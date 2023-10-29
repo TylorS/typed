@@ -10,6 +10,7 @@ import * as EventHandler from "@typed/template/EventHandler"
 import { makeRenderNodePart } from "@typed/template/internal/browser"
 import type { IndexRefCounter } from "@typed/template/internal/indexRefCounter"
 import { indexRefCounter } from "@typed/template/internal/indexRefCounter"
+import { parse } from "@typed/template/internal/parser"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -26,7 +27,6 @@ import {
   TextPartImpl
 } from "@typed/template/internal/parts"
 import { findPath } from "@typed/template/internal/utils"
-import { parser } from "@typed/template/Parser"
 import type {
   AttributePart,
   ClassNamePart,
@@ -257,7 +257,7 @@ function getBrowserEntry(document: Document, ctx: RenderContext, templateStrings
   const cached = ctx.templateCache.get(templateStrings)
 
   if (cached === undefined || cached._tag === "Server") {
-    const template = parser.parse(templateStrings)
+    const template = parse(templateStrings)
     const content = buildTemplate(document, template)
     const entry: BrowserEntry = {
       _tag: "Browser",

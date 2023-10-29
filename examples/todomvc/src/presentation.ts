@@ -104,7 +104,7 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = Fx.genScoped(f
         </span>
 
         <ul class="filters">
-          ${Object.values(Domain.FilterState).map((state) => FilterLink(state))}
+          ${Object.values(Domain.FilterState).map(FilterLink)}
         </ul>
 
          ${

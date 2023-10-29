@@ -5,7 +5,7 @@ import { Effect, Layer, ReadonlyRecord, Tuple } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 
-const TODOS_STORAGE_KEY = `@typed/todo-app/todos`
+const TODOS_STORAGE_KEY = `@typed/todomvc/todos`
 
 const storage = SchemaStorage(({ json }) => ({
   [TODOS_STORAGE_KEY]: json(Domain.TodoList)
@@ -26,19 +26,21 @@ const getFilterState = () => {
   const hash = location.hash.slice(1)
 
   if (hash in hashesToFilterState) {
-    return (Domain.FilterState[hashesToFilterState[hash]])
+    return Domain.FilterState[hashesToFilterState[hash]]
   } else {
-    return (Domain.FilterState.All)
+    return Domain.FilterState.All
   }
 }
 
 const currentFilterState = Fx.fromEmitter<never, never, Domain.FilterState>((emitter) =>
-  Effect.sync(() => {
+  Effect.suspend(() => {
     const onHashChange = () => emitter.succeed(getFilterState())
 
     window.addEventListener("hashchange", onHashChange)
 
     onHashChange()
+
+    return Effect.addFinalizer(() => Effect.sync(() => window.removeEventListener("hashchange", onHashChange)))
   })
 )
 
@@ -46,15 +48,17 @@ const writeFilterState = Fx.tap(
   App.FilterState,
   (state) =>
     Effect.sync(() => {
-      if (location.hash !== `#${state}`) {
-        location.hash = `#${state}`
+      const hash = `#${state}`
+
+      if (location.hash !== hash) {
+        location.hash = hash
       }
     })
 )
 
 const ModelLive = Layer.mergeAll(
   App.TodoList.make(getTodos),
-  App.FilterState.make(currentFilterState), // TODO: Replicate this information into the URL
+  App.FilterState.make(currentFilterState),
   App.TodoText.make(Effect.succeed(""))
 )
 
@@ -67,7 +71,10 @@ const CreateTodoLive = App.CreateTodo.implement((text) =>
       timestamp: new Date()
     }
 
+    // Prepend todo to our TodoList
     yield* _(RefArray.prepend(App.TodoList, todo))
+
+    // Reset the input text
     yield* _(App.TodoText.set(""))
 
     return todo

@@ -155,15 +155,8 @@ export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
   readonly remove: StorageEffect<never, never, void>
 }
 
-const parseJson = <I, A>(schema: S.Schema<I, A>): Schema.Schema<string, A> => {
-  const self: Schema.Schema<string, A> = Schema.parseJson(Schema.string).pipe(Schema.transform(
-    schema,
-    (b, options) => Schema.parseSync(Schema.from(schema))(b, options),
-    (i) => i
-  ))
-
-  return self
-}
+const json = Schema.parseJson(Schema.string)
+const parseJson = <I, A>(schema: S.Schema<I, A>): Schema.Schema<string, A> => Schema.compose(json, schema)
 
 /**
  * Helpers for constructing a SchemaStorage
@@ -171,8 +164,10 @@ const parseJson = <I, A>(schema: S.Schema<I, A>): Schema.Schema<string, A> => {
  * @category constructors
  */
 export type SchemaUtils = {
-  readonly json: typeof parseJson
+  readonly json: <I, A>(schema: S.Schema<I, A>) => Schema.Schema<string, A>
 }
+
+const utils: SchemaUtils = { json: parseJson }
 
 /**
  * Construct a SchemaStorage
@@ -182,7 +177,7 @@ export type SchemaUtils = {
 export function SchemaStorage<
   const Schemas extends Readonly<Record<string, S.Schema<string, any>>>
 >(getSchemas: (utils: SchemaUtils) => Schemas): SchemaStorage<Schemas> {
-  const schemas = getSchemas({ json: parseJson })
+  const schemas = getSchemas(utils)
   const decoders: Partial<
     {
       [K in keyof Schemas]: (

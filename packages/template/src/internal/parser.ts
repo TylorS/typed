@@ -87,23 +87,29 @@ const textChildMatches = {
 }
 
 class PathStack {
-  chunk: Chunk.Chunk<number> = Chunk.of(0)
+  chunk: Chunk.Chunk<number> = Chunk.empty()
   count = 0
 
+  inc() {
+    this.count++
+  }
+
   push(): void {
-    this.chunk = Chunk.append(this.toChunk(), this.count = 0)
+    this.chunk = this.toChunk()
+    this.count = 0
   }
 
   pop(): void {
-    this.count = Chunk.unsafeLast(this.chunk = this.previousChunk()) + 1
+    this.count = Chunk.unsafeLast(this.chunk)
+    this.chunk = Chunk.dropRight(this.chunk, 1)
   }
 
   toChunk(): Chunk.Chunk<number> {
-    return Chunk.replace(this.chunk, Chunk.size(this.chunk) - 1, this.count)
+    return Chunk.append(this.chunk, this.count)
   }
 
   previousChunk() {
-    return Chunk.dropRight(this.chunk, 1)
+    return this.chunk
   }
 }
 
@@ -149,7 +155,6 @@ class ParserImpl implements Parser {
 
     while (this.pos < this.length) {
       const node = this.parseNodeFromContext(this.context)
-
       if (node === undefined) {
         return nodes
       } else {
@@ -207,11 +212,11 @@ class ParserImpl implements Parser {
 
     if ((next = this.chunk(getPart))) { // Parts
       this._skipWhitespace = false
-      return [this.addPartWithCurrentPath(new Template.NodePart(parseInt(next.match[2], 10)))]
+      return [this.addPartWithPrevious(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
       return this._skipWhitespace ? [] : [new Template.TextNode(next.match[1])]
     } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
-      return parseTextAndParts(next.match[1], (i) => this.addPartWithCurrentPath(new Template.NodePart(i)))
+      return parseTextAndParts(next.match[1], (i) => this.addPartWithPrevious(new Template.NodePart(i)))
     } else {
       return [new Template.TextNode(this.nextChar())]
     }
@@ -219,6 +224,7 @@ class ParserImpl implements Parser {
 
   private parseElement(): Template.ParentNode {
     const node = this.parseElementKind()
+    this.path.inc()
 
     this.context = "unknown"
     this._skipWhitespace = true
@@ -236,13 +242,9 @@ class ParserImpl implements Parser {
     }
 
     if (SELF_CLOSING_TAGS.has(tagName)) {
-      const element = this.parseSelfClosingElement(tagName)
-
-      return element
+      return this.parseSelfClosingElement(tagName)
     } else if (TEXT_ONLY_NODES_REGEX.has(tagName)) {
-      const element = this.parseTextOnlyElement(tagName)
-
-      return element
+      return this.parseTextOnlyElement(tagName)
     } else {
       const attributes = this.parseAttributes()
       this.path.push()
@@ -262,7 +264,9 @@ class ParserImpl implements Parser {
 
   private parseTextOnlyElement(tagName: string): Template.TextOnlyElement {
     const attributes = this.parseAttributes()
+    this.path.push()
     const children = this.parseTextChildren()
+    this.path.pop()
 
     return new Template.TextOnlyElement(tagName, attributes, children || [])
   }
@@ -545,8 +549,9 @@ class ParserImpl implements Parser {
     return part
   }
 
-  private addPartWithCurrentPath<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
+  private addPartWithPrevious<T extends Template.PartNode | Template.SparsePartNode>(part: T): T {
     this.parts.push([part, this.path.previousChunk()])
+    this.path.inc() // Nodes will be inserted as a comment
     return part
   }
 
