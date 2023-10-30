@@ -3,7 +3,6 @@ import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type * as Versioned from "@typed/fx/Versioned"
 import { type ElementRef, ElementRefTypeId } from "@typed/template/ElementRef"
-import type { Parts } from "@typed/template/Part"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { Rendered } from "@typed/wire"
@@ -18,19 +17,18 @@ export interface TemplateInstance<E, T extends Rendered = Rendered>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
-  readonly parts: Parts
+  readonly query: ElementRef<T>["query"]
 
-  readonly query: ElementRef<T, E>["query"]
-  readonly events: ElementRef<T, E>["events"]
-  readonly elements: ElementRef<T, E>["elements"]
+  readonly events: ElementRef<T>["events"]
+
+  readonly elements: ElementRef<T>["elements"]
 }
 
 export function TemplateInstance<T extends Rendered = Rendered, E = never>(
   events: Fx.Fx<never, E, RenderEvent>,
-  ref: ElementRef<T, E>,
-  parts: Parts
+  ref: ElementRef<T>
 ): TemplateInstance<E, T> {
-  return new TemplateInstanceImpl(events, ref, parts) as any
+  return new TemplateInstanceImpl(events, ref) as any
 }
 
 class TemplateInstanceImpl<E, T extends Rendered>
@@ -41,8 +39,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
 
   constructor(
     readonly i0: Fx.Fx<never, E, RenderEvent>,
-    readonly i1: ElementRef<T, E>,
-    readonly parts: Parts
+    readonly i1: ElementRef<T>
   ) {
     super(i0, i1)
   }

@@ -16,14 +16,7 @@ const filterClasses = (filterState: Domain.FilterState) =>
   App.FilterState.map((state) => state === filterState ? "selected" : "")
 
 const FilterLink = (filterState: Domain.FilterState) =>
-  html`<li>
-        <a
-          class="${filterClasses(filterState)}" 
-          href="${`#${filterState}`}"
-        >
-          ${filterState}
-        </a>
-      </li>`
+  html`<li><a class="${filterClasses(filterState)}" href="${`#${filterState}`}">${filterState}</a></li>`
 
 const onEnterOrEscape = EventHandler.keys(
   "Enter",
@@ -50,9 +43,8 @@ const TodoItem = (todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
     // The current text value
     const text = todo.map((t) => t.text)
 
-    return yield* _(html`<li
-      class="${todo.map((t) => Domain.isCompleted(t) ? "completed" : "")} ${isEditing.map((b) => b ? "editing" : "")}"
-    >
+    return yield* _(
+      html`<li class="${Fx.when(todo.map(Domain.isCompleted), "completed", "")} ${Fx.when(isEditing, "editing", "")}">
       <div class="view">
         <input
           type="checkbox"
@@ -73,7 +65,8 @@ const TodoItem = (todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
         onfocusout=${EventHandler.make(() => submit)}
         onkeydown=${onEnterOrEscape((ev) => (ev.key === "Enter" ? submit : reset))}
       />
-    </li>`)
+    </li>`
+    )
   })
 
 export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = Fx.genScoped(function*(_) {
@@ -108,15 +101,14 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = Fx.genScoped(f
         </ul>
 
          ${
-    Fx.switchLatest(
-      App.CompletedCount.map((count) =>
-        count > 0 ?
-          Fx.fromFxEffect(html`<button class="clear-completed" onclick=${App.clearCompletedTodos}>
-            Clear completed
-          </button>`) :
-          Fx.succeed(null)
-      )
-    )
+    Fx.if(App.CompletedCount.map((c) => c > 0), {
+      onTrue: Fx.fromFxEffect(
+        html`<button class="clear-completed" onclick=${App.clearCompletedTodos}>
+              Clear completed
+            </button>`
+      ),
+      onFalse: Fx.succeed(null)
+    })
   }
       </footer>
     </section>

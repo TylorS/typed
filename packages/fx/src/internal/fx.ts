@@ -2,7 +2,7 @@ import * as Chainable from "@effect/typeclass/Chainable"
 import * as Covariant from "@effect/typeclass/Covariant"
 import * as Invariant from "@effect/typeclass/Invariant"
 import type * as Context from "@typed/context"
-import { type Fx } from "@typed/fx/Fx"
+import type { Fx, FxInput } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { run } from "@typed/fx/internal/run"
 import { multicast } from "@typed/fx/internal/share"
@@ -278,8 +278,8 @@ export const fromNullable = <A>(value: A | null | undefined | void): Fx<never, n
 const if_: {
   <R2, E2, B, R3, E3, C>(
     options: {
-      readonly onTrue: Fx<R2, E2, B>
-      readonly onFalse: Fx<R3, E3, C>
+      readonly onTrue: FxInput<R2, E2, B>
+      readonly onFalse: FxInput<R3, E3, C>
     }
   ): {
     <R, E>(bool: Fx<R, E, boolean>): Fx<R | R2 | R3, E | E2 | E3, B | C>
@@ -289,36 +289,71 @@ const if_: {
   <R, E, R2, E2, B, R3, E3, C>(
     bool: Fx<R, E, boolean>,
     options: {
-      readonly onTrue: Fx<R2, E2, B>
-      readonly onFalse: Fx<R3, E3, C>
+      readonly onTrue: FxInput<R2, E2, B>
+      readonly onFalse: FxInput<R3, E3, C>
     }
   ): Fx<R | R2 | R3, E | E2 | E3, B | C>
 
   <R2, E2, B, R3, E3, C>(
     bool: boolean,
     options: {
-      readonly onTrue: Fx<R2, E2, B>
-      readonly onFalse: Fx<R3, E3, C>
+      readonly onTrue: FxInput<R2, E2, B>
+      readonly onFalse: FxInput<R3, E3, C>
     }
   ): Fx<R2 | R3, E2 | E3, B | C>
 } = dual(2, function if_<R, E, R2, E2, B, R3, E3, C>(
   bool: boolean | Fx<R, E, boolean>,
   options: {
-    onTrue: Fx<R2, E2, B>
-    onFalse: Fx<R3, E3, C>
+    onTrue: FxInput<R2, E2, B>
+    onFalse: FxInput<R3, E3, C>
   }
 ): Fx<R | R2 | R3, E | E2 | E3, B | C> {
   if (typeof bool === "boolean") {
-    return bool ? options.onTrue : options.onFalse
+    return bool ? core.from(options.onTrue) : core.from(options.onFalse)
   } else {
     return core.switchMap(
       bool,
-      (bool): Fx<R2 | R3, E2 | E3, B | C> => (bool ? options.onTrue : options.onFalse)
+      (bool): FxInput<R2 | R3, E2 | E3, B | C> => (bool ? options.onTrue : options.onFalse)
     )
   }
 })
 
 export { if_ as if }
+
+export const when: {
+  <B, C>(
+    onTrue: B,
+    onFalse: C
+  ): {
+    <R, E>(bool: Fx<R, E, boolean>): Fx<R, E, B | C>
+    (bool: boolean): Fx<never, never, B | C>
+  }
+
+  <R, E, B, C>(
+    bool: Fx<R, E, boolean>,
+    onTrue: B,
+    onFalse: C
+  ): Fx<R, E, B | C>
+
+  <B, C>(
+    bool: boolean,
+    onTrue: B,
+    onFalse: C
+  ): Fx<never, never, B | C>
+} = dual(3, function when_<R, E, B, C>(
+  bool: boolean | Fx<R, E, boolean>,
+  onTrue: B,
+  onFalse: C
+): Fx<R, E, B | C> {
+  if (typeof bool === "boolean") {
+    return bool ? core.from(onTrue) : core.from(onFalse)
+  } else {
+    return core.map(
+      bool,
+      (bool): B | C => (bool ? onTrue : onFalse)
+    )
+  }
+})
 
 export const interruptible = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, A> => core.middleware(fx, Effect.interruptible)
 

@@ -11,7 +11,7 @@ export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
     values: Values,
-    ref?: ElementRef<T, Placeholder.Error<Values[number]>>
+    ref?: ElementRef<T>
   ): Effect.Effect<
     Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
     never,
@@ -40,15 +40,15 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   return RenderTemplate.withEffect((render) => render(template, values))
 }
 
-export function as<T extends Rendered = Rendered, E = never>(ref: ElementRef<T, E>) {
+export function as<T extends Rendered = Rendered>(ref: ElementRef<T>) {
   return function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,
     ...values: Values
   ): Effect.Effect<
     Scope | RenderTemplate | Placeholder.Context<Values[number]>,
     never,
-    TemplateInstance<E | Placeholder.Error<Values[number]>, T>
+    TemplateInstance<Placeholder.Error<Values[number]>, T>
   > {
-    return RenderTemplate.withEffect((render) => render(template, values, ref as any))
+    return RenderTemplate.withEffect((render) => render(template, values, ref))
   }
 }

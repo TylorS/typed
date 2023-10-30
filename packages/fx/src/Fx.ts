@@ -2207,6 +2207,20 @@ export {
 }
 
 /**
+ * Logical if/else using static values.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const when: {
+  <B, C>(
+    onTrue: B,
+    onFalse: C
+  ): { <R, E>(bool: Fx<R, E, boolean>): Fx<R, E, B | C>; (bool: boolean): Fx<never, never, B | C> }
+  <R, E, B, C>(bool: Fx<R, E, boolean>, onTrue: B, onFalse: C): Fx<R, E, B | C>
+  <B, C>(bool: boolean, onTrue: B, onFalse: C): Fx<never, never, B | C>
+} = internal.when
+
+/**
  * Mark an Fx as interruptible
  * @since 1.18.0
  * @category combinators

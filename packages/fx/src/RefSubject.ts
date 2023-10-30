@@ -163,9 +163,13 @@ export namespace RefSubject {
      * Make a layer initializing a RefSubject
      * @since 1.18.0
      */
-    readonly make: {
-      <R>(fx: Fx.FxInput<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I>
-    }
+    readonly make: <R>(fx: Exclude<Fx.FxInput<R, E, A>, Iterable<A>>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
+
+    /**
+     * Make a layer initializing a RefSubject
+     * @since 1.18.0
+     */
+    readonly of: (value: A, eq?: Equivalence<A>) => Layer.Layer<never, never, I>
 
     /**
      * Provide an implementation of this RefSubject
@@ -352,6 +356,8 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
 
   make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> =>
     this.tag.scoped(make(fx, eq || this.defaultEq))
+
+  of = (value: A, eq?: Equivalence<A>): Layer.Layer<never, never, I> => this.tag.scoped(of(value, eq))
 
   provide = <R2>(fx: Fx.Fx<R2, E, A>, eq?: Equivalence<A>) => Effect.provide(this.make(fx, eq || this.defaultEq))
 

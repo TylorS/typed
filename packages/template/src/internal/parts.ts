@@ -303,9 +303,9 @@ export class EventPartImpl extends base("event") implements EventPart {
   static browser<T extends Rendered, E>(
     name: string,
     index: number,
-    ref: ElementRef<T, E>,
+    ref: ElementRef<T>,
     element: HTMLElement | SVGElement,
-    onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>
+    onCause: (cause: Cause<E>) => Effect.Effect<never, never, unknown>
   ): Effect.Effect<unknown, never, void> {
     return withSwitchFork((fork, ctx) => {
       const source = ref.query(element)
@@ -313,13 +313,13 @@ export class EventPartImpl extends base("event") implements EventPart {
       return Effect.succeed(
         new EventPartImpl(
           name,
-          onCause,
+          onCause as any,
           index,
           ({ value }) => {
             return value
               ? Fx.run(
-                source.events(name as any, value.options),
-                WithContext(onCause, (ev) => value.handler(ev as any))
+                source.events(name as keyof HTMLElementEventMap | keyof SVGElementEventMap, value.options),
+                WithContext(onCause, value.handler)
               ).pipe(
                 Effect.provide(ctx),
                 fork
@@ -381,7 +381,7 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
 export class RefPartImpl implements RefPart {
   readonly _tag = "ref"
 
-  constructor(readonly value: ElementSource<any, any, any>, readonly index: number) {}
+  constructor(readonly value: ElementSource<any>, readonly index: number) {}
 }
 
 export class TextPartImpl extends base("text") implements TextPart {

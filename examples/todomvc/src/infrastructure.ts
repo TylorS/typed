@@ -59,7 +59,7 @@ const writeFilterState = Fx.tap(
 const ModelLive = Layer.mergeAll(
   App.TodoList.make(getTodos),
   App.FilterState.make(currentFilterState),
-  App.TodoText.make(Effect.succeed(""))
+  App.TodoText.of("")
 )
 
 const CreateTodoLive = App.CreateTodo.implement((text) =>
@@ -87,7 +87,7 @@ const SubscriptionsLive = Layer.scopedDiscard(Effect.forkScoped(Fx.drain(Fx.merg
 ]))))
 
 export const Live = Layer.provideMerge(
-  Storage.layer(Effect.succeed(localStorage)),
+  Storage.layer(localStorage),
   Layer.provideMerge(
     ModelLive,
     Layer.mergeAll(

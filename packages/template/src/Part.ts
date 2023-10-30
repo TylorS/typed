@@ -1,6 +1,5 @@
 import type { ElementSource } from "@typed/template/ElementSource"
 import type { EventHandler } from "@typed/template/EventHandler"
-import type { Rendered } from "@typed/wire"
 import type { Cause } from "effect/Cause"
 import type { Effect } from "effect/Effect"
 import type { Scope } from "effect/Scope"
@@ -70,9 +69,9 @@ export interface PropertyPart {
   readonly update: (value: this["value"]) => Effect<Scope, never, void>
 }
 
-export interface RefPart<E = any> {
+export interface RefPart<T extends HTMLElement | SVGElement = HTMLElement> {
   readonly _tag: "ref"
-  readonly value: ElementSource<Rendered, E>
+  readonly value: ElementSource<T>
   readonly index: number
 }
 

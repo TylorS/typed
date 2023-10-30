@@ -288,7 +288,7 @@ export function make<R, E, A>(
   eq?: Equivalence<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, any>> {
   return matchFxInput(fx, {
-    RefSubject: (ref) => derivedRefSubject(ref, eq), // TODO: Expand
+    RefSubject: (ref) => derivedRefSubject(ref, eq),
     Fx: (fx) => fxAsRef(fx, eq),
     Stream: (stream) => fxAsRef(core.fromStream(stream), eq),
     Effect: (effect) => fromEffect(effect, eq),

@@ -1,6 +1,5 @@
 import type * as Part from "@typed/template/Part"
 import type { Placeholder } from "@typed/template/Placeholder"
-import type { Renderable } from "@typed/template/Renderable"
 import * as Effect from "effect/Effect"
 
 export const DirectiveTypeId = Symbol.for("@typed/templateDirective")
@@ -15,7 +14,7 @@ export interface Directive<R, E> extends Placeholder<R, E, unknown> {
 export function Directive<R, E>(
   directive: (part: Part.Part) => Effect.Effect<R, E, unknown>
 ): Directive<R, E> {
-  return Object.assign(directive, {
+  return Object.assign((p: Part.Part) => directive(p), {
     [DirectiveTypeId]: DirectiveTypeId
   }) as Directive<R, E>
 }
@@ -61,6 +60,6 @@ export const text: <R, E>(directive: (part: Part.TextPart) => Effect.Effect<R, E
 export const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<R, E, unknown>) => Directive<R, E> =
   withTag("node")
 
-export function isDirective<R, E>(renderable: Renderable<R, E> | Placeholder<R, E>): renderable is Directive<R, E> {
+export function isDirective<R, E>(renderable: unknown): renderable is Directive<R, E> {
   return typeof renderable === "function" && DirectiveTypeId in (renderable as any)
 }

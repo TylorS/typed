@@ -28,7 +28,6 @@ export function makeRenderNodePart(
       }, (updatedNodes) => {
         nodes = diffChildren(comment, nodes, updatedNodes, document)
       })
-      // TODO: We need to port over the diffing of children
     })
   }, [])
 }

@@ -51,7 +51,12 @@ export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags
     provide: (s) => (effect) => Effect.provide(effect, buildTupleContext(tags, s).context),
     provideEffect: (make) => (effect) =>
       Effect.flatMap(make, (s) => Effect.provide(effect, buildTupleContext(tags, s).context)),
-    layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildTupleContext(tags, s).context)),
+    layer: (make) =>
+      Layer.effectContext(
+        Effect.isEffect(make)
+          ? Effect.map(make, (s) => buildTupleContext(tags, s).context)
+          : Effect.succeed(buildTupleContext(tags, make).context)
+      ),
     scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildTupleContext(tags, s).context))
   }
 
@@ -99,7 +104,12 @@ export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags
     provide: (s) => (effect) => Effect.provide(effect, buildStructContext(tags, s).context),
     provideEffect: (make) => (effect) =>
       Effect.flatMap(make, (s) => Effect.provide(effect, buildStructContext(tags, s).context)),
-    layer: (make) => Layer.effectContext(Effect.map(make, (s) => buildStructContext(tags, s).context)),
+    layer: (make) =>
+      Layer.effectContext(
+        Effect.isEffect(make)
+          ? Effect.map(make, (s) => buildStructContext(tags, s).context)
+          : Effect.succeed(buildStructContext(tags, make).context)
+      ),
     scoped: (make) => Layer.scopedContext(Effect.map(make, (s) => buildStructContext(tags, s).context))
   }
 
