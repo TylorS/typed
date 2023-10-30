@@ -17,6 +17,8 @@ export function union<Members extends ReadonlyArray.NonEmptyReadonlyArray<Decode
         if (Either.isRight(result)) {
           return result.right
         }
+
+        failures.push(...result.left.errors)
       }
 
       return yield* $(
