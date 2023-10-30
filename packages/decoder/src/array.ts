@@ -1,6 +1,7 @@
 import type { ParseOptions } from "@effect/schema/AST"
 import * as PR from "@effect/schema/ParseResult"
 import { Effect, pipe, ReadonlyArray as RA } from "effect"
+import type { NonEmptyReadonlyArray } from "effect/ReadonlyArray"
 
 import { compose } from "@typed/decoder/compose"
 import type { Decoder } from "@typed/decoder/decoder"
@@ -40,13 +41,13 @@ export const array = <O>(member: Decoder<unknown, O>): Decoder<unknown, Readonly
   pipe(unknownArray, compose(fromArray(member)))
 
 export const fromNonEmptyArray =
-  <I, O>(member: Decoder<I, O>): Decoder<ReadonlyArray<I>, ReadonlyArray<O>> => (i, options) => {
+  <I, O>(member: Decoder<I, O>): Decoder<ReadonlyArray<I>, NonEmptyReadonlyArray<O>> => (i, options) => {
     if (i.length === 0) {
       return PR.failure(PR.unexpected(i))
     }
 
-    return fromArray(member)(i, options)
+    return fromArray(member)(i, options) as PR.ParseResult<NonEmptyReadonlyArray<O>>
   }
 
-export const nonEmptyArray = <O>(member: Decoder<unknown, O>): Decoder<unknown, ReadonlyArray<O>> =>
+export const nonEmptyArray = <O>(member: Decoder<unknown, O>): Decoder<unknown, NonEmptyReadonlyArray<O>> =>
   pipe(unknownArray, compose(fromNonEmptyArray(member)))
