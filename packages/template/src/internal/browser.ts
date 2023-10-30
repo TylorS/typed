@@ -19,7 +19,7 @@ export function makeRenderNodePart(
   return new NodePartImpl(index, ({ part, value }) => {
     return ctx.queue.add(part, () => {
       matchValue(value, (content) => {
-        if (!text) {
+        if (text === undefined) {
           text = document.createTextNode("")
         }
         text.textContent = content
