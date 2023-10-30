@@ -25,6 +25,7 @@ import * as internalKeyed from "@typed/fx/internal/keyed"
 import * as internalRun from "@typed/fx/internal/run"
 import * as Share from "@typed/fx/internal/share"
 import * as strategies from "@typed/fx/internal/strategies"
+import * as internalWithKey from "@typed/fx/internal/withKey"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import type * as Sink from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
@@ -2405,7 +2406,7 @@ export const keyed: {
     f: (
       ref: RefSubject<never, never, A>,
       key: C
-    ) => Fx<R2, E2, B>,
+    ) => FxInput<R2, E2, B>,
     getKey: (a: A) => C
   ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<B>>
 
@@ -2414,9 +2415,28 @@ export const keyed: {
     f: (
       ref: RefSubject<never, never, A>,
       key: C
-    ) => Fx<R2, E2, B>,
+    ) => FxInput<R2, E2, B>,
     getKey: (a: A) => C
   ): Fx<R | R2, E | E2, ReadonlyArray<B>>
 } = dual(3, internalKeyed.keyed)
+
+export const withKey: {
+  <A, R2, E2, B, C>(
+    f: (
+      ref: RefSubject<never, never, A>,
+      key: C
+    ) => FxInput<R2, E2, B>,
+    options: internalWithKey.WithKeyOptions<A, C>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
+
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    f: (
+      ref: RefSubject<never, never, A>,
+      key: C
+    ) => FxInput<R2, E2, B>,
+    options: internalWithKey.WithKeyOptions<A, C>
+  ): Fx<R | R2, E | E2, B>
+} = dual(3, internalWithKey.withKey)
 
 /* #endregion */

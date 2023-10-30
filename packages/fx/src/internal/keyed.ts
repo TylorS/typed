@@ -1,5 +1,5 @@
-import type { Fx, ScopedFork } from "@typed/fx/Fx"
-import { skipRepeats, withScopedFork } from "@typed/fx/internal/core"
+import type { Fx, FxInput, ScopedFork } from "@typed/fx/Fx"
+import { from, skipRepeats, withScopedFork } from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { run } from "@typed/fx/internal/run"
 import { fromEffect, type RefSubject } from "@typed/fx/RefSubject"
@@ -15,7 +15,7 @@ import * as Scope from "effect/Scope"
 
 export function keyed<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, ReadonlyArray<A>>,
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>,
+  f: (fx: RefSubject<never, never, A>, key: C) => FxInput<R2, E2, B>,
   getKey: (a: A) => C
 ): Fx<R | R2, E | E2, ReadonlyArray<B>> {
   return withScopedFork(({ fork, scope, sink }) =>
@@ -37,7 +37,7 @@ export function keyed<R, E, A, R2, E2, B, C>(
                 state,
                 updated: as,
                 getKey,
-                f,
+                f: (ref, key) => from(f(ref, key)),
                 fork,
                 scope,
                 emit,

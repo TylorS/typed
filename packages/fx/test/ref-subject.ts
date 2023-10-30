@@ -107,4 +107,62 @@ describe(__filename, () => {
       await Effect.runPromise(test)
     })
   })
+
+  describe("withKey", () => {
+    it("creates stable references to another Fx", async () => {
+      type Foo = {
+        id: string
+        value: number
+      }
+
+      const a0: Foo = {
+        id: "a",
+        value: 0
+      }
+      const a1: Foo = {
+        id: "a",
+        value: 1
+      }
+      const b0: Foo = {
+        id: "b",
+        value: 2
+      }
+      const c0: Foo = {
+        id: "c",
+        value: 3
+      }
+      const c1: Foo = {
+        id: "c",
+        value: 4
+      }
+
+      const foos = [a0, a1, b0, c0, c1]
+
+      const source = Fx.merge(foos.map((foo, i) => Fx.at(foo, i * 10)))
+
+      let calls = 0
+
+      const test = source.pipe(
+        Fx.withKey((ref) => {
+          calls++
+          return Fx.map(ref, (x): Foo => ({ ...x, value: x.value + 1 }))
+        }, {
+          key: (f) => f.id
+        }),
+        Fx.toReadonlyArray
+      )
+
+      const actual = await Effect.runPromise(test)
+      const expected = [
+        { ...a0, value: a0.value + 1 },
+        { ...a1, value: a1.value + 1 },
+        { ...b0, value: b0.value + 1 },
+        { ...c0, value: c0.value + 1 },
+        { ...c1, value: c1.value + 1 }
+      ]
+
+      expect(actual).toEqual(expected)
+      expect(calls).toEqual(3)
+    })
+  })
 })
