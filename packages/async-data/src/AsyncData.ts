@@ -51,7 +51,11 @@ export namespace AsyncData {
   }
 }
 
-export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
+export interface NoDataOptions {
+  readonly timestamp: bigint // Clock.currentTimeNanos
+}
+
+export class NoData extends Data.TaggedError(NO_DATA_TAG)<NoDataOptions> {
   [Unify.typeSymbol]!: unknown;
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
   [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
@@ -60,7 +64,10 @@ export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
 export const noData: {
   (): NoData
   <E, A>(): AsyncData<E, A>
-} = (): NoData => new NoData()
+} = (options?: NoDataOptions): NoData =>
+  new NoData({
+    timestamp: options?.timestamp ?? currentTimestamp()
+  })
 
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
   [Unify.typeSymbol]!: unknown;
@@ -246,7 +253,7 @@ export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
   if (isTaggedRecord(u) && hasEquality(u)) {
     switch (u._tag) {
       case NO_DATA_TAG:
-        return true
+        return "timstamp" in u && typeof u.timestamp === "bigint"
       case LOADING_TAG:
         return "progress" in u && Option.isOption(u.progress)
       case FAILURE_TAG:
@@ -316,7 +323,7 @@ export const getEquivalence =
     if (a === b) return true
 
     return match(a, {
-      NoData: () => isNoData(b) ? true : false,
+      NoData: () => isNoData(b) ? Equivalence.bigint(a.timestamp, b.timestamp) : false,
       Loading: (l1) => isLoading(b) ? loadingEquivalence(l1, b) : false,
       Failure: (_, f1) =>
         isFailure(b)
