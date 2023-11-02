@@ -1133,14 +1133,14 @@ export const mapEffect: {
 )
 
 export const tap: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, B>
+  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, A>
 } = dual(
   2,
   function tap<R, E, A, R2, E2, B>(
     fx: Fx<R, E, A>,
     f: (a: A) => Effect.Effect<R2, E2, B>
-  ): Fx<R | R2, E | E2, B> {
+  ): Fx<R | R2, E | E2, A> {
     return TransformerEffect.make(fx, TapEffect(f))
   }
 )

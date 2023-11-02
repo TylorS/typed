@@ -5,7 +5,7 @@ import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
 import * as AsyncData from "@typed/async-data/AsyncData"
 import { Cause, Chunk, Duration, Effect, FiberId, HashSet } from "effect"
-import { isSome } from "effect/Option"
+import * as Option from "effect/Option"
 
 const fiberIdArbitrary: Arbitrary.Arbitrary<FiberId.FiberId> = (fc) =>
   fc.oneof(
@@ -95,13 +95,13 @@ const asyncDataPretty = <E, A>(
     NoData: () => `AsyncData.NoData`,
     Loading: (loading) => `AsyncData.Loading(timestamp=${prettyTimestamp(loading.timestamp)})`,
     Failure: (cause, data) =>
-      `AsyncData.Failure(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${isSome(data.refreshing)}, cause=${
-        prettyCause(cause)
-      })`,
+      `AsyncData.Failure(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
+        Option.isSome(data.refreshing)
+      }, cause=${prettyCause(cause)})`,
     Success: (value, data) =>
-      `AsyncData.Success(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${isSome(data.refreshing)}, value=${
-        prettyValue(value)
-      })`
+      `AsyncData.Success(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
+        Option.isSome(data.refreshing)
+      }, value=${prettyValue(value)})`
   })
 
 const asyncDataArbitrary = <E, A>(
@@ -142,12 +142,18 @@ export const asyncData = <EI, E, AI, A>(
             case "Failure": {
               const cause = yield* _(parseCause(input.cause, options))
 
-              return AsyncData.failCause(cause, { timestamp: input.timestamp, refreshing: input.refreshing })
+              return AsyncData.failCause(cause, {
+                timestamp: input.timestamp,
+                refreshing: Option.getOrUndefined(input.refreshing)
+              })
             }
             case "Success": {
               const a = yield* _(parseValue(input.value, options))
 
-              return AsyncData.success(a, { timestamp: input.timestamp, refreshing: input.refreshing })
+              return AsyncData.success(a, {
+                timestamp: input.timestamp,
+                refreshing: Option.getOrUndefined(input.refreshing)
+              })
             }
           }
         })

@@ -95,7 +95,7 @@ class FilteredImpl<R, E, A, R2, E2, B>
   ) {
     super(
       input,
-      (fx) => core.compact(core.switchMap(fx, f)),
+      (fx) => core.compact(core.mapEffect(fx, f)),
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }

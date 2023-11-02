@@ -1,4 +1,4 @@
-import { Option } from "effect"
+import { Equivalence, Option } from "effect"
 import { dual } from "effect/Function"
 
 export interface Progress {
@@ -33,4 +33,11 @@ export const setTotal: {
     progress.loaded,
     Option.some(total)
   )
+})
+
+export const equals: Equivalence.Equivalence<Progress> = Equivalence.struct<
+  { readonly [K in keyof Progress]: Equivalence.Equivalence<Progress[K]> }
+>({
+  loaded: Equivalence.bigint,
+  total: Option.getEquivalence(Equivalence.bigint)
 })

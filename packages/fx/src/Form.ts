@@ -2,7 +2,8 @@ import { AST } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
-import { Computed } from "@typed/fx/Computed"
+import { Filtered } from "@typed/fx"
+import { Computed, ComputedTypeId } from "@typed/fx/Computed"
 import * as FormEntry from "@typed/fx/FormEntry"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
@@ -306,11 +307,18 @@ const deriveMakeEntries = <
   })
 
 const propOf = <R, E, O>(
-  input: RefSubject<R, E, O> | Fx<R, E, O> | Stream.Stream<R, E, O> | Effect.Effect<R, E, O>,
+  input:
+    | RefSubject<R, E, O>
+    | Computed<R, E, O>
+    | Filtered.Filtered<R, E, O>
+    | Fx<R, E, O>
+    | Stream.Stream<R, E, O>
+    | Effect.Effect<R, E, O>,
   key: keyof O
 ) => {
-  if (RefSubjectTypeId in input) return input.map((o) => o[key])
-  else if (TypeId in input) return core.map(input, (o) => o[key])
+  if (RefSubjectTypeId in input || ComputedTypeId in input || Filtered.FilteredTypeId in input) {
+    return input.map((o) => o[key])
+  } else if (TypeId in input) return core.map(input, (o) => o[key])
   else if (Effect.EffectTypeId in input) return Effect.map(input, (o) => o[key])
   else return Stream.map(input, (o) => o[key])
 }

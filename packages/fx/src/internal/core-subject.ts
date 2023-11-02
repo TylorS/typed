@@ -41,7 +41,7 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
   interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.unit)))
 
   toFx(): Fx<never, E, A> {
-    return fromSink<never, E, A>((sink) => this.addSink(sink, (scope) => awaitScopeClose(scope)))
+    return fromSink<never, E, A>((sink) => this.addSink(sink, awaitScopeClose))
   }
 
   protected addSink<R2, B>(
@@ -78,11 +78,13 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
   readonly subscriberCount: Effect.Effect<never, never, number> = Effect.sync(() => this.sinks.size)
 
   protected onEvent(a: A) {
-    return Effect.forEach(this.sinks, (sink) => sink.onSuccess(a), UNBOUNDED)
+    return Effect.suspend(() => {
+      return Effect.forEach(Array.from(this.sinks), (sink) => sink.onSuccess(a), UNBOUNDED)
+    })
   }
 
   protected onCause(cause: Cause<E>) {
-    return Effect.forEach(this.sinks, (sink) => sink.onFailure(cause), UNBOUNDED)
+    return Effect.suspend(() => Effect.forEach(Array.from(this.sinks), (sink) => sink.onFailure(cause), UNBOUNDED))
   }
 }
 

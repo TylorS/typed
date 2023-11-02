@@ -74,7 +74,11 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   readonly interrupt = Effect.suspend(() =>
     Effect.all([
       this.subject.interrupt,
-      Ref.get(this.ref).pipe(Effect.flatten, Effect.flatMap(Fiber.interrupt), Effect.optionFromOptional)
+      Ref.getAndSet(this.ref, Option.none()).pipe(
+        Effect.flatten,
+        Effect.flatMap(Fiber.interrupt),
+        Effect.optionFromOptional
+      )
     ])
   )
 
@@ -101,7 +105,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
         Effect.flatMap((a) =>
           f(a).pipe(
             Effect.tap(([, a2]) =>
-              Effect.if(this.eq(a2, a), {
+              Effect.if(this.eq(a, a2), {
                 onTrue: this.setValue(a2),
                 onFalse: Effect.zipRight(this.setValue(a2), this.emitValue(a2))
               })
@@ -135,7 +139,10 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
     )
 
   readonly set = (a: A) =>
-    Effect.catchAllCause(this.update(() => a), () => Effect.tap(this._lock(this.setValue(a)), () => this.emitValue(a)))
+    Effect.catchAllCause(
+      this.update(() => a),
+      () => this._lock(Effect.tap(this.setValue(a), () => this.emitValue(a)))
+    )
 
   readonly updateEffect = <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) =>
     this.modifyEffect((a) => f(a).pipe(Effect.map((a2) => [a2, a2] as const)))
@@ -208,9 +215,11 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   }
 
   private emitValue(a: A) {
-    this._version++
+    return Effect.suspend(() => {
+      this._version++
 
-    return this.subject.onSuccess(a)
+      return this.subject.onSuccess(a)
+    })
   }
 
   private initialize(): Effect.Effect<R, never, Fiber.Fiber<E, A>> {

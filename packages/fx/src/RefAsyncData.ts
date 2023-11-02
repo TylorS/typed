@@ -4,18 +4,21 @@
  */
 
 import * as AsyncData from "@typed/async-data/AsyncData"
+import type { Progress } from "@typed/async-data/Progress"
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
+import type * as Computed from "@typed/fx/Computed"
+import type * as Filtered from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import { type Duration, Option } from "effect"
+import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
 
 // TODO: Integration with Request
 // TODO: Computed types
-// TODO: Destructors
 // TODO: UI primitives??
 
 /**
@@ -33,8 +36,8 @@ export interface RefAsyncData<R, E, A> extends RefSubject.RefSubject<R, never, A
 export const make: <E, A>() => Effect.Effect<
   never,
   never,
-  RefSubject.RefSubject<never, never, AsyncData.AsyncData<E, A>>
-> = <E, A>() => RefSubject.of(AsyncData.noData<E, A>())
+  RefAsyncData<never, E, A>
+> = <E, A>() => RefSubject.of(AsyncData.noData<E, A>(), AsyncData.getEquivalence())
 
 /**
  * Create a Tagged RefRemoteData
@@ -231,3 +234,186 @@ export const awaitLoadingOrRefreshing = <R, E, A>(
 
 export const asSink = <R, E, A>(ref: RefAsyncData<R, E, A>): Sink.WithContext<R, E, A> =>
   Sink.WithContext((cause) => ref.set(AsyncData.failCause(cause)), (a) => ref.set(AsyncData.success(a)))
+
+export const mapInputEffect = <R, E, A, R2, B>(
+  ref: RefAsyncData<R, E, A>,
+  f: (b: B) => Effect.Effect<R2, E, A>
+): Sink.WithContext<R | R2, E, B> => Sink.mapEffect(asSink(ref), f)
+
+export const mapInput = <R, E, A, B>(
+  ref: RefAsyncData<R, E, A>,
+  f: (b: B) => A
+): Sink.WithContext<R, E, B> => Sink.map(asSink(ref), f)
+
+export const match: {
+  <
+    E1,
+    A,
+    R2 = never,
+    E2 = never,
+    B = never,
+    R3 = never,
+    E3 = never,
+    C = never,
+    R4 = never,
+    E4 = never,
+    D = never,
+    R5 = never,
+    E5 = never,
+    F = never
+  >(
+    matchers: {
+      NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
+      Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
+      Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+      Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
+    }
+  ): <R, E>(
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>
+  ) => Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
+
+  <
+    R,
+    E,
+    E1,
+    A,
+    R2 = never,
+    E2 = never,
+    B = never,
+    R3 = never,
+    E3 = never,
+    C = never,
+    R4 = never,
+    E4 = never,
+    D = never,
+    R5 = never,
+    E5 = never,
+    F = never
+  >(
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
+    matchers: {
+      NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
+      Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
+      Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+      Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
+    }
+  ): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
+} = dual(2, <R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+  fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
+  matchers: {
+    NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
+    Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
+    Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+    Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
+  }
+): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F> => Fx.switchMap(fx, AsyncData.match(matchers)))
+
+export const matchKeyed: {
+  <
+    E1,
+    A,
+    NoData extends Fx.FxInput<any, any, any>,
+    Loading extends Fx.FxInput<any, any, any>,
+    Failure extends Fx.FxInput<any, any, any>,
+    Success extends Fx.FxInput<any, any, any>
+  >(
+    matchers: {
+      NoData: () => NoData
+      Loading: (data: LoadingComputed) => Loading
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
+    }
+  ): <R, E>(
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>
+  ) => Fx.Fx<
+    R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
+  >
+
+  <
+    R,
+    E,
+    E1,
+    A,
+    NoData extends Fx.FxInput<any, any, any>,
+    Loading extends Fx.FxInput<any, any, any>,
+    Failure extends Fx.FxInput<any, any, any>,
+    Success extends Fx.FxInput<any, any, any>
+  >(
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
+    matchers: {
+      NoData: () => NoData
+      Loading: (data: LoadingComputed) => Loading
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
+    }
+  ): Fx.Fx<
+    R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
+  >
+} = dual(
+  2,
+  <
+    R,
+    E,
+    E1,
+    A,
+    NoData extends Fx.FxInput<any, any, any>,
+    Loading extends Fx.FxInput<any, any, any>,
+    Failure extends Fx.FxInput<any, any, any>,
+    Success extends Fx.FxInput<any, any, any>
+  >(
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
+    matchers: {
+      NoData: () => NoData
+      Loading: (data: LoadingComputed) => Loading
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
+    }
+  ): Fx.Fx<
+    R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
+    Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
+  > =>
+    Fx.matchTags(fx, {
+      NoData: matchers.NoData,
+      Loading: (ref) =>
+        matchers.Loading({
+          timestamp: ref.map((r) => r.timestamp),
+          progress: ref.filterMap((r) => r.progress)
+        }),
+      Failure: (ref) =>
+        matchers.Failure(
+          ref.filterMap(AsyncData.getFailure),
+          {
+            timestamp: ref.map((r) => r.timestamp),
+            refreshing: ref.filterMap((r) => r.refreshing)
+          }
+        ),
+      Success: (ref) =>
+        matchers.Success(
+          ref.map((r) => r.value),
+          {
+            timestamp: ref.map((r) => r.timestamp),
+            refreshing: ref.filterMap((r) => r.refreshing)
+          }
+        )
+    })
+)
+
+export type LoadingComputed = {
+  readonly timestamp: Computed.Computed<never, never, bigint>
+  readonly progress: Filtered.Filtered<never, never, Progress>
+}
+
+export type FailureComputed = {
+  readonly timestamp: Computed.Computed<never, never, bigint>
+  readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
+}
+
+export type SuccessComputed = {
+  readonly timestamp: Computed.Computed<never, never, bigint>
+  readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
+}

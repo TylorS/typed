@@ -9,7 +9,7 @@ import * as Effect from "effect/Effect"
 
 import { describe, it } from "vitest"
 
-describe("Form", () => {
+describe.concurrent("Form", () => {
   describe("make", () => {
     const Foo = Schema.struct({
       id: Schema.string.pipe(

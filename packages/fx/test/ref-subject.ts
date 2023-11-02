@@ -1,12 +1,15 @@
 import * as Schema from "@effect/schema/Schema"
+import * as AsyncData from "@typed/async-data/AsyncData"
+import { Progress } from "@typed/async-data/Progress"
 import * as Fx from "@typed/fx/Fx"
+import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Effect from "effect/Effect"
 
 import { describe, it } from "vitest"
 
-describe(__filename, () => {
-  describe("runUpdate", () => {
+describe.concurrent(__filename, () => {
+  describe.concurrent("runUpdate", () => {
     it("allows changing the value of a ref multiple times withing a single workflow", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(1))
@@ -20,7 +23,7 @@ describe(__filename, () => {
             Effect.gen(function*(_) {
               expect(yield* _(get)).toEqual(1)
               expect(yield* _(set(2))).toEqual(2)
-              expect(yield* _(set(2))).toEqual(2) // Skips duplicates
+              expect(yield* _(set(2))).toEqual(2) // concurrents duplicates
               expect(yield* _(set(3))).toEqual(3)
               expect(yield* _(set(4))).toEqual(4)
               expect(yield* _(set(5))).toEqual(5)
@@ -39,7 +42,7 @@ describe(__filename, () => {
     })
   })
 
-  describe("deriveFromSchema", () => {
+  describe.concurrent("deriveFromSchema", () => {
     const Foo = Schema.struct({
       id: Schema.string,
       name: Schema.string,
@@ -108,7 +111,7 @@ describe(__filename, () => {
     })
   })
 
-  describe("withKey", () => {
+  describe.concurrent("withKey", () => {
     it("creates stable references to another Fx", async () => {
       type Foo = {
         id: string
@@ -146,9 +149,7 @@ describe(__filename, () => {
         Fx.withKey((ref) => {
           calls++
           return Fx.map(ref, (x): Foo => ({ ...x, value: x.value + 1 }))
-        }, {
-          key: (f) => f.id
-        }),
+        }, (f) => f.id),
         Fx.toReadonlyArray
       )
 
@@ -163,6 +164,86 @@ describe(__filename, () => {
 
       expect(actual).toEqual(expected)
       expect(calls).toEqual(3)
+    })
+  })
+
+  describe.concurrent("matchTags", () => {
+    it("allows using withKey to match over _tag values", async () => {
+      type Foo = { _tag: "a"; value: number } | { _tag: "b"; value: number } | { _tag: "c"; value: number }
+
+      const a0: Foo = {
+        _tag: "a",
+        value: 0
+      }
+      const a1: Foo = {
+        _tag: "a",
+        value: 1
+      }
+      const b0: Foo = {
+        _tag: "b",
+        value: 2
+      }
+      const c0: Foo = {
+        _tag: "c",
+        value: 3
+      }
+      const c1: Foo = {
+        _tag: "c",
+        value: 4
+      }
+
+      const foos = [a0, a1, b0, c0, c1]
+
+      const source = Fx.merge(foos.map((foo, i) => Fx.at(foo, i * 10)))
+
+      const matched = Fx.matchTags(source, {
+        a: (ref) => ref.map((r) => r.value),
+        b: (ref) => ref.map((r) => r.value),
+        c: (ref) => ref.map((r) => r.value)
+      })
+
+      const test = Fx.toReadonlyArray(matched)
+
+      const actual = await Effect.runPromise(test)
+
+      expect(actual).toEqual([0, 1, 2, 3, 4])
+    })
+  })
+
+  describe.concurrent("RefAsyncData", () => {
+    describe("matchKeyed", () => {
+      it("allows creating persistent workflows around AsyncData", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefAsyncData.make<string, number>())
+
+          expect(yield* _(ref)).toEqual(AsyncData.noData())
+
+          const matched = RefAsyncData.matchKeyed(ref, {
+            NoData: () => Fx.succeed(0),
+            Loading: ({ progress }) => progress.map((p) => p.loaded),
+            Failure: (failure) => failure.map((s) => s.length),
+            Success: (value) => value.map((x) => x + 1)
+          })
+
+          const fiber = yield* _(matched, Fx.toReadonlyArray, Effect.fork)
+
+          // Let the fiber begin
+          yield* _(Effect.sleep(0))
+
+          yield* _(ref.set(AsyncData.loading({ progress: Progress(1n) })))
+          yield* _(ref.set(AsyncData.loading({ progress: Progress(100n) })))
+          yield* _(ref.set(AsyncData.fail("hello")))
+          yield* _(ref.set(AsyncData.success(41)))
+
+          yield* _(ref.interrupt)
+
+          const values = yield* _(Effect.fromFiber(fiber))
+
+          expect(values).toEqual([0, 1n, 100n, 5, 42])
+        })
+
+        await Effect.runPromise(test)
+      })
     })
   })
 })

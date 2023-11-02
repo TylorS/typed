@@ -6,9 +6,9 @@ import {
   isTaggedRecord,
   SuccessImpl
 } from "@typed/async-data/internal/async-data"
-import type { Progress } from "@typed/async-data/Progress"
+import * as Progress from "@typed/async-data/Progress"
 import type { Effect } from "effect"
-import { Cause, Data, Duration, Exit, Match, Option, Unify } from "effect"
+import { Cause, Data, Duration, Equal, Equivalence, Exit, Option, Unify } from "effect"
 import { dual } from "effect/Function"
 
 export const NO_DATA_TAG = "NoData" as const
@@ -70,16 +70,20 @@ export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
 
 export type LoadingOptions = {
   readonly timestamp: bigint // Clock.currentTimeNanos
-  readonly progress: Option.Option<Progress>
+  readonly progress: Option.Option<Progress.Progress>
+}
+
+export type OptionalPartial<A> = {
+  [K in keyof A]+?: [A[K]] extends [Option.Option<infer R>] ? R | undefined : A[K]
 }
 
 export const loading: {
-  (options?: Partial<LoadingOptions>): Loading
-  <E, A>(options?: Partial<LoadingOptions>): AsyncData<E, A>
-} = (options?: Partial<LoadingOptions>): Loading =>
+  (options?: OptionalPartial<LoadingOptions>): Loading
+  <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
+} = (options?: OptionalPartial<LoadingOptions>): Loading =>
   new Loading({
     timestamp: options?.timestamp || currentTimestamp(),
-    progress: options?.progress || Option.none()
+    progress: Option.fromNullable(options?.progress)
   })
 
 export interface Failure<E> extends Effect.Effect<never, E, never> {
@@ -99,15 +103,15 @@ export type FailureOptions = {
 }
 
 export const failCause: {
-  <E>(cause: Cause.Cause<E>, options?: FailureOptions): Failure<E>
-  <E, A>(cause: Cause.Cause<E>, options?: FailureOptions): AsyncData<E, A>
-} = <E>(cause: Cause.Cause<E>, options?: FailureOptions): Failure<E> =>
-  new FailureImpl(cause, options?.timestamp || currentTimestamp(), options?.refreshing || Option.none())
+  <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E>
+  <E, A>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): AsyncData<E, A>
+} = <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E> =>
+  new FailureImpl(cause, options?.timestamp || currentTimestamp(), Option.fromNullable(options?.refreshing))
 
 export const fail: {
-  <E>(error: E, options?: FailureOptions): Failure<E>
-  <E, A>(error: E, options?: FailureOptions): AsyncData<E, A>
-} = <E>(error: E, options?: FailureOptions): Failure<E> => failCause<E>(Cause.fail(error), options)
+  <E>(error: E, options?: OptionalPartial<FailureOptions>): Failure<E>
+  <E, A>(error: E, options?: OptionalPartial<FailureOptions>): AsyncData<E, A>
+} = <E>(error: E, options?: OptionalPartial<FailureOptions>): Failure<E> => failCause<E>(Cause.fail(error), options)
 
 export interface Success<A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
@@ -122,10 +126,10 @@ export type SuccessOptions = {
 }
 
 export const success: {
-  <A>(value: A, options?: Partial<SuccessOptions>): Success<A>
-  <E, A>(value: A, options?: Partial<SuccessOptions>): AsyncData<E, A>
-} = <A>(value: A, options?: Partial<SuccessOptions>): Success<A> =>
-  new SuccessImpl(value, options?.timestamp || currentTimestamp(), options?.refreshing || Option.none())
+  <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A>
+  <E, A>(value: A, options?: OptionalPartial<SuccessOptions>): AsyncData<E, A>
+} = <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A> =>
+  new SuccessImpl(value, options?.timestamp || currentTimestamp(), Option.fromNullable(options?.refreshing))
 
 export const isSuccess = <E, A>(data: AsyncData<E, A>): data is Success<A> => data._tag === SUCCESS_TAG
 
@@ -150,14 +154,6 @@ export const isRefreshing = <E, A>(data: AsyncData<E, A>): data is Refreshing<E,
 
 export const isLoadingOrRefreshing = <E, A>(data: AsyncData<E, A>): data is Loading | Refreshing<E, A> =>
   isLoading(data) || isRefreshing(data)
-
-export const type = <E, A>(): Match.Matcher<
-  AsyncData<E, A>,
-  Match.Types.Without<never>,
-  AsyncData<E, A>,
-  never,
-  never
-> => Match.type<AsyncData<E, A>>()
 
 export const match: {
   <E, A, R1, R2, R3, R4>(
@@ -199,7 +195,12 @@ export const map: {
   <A, B>(f: (a: A) => B): <E>(data: AsyncData<E, A>) => AsyncData<E, B>
   <E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B>
 } = dual(2, function<E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B> {
-  return isSuccess(data) ? success(f(data.value), data) : data
+  return isSuccess(data) ?
+    success(f(data.value), {
+      timestamp: data.timestamp,
+      refreshing: Option.getOrUndefined(data.refreshing)
+    }) :
+    data
 })
 
 export const flatMap: {
@@ -217,11 +218,11 @@ export const flatMap: {
 
 export const startLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
   if (isSuccess(data)) {
-    return Option.isSome(data.refreshing) ? data : success(data.value, { ...data, refreshing: Option.some(loading()) })
+    return Option.isSome(data.refreshing) ? data : success(data.value, { ...data, refreshing: loading() })
   } else if (isFailure(data)) {
     return Option.isSome(data.refreshing)
       ? data
-      : failCause(data.cause, { ...data, refreshing: Option.some(loading()) })
+      : failCause(data.cause, { ...data, refreshing: loading() })
   } else {
     return loading()
   }
@@ -230,11 +231,11 @@ export const startLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
 export const stopLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
   if (isSuccess(data)) {
     return Option.isSome(data.refreshing)
-      ? success(data.value, { ...data, refreshing: Option.none() }) :
+      ? success(data.value, { ...data, refreshing: undefined }) :
       data
   } else if (isFailure(data)) {
     return Option.isSome(data.refreshing)
-      ? failCause(data.cause, { ...data, refreshing: Option.none() })
+      ? failCause(data.cause, { ...data, refreshing: undefined })
       : data
   } else {
     return loading()
@@ -281,3 +282,49 @@ export const checkIsOutdated = <E, A>(
 
   return false
 }
+
+export const getFailure = <E, A>(data: AsyncData<E, A>): Option.Option<E> =>
+  isFailure(data) ? Cause.failureOption(data.cause) : Option.none()
+
+const optionProgressEq = Option.getEquivalence(Progress.equals)
+
+const loadingEquivalence: Equivalence.Equivalence<Loading> = Equivalence.struct({
+  _tag: Equivalence.string,
+  timestamp: Equivalence.bigint,
+  progress: optionProgressEq
+})
+
+const optionLoadingEq = Option.getEquivalence(loadingEquivalence)
+
+const failureEquivalence: Equivalence.Equivalence<Failure<any>> = Equivalence.struct({
+  _tag: Equivalence.string,
+  cause: Equal.equals,
+  timestamp: Equivalence.bigint,
+  refreshing: optionLoadingEq
+})
+
+const successEquivalence = <A>(valueEq: Equivalence.Equivalence<A>): Equivalence.Equivalence<Success<A>> =>
+  Equivalence.struct({
+    _tag: Equivalence.string,
+    value: valueEq,
+    timestamp: Equivalence.bigint,
+    refreshing: optionLoadingEq
+  })
+
+export const getEquivalence =
+  <E, A>(valueEq: Equivalence.Equivalence<A> = Equal.equals): Equivalence.Equivalence<AsyncData<E, A>> => (a, b) => {
+    if (a === b) return true
+
+    return match(a, {
+      NoData: () => isNoData(b) ? true : false,
+      Loading: (l1) => isLoading(b) ? loadingEquivalence(l1, b) : false,
+      Failure: (_, f1) =>
+        isFailure(b)
+          ? failureEquivalence(f1, b)
+          : false,
+      Success: (_, s1) =>
+        isSuccess(b)
+          ? successEquivalence(valueEq)(s1, b)
+          : false
+    })
+  }

@@ -110,6 +110,14 @@ export namespace Fx {
       readonly _A: (_: never) => A
     }
   }
+
+  export type FromInput<T extends FxInput<any, any, any>> = [T] extends [ReadonlyArray<infer A>] ? Fx<never, never, A>
+    : [T] extends [Iterable<infer A>] ? Fx<never, never, A>
+    : [T] extends [Cause.Cause<infer E>] ? Fx<never, E, never>
+    : [T] extends [Fx<infer R, infer E, infer A>] ? Fx<R, E, A>
+    : [T] extends [Stream<infer R, infer E, infer A>] ? Fx<R, E, A>
+    : [T] extends [Effect.Effect<infer R, infer E, infer A>] ? Fx<R, E, A>
+    : never
 }
 
 /**
@@ -2420,13 +2428,21 @@ export const keyed: {
   ): Fx<R | R2, E | E2, ReadonlyArray<B>>
 } = dual(3, internalKeyed.keyed)
 
+/**
+ * Map an Fx of values into workflows similar to Fx.switchMap, but
+ * instead of providing the value directly, it is exposed as a RefSubject to
+ * allow creating a persistent workflows similar to Fx.keyed but for a single value.
+ *
+ * @since 1.18.0
+ * @category combinators
+ */
 export const withKey: {
   <A, R2, E2, B, C>(
     f: (
       ref: RefSubject<never, never, A>,
       key: C
     ) => FxInput<R2, E2, B>,
-    options: internalWithKey.WithKeyOptions<A, C>
+    getKey: internalWithKey.WithKeyOptions<A, C>
   ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
 
   <R, E, A, R2, E2, B, C>(
@@ -2435,8 +2451,55 @@ export const withKey: {
       ref: RefSubject<never, never, A>,
       key: C
     ) => FxInput<R2, E2, B>,
-    options: internalWithKey.WithKeyOptions<A, C>
+    getKey: internalWithKey.WithKeyOptions<A, C>
   ): Fx<R | R2, E | E2, B>
 } = dual(3, internalWithKey.withKey)
+
+const tagOptions = (a: { readonly _tag: string }): string => a._tag
+
+/**
+ * Match over a tagged union of values into a set of persistent workflows
+ * that allow listening to changes of values with the same tag using the same
+ * Fx.
+ *
+ * @since 1.18.0
+ * @category combinators
+ */
+export const matchTags: {
+  <A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
+    matchers: Matchers
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<
+    R | Fx.Context<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
+  >
+
+  <R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
+    fx: Fx<R, E, A>,
+    matchers: Matchers
+  ): Fx<
+    R | Fx.Context<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
+  >
+} = dual(
+  2,
+  function matchTags<R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
+    fx: Fx<R, E, A>,
+    matchers: Matchers
+  ): Fx<
+    R | Fx.Context<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
+    Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
+  > {
+    return withKey(fx, (ref, tag: A["_tag"]) => matchers[tag](ref as any), tagOptions)
+  }
+)
+
+export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
+  readonly [Tag in A["_tag"]]: (
+    value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
+  ) => FxInput<any, any, any>
+}
 
 /* #endregion */
