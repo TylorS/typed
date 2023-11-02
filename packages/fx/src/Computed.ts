@@ -3,11 +3,13 @@
  * @since 1.18.0
  */
 
+// eslint-disable-next-line import/no-cycle
 import { Filtered } from "@typed/fx/Filtered"
+import type { Fx } from "@typed/fx/Fx"
 import { switchMap } from "@typed/fx/internal/core"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
-import type { Versioned } from "@typed/fx/Versioned"
+import * as Versioned from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
@@ -28,7 +30,7 @@ export type ComputedTypeId = typeof ComputedTypeId
  * @since 1.18.0
  * @category models
  */
-export interface Computed<out R, out E, out A> extends Versioned<R, R, E, A, R, E, A> {
+export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, R, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 
   /**
@@ -75,7 +77,7 @@ export interface Computed<out R, out E, out A> extends Versioned<R, R, E, A, R, 
  * @since 1.18.0
  */
 export function Computed<R, E, A, R2, E2, B>(
-  input: Versioned<R, R, E, A, R, E, A>,
+  input: Versioned.Versioned<R, R, E, A, R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, B>
 ): Computed<R | R2, E | E2, B> {
   return new ComputedImpl(input, f) as any
@@ -88,7 +90,7 @@ class ComputedImpl<R, E, A, R2, E2, B>
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   constructor(
-    readonly input: Versioned<R, R, E, A, R, E, A>,
+    readonly input: Versioned.Versioned<R, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, B>
   ) {
     super(
@@ -110,4 +112,44 @@ class ComputedImpl<R, E, A, R2, E2, B>
     this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
 
   filter: Computed<R | R2, E | E2, B>["filter"] = (f) => this.filterEffect((a) => Effect.sync(() => f(a)))
+}
+
+export function combine<const Computeds extends ReadonlyArray<Computed<any, any, any>>>(computeds: Computeds): Computed<
+  Fx.Context<Computeds[number]>,
+  Fx.Error<Computeds[number]>,
+  { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> }
+> {
+  return Computed(
+    Versioned.combine(computeds) as Versioned.Versioned<
+      Fx.Context<Computeds[number]>,
+      Fx.Context<Computeds[number]>,
+      Fx.Error<Computeds[number]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> },
+      Fx.Context<Computeds[number]>,
+      Fx.Error<Computeds[number]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> }
+    >,
+    Effect.succeed
+  )
+}
+
+export function struct<const Computeds extends Readonly<Record<string, Computed<any, any, any>>>>(
+  computeds: Computeds
+): Computed<
+  Fx.Context<Computeds[string]>,
+  Fx.Error<Computeds[string]>,
+  { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> }
+> {
+  return Computed(
+    Versioned.struct(computeds) as Versioned.Versioned<
+      Fx.Context<Computeds[string]>,
+      Fx.Context<Computeds[string]>,
+      Fx.Error<Computeds[string]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> },
+      Fx.Context<Computeds[string]>,
+      Fx.Error<Computeds[string]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> }
+    >,
+    Effect.succeed
+  )
 }

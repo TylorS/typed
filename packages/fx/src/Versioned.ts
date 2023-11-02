@@ -11,6 +11,7 @@ import * as fxEffectProto from "@typed/fx/internal/fx-effect-proto"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { Effect, identity } from "effect"
 import { dual } from "effect/Function"
+import { sum } from "effect/Number"
 
 /**
  * A data type which is both an Fx and an Effect. This is a more advanced type, and is the basis
@@ -31,6 +32,11 @@ export interface Versioned<R0, R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, Effec
    * is up to date to allow localized caching of value.
    */
   readonly version: Effect.Effect<R0, never, number>
+}
+
+export namespace Versioned {
+  export type VersionContext<T> = T extends
+    Versioned<infer R0, infer _R, infer _E, infer _A, infer _R2, infer _E2, infer _B> ? R0 : never
 }
 
 /**
@@ -173,3 +179,45 @@ export const mapEffect: {
 ): Versioned<R0, R | R3, E | E3, C, R2 | R4, E2 | E4, D> {
   return transform(versioned, core.mapEffect(options.onFx), Effect.flatMap(options.onEffect))
 })
+
+export function combine<const VS extends ReadonlyArray<Versioned<any, any, any, any, any, any, any>>>(
+  versioneds: VS
+): Versioned<
+  Versioned.VersionContext<VS[number]>,
+  Fx.Fx.Context<VS[number]>,
+  Fx.Fx.Error<VS[number]>,
+  { readonly [K in keyof VS]: Fx.Fx.Success<VS[K]> },
+  Effect.Effect.Context<VS[number]>,
+  Effect.Effect.Error<VS[number]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+> {
+  return make({
+    fx: core.combine(versioneds),
+    effect: Effect.all(versioneds, { concurrency: "unbounded" }) as any,
+    version: Effect.map(Effect.all(versioneds.map((v) => v.version)), (versions) => versions.reduce(sum, 0))
+  })
+}
+
+export function struct<const VS extends Readonly<Record<string, Versioned<any, any, any, any, any, any, any>>>>(
+  versioneds: VS
+): Versioned<
+  Versioned.VersionContext<VS[string]>,
+  Fx.Fx.Context<VS[string]>,
+  Fx.Fx.Error<VS[string]>,
+  { readonly [K in keyof VS]: Fx.Fx.Success<VS[K]> },
+  Effect.Effect.Context<VS[string]>,
+  Effect.Effect.Error<VS[string]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+> {
+  return map(
+    combine(
+      Object.entries(versioneds).map(([k, v]) =>
+        map(v, { onFx: (x) => [k, x] as const, onEffect: (x) => [k, x] as const })
+      )
+    ),
+    {
+      onFx: Object.fromEntries,
+      onEffect: Object.fromEntries
+    }
+  )
+}

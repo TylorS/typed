@@ -266,7 +266,7 @@ export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
   } else return false
 }
 
-export const fromExit = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
+export const done = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
   Exit.match(exit, {
     onFailure: (cause) => failCause(cause),
     onSuccess: (value) => success(value)
@@ -292,6 +292,9 @@ export const checkIsOutdated = <E, A>(
 
 export const getFailure = <E, A>(data: AsyncData<E, A>): Option.Option<E> =>
   isFailure(data) ? Cause.failureOption(data.cause) : Option.none()
+
+export const getSuccess = <E, A>(data: AsyncData<E, A>): Option.Option<A> =>
+  isSuccess(data) ? Option.some(data.value) : Option.none()
 
 const optionProgressEq = Option.getEquivalence(Progress.equals)
 

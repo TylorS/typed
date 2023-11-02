@@ -11,15 +11,13 @@ import type * as Filtered from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
-import { type Duration, Option } from "effect"
+import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import { Option } from "effect"
+import type { Duration, Exit } from "effect"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
-
-// TODO: Integration with Request
-// TODO: Computed types
-// TODO: UI primitives??
 
 /**
  * A RefAsyncData is a RefSubject that holds a AsyncData value.
@@ -90,7 +88,7 @@ export const run: {
 
         yield* _(set(AsyncData.startLoading(initial)))
         const exit = yield* _(Effect.exit(effect))
-        return yield* _(set(AsyncData.fromExit(exit)))
+        return yield* _(set(AsyncData.done(exit)))
       }), (current) => Effect.sync(() => AsyncData.stopLoading(current)))
 )
 
@@ -113,7 +111,7 @@ export const runIfNoData: {
         if (AsyncData.isNoData(initial) || (AsyncData.isFailure(initial) && Option.isNone(initial.refreshing))) {
           yield* _(set(AsyncData.startLoading(initial)))
           const exit = yield* _(Effect.exit(effect))
-          return yield* _(set(AsyncData.fromExit(exit)))
+          return yield* _(set(AsyncData.done(exit)))
         }
 
         return initial
@@ -145,7 +143,7 @@ export const runIfOutdated: {
         ) {
           yield* _(set(AsyncData.startLoading(initial)))
           const exit = yield* _(Effect.exit(effect))
-          return yield* _(set(AsyncData.fromExit(exit)))
+          return yield* _(set(AsyncData.done(exit)))
         }
 
         return initial
@@ -244,6 +242,65 @@ export const mapInput = <R, E, A, B>(
   ref: RefAsyncData<R, E, A>,
   f: (b: B) => A
 ): Sink.WithContext<R, E, B> => Sink.map(asSink(ref), f)
+
+export const failCause: {
+  <E>(
+    cause: Cause<E>,
+    options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+  ): <R, A>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+
+  <R, E, A>(
+    ref: RefAsyncData<R, E, A>,
+    cause: Cause<E>,
+    options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+} = dual((args) => args.length === 3 || RefSubjectTypeId in args[0], <R, E, A>(
+  ref: RefAsyncData<R, E, A>,
+  cause: Cause<E>,
+  options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+) => ref.set(AsyncData.failCause(cause, options)))
+
+export const fail: {
+  <E>(
+    error: E,
+    options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+  ): <R, A>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+
+  <R, E, A>(
+    ref: RefAsyncData<R, E, A>,
+    error: E,
+    options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+} = dual((args) => args.length === 3 || RefSubjectTypeId in args[0], <R, E, A>(
+  ref: RefAsyncData<R, E, A>,
+  error: E,
+  options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
+) => ref.set(AsyncData.fail(error, options)))
+
+export const succeed: {
+  <A>(
+    value: A,
+    options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
+  ): <R, E>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+
+  <R, E, A>(
+    ref: RefAsyncData<R, E, A>,
+    value: A,
+    options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
+  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+} = dual((args) => args.length === 3 || RefSubjectTypeId in args[0], <R, E, A>(
+  ref: RefAsyncData<R, E, A>,
+  value: A,
+  options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
+) => ref.set(AsyncData.success(value, options)))
+
+export const done: {
+  <E, A>(exit: Exit.Exit<E, A>): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  <R, E, A>(ref: RefAsyncData<R, E, A>, exit: Exit.Exit<E, A>): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+} = dual((args) => args.length === 3 || RefSubjectTypeId in args[0], <R, E, A>(
+  ref: RefAsyncData<R, E, A>,
+  exit: Exit.Exit<E, A>
+) => ref.set(AsyncData.done(exit)))
 
 export const match: {
   <
@@ -367,7 +424,7 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
     matchers: {
-      NoData: () => NoData
+      NoData: (data: NoDataComputed) => NoData
       Loading: (data: LoadingComputed) => Loading
       Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
@@ -378,7 +435,7 @@ export const matchKeyed: {
     Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
   > =>
     Fx.matchTags(fx, {
-      NoData: matchers.NoData,
+      NoData: (ref) => matchers.NoData({ timestamp: ref.map((r) => r.timestamp) }),
       Loading: (ref) =>
         matchers.Loading({
           timestamp: ref.map((r) => r.timestamp),
@@ -403,6 +460,10 @@ export const matchKeyed: {
     })
 )
 
+export type NoDataComputed = {
+  readonly timestamp: Computed.Computed<never, never, bigint>
+}
+
 export type LoadingComputed = {
   readonly timestamp: Computed.Computed<never, never, bigint>
   readonly progress: Filtered.Filtered<never, never, Progress>
@@ -417,3 +478,9 @@ export type SuccessComputed = {
   readonly timestamp: Computed.Computed<never, never, bigint>
   readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
 }
+
+export const getFailure = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filtered<R, never, E> =>
+  ref.filterMap(AsyncData.getFailure)
+
+export const getSuccess = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filtered<R, never, A> =>
+  ref.filterMap(AsyncData.getSuccess)
