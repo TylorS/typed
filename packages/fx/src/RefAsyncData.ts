@@ -26,6 +26,10 @@ import type { Schedule } from "effect/Schedule"
  */
 export interface RefAsyncData<R, E, A> extends RefSubject.RefSubject<R, never, AsyncData.AsyncData<E, A>> {}
 
+export namespace RefAsyncData {
+  export interface Tagged<I, E, A> extends RefSubject.RefSubject.Tagged<I, never, AsyncData.AsyncData<E, A>> {}
+}
+
 /**
  * Create a RefRemoteData
  * @since 1.18.0
@@ -42,13 +46,12 @@ export const make: <E, A>() => Effect.Effect<
  * @since 1.18.0
  * @category constructors
  */
-export const tagged: <E, A>() => {
+export const tagged = <E, A>(): {
   <const I extends IdentifierConstructor<any>>(
     identifier: (id: <const T>(uniqueIdentifier: T) => IdentifierConstructor<T>) => I
   ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, AsyncData.AsyncData<E, A>>
-
   <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, AsyncData.AsyncData<E, A>>
-} = <E, A>() => RefSubject.tagged<never, AsyncData.AsyncData<E, A>>()
+} => RefSubject.tagged<never, AsyncData.AsyncData<E, A>>()
 
 /**
  * Change the current value of a RefRemoteData to a loading or refreshing state.
@@ -377,7 +380,7 @@ export const matchKeyed: {
     matchers: {
       NoData: () => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): <R, E>(
@@ -402,7 +405,7 @@ export const matchKeyed: {
     matchers: {
       NoData: () => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): Fx.Fx<
@@ -426,7 +429,7 @@ export const matchKeyed: {
     matchers: {
       NoData: (data: NoDataComputed) => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed) => Failure
+      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): Fx.Fx<
@@ -445,6 +448,7 @@ export const matchKeyed: {
         matchers.Failure(
           ref.filterMap(AsyncData.getFailure),
           {
+            cause: ref.map((r) => r.cause),
             timestamp: ref.map((r) => r.timestamp),
             refreshing: ref.filterMap((r) => r.refreshing)
           }
@@ -469,7 +473,8 @@ export type LoadingComputed = {
   readonly progress: Filtered.Filtered<never, never, Progress>
 }
 
-export type FailureComputed = {
+export type FailureComputed<E> = {
+  readonly cause: Computed.Computed<never, never, Cause<E>>
   readonly timestamp: Computed.Computed<never, never, bigint>
   readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
 }

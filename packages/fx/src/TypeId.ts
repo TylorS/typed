@@ -21,3 +21,27 @@ export const RefSubjectTypeId = Symbol.for("@typed/fx/RefSubject")
  * @category symbols
  */
 export type RefSubjectTypeId = typeof RefSubjectTypeId
+
+/**
+ * @since 1.18.0
+ * @category symbols
+ */
+export const ComputedTypeId = Symbol.for("@typed/fx/Computed")
+
+/**
+ * @since 1.18.0
+ * @category symbols
+ */
+export type ComputedTypeId = typeof ComputedTypeId
+
+/**
+ * @since 1.18.0
+ * @category symbols
+ */
+export const FilteredTypeId = Symbol.for("@typed/fx/Filtered")
+
+/**
+ * @since 1.18.0
+ * @category symbols
+ */
+export type FilteredTypeId = typeof FilteredTypeId

@@ -1,5 +1,5 @@
-import type { Fx, FxInput, ScopedFork } from "@typed/fx/Fx"
-import { from, skipRepeats, withScopedFork } from "@typed/fx/internal/core"
+import type * as Fx from "@typed/fx/Fx"
+import { from, skipRepeatsWith, withScopedFork } from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { run } from "@typed/fx/internal/run"
 import { fromEffect, type RefSubject } from "@typed/fx/RefSubject"
@@ -7,6 +7,7 @@ import { WithContext } from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
+import { equals } from "effect/Equal"
 import * as Fiber from "effect/Fiber"
 import * as MutableHashMap from "effect/MutableHashMap"
 import * as Option from "effect/Option"
@@ -14,17 +15,17 @@ import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Scope from "effect/Scope"
 
 export function keyed<R, E, A, R2, E2, B, C>(
-  fx: Fx<R, E, ReadonlyArray<A>>,
-  f: (fx: RefSubject<never, never, A>, key: C) => FxInput<R2, E2, B>,
+  fx: Fx.Fx<R, E, ReadonlyArray<A>>,
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx.FxInput<R2, E2, B>,
   getKey: (a: A) => C
-): Fx<R | R2, E | E2, ReadonlyArray<B>> {
+): Fx.Fx<R | R2, E | E2, ReadonlyArray<B>> {
   return withScopedFork(({ fork, scope, sink }) =>
     Effect.gen(function*($) {
       const state = createKeyedState<A, B, C>()
       const emit = emitWhenReady(state, getKey)
 
       // Let output emit to the sink, it is closes by the surrounding scope
-      yield* $(fork(run(skipRepeats(state.output), sink)))
+      yield* $(fork(run(skipRepeatsWith(state.output, ReadonlyArray.getEquivalence(equals)), sink)))
 
       // Listen to the input and update the state
       yield* $(
@@ -90,8 +91,8 @@ function updateState<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   updated: ReadonlyArray<A>
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>
-  fork: ScopedFork
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx.Fx<R2, E2, B>
+  fork: Fx.ScopedFork
   scope: Scope.Scope
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
@@ -195,8 +196,8 @@ function addValue<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   value: A
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx<R2, E2, B>
-  fork: ScopedFork
+  f: (fx: RefSubject<never, never, A>, key: C) => Fx.Fx<R2, E2, B>
+  fork: Fx.ScopedFork
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => C

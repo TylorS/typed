@@ -12,7 +12,7 @@ import { run } from "@typed/fx/internal/run"
 import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
-import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Ref } from "effect"
 import { type Cause, isInterrupted } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
@@ -29,6 +29,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
   implements Omit<RefSubject<R, E, A>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   private _version = 0
   private _lock = this.semaphore.withPermits(1).bind(this.semaphore)
@@ -349,7 +350,7 @@ const derivedRefSubject = <R, E, A>(
     )))
 
     const derived: RefSubject.Derived<R, never, E, A> = Object.assign(ref, {
-      commit: Effect.matchCauseEffect(ref, source)
+      persist: Effect.matchCauseEffect(ref, source)
     })
 
     return derived

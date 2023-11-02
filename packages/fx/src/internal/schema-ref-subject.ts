@@ -1,13 +1,11 @@
 import type { AST } from "@effect/schema"
 import * as Schema from "@effect/schema/Schema"
-import { ComputedTypeId } from "@typed/fx/Computed"
-import { FilteredTypeId } from "@typed/fx/Filtered"
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import { from, map } from "@typed/fx/internal/core"
 import { make, struct } from "@typed/fx/internal/core-ref-subject"
 import { matchFxInput } from "@typed/fx/internal/matchers"
 import type { MakeRefSubject, RefSubject, ToRefSubject } from "@typed/fx/RefSubject"
-import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Option } from "effect"
 import * as Effect from "effect/Effect"
 import type * as Equivalence from "effect/Equivalence"
@@ -122,11 +120,13 @@ const go = <O>(
               const ref = rebuild(subjects) as typeof source
 
               return Object.assign(subjects, {
-                commit: Effect.matchCauseEffect(ref, source)
+                persist: Effect.tap(Effect.matchCauseEffect(ref, source), () =>
+                  "persist" in source ? (source as RefSubject.Derived<any, any, any, any>).persist : Effect.unit)
               })
             })
           }, // TODO: Expand
-          Fx: (fx) => makeSubjects(makeFxInputs(fx)),
+          Fx: (fx) =>
+            makeSubjects(makeFxInputs(fx)),
           Stream: (stream) => makeSubjects(makeFxInputs(from(stream))),
           Effect: (effect) => makeSubjects(makeEffectInputs(effect)),
           Cause: (cause) => makeSubjects(makeEffectInputs(Effect.failCause(cause))),

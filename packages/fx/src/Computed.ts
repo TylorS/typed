@@ -6,24 +6,13 @@
 // eslint-disable-next-line import/no-cycle
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
-import { switchMap } from "@typed/fx/internal/core"
+import { mapEffect, skipRepeats } from "@typed/fx/internal/core"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
+import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-
-/**
- * @since 1.18.0
- * @category symbols
- */
-export const ComputedTypeId = Symbol.for("@typed/fx/Computed")
-
-/**
- * @since 1.18.0
- * @category symbols
- */
-export type ComputedTypeId = typeof ComputedTypeId
 
 /**
  * A Computed is a Subject that has a current value that can be read and observed
@@ -95,7 +84,7 @@ class ComputedImpl<R, E, A, R2, E2, B>
   ) {
     super(
       input,
-      switchMap(f),
+      (fx) => skipRepeats(mapEffect(fx, f)),
       Effect.flatMap(f)
     )
   }

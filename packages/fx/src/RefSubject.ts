@@ -18,7 +18,7 @@ import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
 import type * as Subject from "@typed/fx/Subject"
-import { RefSubjectTypeId } from "@typed/fx/TypeId"
+import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
 import type { Stream } from "effect"
 import { Cause, Exit, identity } from "effect"
@@ -33,9 +33,7 @@ import type * as Scope from "effect/Scope"
  * @since 1.18.0
  * @category models
  */
-export interface RefSubject<R, in out E, in out A>
-  extends Versioned.Versioned<R, R, E, A, R, E, A>, Subject.Subject<R, E, A>
-{
+export interface RefSubject<R, in out E, in out A> extends Computed<R, E, A>, Subject.Subject<R, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
   /**
@@ -194,7 +192,7 @@ export namespace RefSubject {
    * @category models
    */
   export interface Derived<R0, R, E, A> extends RefSubject<R, E, A> {
-    readonly commit: Effect.Effect<R0, never, void>
+    readonly persist: Effect.Effect<R0, never, void>
   }
 
   /**
@@ -289,6 +287,7 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   implements Omit<RefSubject<I, E, A>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   constructor(readonly tag: C.Tagged<I, RefSubject<never, E, A>>, readonly defaultEq?: Equivalence<A>) {
     super()
@@ -483,7 +482,7 @@ export type ToRefSubject<E, O> = O extends Readonly<Record<PropertyKey, any>> ? 
  * @since 1.18.0
  */
 export type ToDerived<R, E, O> = ToRefSubject<E, O> & {
-  readonly commit: Effect.Effect<R, E, O>
+  readonly persist: Effect.Effect<R, E, O>
 }
 
 /**

@@ -3,6 +3,7 @@ import * as AsyncData from "@typed/async-data/AsyncData"
 import { Progress } from "@typed/async-data/Progress"
 import * as Fx from "@typed/fx/Fx"
 import * as RefAsyncData from "@typed/fx/RefAsyncData"
+import * as RefAsyncDataArray from "@typed/fx/RefAsyncDataArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Effect from "effect/Effect"
 
@@ -82,7 +83,7 @@ describe.concurrent(__filename, () => {
       const test = Effect.gen(function*(_) {
         const source = yield* _(RefSubject.of<Foo>(initial))
 
-        const { address: { city, street }, commit, id, name } = yield* _(makeFooState(source))
+        const { address: { city, street }, id, name, persist: commit } = yield* _(makeFooState(source))
 
         expect(yield* _(id)).toEqual(initial.id)
         expect(yield* _(name)).toEqual(initial.name)
@@ -240,6 +241,84 @@ describe.concurrent(__filename, () => {
           const values = yield* _(Effect.fromFiber(fiber))
 
           expect(values).toEqual([0, 1n, 100n, 5, 42])
+        })
+
+        await Effect.runPromise(test)
+      })
+    })
+  })
+
+  describe.concurrent("RefAsyncDataArray", () => {
+    describe.concurrent("matchKeyed", () => {
+      it("allows creating persistent workflows for each value in the success array", async () => {
+        type Foo = {
+          readonly id: string
+          readonly value: number
+        }
+
+        const a0: Foo = {
+          id: "a",
+          value: 0
+        }
+        const a1: Foo = {
+          id: "a",
+          value: 1
+        }
+        const b0: Foo = {
+          id: "b",
+          value: 2
+        }
+        const c0: Foo = {
+          id: "c",
+          value: 3
+        }
+        const c1: Foo = {
+          id: "c",
+          value: 4
+        }
+
+        let calls = 0
+
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefAsyncDataArray.make<never, Foo>())
+          const matched = RefAsyncDataArray.matchKeyed(ref, {
+            NoData: () => Effect.succeed([]),
+            Loading: () => Effect.succeed([]),
+            Failure: (_, { cause }) => Effect.flatMap(cause, Effect.failCause),
+            Success: (foo) => {
+              calls++
+              return foo.map((f) => f.value)
+            }
+          }, (f) => f.id)
+
+          const fiber = yield* _(matched, Fx.toReadonlyArray, Effect.fork)
+
+          // Let the fiber begin
+          yield* _(Effect.sleep(0))
+
+          yield* _(RefAsyncData.succeed(ref, [a0, b0, c0]))
+          yield* _(RefAsyncData.succeed(ref, [c1, a1, b0]))
+          yield* _(RefAsyncData.succeed(ref, [c1, a1, b0])) // skips repeats
+          yield* _(RefAsyncData.succeed(ref, [b0, c1, a1])) // rotate
+
+          yield* _(ref.interrupt)
+
+          const values = yield* _(Effect.fromFiber(fiber))
+
+          expect(values).toEqual([
+            [],
+            [0, 2, 3],
+            /* glitch, due to the diamond problem */
+            [4, 0, 2],
+            [4, 1, 2],
+            [
+              2,
+              4,
+              1
+            ]
+          ])
+
+          expect(calls).toEqual(3)
         })
 
         await Effect.runPromise(test)

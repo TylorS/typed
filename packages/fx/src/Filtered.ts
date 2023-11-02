@@ -10,22 +10,11 @@ import type * as Fx from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
+import { FilteredTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-
-/**
- * @since 1.18.0
- * @category symbols
- */
-export const FilteredTypeId = Symbol.for("@typed/fx/Filtered")
-
-/**
- * @since 1.18.0
- * @category symbols
- */
-export type FilteredTypeId = typeof FilteredTypeId
 
 /**
  * A Filtered is a Subject that has a current value that can be read and observed
@@ -105,7 +94,7 @@ class FilteredImpl<R, E, A, R2, E2, B>
   ) {
     super(
       input,
-      (fx) => core.compact(core.mapEffect(fx, f)),
+      (fx) => core.skipRepeats(core.compact(core.mapEffect(fx, f))),
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }
@@ -129,7 +118,9 @@ class FilteredImpl<R, E, A, R2, E2, B>
   )
 }
 
-export function combine<const Computeds extends ReadonlyArray<Computed<any, any, any>>>(computeds: Computeds): Filtered<
+export function combine<const Computeds extends ReadonlyArray<Filtered<any, any, any> | Computed<any, any, any>>>(
+  computeds: Computeds
+): Filtered<
   Fx.Fx.Context<Computeds[number]>,
   Fx.Fx.Error<Computeds[number]>,
   { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[number]> }
@@ -148,7 +139,9 @@ export function combine<const Computeds extends ReadonlyArray<Computed<any, any,
   )
 }
 
-export function struct<const Computeds extends Readonly<Record<string, Filtered<any, any, any>>>>(
+export function struct<
+  const Computeds extends Readonly<Record<string, Filtered<any, any, any | Computed<any, any, any>>>>
+>(
   computeds: Computeds
 ): Filtered<
   Fx.Fx.Context<Computeds[string]>,

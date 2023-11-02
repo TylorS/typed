@@ -2,8 +2,8 @@ import { AST } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
-import { Filtered } from "@typed/fx"
-import { Computed, ComputedTypeId } from "@typed/fx/Computed"
+import type { Filtered } from "@typed/fx"
+import { Computed } from "@typed/fx/Computed"
 import * as FormEntry from "@typed/fx/FormEntry"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
@@ -12,7 +12,7 @@ import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { from } from "@typed/fx/internal/schema-equivalence"
 import { hold } from "@typed/fx/internal/share"
 import type { RefSubject } from "@typed/fx/RefSubject"
-import { RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
 import type * as Versioned from "@typed/fx/Versioned"
 import type { Scope } from "effect"
 import { Effect } from "effect"
@@ -316,7 +316,7 @@ const propOf = <R, E, O>(
     | Effect.Effect<R, E, O>,
   key: keyof O
 ) => {
-  if (RefSubjectTypeId in input || ComputedTypeId in input || Filtered.FilteredTypeId in input) {
+  if (RefSubjectTypeId in input || ComputedTypeId in input || FilteredTypeId in input) {
     return input.map((o) => o[key])
   } else if (TypeId in input) return core.map(input, (o) => o[key])
   else if (Effect.EffectTypeId in input) return Effect.map(input, (o) => o[key])
