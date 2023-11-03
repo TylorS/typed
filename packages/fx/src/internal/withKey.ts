@@ -21,7 +21,7 @@ export function withKey<R, E, A, R2, E2, B, C>(
   return core.withScopedFork(({ fork, scope, sink }) =>
     Effect.gen(function*(_) {
       let current: Option.Option<
-        [C, RefSubject.RefSubject<never, never, A>, Fiber.Fiber<never, unknown>]
+        [C, { value: A }, RefSubject.RefSubject<never, never, A>, Fiber.Fiber<never, unknown>]
       > = Option.none()
 
       const lock = (yield* _(Effect.makeSemaphore(1))).withPermits(1)
@@ -29,11 +29,16 @@ export function withKey<R, E, A, R2, E2, B, C>(
       const make = (a: A) =>
         Effect.uninterruptibleMask((restore) =>
           Effect.gen(function*(_) {
-            // Use an intermediate subject to ensure outer values
-            // are utilized as the "current" value when calling .delete
-            // on our RefSubject
             const key = getKey(a)
-            const ref = yield* _(RefSubject.of(a), Effect.provideService(Scope.Scope, scope))
+            // We use a simple mutable object to track the current value
+            // of the state coming from the "outside", such that any internal
+            // usage of RefSubject.delete will reset to the latest value emitted
+            // from here.
+            const currentValue = { value: a }
+            const ref = yield* _(
+              RefSubject.fromEffect(Effect.sync(() => currentValue.value)),
+              Effect.provideService(Scope.Scope, scope)
+            )
             const fiber = yield* _(
               run(core.from(onValue(ref, key)), sink),
               restore,
@@ -41,7 +46,7 @@ export function withKey<R, E, A, R2, E2, B, C>(
             )
 
             // Save our state
-            current = Option.some([key, ref, fiber])
+            current = Option.some([key, currentValue, ref, fiber])
 
             // Allow our Fibers to start
             yield* _(Effect.sleep(0))
@@ -57,10 +62,12 @@ export function withKey<R, E, A, R2, E2, B, C>(
               if (Option.isNone(current)) {
                 yield _(make(a))
               } else {
-                const [key, ref, fiber] = current.value
+                const [key, currentValue, ref, fiber] = current.value
 
                 if (equals(key, getKey(a))) {
-                  // Key didn't change, so we just emit an updated value.
+                  // Key didn't change, so we just set an updated value.
+
+                  currentValue.value = a
                   yield* _(ref.set(a))
                 } else {
                   // Cleanup previous resources
@@ -75,7 +82,7 @@ export function withKey<R, E, A, R2, E2, B, C>(
       ))
 
       if (Option.isSome(current)) {
-        const [, ref, fiber] = current.value
+        const [, , ref, fiber] = current.value
 
         // Signal there will be no more input events
         yield* _(fork(ref.interrupt))
