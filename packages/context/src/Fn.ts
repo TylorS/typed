@@ -6,11 +6,11 @@
 
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
-import * as Layer from "effect/Layer"
+import type * as Layer from "effect/Layer"
 
 import type { EffectFn } from "@typed/context/EffectFn"
+import { Tagged } from "@typed/context/Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { Tag } from "@typed/context/Tag"
 
 /**
  * @category symbols
@@ -30,10 +30,7 @@ export type FnTypeId = typeof FnTypeId
  * @since 1.0.0
  * @category models
  */
-export interface Fn<Key, T extends EffectFn> extends
-  // Brand T so that functions do not collide so easily
-  Tag<Key, T>
-{
+export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
   readonly [FnTypeId]: FnTypeId
 
   /**
@@ -42,7 +39,7 @@ export interface Fn<Key, T extends EffectFn> extends
    */
   readonly apply: <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
-  ) => Effect.Effect<Key | EffectFn.Context<T>, EffectFn.Error<T>, EffectFn.Success<T>>
+  ) => Effect.Effect<I | EffectFn.Context<T>, EffectFn.Error<T>, EffectFn.Success<T>>
 
   /**
    * A helper to implement a Layer for your effectful function which
@@ -51,7 +48,7 @@ export interface Fn<Key, T extends EffectFn> extends
    */
   readonly implement: <T2 extends EffectFn.Extendable<T>>(
     implementation: T2
-  ) => Layer.Layer<EffectFn.Context<T2>, never, Key>
+  ) => Layer.Layer<EffectFn.Context<T2>, never, I>
 
   /**
    * A helper for implementing an providing a Layer to an Effect.
@@ -62,12 +59,12 @@ export interface Fn<Key, T extends EffectFn> extends
       implementation: T2
     ): <R, E, A>(
       effect: Effect.Effect<R, E, A>
-    ) => Effect.Effect<Exclude<R, Key> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
+    ) => Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
 
     <R, E, A, T2 extends EffectFn.Extendable<T>>(
       effect: Effect.Effect<R, E, A>,
       implementation: T2
-    ): Effect.Effect<Exclude<R, Key> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
+    ): Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
   }
 }
 
@@ -84,27 +81,26 @@ export function Fn<T extends EffectFn>(): {
   function makeFn<const Id>(id: Id): Fn<IdentifierOf<Id>, T>
   function makeFn<const Id extends IdentifierInput<any>>(id: Id): Fn<IdentifierOf<Id>, T> {
     // Add id for debugging
-    return Object.assign(wrap(Tag<Id, T>(id)), { id })
+    return Object.assign(wrap(Tagged<Id, T>(id)), { id })
   }
 
   return makeFn
 }
 
-const wrap = <I, S extends EffectFn>(tag: Tag<I, S>): Fn<I, S> => {
+const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
   const implement = <T2 extends EffectFn.Extendable<S>>(
     implementation: T2
   ): Layer.Layer<EffectFn.Context<T2>, never, I> =>
-    Layer.effect(
-      tag,
+    tagged.layer(
       Effect.map(
         Effect.context<EffectFn.Context<T2>>(),
         (c) => ((...a: any) => Effect.provide(implementation(...a), c)) as any
       )
     )
 
-  return Object.assign(tag, {
+  return Object.assign(tagged, {
     [FnTypeId]: FnTypeId,
-    apply: (...args: EffectFn.ArgsOf<S>) => Effect.flatMap(tag, (f) => f(...args)),
+    apply: (...args: EffectFn.ArgsOf<S>) => tagged.withEffect((f) => f(...args)),
     implement,
     provideImplementation: dual(
       2,
@@ -141,4 +137,13 @@ export namespace Fn {
    * @category type-level
    */
   export type Any = Fn<any, any>
+
+  /**
+   * Extract the Identifier of a Fn
+   * @since 1.0.0
+   * @category type-level
+   */
+  export type Context<T extends Fn<any, any>> = T extends Fn<infer K, infer F>
+    ? K | Effect.Effect.Context<ReturnType<F>>
+    : never
 }
