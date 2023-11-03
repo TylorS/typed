@@ -2502,4 +2502,10 @@ export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
   ) => FxInput<any, any, any>
 }
 
+export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS) => Layer.Layer<
+  Fx.Context<FXS[number]>,
+  never,
+  never
+> = internal.drainLayer
+
 /* #endregion */

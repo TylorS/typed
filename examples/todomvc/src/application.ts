@@ -1,5 +1,5 @@
 import * as Context from "@typed/context"
-import * as M from "@typed/fx/Model"
+import * as Computed from "@typed/fx/Computed"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Effect from "effect/Effect"
@@ -10,56 +10,71 @@ import * as Domain from "./domain"
 
 /* #region Services */
 
-export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, never, Domain.Todo>>()(
-  (_) => class CreateTodo extends _("@typed/TodoApp/CreateTodo") {}
-)
+export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, never, Domain.Todo>>()("CreateTodo")
+export type CreateTodo = Context.Fn.Context<typeof CreateTodo>
 
 /* #endregion */
 
 /* #region Model */
 
-export const TodoList = RefArray.tagged<never, Domain.Todo>()((_) =>
-  class TodoList extends _("@typed/todomvc/TodoList") {}
-)
+export const TodoList = RefArray.tagged<never, Domain.Todo>()("TodoList")
+export type TodoList = RefSubject.Context<typeof TodoList>
 
-export const FilterState = RefSubject.tagged<never, Domain.FilterState>()((_) =>
-  class FilterState extends _("@typed/TodoApp/FilterState") {}
-)
+export const FilterState = RefSubject.tagged<never, Domain.FilterState>()("FilterState")
+export type FilterState = RefSubject.Context<typeof FilterState>
 
-export const TodoText = RefSubject.tagged<never, string>()((_) =>
-  class TodoText extends _("@typed/TodoApp/TodoText") {}
-)
+export const TodoText = RefSubject.tagged<never, string>()("TodoText")
+export type TodoText = RefSubject.Context<typeof TodoText>
 
-export const Todos = M.tagged({ list: TodoList, state: FilterState }).map(Domain.filterTodoList)
+export const Todos: Computed.Computed<never, never, Domain.TodoList> = Computed.struct({
+  list: TodoList,
+  state: FilterState
+})
+  .map(Domain.filterTodoList)
 
-export const ActiveCount = TodoList.map(Domain.activeCount)
+export const ActiveCount: Computed.Computed<TodoList, never, number> = TodoList.map(Domain.activeCount)
 
-export const CompletedCount = TodoList.map(Domain.completedCount)
+export const CompletedCount: Computed.Computed<TodoList, never, number> = TodoList.map(Domain.completedCount)
 
-export const AllAreCompleted = TodoList.map(Domain.allAreCompleted)
+export const AllAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map(Domain.allAreCompleted)
 
 /* #endregion */
 
 /* #region Intent */
 
-export const createTodo = Effect.flatMap(TodoText, (text) =>
-  Effect.if(text.trim() === "", {
-    onFalse: Effect.asSome(CreateTodo.apply(text)),
-    onTrue: Effect.succeed(Option.none())
-  }))
+export const createTodo: Effect.Effect<CreateTodo | TodoList | TodoText, never, Option.Option<Domain.Todo>> = Effect
+  .flatMap(TodoText, (text) =>
+    Effect.if(text.trim() === "", {
+      onFalse: CreateTodo.apply(text).pipe(
+        Effect.tap((todo) => RefArray.prepend(TodoList, todo)),
+        Effect.tap(() => TodoText.set("")),
+        Effect.asSome
+      ),
+      onTrue: Effect.succeed(Option.none<Domain.Todo>())
+    }))
 
-export const editTodo = (id: Domain.TodoId, text: string) =>
+export const editTodo = (id: Domain.TodoId, text: string): Effect.Effect<TodoList, never, Domain.TodoList> =>
   Effect.if(text.trim() === "", {
     onFalse: TodoList.update(Domain.editText(id, text)),
     onTrue: TodoList.update(Domain.deleteTodo(id))
   })
 
-export const toggleTodoCompleted = flow(Domain.toggleCompleted, TodoList.update)
+export const toggleTodoCompleted: (id: Domain.TodoId) => Effect.Effect<TodoList, never, Domain.TodoList> = flow(
+  Domain.toggleCompleted,
+  TodoList.update
+)
 
-export const deleteTodo = flow(Domain.deleteTodo, TodoList.update)
+export const deleteTodo: (id: Domain.TodoId) => Effect.Effect<TodoList, never, Domain.TodoList> = flow(
+  Domain.deleteTodo,
+  TodoList.update
+)
 
-export const clearCompletedTodos = TodoList.update(Domain.clearCompleted)
+export const clearCompletedTodos: Effect.Effect<TodoList, never, Domain.TodoList> = TodoList.update(
+  Domain.clearCompleted
+)
 
-export const toggleAllCompleted = TodoList.update(Domain.toggleAllCompleted)
+export const toggleAllCompleted: Effect.Effect<TodoList, never, Domain.TodoList> = TodoList.update(
+  Domain.toggleAllCompleted
+)
 
 /* #endregion */

@@ -149,6 +149,12 @@ export interface RefSubject<R, in out E, in out A> extends Computed<R, E, A>, Su
 }
 
 export namespace RefSubject {
+  export type Any =
+    | RefSubject<any, any, any>
+    | RefSubject<never, any, any>
+    | RefSubject<any, never, any>
+    | RefSubject<never, never, any>
+
   /**
    * A Contextual wrapper around a RefSubject
    * @since 1.18.0
@@ -215,6 +221,24 @@ export namespace RefSubject {
 }
 
 /**
+ * Extract the Identifier from a RefSubject
+ * @since 1.18.0
+ */
+export type Context<T> = RefSubject.Context<T>
+
+/**
+ * Extract the Error from a RefSubject
+ * @since 1.18.0
+ */
+export type Error<T> = RefSubject.Error<T>
+
+/**
+ * Extract the State from a RefSubject
+ * @since 1.18.0
+ */
+export type Success<T> = RefSubject.Success<T>
+
+/**
  * Construct a RefSubject with a lazily initialized value.
  * @since 1.18.0
  * @category constructors
@@ -270,7 +294,7 @@ export function tagged<E, A>(defaultEq?: Equivalence<A>): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
   ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
-  <const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+  <const I>(identifier: I | string): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
 } {
   function makeTagged<const I extends C.IdentifierFactory<any>>(
     identifier: I
@@ -500,3 +524,19 @@ export function deriveFromSchema<I, O>(schema: Schema.Schema<I, O>): MakeRefSubj
 export function deriveToSchema<I, O>(schema: Schema.Schema<I, O>): MakeRefSubject<O> {
   return toRefSubject(schema)
 }
+
+export const tuple: <const REFS extends ReadonlyArray<RefSubject.Any>>(
+  ...refs: REFS
+) => RefSubject<
+  RefSubject.Context<REFS[number]>,
+  RefSubject.Error<REFS[number]>,
+  { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
+> = coreRefSubject.tuple
+
+export const struct: <const REFS extends Readonly<Record<PropertyKey, RefSubject.Any>>>(
+  refs: REFS
+) => RefSubject<
+  RefSubject.Context<REFS[string]>,
+  RefSubject.Error<REFS[string]>,
+  { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
+> = coreRefSubject.struct

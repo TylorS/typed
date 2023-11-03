@@ -12,9 +12,9 @@ import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
-import { Option } from "effect"
+import { Either, Option } from "effect"
 import type { Duration, Exit } from "effect"
-import type { Cause } from "effect/Cause"
+import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
@@ -49,8 +49,8 @@ export const make: <E, A>() => Effect.Effect<
 export const tagged = <E, A>(): {
   <const I extends IdentifierConstructor<any>>(
     identifier: (id: <const T>(uniqueIdentifier: T) => IdentifierConstructor<T>) => I
-  ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, AsyncData.AsyncData<E, A>>
-  <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, AsyncData.AsyncData<E, A>>
+  ): RefAsyncData.Tagged<IdentifierOf<I>, E, A>
+  <const I>(identifier: I | string): RefAsyncData.Tagged<IdentifierOf<I>, E, A>
 } => RefSubject.tagged<never, AsyncData.AsyncData<E, A>>()
 
 /**
@@ -248,18 +248,18 @@ export const mapInput = <R, E, A, B>(
 
 export const failCause: {
   <E>(
-    cause: Cause<E>,
+    cause: Cause.Cause<E>,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
   ): <R, A>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
 
   <R, E, A>(
     ref: RefAsyncData<R, E, A>,
-    cause: Cause<E>,
+    cause: Cause.Cause<E>,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
   ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
 } = dual((args) => args.length === 3 || RefSubjectTypeId in args[0], <R, E, A>(
   ref: RefAsyncData<R, E, A>,
-  cause: Cause<E>,
+  cause: Cause.Cause<E>,
   options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
 ) => ref.set(AsyncData.failCause(cause, options)))
 
@@ -325,7 +325,7 @@ export const match: {
     matchers: {
       NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
       Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
-      Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+      Failure: (cause: Cause.Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
       Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
     }
   ): <R, E>(
@@ -354,7 +354,7 @@ export const match: {
     matchers: {
       NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
       Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
-      Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+      Failure: (cause: Cause.Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
       Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
     }
   ): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
@@ -363,7 +363,7 @@ export const match: {
   matchers: {
     NoData: (data: AsyncData.NoData) => Fx.FxInput<R2, E2, B>
     Loading: (data: AsyncData.Loading) => Fx.FxInput<R3, E3, C>
-    Failure: (cause: Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
+    Failure: (cause: Cause.Cause<E1>, data: AsyncData.Failure<E1>) => Fx.FxInput<R4, E4, D>
     Success: (value: A, data: AsyncData.Success<A>) => Fx.FxInput<R5, E5, F>
   }
 ): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F> => Fx.switchMap(fx, AsyncData.match(matchers)))
@@ -378,9 +378,9 @@ export const matchKeyed: {
     Success extends Fx.FxInput<any, any, any>
   >(
     matchers: {
-      NoData: () => NoData
+      NoData: (data: NoDataComputed) => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
+      Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): <R, E>(
@@ -403,9 +403,9 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
     matchers: {
-      NoData: () => NoData
+      NoData: (data: NoDataComputed) => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
+      Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): Fx.Fx<
@@ -429,7 +429,7 @@ export const matchKeyed: {
     matchers: {
       NoData: (data: NoDataComputed) => NoData
       Loading: (data: LoadingComputed) => Loading
-      Failure: (data: Filtered.Filtered<never, never, E1>, computed: FailureComputed<E1>) => Failure
+      Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
     }
   ): Fx.Fx<
@@ -446,7 +446,9 @@ export const matchKeyed: {
         }),
       Failure: (ref) =>
         matchers.Failure(
-          ref.filterMap(AsyncData.getFailure),
+          ref.mapEffect(({ cause }) =>
+            Cause.failureOrCause(cause).pipe(Either.reverse, Effect.catchAll(Effect.failCause))
+          ),
           {
             cause: ref.map((r) => r.cause),
             timestamp: ref.map((r) => r.timestamp),
@@ -474,7 +476,7 @@ export type LoadingComputed = {
 }
 
 export type FailureComputed<E> = {
-  readonly cause: Computed.Computed<never, never, Cause<E>>
+  readonly cause: Computed.Computed<never, never, Cause.Cause<E>>
   readonly timestamp: Computed.Computed<never, never, bigint>
   readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
 }

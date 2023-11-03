@@ -19,6 +19,7 @@ import type * as FiberId from "effect/FiberId"
 import type * as FiberRef from "effect/FiberRef"
 import { dual } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
+import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type * as PubSub from "effect/PubSub"
 import * as Queue from "effect/Queue"
@@ -618,4 +619,12 @@ function PubSubSubscribe<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>) 
   } else {
     return PubSub.subscribe
   }
+}
+
+export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS): Layer.Layer<
+  Fx.Context<FXS[number]>,
+  never,
+  never
+> {
+  return Layer.scopedDiscard(Effect.forkScoped(core.drain(core.merge(fxs))))
 }

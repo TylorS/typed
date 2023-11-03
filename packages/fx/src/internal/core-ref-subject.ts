@@ -399,7 +399,7 @@ export function unsafeMake<R, E, A>(
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
 
-export function tuple<const REFS extends ReadonlyArray<RefSubject<any, any, any>>>(...refs: REFS): RefSubject<
+export function tuple<const REFS extends ReadonlyArray<RefSubject.Any>>(...refs: REFS): RefSubject<
   RefSubject.Context<REFS[number]>,
   RefSubject.Error<REFS[number]>,
   { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
@@ -416,7 +416,7 @@ export function tuple<const REFS extends ReadonlyArray<RefSubject<any, any, any>
 
   const fx = core.combine(refs) as Fx<_R, _E, _A>
   const sink: WithContext<_R, _E, _A> = WithContext(
-    (cause) => Effect.all(refs.map((ref) => ref.onFailure(cause)), UNBOUNDED),
+    (cause) => Effect.all(refs.map((ref) => ref.onFailure(cause as any)), UNBOUNDED),
     (values) => Effect.all(refs.map((ref, i) => ref.onSuccess(values[i])), UNBOUNDED)
   )
 
@@ -434,7 +434,7 @@ export function tuple<const REFS extends ReadonlyArray<RefSubject<any, any, any>
   )
 }
 
-export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubject<any, any, any>>>>(
+export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubject.Any>>>(
   refs: REFS
 ): RefSubject<
   RefSubject.Context<REFS[string]>,
@@ -455,7 +455,7 @@ export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubjec
   const entries = Object.entries(refs)
   const values = Object.values(refs)
   const sink: WithContext<_R, _E, _A> = WithContext(
-    (cause) => Effect.all(values.map((ref) => ref.onFailure(cause)), UNBOUNDED),
+    (cause) => Effect.all(values.map((ref) => ref.onFailure(cause as any)), UNBOUNDED),
     (values) => Effect.all(entries.map(([k, ref]) => ref.onSuccess(values[k])), UNBOUNDED)
   )
 
