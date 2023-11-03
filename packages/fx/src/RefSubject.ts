@@ -290,18 +290,33 @@ export function make<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
+export function tagged<A>(defaultEq?: Equivalence<A>): {
+  <const I extends C.IdentifierConstructor<any>>(
+    identifier: (id: typeof C.id) => I
+  ): RefSubject.Tagged<C.IdentifierOf<I>, never, A>
+  <const I>(identifier: I | string): RefSubject.Tagged<C.IdentifierOf<I>, never, A>
+}
 export function tagged<E, A>(defaultEq?: Equivalence<A>): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
   ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
   <const I>(identifier: I | string): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+}
+
+export function tagged(defaultEq?: Equivalence<any>): {
+  <const I extends C.IdentifierConstructor<any>>(
+    identifier: (id: typeof C.id) => I
+  ): RefSubject.Tagged<C.IdentifierOf<I>, any, any> | RefSubject.Tagged<C.IdentifierOf<I>, never, any>
+  <const I>(
+    identifier: I | string
+  ): RefSubject.Tagged<C.IdentifierOf<I>, any, any> | RefSubject.Tagged<C.IdentifierOf<I>, never, any>
 } {
   function makeTagged<const I extends C.IdentifierFactory<any>>(
     identifier: I
-  ): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
-  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
-  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A> {
-    return new ContextImpl(C.Tagged<I, RefSubject<never, E, A>>(identifier), defaultEq) as any
+  ): RefSubject.Tagged<C.IdentifierOf<I>, any, any>
+  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, any, any>
+  function makeTagged<const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, any, any> {
+    return new ContextImpl(C.Tagged<I, RefSubject<never, any, any>>(identifier), defaultEq) as any
   }
 
   return makeTagged

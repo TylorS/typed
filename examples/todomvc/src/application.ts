@@ -17,13 +17,13 @@ export type CreateTodo = Context.Fn.Context<typeof CreateTodo>
 
 /* #region Model */
 
-export const TodoList = RefArray.tagged<never, Domain.Todo>()("TodoList")
+export const TodoList = RefSubject.tagged<Domain.TodoList>()("TodoList")
 export type TodoList = RefSubject.Context<typeof TodoList>
 
-export const FilterState = RefSubject.tagged<never, Domain.FilterState>()("FilterState")
+export const FilterState = RefSubject.tagged<Domain.FilterState>()("FilterState")
 export type FilterState = RefSubject.Context<typeof FilterState>
 
-export const TodoText = RefSubject.tagged<never, string>()("TodoText")
+export const TodoText = RefSubject.tagged<string>()("TodoText")
 export type TodoText = RefSubject.Context<typeof TodoText>
 
 export const Todos: Computed.Computed<never, never, Domain.TodoList> = Computed.struct({

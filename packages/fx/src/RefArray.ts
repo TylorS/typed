@@ -53,14 +53,36 @@ export function make<R, E, A>(
  * @since 1.18.0
  * @category constructors
  */
+
+export function tagged<A>(): {
+  <const I extends C.IdentifierConstructor<any>>(
+    identifier: (id: typeof C.id) => I
+  ): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<A>>
+
+  <const I>(identifier: I): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<A>>
+}
 export function tagged<E, A>(): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
   ): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, E, ReadonlyArray<A>>
 
   <const I>(identifier: I): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, E, ReadonlyArray<A>>
+}
+
+export function tagged(): {
+  <const I extends C.IdentifierConstructor<any>>(
+    identifier: (id: typeof C.id) => I
+  ):
+    | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, any, ReadonlyArray<any>>
+    | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<any>>
+
+  <const I>(
+    identifier: I
+  ):
+    | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, any, ReadonlyArray<any>>
+    | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<any>>
 } {
-  return RefSubject.tagged<E, ReadonlyArray<A>>()
+  return RefSubject.tagged<any, ReadonlyArray<any>>()
 }
 
 /**
