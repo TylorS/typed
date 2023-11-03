@@ -89,7 +89,7 @@ class ComputedImpl<R, E, A, R2, E2, B>
     )
   }
 
-  mapEffect: Computed<R | R2, E | E2, B>["mapEffect"] = (f) => Computed(this.input, (a) => Effect.flatMap(this.f(a), f))
+  mapEffect: Computed<R | R2, E | E2, B>["mapEffect"] = (f) => Computed(this as any, f)
 
   map: Computed<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
