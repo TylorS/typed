@@ -5,7 +5,7 @@ import * as Num from "@typed/fx/RefNumber"
 import { render } from "@typed/template/Render"
 import * as RenderContext from "@typed/template/RenderContext"
 import { html } from "@typed/template/RenderTemplate"
-import { Effect } from "effect"
+import { Effect, Layer } from "effect"
 
 const Counter = Fx.gen(function*(_) {
   const count = yield* _(Num.of(0))
@@ -17,15 +17,13 @@ const Counter = Fx.gen(function*(_) {
   </div>`
 })
 
-const program = Fx.drain(render(Counter))
-
-const main = program.pipe(
-  Effect.provide(RenderContext.browser),
-  Document.provide(document),
-  RootElement.provide({ rootElement: document.body }),
-  Effect.scoped
+render(Counter).pipe(
+  Fx.drainLayer,
+  Layer.use(Layer.mergeAll(
+    RenderContext.browser,
+    Document.layer(document),
+    RootElement.layer({ rootElement: document.body })
+  )),
+  Layer.launch,
+  Effect.runFork
 )
-
-Effect.runPromise(main).catch((error) => {
-  console.error(error)
-})

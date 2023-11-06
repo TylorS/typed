@@ -2495,7 +2495,7 @@ export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
 }
 
 export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS) => Layer.Layer<
-  Fx.Context<FXS[number]>,
+  Exclude<Fx.Context<FXS[number]>, Scope.Scope>,
   never,
   never
 > = internal.drainLayer

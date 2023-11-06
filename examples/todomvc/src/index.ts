@@ -8,13 +8,14 @@ import { TodoApp } from "./presentation"
 
 TodoApp.pipe(
   render,
-  Fx.drain,
-  Effect.provide(
+  Fx.drainLayer,
+  Layer.use(
     Layer.mergeAll(
       RenderContext.browser,
       Document.layer(document),
       RootElement.layer({ rootElement: document.body })
     )
   ),
+  Layer.launch,
   Effect.runFork
 )

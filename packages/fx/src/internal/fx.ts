@@ -614,7 +614,7 @@ function PubSubSubscribe<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>) 
 }
 
 export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS): Layer.Layer<
-  Fx.Context<FXS[number]>,
+  Exclude<Fx.Context<FXS[number]>, Scope.Scope>,
   never,
   never
 > {
