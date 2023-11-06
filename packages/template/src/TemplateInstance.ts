@@ -36,12 +36,21 @@ class TemplateInstanceImpl<E, T extends Rendered>
   implements Omit<TemplateInstance<E, T>, keyof Placeholder<never, E, RenderEvent>>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId = TemplateInstanceTypeId
+  query: TemplateInstance<E, T>["query"]
+  events: TemplateInstance<E, T>["events"]
+  elements: TemplateInstance<E, T>["elements"]
+  version: Effect.Effect<never, never, number>
 
   constructor(
     readonly i0: Fx.Fx<never, E, RenderEvent>,
     readonly i1: ElementRef<T>
   ) {
     super()
+
+    this.query = this.i1.query
+    this.events = this.i1.events
+    this.elements = this.i1.elements
+    this.version = this.i1[ElementRefTypeId].version
   }
 
   toFx(): Fx.Fx<never, E, RenderEvent> {
@@ -51,9 +60,4 @@ class TemplateInstanceImpl<E, T extends Rendered>
   toEffect(): Effect.Effect<never, E | NoSuchElementException, T> {
     return this.i1
   }
-
-  query = this.i1.query
-  events = this.i1.events
-  elements = this.i1.elements
-  version = this.i1[ElementRefTypeId].version
 }

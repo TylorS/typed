@@ -1,0 +1,28 @@
+{
+  "name": "@typed/example-counter",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "start": "tsx ./src/index.ts"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "dependencies": {
+    "@effect/platform": "^0.27.2",
+    "@effect/platform-node": "^0.28.2",
+    "@typed/fx": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "2.0.0-next.54"
+  },
+  "devDependencies": {
+    "tsx": "^3.14.0"
+  }
+}

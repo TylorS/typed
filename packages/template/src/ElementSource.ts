@@ -263,10 +263,19 @@ export class ElementSourceImpl<
   private bubbleMap = new Map<any, Fx.Fx<never, never, any>>()
   private captureMap = new Map<any, Fx.Fx<never, never, any>>()
 
+  readonly elements: ElementSource<T, EventMap>["elements"]
+  readonly version: ElementSource<T, EventMap>["version"]
+
   constructor(readonly rootElement: Filtered<never, never, T>, readonly selector: Selector = CssSelectors([])) {
     super()
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
+
+    this.elements = this.selector._tag === "css" ?
+      this.rootElement.map(findMatchingElements<any>(this.selector.selectors)) :
+      Filtered(Versioned.of(this.selector.element), (x) => Effect.succeedSome([x])) as any
+
+    this.version = this.elements.version
   }
 
   static fromElement<T extends Rendered>(rootElement: T): ElementSource<T> {
@@ -296,12 +305,6 @@ export class ElementSourceImpl<
       return new ElementSourceImpl(this.rootElement, ElementSelector(selector)) as any
     }
   }
-
-  readonly elements: ElementSource<T, EventMap>["elements"] = this.selector._tag === "css" ?
-    this.rootElement.map(findMatchingElements<any>(this.selector.selectors)) :
-    Filtered(Versioned.of(this.selector.element), (x) => Effect.succeedSome([x])) as any
-
-  readonly version = this.elements.version
 
   events<Type extends keyof EventMap>(
     type: Type,

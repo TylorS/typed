@@ -1,5 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import type { Sink } from "@typed/fx/Sink"
+import * as FxStream from "@typed/fx/Stream"
 import { TypeId } from "@typed/fx/TypeId"
 import { isDirective } from "@typed/template/Directive"
 import * as ElementRef from "@typed/template/ElementRef"
@@ -19,25 +20,34 @@ import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import { Deferred, Effect, Option, pipe } from "effect"
 import * as Scope from "effect/Scope"
+import * as Stream from "effect/Stream"
 import { StreamTypeId } from "effect/Stream"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
 
-export function renderToHtmlStream<R, E>(
+export function renderToHtml<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Fx.Fx<Exclude<R, RenderTemplate> | RenderContext, E, string> {
   return Fx.fromFxEffect(
-    RenderContext.with((ctx) => Fx.map(Fx.provide(fx, RenderTemplate.layer(renderHtml(ctx))), toHtml))
-  ).pipe(
-    Fx.startWith(TYPED_START),
-    Fx.continueWith(() => Fx.succeed(TYPED_END))
+    RenderContext.with((ctx) =>
+      Fx.map(Fx.provide(fx, RenderTemplate.layer(renderHtml(ctx))), toHtml).pipe(
+        Fx.startWith(TYPED_START),
+        Fx.continueWith(() => Fx.succeed(TYPED_END))
+      )
+    )
   )
 }
 
-export function renderToHtml<R, E>(
+export function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string> {
-  return Effect.map(Fx.toReadonlyArray(renderToHtmlStream(fx)), (strings) => strings.join(""))
+  return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), (strings) => strings.join(""))
+}
+
+export function renderToStream<R, E>(
+  fx: Fx.Fx<R, E, RenderEvent>
+): Stream.Stream<Exclude<R, RenderTemplate> | RenderContext, E, Uint8Array> {
+  return Stream.encodeText(FxStream.toStream(renderToHtml(fx)))
 }
 
 function renderHtml(ctx: RenderContext) {

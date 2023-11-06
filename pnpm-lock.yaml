@@ -184,6 +184,28 @@ importers:
         specifier: 2.0.0-next.54
         version: 2.0.0-next.54
 
+  examples/simple-ssr:
+    dependencies:
+      '@effect/platform':
+        specifier: ^0.27.2
+        version: 0.27.2(@effect/schema@0.47.2)(effect@2.0.0-next.54)
+      '@effect/platform-node':
+        specifier: ^0.28.2
+        version: 0.28.2(@effect/schema@0.47.2)(effect@2.0.0-next.54)
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../../packages/fx/dist
+      '@typed/template':
+        specifier: workspace:*
+        version: link:../../packages/template/dist
+      effect:
+        specifier: 2.0.0-next.54
+        version: 2.0.0-next.54
+    devDependencies:
+      tsx:
+        specifier: ^3.14.0
+        version: 3.14.0
+
   examples/todomvc:
     dependencies:
       '@effect/platform':
@@ -317,6 +339,9 @@ importers:
 
   packages/template:
     dependencies:
+      '@effect/platform':
+        specifier: ^0.27.2
+        version: 0.27.2(@effect/schema@0.47.2)(effect@2.0.0-next.54)
       '@effect/schema':
         specifier: 0.47.2
         version: 0.47.2(effect@2.0.0-next.54)(fast-check@3.13.2)
@@ -989,7 +1014,6 @@ packages:
       mime: 3.0.0
     transitivePeerDependencies:
       - '@effect/schema'
-    dev: true
 
   /@effect/platform@0.27.2(@effect/schema@0.47.2)(effect@2.0.0-next.54):
     resolution: {integrity: sha512-Ya8clQi5FWdlrsyPfhsh4zldvDM+NZe50QPANVXByqOpAWTw3XgPNRTMom/Yx464+VTORN6Pc4q82THWat1iOA==}
@@ -2529,7 +2553,6 @@ packages:
     engines: {node: '>=10.16.0'}
     dependencies:
       streamsearch: 1.1.0
-    dev: true
 
   /cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
@@ -4916,7 +4939,6 @@ packages:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
     engines: {node: '>=10.0.0'}
     hasBin: true
-    dev: true
 
   /mimic-fn@2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
@@ -6119,7 +6141,6 @@ packages:
   /streamsearch@1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
-    dev: true
 
   /string-template@0.2.1:
     resolution: {integrity: sha512-Yptehjogou2xm4UJbxJ4CxgZx12HBfeystp0y3x7s4Dj32ltVVG1Gg8YhKjHZkHicuKpZX/ffilA8505VbUbpw==}

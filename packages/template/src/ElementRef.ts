@@ -3,7 +3,8 @@ import { compact } from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
-import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSource"
+import type { DefaultEventMap } from "@typed/template/ElementSource"
+import { ElementSource } from "@typed/template/ElementSource"
 import type { Placeholder } from "@typed/template/Placeholder"
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
@@ -50,13 +51,24 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, n
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
-  private source = new ElementSourceImpl(RefSubject.compact(this.ref))
+  private source: ElementSource<
+    T,
+    DefaultEventMap<T>
+  >
 
-  readonly selectors = this.source.selector
+  readonly query: ElementRef<T>["query"]
+  readonly events: ElementRef<T>["events"]
+  readonly elements: ElementRef<T>["elements"]
+  readonly version: ElementRef<T>["version"]
 
   constructor(readonly ref: RefSubject.RefSubject<never, never, Option.Option<T>>) {
     super()
     this[ElementRefTypeId] = ref
+    this.source = ElementSource(RefSubject.compact(ref))
+    this.query = this.source.query
+    this.events = this.source.events
+    this.elements = this.source.elements
+    this.version = ref.version
   }
 
   protected toFx(): Fx<never, never, T> {
@@ -66,12 +78,6 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, n
   protected toEffect(): Effect.Effect<never, NoSuchElementException, T> {
     return Effect.flatten(this.ref.get)
   }
-
-  version = this.ref.version
-
-  query = this.source.query
-  events = this.source.events
-  elements = this.source.elements
 }
 
 export const set: {

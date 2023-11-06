@@ -1,13 +1,13 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Directive from "@typed/template/Directive"
 import { make } from "@typed/template/EventHandler"
-import { renderToHtmlStream } from "@typed/template/Html"
+import { renderToHtml } from "@typed/template/Html"
 import { TEXT_START, TYPED_HOLE } from "@typed/template/Meta"
 import * as RenderContext from "@typed/template/RenderContext"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { html } from "@typed/template/RenderTemplate"
-import { counter } from "@typed/template/test/fixtures/test_components"
+import { counter, inputWithLabel } from "@typed/template/test/fixtures/test_components"
 import { deepStrictEqual } from "assert"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
@@ -241,6 +241,13 @@ describe("Html", () => {
       `</span><button data-typed="..." id="increment">+</button>`
     ])
   })
+
+  it.concurrent("renders components with multiple attribute types", async () => {
+    await testHtmlChunks(inputWithLabel, [
+      `<div data-typed="..." class="formgroup"><input`,
+      `class="custom-input"/><label class="custom-input-label" for="name">Name</label></div>`
+    ])
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
@@ -253,7 +260,7 @@ async function testHtmlChunks(
 ): Promise<void> {
   const actual = (
     await template.pipe(
-      renderToHtmlStream,
+      renderToHtml,
       Fx.map((s) => pipe(s, stripDataTyped, (x) => x.trim())),
       Fx.toReadonlyArray,
       provideResources,

@@ -29,7 +29,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   private _version = 0
-  private _lock = this.semaphore.withPermits(1).bind(this.semaphore)
+  private _lock: <R, E, A>(self: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
 
   constructor(
     readonly initial: Effect.Effect<R, E, A>,
@@ -42,6 +42,9 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 
     this.onSuccess = this.onSuccess.bind(this)
     this.onFailure = this.onFailure.bind(this)
+
+    this._lock = semaphore.withPermits(1)
+    this.subscriberCount = subject.subscriberCount
   }
 
   static make<R, E, A>(
@@ -67,7 +70,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 
   readonly version = Effect.sync((): number => this._version)
 
-  readonly subscriberCount: Effect.Effect<R, never, number> = this.subject.subscriberCount
+  readonly subscriberCount: Effect.Effect<R, never, number>
 
   readonly interrupt = Effect.suspend(() =>
     Effect.all([
@@ -93,8 +96,10 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
     return this.get
   }
 
-  readonly get: RefSubject<R, E, A>["get"] = Effect.fromFiberEffect(
-    Effect.flatMap(Ref.get(this.ref), (fiber) => this.getOrInitialize(fiber))
+  readonly get: RefSubject<R, E, A>["get"] = Effect.suspend(() =>
+    Effect.fromFiberEffect(
+      Effect.flatMap(Ref.get(this.ref), (fiber) => this.getOrInitialize(fiber))
+    )
   )
 
   readonly modifyEffect: RefSubject<R, E, A>["modifyEffect"] = (f) =>
@@ -234,9 +239,13 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
       fiber: Option.Option<Fiber.Fiber<E, A>>
     ) => Effect.Effect<R2, E2, readonly [B, Option.Option<Fiber.Fiber<E, A>>]>
   ) {
-    return this._lock(
-      Ref.get(this.ref).pipe(
-        Effect.flatMap((fiber) => f(fiber).pipe(Effect.flatMap(([b, a2]) => Ref.set(this.ref, a2).pipe(Effect.as(b)))))
+    return Effect.suspend(() =>
+      this._lock(
+        Ref.get(this.ref).pipe(
+          Effect.flatMap((fiber) =>
+            f(fiber).pipe(Effect.flatMap(([b, a2]) => Ref.set(this.ref, a2).pipe(Effect.as(b))))
+          )
+        )
       )
     )
   }
