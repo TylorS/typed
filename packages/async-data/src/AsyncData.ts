@@ -1,23 +1,9 @@
-import {
-  currentTimestamp,
-  FailureImpl,
-  hasDataOptions,
-  hasEquality,
-  isTaggedRecord,
-  SuccessImpl
-} from "@typed/async-data/internal/async-data"
+import * as internal from "@typed/async-data/internal/async-data"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "@typed/async-data/internal/tag"
 import * as Progress from "@typed/async-data/Progress"
 import type { Effect } from "effect"
 import { Cause, Data, Duration, Equal, Equivalence, Exit, Option, Unify } from "effect"
 import { dual } from "effect/Function"
-
-export const NO_DATA_TAG = "NoData" as const
-
-export const LOADING_TAG = "Loading" as const
-
-export const FAILURE_TAG = "Failure" as const
-
-export const SUCCESS_TAG = "Success" as const
 
 export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A>
 
@@ -66,7 +52,7 @@ export const noData: {
   <E, A>(): AsyncData<E, A>
 } = (options?: NoDataOptions): NoData =>
   new NoData({
-    timestamp: options?.timestamp ?? currentTimestamp()
+    timestamp: options?.timestamp ?? internal.currentTimestamp()
   })
 
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
@@ -89,7 +75,7 @@ export const loading: {
   <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
 } = (options?: OptionalPartial<LoadingOptions>): Loading =>
   new Loading({
-    timestamp: options?.timestamp || currentTimestamp(),
+    timestamp: options?.timestamp || internal.currentTimestamp(),
     progress: Option.fromNullable(options?.progress)
   })
 
@@ -113,7 +99,11 @@ export const failCause: {
   <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E>
   <E, A>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): AsyncData<E, A>
 } = <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E> =>
-  new FailureImpl(cause, options?.timestamp || currentTimestamp(), Option.fromNullable(options?.refreshing))
+  new internal.FailureImpl(
+    cause,
+    options?.timestamp || internal.currentTimestamp(),
+    Option.fromNullable(options?.refreshing)
+  )
 
 export const fail: {
   <E>(error: E, options?: OptionalPartial<FailureOptions>): Failure<E>
@@ -136,7 +126,11 @@ export const success: {
   <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A>
   <E, A>(value: A, options?: OptionalPartial<SuccessOptions>): AsyncData<E, A>
 } = <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A> =>
-  new SuccessImpl(value, options?.timestamp || currentTimestamp(), Option.fromNullable(options?.refreshing))
+  new internal.SuccessImpl(
+    value,
+    options?.timestamp || internal.currentTimestamp(),
+    Option.fromNullable(options?.refreshing)
+  )
 
 export const isSuccess = <E, A>(data: AsyncData<E, A>): data is Success<A> => data._tag === SUCCESS_TAG
 
@@ -249,22 +243,7 @@ export const stopLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
   }
 }
 
-export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
-  if (isTaggedRecord(u) && hasEquality(u)) {
-    switch (u._tag) {
-      case NO_DATA_TAG:
-        return "timstamp" in u && typeof u.timestamp === "bigint"
-      case LOADING_TAG:
-        return "progress" in u && Option.isOption(u.progress)
-      case FAILURE_TAG:
-        return hasDataOptions(u) && "cause" in u && Cause.isCause(u.cause)
-      case SUCCESS_TAG:
-        return hasDataOptions(u) && "value" in u
-      default:
-        return false
-    }
-  } else return false
-}
+export const isAsyncData: <E, A>(u: unknown) => u is AsyncData<E, A> = internal.isAsyncData
 
 export const done = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
   Exit.match(exit, {
@@ -279,7 +258,7 @@ export const checkIsOutdated = <E, A>(
 ): data is Success<A> => {
   if (isSuccess(data)) {
     if (currentTime === undefined) {
-      currentTime = currentTimestamp()
+      currentTime = internal.currentTimestamp()
     }
     const updatedTime = data.timestamp
     const difference = Duration.nanos(currentTime - updatedTime)

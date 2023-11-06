@@ -1,8 +1,8 @@
 // Internal
 
-import type { AsyncData, Failure, Loading, Success } from "@typed/async-data/AsyncData"
-import type { Cause } from "effect"
-import { Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
+import { type AsyncData, type Failure, type Loading, type Success } from "@typed/async-data/AsyncData"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "@typed/async-data/internal/tag"
+import { Cause, Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
 import { constant } from "effect/Function"
 
 export const defaultClock = Effect.runSync(Effect.clock)
@@ -24,7 +24,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
   }
 
   [Equal.symbol](that: unknown) {
-    return that instanceof FailureImpl
+    return isAsyncData(that) && that._tag === "Failure"
       && Equal.equals(this.cause, that.cause)
       && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
@@ -56,7 +56,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
   }
 
   [Equal.symbol](that: unknown) {
-    return that instanceof SuccessImpl
+    return isAsyncData(that) && that._tag === "Success"
       && Equal.equals(this.value, that.value)
       && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
@@ -88,4 +88,21 @@ export function isTaggedRecord(u: unknown): u is Record<PropertyKey, unknown> & 
 
 export function isRecord(u: unknown): u is Record<PropertyKey, unknown> {
   return typeof u === "object" && u !== null && !Array.isArray(u)
+}
+
+export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
+  if (isTaggedRecord(u) && hasEquality(u)) {
+    switch (u._tag) {
+      case NO_DATA_TAG:
+        return "timstamp" in u && typeof u.timestamp === "bigint"
+      case LOADING_TAG:
+        return "progress" in u && Option.isOption(u.progress)
+      case FAILURE_TAG:
+        return hasDataOptions(u) && "cause" in u && Cause.isCause(u.cause)
+      case SUCCESS_TAG:
+        return hasDataOptions(u) && "value" in u
+      default:
+        return false
+    }
+  } else return false
 }
