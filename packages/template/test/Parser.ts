@@ -54,7 +54,7 @@ describe("Parser2", () => {
     element.attributes.push(id, className)
 
     const expected = new Template([element], templateHash(template), [])
-    const actual = Parser2.parser.parse(template)
+    const actual = Parser2.parse(template)
 
     expect(actual).toEqual(expected)
   })
@@ -105,9 +105,10 @@ describe("Parser2", () => {
 
     div.attributes.push(sparse)
 
-    const expected = new Template([div], templateHash(template), [[sparse, Chunk.unsafeFromArray([0])]])
+    const expected = new Template([div], templateHash(template), [[sparse, Chunk.of(0)]])
+    const actual = Parser2.parser.parse(template)
 
-    deepStrictEqual(Parser2.parser.parse(template), expected)
+    deepStrictEqual(actual, expected)
   })
 
   it("parses boolean attributes", () => {

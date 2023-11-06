@@ -99,7 +99,7 @@ function makeRef(window: Window) {
 
   return (template: TemplateStringsArray) =>
     Effect.gen(function*(_) {
-      const ref = yield* _(ElementRef.ElementRef())
+      const ref = yield* _(ElementRef.make())
       const element = html(template)
 
       yield* _(ElementRef.set(ref, element))

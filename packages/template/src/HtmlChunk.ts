@@ -83,7 +83,17 @@ const nodeMap: NodeMap = {
   "comment-part": (node) => [
     new PartChunk(node, (value) => `<!--${value}-->`)
   ],
-  "sparse-comment": (node) => node.nodes.flatMap((node) => nodeMap[node._tag](node as any))
+  "sparse-comment": (node) => [
+    new TextChunk("<!--"),
+    ...node.nodes.map((node) => {
+      if (node._tag === "text") {
+        return textToHtmlChunks(node)
+      } else {
+        return new PartChunk(node, (value) => `${value}`)
+      }
+    }),
+    new TextChunk("-->")
+  ]
 }
 
 function nodeToHtmlChunk(node: Node, hash?: string): Array<HtmlChunk> {

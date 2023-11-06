@@ -57,7 +57,7 @@ export interface EventPart {
   readonly index: number
   readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
 
-  readonly update: <R>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
+  readonly update: <R = never>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
 }
 
 export interface PropertyPart {
@@ -69,7 +69,7 @@ export interface PropertyPart {
   readonly update: (value: this["value"]) => Effect<Scope, never, void>
 }
 
-export interface RefPart<T extends HTMLElement | SVGElement = HTMLElement> {
+export interface RefPart<T extends HTMLElement | SVGElement = HTMLElement | SVGElement> {
   readonly _tag: "ref"
   readonly value: ElementSource<T>
   readonly index: number

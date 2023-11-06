@@ -29,7 +29,7 @@ export interface ElementRef<T extends Rendered = Rendered>
 
 const strictEqual = Option.getEquivalence((a, b) => a === b)
 
-export function ElementRef<T extends Rendered = Rendered>(): Effect.Effect<never, never, ElementRef<T>> {
+export function make<T extends Rendered = Rendered>(): Effect.Effect<never, never, ElementRef<T>> {
   return Effect.map(
     RefSubject.of(Option.none<T>(), strictEqual),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>

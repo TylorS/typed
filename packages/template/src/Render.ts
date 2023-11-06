@@ -79,7 +79,7 @@ const renderTemplate: (document: Document, ctx: RenderContext) => RenderTemplate
     providedRef?: ElementRef.ElementRef<T>
   ) =>
     Effect.gen(function*(_) {
-      const elementRef = providedRef || (yield* _(ElementRef.ElementRef<T>()))
+      const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
       const events = Fx.map(elementRef, DomRenderEvent)
       const errors = makeSubject<Placeholder.Error<Values[number]>, never>()
       const entry = getBrowserEntry(document, ctx, templateStrings)

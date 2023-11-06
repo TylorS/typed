@@ -450,7 +450,7 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
       name,
       parts,
       ({ part, value }) =>
-        ctx.queue.add(part, () => element.setAttribute(name, value.flatMap(isNonEmptyString).join("")))
+        ctx.queue.add(part, () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")))
     )
   }
 }
@@ -474,7 +474,7 @@ export class SparseClassNamePartImpl extends sparse("sparse/className") implemen
       parts,
       ({ part, value }) =>
         ctx.queue.add(part, () => {
-          return element.setAttribute("class", value.flatMap(isNonEmptyString).join(" "))
+          return element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" "))
         }),
       values
     )
@@ -493,7 +493,8 @@ export class SparseCommentPartImpl extends sparse("sparse/comment") implements S
   static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, ctx: RenderContext) {
     return new SparseCommentPartImpl(
       parts,
-      ({ part, value }) => ctx.queue.add(part, () => comment.nodeValue = value.flatMap(isNonEmptyString).join("")),
+      ({ part, value }) =>
+        ctx.queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join("")),
       []
     )
   }
@@ -505,13 +506,13 @@ export class StaticTextImpl implements StaticText {
   constructor(readonly value: string) {}
 }
 
-function isNonEmptyString(s: string | ReadonlyArray<string> | null | undefined): Array<string> {
+function isNonEmptyString(s: string | ReadonlyArray<string> | null | undefined, trim: boolean): Array<string> {
   if (s == null) return []
-  if (Array.isArray(s)) return s.flatMap(isNonEmptyString)
+  if (Array.isArray(s)) return s.flatMap((s) => isNonEmptyString(s, trim))
 
-  const trimmed = (s as string).trim()
+  const trimmed = trim ? (s as string).trim() : s
 
   if (trimmed.length === 0) return []
 
-  return [trimmed]
+  return [trimmed as string]
 }

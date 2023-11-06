@@ -29,7 +29,7 @@ import * as internalWithKey from "@typed/fx/internal/withKey"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import type * as Sink from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
-import type { TypeId } from "@typed/fx/TypeId"
+import { TypeId } from "@typed/fx/TypeId"
 import * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import type { DurationInput } from "effect/Duration"
@@ -2501,3 +2501,7 @@ export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs
 > = internal.drainLayer
 
 /* #endregion */
+
+export function isFx<R = unknown, E = unknown, A = unknown>(u: unknown): u is Fx<R, E, A> {
+  return typeof u === "object" && u !== null && TypeId in u
+}

@@ -429,7 +429,7 @@ class ParserImpl implements Parser {
         return Skip
       case "part": {
         this.consumeAmount(8)
-        const part = this.parsePartToken((i) => this.addPart(new Template.TextPartNode(i)))
+        const part = this.parsePartToken((i) => this.addPartWithPrevious(new Template.TextPartNode(i)))
 
         return text === "" ? Continue([part]) : Continue([new Template.TextNode(text), part])
       }
