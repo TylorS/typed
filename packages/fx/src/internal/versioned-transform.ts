@@ -1,14 +1,14 @@
 import type { Fx } from "@typed/fx/Fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import { MulticastEffect } from "@typed/fx/internal/helpers"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
 export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
-  extends FxEffectProto<R3, E3, C, R0 | R4, E4, D>
-  implements Omit<Versioned<R0, R3, E3, C, R4, E4, D>, ModuleAgumentedEffectKeysToOmit>
+  extends FxEffectBase<R3, E3, C, R0 | R4, E4, D>
+  implements Omit<Versioned<R0, R3, E3, C, R0 | R4, E4, D>, ModuleAgumentedEffectKeysToOmit>
 {
   private _version = 0
   private _currentValue: Option.Option<D> = Option.none()

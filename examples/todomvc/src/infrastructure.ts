@@ -25,6 +25,8 @@ const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.ca
 
 /* #region Routing */
 
+// TODO: Replace this with @typed/router when it is ready.
+
 const hashesToFilterState = ReadonlyRecord.fromEntries(ReadonlyRecord.toEntries(Domain.FilterState).map(Tuple.swap))
 
 const getFilterState = () => {

@@ -1,34 +1,9 @@
 import type { Fx } from "@typed/fx/Fx"
 import { succeed } from "@typed/fx/internal/core"
-import { ToFx } from "@typed/fx/internal/fx-primitive"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
-import { Variance } from "@typed/fx/internal/protos"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
-
-/**
- * Prototype for creqting a type which is both an Effect and an Fx
- */
-// @ts-ignore - Module augmentation makes this tough
-export abstract class FxEffectProto<R, E, A, R2, E2, B> extends ToFx<R, E, A>
-  implements Effect.Effect<R2, E2, B>, Fx<R, E, A>
-{
-  readonly _op = "Commit"
-
-  readonly [Effect.EffectTypeId] = Variance as any
-
-  protected abstract toEffect(): Effect.Effect<R2, E2, B>
-
-  private _effect: Effect.Effect<R2, E2, B> | undefined
-
-  commit(): Effect.Effect<R2, E2, B> {
-    if (this._effect === undefined) {
-      return (this._effect = this.toEffect())
-    } else {
-      return this._effect
-    }
-  }
-}
 
 /**
  * Construct a Versioned type.
@@ -58,7 +33,7 @@ export function versionedOf<A>(value: A): Versioned<never, never, never, A, neve
   })
 }
 
-class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectProto<R, E, A, R2, E2, B>
+export class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectBase<R, E, A, R2, E2, B>
   implements Omit<Versioned<R0, R, E, A, R2, E2, B>, ModuleAgumentedEffectKeysToOmit>
 {
   constructor(
@@ -66,7 +41,7 @@ class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectProto<R, E, A, R2, E
     readonly i1: Fx<R, E, A>,
     readonly i2: Effect.Effect<R2, E2, B>
   ) {
-    super(i0, i1, i2)
+    super()
   }
 
   protected toEffect(): Effect.Effect<R2, E2, B> {

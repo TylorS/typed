@@ -7,7 +7,7 @@ import { pipeArguments } from "effect/Pipeable"
 import type * as StreamSink from "effect/Sink"
 import type * as Stream from "effect/Stream"
 
-import { type Fx } from "@typed/fx/Fx"
+import type { Fx, ToFx } from "@typed/fx/Fx"
 import { TypeId } from "@typed/fx/TypeId"
 import { Effectable } from "effect"
 import * as Fiber from "effect/Fiber"
@@ -103,3 +103,39 @@ export class OnceEffect<R, E, A> extends Effectable.Class<R, E, A> {
 }
 
 export const once = <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, E, A> => new OnceEffect(effect)
+
+// @ts-expect-error private properties don't quite work out
+export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B>
+  implements ToFx<R, E, A>
+{
+  _fxTag = "ToFx" as const
+
+  readonly [TypeId] = Variance as any
+
+  protected abstract toFx(): Fx<R, E, A>
+  protected abstract toEffect(): Effect.Effect<R2, E2, B>
+
+  private _fx: Fx<R, E, A> | undefined
+
+  get fx(): Fx<R, E, A> {
+    return this._fx ||= this.toFx()
+  }
+
+  private _effect: Effect.Effect<R2, E2, B> | undefined
+
+  commit(): Effect.Effect<R2, E2, B> {
+    return this._effect ||= this.toEffect()
+  }
+
+  toJSON(): unknown {
+    return this
+  }
+
+  [NodeInspectSymbol]() {
+    return this.toJSON()
+  }
+
+  toString() {
+    return JSON.stringify(this.toJSON())
+  }
+}

@@ -278,10 +278,8 @@ export const fromNullable = <A>(value: A | null | undefined | void): Fx<never, n
 
 const if_: {
   <R2, E2, B, R3, E3, C>(
-    options: {
-      readonly onTrue: FxInput<R2, E2, B>
-      readonly onFalse: FxInput<R3, E3, C>
-    }
+    onTrue: FxInput<R2, E2, B>,
+    onFalse: FxInput<R3, E3, C>
   ): {
     <R, E>(bool: Fx<R, E, boolean>): Fx<R | R2 | R3, E | E2 | E3, B | C>
     (bool: boolean): Fx<R2 | R3, E2 | E3, B | C>
@@ -289,32 +287,26 @@ const if_: {
 
   <R, E, R2, E2, B, R3, E3, C>(
     bool: Fx<R, E, boolean>,
-    options: {
-      readonly onTrue: FxInput<R2, E2, B>
-      readonly onFalse: FxInput<R3, E3, C>
-    }
+    onTrue: FxInput<R2, E2, B>,
+    onFalse: FxInput<R3, E3, C>
   ): Fx<R | R2 | R3, E | E2 | E3, B | C>
 
   <R2, E2, B, R3, E3, C>(
     bool: boolean,
-    options: {
-      readonly onTrue: FxInput<R2, E2, B>
-      readonly onFalse: FxInput<R3, E3, C>
-    }
-  ): Fx<R2 | R3, E2 | E3, B | C>
-} = dual(2, function if_<R, E, R2, E2, B, R3, E3, C>(
-  bool: boolean | Fx<R, E, boolean>,
-  options: {
-    onTrue: FxInput<R2, E2, B>
+    onTrue: FxInput<R2, E2, B>,
     onFalse: FxInput<R3, E3, C>
-  }
+  ): Fx<R2 | R3, E2 | E3, B | C>
+} = dual(3, function if_<R, E, R2, E2, B, R3, E3, C>(
+  bool: boolean | Fx<R, E, boolean>,
+  onTrue: FxInput<R2, E2, B>,
+  onFalse: FxInput<R3, E3, C>
 ): Fx<R | R2 | R3, E | E2 | E3, B | C> {
   if (typeof bool === "boolean") {
-    return bool ? core.from(options.onTrue) : core.from(options.onFalse)
+    return bool ? core.from(onTrue) : core.from(onFalse)
   } else {
     return core.switchMap(
       bool,
-      (bool): FxInput<R2 | R3, E2 | E3, B | C> => (bool ? options.onTrue : options.onFalse)
+      (bool): FxInput<R2 | R3, E2 | E3, B | C> => (bool ? onTrue : onFalse)
     )
   }
 })

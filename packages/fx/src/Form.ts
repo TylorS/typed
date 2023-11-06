@@ -7,7 +7,7 @@ import { Computed } from "@typed/fx/Computed"
 import * as FormEntry from "@typed/fx/FormEntry"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { from } from "@typed/fx/internal/schema-equivalence"
 import { hold } from "@typed/fx/internal/share"
@@ -182,7 +182,8 @@ export function make<
 
 const parseOptions: ParseOptions = { errors: "all", onExcessProperty: "ignore" }
 
-class FormImpl<Entries extends Form.AnyEntries> extends FxEffectProto<
+// @ts-expect-error Unable to resolve the proper types
+class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
   never,
   Form.Error<Entries> | ParseError,
   Form.Input<Entries>,

@@ -92,4 +92,8 @@ export function filterTodoList({ list, state }: { list: TodoList; state: FilterS
   }
 }
 
+export function updateText(text: string) {
+  return (todo: Todo): Todo => ({ ...todo, text })
+}
+
 /* #endregion */

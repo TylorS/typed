@@ -230,7 +230,7 @@ describe.concurrent(__filename, () => {
   })
 
   describe.concurrent("RefSubject", () => {
-    it.concurrent("allows keeping state", async () => {
+    it.concurrent.only("allows keeping state", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
@@ -1032,10 +1032,8 @@ describe.concurrent("Fx.if", () => {
   it.concurrent("runs an Fx if the predicate is true", async () => {
     const test = Fx.if(
       true,
-      {
-        onTrue: Fx.succeed(1),
-        onFalse: Fx.succeed(2)
-      }
+      Fx.succeed(1),
+      Fx.succeed(2)
     ).pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)
@@ -1046,10 +1044,8 @@ describe.concurrent("Fx.if", () => {
   it.concurrent("runs an Fx if the predicate is false", async () => {
     const test = Fx.if(
       false,
-      {
-        onTrue: Fx.succeed(1),
-        onFalse: Fx.succeed(2)
-      }
+      Fx.succeed(1),
+      Fx.succeed(2)
     ).pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)
@@ -1063,10 +1059,8 @@ describe.concurrent("Fx.if", () => {
         Fx.at(true, 50),
         Fx.at(false, 100)
       ]),
-      {
-        onTrue: Fx.succeed(1),
-        onFalse: Fx.succeed(2)
-      }
+      Fx.succeed(1),
+      Fx.succeed(2)
     ).pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)

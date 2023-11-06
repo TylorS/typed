@@ -1,7 +1,9 @@
 import * as Context from "@typed/context"
+import * as Fx from "@typed/fx/Fx"
 import type { ElementRef } from "@typed/template/ElementRef"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
+import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import type * as Effect from "effect/Effect"
@@ -32,23 +34,23 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect.Effect<
+): Fx.Fx<
   RenderTemplate | Scope | Placeholder.Context<Values[number]>,
-  never,
-  TemplateInstance<Placeholder.Error<Values[number]>, Rendered>
+  Placeholder.Error<Values[number]>,
+  RenderEvent
 > {
-  return RenderTemplate.withEffect((render) => render(template, values))
+  return Fx.fromFxEffect(RenderTemplate.withEffect((render) => render(template, values))) as any
 }
 
 export function as<T extends Rendered = Rendered>(ref: ElementRef<T>) {
   return function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,
     ...values: Values
-  ): Effect.Effect<
+  ): Fx.Fx<
     Scope | RenderTemplate | Placeholder.Context<Values[number]>,
-    never,
-    TemplateInstance<Placeholder.Error<Values[number]>, T>
+    Placeholder.Error<Values[number]>,
+    RenderEvent
   > {
-    return RenderTemplate.withEffect((render) => render(template, values, ref))
+    return Fx.fromFxEffect(RenderTemplate.withEffect((render) => render(template, values, ref))) as any
   }
 }

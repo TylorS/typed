@@ -14,7 +14,7 @@ import { provide } from "@typed/fx/internal/core"
 import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { exit, fromFxEffect } from "@typed/fx/internal/fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
 import type * as Subject from "@typed/fx/Subject"
@@ -322,7 +322,7 @@ export function tagged(defaultEq?: Equivalence<any>): {
   return makeTagged
 }
 
-class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
+class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A>
   implements Omit<RefSubject<I, E, A>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
@@ -337,7 +337,7 @@ class ContextImpl<I, E, A> extends FxEffectProto<I, E, A, I, E, A>
   }
 
   protected toEffect(): Effect.Effect<I, E, A> {
-    return Effect.flatten(this.tag)
+    return this.get
   }
 
   version = this.tag.withEffect((ref) => ref.version)

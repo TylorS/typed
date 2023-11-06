@@ -1,5 +1,5 @@
 import type * as Fx from "@typed/fx/Fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type * as Versioned from "@typed/fx/Versioned"
 import { type ElementRef, ElementRefTypeId } from "@typed/template/ElementRef"
@@ -32,7 +32,7 @@ export function TemplateInstance<T extends Rendered = Rendered, E = never>(
 }
 
 class TemplateInstanceImpl<E, T extends Rendered>
-  extends FxEffectProto<never, E, RenderEvent, never, E | NoSuchElementException, T>
+  extends FxEffectBase<never, E, RenderEvent, never, E | NoSuchElementException, T>
   implements Omit<TemplateInstance<E, T>, keyof Placeholder<never, E, RenderEvent> | ModuleAgumentedEffectKeysToOmit>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId = TemplateInstanceTypeId
@@ -41,7 +41,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
     readonly i0: Fx.Fx<never, E, RenderEvent>,
     readonly i1: ElementRef<T>
   ) {
-    super(i0, i1)
+    super()
   }
 
   toFx(): Fx.Fx<never, E, RenderEvent> {

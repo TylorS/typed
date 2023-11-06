@@ -2,10 +2,10 @@ import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
 import { render } from "@typed/template/Render"
+import type { Renderable } from "@typed/template/Renderable"
 import * as RenderContext from "@typed/template/RenderContext"
 import { DomRenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import { html } from "@typed/template/RenderTemplate"
+import { RenderTemplate } from "@typed/template/RenderTemplate"
 import type { TemplateInstance } from "@typed/template/TemplateInstance"
 import type * as Wire from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
@@ -15,6 +15,13 @@ import * as Layer from "effect/Layer"
 import * as Scope from "effect/Scope"
 import * as happyDOM from "happy-dom"
 import { describe, it } from "vitest"
+
+export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
+  template: TemplateStringsArray,
+  ...values: Values
+) {
+  return RenderTemplate.withEffect((render) => render(template, values))
+}
 
 describe("Render", () => {
   it("renders a simple template", async () => {

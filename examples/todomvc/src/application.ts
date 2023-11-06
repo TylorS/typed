@@ -34,7 +34,9 @@ export const Todos: Computed.Computed<never, never, Domain.TodoList> = Computed.
 
 export const ActiveCount: Computed.Computed<TodoList, never, number> = TodoList.map(Domain.activeCount)
 
-export const CompletedCount: Computed.Computed<TodoList, never, number> = TodoList.map(Domain.completedCount)
+export const SomeAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map((list) =>
+  Domain.completedCount(list) > 0
+)
 
 export const AllAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map(Domain.allAreCompleted)
 
@@ -43,15 +45,18 @@ export const AllAreCompleted: Computed.Computed<TodoList, never, boolean> = Todo
 /* #region Intent */
 
 export const createTodo: Effect.Effect<CreateTodo | TodoList | TodoText, never, Option.Option<Domain.Todo>> = Effect
-  .flatMap(TodoText, (text) =>
-    Effect.if(text.trim() === "", {
+  .flatMap(TodoText, (text) => {
+    console.log("Text", text)
+
+    return Effect.if(text.trim() === "", {
       onFalse: CreateTodo.apply(text).pipe(
         Effect.tap((todo) => RefArray.prepend(TodoList, todo)),
         Effect.tap(() => TodoText.set("")),
         Effect.asSome
       ),
       onTrue: Effect.succeed(Option.none<Domain.Todo>())
-    }))
+    })
+  })
 
 export const editTodo = (id: Domain.TodoId, text: string): Effect.Effect<TodoList, never, Domain.TodoList> =>
   Effect.if(text.trim() === "", {

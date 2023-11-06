@@ -9,7 +9,7 @@ import { Computed } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import { struct } from "@typed/fx/Fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
@@ -319,7 +319,7 @@ export namespace Model {
     : never
 }
 
-class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectProto<
+class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase<
   Model.Identifier<Refs[keyof Refs]>,
   Model.Error<Refs[keyof Refs]>,
   {

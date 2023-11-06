@@ -2,7 +2,7 @@ import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
 import { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as Versioned from "@typed/fx/Versioned"
 import type { Placeholder } from "@typed/template/Placeholder"
@@ -254,10 +254,11 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
+// @ts-expect-error Placeholder causes issues
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends FxEffectProto<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+> extends FxEffectBase<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
   implements Omit<ElementSource<T, EventMap>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
   private bubbleMap = new Map<any, Fx.Fx<never, never, any>>()

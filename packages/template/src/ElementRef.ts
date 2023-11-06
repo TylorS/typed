@@ -1,6 +1,6 @@
 import type { Fx } from "@typed/fx/Fx"
 import { compact } from "@typed/fx/Fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
+import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
@@ -44,7 +44,7 @@ export function of<T extends Rendered>(rendered: T): Effect.Effect<never, never,
   )
 }
 
-class ElementRefImpl<T extends Rendered> extends FxEffectProto<never, never, T, never, NoSuchElementException, T>
+class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, never, NoSuchElementException, T>
   implements Omit<ElementRef<T>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>

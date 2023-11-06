@@ -5,9 +5,8 @@ import * as core from "@typed/fx/internal/core"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { DeferredRef } from "@typed/fx/internal/deferred-ref"
 import { fromFxEffect } from "@typed/fx/internal/fx"
-import { FxEffectProto } from "@typed/fx/internal/fx-effect-proto"
 import { matchFxInput } from "@typed/fx/internal/matchers"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
+import { FxEffectBase, type ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { run } from "@typed/fx/internal/run"
 import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
@@ -25,7 +24,7 @@ import * as Option from "effect/Option"
 import { getEquivalence } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
 
-export class RefSubjectImpl<R, E, A> extends FxEffectProto<R, E, A, R, E, A>
+export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A>
   implements Omit<RefSubject<R, E, A>, ModuleAgumentedEffectKeysToOmit>
 {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId

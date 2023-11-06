@@ -387,17 +387,6 @@ export abstract class ToFx<R, E, A> extends primitive.ToFx<R, E, A> implements F
    * @since 1.18.0
    */
   abstract toFx(): Fx<R, E, A>
-
-  /**
-   * The Fx.run implementation and all of its
-   * derivatives utilize this accessor to memoize the Fx.
-   * Because of this, it is important to access external resources lazily
-   * within an Effect/Fx.
-   * @since 1.18.0
-   */
-  get fx(): Fx<R, E, A> {
-    return super.fx
-  }
 }
 
 /**
@@ -2191,18 +2180,21 @@ export const fromNullable: <A>(value: void | A | null | undefined) => Fx<never, 
 
 const if_: {
   <R2, E2, B, R3, E3, C>(
-    options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }
+    onTrue: Fx<R2, E2, B>,
+    onFalse: Fx<R3, E3, C>
   ): {
     <R, E>(bool: Fx<R, E, boolean>): Fx<R2 | R3 | R, E2 | E3 | E, B | C>
     (bool: boolean): Fx<R2 | R3, E2 | E3, B | C>
   }
   <R, E, R2, E2, B, R3, E3, C>(
     bool: Fx<R, E, boolean>,
-    options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }
+    onTrue: Fx<R2, E2, B>,
+    onFalse: Fx<R3, E3, C>
   ): Fx<R | R2 | R3, E | E2 | E3, B | C>
   <R2, E2, B, R3, E3, C>(
     bool: boolean,
-    options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }
+    onTrue: Fx<R2, E2, B>,
+    onFalse: Fx<R3, E3, C>
   ): Fx<R2 | R3, E2 | E3, B | C>
 } = internal.if
 
