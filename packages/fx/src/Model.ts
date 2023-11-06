@@ -10,7 +10,6 @@ import { Filtered } from "@typed/fx/Filtered"
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import { struct } from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
@@ -330,7 +329,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase
   {
     readonly [K in keyof Refs]: Model.State<Refs[K]>
   }
-> implements Omit<Model<Refs>, ModuleAgumentedEffectKeysToOmit> {
+> implements Model<Refs> {
   get: Model<Refs>["get"]
   set: Model<Refs>["set"]
   delete: Model<Refs>["delete"]

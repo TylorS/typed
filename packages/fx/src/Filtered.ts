@@ -8,7 +8,6 @@
 import { Computed } from "@typed/fx/Computed"
 import type * as Fx from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { FilteredTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
@@ -84,7 +83,7 @@ export function Filtered<R, E, A, R2, E2, B>(
 
 class FilteredImpl<R, E, A, R2, E2, B>
   extends VersionedTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
-  implements Omit<Filtered<R | R2, E | E2, B>, ModuleAgumentedEffectKeysToOmit>
+  implements Filtered<R | R2, E | E2, B>
 {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
 

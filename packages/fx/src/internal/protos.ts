@@ -1,11 +1,8 @@
-import type * as Channel from "effect/Channel"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
 import { identity } from "effect/Function"
 import * as Hash from "effect/Hash"
 import { pipeArguments } from "effect/Pipeable"
-import type * as StreamSink from "effect/Sink"
-import type * as Stream from "effect/Stream"
 
 import type { Fx, ToFx } from "@typed/fx/Fx"
 import { TypeId } from "@typed/fx/TypeId"
@@ -13,12 +10,6 @@ import { Effectable } from "effect"
 import * as Fiber from "effect/Fiber"
 import { NodeInspectSymbol } from "effect/Inspectable"
 import type { Inspectable } from "effect/Inspectable"
-
-export type ModuleAgumentedEffectKeysToOmit =
-  | TypeId
-  | keyof Stream.Stream<any, any, any>
-  | keyof StreamSink.Sink<any, any, any, any, any>
-  | keyof Channel.Channel<any, any, any, any, any, any, any>
 
 export const Variance: Fx<any, any, any>[TypeId] = {
   _R: identity,

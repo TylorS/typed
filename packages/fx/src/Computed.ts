@@ -7,7 +7,6 @@
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
 import { mapEffect, skipRepeats } from "@typed/fx/internal/core"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
@@ -74,7 +73,7 @@ export function Computed<R, E, A, R2, E2, B>(
 
 class ComputedImpl<R, E, A, R2, E2, B>
   extends VersionedTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2, B>
-  implements Omit<Computed<R | R2, E | E2, B>, ModuleAgumentedEffectKeysToOmit>
+  implements Computed<R | R2, E | E2, B>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 

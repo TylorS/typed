@@ -1,6 +1,5 @@
 import type * as Fx from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import type * as Versioned from "@typed/fx/Versioned"
 import { type ElementRef, ElementRefTypeId } from "@typed/template/ElementRef"
 import type { Placeholder } from "@typed/template/Placeholder"
@@ -31,9 +30,10 @@ export function TemplateInstance<T extends Rendered = Rendered, E = never>(
   return new TemplateInstanceImpl(events, ref) as any
 }
 
+// @ts-expect-error placeholder issues
 class TemplateInstanceImpl<E, T extends Rendered>
   extends FxEffectBase<never, E, RenderEvent, never, E | NoSuchElementException, T>
-  implements Omit<TemplateInstance<E, T>, keyof Placeholder<never, E, RenderEvent> | ModuleAgumentedEffectKeysToOmit>
+  implements Omit<TemplateInstance<E, T>, keyof Placeholder<never, E, RenderEvent>>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId = TemplateInstanceTypeId
 

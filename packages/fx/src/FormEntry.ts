@@ -8,7 +8,6 @@ import * as core from "@typed/fx/internal/core"
 import { RefSubjectImpl } from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { DeferredRef } from "@typed/fx/internal/deferred-ref"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as schemaEquivalence from "@typed/fx/internal/schema-equivalence"
 import { Sink } from "@typed/fx/Sink"
 import { RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
@@ -131,9 +130,7 @@ function makeDerivedFormEntry<R, E, I, O>(
     ) satisfies FormEntry.Derived<R, E, I, O>)
 }
 
-class FormEntryImpl<E, I, O> extends RefSubjectImpl<never, E | ParseError, I>
-  implements Omit<FormEntry<E, I, O>, ModuleAgumentedEffectKeysToOmit>
-{
+class FormEntryImpl<E, I, O> extends RefSubjectImpl<never, E | ParseError, I> implements FormEntry<E, I, O> {
   constructor(
     initial: Effect.Effect<never, E, I>,
     readonly name: PropertyKey,

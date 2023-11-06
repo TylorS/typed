@@ -15,7 +15,6 @@ import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { exit, fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
 import type * as Subject from "@typed/fx/Subject"
 import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
@@ -322,9 +321,7 @@ export function tagged(defaultEq?: Equivalence<any>): {
   return makeTagged
 }
 
-class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A>
-  implements Omit<RefSubject<I, E, A>, ModuleAgumentedEffectKeysToOmit>
-{
+class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements RefSubject<I, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 

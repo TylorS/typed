@@ -1,6 +1,5 @@
 import type { Fx } from "@typed/fx/Fx"
 import { succeed } from "@typed/fx/internal/core"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
@@ -34,7 +33,7 @@ export function versionedOf<A>(value: A): Versioned<never, never, never, A, neve
 }
 
 export class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectBase<R, E, A, R2, E2, B>
-  implements Omit<Versioned<R0, R, E, A, R2, E2, B>, ModuleAgumentedEffectKeysToOmit>
+  implements Versioned<R0, R, E, A, R2, E2, B>
 {
   constructor(
     readonly i0: Effect.Effect<R0, never, number>,
@@ -44,13 +43,13 @@ export class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectBase<R, E, A,
     super()
   }
 
-  protected toEffect(): Effect.Effect<R2, E2, B> {
-    return this.i2
-  }
+  version = this.i0
 
   protected toFx(): Fx<R, E, A> {
     return this.i1
   }
 
-  version = this.i0
+  protected toEffect(): Effect.Effect<R2, E2, B> {
+    return this.i2
+  }
 }

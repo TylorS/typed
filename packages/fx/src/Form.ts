@@ -8,7 +8,6 @@ import * as FormEntry from "@typed/fx/FormEntry"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import { from } from "@typed/fx/internal/schema-equivalence"
 import { hold } from "@typed/fx/internal/share"
 import type { RefSubject } from "@typed/fx/RefSubject"
@@ -67,11 +66,11 @@ export namespace Form {
 
   export type AnyEntries = Readonly<Record<PropertyKey, AnyEntry>>
 
-  export type Error<T> = T extends FormEntry.FormEntry<infer E, infer _I, infer _> ? E :
+  export type Error<T> = [T] extends [FormEntry.FormEntry<infer E, infer _I, infer _>] ? E :
     [T] extends [Base<infer _E, infer _I, infer _O, infer _Entries>] ? _E :
     never
 
-  export type Input<T> = T extends FormEntry.FormEntry<infer _E, infer I, infer _> ? I :
+  export type Input<T> = [T] extends [FormEntry.FormEntry<infer _E, infer I, infer _>] ? I :
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Input<Entries[K]>
       } :
@@ -80,7 +79,7 @@ export namespace Form {
       } :
     never
 
-  export type Output<T> = T extends FormEntry.FormEntry<infer _E, infer _I, infer O> ? O :
+  export type Output<T> = [T] extends [FormEntry.FormEntry<infer _E, infer _I, infer O>] ? O :
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Output<Entries[K]>
       } :
@@ -182,7 +181,7 @@ export function make<
 
 const parseOptions: ParseOptions = { errors: "all", onExcessProperty: "ignore" }
 
-// @ts-expect-error Unable to resolve the proper types
+// @ts-expect-error
 class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
   never,
   Form.Error<Entries> | ParseError,
@@ -190,7 +189,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
   never,
   Form.Error<Entries> | ParseError,
   Form.Input<Entries>
-> implements Omit<Form<Entries>, ModuleAgumentedEffectKeysToOmit> {
+> implements Form<Entries> {
   readonly [FormTypeId]: FormTypeId = FormTypeId
 
   constructor(readonly entries: Entries) {

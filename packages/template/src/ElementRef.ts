@@ -1,7 +1,6 @@
 import type { Fx } from "@typed/fx/Fx"
 import { compact } from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { ModuleAgumentedEffectKeysToOmit } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import { type ElementSource, ElementSourceImpl } from "@typed/template/ElementSource"
@@ -44,8 +43,10 @@ export function of<T extends Rendered>(rendered: T): Effect.Effect<never, never,
   )
 }
 
+// @ts-expect-error placeholder issues
 class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, never, NoSuchElementException, T>
-  implements Omit<ElementRef<T>, ModuleAgumentedEffectKeysToOmit | keyof Placeholder<any, any, any>>
+  implements
+    Omit<ElementRef<T>, keyof Placeholder<never, never, T> | keyof Placeholder<never, NoSuchElementException, T>>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
