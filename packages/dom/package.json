@@ -42,12 +42,12 @@
   "dependencies": {
     "effect": "2.0.0-next.54",
     "@effect/schema": "0.47.2",
-    "@typed/context": "0.0.0",
+    "@typed/context": "workspace:",
     "typed-query-selector": "^2.11.0"
   },
   "peerDependencies": {
     "effect": "2.0.0-next.54",
     "@effect/schema": "0.47.2",
-    "@typed/context": "0.0.0"
+    "@typed/context": "workspace:"
   }
 }
