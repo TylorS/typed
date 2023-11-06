@@ -45,10 +45,10 @@
     "typed-query-selector": "^2.11.0",
     "udomdiff": "^1.1.0",
     "@effect/schema": "0.47.2",
-    "@typed/context": "0.0.0",
-    "@typed/dom": "0.0.0",
-    "@typed/fx": "1.17.4",
-    "@typed/wire": "0.1.0"
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/wire": "workspace:*"
   },
   "peerDependencies": {
     "effect": "2.0.0-next.54"
