@@ -6,7 +6,7 @@
 // eslint-disable-next-line import/no-cycle
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
-import { mapEffect, skipRepeats } from "@typed/fx/internal/core"
+import * as core from "@typed/fx/internal/core"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
@@ -83,7 +83,17 @@ class ComputedImpl<R, E, A, R2, E2, B>
   ) {
     super(
       input,
-      (fx) => skipRepeats(mapEffect(fx, f)),
+      (fx) => {
+        const computed = core.skipRepeats(core.mapEffect(fx, f))
+
+        return core.suspend(() => {
+          if (Option.isSome(this._currentValue)) {
+            return core.startWith(computed, this._currentValue.value)
+          } else {
+            return computed
+          }
+        })
+      },
       Effect.flatMap(f)
     )
   }

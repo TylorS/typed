@@ -93,7 +93,17 @@ class FilteredImpl<R, E, A, R2, E2, B>
   ) {
     super(
       input,
-      (fx) => core.skipRepeats(core.compact(core.mapEffect(fx, f))),
+      (fx) => {
+        const computed = core.skipRepeats(core.compact(core.mapEffect(fx, f)))
+
+        return core.suspend(() => {
+          if (Option.isSome(this._currentValue)) {
+            return core.startWith(computed, this._currentValue.value)
+          } else {
+            return computed
+          }
+        })
+      },
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }
