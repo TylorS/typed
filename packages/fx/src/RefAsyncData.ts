@@ -13,11 +13,12 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Either, Option } from "effect"
-import type { Duration, Exit } from "effect"
+import type { Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
+import type { Scope } from "effect/Scope"
 
 /**
  * A RefAsyncData is a RefSubject that holds a AsyncData value.
@@ -112,38 +113,6 @@ export const runIfNoData: {
         const initial = yield* _(get)
 
         if (AsyncData.isNoData(initial) || (AsyncData.isFailure(initial) && Option.isNone(initial.refreshing))) {
-          yield* _(set(AsyncData.startLoading(initial)))
-          const exit = yield* _(Effect.exit(effect))
-          return yield* _(set(AsyncData.done(exit)))
-        }
-
-        return initial
-      }), (current) => Effect.sync(() => AsyncData.stopLoading(current)))
-)
-
-export const runIfOutdated: {
-  <R2, E, A>(
-    effect: Effect.Effect<R2, E, A>,
-    timeToLive: Duration.DurationInput
-  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
-
-  <R, E, A, R2>(
-    ref: RefAsyncData<R, E, A>,
-    effect: Effect.Effect<R2, E, A>,
-    timeToLive: Duration.DurationInput
-  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
-} = dual(
-  3,
-  <R, E, A, R2>(ref: RefAsyncData<R, E, A>, effect: Effect.Effect<R2, E, A>, timeToLive: Duration.DurationInput) =>
-    ref.runUpdate((get, set) =>
-      Effect.gen(function*(_) {
-        const initial = yield* _(get)
-
-        if (
-          AsyncData.isNoData(initial)
-          || ((AsyncData.isFailure(initial) || AsyncData.checkIsOutdated(initial, timeToLive)) &&
-            Option.isNone(initial.refreshing))
-        ) {
           yield* _(set(AsyncData.startLoading(initial)))
           const exit = yield* _(Effect.exit(effect))
           return yield* _(set(AsyncData.done(exit)))
@@ -378,7 +347,7 @@ export const matchKeyed: {
     Success extends Fx.FxInput<any, any, any>
   >(
     matchers: {
-      NoData: (data: NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
@@ -403,7 +372,7 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
     matchers: {
-      NoData: (data: NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
@@ -427,7 +396,7 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
     matchers: {
-      NoData: (data: NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: SuccessComputed) => Success
@@ -438,12 +407,8 @@ export const matchKeyed: {
     Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
   > =>
     Fx.matchTags(fx, {
-      NoData: (ref) => matchers.NoData({ timestamp: ref.map((r) => r.timestamp) }),
-      Loading: (ref) =>
-        matchers.Loading({
-          timestamp: ref.map((r) => r.timestamp),
-          progress: ref.filterMap((r) => r.progress)
-        }),
+      NoData: () => matchers.NoData(),
+      Loading: (ref) => matchers.Loading({ progress: ref.filterMap((r) => r.progress) }),
       Failure: (ref) =>
         matchers.Failure(
           ref.mapEffect(({ cause }) =>
@@ -451,7 +416,6 @@ export const matchKeyed: {
           ),
           {
             cause: ref.map((r) => r.cause),
-            timestamp: ref.map((r) => r.timestamp),
             refreshing: ref.filterMap((r) => r.refreshing)
           }
         ),
@@ -459,30 +423,22 @@ export const matchKeyed: {
         matchers.Success(
           ref.map((r) => r.value),
           {
-            timestamp: ref.map((r) => r.timestamp),
             refreshing: ref.filterMap((r) => r.refreshing)
           }
         )
     })
 )
 
-export type NoDataComputed = {
-  readonly timestamp: Computed.Computed<never, never, bigint>
-}
-
 export type LoadingComputed = {
-  readonly timestamp: Computed.Computed<never, never, bigint>
   readonly progress: Filtered.Filtered<never, never, Progress>
 }
 
 export type FailureComputed<E> = {
   readonly cause: Computed.Computed<never, never, Cause.Cause<E>>
-  readonly timestamp: Computed.Computed<never, never, bigint>
   readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
 }
 
 export type SuccessComputed = {
-  readonly timestamp: Computed.Computed<never, never, bigint>
   readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
 }
 
@@ -491,3 +447,7 @@ export const getFailure = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filter
 
 export const getSuccess = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filtered<R, never, A> =>
   ref.filterMap(AsyncData.getSuccess)
+
+export type AsyncDataCache<K, E, A> = {
+  readonly get: (key: K) => Effect.Effect<Scope, never, RefAsyncData<never, E, A>>
+}

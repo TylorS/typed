@@ -9,19 +9,15 @@ import * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 
-export interface WithKeyOptions<A, B> {
-  (a: A): B
-}
-
-export function withKey<R, E, A, R2, E2, B, C>(
+export function withKey<R, E, A, B, R2, E2, C>(
   fx: Fx<R, E, A>,
-  onValue: (ref: RefSubject.RefSubject<never, never, A>, key: C) => FxInput<R2, E2, B>,
-  getKey: WithKeyOptions<A, C>
-): Fx<R | R2, E | E2, B> {
+  getKey: (a: A) => B,
+  onValue: (ref: RefSubject.RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
+): Fx<R | R2, E | E2, C> {
   return core.withScopedFork(({ fork, scope, sink }) =>
     Effect.gen(function*(_) {
       let current: Option.Option<
-        [C, { value: A }, RefSubject.RefSubject<never, never, A>, Fiber.Fiber<never, unknown>]
+        [B, { value: A }, RefSubject.RefSubject<never, never, A>, Fiber.Fiber<never, unknown>]
       > = Option.none()
 
       const lock = (yield* _(Effect.makeSemaphore(1))).withPermits(1)

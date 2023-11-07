@@ -4,7 +4,7 @@ import * as ParseResult from "@effect/schema/ParseResult"
 import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
 import * as AsyncData from "@typed/async-data/AsyncData"
-import { Cause, Chunk, Duration, Effect, FiberId, HashSet } from "effect"
+import { Cause, Chunk, Effect, FiberId, HashSet } from "effect"
 import * as Option from "effect/Option"
 
 const fiberIdArbitrary: Arbitrary.Arbitrary<FiberId.FiberId> = (fc) =>
@@ -81,27 +81,17 @@ export const cause = <EI, E>(error: Schema.Schema<EI, E>): Schema.Schema<Cause.C
   return self
 }
 
-const prettyTimestamp = (timestamp: bigint): string => {
-  const ms = Duration.toMillis(Duration.nanos(timestamp))
-
-  return new Date(ms).toUTCString()
-}
-
 const asyncDataPretty = <E, A>(
   prettyCause: Pretty.Pretty<Cause.Cause<E>>,
   prettyValue: Pretty.Pretty<A>
 ): Pretty.Pretty<AsyncData.AsyncData<E, A>> =>
   AsyncData.match({
     NoData: () => `AsyncData.NoData`,
-    Loading: (loading) => `AsyncData.Loading(timestamp=${prettyTimestamp(loading.timestamp)})`,
+    Loading: () => `AsyncData.Loading`,
     Failure: (cause, data) =>
-      `AsyncData.Failure(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
-        Option.isSome(data.refreshing)
-      }, cause=${prettyCause(cause)})`,
+      `AsyncData.Failure(refreshing=${Option.isSome(data.refreshing)}, cause=${prettyCause(cause)})`,
     Success: (value, data) =>
-      `AsyncData.Success(timestamp=${prettyTimestamp(data.timestamp)}, refreshing=${
-        Option.isSome(data.refreshing)
-      }, value=${prettyValue(value)})`
+      `AsyncData.Success(refreshing=${Option.isSome(data.refreshing)}, value=${prettyValue(value)})`
   })
 
 const asyncDataArbitrary = <E, A>(
@@ -143,7 +133,6 @@ export const asyncData = <EI, E, AI, A>(
               const cause = yield* _(parseCause(input.cause, options))
 
               return AsyncData.failCause(cause, {
-                timestamp: input.timestamp,
                 refreshing: Option.getOrUndefined(input.refreshing)
               })
             }
@@ -151,7 +140,6 @@ export const asyncData = <EI, E, AI, A>(
               const a = yield* _(parseValue(input.value, options))
 
               return AsyncData.success(a, {
-                timestamp: input.timestamp,
                 refreshing: Option.getOrUndefined(input.refreshing)
               })
             }

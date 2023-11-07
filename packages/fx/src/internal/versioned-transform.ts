@@ -10,7 +10,7 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
   implements Versioned<R0, R3, E3, C, R0 | R4, E4, D>
 {
   private _version = 0
-  private _currentValue: Option.Option<D> = Option.none()
+  protected _currentValue: Option.Option<D> = Option.none()
 
   constructor(
     readonly input: Versioned<R0, R, E, A, R2, E2, B>,

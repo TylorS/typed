@@ -2,7 +2,7 @@ import * as internal from "@typed/async-data/internal/async-data"
 import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "@typed/async-data/internal/tag"
 import * as Progress from "@typed/async-data/Progress"
 import type { Effect } from "effect"
-import { Cause, Data, Duration, Equal, Equivalence, Exit, Option, Unify } from "effect"
+import { Cause, Data, Equal, Equivalence, Exit, Option, Unify } from "effect"
 import { dual } from "effect/Function"
 
 export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A>
@@ -37,32 +37,24 @@ export namespace AsyncData {
   }
 }
 
-export interface NoDataOptions {
-  readonly timestamp: bigint // Clock.currentTimeNanos
-}
-
-export class NoData extends Data.TaggedError(NO_DATA_TAG)<NoDataOptions> {
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
+  readonly [Unify.typeSymbol]!: unknown
+  readonly [Unify.unifySymbol]!: AsyncData.Unify<this>
+  readonly [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
 }
 
 export const noData: {
   (): NoData
   <E, A>(): AsyncData<E, A>
-} = (options?: NoDataOptions): NoData =>
-  new NoData({
-    timestamp: options?.timestamp ?? internal.currentTimestamp()
-  })
+} = (): NoData => new NoData()
 
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+  readonly [Unify.typeSymbol]!: unknown
+  readonly [Unify.unifySymbol]!: AsyncData.Unify<this>
+  readonly [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
 }
 
 export type LoadingOptions = {
-  readonly timestamp: bigint // Clock.currentTimeNanos
   readonly progress: Option.Option<Progress.Progress>
 }
 
@@ -75,14 +67,12 @@ export const loading: {
   <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
 } = (options?: OptionalPartial<LoadingOptions>): Loading =>
   new Loading({
-    timestamp: options?.timestamp || internal.currentTimestamp(),
     progress: Option.fromNullable(options?.progress)
   })
 
 export interface Failure<E> extends Effect.Effect<never, E, never> {
   readonly _tag: typeof FAILURE_TAG
   readonly cause: Cause.Cause<E>
-  readonly timestamp: bigint // Clock.currentTimeNanos
   readonly refreshing: Option.Option<Loading>
 
   readonly [Unify.typeSymbol]: unknown
@@ -91,7 +81,6 @@ export interface Failure<E> extends Effect.Effect<never, E, never> {
 }
 
 export type FailureOptions = {
-  readonly timestamp: bigint // Clock.currentTimeNanos
   readonly refreshing: Option.Option<Loading>
 }
 
@@ -101,7 +90,6 @@ export const failCause: {
 } = <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E> =>
   new internal.FailureImpl(
     cause,
-    options?.timestamp || internal.currentTimestamp(),
     Option.fromNullable(options?.refreshing)
   )
 
@@ -113,12 +101,10 @@ export const fail: {
 export interface Success<A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
-  readonly timestamp: bigint // Clock.currentTimeNanos
   readonly refreshing: Option.Option<Loading>
 }
 
 export type SuccessOptions = {
-  readonly timestamp: bigint // Clock.currentTimeNanos
   readonly refreshing: Option.Option<Loading>
 }
 
@@ -128,7 +114,6 @@ export const success: {
 } = <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A> =>
   new internal.SuccessImpl(
     value,
-    options?.timestamp || internal.currentTimestamp(),
     Option.fromNullable(options?.refreshing)
   )
 
@@ -198,7 +183,6 @@ export const map: {
 } = dual(2, function<E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B> {
   return isSuccess(data) ?
     success(f(data.value), {
-      timestamp: data.timestamp,
       refreshing: Option.getOrUndefined(data.refreshing)
     }) :
     data
@@ -231,15 +215,11 @@ export const startLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
 
 export const stopLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
   if (isSuccess(data)) {
-    return Option.isSome(data.refreshing)
-      ? success(data.value, { ...data, refreshing: undefined }) :
-      data
+    return Option.isSome(data.refreshing) ? success(data.value) : data
   } else if (isFailure(data)) {
-    return Option.isSome(data.refreshing)
-      ? failCause(data.cause, { ...data, refreshing: undefined })
-      : data
+    return Option.isSome(data.refreshing) ? failCause(data.cause) : data
   } else {
-    return loading()
+    return noData()
   }
 }
 
@@ -251,24 +231,6 @@ export const done = <E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> =>
     onSuccess: (value) => success(value)
   })
 
-export const checkIsOutdated = <E, A>(
-  data: AsyncData<E, A>,
-  timeToLive: Duration.DurationInput,
-  currentTime?: bigint
-): data is Success<A> => {
-  if (isSuccess(data)) {
-    if (currentTime === undefined) {
-      currentTime = internal.currentTimestamp()
-    }
-    const updatedTime = data.timestamp
-    const difference = Duration.nanos(currentTime - updatedTime)
-
-    return Duration.greaterThanOrEqualTo(difference, timeToLive)
-  }
-
-  return false
-}
-
 export const getFailure = <E, A>(data: AsyncData<E, A>): Option.Option<E> =>
   isFailure(data) ? Cause.failureOption(data.cause) : Option.none()
 
@@ -279,7 +241,6 @@ const optionProgressEq = Option.getEquivalence(Progress.equals)
 
 const loadingEquivalence: Equivalence.Equivalence<Loading> = Equivalence.struct({
   _tag: Equivalence.string,
-  timestamp: Equivalence.bigint,
   progress: optionProgressEq
 })
 
@@ -288,7 +249,6 @@ const optionLoadingEq = Option.getEquivalence(loadingEquivalence)
 const failureEquivalence: Equivalence.Equivalence<Failure<any>> = Equivalence.struct({
   _tag: Equivalence.string,
   cause: Equal.equals,
-  timestamp: Equivalence.bigint,
   refreshing: optionLoadingEq
 })
 
@@ -296,7 +256,6 @@ const successEquivalence = <A>(valueEq: Equivalence.Equivalence<A>): Equivalence
   Equivalence.struct({
     _tag: Equivalence.string,
     value: valueEq,
-    timestamp: Equivalence.bigint,
     refreshing: optionLoadingEq
   })
 
@@ -305,15 +264,9 @@ export const getEquivalence =
     if (a === b) return true
 
     return match(a, {
-      NoData: () => isNoData(b) ? Equivalence.bigint(a.timestamp, b.timestamp) : false,
+      NoData: () => isNoData(b),
       Loading: (l1) => isLoading(b) ? loadingEquivalence(l1, b) : false,
-      Failure: (_, f1) =>
-        isFailure(b)
-          ? failureEquivalence(f1, b)
-          : false,
-      Success: (_, s1) =>
-        isSuccess(b)
-          ? successEquivalence(valueEq)(s1, b)
-          : false
+      Failure: (_, f1) => isFailure(b) ? failureEquivalence(f1, b) : false,
+      Success: (_, s1) => isSuccess(b) ? successEquivalence(valueEq)(s1, b) : false
     })
   }

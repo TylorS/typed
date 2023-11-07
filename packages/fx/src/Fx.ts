@@ -2429,25 +2429,25 @@ export const keyed: {
  * @category combinators
  */
 export const withKey: {
-  <A, R2, E2, B, C>(
+  <A, B, R2, E2, C>(
+    getKey: (a: A) => B,
     f: (
       ref: RefSubject<never, never, A>,
-      key: C
-    ) => FxInput<R2, E2, B>,
-    getKey: internalWithKey.WithKeyOptions<A, C>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
+      key: B
+    ) => FxInput<R2, E2, C>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, C>
 
-  <R, E, A, R2, E2, B, C>(
+  <R, E, A, B, R2, E2, C>(
     fx: Fx<R, E, A>,
+    getKey: (a: A) => B,
     f: (
       ref: RefSubject<never, never, A>,
-      key: C
-    ) => FxInput<R2, E2, B>,
-    getKey: internalWithKey.WithKeyOptions<A, C>
-  ): Fx<R | R2, E | E2, B>
+      key: B
+    ) => FxInput<R2, E2, C>
+  ): Fx<R | R2, E | E2, C>
 } = dual(3, internalWithKey.withKey)
 
-const tagOptions = (a: { readonly _tag: string }): string => a._tag
+const getTag = (a: { readonly _tag: string }): string => a._tag
 
 /**
  * Match over a tagged union of values into a set of persistent workflows
@@ -2484,7 +2484,7 @@ export const matchTags: {
     E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
     Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
   > {
-    return withKey(fx, (ref, tag: A["_tag"]) => matchers[tag](ref as any), tagOptions)
+    return withKey(fx, getTag, (ref, tag: A["_tag"]) => matchers[tag](ref as any))
   }
 )
 
