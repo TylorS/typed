@@ -147,10 +147,10 @@ describe.concurrent(__filename, () => {
       let calls = 0
 
       const test = source.pipe(
-        Fx.withKey((ref) => {
+        Fx.withKey((f) => f.id, (ref) => {
           calls++
           return Fx.map(ref, (x): Foo => ({ ...x, value: x.value + 1 }))
-        }, (f) => f.id),
+        }),
         Fx.toReadonlyArray
       )
 
