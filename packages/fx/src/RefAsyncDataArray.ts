@@ -101,7 +101,7 @@ export const matchKeyed: {
       NoData: matchers.NoData,
       Loading: matchers.Loading,
       Failure: matchers.Failure,
-      Success: (ref, computed) => Fx.keyed(ref, (ref) => matchers.Success(ref, computed), getKey)
+      Success: (ref, computed) => Fx.keyed(ref, getKey, (ref) => matchers.Success(ref, computed))
     }) as any
   }
 )

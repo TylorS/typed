@@ -14,11 +14,11 @@ import * as Option from "effect/Option"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Scope from "effect/Scope"
 
-export function keyed<R, E, A, R2, E2, B, C>(
+export function keyed<R, E, A, B, R2, E2, C>(
   fx: Fx.Fx<R, E, ReadonlyArray<A>>,
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx.FxInput<R2, E2, B>,
-  getKey: (a: A) => C
-): Fx.Fx<R | R2, E | E2, ReadonlyArray<B>> {
+  getKey: (a: A) => B,
+  f: (fx: RefSubject<never, never, A>, key: B) => Fx.FxInput<R2, E2, C>
+): Fx.Fx<R | R2, E | E2, ReadonlyArray<C>> {
   return withScopedFork(({ fork, scope, sink }) =>
     Effect.gen(function*($) {
       const state = createKeyedState<A, B, C>()
@@ -58,13 +58,13 @@ export function keyed<R, E, A, R2, E2, B, C>(
 
 type KeyedState<A, B, C> = {
   previous: ReadonlyArray<A>
-  previousKeys: ReadonlySet<C>
+  previousKeys: ReadonlySet<B>
 
-  readonly subjects: MutableHashMap.MutableHashMap<C, RefSubject<never, never, A>>
-  readonly initialValues: MutableHashMap.MutableHashMap<C, A>
-  readonly fibers: MutableHashMap.MutableHashMap<C, Fiber.RuntimeFiber<never, void>>
-  readonly values: MutableHashMap.MutableHashMap<C, B>
-  readonly output: Subject<never, never, ReadonlyArray<B>>
+  readonly subjects: MutableHashMap.MutableHashMap<B, RefSubject<never, never, A>>
+  readonly initialValues: MutableHashMap.MutableHashMap<B, A>
+  readonly fibers: MutableHashMap.MutableHashMap<B, Fiber.RuntimeFiber<never, void>>
+  readonly values: MutableHashMap.MutableHashMap<B, C>
+  readonly output: Subject<never, never, ReadonlyArray<C>>
 }
 
 function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
@@ -75,7 +75,7 @@ function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
     initialValues: MutableHashMap.empty(),
     fibers: MutableHashMap.empty(),
     values: MutableHashMap.empty(),
-    output: makeHoldSubject<never, ReadonlyArray<B>>()
+    output: makeHoldSubject<never, ReadonlyArray<C>>()
   }
 }
 
@@ -91,12 +91,12 @@ function updateState<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   updated: ReadonlyArray<A>
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx.Fx<R2, E2, B>
+  f: (fx: RefSubject<never, never, A>, key: B) => Fx.Fx<R2, E2, C>
   fork: Fx.ScopedFork
   scope: Scope.Scope
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => C
+  getKey: (a: A) => B
 }): Effect.Effect<Exclude<R2 | R3, Scope.Scope>, never, void> {
   return Effect.provideService(
     Effect.gen(function*($) {
@@ -134,13 +134,13 @@ function updateState<A, B, C, R2, E2, R3>({
 function diffValues<A, B, C>(
   state: KeyedState<A, B, C>,
   updated: ReadonlyArray<A>,
-  getKey: (a: A) => C
+  getKey: (a: A) => B
 ) {
   const added: Array<A> = []
   const unchanged: Array<A> = []
-  const removed: Array<C> = []
+  const removed: Array<B> = []
   const previousKeys = state.previousKeys
-  const keys = new Set<C>(updated.map(getKey))
+  const keys = new Set<B>(updated.map(getKey))
 
   for (let i = 0; i < updated.length; ++i) {
     const value = updated[i]
@@ -169,7 +169,7 @@ function diffValues<A, B, C>(
   } as const
 }
 
-function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: C) {
+function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: B) {
   return Effect.gen(function*($) {
     const subject = MutableHashMap.get(state.subjects, key)
 
@@ -196,11 +196,11 @@ function addValue<A, B, C, R2, E2, R3>({
 }: {
   state: KeyedState<A, B, C>
   value: A
-  f: (fx: RefSubject<never, never, A>, key: C) => Fx.Fx<R2, E2, B>
+  f: (fx: RefSubject<never, never, A>, key: B) => Fx.Fx<R2, E2, C>
   fork: Fx.ScopedFork
   emit: Effect.Effect<never, never, void>
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => C
+  getKey: (a: A) => B
 }) {
   return Effect.suspend(() => {
     const key = getKey(value)
@@ -220,9 +220,9 @@ function addValue<A, B, C, R2, E2, R3>({
             f(subject, key),
             WithContext(
               error,
-              (b: B) =>
+              (c: C) =>
                 Effect.suspend(() => {
-                  MutableHashMap.set(state.values, key, b)
+                  MutableHashMap.set(state.values, key, c)
                   return emit
                 })
             )
@@ -240,7 +240,7 @@ function addValue<A, B, C, R2, E2, R3>({
   })
 }
 
-function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => C) {
+function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => B) {
   return Effect.gen(function*($) {
     const key = getKey(value)
     const subject = MutableHashMap.get(state.subjects, key)
@@ -255,7 +255,7 @@ function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: 
   })
 }
 
-function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => C) {
+function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => B) {
   return Effect.suspend(() => {
     // Fast path: if we don't have enough values, don't emit
     if (MutableHashMap.size(state.values) !== state.previous.length) {

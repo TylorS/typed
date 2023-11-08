@@ -32,7 +32,7 @@ export function renderToHtml<R, E>(
     RenderContext.with((ctx) =>
       Fx.map(Fx.provide(fx, RenderTemplate.layer(renderHtml(ctx))), toHtml).pipe(
         Fx.startWith(TYPED_START),
-        Fx.continueWith(() => Fx.succeed(TYPED_END))
+        Fx.endWith(TYPED_END)
       )
     )
   )

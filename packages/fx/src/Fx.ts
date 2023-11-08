@@ -2402,22 +2402,22 @@ export const partitionMap: {
  * @category combinators
  */
 export const keyed: {
-  <A, R2, E2, B, C>(
+  <A, B, R2, E2, C>(
+    getKey: (a: A) => B,
     f: (
       ref: RefSubject<never, never, A>,
-      key: C
-    ) => FxInput<R2, E2, B>,
-    getKey: (a: A) => C
-  ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<B>>
+      key: B
+    ) => FxInput<R2, E2, C>
+  ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<C>>
 
-  <R, E, A, R2, E2, B, C>(
+  <R, E, A, B, R2, E2, C>(
     fx: Fx<R, E, ReadonlyArray<A>>,
+    getKey: (a: A) => B,
     f: (
       ref: RefSubject<never, never, A>,
-      key: C
-    ) => FxInput<R2, E2, B>,
-    getKey: (a: A) => C
-  ): Fx<R | R2, E | E2, ReadonlyArray<B>>
+      key: B
+    ) => FxInput<R2, E2, C>
+  ): Fx<R | R2, E | E2, ReadonlyArray<C>>
 } = dual(3, internalKeyed.keyed)
 
 /**
