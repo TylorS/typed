@@ -19,7 +19,7 @@ import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subj
 import type * as Subject from "@typed/fx/Subject"
 import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
-import type { Stream } from "effect"
+import type { Stream, SubscriptionRef } from "effect"
 import { Cause, Exit, identity } from "effect"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
@@ -552,3 +552,9 @@ export const struct: <const REFS extends Readonly<Record<PropertyKey, RefSubject
   RefSubject.Error<REFS[string]>,
   { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
 > = coreRefSubject.struct
+
+export function fromSubscriptionRef<A>(
+  subscriptionRef: SubscriptionRef.SubscriptionRef<A>
+): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
+  return coreRefSubject.make(subscriptionRef.changes)
+}

@@ -33,7 +33,7 @@ export const matchKeyed: {
     B
   >(
     matchers: {
-      NoData: (data: RefAsyncData.NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success
@@ -60,7 +60,7 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
     matchers: {
-      NoData: (data: RefAsyncData.NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success
@@ -86,7 +86,7 @@ export const matchKeyed: {
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
     matchers: {
-      NoData: (data: RefAsyncData.NoDataComputed) => NoData
+      NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success

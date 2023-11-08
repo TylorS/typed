@@ -1,4 +1,5 @@
 import type { AST } from "@effect/schema"
+import * as SchemaEquivalence from "@effect/schema/Equivalence"
 import * as Schema from "@effect/schema/Schema"
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import { from, map } from "@typed/fx/internal/core"
@@ -10,7 +11,6 @@ import { Option } from "effect"
 import * as Effect from "effect/Effect"
 import type * as Equivalence from "effect/Equivalence"
 import type * as Scope from "effect/Scope"
-import * as SchemaEquivalence from "./schema-equivalence"
 
 const makeSchema = <O>(
   f: <R, E>(
@@ -36,7 +36,7 @@ const defaultSchema = <O>(defaultEq?: Equivalence.Equivalence<O>) =>
 
 const go = <O>(
   ast: AST.AST,
-  defaultEq: Equivalence.Equivalence<O> = SchemaEquivalence.go(ast)
+  getDefaultEq: (ast: AST.AST) => Equivalence.Equivalence<O>
 ): MakeRefSubject<O> => {
   switch (ast._tag) {
     case "AnyKeyword":
@@ -56,25 +56,25 @@ const go = <O>(
     case "UnknownKeyword":
     case "VoidKeyword":
     case "Union": // TODO: Union should probably be better somehow
-      return defaultSchema<O>(defaultEq)
+      return defaultSchema<O>(getDefaultEq(ast))
     case "Lazy": {
-      const get = memoizeThunk(() => go<O>(ast.f(), defaultEq))
+      const get = memoizeThunk(() => go<O>(ast.f(), getDefaultEq))
 
       return makeSchema((input, eq) => get()(input, eq))
     }
     case "Refinement":
-      return go(ast.from)
+      return go(ast.from, getDefaultEq)
     case "Transform":
-      return go(ast.to)
+      return go(ast.to, getDefaultEq)
     case "Declaration":
-      return go(ast.type)
+      return go(ast.type, getDefaultEq)
     case "TypeLiteral": {
       if (ast.propertySignatures.length === 0) {
-        return defaultSchema<O>(defaultEq)
+        return defaultSchema<O>(getDefaultEq(ast))
       }
 
       const propertySignaturesTypes = ast.propertySignatures.map((propertySignature) =>
-        [propertySignature.name, go<any>(propertySignature.type)] as const
+        [propertySignature.name, go<any>(propertySignature.type, getDefaultEq)] as const
       )
 
       const makeSubjects = <R, E>(inputs: Record<PropertyKey, FxInput<R, E, any>>) =>
@@ -140,11 +140,11 @@ const go = <O>(
 }
 
 export function fromRefSubject<I, O>(source: Schema.Schema<I, O>): MakeRefSubject<I> {
-  return go<I>(Schema.from(source).ast, SchemaEquivalence.from(source))
+  return go<I>(Schema.from(source).ast, (ast) => SchemaEquivalence.from(Schema.make(ast)))
 }
 
 export function toRefSubject<I, O>(source: Schema.Schema<I, O>): MakeRefSubject<O> {
-  return go<O>(Schema.to(source).ast, SchemaEquivalence.to(source))
+  return go<O>(Schema.to(source).ast, (ast) => SchemaEquivalence.to(Schema.make(ast)))
 }
 
 const rebuild = (subjects: Record<PropertyKey, any>) => {

@@ -8,11 +8,12 @@ import { fromFxEffect } from "@typed/fx/internal/fx"
 import { matchFxInput } from "@typed/fx/internal/matchers"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import { run } from "@typed/fx/internal/run"
+import { share } from "@typed/fx/internal/share"
 import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
-import { Ref } from "effect"
+import { Ref, SubscriptionRef } from "effect"
 import { type Cause, isInterrupted } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -20,6 +21,7 @@ import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
 import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
+import { sum } from "effect/Number"
 import * as Option from "effect/Option"
 import { getEquivalence } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
@@ -472,9 +474,28 @@ export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubjec
       ...sink,
       subscriberCount: Effect.map(
         Effect.all(values.map((ref) => ref.subscriberCount), UNBOUNDED),
-        (counts) => counts.reduce((a, b) => a + b, 0)
+        (counts) => counts.reduce(sum, 0)
       ),
       interrupt: Effect.all(values.map((ref) => ref.interrupt), UNBOUNDED)
     }
   )
+}
+
+export function fromSubscriptionRef<A>(
+  subscriptionRef: SubscriptionRef.SubscriptionRef<A>
+): RefSubject.Derived<never, never, never, A> {
+  const effect = SubscriptionRef.get(subscriptionRef)
+  const subject = makeHoldSubject<never, A>()
+  const fx = share(core.fromStream(subscriptionRef.changes), subject)
+  const ref: RefSubject<never, never, A> = unsafeMake(effect, {
+    ...fx,
+    onSuccess: subject.onSuccess,
+    onFailure: subject.onFailure,
+    subscriberCount: subject.subscriberCount,
+    interrupt: subject.interrupt
+  })
+
+  return Object.assign(ref, {
+    persist: ref.updateEffect((value) => SubscriptionRef.setAndGet(subscriptionRef, value))
+  })
 }

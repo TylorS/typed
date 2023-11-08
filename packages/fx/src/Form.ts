@@ -1,5 +1,6 @@
 import { AST } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
+import { from } from "@effect/schema/Equivalence"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import type { Filtered } from "@typed/fx"
@@ -8,7 +9,6 @@ import * as FormEntry from "@typed/fx/FormEntry"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { FxEffectBase } from "@typed/fx/internal/protos"
-import { from } from "@typed/fx/internal/schema-equivalence"
 import { hold } from "@typed/fx/internal/share"
 import type { RefSubject } from "@typed/fx/RefSubject"
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
@@ -108,7 +108,7 @@ export type MakeForm<
   <R, E>(fx: RefSubject<R, E, O>): Effect.Effect<
     R | Scope.Scope,
     never,
-    [DerviedFromIO<R, E, I, O>] extends [Form.Derived<infer R, infer R2>] ? Form.Derived<R, R2> : never
+    [DerivedFromIO<R, E, I, O>] extends [Form.Derived<infer R, infer R2>] ? Form.Derived<R, R2> : never
   >
 
   <R, E>(fx: Fx<R, E, O>): Effect.Effect<
@@ -149,7 +149,7 @@ export type FormEntriesFromIO<
     FormEntry.FormEntry<E, I[K], O[K]>
 }
 
-export type DerviedFromIO<
+export type DerivedFromIO<
   R,
   E,
   I extends Readonly<Record<PropertyKey, any>>,
