@@ -93,7 +93,7 @@ export const run: {
         yield* _(set(AsyncData.startLoading(initial)))
         const exit = yield* _(Effect.exit(effect))
         return yield* _(set(AsyncData.done(exit)))
-      }), (current) => Effect.sync(() => AsyncData.stopLoading(current)))
+      }), (current) => Effect.succeed(AsyncData.stopLoading(current)))
 )
 
 export const runIfNoData: {
@@ -119,7 +119,7 @@ export const runIfNoData: {
         }
 
         return initial
-      }), (current) => Effect.sync(() => AsyncData.stopLoading(current)))
+      }), (current) => Effect.succeed(AsyncData.stopLoading(current)))
 )
 
 export const runRepeat: {
