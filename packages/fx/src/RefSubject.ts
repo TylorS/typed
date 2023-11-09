@@ -78,7 +78,15 @@ export interface RefSubject<R, in out E, in out A> extends Computed<R, E, A>, Su
   ) => Effect.Effect<R | R2, E | E2, B>
 
   /**
+   * Modify the current value of this RefSubject using the provided effectful function.
+   * @since 1.18.0
+   */
+  readonly updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<R | R2, E | E2, A>
+
+  /**
    * Modify the current value of this RefSubject and compute a new value using the provided effectful function.
+   * The key difference is it will allow running a workflow and setting the value multiple times. Optionally,
+   * another function can be provided to change the value
    * @since 1.18.0
    */
   readonly runUpdate: <R2, E2, B, R3 = never, E3 = never>(
@@ -86,60 +94,8 @@ export interface RefSubject<R, in out E, in out A> extends Computed<R, E, A>, Su
       get: RefSubject<R, E, A>["get"],
       set: RefSubject<R, E, A>["set"]
     ) => Effect.Effect<R2, E2, B>,
-    onInterrupt?: (current: A) => Effect.Effect<R3, E3, A>
+    onInterrupt?: (a: A) => Effect.Effect<R3, E3, A>
   ) => Effect.Effect<R | R2 | R3, E | E2 | E3, B>
-
-  /**
-   * Modify the current value of this RefSubject using the provided effectful function.
-   * @since 1.18.0
-   */
-  readonly updateEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, A>) => Effect.Effect<R | R2, E | E2, A>
-
-  /**
-   * Map the current value of this Computed to a new value using an Effect
-   * @since 1.18.0
-   */
-  readonly mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R | R2, E | E2, B>
-
-  /**
-   * Map the current value of this Computed to a new value
-   * @since 1.18.0
-   */
-  readonly map: <B>(f: (a: A) => B) => Computed<R, E, B>
-
-  /**
-   * Map the current value of this Filtered to a new value using an Effect
-   * @since 1.18.0
-   */
-  readonly filterMapEffect: <R2, E2, B>(
-    f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
-  ) => Filtered<R | R2, E | E2, B>
-
-  /**
-   * Map the current value of this Filtered to a new value
-   * @since 1.18.0
-   */
-  readonly filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B>
-
-  /**
-   * Filter the current value of this Filtered to a new value using an Effect
-   */
-  readonly filterEffect: <R2, E2>(
-    f: (a: A) => Effect.Effect<R2, E2, boolean>
-  ) => Filtered<R | R2, E | E2, A>
-
-  /**
-   * Filter the current value of this Filtered to a new value
-   * @since 1.18.0
-   */
-  readonly filter: (f: (a: A) => boolean) => Filtered<R, E, A>
-
-  /**
-   * A monotonic version number that is incremented every time the value of this RefSubject changes.
-   * It is reset to 0 when the RefSubject is deleted.
-   * @since 1.18.0
-   */
-  readonly version: Effect.Effect<R, never, number>
 
   /**
    * Interrupt the current Fibers.
