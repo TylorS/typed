@@ -123,24 +123,25 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 
   readonly runUpdate: RefSubject<R, E, A>["runUpdate"] = (updates, onInterrupt) =>
     Effect.uninterruptibleMask((restore) =>
-      updates(this.get, (a) =>
-        this.get.pipe(
-          Effect.matchCauseEffect({
-            onFailure: () => Effect.zipRight(this.setValue(a), this.emitValue(a)),
-            onSuccess: (current) =>
-              this.eq(current, a) ? this.setValue(a) : Effect.zipRight(this.setValue(a), this.emitValue(a))
-          }),
-          Effect.as(a)
-        )).pipe(
-          this._lock,
-          restore,
-          Effect.tapErrorCause(
-            (cause) =>
-              onInterrupt && isInterrupted(cause)
-                ? Effect.flatMap(this.get, onInterrupt)
-                : Effect.unit
-          )
+      updates(this.get, this.setUnlocked).pipe(
+        this._lock,
+        restore,
+        Effect.tapErrorCause(
+          (cause) =>
+            onInterrupt && isInterrupted(cause)
+              ? Effect.flatMap(this.get, onInterrupt)
+              : Effect.unit
         )
+      )
+    )
+
+  private setUnlocked = (a: A) =>
+    this.get.pipe(
+      Effect.matchCauseEffect({
+        onFailure: () => Effect.zipLeft(this.setValue(a), this.emitValue(a)),
+        onSuccess: (current) =>
+          this.eq(current, a) ? this.setValue(a) : Effect.zipLeft(this.setValue(a), this.emitValue(a))
+      })
     )
 
   readonly set = (a: A) =>
