@@ -16,8 +16,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.27.2",
-    "@effect/platform-node": "^0.28.2",
+    "@effect/platform": "^0.27.4",
+    "@effect/platform-node": "^0.28.4",
     "@typed/fx": "workspace:*",
     "@typed/template": "workspace:*",
     "effect": "2.0.0-next.54"

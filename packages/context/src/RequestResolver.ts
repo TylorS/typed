@@ -35,16 +35,6 @@ export interface RequestResolver<
     ) => Array<Request.Success<Requests[keyof Requests]>>
   ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
 
-  readonly fromFunctionEffect: <R>(
-    f: (
-      req: Request.Req<Requests[keyof Requests]>
-    ) => Effect.Effect<
-      R,
-      Request.Error<Requests[keyof Requests]>,
-      Request.Success<Requests[keyof Requests]>
-    >
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
-
   readonly make: <R>(
     f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<R, never, void>
   ) => Layer.Layer<R, never, Id>
@@ -114,8 +104,6 @@ export function RequestResolver<
     const layerWithContext = <R = never>(f: () => RR.RequestResolver<_Req, R>) =>
       provideMerge(Layer.effect(tag, Effect.contextWith((ctx: Context<R>) => RR.provideContext(f(), ctx))))
 
-    const fromFunctionEffect: _Resolver["fromFunctionEffect"] = (f) => layerWithContext(() => RR.fromFunctionEffect(f))
-
     const make: _Resolver["make"] = (f) => layerWithContext(() => RR.make(f))
 
     const makeBatched: _Resolver["makeBatched"] = (f) => layerWithContext(() => RR.makeBatched(f))
@@ -126,7 +114,6 @@ export function RequestResolver<
       requests: derivedRequests,
       fromFunction,
       fromFunctionBatched,
-      fromFunctionEffect,
       make,
       makeBatched,
       makeWithEntry

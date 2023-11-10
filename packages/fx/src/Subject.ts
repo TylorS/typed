@@ -97,6 +97,9 @@ export function tagged<E, A>(): {
 }
 
 class ContextImpl<I, E, A> extends ToFx<I, E, A> implements Subject.Tagged<I, E, A> {
+  interrupt: Subject.Tagged<I, E, A>["interrupt"]
+  subscriberCount: Subject.Tagged<I, E, A>["subscriberCount"]
+
   constructor(readonly tag: C.Tagged<I, Subject<never, E, A>>) {
     super()
 
@@ -104,6 +107,8 @@ class ContextImpl<I, E, A> extends ToFx<I, E, A> implements Subject.Tagged<I, E,
     this.onSuccess = this.onSuccess.bind(this)
     this.provide = this.provide.bind(this)
     this.make = this.make.bind(this)
+    this.interrupt = tag.withEffect((subject) => subject.interrupt)
+    this.subscriberCount = tag.withEffect((subject) => subject.subscriberCount)
   }
 
   toFx() {
@@ -117,10 +122,6 @@ class ContextImpl<I, E, A> extends ToFx<I, E, A> implements Subject.Tagged<I, E,
   onSuccess(a: A) {
     return this.tag.withEffect((subject) => subject.onSuccess(a))
   }
-
-  interrupt: Effect.Effect<I, never, void> = this.tag.withEffect((subject) => subject.interrupt)
-
-  subscriberCount: Effect.Effect<I, never, number> = this.tag.withEffect((subject) => subject.subscriberCount)
 
   make(replay?: number): Layer.Layer<never, never, I> {
     return this.tag.layer(Effect.sync(() => {

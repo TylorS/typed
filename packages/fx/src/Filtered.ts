@@ -106,6 +106,11 @@ class FilteredImpl<R, E, A, R2, E2, B>
       },
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
+
+    this.option = Computed(
+      this.input,
+      this.f
+    )
   }
 
   filterMapEffect: Filtered<R | R2, E | E2, B>["filterMapEffect"] = (f) => new FilteredImpl(this as any, f) as any
@@ -121,10 +126,7 @@ class FilteredImpl<R, E, A, R2, E2, B>
 
   map: Filtered<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
-  option: Filtered<R | R2, E | E2, B>["option"] = Computed(
-    this.input,
-    this.f
-  )
+  readonly option: Filtered<R | R2, E | E2, B>["option"]
 }
 
 export function combine<const Computeds extends ReadonlyArray<Filtered<any, any, any> | Computed<any, any, any>>>(

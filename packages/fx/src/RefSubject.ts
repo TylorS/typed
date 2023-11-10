@@ -281,8 +281,20 @@ class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements Ref
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
+  readonly version: RefSubject<I, E, A>["version"]
+  readonly subscriberCount: RefSubject<I, E, A>["subscriberCount"]
+  readonly get: RefSubject<I, E, A>["get"]
+  readonly delete: RefSubject<I, E, A>["delete"]
+  readonly interrupt: RefSubject<I, E, A>["interrupt"]
+
   constructor(readonly tag: C.Tagged<I, RefSubject<never, E, A>>, readonly defaultEq?: Equivalence<A>) {
     super()
+
+    this.version = tag.withEffect((ref) => ref.version)
+    this.subscriberCount = tag.withEffect((ref) => ref.subscriberCount)
+    this.get = tag.withEffect((ref) => ref.get)
+    this.delete = tag.withEffect((ref) => ref.delete)
+    this.interrupt = tag.withEffect((r) => r.interrupt)
   }
 
   protected toFx(): Fx.Fx<I, E, A> {
@@ -292,10 +304,6 @@ class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements Ref
   protected toEffect(): Effect.Effect<I, E, A> {
     return this.get
   }
-
-  version = this.tag.withEffect((ref) => ref.version)
-
-  subscriberCount: Effect.Effect<I, never, number> = this.tag.withEffect((ref) => ref.subscriberCount)
 
   runUpdate: RefSubject<I, E, A>["runUpdate"] = (
     f,
@@ -314,11 +322,7 @@ class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements Ref
 
   update: (f: (a: A) => A) => Effect.Effect<I, E, A> = (f) => this.tag.withEffect((ref) => ref.update(f))
 
-  get: Effect.Effect<I, E, A> = this.tag.withEffect((ref) => ref.get)
-
   set: (a: A) => Effect.Effect<I, never, A> = (a) => this.tag.withEffect((ref) => ref.set(a))
-
-  delete: Effect.Effect<I, never, Option.Option<A>> = this.tag.withEffect((ref) => ref.delete)
 
   mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B> = (f) =>
     Computed(this as any, f)
@@ -342,8 +346,6 @@ class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements Ref
     this.tag.withEffect((ref) => ref.onFailure(cause))
 
   onSuccess: (value: A) => Effect.Effect<I, never, unknown> = (a) => this.tag.withEffect((ref) => ref.onSuccess(a))
-
-  interrupt: Effect.Effect<I, never, void> = this.tag.withEffect((r) => r.interrupt)
 
   make = <R>(fx: Fx.Fx<R, E, A>, eq?: Equivalence<A>): Layer.Layer<R, never, I> =>
     this.tag.scoped(make(fx, eq || this.defaultEq))

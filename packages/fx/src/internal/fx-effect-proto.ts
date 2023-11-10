@@ -35,15 +35,16 @@ export function versionedOf<A>(value: A): Versioned<never, never, never, A, neve
 export class VersionedImpl<R0, R, E, A, R2, E2, B> extends FxEffectBase<R, E, A, R2, E2, B>
   implements Versioned<R0, R, E, A, R2, E2, B>
 {
+  version: Effect.Effect<R0, never, number>
+
   constructor(
     readonly i0: Effect.Effect<R0, never, number>,
     readonly i1: Fx<R, E, A>,
     readonly i2: Effect.Effect<R2, E2, B>
   ) {
     super()
+    this.version = i0
   }
-
-  version = this.i0
 
   protected toFx(): Fx<R, E, A> {
     return this.i1

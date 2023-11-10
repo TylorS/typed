@@ -196,34 +196,36 @@ class RenderQueueImpl implements RenderQueue {
     return Scope.addFinalizer(this.scope, Fiber.interrupt(Effect.runFork(this.run)))
   })
 
-  run: Effect.Effect<never, never, void> = Effect.provideService(
-    Effect.flatMap(
-      Idle.whenIdle(this.options),
-      (deadline) =>
-        Effect.suspend(() => {
-          const iterator = this.queue.entries()
+  run: Effect.Effect<never, never, void> = Effect.suspend(() =>
+    Effect.provideService(
+      Effect.flatMap(
+        Idle.whenIdle(this.options),
+        (deadline) =>
+          Effect.suspend(() => {
+            const iterator = this.queue.entries()
 
-          while (Idle.shouldContinue(deadline)) {
-            const result = iterator.next()
+            while (Idle.shouldContinue(deadline)) {
+              const result = iterator.next()
 
-            if (result.done) break
-            else {
-              const [part, task] = result.value
-              this.queue.delete(part)
-              task()
+              if (result.done) break
+              else {
+                const [part, task] = result.value
+                this.queue.delete(part)
+                task()
+              }
             }
-          }
 
-          if (this.queue.size > 0) {
-            return this.run
-          }
+            if (this.queue.size > 0) {
+              return this.run
+            }
 
-          this.scheduled = false
+            this.scheduled = false
 
-          return Effect.unit
-        })
-    ),
-    Scope.Scope,
-    this.scope
+            return Effect.unit
+          })
+      ),
+      Scope.Scope,
+      this.scope
+    )
   )
 }

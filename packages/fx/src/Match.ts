@@ -193,5 +193,5 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
     )
   }
 
-  run: ValueMatcher<R, E, I, O>["run"] = this.matcher.run(this.value)
+  run: ValueMatcher<R, E, I, O>["run"] = Fx.suspend(() => this.matcher.run(this.value))
 }

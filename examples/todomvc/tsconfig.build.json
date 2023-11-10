@@ -22,6 +22,12 @@
       "path": "../../packages/fx"
     },
     {
+      "path": "../../packages/navigation"
+    },
+    {
+      "path": "../../packages/route"
+    },
+    {
       "path": "../../packages/template"
     }
   ]

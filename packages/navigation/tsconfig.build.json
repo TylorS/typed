@@ -9,14 +9,17 @@
     "rootDir": "src"
   },
   "include": [
-    "src/**/*.ts"
+    "src"
   ],
   "references": [
     {
-      "path": "../../packages/fx"
+      "path": "../context"
     },
     {
-      "path": "../../packages/template"
+      "path": "../dom"
+    },
+    {
+      "path": "../fx"
     }
   ]
 }

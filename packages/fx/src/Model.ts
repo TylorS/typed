@@ -333,6 +333,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase
   get: Model<Refs>["get"]
   set: Model<Refs>["set"]
   delete: Model<Refs>["delete"]
+  version: Effect.Effect<any, never, number>
 
   constructor(readonly refs: Refs) {
     super()
@@ -358,6 +359,11 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase
       Effect.all(entries.map(([k, ref]) => Effect.map(ref.delete, Option.map((v) => [k, v] as const)))),
       (options) => Option.map(Option.all(options), Object.fromEntries)
     ) as Model<Refs>["delete"]
+
+    this.version = Effect.map(
+      Effect.all(Object.values(this.refs).map((ref) => ref.version)),
+      (versions) => versions.reduce((a, b) => a + b, 0)
+    )
   }
 
   toFx() {
@@ -391,11 +397,6 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase
 
         return Effect.as(this.set(newState), b)
       }))
-
-  version = Effect.map(
-    Effect.all(Object.values(this.refs).map((ref) => ref.version)),
-    (versions) => versions.reduce((a, b) => a + b, 0)
-  )
 
   mapEffect: Model<Refs>["mapEffect"] = (f) => Computed(this as any, f)
 

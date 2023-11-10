@@ -1,6 +1,11 @@
 import { SchemaStorage, Storage } from "@typed/dom/Storage"
+import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
-import { Effect, Layer, ReadonlyRecord, Tuple } from "effect"
+import * as Match from "@typed/fx/Match"
+import { CurrentPath, polyfill } from "@typed/navigation"
+import * as Route from "@typed/route/Route2"
+import { Effect, Layer } from "effect"
+import { getOrElse } from "effect/Option"
 import * as App from "./application"
 import * as Domain from "./domain"
 
@@ -27,41 +32,18 @@ const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.ca
 
 // TODO: Replace this with @typed/router when it is ready.
 
-const hashesToFilterState = ReadonlyRecord.fromEntries(ReadonlyRecord.toEntries(Domain.FilterState).map(Tuple.swap))
+const allRoute = Route.fromPath("/", { match: { end: true } })
+const activeRoute = Route.fromPath("/active")
+const completedRoute = Route.fromPath("/completed")
 
-const getFilterState = () => {
-  const hash = location.hash.slice(1)
-
-  if (hash in hashesToFilterState) {
-    return Domain.FilterState[hashesToFilterState[hash]]
-  } else {
-    return Domain.FilterState.All
-  }
-}
-
-const currentFilterState = Fx.fromEmitter<never, never, Domain.FilterState>((emitter) =>
-  Effect.suspend(() => {
-    const onHashChange = () => emitter.succeed(getFilterState())
-
-    window.addEventListener("hashchange", onHashChange)
-
-    onHashChange()
-
-    return Effect.addFinalizer(() => Effect.sync(() => window.removeEventListener("hashchange", onHashChange)))
-  })
-)
-
-const writeFilterState = Fx.tap(
-  App.FilterState,
-  (state) =>
-    Effect.sync(() => {
-      const hash = `#${state}`
-
-      if (location.hash !== hash) {
-        location.hash = hash
-      }
-    })
-)
+const currentFilterState = Match.value(CurrentPath)
+  .when(allRoute, () => Fx.succeed(Domain.FilterState.All))
+  .when(activeRoute, () => Fx.succeed(Domain.FilterState.Active))
+  .when(completedRoute, () => Fx.succeed(Domain.FilterState.Completed))
+  .run
+  .pipe(
+    Fx.map(getOrElse(() => Domain.FilterState.All))
+  )
 
 /* #endregion */
 
@@ -82,15 +64,18 @@ const CreateTodoLive = App.CreateTodo.implement((text) =>
   }))
 )
 
-const SubscriptionsLive = Fx.drainLayer(writeTodos, writeFilterState)
+const SubscriptionsLive = Fx.drainLayer(writeTodos)
 
 export const Live = Layer.provideMerge(
-  Storage.layer(localStorage),
+  Window.layer(window),
   Layer.provideMerge(
-    ModelLive,
-    Layer.mergeAll(
-      CreateTodoLive,
-      SubscriptionsLive
+    Layer.mergeAll(Storage.layer(localStorage), polyfill({})),
+    Layer.provideMerge(
+      ModelLive,
+      Layer.mergeAll(
+        CreateTodoLive,
+        SubscriptionsLive
+      )
     )
   )
 )

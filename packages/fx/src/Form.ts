@@ -194,11 +194,13 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
 
   constructor(readonly entries: Entries) {
     super()
+
+    this.schema = buildSchema(entries)
   }
 
   get: Form<Entries>["get"] = (k) => this.entries[k]
 
-  schema: Form<Entries>["schema"] = buildSchema(this.entries)
+  schema: Form<Entries>["schema"]
 
   version: Form<Entries>["version"] = Effect.map(
     // @ts-ignore Infinite type instantiation

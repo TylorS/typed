@@ -3,6 +3,7 @@ import "./styles.css"
 import * as Fx from "@typed/fx/Fx"
 import * as Bool from "@typed/fx/RefBoolean"
 import type { RefSubject } from "@typed/fx/RefSubject"
+import { navigate } from "@typed/navigation"
 import * as EventHandler from "@typed/template/EventHandler"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
@@ -35,7 +36,7 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = html`<section 
       <label for="toggle-all" onclick=${App.toggleAllCompleted}>Mark all as complete</label>
 
       <ul class="todo-list">
-        ${Fx.keyed(App.Todos, TodoItem, (todo) => todo.id)}
+        ${Fx.keyed(App.Todos, (todo) => todo.id, TodoItem)}
       </ul>
 
       <footer class="footer">
@@ -67,6 +68,9 @@ function TodoItem(todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
     const isEditing = yield* _(Bool.make(Effect.succeed(false)))
     const isCompleted = todo.map(Domain.isCompleted)
 
+    if (location.pathname === "/") {
+      yield* _(navigate("/todo/", { history: "push" }))
+    }
     // Update the todo's text using the provided RefSubject
     const updateText = flow(Domain.updateText, todo.update)
 
@@ -108,7 +112,9 @@ function TodoItem(todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
 }
 
 function FilterLink(filterState: Domain.FilterState) {
-  return html`<li><a class="${filterClasses(filterState)}" href="${`#${filterState}`}">${filterState}</a></li>`
+  return html`<li><a class="${filterClasses(filterState)}" href="${`/${
+    filterState === Domain.FilterState.All ? "" : filterState
+  }`}">${filterState}</a></li>`
 }
 
 function filterClasses(filterState: Domain.FilterState) {

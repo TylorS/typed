@@ -243,34 +243,36 @@ class IdleQueueImpl<I extends Hash> implements IdleQueue<I> {
     return Scope.addFinalizer(this.scope, Fiber.interrupt(Effect.runFork(this.run)))
   })
 
-  run: Effect.Effect<never, never, void> = Effect.provideService(
-    Effect.flatMap(
-      whenIdle(this.options),
-      (deadline) =>
-        Effect.gen(this, function*(_) {
-          const iterator = this.queue[Symbol.iterator]()
+  run: Effect.Effect<never, never, void> = Effect.suspend(() =>
+    Effect.provideService(
+      Effect.flatMap(
+        whenIdle(this.options),
+        (deadline) =>
+          Effect.gen(this, function*(_) {
+            const iterator = this.queue[Symbol.iterator]()
 
-          while (shouldContinue(deadline)) {
-            const result = iterator.next()
+            while (shouldContinue(deadline)) {
+              const result = iterator.next()
 
-            if (result.done) break
-            else {
-              const [part, task] = result.value
-              MutableHashMap.remove(this.queue, part)
-              yield* _(task)
+              if (result.done) break
+              else {
+                const [part, task] = result.value
+                MutableHashMap.remove(this.queue, part)
+                yield* _(task)
+              }
             }
-          }
 
-          if (MutableHashMap.size(this.queue) > 0) {
-            return this.run
-          }
+            if (MutableHashMap.size(this.queue) > 0) {
+              return this.run
+            }
 
-          this.scheduled = false
+            this.scheduled = false
 
-          return Effect.unit
-        })
-    ),
-    Scope.Scope,
-    this.scope
+            return Effect.unit
+          })
+      ),
+      Scope.Scope,
+      this.scope
+    )
   )
 }

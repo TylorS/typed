@@ -206,9 +206,11 @@ export function withFlattenStrategy(
 export class RingBuffer<A> {
   constructor(
     readonly capacity: number
-  ) {}
+  ) {
+    this._buffer = Array(this.capacity)
+  }
 
-  private _buffer: Array<A> = Array(this.capacity)
+  private _buffer: Array<A>
   private _size = 0
 
   get size() {
