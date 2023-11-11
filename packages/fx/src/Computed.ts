@@ -3,14 +3,18 @@
  * @since 1.18.0
  */
 
+import type { Tag } from "@typed/context"
 // eslint-disable-next-line import/no-cycle
 import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
+import { fromFxEffect } from "@typed/fx/internal/fx"
+import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
+import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 
 /**
@@ -151,3 +155,22 @@ export function struct<const Computeds extends Readonly<Record<string, Computed<
     Effect.succeed
   )
 }
+
+export const fromTag: {
+  <S, R2, E2, B>(f: (s: S) => Computed<R2, E2, B>): <I>(tag: Tag<I, S>) => Computed<I | R2, E2, B>
+  <I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Computed<R2, E2, B>): Computed<I | R2, E2, B>
+} = dual(
+  2,
+  function fromTag<I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Computed<R2, E2, B>): Computed<I | R2, E2, B> {
+    const get = new OnceEffect(Effect.map(tag, f))
+
+    return Computed(
+      Versioned.make({
+        fx: fromFxEffect(get),
+        effect: Effect.flatten(get),
+        version: Effect.flatMap(get, (c) => c.version)
+      }),
+      Effect.succeed
+    )
+  }
+)

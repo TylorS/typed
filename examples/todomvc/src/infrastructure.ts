@@ -2,10 +2,9 @@ import { SchemaStorage, Storage } from "@typed/dom/Storage"
 import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
 import * as Match from "@typed/fx/Match"
-import { CurrentPath, polyfill } from "@typed/navigation"
+import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route/Route2"
-import { Effect, Layer } from "effect"
-import { getOrElse } from "effect/Option"
+import { Effect, Layer, Option } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 
@@ -30,19 +29,29 @@ const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.ca
 
 /* #region Routing */
 
-// TODO: Replace this with @typed/router when it is ready.
-
 const allRoute = Route.fromPath("/", { match: { end: true } })
 const activeRoute = Route.fromPath("/active")
 const completedRoute = Route.fromPath("/completed")
 
-const currentFilterState = Match.value(CurrentPath)
+// Expose conversion to route for the UI
+export const filterStateToPath = (state: Domain.FilterState) => {
+  switch (state) {
+    case Domain.FilterState.All:
+      return allRoute.path
+    case Domain.FilterState.Active:
+      return activeRoute.path
+    case Domain.FilterState.Completed:
+      return completedRoute.path
+  }
+}
+
+const currentFilterState = Match.value(Navigation.CurrentPath)
   .when(allRoute, () => Fx.succeed(Domain.FilterState.All))
   .when(activeRoute, () => Fx.succeed(Domain.FilterState.Active))
   .when(completedRoute, () => Fx.succeed(Domain.FilterState.Completed))
   .run
   .pipe(
-    Fx.map(getOrElse(() => Domain.FilterState.All))
+    Fx.map(Option.getOrElse(() => Domain.FilterState.All))
   )
 
 /* #endregion */
@@ -66,18 +75,18 @@ const CreateTodoLive = App.CreateTodo.implement((text) =>
 
 const SubscriptionsLive = Fx.drainLayer(writeTodos)
 
-export const Live = Layer.provideMerge(
-  Window.layer(window),
-  Layer.provideMerge(
-    Layer.mergeAll(Storage.layer(localStorage), polyfill({})),
-    Layer.provideMerge(
-      ModelLive,
-      Layer.mergeAll(
-        CreateTodoLive,
-        SubscriptionsLive
-      )
-    )
+const AppLive = Layer.provideMerge(
+  ModelLive,
+  Layer.mergeAll(
+    CreateTodoLive,
+    SubscriptionsLive
   )
 )
+
+export const Live = AppLive
+  .pipe(
+    Layer.useMerge(Layer.mergeAll(Storage.layer(localStorage), Navigation.polyfill({}))),
+    Layer.useMerge(Window.layer(window))
+  )
 
 /* #endregion */

@@ -2,23 +2,26 @@ import "./styles.css"
 
 import * as Fx from "@typed/fx/Fx"
 import * as Bool from "@typed/fx/RefBoolean"
-import type { RefSubject } from "@typed/fx/RefSubject"
-import { navigate } from "@typed/navigation"
+import type * as RefSubject from "@typed/fx/RefSubject"
+import type { RenderEvent, RenderTemplate } from "@typed/template"
+import { html, many } from "@typed/template"
 import * as EventHandler from "@typed/template/EventHandler"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import { html } from "@typed/template/RenderTemplate"
+import type { Scope } from "effect"
 import { Effect, flow } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
-import { Live } from "./infrastructure"
+import * as Infra from "./infrastructure"
 
 const onEnterOrEscape = EventHandler.keys(
   "Enter",
   "Escape"
 )
 
-export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = html`<section class="todoapp ${App.FilterState}">
+export const TodoApp: Fx.Fx<
+  App.CreateTodo | App.TodoList | App.TodoText | RenderTemplate | Scope.Scope,
+  never,
+  RenderEvent
+> = html`<section class="todoapp ${App.FilterState}">
     <header class="header">
       <h1>todos</h1>
       <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => App.createTodo)}>
@@ -36,7 +39,7 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = html`<section 
       <label for="toggle-all" onclick=${App.toggleAllCompleted}>Mark all as complete</label>
 
       <ul class="todo-list">
-        ${Fx.keyed(App.Todos, (todo) => todo.id, TodoItem)}
+        ${many(App.Todos, (todo) => todo.id, TodoItem)}
       </ul>
 
       <footer class="footer">
@@ -48,7 +51,7 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = html`<section 
           ${Object.values(Domain.FilterState).map(FilterLink)}
         </ul>
 
-         ${
+        ${
   Fx.if(
     App.SomeAreCompleted,
     html`<button class="clear-completed" onclick=${App.clearCompletedTodos}>Clear completed</button>`,
@@ -57,21 +60,20 @@ export const TodoApp: Fx.Fx<RenderTemplate, never, RenderEvent> = html`<section 
 }
       </footer>
     </section>
-  </section>`.pipe(
-  Fx.provide(Live),
-  Fx.scoped
-)
+  </section>`
 
-function TodoItem(todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
+function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
   return Fx.genScoped(function*(_) {
     // Track whether this todo is being edited
     const isEditing = yield* _(Bool.make(Effect.succeed(false)))
+
+    // Track whether the todo is marked as completed
     const isCompleted = todo.map(Domain.isCompleted)
 
-    if (location.pathname === "/") {
-      yield* _(navigate("/todo/", { history: "push" }))
-    }
-    // Update the todo's text using the provided RefSubject
+    // the current text
+    const text = todo.map((t) => t.text)
+
+    // Update the todo's text
     const updateText = flow(Domain.updateText, todo.update)
 
     // Submit the todo when the user is done editing
@@ -80,11 +82,8 @@ function TodoItem(todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
       Effect.flatMap(() => isEditing.set(false))
     )
 
-    // Reset the todo's text to the current text value
+    // Reset the todo's text to the text value before editing it
     const reset = todo.delete.pipe(Effect.zipRight(isEditing.set(false)))
-
-    // The current text value
-    const text = todo.map((t) => t.text)
 
     return html`<li class="${Fx.when(isCompleted, "completed", "")} ${Fx.when(isEditing, "editing", "")}">
       <div class="view">
@@ -112,11 +111,10 @@ function TodoItem(todo: RefSubject<never, never, Domain.Todo>, id: Domain.TodoId
 }
 
 function FilterLink(filterState: Domain.FilterState) {
-  return html`<li><a class="${filterClasses(filterState)}" href="${`/${
-    filterState === Domain.FilterState.All ? "" : filterState
-  }`}">${filterState}</a></li>`
-}
-
-function filterClasses(filterState: Domain.FilterState) {
-  return App.FilterState.map((state) => state === filterState ? "selected" : "")
+  return html`<li>
+    <a
+      class="${Fx.when(App.FilterState.map((state) => state === filterState), "selected", "")}" 
+      href="${Infra.filterStateToPath(filterState)}">${filterState}
+    </a>
+  </li>`
 }

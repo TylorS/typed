@@ -5,7 +5,7 @@ import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { RenderContext } from "@typed/template/RenderContext"
-import { DomRenderEvent, type RenderEvent } from "@typed/template/RenderEvent"
+import { type RenderEvent } from "@typed/template/RenderEvent"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 
@@ -13,26 +13,25 @@ export function many<R, E, A, B, R2, E2>(
   values: Fx.Fx<R, E, ReadonlyArray<A>>,
   getKey: (a: A) => B,
   f: (a: RefSubject.RefSubject<never, never, A>, key: B) => Fx.Fx<R2, E2, RenderEvent>
-): Fx.Fx<R | R2 | RenderContext, E | E2, RenderEvent> {
-  return Fx.fromFxEffect(RenderContext.with((ctx) => {
-    if (ctx.environment === "browser") {
-      return Fx.map(
-        Fx.keyed(values, getKey, f),
-        (events) => DomRenderEvent(events.flatMap((e) => (e as DomRenderEvent).rendered))
+): Fx.Fx<R | R2 | RenderContext, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> {
+  return Fx.fromFxEffect(
+    RenderContext.with((ctx): Fx.Fx<R | R2 | RenderContext, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> => {
+      if (ctx.environment === "browser") {
+        return Fx.keyed(values, getKey, f)
+      }
+
+      return Fx.fromFxEffect(
+        Effect.map(Fx.first(values), (values) =>
+          values._tag === "None" ? Fx.empty : Fx.mergeBuffer(
+            values.value.map((value) => {
+              const ref = RefSubject.unsafeMake(Effect.succeed(value), makeHoldSubject())
+
+              return f({ ...ref, ...Fx.take(ref, 1) } as RefSubject.RefSubject<never, never, A>, getKey(value))
+            })
+          ))
       )
-    }
-
-    return Fx.fromFxEffect(
-      Effect.map(Fx.first(values), (values) =>
-        values._tag === "None" ? Fx.empty : Fx.mergeBuffer(
-          values.value.map((value) => {
-            const ref = RefSubject.unsafeMake(Effect.succeed(value), makeHoldSubject())
-
-            return f({ ...ref, ...Fx.take(ref, 1) } as RefSubject.RefSubject<never, never, A>, getKey(value))
-          })
-        ))
-    )
-  }))
+    })
+  )
 }
 
 export const manyAsyncData: {
@@ -108,7 +107,7 @@ export const manyAsyncData: {
   ): Fx.Fx<
     R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
-    RenderEvent
+    Fx.Fx.Success<NoData | Loading | Failure | Success>
   > => {
     return RefAsyncData.matchKeyed(fx, {
       NoData: matchers.NoData,

@@ -44,7 +44,9 @@ export interface PathRoute<P extends string> extends
 
   readonly params: FromPathParams
 
-  readonly make: <const Params extends Path.ParamsOf<P>>(input: Params) => Path.Interpolate<P, Params>
+  readonly make: <const Params extends Path.ParamsOf<P> = Path.ParamsOf<P>>(
+    ...params: [keyof Params] extends [never] ? readonly [{}?] : readonly [Params]
+  ) => Path.Interpolate<P, Params>
 
   readonly concat: <P2 extends string>(
     route: PathRoute<P2>,

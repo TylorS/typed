@@ -350,7 +350,7 @@ type Compact<A> = { readonly [K in keyof A]: A[K] }
  * @category Type-level
  * @since 1.0.0
  */
-export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never] ? P
+export type Interpolate<P extends string, Params extends ParamsOf<P>> = [keyof Params] extends [never] ? P
   : P extends `${infer Head}\\?${infer Tail}` ? PathJoin<
       InterpolateWithQueryParams<
         SplitQueryParams<Tail>,

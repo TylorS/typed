@@ -328,6 +328,9 @@ importers:
 
   packages/navigation:
     dependencies:
+      '@effect/schema':
+        specifier: 0.47.2
+        version: 0.47.2(effect@2.0.0-next.54)(fast-check@3.13.2)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist

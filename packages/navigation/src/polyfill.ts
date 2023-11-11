@@ -1,40 +1,47 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
-import { addWindowListener, Window } from "@typed/dom/Window"
+import { Window } from "@typed/dom/Window"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Layer } from "effect"
 import { Effect } from "effect"
 import { Destination, NavigateOptions, Navigation } from "./Navigation"
 
-const getNavigation = (options?: import("@virtualstate/navigation").NavigationOptions) =>
+const getNavigation = (window: Window, options?: import("@virtualstate/navigation").NavigationOptions) =>
   Effect.gen(function*(_) {
-    const hasNative = "navigation" in globalThis
-
-    const navigation = hasNative ?
-      (globalThis as any).navigation as import("@virtualstate/navigation").Navigation :
+    return (globalThis as any).navigation as import("@virtualstate/navigation").Navigation ||
       (yield* _(
-        Effect.promise(() => import("@virtualstate/navigation").then((m) => new m.Navigation(options)))
+        Effect.promise(() =>
+          import("@virtualstate/navigation").then(({ Navigation, getCompletePolyfill }) => {
+            const navigation = new Navigation(options)
+
+            // Apply the polyfill to window/history
+            const polyfill = getCompletePolyfill({
+              history: window.history as any,
+              interceptEvents: true,
+              limit: 50,
+              navigation: navigation as any,
+              patch: true,
+              persist: true,
+              persistState: true,
+              window: window as any
+            })
+
+            polyfill.apply()
+
+            return navigation
+          })
+        )
       ))
-
-    return [navigation, hasNative] as const
   })
-
-// TODO: Support saving and restoring navigation entries to localStorage
 
 export const polyfill = (
   options?: import("@virtualstate/navigation").NavigationOptions
 ): Layer.Layer<Window, never, Navigation> =>
   Navigation.scoped(Effect.gen(function*(_) {
     const window = yield* _(Window)
-    // const fiberId = yield* _(Effect.fiberId)
-    const [navigation, hasNative] = yield* _(
-      getNavigation({
-        getState: () => window.history.state,
-        setState: (entry) => window.history.pushState(entry.getState(), "", entry.url!),
-        ...options
-      })
-    )
+    const navigation = yield* _(getNavigation(window, options))
+
     const current = yield* _(
       RefSubject.fromEffect(Effect.sync(() => navigationHistoryEntryToDestination(navigation.currentEntry)))
     )
@@ -51,6 +58,37 @@ export const polyfill = (
         const { finished } = navigation.navigate(url.toString(), options)
 
         finished.then(() => resume(current), (error) => resume(Effect.die(error)))
+      })
+
+    const back = (options?: { readonly info?: unknown }) =>
+      Effect.async<never, never, Destination>((resume) => {
+        navigation.back(options).finished.then(
+          () => resume(current),
+          (error) => resume(Effect.die(error))
+        )
+      })
+
+    const forward = (options?: { readonly info?: unknown }) =>
+      Effect.async<never, never, Destination>((resume) => {
+        navigation.forward(options).finished.then(
+          () => resume(current),
+          (error) => resume(Effect.die(error))
+        )
+      })
+
+    const traverseTo = (key: string, options?: { readonly info?: unknown }) =>
+      Effect.async<never, never, Destination>((resume) => {
+        navigation.traverseTo(key, options).finished.then(
+          () => resume(current),
+          (error) => resume(Effect.die(error))
+        )
+      })
+
+    const updateCurrentEntry = (options: { readonly state: unknown }) =>
+      Effect.suspend(() => {
+        navigation.updateCurrentEntry(options)
+
+        return current
       })
 
     const { run } = yield* _(scopedRuntime<never>())
@@ -88,19 +126,16 @@ export const polyfill = (
       ev.intercept()
     })
 
-    if (!hasNative) {
-      // The native implementation automatically allows intercepting link clicks
-      yield* _(interceptLinkClicks(window, navigation))
-    }
-
-    // navigationPolyfill.addEventListener("navigatesuccess", (ev) => {})
-
     const nav: Navigation = {
       current,
       destinations,
       canGoBack,
       canGoForward,
-      navigate
+      navigate,
+      back,
+      forward,
+      traverseTo,
+      updateCurrentEntry
     }
 
     return nav
@@ -132,67 +167,4 @@ function shouldNotIntercept(navigationEvent: import("@virtualstate/navigation").
     // let that go to the server.
     !!navigationEvent.formData
   )
-}
-
-function interceptLinkClicks(window: Window, navigation: import("@virtualstate/navigation").Navigation) {
-  return addWindowListener({
-    eventName: "click",
-    handler: (e) =>
-      Effect.sync(() => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) return
-
-        let el = findLink(e.target as Node | null)
-
-        // Allows intercepting across shadow-dom boundaries
-        if (!el && e.composedPath) {
-          el = findLink(e.composedPath()[0] as Node)
-        }
-
-        // 1. Not a link
-        if (!el) {
-          return
-        }
-
-        // 2. "download" attribute
-        if (el.getAttribute("download") !== null) {
-          return
-        }
-
-        // 3. rel="external" attribute
-        if (el.getAttribute("rel") === "external") {
-          return
-        }
-
-        // 4. target attribute
-        if ((el.target && el.target !== "_self")) {
-          return
-        }
-
-        const link = el.href
-
-        // ensure this is not a hash for the same path
-        if (el.pathname === window.location.pathname && (el.hash || link === "#")) {
-          return
-        }
-
-        // Check for mailto: in the href
-        if (link && link.indexOf("mailto:") > -1) {
-          return
-        }
-
-        e.preventDefault()
-
-        navigation.navigate(link, { history: "push" })
-      })
-  })
-}
-
-function findLink(el: Node | null) {
-  while (el && el.nodeName !== "A") {
-    el = el.parentNode
-  }
-  if (!el || el.nodeName !== "A") {
-    return null
-  }
-  return el as HTMLAnchorElement | null
 }

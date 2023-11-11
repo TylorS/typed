@@ -1,11 +1,9 @@
 import { Tagged } from "@typed/context"
 import * as Computed from "@typed/fx/Computed"
-import { fromFxEffect } from "@typed/fx/Fx"
-import * as Versioned from "@typed/fx/Versioned"
-import { Effect } from "effect"
+import type { Effect } from "effect"
 
 // TODO: Represent errors
-// TODO: back, forward, navigate, reload, traverseTo
+// TODO: reload, traverseTo
 // TODO: onNavigationEvent handlers
 
 export interface Navigation {
@@ -16,6 +14,12 @@ export interface Navigation {
 
   readonly canGoBack: Computed.Computed<never, never, boolean>
   readonly canGoForward: Computed.Computed<never, never, boolean>
+
+  readonly back: (options?: { readonly info?: unknown }) => Effect.Effect<never, never, Destination>
+  readonly forward: (options?: { readonly info?: unknown }) => Effect.Effect<never, never, Destination>
+  readonly traverseTo: (key: string, options?: { readonly info?: unknown }) => Effect.Effect<never, never, Destination>
+
+  readonly updateCurrentEntry: (options: { readonly state: unknown }) => Effect.Effect<never, never, Destination>
 }
 
 export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
@@ -32,18 +36,15 @@ export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" 
   return location.pathname + location.search + location.hash
 }
 
-export const CurrentPath: Computed.Computed<Navigation, never, string> = Computed.Computed(
-  Versioned.make({
-    fx: fromFxEffect(Navigation.with((nav) => nav.current.map((d) => getCurrentPathFromUrl(d.url)))),
-    effect: Navigation.withEffect((nav) => nav.current.map((d) => getCurrentPathFromUrl(d.url))),
-    version: Navigation.withEffect((nav) => nav.current.version)
-  }),
-  Effect.succeed
+export const CurrentPath: Computed.Computed<Navigation, never, string> = Computed.fromTag(
+  Navigation,
+  (nav) => nav.current.map((d) => getCurrentPathFromUrl(d.url))
 )
 
 export interface NavigateOptions {
   readonly history?: "replace" | "push" | "auto"
   readonly state?: unknown
+  readonly info?: unknown
 }
 
 export const navigate = (url: string | URL, options?: NavigateOptions) =>
