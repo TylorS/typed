@@ -26,25 +26,26 @@ export const matchKeyed: {
   <
     E1,
     A,
+    B,
     NoData extends Fx.FxInput<any, any, any>,
     Loading extends Fx.FxInput<any, any, any>,
     Failure extends Fx.FxInput<any, any, any>,
-    Success extends Fx.FxInput<any, any, any>,
-    B
+    Success extends Fx.FxInput<any, any, any>
   >(
+    getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success
-    },
-    getKey: (a: A) => B
+    }
   ): <R, E>(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>
   ) => Fx.Fx<
     R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
     E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
-    Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
+    | Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure>>
+    | ReadonlyArray<Fx.Fx.Success<Fx.Fx.FromInput<Success>>>
   >
 
   <
@@ -52,24 +53,25 @@ export const matchKeyed: {
     E,
     E1,
     A,
+    B,
     NoData extends Fx.FxInput<any, any, any>,
     Loading extends Fx.FxInput<any, any, any>,
     Failure extends Fx.FxInput<any, any, any>,
-    Success extends Fx.FxInput<any, any, any>,
-    B
+    Success extends Fx.FxInput<any, any, any>
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
+    getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success
-    },
-    getKey: (a: A) => B
+    }
   ): Fx.Fx<
     R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
     E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
-    Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>
+    | Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure>>
+    | ReadonlyArray<Fx.Fx.Success<Fx.Fx.FromInput<Success>>>
   >
 } = dual(
   3,
@@ -78,24 +80,25 @@ export const matchKeyed: {
     E,
     E1,
     A,
+    B,
     NoData extends Fx.FxInput<any, any, any>,
     Loading extends Fx.FxInput<any, any, any>,
     Failure extends Fx.FxInput<any, any, any>,
-    Success extends Fx.FxInput<any, any, any>,
-    B
+    Success extends Fx.FxInput<any, any, any>
   >(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
+    getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: RefAsyncData.LoadingComputed) => Loading
       Failure: (data: Computed.Computed<never, never, E1>, computed: RefAsyncData.FailureComputed<E1>) => Failure
       Success: (value: Computed.Computed<never, never, A>, computed: RefAsyncData.SuccessComputed) => Success
-    },
-    getKey: (a: A) => B
+    }
   ): Fx.Fx<
     R | Fx.Fx.Context<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
     E | Fx.Fx.Error<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>,
-    ReadonlyArray<Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure | Success>>>
+    | Fx.Fx.Success<Fx.Fx.FromInput<NoData | Loading | Failure>>
+    | ReadonlyArray<Fx.Fx.Success<Fx.Fx.FromInput<Success>>>
   > => {
     return RefAsyncData.matchKeyed(fx, {
       NoData: matchers.NoData,

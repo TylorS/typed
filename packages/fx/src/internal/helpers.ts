@@ -235,11 +235,11 @@ export class RingBuffer<A> {
       case 1:
         return f(this._buffer[0], 0)
       case 2:
-        return Effect.flatMap(f(this._buffer[0], 0), () => f(this._buffer[1], 1))
+        return Effect.zipRight(f(this._buffer[0], 0), f(this._buffer[1], 1))
       case 3:
-        return Effect.flatMap(
+        return Effect.zipRight(
           f(this._buffer[0], 0),
-          () => Effect.flatMap(f(this._buffer[1], 1), () => f(this._buffer[2], 2))
+          Effect.zipRight(f(this._buffer[1], 1), f(this._buffer[2], 2))
         )
       default:
         return Effect.forEach(
@@ -361,7 +361,7 @@ export function awaitScopeClose(scope: Scope.Scope) {
 }
 
 export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
-  #fiber: Fiber.Fiber<E, A> | null = null
+  private _fiber: Fiber.Fiber<E, A> | null = null
 
   constructor(
     readonly effect: Effect.Effect<R, E, A>
@@ -371,13 +371,13 @@ export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
 
   commit() {
     return Effect.suspend(() => {
-      if (this.#fiber) {
-        return Fiber.join(this.#fiber)
+      if (this._fiber) {
+        return Fiber.join(this._fiber)
       } else {
         return Effect.forkDaemon(this.effect).pipe(
-          Effect.tap((fiber) => Effect.sync(() => this.#fiber = fiber)),
+          Effect.tap((fiber) => Effect.sync(() => this._fiber = fiber)),
           Effect.flatMap((fiber) =>
-            Effect.ensuring(Fiber.join(fiber), Effect.sync(() => this.#fiber === fiber ? this.#fiber = null : null))
+            Effect.ensuring(Fiber.join(fiber), Effect.sync(() => this._fiber === fiber ? this._fiber = null : null))
           )
         )
       }
@@ -386,8 +386,8 @@ export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
 
   interrupt() {
     return Effect.suspend(() => {
-      if (this.#fiber) {
-        return Fiber.interruptFork(this.#fiber)
+      if (this._fiber) {
+        return Fiber.interruptFork(this._fiber)
       } else {
         return Effect.unit
       }

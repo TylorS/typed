@@ -18,7 +18,6 @@ import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
-import type { Scope } from "effect/Scope"
 
 /**
  * A RefAsyncData is a RefSubject that holds a AsyncData value.
@@ -408,7 +407,7 @@ export const matchKeyed: {
   > =>
     Fx.matchTags(fx, {
       NoData: () => matchers.NoData(),
-      Loading: (ref) => matchers.Loading({ progress: ref.filterMap((r) => r.progress) }),
+      Loading: (ref) => matchers.Loading({ progress: ref.map((r) => r.progress) }),
       Failure: (ref) =>
         matchers.Failure(
           ref.mapEffect(({ cause }) =>
@@ -416,30 +415,30 @@ export const matchKeyed: {
           ),
           {
             cause: ref.map((r) => r.cause),
-            refreshing: ref.filterMap((r) => r.refreshing)
+            refreshing: ref.map((r) => r.refreshing)
           }
         ),
       Success: (ref) =>
         matchers.Success(
           ref.map((r) => r.value),
           {
-            refreshing: ref.filterMap((r) => r.refreshing)
+            refreshing: ref.map((r) => r.refreshing)
           }
         )
     })
 )
 
 export type LoadingComputed = {
-  readonly progress: Filtered.Filtered<never, never, Progress>
+  readonly progress: Computed.Computed<never, never, Option.Option<Progress>>
 }
 
 export type FailureComputed<E> = {
   readonly cause: Computed.Computed<never, never, Cause.Cause<E>>
-  readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
+  readonly refreshing: Computed.Computed<never, never, Option.Option<AsyncData.Loading>>
 }
 
 export type SuccessComputed = {
-  readonly refreshing: Filtered.Filtered<never, never, AsyncData.Loading>
+  readonly refreshing: Computed.Computed<never, never, Option.Option<AsyncData.Loading>>
 }
 
 export const getFailure = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filtered<R, never, E> =>
@@ -447,7 +446,3 @@ export const getFailure = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filter
 
 export const getSuccess = <R, E, A>(ref: RefAsyncData<R, E, A>): Filtered.Filtered<R, never, A> =>
   ref.filterMap(AsyncData.getSuccess)
-
-export type AsyncDataCache<K, E, A> = {
-  readonly get: (key: K) => Effect.Effect<Scope, never, RefAsyncData<never, E, A>>
-}

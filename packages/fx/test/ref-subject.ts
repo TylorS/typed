@@ -6,6 +6,7 @@ import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import * as RefAsyncDataArray from "@typed/fx/RefAsyncDataArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 
 import { describe, it } from "vitest"
 
@@ -83,7 +84,7 @@ describe.concurrent(__filename, () => {
       const test = Effect.gen(function*(_) {
         const source = yield* _(RefSubject.of<Foo>(initial))
 
-        const { address: { city, street }, id, name, persist: commit } = yield* _(makeFooState(source))
+        const { address: { city, street }, id, name, persist } = yield* _(makeFooState(source))
 
         expect(yield* _(id)).toEqual(initial.id)
         expect(yield* _(name)).toEqual(initial.name)
@@ -99,7 +100,7 @@ describe.concurrent(__filename, () => {
         expect(yield* _(source)).toEqual(initial)
 
         // Replicate local changes back into the Source RefSubject
-        yield* _(commit)
+        yield* _(persist)
 
         expect(yield* _(source)).toEqual({
           id: "fdsa",
@@ -221,7 +222,7 @@ describe.concurrent(__filename, () => {
 
           const matched = RefAsyncData.matchKeyed(ref, {
             NoData: () => Fx.succeed(0),
-            Loading: ({ progress }) => progress.map((p) => p.loaded),
+            Loading: ({ progress }) => progress.filterMap(Option.map((p) => p.loaded)),
             Failure: (failure) => failure.map((s) => s.length),
             Success: (value) => value.map((x) => x + 1)
           })
@@ -281,7 +282,7 @@ describe.concurrent(__filename, () => {
 
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefAsyncDataArray.make<never, Foo>())
-          const matched = RefAsyncDataArray.matchKeyed(ref, {
+          const matched = RefAsyncDataArray.matchKeyed(ref, (f) => f.id, {
             NoData: () => Effect.succeed([]),
             Loading: () => Effect.succeed([]),
             Failure: (_, { cause }) => Effect.flatMap(cause, Effect.failCause),
@@ -289,7 +290,7 @@ describe.concurrent(__filename, () => {
               calls++
               return foo.map((f) => f.value)
             }
-          }, (f) => f.id)
+          })
 
           const fiber = yield* _(matched, Fx.toReadonlyArray, Effect.fork)
 
