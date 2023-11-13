@@ -201,12 +201,12 @@ export function combine<const VS extends ReadonlyArray<Versioned<any, any, any, 
 export function struct<const VS extends Readonly<Record<string, Versioned<any, any, any, any, any, any, any>>>>(
   versioneds: VS
 ): Versioned<
-  Versioned.VersionContext<VS[string]>,
-  Fx.Fx.Context<VS[string]>,
-  Fx.Fx.Error<VS[string]>,
+  Versioned.VersionContext<VS[keyof VS]>,
+  Fx.Fx.Context<VS[keyof VS]>,
+  Fx.Fx.Error<VS[keyof VS]>,
   { readonly [K in keyof VS]: Fx.Fx.Success<VS[K]> },
-  Effect.Effect.Context<VS[string]>,
-  Effect.Effect.Error<VS[string]>,
+  Effect.Effect.Context<VS[keyof VS]>,
+  Effect.Effect.Error<VS[keyof VS]>,
   { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
 > {
   return map(

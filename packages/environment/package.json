@@ -1,6 +1,6 @@
 {
-  "name": "@typed/route",
-  "version": "0.14.1",
+  "name": "@typed/environment",
+  "version": "0.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -39,15 +39,7 @@
   "author": "Typed contributors",
   "license": "MIT",
   "sideEffects": [],
-  "dependencies": {
-    "effect": "2.0.0-next.54",
-    "@typed/fx": "workspace:*",
-    "@typed/path": "workspace:*",
-    "path-to-regexp": "^6.2.1"
-  },
-  "peerDependencies": {
-    "effect": "2.0.0-next.54",
-    "@typed/path": "workspace:*",
-    "path-to-regexp": "^6.2.1"
-  }
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {}
 }

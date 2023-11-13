@@ -1,10 +1,10 @@
 import { SchemaStorage, Storage } from "@typed/dom/Storage"
 import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
-import * as Match from "@typed/fx/Match"
 import * as Navigation from "@typed/navigation"
-import * as Route from "@typed/route/Route2"
-import { Effect, Layer, Option } from "effect"
+import * as Route from "@typed/route"
+import * as Router from "@typed/router"
+import { Effect, Layer } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 
@@ -23,6 +23,7 @@ const getTodos = todos.get({ errors: "all", onExcessProperty: "error" }).pipe(
   Effect.catchAll(() => Effect.succeed([]))
 )
 
+// Everytime there is a change to our TodoList, write its value back to storage
 const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
 
 /* #endregion */
@@ -45,13 +46,15 @@ export const filterStateToPath = (state: Domain.FilterState) => {
   }
 }
 
-const currentFilterState = Match.value(Navigation.CurrentPath)
-  .when(allRoute, () => Fx.succeed(Domain.FilterState.All))
-  .when(activeRoute, () => Fx.succeed(Domain.FilterState.Active))
-  .when(completedRoute, () => Fx.succeed(Domain.FilterState.Completed))
-  .run
-  .pipe(
-    Fx.map(Option.getOrElse(() => Domain.FilterState.All))
+const currentFilterState = Router
+  .to(allRoute, () => Domain.FilterState.All)
+  .to(activeRoute, () => Domain.FilterState.Active)
+  .to(completedRoute, () => Domain.FilterState.Completed)
+  .notFound(() =>
+    Navigation.navigate(filterStateToPath(Domain.FilterState.All), { history: "replace" }).pipe(
+      Effect.catchAll(() => Effect.unit),
+      Effect.as(Domain.FilterState.All)
+    )
   )
 
 /* #endregion */
@@ -59,12 +62,16 @@ const currentFilterState = Match.value(Navigation.CurrentPath)
 /* #region Layers */
 
 const ModelLive = Layer.mergeAll(
+  // Ininialize our TodoList from storage
   App.TodoList.make(getTodos),
+  // Update our FilterState everytime the current path changes
   App.FilterState.make(currentFilterState),
+  // Initialize our TodoText
   App.TodoText.of("")
 )
 
 const CreateTodoLive = App.CreateTodo.implement((text) =>
+  // Create a new Todo with the provided text
   Effect.sync(() => ({
     id: Domain.TodoId(crypto.randomUUID()),
     text,
@@ -73,20 +80,20 @@ const CreateTodoLive = App.CreateTodo.implement((text) =>
   }))
 )
 
+// Create our subscriptiosn to streams
 const SubscriptionsLive = Fx.drainLayer(writeTodos)
 
-const AppLive = Layer.provideMerge(
-  ModelLive,
+const AppLive = ModelLive.pipe(Layer.provideMerge(
   Layer.mergeAll(
     CreateTodoLive,
     SubscriptionsLive
   )
-)
+))
 
 export const Live = AppLive
   .pipe(
-    Layer.useMerge(Layer.mergeAll(Storage.layer(localStorage), Navigation.polyfill({}))),
-    Layer.useMerge(Window.layer(window))
+    Layer.use(Layer.mergeAll(Storage.layer(localStorage), Navigation.polyfill({}))),
+    Layer.use(Window.layer(window))
   )
 
 /* #endregion */

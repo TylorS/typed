@@ -26,7 +26,7 @@ export type FilterState = RefSubject.Context<typeof FilterState>
 export const TodoText = RefSubject.tagged<string>()("TodoText")
 export type TodoText = RefSubject.Context<typeof TodoText>
 
-export const Todos: Computed.Computed<never, never, Domain.TodoList> = Computed.struct({
+export const Todos: Computed.Computed<TodoList | FilterState, never, Domain.TodoList> = Computed.struct({
   list: TodoList,
   state: FilterState
 })
@@ -34,9 +34,7 @@ export const Todos: Computed.Computed<never, never, Domain.TodoList> = Computed.
 
 export const ActiveCount: Computed.Computed<TodoList, never, number> = TodoList.map(Domain.activeCount)
 
-export const SomeAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map((list) =>
-  Domain.completedCount(list) > 0
-)
+export const SomeAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map(Domain.someAreCompleted)
 
 export const AllAreCompleted: Computed.Computed<TodoList, never, boolean> = TodoList.map(Domain.allAreCompleted)
 

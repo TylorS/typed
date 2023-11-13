@@ -3,7 +3,7 @@ import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
 import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
 import type * as Sink from "@typed/fx/Sink"
-import { Effectable } from "effect"
+import { Effectable, Exit } from "effect"
 import { type Cause, NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
@@ -321,7 +321,8 @@ export function withBuffers<R, E, A>(size: number, sink: Sink.WithContext<R, E, 
 export type ScopedRuntime<R> = {
   readonly runtime: Runtime.Runtime<R | Scope.Scope>
   readonly scope: Scope.Scope
-  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.Fiber<E, A>
+  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.RuntimeFiber<E, A>
+  readonly runPromise: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Promise<A>
 }
 
 export function scopedRuntime<R>(): Effect.Effect<
@@ -334,8 +335,8 @@ export function scopedRuntime<R>(): Effect.Effect<
     const scope = unsafeGet(runtime.context, Scope.Scope)
     const runFork = Runtime.runFork(runtime)
 
-    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => {
-      const fiber: Fiber.Fiber<E, A> = Scope.addFinalizer(
+    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
+      const fiber: Fiber.RuntimeFiber<E, A> = Scope.addFinalizer(
         scope,
         Effect.suspend(() => Fiber.interrupt(fiber))
       ).pipe(
@@ -346,10 +347,20 @@ export function scopedRuntime<R>(): Effect.Effect<
       return fiber
     }
 
+    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
+      new Promise((resolve, reject) => {
+        const fiber = run(effect)
+        fiber.addObserver(Exit.match({
+          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
+          onSuccess: resolve
+        }))
+      })
+
     return {
       runtime,
       scope,
-      run
+      run,
+      runPromise
     } as const
   })
 }

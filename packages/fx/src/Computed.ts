@@ -13,7 +13,9 @@ import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
+import type { Equivalence } from "effect/dist/declarations/src"
 import * as Effect from "effect/Effect"
+import { equals } from "effect/Equal"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 
@@ -62,6 +64,11 @@ export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, R,
    * Filter the current value of this Filtered to a new value
    */
   readonly filter: (f: (a: A) => boolean) => Filtered<R, E, A>
+
+  /**
+   * Skip values that match the provided Equivalence instance
+   */
+  readonly skipRepeats: (eq?: Equivalence.Equivalence<A>) => Computed<R, E, A>
 }
 
 /**
@@ -73,6 +80,12 @@ export function Computed<R, E, A, R2, E2, B>(
   f: (a: A) => Effect.Effect<R2, E2, B>
 ): Computed<R | R2, E | E2, B> {
   return new ComputedImpl(input, f) as any
+}
+
+export namespace Computed {
+  export type Context<T> = [T] extends [Computed<infer R, infer _E, infer _A>] ? R : never
+  export type Error<T> = [T] extends [Computed<infer _R, infer E, infer _A>] ? E : never
+  export type Success<T> = [T] extends [Computed<infer _R, infer _E, infer A>] ? A : never
 }
 
 class ComputedImpl<R, E, A, R2, E2, B>
@@ -102,11 +115,11 @@ class ComputedImpl<R, E, A, R2, E2, B>
     )
   }
 
-  mapEffect: Computed<R | R2, E | E2, B>["mapEffect"] = (f) => Computed(this as any, f)
+  mapEffect: Computed<R | R2, E | E2, B>["mapEffect"] = (f) => Computed(this, f)
 
   map: Computed<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
-  filterMapEffect: Computed<R | R2, E | E2, B>["filterMapEffect"] = (f) => Filtered(this as any, f)
+  filterMapEffect: Computed<R | R2, E | E2, B>["filterMapEffect"] = (f) => Filtered(this, f)
 
   filterMap: Computed<R | R2, E | E2, B>["filterMap"] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
 
@@ -114,22 +127,31 @@ class ComputedImpl<R, E, A, R2, E2, B>
     this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
 
   filter: Computed<R | R2, E | E2, B>["filter"] = (f) => this.filterEffect((a) => Effect.sync(() => f(a)))
+
+  skipRepeats: (eq?: Equivalence.Equivalence<B> | undefined) => Computed<R | R2, E | E2, B> = (eq = equals) =>
+    Computed<R | R2, E | E2, B, never, never, B>(
+      Versioned.transformFx<R | R2, R | R2, E | E2, B, R | R2, E | E2, B, R | R2, E | E2, B>(
+        this,
+        core.skipRepeatsWith(eq)
+      ),
+      Effect.succeed
+    )
 }
 
 export function combine<const Computeds extends ReadonlyArray<Computed<any, any, any>>>(computeds: Computeds): Computed<
-  Fx.Context<Computeds[number]>,
-  Fx.Error<Computeds[number]>,
-  { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> }
+  Fx.Context<Computeds[keyof Computeds]>,
+  Fx.Error<Computeds[keyof Computeds]>,
+  { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> }
 > {
   return Computed(
     Versioned.combine(computeds) as Versioned.Versioned<
-      Fx.Context<Computeds[number]>,
-      Fx.Context<Computeds[number]>,
-      Fx.Error<Computeds[number]>,
-      { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> },
-      Fx.Context<Computeds[number]>,
-      Fx.Error<Computeds[number]>,
-      { readonly [K in keyof Computeds]: Fx.Success<Computeds[number]> }
+      Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> },
+      Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> }
     >,
     Effect.succeed
   )
@@ -138,19 +160,19 @@ export function combine<const Computeds extends ReadonlyArray<Computed<any, any,
 export function struct<const Computeds extends Readonly<Record<string, Computed<any, any, any>>>>(
   computeds: Computeds
 ): Computed<
-  Fx.Context<Computeds[string]>,
-  Fx.Error<Computeds[string]>,
-  { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> }
+  Computed.Context<Computeds[keyof Computeds]>,
+  Computed.Error<Computeds[keyof Computeds]>,
+  { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> }
 > {
   return Computed(
     Versioned.struct(computeds) as Versioned.Versioned<
-      Fx.Context<Computeds[string]>,
-      Fx.Context<Computeds[string]>,
-      Fx.Error<Computeds[string]>,
-      { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> },
-      Fx.Context<Computeds[string]>,
-      Fx.Error<Computeds[string]>,
-      { readonly [K in keyof Computeds]: Fx.Success<Computeds[string]> }
+      Computed.Context<Computeds[keyof Computeds]>,
+      Computed.Context<Computeds[keyof Computeds]>,
+      Computed.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> },
+      Computed.Context<Computeds[keyof Computeds]>,
+      Computed.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> }
     >,
     Effect.succeed
   )

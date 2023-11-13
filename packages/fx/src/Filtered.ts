@@ -4,15 +4,21 @@
  * @since 1.18.0
  */
 
+import type { Tag } from "@typed/context"
 // eslint-disable-next-line import/no-cycle
 import { Computed } from "@typed/fx/Computed"
 import type * as Fx from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
+import { fromFxEffect } from "@typed/fx/internal/fx"
+import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { FilteredTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
+import { equals } from "effect/Equal"
+import type { Equivalence } from "effect/Equivalence"
+import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 
 /**
@@ -68,6 +74,11 @@ export interface Filtered<out R, out E, out A>
    * @since 1.18.0
    */
   readonly map: <B>(f: (a: A) => B) => Filtered<R, E, B>
+
+  /**
+   * Skip values that match the provided Equivalence instance
+   */
+  readonly skipRepeats: (eq?: Equivalence<A>) => Filtered<R, E, A>
 }
 
 /**
@@ -75,7 +86,7 @@ export interface Filtered<out R, out E, out A>
  * @since 1.18.0
  */
 export function Filtered<R, E, A, R2, E2, B>(
-  input: Versioned.Versioned<R, R, E, A, R, E, A>,
+  input: Versioned.Versioned<R, R, E, A, R, E | Cause.NoSuchElementException, A>,
   f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
 ): Filtered<R | R2, E | E2, B> {
   return new FilteredImpl(input, f) as any
@@ -126,6 +137,15 @@ class FilteredImpl<R, E, A, R2, E2, B>
 
   map: Filtered<R | R2, E | E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
+  skipRepeats: (eq?: Equivalence<B> | undefined) => Filtered<R | R2, E | E2, B> = (eq = equals) =>
+    Filtered(
+      Versioned.transformFx(
+        this,
+        (fx: Fx.Fx<R | R2, E | E2, B>) => core.skipRepeatsWith(fx, eq)
+      ),
+      Effect.succeedSome
+    )
+
   readonly option: Filtered<R | R2, E | E2, B>["option"]
 }
 
@@ -155,20 +175,39 @@ export function struct<
 >(
   computeds: Computeds
 ): Filtered<
-  Fx.Fx.Context<Computeds[string]>,
-  Fx.Fx.Error<Computeds[string]>,
-  { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[string]> }
+  Fx.Fx.Context<Computeds[keyof Computeds]>,
+  Fx.Fx.Error<Computeds[keyof Computeds]>,
+  { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[K]> }
 > {
   return Filtered(
     Versioned.struct(computeds) as Versioned.Versioned<
-      Fx.Fx.Context<Computeds[string]>,
-      Fx.Fx.Context<Computeds[string]>,
-      Fx.Fx.Error<Computeds[string]>,
-      { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[string]> },
-      Fx.Fx.Context<Computeds[string]>,
-      Fx.Fx.Error<Computeds[string]>,
-      { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[string]> }
+      Fx.Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Fx.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[K]> },
+      Fx.Fx.Context<Computeds[keyof Computeds]>,
+      Fx.Fx.Error<Computeds[keyof Computeds]>,
+      { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[K]> }
     >,
     Effect.succeedSome
   )
 }
+
+export const fromTag: {
+  <S, R2, E2, B>(f: (s: S) => Filtered<R2, E2, B>): <I>(tag: Tag<I, S>) => Filtered<I | R2, E2, B>
+  <I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Filtered<R2, E2, B>): Filtered<I | R2, E2, B>
+} = dual(
+  2,
+  function fromTag<I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Filtered<R2, E2, B>) {
+    const get = new OnceEffect(Effect.map(tag, f))
+
+    return Filtered(
+      Versioned.make({
+        fx: fromFxEffect(get),
+        effect: Effect.flatten(get),
+        version: Effect.flatMap(get, (c) => c.version)
+      }),
+      Effect.succeedSome
+    )
+  }
+)

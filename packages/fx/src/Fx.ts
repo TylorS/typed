@@ -26,7 +26,7 @@ import * as internalRun from "@typed/fx/internal/run"
 import * as Share from "@typed/fx/internal/share"
 import * as strategies from "@typed/fx/internal/strategies"
 import * as internalWithKey from "@typed/fx/internal/withKey"
-import type { RefSubject } from "@typed/fx/RefSubject"
+import { type RefSubject, transform } from "@typed/fx/RefSubject"
 import type * as Sink from "@typed/fx/Sink"
 import type { Subject } from "@typed/fx/Subject"
 import { TypeId } from "@typed/fx/TypeId"
@@ -40,7 +40,7 @@ import type * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import type * as FiberId from "effect/FiberId"
 import type { FiberRef } from "effect/FiberRef"
-import { constant, dual } from "effect/Function"
+import { constant, dual, identity } from "effect/Function"
 import type * as HashSet from "effect/HashSet"
 import type { Inspectable } from "effect/Inspectable"
 import type * as Layer from "effect/Layer"
@@ -661,10 +661,16 @@ export const fromPubSub: {
  * @since 1.18.0
  * @category running
  */
-export const run: <R, E, A, R2>(
-  fx: Fx<R, E, A>,
-  sink: Sink.WithContext<R2, E, A>
-) => Effect.Effect<R | R2, never, unknown> = internalRun.run
+export const run: {
+  <E, A, R2>(
+    sink: Sink.WithContext<R2, E, A>
+  ): <R>(fx: Fx<R, E, A>) => Effect.Effect<R | R2, never, unknown>
+
+  <R, E, A, R2>(
+    fx: Fx<R, E, A>,
+    sink: Sink.WithContext<R2, E, A>
+  ): Effect.Effect<R | R2, never, unknown>
+} = dual(2, internalRun.run)
 
 /**
  * Observe an Fx with the provided success value handler. The
@@ -1121,8 +1127,8 @@ export const mapEffect: {
  * @category combinators
  */
 export const tap: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, B>
+  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, A>
 } = core.tap
 
 /**
@@ -2505,3 +2511,65 @@ export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs
 export function isFx<R = unknown, E = unknown, A = unknown>(u: unknown): u is Fx<R, E, A> {
   return typeof u === "object" && u !== null && TypeId in u
 }
+
+export const matchOption: {
+  <A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    onNone: () => FxInput<R2, E2, B>,
+    onSome: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R | R2, E | E2, B | C>
+
+  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    fx: Fx<R, E, Option.Option<A>>,
+    onNone: () => FxInput<R2, E2, B>,
+    onSome: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): Fx<R | R2, E | E2, B | C>
+} = dual(
+  3,
+  function matchOption<R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    fx: Fx<R, E, Option.Option<A>>,
+    onNone: () => FxInput<R2, E2, B>,
+    onSome: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): Fx<R | R2, E | E2, B | C> {
+    return matchTags(fx, {
+      None: onNone,
+      Some: (some) => onSome(transform(some, (s) => s.value, (value) => Option.some(value) as Option.Some<A>))
+    })
+  }
+)
+
+export const getOrElse: {
+  <A, R2 = never, E2 = never, B = never>(
+    orElse: () => FxInput<R2, E2, B>
+  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R | R2, E | E2, A | B>
+
+  <R, E, A, R2 = never, E2 = never, B = never>(
+    fx: Fx<R, E, Option.Option<A>>,
+    orElse: () => FxInput<R2, E2, B>
+  ): Fx<R | R2, E | E2, A | B>
+} = dual(
+  2,
+  function getOrElse<R, E, A, R2 = never, E2 = never, B = never>(
+    fx: Fx<R, E, Option.Option<A>>,
+    orElse: () => FxInput<R2, E2, B>
+  ): Fx<R | R2, E | E2, A | B> {
+    return matchOption(fx, orElse, identity)
+  }
+)
+
+export const fork = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> =>
+  Effect.fork(drain(fx))
+
+export const forkScoped = <R, E, A>(
+  fx: Fx<R, E, A>
+): Effect.Effect<R | Scope.Scope, never, Fiber.RuntimeFiber<E, void>> => Effect.forkScoped(drain(fx))
+
+export const forkDaemon = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> =>
+  Effect.forkDaemon(drain(fx))
+
+export const forkIn: {
+  (scope: Scope.Scope): <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
+  <R, E, A>(fx: Fx<R, E, A>, scope: Scope.Scope): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
+} = dual(2, <R, E, A>(
+  fx: Fx<R, E, A>,
+  scope: Scope.Scope
+): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> => Effect.forkIn(drain(fx), scope))

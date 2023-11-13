@@ -1,5 +1,6 @@
 import { RefSubject } from "@typed/fx"
 import * as Fx from "@typed/fx/Fx"
+import type { Guard } from "@typed/fx/Guard"
 import { Effect, Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
@@ -16,9 +17,14 @@ export interface TypeMatcher<R, E, I, O> {
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
 
   readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: (input: I) => Effect.Effect<R2, E2, Option.Option<A>>,
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
   ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
+
+  readonly to: <R2, E2, A, B>(
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    onMatch: B
+  ) => TypeMatcher<R | R2, E | E2, I, O | B>
 
   readonly run: <R2 = never, E2 = never>(input: Fx.FxInput<R2, E2, I>) => Fx.Fx<R | R2, E | E2, Option.Option<O>>
 }
@@ -31,11 +37,20 @@ export interface ValueMatcher<R, E, I, O> {
   readonly value: Fx.Fx<R, E, I>
 
   readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: (input: I) => Effect.Effect<R2, E2, Option.Option<A>>,
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
   ) => ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
+  readonly to: <R2, E2, A, B>(
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    onMatch: B
+  ) => ValueMatcher<R | R2, E | E2, I, O | B>
+
   readonly run: Fx.Fx<R, E, Option.Option<O>>
+
+  readonly getOrElse: <R2 = never, E2 = never, B = never>(
+    f: () => Fx.FxInput<R2, E2, B>
+  ) => Fx.Fx<R | R2, E | E2, O | B>
 }
 
 export namespace Matcher {
@@ -79,12 +94,19 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
   }
 
   when<R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: (input: I) => Effect.Effect<R2, E2, Option.Option<A>>,
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
   ): TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
     return new TypeMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
-      Chunk.append(this.cases, new When<R2 | R3, E2 | E3, I, A, B>(guard, onMatch))
+      Chunk.append(this.cases, new When<R2 | R3, E2 | E3, I, A, B>(getGuard(guard), onMatch))
     )
+  }
+
+  to<R2, E2, A, B>(
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    onMatch: B
+  ): TypeMatcher<R | R2, E | E2, I, O | B> {
+    return this.when(guard, () => Effect.succeed(onMatch))
   }
 
   run<R2, E2>(input: Fx.FxInput<R2, E2, I>): Fx.Fx<R | R2, E | E2, Option.Option<O>> {
@@ -181,10 +203,12 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
 
   constructor(readonly value: Fx.Fx<R, E, I>, readonly matcher: TypeMatcher<R, E, I, O>) {
     this.when = this.when.bind(this)
+    this.to = this.to.bind(this)
+    this.getOrElse = this.getOrElse.bind(this)
   }
 
   when<R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: (input: I) => Effect.Effect<R2, E2, Option.Option<A>>,
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
   ): ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
     return new ValueMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
@@ -193,5 +217,24 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
     )
   }
 
+  to<R2, E2, A, B>(
+    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    onMatch: B
+  ): ValueMatcher<R | R2, E | E2, I, O | B> {
+    return this.when(guard, () => Effect.succeed(onMatch))
+  }
+
   run: ValueMatcher<R, E, I, O>["run"] = Fx.suspend(() => this.matcher.run(this.value))
+
+  getOrElse: ValueMatcher<R, E, I, O>["getOrElse"] = (f) =>
+    Fx.suspend(() => Fx.getOrElse(this.matcher.run(this.value), f))
+}
+
+export interface AsGuard<I, R, E, A> {
+  readonly asGuard: () => Guard<I, R, E, A>
+}
+
+function getGuard<I, R, E, A>(guard: Guard<I, R, E, A> | AsGuard<I, R, E, A>): Guard<I, R, E, A> {
+  if (typeof guard === "function") return guard
+  return guard.asGuard()
 }

@@ -77,13 +77,13 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
     const updateText = flow(Domain.updateText, todo.update)
 
     // Submit the todo when the user is done editing
-    const submit = todo.pipe(
-      Effect.flatMap((t) => App.editTodo(t.id, t.text)),
+    const submit = text.pipe(
+      Effect.flatMap((t) => App.editTodo(id, t)),
       Effect.flatMap(() => isEditing.set(false))
     )
 
     // Reset the todo's text to the text value before editing it
-    const reset = todo.delete.pipe(Effect.zipRight(isEditing.set(false)))
+    const reset = todo.delete.pipe(Effect.zipLeft(isEditing.set(false)))
 
     return html`<li class="${Fx.when(isCompleted, "completed", "")} ${Fx.when(isEditing, "editing", "")}">
       <div class="view">

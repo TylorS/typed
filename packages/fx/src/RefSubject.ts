@@ -7,10 +7,10 @@
 
 import type { Schema } from "@effect/schema"
 import * as C from "@typed/context"
-import { Computed } from "@typed/fx/Computed"
+import { Computed, fromTag } from "@typed/fx/Computed"
 import { Filtered } from "@typed/fx/Filtered"
 import type * as Fx from "@typed/fx/Fx"
-import { provide } from "@typed/fx/internal/core"
+import { provide, skipRepeatsWith } from "@typed/fx/internal/core"
 import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { exit, fromFxEffect } from "@typed/fx/internal/fx"
@@ -22,7 +22,9 @@ import * as Versioned from "@typed/fx/Versioned"
 import type { Stream, SubscriptionRef } from "effect"
 import { Cause, Exit, identity } from "effect"
 import * as Effect from "effect/Effect"
+import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
+import { dual } from "effect/Function"
 import type * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
@@ -342,6 +344,9 @@ class ContextImpl<I, E, A> extends FxEffectBase<I, E, A, I, E, A> implements Ref
   filterEffect: <R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>) => Filtered<I | R2, E | E2, A> = (f) =>
     this.filterMapEffect((a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
 
+  skipRepeats: (eq?: Equivalence<A> | undefined) => Computed<I, E, A> = (eq = equals) =>
+    fromTag(this.tag, (s) => s.skipRepeats(eq))
+
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<I, never, unknown> = (cause) =>
     this.tag.withEffect((ref) => ref.onFailure(cause))
 
@@ -515,4 +520,92 @@ export function fromSubscriptionRef<A>(
   subscriptionRef: SubscriptionRef.SubscriptionRef<A>
 ): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
   return coreRefSubject.make(subscriptionRef.changes)
+}
+
+export const transform: {
+  <A, B>(from: (a: A) => B, to: (b: B) => A): <R, E>(ref: RefSubject<R, E, A>) => RefSubject<R, E, B>
+  <R, E, A, B>(ref: RefSubject<R, E, A>, from: (a: A) => B, to: (b: B) => A): RefSubject<R, E, B>
+} = dual(3, function transform<R, E, A, B>(
+  ref: RefSubject<R, E, A>,
+  from: (a: A) => B,
+  to: (b: B) => A
+): RefSubject<R, E, B> {
+  return new TransformImpl(ref, from, to)
+})
+
+class TransformImpl<R, E, A, B> extends FxEffectBase<R, E, B, R, E, B> implements RefSubject<R, E, B> {
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+
+  readonly version: RefSubject<R, E, B>["version"]
+  readonly subscriberCount: RefSubject<R, E, B>["subscriberCount"]
+  readonly get: RefSubject<R, E, B>["get"]
+  readonly delete: RefSubject<R, E, B>["delete"]
+  readonly interrupt: RefSubject<R, E, B>["interrupt"]
+
+  constructor(
+    readonly ref: RefSubject<R, E, A>,
+    readonly from: (a: A) => B,
+    readonly to: (b: B) => A
+  ) {
+    super()
+
+    this.version = ref.version
+    this.subscriberCount = ref.subscriberCount
+    this.get = Effect.map(ref.get, from)
+    this.delete = Effect.map(ref.delete, Option.map(from))
+    this.interrupt = ref.interrupt
+  }
+
+  protected toFx(): Fx.Fx<R, E, B> {
+    return this.ref.map(this.from)
+  }
+
+  protected toEffect(): Effect.Effect<R, E, B> {
+    return this.ref.map(this.from)
+  }
+
+  set: RefSubject<R, E, B>["set"] = (b) => Effect.map(this.ref.set(this.to(b)), this.from)
+  update: RefSubject<R, E, B>["update"] = (f) => Effect.map(this.ref.update((a) => this.to(f(this.from(a)))), this.from)
+
+  updateEffect: RefSubject<R, E, B>["updateEffect"] = (f) =>
+    Effect.map(this.ref.updateEffect((a) => Effect.map(f(this.from(a)), this.to)), this.from)
+
+  modifyEffect: RefSubject<R, E, B>["modifyEffect"] = (f) =>
+    this.ref.modifyEffect((a) => Effect.map(f(this.from(a)), ([c, b]) => [c, this.to(b)] as const))
+
+  modify: RefSubject<R, E, B>["modify"] = (f) =>
+    this.ref.modify((a) => {
+      const [c, b] = f(this.from(a))
+      return [c, this.to(b)] as const
+    })
+
+  runUpdate: RefSubject<R, E, B>["runUpdate"] = (f) =>
+    this.ref.runUpdate((get, set) => f(Effect.map(get, this.from), (b) => Effect.map(set(this.to(b)), this.from)))
+
+  mapEffect: RefSubject<R, E, B>["mapEffect"] = (f) => Computed(this, f)
+
+  map: RefSubject<R, E, B>["map"] = (f) => this.mapEffect((b) => Effect.sync(() => f(b)))
+
+  filterMapEffect: RefSubject<R, E, B>["filterMapEffect"] = (f) => Filtered(this, f)
+
+  filterMap: RefSubject<R, E, B>["filterMap"] = (f) => Filtered(this, (a) => Effect.sync(() => f(a)))
+
+  filter: RefSubject<R, E, B>["filter"] = (f) => this.filterMap((a) => f(a) ? Option.some(a) : Option.none())
+
+  filterEffect: RefSubject<R, E, B>["filterEffect"] = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
+
+  onSuccess: RefSubject<R, E, B>["onSuccess"] = (b) => this.ref.onSuccess(this.to(b))
+
+  onFailure: RefSubject<R, E, B>["onFailure"] = (b) => this.ref.onFailure(b)
+
+  skipRepeats: (eq?: Equivalence<B> | undefined) => Computed<R, E, B> = (eq = equals) =>
+    Computed<R, E, B, never, never, B>(
+      Versioned.transformFx<R, R, E, B, R, E, B, R, E, B>(
+        this,
+        skipRepeatsWith(eq)
+      ),
+      Effect.succeed
+    )
 }

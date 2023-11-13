@@ -81,6 +81,10 @@ export function allAreCompleted(list: TodoList): boolean {
   return list.length > 0 && list.every(isCompleted)
 }
 
+export function someAreCompleted(list: TodoList): boolean {
+  return list.length > 0 && list.some(isCompleted)
+}
+
 export function filterTodoList({ list, state }: { list: TodoList; state: FilterState }): TodoList {
   switch (state) {
     case FilterState.All:

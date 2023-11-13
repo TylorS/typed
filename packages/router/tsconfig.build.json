@@ -1,5 +1,7 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": [
+    "../../tsconfig.base.json"
+  ],
   "compilerOptions": {
     "outDir": "build/esm",
     "declarationDir": "build/dts",
@@ -11,10 +13,19 @@
   ],
   "references": [
     {
+      "path": "../context"
+    },
+    {
       "path": "../fx"
     },
     {
+      "path": "../navigation"
+    },
+    {
       "path": "../path"
+    },
+    {
+      "path": "../route"
     }
   ]
 }

@@ -13,6 +13,7 @@ import { type RefSubject } from "@typed/fx/RefSubject"
 import { Sink, WithContext } from "@typed/fx/Sink"
 import type * as Subject from "@typed/fx/Subject"
 import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
+import { transformFx } from "@typed/fx/Versioned"
 import { Ref, SubscriptionRef } from "effect"
 import { type Cause, isInterrupted } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
@@ -183,24 +184,33 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
     )
   })
 
-  mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R2, E | E2, B> = (f) =>
-    Computed(this as any, f)
+  mapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>) => Computed<R | R2, E | E2, B> = (f) =>
+    Computed(this, f)
 
-  map: <B>(f: (a: A) => B) => Computed<never, E, B> = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
+  map: <B>(f: (a: A) => B) => Computed<R, E, B> = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
 
-  filterMapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>) => Filtered<R2, E | E2, B> = (
+  filterMapEffect: <R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>) => Filtered<R | R2, E | E2, B> = (
     f
-  ) => Filtered(this as any, f)
+  ) => Filtered(this, f)
 
-  filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<never, E, B> = (f) =>
+  filterMap: <B>(f: (a: A) => Option.Option<B>) => Filtered<R, E, B> = (f) =>
     this.filterMapEffect((a) => Effect.sync(() => f(a)))
 
   filterEffect: <R2, E2>(
     f: (a: A) => Effect.Effect<R2, E2, boolean>
-  ) => Filtered<R2, E | E2, A> = (f) =>
+  ) => Filtered<R | R2, E | E2, A> = (f) =>
     this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
 
   filter = (f: (a: A) => boolean) => this.filterMap(Option.liftPredicate(f))
+
+  skipRepeats: (eq?: Equivalence<A> | undefined) => Computed<R, E, A> = (eq = equals) =>
+    Computed<R, E, A, never, never, A>(
+      transformFx<R, R, E, A, R, E, A, R, E, A>(
+        this,
+        core.skipRepeatsWith(eq)
+      ),
+      Effect.succeed
+    )
 
   private getCurrentValue = (fiber: Option.Option<Fiber.Fiber<E, A>>) => {
     return Option.match(fiber, {
