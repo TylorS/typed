@@ -6,14 +6,22 @@ import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { Effect, Stream } from "effect"
 
+const HTML_CONTENT_TYPE = "text/html"
+const CAMEL_CASE_CONTENT_TYPE = { contentType: HTML_CONTENT_TYPE }
+const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
+
 export function htmlResponse<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
   options?: HttpServer.response.Options
 ): Effect.Effect<RenderContext.RenderContext | Exclude<R, RenderTemplate>, E, HttpServer.response.ServerResponse> {
   return Effect.contextWithEffect((ctx) =>
     HttpServer.response.stream(
-      renderToStream(fx).pipe(Stream.provideContext(ctx)),
-      { contentType: "text/html", ...options, headers: { "content-type": "text/html", ...options?.headers } }
+      Stream.provideContext(renderToStream(fx), ctx),
+      {
+        ...CAMEL_CASE_CONTENT_TYPE,
+        ...options,
+        headers: { ...HYPHENATED_CONTENT_TYPE, ...options?.headers }
+      }
     )
   )
 }

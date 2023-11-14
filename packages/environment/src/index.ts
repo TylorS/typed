@@ -1,7 +1,7 @@
 import * as Context from "@typed/context"
 import type * as Effect from "effect/Effect"
 
-export type Environment = "browser" | "server" | "static"
+export type Environment = "browser" | "server" | "static" | "test"
 
 /**
  * @since 1.0.0
@@ -9,7 +9,8 @@ export type Environment = "browser" | "server" | "static"
 export const Environment: { readonly [_ in Environment]: _ } = {
   server: "server",
   browser: "browser",
-  static: "static"
+  static: "static",
+  test: "test"
 }
 
 export const CurrentEnvironment = Context.Tagged<Environment>()((_) =>
@@ -29,3 +30,5 @@ export const isServer: Effect.Effect<CurrentEnvironment, never, boolean> = Curre
 export const isStatic: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
   e === "static"
 )
+
+export const isTest: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "test")

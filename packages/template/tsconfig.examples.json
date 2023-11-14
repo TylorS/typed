@@ -4,7 +4,10 @@
     "tsBuildInfoFile": "build/tsbuildinfo/examples.tsbuildinfo",
     "rootDir": "examples",
     "module": "CommonJS",
-    "outDir": "build/examples"
+    "outDir": "build/examples",
+    "types": [
+      "vitest/globals"
+    ]
   },
   "include": [
     "examples/**/*.ts"

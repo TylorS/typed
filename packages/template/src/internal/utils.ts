@@ -1,5 +1,10 @@
+import { getOption } from "@typed/context"
 import { TEXT_START, TYPED_START } from "@typed/template/Meta"
 import * as Chunk from "effect/Chunk"
+import type * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import { isSome } from "effect/Option"
+import { TestClock } from "effect/TestClock"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE
@@ -52,4 +57,17 @@ export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Nod
 export interface ParentChildNodes {
   readonly parentNode: Node | null
   readonly childNodes: ArrayLike<Node>
+}
+
+export function adjustTime(input?: Duration.DurationInput) {
+  return Effect.gen(function*(_) {
+    const ctx = yield* _(Effect.context<never>())
+    const testClock = getOption(ctx, TestClock)
+
+    if (isSome(testClock)) {
+      yield* _(testClock.value.adjust(input ?? 1))
+    } else if (input) {
+      yield* _(Effect.sleep(input))
+    }
+  })
 }

@@ -21,6 +21,8 @@ export interface TemplateInstance<E, T extends Rendered = Rendered>
   readonly events: ElementRef<T>["events"]
 
   readonly elements: ElementRef<T>["elements"]
+
+  readonly dispatchEvent: ElementRef<T>["dispatchEvent"]
 }
 
 export function TemplateInstance<T extends Rendered = Rendered, E = never>(
@@ -39,6 +41,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
   query: TemplateInstance<E, T>["query"]
   events: TemplateInstance<E, T>["events"]
   elements: TemplateInstance<E, T>["elements"]
+  dispatchEvent: TemplateInstance<E, T>["dispatchEvent"]
   version: Effect.Effect<never, never, number>
 
   constructor(
@@ -50,6 +53,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
     this.query = this.i1.query
     this.events = this.i1.events
     this.elements = this.i1.elements
+    this.dispatchEvent = this.i1.dispatchEvent
     this.version = this.i1[ElementRefTypeId].version
   }
 

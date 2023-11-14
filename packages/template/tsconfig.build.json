@@ -6,7 +6,10 @@
     "outDir": "build/esm",
     "declarationDir": "build/dts",
     "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
-    "rootDir": "src"
+    "rootDir": "src",
+    "types": [
+      "vitest/globals"
+    ]
   },
   "include": [
     "src/**/*.ts"

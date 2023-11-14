@@ -66,8 +66,8 @@ export const DomServices: Context.TaggedStruct<
 export type DomServicesParams = {
   readonly window: Window
   readonly globalThis: GlobalThis
-  readonly rootElement?: HTMLElement
-  readonly parentElement?: HTMLElement
+  readonly rootElement?: HTMLElement | undefined
+  readonly parentElement?: HTMLElement | undefined
 }
 
 /**
@@ -98,8 +98,8 @@ export const makeDomServices = (params: DomServicesParams): Context.Context<DomS
  * @category params
  */
 export type DomServicesElementParams = {
-  readonly rootElement?: HTMLElement
-  readonly parentElement?: HTMLElement
+  readonly rootElement?: HTMLElement | undefined
+  readonly parentElement?: HTMLElement | undefined
 }
 
 /**

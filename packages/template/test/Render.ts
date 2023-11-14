@@ -1,13 +1,16 @@
 import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import type { CurrentEnvironment } from "@typed/environment"
+import { RefSubject } from "@typed/fx"
 import * as Fx from "@typed/fx/Fx"
 import { render } from "@typed/template/Render"
 import type { Renderable } from "@typed/template/Renderable"
 import * as RenderContext from "@typed/template/RenderContext"
 import { DomRenderEvent } from "@typed/template/RenderEvent"
-import { RenderTemplate } from "@typed/template/RenderTemplate"
+import { html, RenderTemplate } from "@typed/template/RenderTemplate"
 import type { TemplateInstance } from "@typed/template/TemplateInstance"
+import { click, testRender } from "@typed/template/Test"
+import * as Vitest from "@typed/template/Vitest"
 import type * as Wire from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import type { NoSuchElementException } from "effect/Cause"
@@ -17,7 +20,7 @@ import * as Scope from "effect/Scope"
 import * as happyDOM from "happy-dom"
 import { describe, it } from "vitest"
 
-export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
+export function tmpl<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
 ) {
@@ -25,17 +28,18 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
 }
 
 describe("Render", () => {
-  it("renders a simple template", async () => {
-    const test = testRendered(html`<div>Hello, world!</div>`, (rendered, window) => {
+  Vitest.test("renders a simple template", () => {
+    return Effect.gen(function*(_) {
+      const { elementRef, window } = yield* _(testRender(html`<div>Hello, world!</div>`))
+      const rendered = yield* _(elementRef)
+
       ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.innerText, "Hello, world!")
     })
-
-    await Effect.runPromise(test)
   })
 
   it("renders a simple template with attributes", async () => {
-    const test = testRendered(html`<div class="foo" id="bar">Hello, world!</div>`, (rendered, window) => {
+    const test = testRendered(tmpl`<div class="foo" id="bar">Hello, world!</div>`, (rendered, window) => {
       ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.className, "foo")
       deepStrictEqual(rendered.id, "bar")
@@ -46,7 +50,7 @@ describe("Render", () => {
   })
 
   it("renders a nested templates", async () => {
-    const test = testRendered(html`<div class="foo" id="bar">Hello, world!</div>`, (rendered, window) => {
+    const test = testRendered(tmpl`<div class="foo" id="bar">Hello, world!</div>`, (rendered, window) => {
       ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.className, "foo")
       deepStrictEqual(rendered.id, "bar")
@@ -54,6 +58,35 @@ describe("Render", () => {
     })
 
     await Effect.runPromise(test)
+  })
+
+  Vitest.test("renders a counter", () => {
+    const decrement = (x: number) => Math.max(0, x - 1)
+    const increment = (x: number) => x + 1
+
+    return Effect.gen(function*(_) {
+      const count = yield* _(RefSubject.of(0))
+      const rendered = yield* _(testRender(
+        html`
+        <button class="dec" onclick=${count.update(decrement)}>-</button>
+        <p>${count}</p>
+        <button class="inc" onclick=${count.update(increment)}>-</button>`
+      ))
+
+      const dec = click(rendered, { selector: ".dec" })
+      const inc = click(rendered, { selector: ".inc" })
+
+      yield* _(inc)
+      yield* _(inc)
+      yield* _(inc)
+      yield* _(dec)
+      yield* _(dec)
+      yield* _(inc)
+      yield* _(inc)
+      yield* _(inc)
+
+      expect(yield* _(count)).toEqual(4)
+    })
   })
 })
 

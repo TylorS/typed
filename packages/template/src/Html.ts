@@ -1,5 +1,5 @@
 import * as Fx from "@typed/fx/Fx"
-import type { Sink } from "@typed/fx/Sink"
+import { Sink } from "@typed/fx/Sink"
 import * as FxStream from "@typed/fx/Stream"
 import { TypeId } from "@typed/fx/TypeId"
 import { isDirective } from "@typed/template/Directive"
@@ -18,8 +18,9 @@ import type { RenderEvent } from "@typed/template/RenderEvent"
 import { RenderTemplate } from "@typed/template/RenderTemplate"
 import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
-import { Deferred, Effect, Option, pipe } from "effect"
-import * as Scope from "effect/Scope"
+import { Effect, Option } from "effect"
+import { join } from "effect/ReadonlyArray"
+import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import { StreamTypeId } from "effect/Stream"
 
@@ -30,7 +31,9 @@ export function renderToHtml<R, E>(
 ): Fx.Fx<Exclude<R, RenderTemplate> | RenderContext, E, string> {
   return Fx.fromFxEffect(
     RenderContext.with((ctx) =>
-      Fx.map(Fx.provide(fx, RenderTemplate.layer(renderHtml(ctx))), toHtml).pipe(
+      fx.pipe(
+        Fx.provide(RenderTemplate.layer(renderHtml(ctx))),
+        Fx.map(toHtml),
         Fx.startWith(TYPED_START),
         Fx.endWith(TYPED_END)
       )
@@ -41,7 +44,7 @@ export function renderToHtml<R, E>(
 export function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string> {
-  return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), (strings) => strings.join(""))
+  return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }
 
 export function renderToStream<R, E>(
@@ -72,8 +75,14 @@ function renderHtml(ctx: RenderContext) {
       } else {
         return TemplateInstance(
           Fx.filter(
-            // @ts-ignore
-            Fx.mergeBuffer(entry.chunks.map((chunk) => renderChunk(chunk, values))),
+            Fx.mergeBuffer(
+              entry.chunks.map((chunk) =>
+                renderChunk<
+                  Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
+                  Placeholder.Error<Values[number]>
+                >(chunk, values)
+              )
+            ),
             (x) => (x.valueOf() as string).length > 0
           ) as any,
           ref as any
@@ -90,20 +99,19 @@ function renderChunk<R, E>(
   if (chunk._tag === "text") {
     return Fx.succeed(HtmlRenderEvent(chunk.value))
   } else if (chunk._tag === "part") {
-    // @ts-ignore
-    return renderPart(chunk, values)
+    return renderPart<R, E>(chunk, values)
   } else {
-    return renderSparsePart(chunk, values)
+    return renderSparsePart<R, E>(chunk, values) as Fx.Fx<R, E, RenderEvent>
   }
 }
 
-function renderNode<R, E>(renderable: Renderable<R, E>): Fx.Fx<R, E, RenderEvent> {
+function renderNode<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, RenderEvent> {
   switch (typeof renderable) {
     case "string":
     case "number":
     case "boolean":
-      // @ts-ignore
-      return Fx.succeed(HtmlRenderEvent(TEXT_START + (renderable as any)))
+    case "bigint":
+      return Fx.succeed(HtmlRenderEvent(TEXT_START + renderable.toString()))
     case "undefined":
     case "object":
       return renderObject(renderable)
@@ -120,7 +128,7 @@ function renderObject<R, E>(renderable: object | null | undefined) {
   } else if (Fx.isFx<R, E, Renderable>(renderable)) {
     return Fx.concatMap(takeOneIfNotRenderEvent(renderable), renderNode as any)
   } else if (Effect.isEffect(renderable)) {
-    return Fx.switchMap(Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>), renderNode)
+    return Fx.switchMap(Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>), renderNode<R, E>)
   } else if (isRenderEvent(renderable)) {
     return Fx.succeed(renderable)
   } else {
@@ -133,8 +141,7 @@ function renderPart<R, E>(
   values: ReadonlyArray<Renderable<any, any>>
 ): Fx.Fx<R, E, RenderEvent> {
   const { node, render } = chunk
-  // @ts-ignore
-  const renderable = values[node.index]
+  const renderable: Renderable<any, any> = values[node.index]
 
   // Refs and events are not rendered into HTML
   if (isDirective<R, E>(renderable)) {
@@ -147,9 +154,9 @@ function renderPart<R, E>(
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    return Fx.continueWith(renderNode(renderable), () => Fx.succeed(HtmlRenderEvent(TYPED_HOLE(node.index))))
+    return Fx.continueWith(renderNode<R, E>(renderable), () => Fx.succeed(HtmlRenderEvent(TYPED_HOLE(node.index))))
   } else {
-    return Fx.filterMap(Fx.take(unwrapRenderable(renderable), 1), (value) => {
+    return Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
 
       return s ? Option.some(HtmlRenderEvent(s)) : Option.none()
@@ -159,7 +166,7 @@ function renderPart<R, E>(
 
 function renderSparsePart<R, E>(
   chunk: SparsePartChunk,
-  values: ReadonlyArray<Renderable<R, E>>
+  values: ReadonlyArray<Renderable<any, any>>
 ): Fx.Fx<R, E, RenderEvent> {
   const { node, render } = chunk
 
@@ -169,7 +176,7 @@ function renderSparsePart<R, E>(
         node.nodes.map((node) => {
           if (node._tag === "text") return Fx.succeed(node.value)
 
-          const renderable = (values as any)[node.index]
+          const renderable: Renderable<any, any> = (values as any)[node.index]
 
           if (isDirective<R, E>(renderable)) {
             return Fx.fromSink<R, E, unknown>((sink: Sink<E, unknown>) =>
@@ -180,39 +187,34 @@ function renderSparsePart<R, E>(
             )
           }
 
-          return unwrapRenderable<R, E>((values as any)[node.index])
+          return unwrapRenderable<R, E>(renderable)
         })
       ),
       1
     ),
-    (value) => HtmlRenderEvent(render(value as any))
+    (value) => HtmlRenderEvent(render(value))
   )
 }
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.fromSink((sink) =>
-    Effect.acquireUseRelease(
-      Scope.make(),
-      (scope) =>
-        Effect.flatMap(Deferred.make<never, void>(), (deferred) =>
-          pipe(
-            fx,
-            Fx.observe((event) =>
-              isRenderEvent(event)
-                ? sink.onSuccess(event)
-                : Effect.flatMap(sink.onSuccess(event), () => Deferred.succeed(deferred, undefined))
-            ),
-            Effect.onExit((exit) => Deferred.done(deferred, exit)),
-            Effect.provideService(Scope.Scope, scope),
-            Effect.forkIn(scope),
-            Effect.flatMap(() => Deferred.await(deferred))
-          )),
-      (scope, exit) => Scope.close(scope, exit)
+  return Fx.withEarlyExit(({ scope, sink }) =>
+    Fx.run(
+      fx,
+      Sink(
+        sink.onFailure,
+        (event) => isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
+      )
+    ).pipe(
+      Effect.forkIn(scope),
+      Effect.fromFiberEffect
     )
   )
 }
 
-function getServerEntry(templateStrings: TemplateStringsArray, templateCache: RenderContext["templateCache"]) {
+function getServerEntry(
+  templateStrings: TemplateStringsArray,
+  templateCache: RenderContext["templateCache"]
+): ServerEntry {
   const cached = templateCache.get(templateStrings)
 
   if (cached === undefined || cached._tag === "Browser") {
@@ -230,7 +232,7 @@ function getServerEntry(templateStrings: TemplateStringsArray, templateCache: Re
   }
 }
 
-function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
+function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, any> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {
@@ -242,7 +244,7 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
       } else if (StreamTypeId in renderable) return Fx.from(renderable)
       // Unwrap Effects such that templates can be embeded directly
       else if (Effect.EffectTypeId in renderable) {
-        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<R, E>))
+        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<any, any>))
       } else return Fx.succeed(renderable as any)
     }
     default:

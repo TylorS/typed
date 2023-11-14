@@ -55,6 +55,10 @@
   "peerDependencies": {
     "effect": "2.0.0-next.54"
   },
+  "optionalPeerDependencies": {
+    "happy-dom": "^12.10.3",
+    "vitest": "0.34.6"
+  },
   "devDependencies": {
     "@types/escape-html": "^1.0.4",
     "happy-dom": "^12.10.3"

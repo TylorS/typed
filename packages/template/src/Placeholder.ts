@@ -1,5 +1,8 @@
+export const PlaceholderTypeId = Symbol.for("@typed/template/Placholder")
+export type PlaceholderTypeId = typeof PlaceholderTypeId
+
 export interface Placeholder<out R = never, out E = never, out A = unknown> {
-  readonly __Placeholder__: {
+  readonly [PlaceholderTypeId]: {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => E
     readonly _A: (_: never) => A

@@ -4,10 +4,12 @@ import { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import * as Versioned from "@typed/fx/Versioned"
-import type { Placeholder } from "@typed/template/Placeholder"
+import { adjustTime } from "@typed/template/internal/utils"
+import { PlaceholderTypeId } from "@typed/template/Placeholder"
 import type { Rendered } from "@typed/wire"
 import { isWire } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
+import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Scope from "effect/Scope"
@@ -36,6 +38,8 @@ export interface ElementSource<
     type: Type,
     options?: AddEventListenerOptions
   ) => Fx.Fx<never, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+
+  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
 }
 
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
@@ -253,13 +257,15 @@ function isElement(element: RenderedWithoutArray): element is Element {
 /**
  * @internal
  */
-// @ts-expect-error Placeholder causes issues
+// @ts-expect-error
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
 > extends FxEffectBase<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
-  implements Omit<ElementSource<T, EventMap>, keyof Placeholder<any, any, any>>
+  implements Omit<ElementSource<T, EventMap>, PlaceholderTypeId>
 {
+  readonly [PlaceholderTypeId]!: any
+
   private bubbleMap = new Map<any, Fx.Fx<never, never, any>>()
   private captureMap = new Map<any, Fx.Fx<never, never, any>>()
 
@@ -332,6 +338,17 @@ export class ElementSourceImpl<
     }
 
     return current
+  }
+
+  dispatchEvent(event: Event, wait?: DurationInput) {
+    return Effect.zipRight(
+      Effect.flatMap(
+        this.elements,
+        (elements) => Effect.sync(() => elements.length > 0 ? elements[0].dispatchEvent(event) : null)
+      ),
+      // Allow time to move forward
+      adjustTime(wait)
+    )
   }
 }
 
