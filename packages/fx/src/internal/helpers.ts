@@ -1,10 +1,11 @@
-import { unsafeGet } from "@typed/context"
+import { getOption, unsafeGet } from "@typed/context"
 import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
 import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
 import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
 import type * as Sink from "@typed/fx/Sink"
-import { Effectable, Exit } from "effect"
+import { Effectable, Exit, TestClock } from "effect"
 import { type Cause, NoSuchElementException } from "effect/Cause"
+import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
@@ -404,4 +405,17 @@ export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
       }
     })
   }
+}
+
+export function adjustTime(input?: Duration.DurationInput) {
+  return Effect.gen(function*(_) {
+    const ctx = yield* _(Effect.context<never>())
+    const testClock = getOption(ctx, TestClock.TestClock)
+
+    if (Option.isSome(testClock)) {
+      yield* _(testClock.value.adjust(input ?? 1))
+    } else if (input) {
+      yield* _(Effect.sleep(input))
+    }
+  })
 }

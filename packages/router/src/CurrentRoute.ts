@@ -1,7 +1,9 @@
 import * as Context from "@typed/context"
+import { Document } from "@typed/dom/Document"
 import type { Filtered } from "@typed/fx/Filtered"
 import type { Navigation } from "@typed/navigation"
-import { CurrentPath } from "@typed/navigation"
+import { CurrentPath, getCurrentPathFromUrl } from "@typed/navigation"
+import type { Layer } from "effect"
 import { Effect, Option, pipe } from "effect"
 import { dual } from "effect/Function"
 
@@ -94,4 +96,22 @@ export function isActive<const P extends string>(
       return fullPath === currentPath || currentPath.startsWith(fullPath)
     })
   )
+}
+
+export const browser: Layer.Layer<Document, never, CurrentRoute> = CurrentRoute.layer(Effect.gen(function*(_) {
+  const document = yield* _(Document)
+  const base = document.querySelector("base")
+  const baseHref = base ? getBasePathFromHref(base.href) : "/"
+  return {
+    route: Route.fromPath(baseHref),
+    parent: Option.none()
+  }
+}))
+
+export function getBasePathFromHref(href: string) {
+  try {
+    return getCurrentPathFromUrl(new URL(href))
+  } catch {
+    return href
+  }
 }

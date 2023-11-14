@@ -390,6 +390,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../dom/dist
       '@typed/environment':
         specifier: workspace:*
         version: link:../environment/dist

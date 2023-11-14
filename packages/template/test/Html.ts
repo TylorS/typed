@@ -9,8 +9,8 @@ import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { html } from "@typed/template/RenderTemplate"
 import { counter, inputWithLabel } from "@typed/template/test/fixtures/test_components"
 import { deepStrictEqual } from "assert"
+import { pipe } from "effect"
 import * as Effect from "effect/Effect"
-import { pipe } from "effect/Function"
 import type { Scope } from "effect/Scope"
 
 describe("Html", () => {
@@ -233,7 +233,7 @@ describe("Html", () => {
     )
   })
 
-  it.concurrent("renders components with wires", async () => {
+  it("renders components with wires", async () => {
     await testHtmlChunks(Fx.scoped(counter), [
       `<button data-typed="..." id="decrement">-</button><span data-typed="..." id="count">`,
       `${TEXT_START}0`,
@@ -261,7 +261,10 @@ async function testHtmlChunks(
   const actual = (
     await template.pipe(
       renderToHtml,
-      Fx.map((s) => pipe(s, stripDataTyped, (x) => x.trim())),
+      Fx.map((s) => {
+        console.log({ html: s })
+        return pipe(s, stripDataTyped, (x) => x.trim())
+      }),
       Fx.toReadonlyArray,
       provideResources,
       Effect.runPromise

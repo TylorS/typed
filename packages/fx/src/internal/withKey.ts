@@ -1,5 +1,6 @@
 import type { Fx, FxInput } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
+import { adjustTime } from "@typed/fx/internal/helpers"
 import { run } from "@typed/fx/internal/run"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
@@ -45,7 +46,7 @@ export function withKey<R, E, A, B, R2, E2, C>(
             current = Option.some([key, currentValue, ref, fiber])
 
             // Allow our Fibers to start
-            yield* _(Effect.sleep(0))
+            yield* _(adjustTime(0))
           })
         )
 

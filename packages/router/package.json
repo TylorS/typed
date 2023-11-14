@@ -41,6 +41,7 @@
   "sideEffects": [],
   "dependencies": {
     "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
     "@typed/environment": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/navigation": "workspace:*",

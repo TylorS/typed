@@ -154,7 +154,7 @@ function renderPart<R, E>(
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    return Fx.continueWith(renderNode<R, E>(renderable), () => Fx.succeed(HtmlRenderEvent(TYPED_HOLE(node.index))))
+    return Fx.endWith(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
   } else {
     return Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
@@ -197,7 +197,7 @@ function renderSparsePart<R, E>(
 }
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.withEarlyExit(({ scope, sink }) =>
+  return Fx.withEarlyExit(({ fork, sink }) =>
     Fx.run(
       fx,
       Sink(
@@ -205,7 +205,7 @@ function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
         (event) => isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
       )
     ).pipe(
-      Effect.forkIn(scope),
+      fork,
       Effect.fromFiberEffect
     )
   )

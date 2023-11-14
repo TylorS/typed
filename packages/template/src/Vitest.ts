@@ -25,13 +25,15 @@ export function it<E, A>(
 
 export function test<E, A>(
   name: string,
-  test: (clock: TestClock.TestClock) => Effect.Effect<Scope | TestServices.TestServices, E, A>,
+  test: (options: {
+    readonly clock: TestClock.TestClock
+  }) => Effect.Effect<Scope | TestServices.TestServices, E, A>,
   options?: vitest.TestOptions
 ) {
   return vitest.it(
     name,
     () =>
-      TestClock.testClockWith(test).pipe(
+      TestClock.testClockWith((clock) => test({ clock })).pipe(
         Effect.provide(TestContext.TestContext),
         Effect.scoped,
         Effect.runPromise

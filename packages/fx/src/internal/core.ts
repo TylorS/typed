@@ -62,6 +62,7 @@ import {
   WithFlattenStrategy,
   WithScopedFork
 } from "@typed/fx/internal/fx-primitive"
+import { adjustTime } from "@typed/fx/internal/helpers"
 import { matchFxInput } from "@typed/fx/internal/matchers"
 import { OnceEffect } from "@typed/fx/internal/protos"
 import * as Sink from "@typed/fx/Sink"
@@ -116,7 +117,7 @@ class Merge<R, E, A> extends ToFx<R, E, A> {
                   run(
                     fx,
                     Sink.WithContext(
-                      sink.onFailure,
+                      (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),
                       (a) => buffers.onSuccess(i, a)
                     )
                   ),
@@ -442,7 +443,7 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
             )
           )),
           () =>
-            Effect.sleep(0).pipe(Effect.zipRight(run(
+            adjustTime(0).pipe(Effect.zipRight(run(
               fx,
               Sink.WithContext(
                 sink.onFailure,
@@ -1870,7 +1871,7 @@ export const during: {
           })
         )),
         () =>
-          Effect.sleep(0).pipe(Effect.zipRight(run(
+          adjustTime(0).pipe(Effect.zipRight(run(
             fx,
             Sink.Sink(
               sink.onFailure,

@@ -5,6 +5,7 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import type { DefaultEventMap } from "@typed/template/ElementSource"
 import { ElementSource, getElements } from "@typed/template/ElementSource"
+import { adjustTime } from "@typed/template/internal/utils"
 import type { Placeholder } from "@typed/template/Placeholder"
 import { type Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
@@ -95,11 +96,12 @@ export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Eve
     Effect.flatMap((rendered) => {
       const elements = getElements(rendered)
       if (elements.length === 0) return Option.none()
+      // TODO: How should we manage multiple elements?
       return Effect.sync(() => elements[0].dispatchEvent(event))
     }),
     // Allow changes to take place
-    Effect.zipRight(Effect.sleep(0)),
+    Effect.zipRight(adjustTime(0)),
     // Allow additional fibers to start
-    Effect.zipRight(Effect.sleep(0))
+    Effect.zipRight(adjustTime(0))
   )
 }

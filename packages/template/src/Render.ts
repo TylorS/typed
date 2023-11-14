@@ -67,6 +67,12 @@ export function render<R, E, T extends RenderEvent | null>(
   }))
 }
 
+export function renderLayer<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<R, E, T>
+) {
+  return Fx.drainLayer(Fx.switchMapCause(render(rendered), Effect.logError))
+}
+
 /**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.

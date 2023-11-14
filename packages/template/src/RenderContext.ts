@@ -4,6 +4,9 @@
  */
 
 import * as Context from "@typed/context"
+import { type DomServices, domServices, type DomServicesElementParams } from "@typed/dom/DomServices"
+import { GlobalThis } from "@typed/dom/GlobalThis"
+import { Window } from "@typed/dom/Window"
 import type { Environment } from "@typed/environment"
 import { CurrentEnvironment } from "@typed/environment"
 import * as Idle from "@typed/fx/Idle"
@@ -111,9 +114,19 @@ const buildWithCurrentEnvironment = (environment: Environment) =>
 /**
  * @since 1.0.0
  */
-export const browser: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment(
-  "browser"
-)
+export const browser: (
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams
+) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
+  Layer.provideMerge(
+    Layer.mergeAll(Window.layer(window), GlobalThis.layer(window)),
+    Layer.mergeAll(
+      buildWithCurrentEnvironment(
+        "browser"
+      ),
+      domServices(options)
+    )
+  )
 
 /**
  * @since 1.0.0
