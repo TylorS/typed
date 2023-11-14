@@ -40,8 +40,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.27.3",
-    "@effect/schema": "0.47.2",
+    "@effect/platform": "^0.29.1",
+    "@effect/schema": "0.47.7",
     "@typed/context": "workspace:*",
     "@typed/environment": "workspace:*",
     "@typed/dom": "workspace:*",
