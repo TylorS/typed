@@ -39,7 +39,10 @@
   "author": "Typed contributors",
   "license": "MIT",
   "sideEffects": [],
-  "dependencies": {},
+  "dependencies": {
+    "effect": "2.0.0-next.54",
+    "@typed/context": "workspace:*"
+  },
   "peerDependencies": {},
   "devDependencies": {}
 }

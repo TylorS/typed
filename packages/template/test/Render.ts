@@ -1,5 +1,6 @@
 import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
+import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import { render } from "@typed/template/Render"
 import type { Renderable } from "@typed/template/Renderable"
@@ -60,7 +61,7 @@ function makeWindow() {
   return new happyDOM.Window() as any as Window & typeof globalThis
 }
 
-type Provided = Document | RootElement | RenderContext.RenderContext | Scope.Scope
+type Provided = Document | RootElement | RenderContext.RenderContext | Scope.Scope | CurrentEnvironment
 
 function testRendered<R, E, A extends Wire.Rendered>(
   template: Effect.Effect<R, never, TemplateInstance<E, A>>,

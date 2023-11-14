@@ -862,6 +862,16 @@ export const filterMapError: {
 } = core.filterMapError
 
 /**
+ * Filter and map the error of an Fx using an Effect.
+ * @since 1.18.0
+ * @category errors
+ */
+export const filterMapErrorEffect: {
+  <E, R2, E2, B>(f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | B, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E2 | B, A>
+} = core.filterMapErrorEffect
+
+/**
  * Map the success value of an Fx to another Fx, flattening the result
  * with the provided FlattenStrategy.
  * @since 1.18.0

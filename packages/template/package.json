@@ -43,6 +43,7 @@
     "@effect/platform": "^0.27.3",
     "@effect/schema": "0.47.2",
     "@typed/context": "workspace:*",
+    "@typed/environment": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",

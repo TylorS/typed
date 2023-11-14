@@ -142,3 +142,7 @@ export function redirectToPath(path: string | URL, options?: NavigateOptions) {
 export function redirectToDestination(key: Destination["key"], options?: { readonly info?: unknown }) {
   return new RedirectError({ redirect: { _tag: "RedirectToDestination", key, options } })
 }
+
+export function isRedirectError(e: unknown): e is RedirectError {
+  return e instanceof RedirectError
+}

@@ -50,12 +50,7 @@ const currentFilterState = Router
   .to(allRoute, () => Domain.FilterState.All)
   .to(activeRoute, () => Domain.FilterState.Active)
   .to(completedRoute, () => Domain.FilterState.Completed)
-  .notFound(() =>
-    Navigation.navigate(filterStateToPath(Domain.FilterState.All), { history: "replace" }).pipe(
-      Effect.catchAll(() => Effect.unit),
-      Effect.as(Domain.FilterState.All)
-    )
-  )
+  .redirect(allRoute)
 
 /* #endregion */
 

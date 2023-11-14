@@ -4,12 +4,13 @@
  */
 
 import * as Context from "@typed/context"
+import type { Environment } from "@typed/environment"
+import { CurrentEnvironment } from "@typed/environment"
 import * as Idle from "@typed/fx/Idle"
 import type { Entry } from "@typed/template/Entry"
 import type { Part, SparsePart } from "@typed/template/Part"
 import type { Rendered } from "@typed/wire"
-import type { Layer } from "effect"
-import { Effect, Fiber, Option } from "effect"
+import { Effect, Fiber, Layer, Option } from "effect"
 import * as Scope from "effect/Scope"
 
 /**
@@ -18,14 +19,9 @@ import * as Scope from "effect/Scope"
  */
 export interface RenderContext {
   /**
-   * The current environment.
+   * The current environment we are rendering within
    */
-  readonly environment: "server" | "browser" | "static"
-
-  /**
-   * Whether or not the current render is for a bot.
-   */
-  readonly isBot: boolean
+  readonly environment: Environment
 
   /**
    * Cache for root Node's being rendered into.
@@ -62,41 +58,31 @@ export interface RenderQueue {
  * @since 1.0.0
  */
 export type RenderContextOptions = IdleRequestOptions & {
-  readonly environment: RenderContext["environment"]
+  readonly environment: Environment
   readonly scope: Scope.Scope
-  readonly isBot?: RenderContext["isBot"] | undefined
 }
 
 /**
  * @since 1.0.0
  */
-export function make({
+export function make({ ...options }: Omit<RenderContextOptions, "scope">) {
+  return Effect.scopeWith((scope) => Effect.succeed(unsafeMake({ ...options, scope })))
+}
+
+/**
+ * @since 1.0.0
+ */
+export function unsafeMake({
   environment,
-  isBot = false,
   scope,
   ...options
 }: RenderContextOptions): RenderContext {
   return {
     environment,
-    isBot,
     renderCache: new WeakMap(),
     templateCache: new WeakMap(),
     queue: new RenderQueueImpl(scope, options)
   }
-}
-
-/**
- * @since 1.0.0
- */
-export type Environment = RenderContext["environment"]
-
-/**
- * @since 1.0.0
- */
-export const Environment: { readonly [_ in Environment]: _ } = {
-  server: "server",
-  browser: "browser",
-  static: "static"
 }
 
 /**
@@ -116,42 +102,27 @@ export function getTemplateCache(
   return Option.fromNullable(templateCache.get(key))
 }
 
+const buildWithCurrentEnvironment = (environment: Environment) =>
+  Layer.mergeAll(
+    RenderContext.scoped(make({ environment })),
+    CurrentEnvironment.layer(environment)
+  )
+
 /**
  * @since 1.0.0
  */
-export const browser: Layer.Layer<never, never, RenderContext> = RenderContext.scoped(
-  Effect.scopeWith((scope) =>
-    Effect.succeed(make({
-      environment: "browser",
-      scope
-    }))
-  )
+export const browser: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment(
+  "browser"
 )
 
 /**
  * @since 1.0.0
  */
-export const server: (isBot?: boolean) => Layer.Layer<never, never, RenderContext> = (isBot) =>
-  RenderContext.scoped(
-    Effect.scopeWith((scope) =>
-      Effect.succeed(make({
-        environment: "server",
-        isBot,
-        scope
-      }))
-    )
-  )
+export const server: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment(
+  "server"
+)
 
-const static_: (isBot?: boolean) => Layer.Layer<never, never, RenderContext> = (isBot) =>
-  RenderContext.scoped(
-    Effect.scopeWith((scope) =>
-      Effect.succeed(make({
-        environment: "static",
-        isBot,
-        scope
-      }))
-    )
-  )
+const static_: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment("static")
 
 export {
   /**

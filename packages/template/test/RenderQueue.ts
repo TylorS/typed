@@ -31,7 +31,7 @@ describe("RenderQueue", () => {
 
       deepStrictEqual(i, 2)
     }).pipe(
-      Effect.provide(RenderContext.server()),
+      Effect.provide(RenderContext.server),
       Effect.scoped
     )
 

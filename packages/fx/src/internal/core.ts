@@ -601,6 +601,35 @@ export const filterMapError: {
     ))
 })
 
+export const filterMapErrorEffect: {
+  <E, R2, E2, B>(f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | B, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E2 | B, A>
+} = dual(2, <R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>
+): Fx<R | R2, B | E2, A> => {
+  return fromSink((sink) =>
+    run(
+      fx,
+      Sink.WithContext(
+        (cause) =>
+          Either.match(Cause.failureOrCause(cause), {
+            onLeft: (e) =>
+              Effect.matchCauseEffect(f(e), {
+                onFailure: sink.onFailure,
+                onSuccess: Option.match({
+                  onNone: () => Effect.unit,
+                  onSome: (b) => sink.onFailure(Cause.fail(b))
+                })
+              }),
+            onRight: sink.onFailure
+          }),
+        sink.onSuccess
+      )
+    )
+  )
+})
+
 export function observe<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
   onSuccees: (a: A) => Effect.Effect<R2, E2, unknown>

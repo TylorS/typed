@@ -251,7 +251,7 @@ describe("Html", () => {
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return effect.pipe(Effect.provide(RenderContext.server()), Effect.scoped)
+  return effect.pipe(Effect.provide(RenderContext.server), Effect.scoped)
 }
 
 async function testHtmlChunks(
