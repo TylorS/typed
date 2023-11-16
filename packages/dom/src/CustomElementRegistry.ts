@@ -1,5 +1,5 @@
 import * as context from "@typed/context"
-import type { NoSuchElementException } from "effect/dist/declarations/src/Cause"
+import type { NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 

@@ -1,8 +1,6 @@
-import { Document } from "@typed/dom/Document"
-import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
 import * as Num from "@typed/fx/RefNumber"
-import { render } from "@typed/template/Render"
+import { renderLayer } from "@typed/template/Render"
 import * as RenderContext from "@typed/template/RenderContext"
 import { html } from "@typed/template/RenderTemplate"
 import { Effect, Layer } from "effect"
@@ -17,13 +15,8 @@ const Counter = Fx.gen(function*(_) {
   </div>`
 })
 
-render(Counter).pipe(
-  Fx.drainLayer,
-  Layer.use(Layer.mergeAll(
-    RenderContext.browser,
-    Document.layer(document),
-    RootElement.layer({ rootElement: document.body })
-  )),
+renderLayer(Counter).pipe(
+  Layer.use(RenderContext.browser(window)),
   Layer.launch,
   Effect.runFork
 )

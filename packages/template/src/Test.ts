@@ -21,7 +21,7 @@ import * as Either from "effect/Either"
 import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
 import * as happyDOM from "happy-dom"
-import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions"
+import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 
 // TODO: Instrument RenderTemplate to log info about when specific values are hanging for too long
 // TODO: Fx.mergeRace
