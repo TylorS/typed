@@ -1,7 +1,20 @@
 {
+  "$schema": "https://json.schemastore.org/babelrc",
+  "targets": {
+    "node": "18"
+  },
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": "cjs"
+      }
+    ]
+  ],
   "plugins": [
-    ["@effect/babel-plugin"],
+    ["@babel/plugin-transform-export-namespace-from"],
     ["@babel/transform-modules-commonjs"],
-    ["annotate-pure-calls"]
+    ["annotate-pure-calls"],
+    ["@effect/babel-plugin"]
   ]
 }

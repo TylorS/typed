@@ -50,12 +50,12 @@ export function Enqueue<A>(): {
     return Object.assign(tag, {
       capacity: tag.with((e) => e.capacity()),
       isActive: tag.with((e) => e.isActive()),
-      size: tag.withEffect((e) => e.size()),
-      isFull: tag.withEffect((e) => e.isFull()),
-      isEmpty: tag.withEffect((e) => e.isEmpty()),
-      shutdown: tag.withEffect((e) => e.shutdown()),
-      isShutdown: tag.withEffect((e) => e.isShutdown()),
-      awaitShutdown: tag.withEffect((e) => e.awaitShutdown()),
+      size: tag.withEffect((e) => e.size),
+      isFull: tag.withEffect((e) => e.isFull),
+      isEmpty: tag.withEffect((e) => e.isEmpty),
+      shutdown: tag.withEffect((e) => e.shutdown),
+      isShutdown: tag.withEffect((e) => e.isShutdown),
+      awaitShutdown: tag.withEffect((e) => e.awaitShutdown),
       offer: (a: A) => tag.withEffect(Q.offer(a)),
       offerAll: (as: Iterable<A>): Effect.Effect<IdentifierOf<I>, never, boolean> =>
         tag.withEffect((enqueue) => Q.offerAll<A>(enqueue, as)),

@@ -411,7 +411,7 @@ export const matchKeyed: {
       Failure: (ref) =>
         matchers.Failure(
           ref.mapEffect(({ cause }) =>
-            Cause.failureOrCause(cause).pipe(Either.reverse, Effect.catchAll(Effect.failCause))
+            Cause.failureOrCause(cause).pipe(Either.flip, Effect.catchAll(Effect.failCause))
           ),
           {
             cause: ref.map((r) => r.cause),

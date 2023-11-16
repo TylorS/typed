@@ -5,7 +5,7 @@
  */
 
 import type * as Context from "@typed/context"
-import { dequeueIsActive, takeDequeue } from "@typed/fx/internal/fx"
+import { dequeueIsActive } from "@typed/fx/internal/fx"
 import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
 import { MutableHashMap, Option } from "effect"
 import * as Effect from "effect/Effect"
@@ -192,7 +192,7 @@ export function dequeueWhileIdle<I, A, R2, E2, B>(
 ): Effect.Effect<I | R2 | Scope.Scope, E2, void> {
   return whileIdle({
     while: dequeueIsActive(dequeue),
-    body: Effect.flatMap(takeDequeue<I, A>(dequeue), f),
+    body: Effect.flatMap(dequeue.take, f),
     ...options
   })
 }

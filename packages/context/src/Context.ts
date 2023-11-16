@@ -205,7 +205,7 @@ export {
    * @category models
    * @since 1.0.0
    */
-  type TagUnifyBlacklist,
+  type TagUnifyIgnore,
   /**
    * @category symbol
    * @since 1.0.0

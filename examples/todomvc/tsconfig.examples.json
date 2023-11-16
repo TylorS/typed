@@ -3,7 +3,8 @@
   "compilerOptions": {
     "tsBuildInfoFile": "build/tsbuildinfo/examples.tsbuildinfo",
     "rootDir": "examples",
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "build/examples"
   },
   "include": [

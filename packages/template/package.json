@@ -40,20 +40,20 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.29.1",
-    "@effect/schema": "0.47.7",
+    "@effect/platform": "^0.30.2",
+    "@effect/schema": "0.48.0",
     "@typed/context": "workspace:*",
     "@typed/environment": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
-    "effect": "2.0.0-next.54",
+    "effect": "2.0.0-next.55",
     "escape-html": "^1.0.3",
     "typed-query-selector": "^2.11.0",
     "udomdiff": "^1.1.0"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.54"
+    "effect": "2.0.0-next.55"
   },
   "optionalPeerDependencies": {
     "happy-dom": "^12.10.3",

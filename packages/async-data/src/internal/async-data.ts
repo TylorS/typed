@@ -12,7 +12,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
 
   [Unify.typeSymbol]!: unknown;
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+  [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
   constructor(readonly cause: Cause.Cause<E>, readonly refreshing: Option.Option<Loading>) {
     super()
@@ -20,13 +20,13 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
     this.commit = constant(Effect.failCause(cause))
   }
 
-  [Equal.symbol](that: unknown) {
+  [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Failure"
       && Equal.equals(this.cause, that.cause)
       && Equal.equals(this.refreshing, that.refreshing)
-  }
+  };
 
-  [Hash.symbol]() {
+  [Hash.symbol] = () => {
     return pipe(
       Hash.string(this._tag),
       Hash.combine(Hash.hash(this.cause)),
@@ -42,7 +42,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
 
   [Unify.typeSymbol]!: unknown;
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+  [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
   constructor(readonly value: A, readonly refreshing: Option.Option<Loading>) {
     super()
@@ -50,13 +50,13 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
     this.commit = constant(Effect.succeed(value))
   }
 
-  [Equal.symbol](that: unknown) {
+  [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Success"
       && Equal.equals(this.value, that.value)
       && Equal.equals(this.refreshing, that.refreshing)
-  }
+  };
 
-  [Hash.symbol]() {
+  [Hash.symbol] = () => {
     return pipe(
       Hash.string(this._tag),
       Hash.combine(Hash.hash(this.value)),

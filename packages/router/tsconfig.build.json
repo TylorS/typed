@@ -16,6 +16,9 @@
       "path": "../context"
     },
     {
+      "path": "../dom"
+    },
+    {
       "path": "../environment"
     },
     {

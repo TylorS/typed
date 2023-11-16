@@ -550,21 +550,10 @@ export function fromDequeue<I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, 
 export function fromDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Fx<I, never, A> {
   return core.fromSink((sink) =>
     Effect.repeatWhileEffect(
-      Effect.matchCauseEffect(takeDequeue(dequeue), sink),
+      Effect.matchCauseEffect(dequeue.take, sink),
       () => dequeueIsActive(dequeue)
     )
   )
-}
-
-/**
- * @internal
- */
-export function takeDequeue<I, A>(dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>): Effect.Effect<I, never, A> {
-  if (Queue.DequeueTypeId in dequeue) {
-    return dequeue.take()
-  } else {
-    return dequeue.take
-  }
 }
 
 /**
@@ -599,18 +588,10 @@ export function fromPubSub<A>(PubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, 
 export function fromPubSub<I, A>(PubSub: Context.PubSub<I, A>): Fx<I | Scope.Scope, never, A>
 export function fromPubSub<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>): Fx<I | Scope.Scope, never, A> {
   return core.acquireUseRelease(
-    PubSubSubscribe(PubSub),
+    PubSub.subscribe,
     (q) => fromDequeue(q),
-    (d) => d.shutdown()
+    (d) => d.shutdown
   )
-}
-
-function PubSubSubscribe<I, A>(PubSub: Context.PubSub<I, A> | PubSub.PubSub<A>) {
-  if (Queue.EnqueueTypeId in PubSub) {
-    return PubSub.subscribe()
-  } else {
-    return PubSub.subscribe
-  }
 }
 
 export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS): Layer.Layer<

@@ -32,7 +32,7 @@ export namespace AsyncData {
    * @category models
    * @since 1.0.0
    */
-  export interface UnifyBlackList extends Effect.EffectUnifyBlacklist {
+  export interface IgnoreList extends Effect.EffectUnifyIgnore {
     Effect: true
   }
 }
@@ -40,7 +40,7 @@ export namespace AsyncData {
 export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
   readonly [Unify.typeSymbol]!: unknown
   readonly [Unify.unifySymbol]!: AsyncData.Unify<this>
-  readonly [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+  readonly [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 }
 
 export const noData: {
@@ -51,7 +51,7 @@ export const noData: {
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
   readonly [Unify.typeSymbol]!: unknown
   readonly [Unify.unifySymbol]!: AsyncData.Unify<this>
-  readonly [Unify.blacklistSymbol]!: AsyncData.UnifyBlackList
+  readonly [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 }
 
 export type LoadingOptions = {
@@ -77,7 +77,7 @@ export interface Failure<E> extends Effect.Effect<never, E, never> {
 
   readonly [Unify.typeSymbol]: unknown
   readonly [Unify.unifySymbol]: AsyncData.Unify<this>
-  readonly [Unify.blacklistSymbol]: AsyncData.UnifyBlackList
+  readonly [Unify.ignoreSymbol]: AsyncData.IgnoreList
 }
 
 export type FailureOptions = {
@@ -102,6 +102,10 @@ export interface Success<A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
   readonly refreshing: Option.Option<Loading>
+
+  readonly [Unify.typeSymbol]: unknown
+  readonly [Unify.unifySymbol]: AsyncData.Unify<this>
+  readonly [Unify.ignoreSymbol]: AsyncData.IgnoreList
 }
 
 export type SuccessOptions = {

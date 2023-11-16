@@ -61,16 +61,16 @@ export function ScopedCache<K, E, A>(): {
   function makeScopedCache<const I extends IdentifierInput<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A> {
     const tag = withActions(Tag<I, SC.ScopedCache<K, E, A>>(identifier))
     const self: Omit<ScopedCache<IdentifierOf<I>, K, E, A>, keyof typeof tag> = {
-      cacheStats: tag.withEffect((cache) => cache.cacheStats()),
+      cacheStats: tag.withEffect((cache) => cache.cacheStats),
       contains: (key) => tag.withEffect((cache) => cache.contains(key)),
       entryStats: (key) => tag.withEffect((cache) => cache.entryStats(key)),
       get: (key) => tag.withEffect((cache) => cache.get(key)),
       getOption: (key) => tag.withEffect((cache) => cache.getOption(key)),
       getOptionComplete: (key) => tag.withEffect((cache) => cache.getOptionComplete(key)),
       invalidate: (key) => tag.withEffect((cache) => cache.invalidate(key)),
-      invalidateAll: tag.withEffect((cache) => cache.invalidateAll()),
+      invalidateAll: tag.withEffect((cache) => cache.invalidateAll),
       refresh: (key) => tag.withEffect((cache) => cache.refresh(key)),
-      size: tag.withEffect((cache) => cache.size()),
+      size: tag.withEffect((cache) => cache.size),
       make: (options) => Layer.scoped(tag, SC.make(options)),
       makeWith: (options) => Layer.scoped(tag, SC.makeWith(options))
     }

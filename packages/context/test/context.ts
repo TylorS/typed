@@ -222,7 +222,7 @@ describe(__filename, () => {
       const PubSub = Context.PubSub<number>()("test")
       const test = PubSub.subscribe.pipe(
         Effect.tap(() => PubSub.publishAll([1, 2, 3])),
-        Effect.flatMap((sub) => sub.takeAll()),
+        Effect.flatMap((sub) => sub.takeAll),
         Effect.provide(PubSub.unbounded),
         Effect.scoped
       )
@@ -281,7 +281,7 @@ describe(__filename, () => {
       const enqueue = Context.Enqueue<number>()("test-enqueue")
       const test = PubSub.subscribe.pipe(
         Effect.tap(() => enqueue.offerAll([1, 2, 3])),
-        Effect.flatMap((dequeue) => dequeue.takeAll()),
+        Effect.flatMap((dequeue) => dequeue.takeAll),
         Effect.provide(enqueue.fromPubSub(PubSub)),
         Effect.provide(PubSub.unbounded),
         Effect.scoped
