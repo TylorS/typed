@@ -10,7 +10,8 @@ import {
   type NavigateOptions,
   type Navigation,
   NavigationError,
-  NavigationHandler
+  NavigationHandler,
+  Redirect
 } from "../Navigation"
 
 export function fromNavigation(
@@ -30,6 +31,7 @@ export function fromNavigation(
     const handlers = yield* _(
       RefSubject.fromEffect(Effect.sync((): ReadonlyArray<readonly [NavigationHandler<any, any>, Context<any>]> => []))
     )
+    const isNavigating = yield* _(RefSubject.of(false))
 
     const navigate = (url: string | URL, options?: NavigateOptions) =>
       Effect.async<never, NavigationError, Destination>((resume) => {
@@ -116,6 +118,8 @@ export function fromNavigation(
 
     const runHandlers = (destination: Destination) =>
       Effect.gen(function*(_) {
+        yield* _(isNavigating.set(true))
+
         const currentHandlers = yield* _(handlers)
 
         for (const [handler, ctx] of currentHandlers) {
@@ -125,18 +129,13 @@ export function fromNavigation(
             const result = yield* _(matched.value, Effect.provide(ctx), Effect.either)
 
             if (Either.isLeft(result)) {
-              const { redirect } = result.left
-              if (redirect._tag === "RedirectToPath") {
-                return navigation.navigate(redirect.path.toString(), { history: "replace", ...redirect.options })
-              } else {
-                return navigation.traverseTo(redirect.key, redirect.options)
-              }
+              return handleRedirect(navigation, result.left.redirect)
             }
 
             return
           }
         }
-      })
+      }).pipe(Effect.ensuring(isNavigating.set(false)))
 
     navigation.addEventListener("navigate", (ev) => {
       if (shouldNotIntercept(ev)) return
@@ -151,6 +150,7 @@ export function fromNavigation(
       destinations,
       canGoBack,
       canGoForward,
+      isNavigating,
       navigate,
       back,
       forward,
@@ -200,5 +200,16 @@ function navigationDestinationToDestination(
     sameDocument: destination.sameDocument,
     url: new URL(destination.url!),
     state: Effect.sync(() => destination.getState())
+  }
+}
+
+function handleRedirect(
+  navigation: import("@virtualstate/navigation").Navigation,
+  redirect: Redirect
+) {
+  if (redirect._tag === "RedirectToPath") {
+    return navigation.navigate(redirect.path.toString(), { history: "replace", ...redirect.options })
+  } else {
+    return navigation.traverseTo(redirect.key, redirect.options)
   }
 }

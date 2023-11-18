@@ -1,14 +1,14 @@
 import { Tagged } from "@typed/context"
 import * as Computed from "@typed/fx/Computed"
 import { Data } from "effect"
-// Needed for portability of NavigationError type
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { Effect, Equal as _Equal, Option, Scope, Types as _Types } from "effect"
+import type { Effect, Option, Scope } from "effect"
 
 export interface Navigation {
   readonly current: Computed.Computed<never, never, Destination>
 
   readonly destinations: Computed.Computed<never, never, ReadonlyArray<Destination>>
+
+  readonly isNavigating: Computed.Computed<never, never, boolean>
 
   readonly canGoBack: Computed.Computed<never, never, boolean>
 
@@ -65,8 +65,10 @@ export interface NavigateOptions {
   readonly info?: unknown
 }
 
-export const navigate = (url: string | URL, options?: NavigateOptions) =>
-  Navigation.withEffect((n) => n.navigate(url, options))
+export const navigate = (
+  url: string | URL,
+  options?: NavigateOptions
+): Effect.Effect<Navigation, NavigationError, Destination> => Navigation.withEffect((n) => n.navigate(url, options))
 
 export const back: (options?: { readonly info?: unknown }) => Effect.Effect<Navigation, NavigationError, Destination> =
   (opts) => Navigation.withEffect((n) => n.back(opts))
@@ -135,11 +137,11 @@ export interface RedirectToDestination {
   readonly options?: { readonly info?: unknown } | undefined
 }
 
-export function redirectToPath(path: string | URL, options?: NavigateOptions) {
+export function redirectToPath(path: string | URL, options?: NavigateOptions): RedirectError {
   return new RedirectError({ redirect: { _tag: "RedirectToPath", path, options } })
 }
 
-export function redirectToDestination(key: Destination["key"], options?: { readonly info?: unknown }) {
+export function redirectToDestination(key: Destination["key"], options?: { readonly info?: unknown }): RedirectError {
   return new RedirectError({ redirect: { _tag: "RedirectToDestination", key, options } })
 }
 
