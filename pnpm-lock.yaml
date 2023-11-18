@@ -220,6 +220,9 @@ importers:
       '@effect/platform-browser':
         specifier: ^0.18.4
         version: 0.18.4(@effect/schema@0.48.1)(effect@2.0.0-next.55)
+      '@effect/platform-node':
+        specifier: ^0.31.4
+        version: 0.31.4(@effect/schema@0.48.1)(effect@2.0.0-next.55)
       '@effect/schema':
         specifier: 0.48.1
         version: 0.48.1(effect@2.0.0-next.55)(fast-check@3.13.2)
@@ -254,6 +257,24 @@ importers:
         specifier: ^1.0.5
         version: 1.0.5
     devDependencies:
+      '@vavite/connect':
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
+      '@vavite/expose-vite-dev-server':
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
+      '@vavite/multibuild':
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
+      '@vavite/multibuild-cli':
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
+      '@vavite/node-loader':
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
+      vavite:
+        specifier: ^3.0.0
+        version: 3.0.0(vite@5.0.0)
       vite:
         specifier: ^5.0.0
         version: 5.0.0(@types/node@20.9.1)
@@ -3583,6 +3604,64 @@ packages:
 
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+    dev: true
+
+  /@vavite/connect@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-qTbxzuXlHiCHdeIa5PUaq3Xcj6mDAONZBzRCHY4NlHh0+9etG0Lb5yU2dwLdUvumqQaGKNljWMl5WCJ0pkOGEw==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      '@types/node': 20.9.1
+      vite: 5.0.0(@types/node@20.9.1)
+    dev: true
+
+  /@vavite/expose-vite-dev-server@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-rGqIIcVdZWSkGi4EK9qzFh/NdfFRWJogusPzAYf11lUN/q2IEEUujCWJ5YntufB+18HD3Gka7O+awzOTWC6vYg==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      vite: 5.0.0(@types/node@20.9.1)
+    dev: true
+
+  /@vavite/multibuild-cli@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-sZVSh8VFMORToLKwOVEut0Gj404gfBUXUTCntr1SiihDkpslKuHSrpDyLEQIJ0xiU12YrACZEQyVRRN1TDn4cw==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      '@types/node': 20.9.1
+      '@vavite/multibuild': 3.0.0(vite@5.0.0)
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.0(@types/node@20.9.1)
+    dev: true
+
+  /@vavite/multibuild@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-RHNOP0j6Zka9fhZ5B9Y8+IWHA17CCCoGf2/p8sSew0tMCM1RdOBpR2vsL8s5gcSB96COi4Qkn4s9YwF4LhZHjg==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      '@types/node': 20.9.1
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.0(@types/node@20.9.1)
+    dev: true
+
+  /@vavite/node-loader@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-E14P6wP/u24TVxQGLyApOwhXamyYt9hX5EsqM0Vjd6tyE7Jiyt0XONNaotyt0DjXUJrLfFcbBfVyhr5aVEc73w==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      vite: 5.0.0(@types/node@20.9.1)
+    dev: true
+
+  /@vavite/reloader@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-mgyLbsH+XTuGp/mQ9GbgKBV5Q9QK0IEVdVNcH72TSiaqtIbqc5b3hdpEyf1GncYzZ0S/96YdmuU7SCJWiBYHeQ==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      vite: 5.0.0(@types/node@20.9.1)
     dev: true
 
   /@virtualstate/composite-key@1.0.0:
@@ -8328,6 +8407,23 @@ packages:
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
     dependencies:
       builtins: 5.0.1
+    dev: true
+
+  /vavite@3.0.0(vite@5.0.0):
+    resolution: {integrity: sha512-3v77cZD78LYhT3M5zEQ+TKXdKQcKVV1DRAqYLOLTrB5n8Jq0bmz1vvBQH6PSvFFfhi+2S3hCjs4ekNzBCxvC4w==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4
+    dependencies:
+      '@vavite/connect': 3.0.0(vite@5.0.0)
+      '@vavite/expose-vite-dev-server': 3.0.0(vite@5.0.0)
+      '@vavite/multibuild': 3.0.0(vite@5.0.0)
+      '@vavite/multibuild-cli': 3.0.0(vite@5.0.0)
+      '@vavite/node-loader': 3.0.0(vite@5.0.0)
+      '@vavite/reloader': 3.0.0(vite@5.0.0)
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.0(@types/node@20.9.1)
     dev: true
 
   /vite-node@0.34.6(@types/node@20.9.1):

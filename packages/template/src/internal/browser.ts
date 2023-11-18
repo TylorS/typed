@@ -10,11 +10,12 @@ export function makeRenderNodePart(
   index: number,
   parent: HTMLElement | SVGElement,
   ctx: RenderContext,
-  document: Document
+  document: Document,
+  isHydrating: boolean
 ) {
   const comment = findHoleComment(parent, index)
   let text: Text
-  let nodes: Array<Node> = []
+  let nodes = isHydrating ? findPreviousNodes(comment, index) : []
 
   return new NodePartImpl(index, ({ part, value }) => {
     return ctx.queue.add(part, () => {
@@ -29,7 +30,7 @@ export function makeRenderNodePart(
         nodes = diffChildren(comment, nodes, updatedNodes, document)
       })
     })
-  }, [])
+  }, nodes)
 }
 
 export function getPreviousTextSibling(node: Node | null) {

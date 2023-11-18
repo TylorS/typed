@@ -180,7 +180,7 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
             element.classList.remove(...removed)
           }
         ),
-      null
+      Array.from(element.classList)
     )
   }
 
@@ -373,7 +373,8 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
       name,
       index,
       ({ part, value }) => ctx.queue.add(part, () => (node as any)[name] = value),
-      null
+      // TODO: Unescape
+      (node as any)[name]
     )
   }
 }
