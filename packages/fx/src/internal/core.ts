@@ -98,7 +98,7 @@ class Merge<R, E, A> extends ToFx<R, E, A> {
         return new Merge(nonEmptyFx.slice(0, neverIndex + 1), strategy)
       // No use creating fibers for Fx that don't emit
       case "Unordered":
-        return new Merge(nonEmptyFx.filter((fx) => !(fx instanceof Never)), strategy)
+        return new Merge(nonEmptyFx, strategy)
     }
   }
 
