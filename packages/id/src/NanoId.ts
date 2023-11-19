@@ -43,7 +43,11 @@ const numToCharacter = (byte: number): string => {
   }
 }
 
-const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) => id + numToCharacter(x), ""))
+const characters = Array.from({ length: 64 }, (_, i) => {
+  return numToCharacter(i)
+})
+
+export const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) => id + characters[x], ""))
 
 export const makeNanoIdSeed: Effect.Effect<GetRandomValues, never, NanoIdSeed> = GetRandomValues.apply(21) as any
 
