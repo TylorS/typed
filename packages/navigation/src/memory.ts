@@ -3,13 +3,14 @@ import { RefArray, RefSubject } from "@typed/fx"
 import * as Id from "@typed/id"
 import { Navigation } from "@typed/navigation/Navigation"
 import type {
+  CancelNavigation,
   Destination,
   NavigateOptions,
   NavigationError,
   NavigationHandler,
-  Redirect
+  RedirectError
 } from "@typed/navigation/Navigation"
-import type { Layer } from "effect"
+import type { Layer, Scope } from "effect"
 import { Effect, Either, Option, ReadonlyArray } from "effect"
 
 export interface MemoryOptions {
@@ -51,7 +52,9 @@ const makeNewDestination = (
     return destination
   })
 
-function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.GetRandomValues, never, Navigation> {
+function makeMemoryNavigation(
+  memoryOptions: MemoryOptions
+): Effect.Effect<Id.GetRandomValues | Scope.Scope, never, Navigation> {
   const maxEntries = memoryOptions.maxEntries || 50
   const origin = memoryOptions.origin || "http://localhost"
   const states = memoryOptions.states ?? new WeakMap<Destination, unknown>()
@@ -89,7 +92,7 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
             const result = yield* _(matched.value, Effect.provide(ctx), Effect.either)
 
             if (Either.isLeft(result)) {
-              return Option.some(result.left.redirect)
+              return Option.some(result.left)
             }
 
             return Option.none()
@@ -99,12 +102,17 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
         return Option.none()
       }).pipe(Effect.ensuring(isNavigating.set(false)))
 
-    const handleRedirect = (redirect: Redirect): Effect.Effect<never, NavigationError, Destination> =>
+    const handleError = (error: RedirectError | CancelNavigation): Effect.Effect<never, NavigationError, Destination> =>
       Effect.gen(function*(_) {
-        if (redirect._tag === "RedirectToPath") {
-          return yield* _(navigate(redirect.path, redirect.options))
+        if (error._tag === "RedirectError") {
+          const redirect = error.redirect
+          if (redirect._tag === "RedirectToPath") {
+            return yield* _(navigate(redirect.path, redirect.options))
+          } else {
+            return yield* _(traverseTo(redirect.key, redirect.options))
+          }
         } else {
-          return yield* _(traverseTo(redirect.key, redirect.options))
+          return yield* _(current)
         }
       })
 
@@ -122,10 +130,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
         }
 
         const destination = yield* _(current)
-        const redirect = yield* _(runHandlers(destination, options?.info))
+        const error = yield* _(runHandlers(destination, options?.info))
 
-        if (Option.isSome(redirect)) {
-          return yield* _(handleRedirect(redirect.value))
+        if (Option.isSome(error)) {
+          return yield* _(handleError(error.value))
         }
 
         return destination
@@ -145,10 +153,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
           states.set(destination, options.state)
         }
 
-        const redirect = yield* _(runHandlers(destination, options?.info))
+        const error = yield* _(runHandlers(destination, options?.info))
 
-        if (Option.isSome(redirect)) {
-          return yield* _(handleRedirect(redirect.value))
+        if (Option.isSome(error)) {
+          return yield* _(handleError(error.value))
         }
 
         const index = yield* _(currentIndex)
@@ -183,10 +191,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
         const destinations = yield* _(currentDestinations)
         const destination = destinations[previousIndex]
 
-        const redirect = yield* _(runHandlers(destination, options?.info))
+        const error = yield* _(runHandlers(destination, options?.info))
 
-        if (Option.isSome(redirect)) {
-          return yield* _(handleRedirect(redirect.value))
+        if (Option.isSome(error)) {
+          return yield* _(handleError(error.value))
         }
 
         yield* _(currentIndex.set(previousIndex))
@@ -205,10 +213,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
         const previousIndex = index + 1
         const destination = destinations[previousIndex]
 
-        const redirect = yield* _(runHandlers(destination, options?.info))
+        const error = yield* _(runHandlers(destination, options?.info))
 
-        if (Option.isSome(redirect)) {
-          return yield* _(handleRedirect(redirect.value))
+        if (Option.isSome(error)) {
+          return yield* _(handleError(error.value))
         }
 
         yield* _(currentIndex.set(previousIndex))
@@ -230,10 +238,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
           states.set(destination, options.state)
         }
 
-        const redirect = yield* _(runHandlers(destination, options?.info))
+        const error = yield* _(runHandlers(destination, options?.info))
 
-        if (Option.isSome(redirect)) {
-          return yield* _(handleRedirect(redirect.value))
+        if (Option.isSome(error)) {
+          return yield* _(handleError(error.value))
         }
 
         return yield* _(current)
@@ -259,13 +267,13 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.Ge
 }
 
 export const memory = (options: MemoryOptions): Layer.Layer<Id.GetRandomValues, never, Navigation> =>
-  Navigation.layer(makeMemoryNavigation(options))
+  Navigation.scoped(makeMemoryNavigation(options))
 
 export function initialMemory(
   urlOrPath: string | URL,
   origin?: string
 ): Layer.Layer<Id.GetRandomValues, never, Navigation> {
-  return Navigation.layer(Effect.gen(function*(_) {
+  return Navigation.scoped(Effect.gen(function*(_) {
     const states = new WeakMap<Destination, unknown>()
     const destination = yield* _(makeNewDestination(urlOrPath, states, origin || "http://localhost"))
 

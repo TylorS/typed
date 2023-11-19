@@ -1,7 +1,9 @@
 import { Tagged } from "@typed/context"
+import { RefSubject } from "@typed/fx"
 import * as Computed from "@typed/fx/Computed"
-import { Data } from "effect"
-import type { Effect, Option, Scope } from "effect"
+import type * as Filtered from "@typed/fx/Filtered"
+import type { Scope } from "effect"
+import { Data, Deferred, Effect, Option } from "effect"
 
 export interface Navigation {
   readonly current: Computed.Computed<never, never, Destination>
@@ -41,10 +43,11 @@ export interface Navigation {
   ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
 }
 
+// TODO: Probably should have access to the Previous Destination
 export type NavigationHandler<R, R2> = (
   destination: Destination,
   info: unknown
-) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError, void>>>
+) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, void>>>
 
 export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
 
@@ -124,6 +127,8 @@ export class NavigationError extends Data.TaggedError("NavigationError")<{ reado
 
 export class RedirectError extends Data.TaggedError("RedirectError")<{ readonly redirect: Redirect }> {}
 
+export class CancelNavigation extends Data.TaggedError("CancelNavigation")<{}> {}
+
 export type Redirect = RedirectToPath | RedirectToDestination
 
 export interface RedirectToPath {
@@ -157,3 +162,74 @@ export function handleRedirect({ redirect }: RedirectError): Effect.Effect<Navig
     return traverseTo(redirect.key, redirect.options)
   }
 }
+
+type BlockState = Unblocked | Blocked
+
+type Unblocked = {
+  readonly _tag: "Unblocked"
+}
+const Unblocked: Unblocked = { _tag: "Unblocked" }
+
+type Blocked = {
+  readonly _tag: "Blocked"
+  readonly currentDestination: Destination
+  readonly proposedDestination: Destination
+  readonly deferred: Deferred.Deferred<never, void>
+}
+
+const Blocked = (currentDestination: Destination, proposedDestination: Destination) =>
+  Effect.map(
+    Deferred.make<never, void>(),
+    (deferred): Blocked => ({ _tag: "Blocked", deferred, currentDestination, proposedDestination })
+  )
+
+export interface BlockNavigation {
+  readonly isBlocking: Computed.Computed<never, never, boolean>
+  readonly unblock: Effect.Effect<never, never, boolean>
+  readonly from: Filtered.Filtered<never, never, Destination>
+  readonly to: Filtered.Filtered<never, never, Destination>
+}
+
+export const blockNavigation: Effect.Effect<
+  Scope.Scope | Navigation,
+  never,
+  BlockNavigation
+> = Effect.gen(function*(_) {
+  const navigation = yield* _(Navigation)
+  const BlockState = yield* _(RefSubject.of<BlockState>(Unblocked))
+
+  yield* _(
+    navigation.onNavigation<never, never>((destination) =>
+      BlockState.modifyEffect((state) =>
+        Effect.gen(function*(_) {
+          // Can't block twice
+          if (state._tag === "Blocked") return [Option.none(), state] as const
+          const updated = yield* _(Blocked(yield* _(navigation.current), destination))
+
+          return [
+            Option.some(Deferred.await(updated.deferred)),
+            updated
+          ] as const
+        })
+      )
+    )
+  )
+
+  const isBlocking = BlockState.map((s) => s._tag === "Blocked")
+
+  const unblock = BlockState.modifyEffect((state) => {
+    if (state._tag === "Unblocked") return Effect.succeed([false, state] as const)
+
+    return Deferred.succeed(state.deferred, undefined).pipe(Effect.as([true, Unblocked]))
+  })
+
+  const from = BlockState.filterMap((s) => s._tag === "Blocked" ? Option.some(s.currentDestination) : Option.none())
+  const to = BlockState.filterMap((s) => s._tag === "Blocked" ? Option.some(s.proposedDestination) : Option.none())
+
+  return {
+    isBlocking,
+    unblock,
+    from,
+    to
+  } as const
+})

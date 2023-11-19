@@ -79,6 +79,16 @@ export function fromNavigation(
         )
       })
 
+    const cancelNavigation = (options?: { readonly info?: unknown }) =>
+      Effect.async<never, NavigationError, Destination>((resume) => {
+        navigation.transition
+          ? navigation.transition.rollback(options).finished.then(
+            () => resume(current),
+            (error) => resume(Effect.die(error))
+          )
+          : Effect.sync(() => resume(current))
+      })
+
     const onNavigation = <R, R2>(handler: NavigationHandler<R, R2>) =>
       Effect.gen(function*(_) {
         const ctx = yield* _(Effect.context<R | R2>())
@@ -129,10 +139,12 @@ export function fromNavigation(
             const result = yield* _(matched.value, Effect.provide(ctx), Effect.either)
 
             if (Either.isLeft(result)) {
-              return handleRedirect(navigation, result.left.redirect)
+              if (result.left._tag === "RedirectError") {
+                return handleRedirect(navigation, result.left.redirect)
+              } else {
+                return yield* _(cancelNavigation({ info }))
+              }
             }
-
-            return
           }
         }
       }).pipe(Effect.ensuring(isNavigating.set(false)))
