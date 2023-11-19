@@ -1,3 +1,3 @@
-export * from "./Crypto"
+export * from "./GetRandomValues"
 export * from "./NanoId"
 export * from "./Uuid"
