@@ -1,8 +1,7 @@
 import "./styles.css"
 
 import * as Fx from "@typed/fx/Fx"
-import * as Bool from "@typed/fx/RefBoolean"
-import type * as RefSubject from "@typed/fx/RefSubject"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { RenderEvent, RenderTemplate } from "@typed/template"
 import { html, many } from "@typed/template"
 import * as EventHandler from "@typed/template/EventHandler"
@@ -28,15 +27,15 @@ export const TodoApp: Fx.Fx<
         <input
           class="new-todo"
           placeholder="What needs to be done?"
-          .value=${App.TodoText}
-          oninput=${EventHandler.target<HTMLInputElement>()((ev) => App.TodoText.set(ev.target.value))}
+          .value="${App.TodoText}"
+          oninput="${EventHandler.target<HTMLInputElement>()((ev) => App.TodoText.set(ev.target.value))}"
         />
       </form>
     </header>
 
     <section class="main">
-      <input class="toggle-all" type="checkbox" ?checked=${App.AllAreCompleted} ?indeterminate=${App.SomeAreCompleted} />
-      <label for="toggle-all" onclick=${App.toggleAllCompleted}>Mark all as complete</label>
+      <input class="toggle-all" type="checkbox" ?checked="${App.AllAreCompleted}" ?indeterminate="${App.SomeAreCompleted}" />
+      <label for="toggle-all" onclick="${App.toggleAllCompleted}">Mark all as complete</label>
 
       <ul class="todo-list">
         ${many(App.Todos, (todo) => todo.id, TodoItem)}
@@ -54,7 +53,7 @@ export const TodoApp: Fx.Fx<
         ${
   Fx.if(
     App.SomeAreCompleted,
-    html`<button class="clear-completed" onclick=${App.clearCompletedTodos}>Clear completed</button>`,
+    html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
     Fx.succeed(null)
   )
 }
@@ -65,7 +64,7 @@ export const TodoApp: Fx.Fx<
 function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
   return Fx.genScoped(function*(_) {
     // Track whether this todo is being edited
-    const isEditing = yield* _(Bool.make(Effect.succeed(false)))
+    const isEditing = yield* _(RefSubject.of(false))
 
     // Track whether the todo is marked as completed
     const isCompleted = todo.map(Domain.isCompleted)
@@ -90,21 +89,21 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
         <input
           type="checkbox"
           class="toggle"
-          .checked=${isCompleted}
-          onclick=${App.toggleTodoCompleted(id)}
+          .checked="${isCompleted}"
+          onclick="${App.toggleTodoCompleted(id)}"
         />
 
-        <label ondblclick=${isEditing.set(true)}>${text}</label>
+        <label ondblclick="${isEditing.set(true)}">${text}</label>
 
-        <button class="destroy" onclick=${App.deleteTodo(id)}></button>
+        <button class="destroy" onclick="${App.deleteTodo(id)}"></button>
       </div>
 
       <input
         class="edit"
-        .value=${text}
-        oninput=${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}
-        onfocusout=${EventHandler.make(() => submit)}
-        onkeydown=${onEnterOrEscape((ev) => (ev.key === "Enter" ? submit : reset))}
+        .value="${text}"
+        oninput="${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}"
+        onfocusout="${EventHandler.make(() => submit)}"
+        onkeydown="${onEnterOrEscape((ev) => (ev.key === "Enter" ? submit : reset))}"
       />
     </li>`
   })
@@ -114,7 +113,9 @@ function FilterLink(filterState: Domain.FilterState) {
   return html`<li>
     <a
       class="${Fx.when(App.FilterState.map((state) => state === filterState), "selected", "")}" 
-      href="${Infra.filterStateToPath(filterState)}">${filterState}
+      href="${Infra.filterStateToPath(filterState)}"
+    >
+      ${filterState}
     </a>
   </li>`
 }
