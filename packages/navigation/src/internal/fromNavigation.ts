@@ -116,14 +116,14 @@ export function fromNavigation(
       )
     })
 
-    const runHandlers = (destination: Destination) =>
+    const runHandlers = (destination: Destination, info: unknown) =>
       Effect.gen(function*(_) {
         yield* _(isNavigating.set(true))
 
         const currentHandlers = yield* _(handlers)
 
         for (const [handler, ctx] of currentHandlers) {
-          const matched = yield* _(handler(destination), Effect.provide(ctx))
+          const matched = yield* _(handler(destination, info), Effect.provide(ctx))
 
           if (Option.isSome(matched)) {
             const result = yield* _(matched.value, Effect.provide(ctx), Effect.either)
@@ -141,7 +141,7 @@ export function fromNavigation(
       if (shouldNotIntercept(ev)) return
 
       ev.intercept({
-        handler: () => runPromise(runHandlers(navigationDestinationToDestination(ev.destination)))
+        handler: () => runPromise(runHandlers(navigationDestinationToDestination(ev.destination), ev.info))
       })
     })
 

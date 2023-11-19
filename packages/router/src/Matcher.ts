@@ -38,18 +38,18 @@ export interface RouteMatcher<R, E, A> {
     ): RouteMatcher<R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>, E | E2 | E3, A | C>
   }
 
-  notFound<R2, E2, B>(
+  readonly notFound: <R2, E2, B>(
     f: (destination: typeof Navigation.CurrentDestination) => Fx.Fx<R2, E2, B>
-  ): Fx.Fx<
+  ) => Fx.Fx<
     Navigation.Navigation | CurrentEnvironment | R | Exclude<R2, Scope.Scope>,
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   >
 
-  redirect<const P extends string>(
+  readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
     ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
-  ): Fx.Fx<
+  ) => Fx.Fx<
     Navigation.Navigation | CurrentRoute | CurrentEnvironment | R,
     Exclude<E, Navigation.RedirectError>,
     A
@@ -67,6 +67,7 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
     this.match = this.match.bind(this)
     this.to = this.to.bind(this)
     this.notFound = this.notFound.bind(this)
+    this.redirect = this.redirect.bind(this)
   }
 
   match<const P extends string, R2, E2, B>(
@@ -80,21 +81,23 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
   ): RouteMatcher<R | R2 | R3, E | E2 | E3, A | C>
 
   match<const P extends string, R2, E2, B, R3, E3, C>(
-    route: Route.Route<P> | P,
+    pathOrRoute: Route.Route<P> | P,
     guard:
       | Guard.Guard<Path.ParamsOf<P>, R2, E2, B>
       | ((ref: RefSubject.RefSubject<never, never, B>) => Fx.Fx<R3, E3, C>),
     f?: (ref: RefSubject.RefSubject<never, never, B>) => Fx.Fx<R3, E3, C>
   ): RouteMatcher<R | R2 | R3, E | E2 | E3, A | C> {
+    const route = getRoute(pathOrRoute)
+
     if (arguments.length === 2) {
       return new RouteMatcherImpl<R | R2 | R3, E | E2 | E3, A | C>([...this.guards, {
-        route: getRoute(route),
+        route,
         guard: getGuard(route),
         match: guard as any
       }]) as any
     } else {
       return new RouteMatcherImpl<R | R2 | R3, E | E2 | E3, A | C>([...this.guards, {
-        route: getRoute(route),
+        route,
         guard: getGuard(route, guard as any),
         match: f as any
       }]) as any
@@ -145,7 +148,7 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
 
       return Fx.filterMapErrorEffect(matcher.getOrElse(() => onNotFound), (e) =>
         Navigation.isRedirectError(e)
-          ? Effect.as(handleRedirect(e), Option.none())
+          ? Effect.as(Effect.orDie(Navigation.handleRedirect(e)), Option.none())
           : Effect.succeedSome(e as Exclude<E | E2, Navigation.RedirectError>))
     }))
   }
@@ -159,30 +162,18 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
 }
 
 function getGuard<const P extends string, R2, E2, B>(
-  path: Route.Route<P> | P,
+  path: Route.Route<P>,
   guard?: Guard.Guard<Path.ParamsOf<P>, R2, E2, B>
 ) {
-  const routeGuard = Route.asGuard(getRoute(path))
-
   if (guard) {
-    return Guard.flatMap(routeGuard, guard)
+    return Guard.compose(Route.asGuard(getRoute(path)), guard)
   } else {
-    return routeGuard
+    return Route.asGuard(getRoute(path))
   }
 }
 
 function getRoute<const P extends string>(route: Route.Route<P> | P): Route.Route<P> {
   return typeof route === "string" ? Route.fromPath(route) : route
-}
-
-function handleRedirect(
-  { redirect }: Navigation.RedirectError
-): Effect.Effect<Navigation.Navigation, never, Navigation.Destination> {
-  if (redirect._tag === "RedirectToPath") {
-    return Effect.orDie(Navigation.navigate(redirect.path.toString(), { history: "replace", ...redirect.options }))
-  } else {
-    return Effect.orDie(Navigation.traverseTo(redirect.key, redirect.options))
-  }
 }
 
 export function empty(): RouteMatcher<never, never, never> {

@@ -9,20 +9,7 @@
     "rootDir": "src"
   },
   "include": [
-    "src"
+    "src/**/*.ts"
   ],
-  "references": [
-    {
-      "path": "../context"
-    },
-    {
-      "path": "../dom"
-    },
-    {
-      "path": "../fx"
-    },
-    {
-      "path": "../id"
-    }
-  ]
+  "references": []
 }

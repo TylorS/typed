@@ -1,8 +1,8 @@
 import * as Context from "@typed/context"
-import { Document } from "@typed/dom/Document"
+import * as Document from "@typed/dom/Document"
 import type { Filtered } from "@typed/fx/Filtered"
-import type { Navigation } from "@typed/navigation"
-import { CurrentPath, getCurrentPathFromUrl } from "@typed/navigation"
+import type { Destination, Navigation } from "@typed/navigation"
+import { CurrentDestination, CurrentPath } from "@typed/navigation"
 import type { Layer } from "effect"
 import { Effect, Option, pipe } from "effect"
 import { dual } from "effect/Function"
@@ -55,63 +55,79 @@ export const withCurrentRoute: {
     )
   }))
 
+const makeHref_ = <P extends string, P2 extends string>(
+  currentPath: string,
+  currentRoute: Route.Route<P>,
+  route: Route.Route<P2>,
+  ...[params]: [keyof ParamsOf<P2>] extends [never] ? [{}?] : [ParamsOf<P2>]
+) => {
+  const currentMatch = currentRoute.match(currentPath)
+  if (Option.isNone(currentMatch)) return Option.none()
+
+  const fullRoute = currentRoute.concat(route)
+  const fullParams = { ...currentMatch.value, ...params }
+
+  return Option.some(fullRoute.make(fullParams as any))
+}
+
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
-  ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
 ): Filtered<Navigation | CurrentRoute, never, string> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return CurrentPath.filterMapEffect((currentPath) =>
-    Effect.gen(function*(_) {
-      const currentRoute = yield* _(CurrentRoute)
-      const currentMatch = currentRoute.route.match(currentPath)
-
-      if (Option.isNone(currentMatch)) return Option.none()
-
-      const fullRoute = currentRoute.route.concat(route)
-      const fullParams = { ...currentMatch.value, ...params }
-
-      return Option.some(fullRoute.make(fullParams as any))
-    })
+    Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params))
   )
 }
 
+const isActive_ = <P extends string, P2 extends string>(
+  currentPath: string,
+  currentRoute: Route.Route<P>,
+  route: Route.Route<P2>,
+  ...params: [keyof ParamsOf<P2>] extends [never] ? [{}?] : [ParamsOf<P2>]
+) => {
+  const currentMatch = currentRoute.match(currentPath)
+
+  if (Option.isNone(currentMatch)) return false
+
+  const fullRoute = currentRoute.concat(route)
+  const fullParams = { ...currentMatch.value, ...params }
+  const fullPath = fullRoute.make(fullParams as any)
+
+  return fullPath === currentPath || currentPath.startsWith(fullPath)
+}
 export function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
-  ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
 ): Computed.Computed<Navigation | CurrentRoute, never, boolean> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return CurrentPath.mapEffect((currentPath) =>
-    Effect.gen(function*(_) {
-      const currentRoute = yield* _(CurrentRoute)
-      const currentMatch = currentRoute.route.match(currentPath)
-
-      if (Option.isNone(currentMatch)) return false
-
-      const fullRoute = currentRoute.route.concat(route)
-      const fullParams = { ...currentMatch.value, ...params }
-      const fullPath = fullRoute.make(fullParams as any)
-
-      return fullPath === currentPath || currentPath.startsWith(fullPath)
-    })
+    Effect.map(CurrentRoute, (currentRoute) => isActive_(currentPath, currentRoute.route, route, ...params))
   )
 }
 
-export const browser: Layer.Layer<Document, never, CurrentRoute> = CurrentRoute.layer(Effect.gen(function*(_) {
-  const document = yield* _(Document)
-  const base = document.querySelector("base")
-  const baseHref = base ? getBasePathFromHref(base.href) : "/"
-  return {
-    route: Route.fromPath(baseHref),
-    parent: Option.none()
-  }
-}))
+export const browser: Layer.Layer<Document.Document, never, CurrentRoute> = CurrentRoute.layer(
+  Effect.gen(function*(_) {
+    const document = yield* _(Document.Document)
+    const base = document.querySelector("base")
+    const baseHref = base ? base.href : "/"
 
-export function getBasePathFromHref(href: string) {
-  try {
-    return getCurrentPathFromUrl(new URL(href))
-  } catch {
-    return href
-  }
-}
+    return {
+      route: Route.fromPath(baseHref),
+      parent: Option.none()
+    }
+  })
+)
+
+export const server = (base: string = "/"): Layer.Layer<never, never, CurrentRoute> =>
+  CurrentRoute.layer({ route: Route.fromPath(base), parent: Option.none() })
+
+const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
+  Object.fromEntries(destination.url.searchParams)
+
+export const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>> =
+  CurrentDestination.map(getSearchParams)
+
+export const CurrentState = CurrentDestination.mapEffect((d) => d.state)

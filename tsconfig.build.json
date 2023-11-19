@@ -14,7 +14,13 @@
       "path": "packages/environment"
     },
     {
+      "path": "packages/form"
+    },
+    {
       "path": "packages/fx"
+    },
+    {
+      "path": "packages/id"
     },
     {
       "path": "packages/navigation"

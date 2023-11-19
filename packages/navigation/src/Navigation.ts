@@ -42,7 +42,8 @@ export interface Navigation {
 }
 
 export type NavigationHandler<R, R2> = (
-  destination: Destination
+  destination: Destination,
+  info: unknown
 ) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError, void>>>
 
 export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
@@ -147,4 +148,12 @@ export function redirectToDestination(key: Destination["key"], options?: { reado
 
 export function isRedirectError(e: unknown): e is RedirectError {
   return e instanceof RedirectError
+}
+
+export function handleRedirect({ redirect }: RedirectError): Effect.Effect<Navigation, NavigationError, Destination> {
+  if (redirect._tag === "RedirectToPath") {
+    return navigate(redirect.path.toString(), { history: "replace", ...redirect.options })
+  } else {
+    return traverseTo(redirect.key, redirect.options)
+  }
 }

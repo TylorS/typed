@@ -247,7 +247,7 @@ export const insertAt: {
     a: A
   ): Effect.Effect<R, E, ReadonlyArray<A>>
 } = dual(3, function insertAt<R, E, A>(ref: RefArray<R, E, A>, index: number, a: A) {
-  return ref.update((as) => Option.getOrElse(ReadonlyArray.insertAt(as, index, a), () => as))
+  return ref.update((as) => Option.getOrElse(ReadonlyArray.insertAt(as, index, a), () => [...as, a]))
 })
 
 /**

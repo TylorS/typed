@@ -55,6 +55,18 @@
       "@typed/environment/examples/*": [
         "packages/environment/examples/*"
       ],
+      "@typed/form": [
+        "packages/form/src/index.ts"
+      ],
+      "@typed/form/*": [
+        "packages/form/src/*"
+      ],
+      "@typed/form/test/*": [
+        "packages/form/test/*"
+      ],
+      "@typed/form/examples/*": [
+        "packages/form/examples/*"
+      ],
       "@typed/fx": [
         "packages/fx/src/index.ts"
       ],
@@ -66,6 +78,18 @@
       ],
       "@typed/fx/examples/*": [
         "packages/fx/examples/*"
+      ],
+      "@typed/id": [
+        "packages/id/src/index.ts"
+      ],
+      "@typed/id/*": [
+        "packages/id/src/*"
+      ],
+      "@typed/id/test/*": [
+        "packages/id/test/*"
+      ],
+      "@typed/id/examples/*": [
+        "packages/id/examples/*"
       ],
       "@typed/navigation": [
         "packages/navigation/src/index.ts"

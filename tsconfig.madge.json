@@ -55,6 +55,18 @@
       "@typed/environment/examples/*": [
         "packages/environment/build/examples/*"
       ],
+      "@typed/form": [
+        "packages/form/build/esm/index.js"
+      ],
+      "@typed/form/*": [
+        "packages/form/build/esm/*"
+      ],
+      "@typed/form/test/*": [
+        "packages/form/build/test/*"
+      ],
+      "@typed/form/examples/*": [
+        "packages/form/build/examples/*"
+      ],
       "@typed/fx": [
         "packages/fx/build/esm/index.js"
       ],
@@ -66,6 +78,18 @@
       ],
       "@typed/fx/examples/*": [
         "packages/fx/build/examples/*"
+      ],
+      "@typed/id": [
+        "packages/id/build/esm/index.js"
+      ],
+      "@typed/id/*": [
+        "packages/id/build/esm/*"
+      ],
+      "@typed/id/test/*": [
+        "packages/id/build/test/*"
+      ],
+      "@typed/id/examples/*": [
+        "packages/id/build/examples/*"
       ],
       "@typed/navigation": [
         "packages/navigation/build/esm/index.js"
@@ -154,9 +178,15 @@
     "packages/environment/build/esm/**/*",
     "packages/environment/build/test/**/*",
     "packages/environment/build/examples/**/*",
+    "packages/form/build/esm/**/*",
+    "packages/form/build/test/**/*",
+    "packages/form/build/examples/**/*",
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",
+    "packages/id/build/esm/**/*",
+    "packages/id/build/test/**/*",
+    "packages/id/build/examples/**/*",
     "packages/navigation/build/esm/**/*",
     "packages/navigation/build/test/**/*",
     "packages/navigation/build/examples/**/*",

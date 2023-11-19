@@ -3,7 +3,7 @@ import { dual } from "effect/Function"
 
 export type Guard<I, R, E, O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
 
-export const flatMap: {
+export const compose: {
   <O, R2, E2, B>(output: Guard<O, R2, E2, B>): <I, R, E>(input: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, B>
   <I, R, E, O, R2, E2, B>(input: Guard<I, R, E, O>, output: Guard<O, R2, E2, B>): Guard<I, R | R2, E | E2, B>
 } = dual(2, function flatMap<I, R, E, O, R2, E2, B>(
@@ -29,7 +29,7 @@ export const mapEffect: {
   guard: Guard<I, R, E, O>,
   f: (o: O) => Effect.Effect<R2, E2, B>
 ): Guard<I, R | R2, E | E2, B> {
-  return flatMap(guard, (o) => Effect.asSome(f(o)))
+  return compose(guard, (o) => Effect.asSome(f(o)))
 })
 
 export const map: {
@@ -51,7 +51,7 @@ export const tap: {
   guard: Guard<I, R, E, O>,
   f: (o: O) => Effect.Effect<R2, E2, B>
 ): Guard<I, R | R2, E | E2, O> {
-  return flatMap(guard, (o) => Effect.as(f(o), Option.some(o)))
+  return compose(guard, (o) => Effect.as(f(o), Option.some(o)))
 })
 
 export const filterMap: {
