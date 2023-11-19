@@ -12,7 +12,6 @@ import { Filtered } from "@typed/fx/Filtered"
 import type * as Fx from "@typed/fx/Fx"
 import { provide, skipRepeatsWith } from "@typed/fx/internal/core"
 import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
-import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import { exit, fromFxEffect } from "@typed/fx/internal/fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
@@ -124,7 +123,10 @@ export namespace RefSubject {
      * Make a layer initializing a RefSubject
      * @since 1.18.0
      */
-    readonly make: <R>(fx: Exclude<Fx.FxInput<R, E, A>, Iterable<A>>, eq?: Equivalence<A>) => Layer.Layer<R, never, I>
+    readonly make: <R = never>(
+      fx: Exclude<Fx.FxInput<R, E, A>, Iterable<A>>,
+      eq?: Equivalence<A>
+    ) => Layer.Layer<R, never, I>
 
     /**
      * Make a layer initializing a RefSubject
@@ -138,7 +140,7 @@ export namespace RefSubject {
      */
     readonly provide: <R2>(fx: Fx.FxInput<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
       effect: Effect.Effect<R3, E3, C>
-    ) => Effect.Effect<R2 | Exclude<R3, I>, E | E3, C>
+    ) => Effect.Effect<R2 | Exclude<R3, I> | Scope.Scope, E | E3, C>
 
     /**
      * Provide an implementation of this RefSubject
@@ -146,7 +148,7 @@ export namespace RefSubject {
      */
     readonly provideFx: <R2>(fx: Fx.FxInput<R2, E, A>, eq?: Equivalence<A>) => <R3, E3, C>(
       effect: Fx.Fx<R3, E3, C>
-    ) => Fx.Fx<R2 | Exclude<R3, I>, E | E3, C>
+    ) => Fx.Fx<R2 | Exclude<R3, I> | Scope.Scope, E | E3, C>
   }
 
   /**
@@ -203,8 +205,8 @@ export type Success<T> = RefSubject.Success<T>
 export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<never, E, A>> {
-  return Effect.contextWith((ctx) => unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq))
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
+  return coreRefSubject.fromEffect(initial, eq)
 }
 
 /**
@@ -215,8 +217,20 @@ export function fromEffect<R, E, A>(
 export function of<A, E = never>(
   initial: A,
   eq?: Equivalence<A>
-): Effect.Effect<never, never, RefSubject<never, E, A>> {
+): Effect.Effect<Scope.Scope, never, RefSubject<never, E, A>> {
   return fromEffect<never, E, A>(Effect.succeed(initial), eq)
+}
+
+/**
+ * Construct a RefSubject from a synchronous value.
+ * @since 1.18.0
+ * @category constructors
+ */
+export function sync<A, E = never>(
+  initial: () => A,
+  eq?: Equivalence<A>
+): Effect.Effect<Scope.Scope, never, RefSubject<never, E, A>> {
+  return fromEffect<never, E, A>(Effect.sync(initial), eq)
 }
 
 /**
@@ -228,7 +242,7 @@ export function of<A, E = never>(
 export function make<R, E, A>(
   fx: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
   fx: Fx.FxInput<R, E, A>,
   eq?: Equivalence<A>

@@ -22,7 +22,7 @@ export interface RefNumber<R, E> extends RefSubject.RefSubject<R, E, number> {}
  */
 export function make<R, E>(
   initial: Effect.Effect<R, E, number>
-): Effect.Effect<R, never, RefNumber<never, E>>
+): Effect.Effect<R | Scope, never, RefNumber<never, E>>
 export function make<R, E>(
   initial: Fx.Fx<R, E, number>
 ): Effect.Effect<R | Scope, never, RefNumber<never, E>>
@@ -40,7 +40,7 @@ export function make<R, E>(
  */
 export function of(
   initial: number
-): Effect.Effect<never, never, RefNumber<never, never>> {
+): Effect.Effect<Scope, never, RefNumber<never, never>> {
   return RefSubject.of(initial, strict())
 }
 

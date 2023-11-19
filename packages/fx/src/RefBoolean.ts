@@ -20,7 +20,7 @@ export interface RefBoolean<R, E> extends RefSubject.RefSubject<R, E, boolean> {
  */
 export function make<R, E>(
   initial: Effect.Effect<R, E, boolean>
-): Effect.Effect<R, never, RefBoolean<never, E>>
+): Effect.Effect<R | Scope, never, RefBoolean<never, E>>
 export function make<R, E>(
   initial: Fx.Fx<R, E, boolean>
 ): Effect.Effect<R | Scope, never, RefBoolean<never, E>>

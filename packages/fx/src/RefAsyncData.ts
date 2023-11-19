@@ -13,7 +13,7 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import { RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Either, Option } from "effect"
-import type { Exit } from "effect"
+import type { Exit, Scope } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
@@ -36,7 +36,7 @@ export namespace RefAsyncData {
  * @category constructors
  */
 export const make: <E, A>() => Effect.Effect<
-  never,
+  Scope.Scope,
   never,
   RefAsyncData<never, E, A>
 > = <E, A>() => RefSubject.of(AsyncData.noData<E, A>(), AsyncData.getEquivalence())

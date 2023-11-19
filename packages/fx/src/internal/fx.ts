@@ -8,6 +8,7 @@ import { run } from "@typed/fx/internal/run"
 import { multicast } from "@typed/fx/internal/share"
 import * as Sink from "@typed/fx/Sink"
 import * as Typeclass from "@typed/fx/Typeclass"
+import { Fiber } from "effect"
 import type * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import type { ConfigProvider } from "effect/ConfigProvider"
@@ -601,3 +602,18 @@ export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(...fx
 > {
   return Layer.scopedDiscard(Effect.forkScoped(core.drain(core.merge(fxs))))
 }
+
+export const mergeRace: {
+  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+} = dual(
+  2,
+  function mergeRace<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B> {
+    return core.withScopedFork(({ fork, sink }) =>
+      Effect.flatMap(
+        fork(run(other, sink)),
+        (otherFiber) => run(core.tap(fx, () => Fiber.interrupt(otherFiber)), sink)
+      )
+    )
+  }
+)

@@ -30,8 +30,8 @@ class RefCounter {
 }
 
 export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
-  #fxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
-  #refCount = new RefCounter()
+  _FxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
+  _RefCount = new RefCounter()
 
   constructor(
     readonly i0: Fx<R, E, A>,
@@ -44,7 +44,7 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
     return withScopedFork(({ fork, sink }) =>
       Effect.flatMap(
         fork(
-          Effect.onExit(run(this.i1, sink), () => this.#refCount.decrement() === 0 ? this.interrupt() : Effect.unit)
+          Effect.onExit(run(this.i1, sink), () => this._RefCount.decrement() === 0 ? this.interrupt() : Effect.unit)
         ),
         () => this.initialize()
       )
@@ -53,17 +53,17 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
 
   private initialize(): Effect.Effect<R | R2, never, unknown> {
     return Effect.suspend(() => {
-      if (this.#refCount.increment() === 1) {
+      if (this._RefCount.increment() === 1) {
         return run(this.i0, this.i1).pipe(
-          Effect.onExit(() => Effect.sync(() => MutableRef.set(this.#fxFiber, Option.none()))),
+          Effect.onExit(() => Effect.sync(() => MutableRef.set(this._FxFiber, Option.none()))),
           Effect.interruptible,
           Effect.forkDaemon,
-          Effect.tap((fiber) => Effect.sync(() => MutableRef.set(this.#fxFiber, Option.some(fiber)))),
+          Effect.tap((fiber) => Effect.sync(() => MutableRef.set(this._FxFiber, Option.some(fiber)))),
           Effect.flatMap(Fiber.join)
         )
       } else {
         return Option.match(
-          MutableRef.get(this.#fxFiber),
+          MutableRef.get(this._FxFiber),
           {
             onNone: () => Effect.unit,
             onSome: Fiber.join
@@ -75,7 +75,7 @@ export class Share<R, E, A, R2> extends ToFx<R | R2, E, A> {
 
   private interrupt(): Effect.Effect<R | R2, never, void> {
     return Effect.suspend(() => {
-      const fiber = Option.getOrNull(MutableRef.get(this.#fxFiber))
+      const fiber = Option.getOrNull(MutableRef.getAndSet(this._FxFiber, Option.none()))
 
       return fiber ? Effect.zip(Fiber.interrupt(fiber), this.i1.interrupt) : this.i1.interrupt
     })

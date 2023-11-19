@@ -23,7 +23,7 @@ export interface RefHashMap<R, E, K, V> extends RefSubject.RefSubject<R, E, Hash
  */
 export function make<R, E, K, V>(
   initial: Effect.Effect<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R, never, RefHashMap<never, E, K, V>>
+): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
 export function make<R, E, K, V>(
   initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
@@ -52,7 +52,9 @@ export const tagged: <K, V>() => {
  * @since 1.18.0
  * @category constructors
  */
-export function of<K, V>(map: HashMap.HashMap<K, V>): Effect.Effect<never, never, RefHashMap<never, never, K, V>> {
+export function of<K, V>(
+  map: HashMap.HashMap<K, V>
+): Effect.Effect<Scope.Scope, never, RefHashMap<never, never, K, V>> {
   return make(Effect.succeed(map))
 }
 

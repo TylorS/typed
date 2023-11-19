@@ -30,7 +30,8 @@
     "sync-deps": "syncpack fix-mismatches",
     "update-deps": "syncpack update",
     "sync-refs": "node ./scripts/sync-project-references.js",
-    "update-paths": "node ./scripts/update-path-references.js"
+    "update-paths": "node ./scripts/update-path-references.js",
+    "update": "pnpm run update-paths && pnpm run sync-refs"
   },
   "devDependencies": {
     "@babel/cli": "^7.23.0",

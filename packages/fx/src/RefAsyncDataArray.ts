@@ -3,6 +3,7 @@ import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identif
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
 import * as RefAsyncData from "@typed/fx/RefAsyncData"
+import type { Scope } from "effect"
 import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 
@@ -12,7 +13,7 @@ export namespace RefAsyncDataArray {
   export interface Tagged<I, E, A> extends RefAsyncData.RefAsyncData.Tagged<I, E, ReadonlyArray<A>> {}
 }
 
-export const make = <E, A>(): Effect.Effect<never, never, RefAsyncDataArray<never, E, A>> =>
+export const make = <E, A>(): Effect.Effect<Scope.Scope, never, RefAsyncDataArray<never, E, A>> =>
   RefAsyncData.make<E, ReadonlyArray<A>>()
 
 export const tagged = <E, A>(): {

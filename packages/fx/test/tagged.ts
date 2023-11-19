@@ -29,7 +29,8 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(ref)).toEqual(initialValue)
       }).pipe(
-        ref.provide(Effect.succeed(initialValue))
+        ref.provide(Effect.succeed(initialValue)),
+        Effect.scoped
       )
 
       await Effect.runPromise(test)
@@ -45,7 +46,8 @@ describe.concurrent("Context", () => {
 
         expect(yield* _(addOne)).toEqual(initialValue + 2)
       }).pipe(
-        ref.provide(Effect.succeed(initialValue))
+        ref.provide(Effect.succeed(initialValue)),
+        Effect.scoped
       )
 
       await Effect.runPromise(test)

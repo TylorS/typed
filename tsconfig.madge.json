@@ -55,18 +55,6 @@
       "@typed/environment/examples/*": [
         "packages/environment/build/examples/*"
       ],
-      "@typed/form": [
-        "packages/form/build/esm/index.js"
-      ],
-      "@typed/form/*": [
-        "packages/form/build/esm/*"
-      ],
-      "@typed/form/test/*": [
-        "packages/form/build/test/*"
-      ],
-      "@typed/form/examples/*": [
-        "packages/form/build/examples/*"
-      ],
       "@typed/fx": [
         "packages/fx/build/esm/index.js"
       ],
@@ -178,9 +166,6 @@
     "packages/environment/build/esm/**/*",
     "packages/environment/build/test/**/*",
     "packages/environment/build/examples/**/*",
-    "packages/form/build/esm/**/*",
-    "packages/form/build/test/**/*",
-    "packages/form/build/examples/**/*",
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",

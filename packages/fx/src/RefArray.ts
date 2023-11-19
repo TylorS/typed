@@ -33,7 +33,7 @@ export interface RefArray<R, E, A> extends RefSubject.RefSubject<R, E, ReadonlyA
 export function make<R, E, A>(
   initial: Effect.Effect<R, E, ReadonlyArray<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefArray<never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
 export function make<R, E, A>(
   initial: Fx.Fx<R, E, ReadonlyArray<A>>,
   eq?: Equivalence<A>

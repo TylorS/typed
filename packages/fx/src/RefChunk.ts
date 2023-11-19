@@ -30,7 +30,7 @@ export interface RefChunk<R, E, A> extends RefSubject.RefSubject<R, E, Chunk.Chu
 export function make<R, E, A>(
   initial: Effect.Effect<R, E, Chunk.Chunk<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefChunk<never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
 export function make<R, E, A>(
   initial: Fx.Fx<R, E, Chunk.Chunk<A>>,
   eq?: Equivalence<A>

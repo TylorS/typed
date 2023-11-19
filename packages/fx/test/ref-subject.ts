@@ -38,7 +38,7 @@ describe.concurrent(__filename, () => {
         const values = yield* _(Effect.fromFiber(fiber))
 
         expect(values).toEqual([1, 2, 3, 4, 5])
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -242,7 +242,7 @@ describe.concurrent(__filename, () => {
           const values = yield* _(Effect.fromFiber(fiber))
 
           expect(values).toEqual([0, 1n, 100n, 5, 42])
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -320,7 +320,7 @@ describe.concurrent(__filename, () => {
           ])
 
           expect(calls).toEqual(3)
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })

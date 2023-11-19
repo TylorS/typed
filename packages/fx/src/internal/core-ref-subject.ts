@@ -275,8 +275,14 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 export function fromEffect<R, E, A>(
   initial: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<never, E, A>> {
-  return Effect.contextWith((ctx) => unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq))
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
+  return Effect.contextWithEffect((ctx) =>
+    Effect.suspend(() => {
+      const ref = unsafeMake(Effect.provide(initial, ctx), makeHoldSubject<E, A>(), eq)
+
+      return Effect.as(Effect.addFinalizer(() => ref.interrupt), ref)
+    })
+  )
 }
 
 /**
@@ -287,7 +293,7 @@ export function fromEffect<R, E, A>(
 export function of<A, E = never>(
   initial: A,
   eq?: Equivalence<A>
-): Effect.Effect<never, never, RefSubject<never, E, A>> {
+): Effect.Effect<Scope.Scope, never, RefSubject<never, E, A>> {
   return fromEffect<never, E, A>(Effect.succeed(initial), eq)
 }
 
@@ -298,15 +304,15 @@ export function of<A, E = never>(
 export function make<A, E = never>(
   iterable: Iterable<A>,
   eq?: Equivalence<A>
-): Effect.Effect<never, never, RefSubject<never, E, ReadonlyArray<A>>>
+): Effect.Effect<Scope.Scope, never, RefSubject<never, E, ReadonlyArray<A>>>
 export function make<R, E, A>(
   refSubject: RefSubject<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject.Derived<R, never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefSubject.Derived<R, never, E, A>>
 export function make<R, E, A>(
   effect: Effect.Effect<R, E, A>,
   eq?: Equivalence<A>
-): Effect.Effect<R, never, RefSubject<never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>>
 export function make<R, E, A>(
   fx: FxInput<R, E, A>,
   eq?: Equivalence<A>
@@ -346,6 +352,8 @@ const fxAsRef = <R, E, A>(
       )
     )))
 
+    yield* $(Effect.addFinalizer(() => ref.interrupt))
+
     return ref
   })
 
@@ -367,6 +375,8 @@ const derivedRefSubject = <R, E, A>(
         (a) => done(Exit.succeed(a))
       )
     )))
+
+    yield* $(Effect.addFinalizer(() => ref.interrupt))
 
     const derived: RefSubject.Derived<R, never, E, A> = Object.assign(ref, {
       persist: Effect.matchCauseEffect(ref, source)
@@ -494,19 +504,23 @@ export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubjec
 
 export function fromSubscriptionRef<A>(
   subscriptionRef: SubscriptionRef.SubscriptionRef<A>
-): RefSubject.Derived<never, never, never, A> {
-  const effect = SubscriptionRef.get(subscriptionRef)
-  const subject = makeHoldSubject<never, A>()
-  const fx = share(core.fromStream(subscriptionRef.changes), subject)
-  const ref: RefSubject<never, never, A> = unsafeMake(effect, {
-    ...fx,
-    onSuccess: subject.onSuccess,
-    onFailure: subject.onFailure,
-    subscriberCount: subject.subscriberCount,
-    interrupt: subject.interrupt
-  })
+): Effect.Effect<Scope.Scope, never, RefSubject.Derived<never, never, never, A>> {
+  return Effect.suspend(() => {
+    const effect = SubscriptionRef.get(subscriptionRef)
+    const subject = makeHoldSubject<never, A>()
+    const fx = share(core.fromStream(subscriptionRef.changes), subject)
+    const ref: RefSubject<never, never, A> = unsafeMake(effect, {
+      ...fx,
+      onSuccess: subject.onSuccess,
+      onFailure: subject.onFailure,
+      subscriberCount: subject.subscriberCount,
+      interrupt: subject.interrupt
+    })
 
-  return Object.assign(ref, {
-    persist: ref.updateEffect((value) => SubscriptionRef.setAndGet(subscriptionRef, value))
+    const derived: RefSubject.Derived<never, never, never, A> = Object.assign(ref, {
+      persist: ref.updateEffect((value) => SubscriptionRef.setAndGet(subscriptionRef, value))
+    })
+
+    return Effect.as(Effect.addFinalizer(() => ref.interrupt), derived)
   })
 }

@@ -247,7 +247,7 @@ describe.concurrent(__filename, () => {
         yield* _(ref.delete)
 
         expect(yield* _(ref)).toEqual(0)
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -265,7 +265,7 @@ describe.concurrent(__filename, () => {
         yield* _(ref.set(2))
 
         expect(yield* _(Fiber.join(fiber))).toEqual([0, 1, 2])
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -289,7 +289,7 @@ describe.concurrent(__filename, () => {
           yield* _(ref.delete)
 
           expect(yield* _(addOne)).toEqual(1)
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -310,7 +310,7 @@ describe.concurrent(__filename, () => {
           yield* _(ref.set(2))
 
           expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(2))
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -333,7 +333,7 @@ describe.concurrent(__filename, () => {
         yield* _(ref.delete)
 
         expect(yield* _(ref)).toEqual(0)
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -385,7 +385,7 @@ describe.concurrent(__filename, () => {
           yield* _(ref.delete)
 
           expect(yield* _(ref)).toEqual(0)
-        }).pipe(ref.provide(Effect.succeed(0)))
+        }).pipe(ref.provide(Effect.succeed(0)), Effect.scoped)
 
         await Effect.runPromise(test)
       })

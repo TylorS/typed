@@ -26,7 +26,7 @@ export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet
  */
 export function make<R, E, A>(
   initial: Effect.Effect<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R, never, RefHashSet<never, E, A>>
+): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
 export function make<R, E, A>(
   initial: Fx.Fx<R, E, HashSet.HashSet<A>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>

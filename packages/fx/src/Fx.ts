@@ -34,7 +34,7 @@ import * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
-import type * as Either from "effect/Either"
+import * as Either from "effect/Either"
 import type { Equivalence } from "effect/Equivalence"
 import type * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
@@ -2566,6 +2566,31 @@ export const getOrElse: {
   }
 )
 
+export const matchEither: {
+  <E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
+    onRight: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): <R, E>(fx: Fx<R, E, Either.Either<E1, A>>) => Fx<R | R2, E | E2, B | C>
+
+  <R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    fx: Fx<R, E, Either.Either<E1, A>>,
+    onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
+    onRight: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): Fx<R | R2, E | E2, B | C>
+} = dual(
+  3,
+  function matchEither<R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
+    fx: Fx<R, E, Either.Either<E1, A>>,
+    onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
+    onRight: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
+  ): Fx<R | R2, E | E2, B | C> {
+    return matchTags(fx, {
+      Left: (left) => onLeft(transform(left, (a) => a.left, (a) => Either.left(a) as Either.Left<E1, A>)),
+      Right: (right) => onRight(transform(right, (s) => s.right, (value) => Either.right(value) as Either.Right<E1, A>))
+    })
+  }
+)
+
 export const fork = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> =>
   Effect.fork(drain(fx))
 
@@ -2583,3 +2608,8 @@ export const forkIn: {
   fx: Fx<R, E, A>,
   scope: Scope.Scope
 ): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> => Effect.forkIn(drain(fx), scope))
+
+export const mergeRace: {
+  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+} = internal.mergeRace

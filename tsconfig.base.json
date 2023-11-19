@@ -55,18 +55,6 @@
       "@typed/environment/examples/*": [
         "packages/environment/examples/*"
       ],
-      "@typed/form": [
-        "packages/form/src/index.ts"
-      ],
-      "@typed/form/*": [
-        "packages/form/src/*"
-      ],
-      "@typed/form/test/*": [
-        "packages/form/test/*"
-      ],
-      "@typed/form/examples/*": [
-        "packages/form/examples/*"
-      ],
       "@typed/fx": [
         "packages/fx/src/index.ts"
       ],
