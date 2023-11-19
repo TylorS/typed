@@ -3,6 +3,13 @@ import { dual } from "effect/Function"
 
 export type Guard<I, R, E, O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
 
+export namespace Guard {
+  export type Input<T> = T extends Guard<infer I, infer _R, infer _E, infer _O> ? I : never
+  export type Context<T> = T extends Guard<infer _I, infer R, infer _E, infer _O> ? R : never
+  export type Error<T> = T extends Guard<infer _I, infer _R, infer E, infer _O> ? E : never
+  export type Output<T> = T extends Guard<infer _I, infer _R, infer _E, infer O> ? O : never
+}
+
 export const compose: {
   <O, R2, E2, B>(output: Guard<O, R2, E2, B>): <I, R, E>(input: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, B>
   <I, R, E, O, R2, E2, B>(input: Guard<I, R, E, O>, output: Guard<O, R2, E2, B>): Guard<I, R | R2, E | E2, B>
@@ -73,3 +80,31 @@ export const filter: {
   <I, R, E, O>(guard: Guard<I, R, E, O>, predicate: (o: O) => boolean): Guard<I, R, E, O> => (i) =>
     Effect.map(guard(i), Option.filter(predicate))
 )
+
+export function any<const GS extends Readonly<Record<string, Guard<any, any, any, any>>>>(
+  guards: GS
+): Guard<AnyInput<GS>, Guard.Context<GS[keyof GS]>, Guard.Context<GS[keyof GS]>, AnyOutput<GS>> {
+  const entries = Object.entries(guards)
+  return (i: AnyInput<GS>) =>
+    Effect.gen(function*(_) {
+      for (const [_tag, guard] of entries) {
+        const match = yield* _(guard(i))
+        if (Option.isSome(match)) {
+          return Option.some({ _tag, value: match.value } as AnyOutput<GS>)
+        }
+      }
+      return Option.none()
+    })
+}
+
+export type AnyInput<GS extends Readonly<Record<string, Guard<any, any, any, any>>>> = UnionToIntersection<
+  Guard.Input<GS[keyof GS]>
+>
+
+type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (x: infer R) => any ? R : never
+
+export type AnyOutput<GS extends Readonly<Record<string, Guard<any, any, any, any>>>> = [
+  {
+    [K in keyof GS]: { readonly _tag: K; readonly value: Guard.Output<GS[K]> }
+  }[keyof GS]
+] extends [infer R] ? R : never

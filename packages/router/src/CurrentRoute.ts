@@ -34,12 +34,12 @@ export const CurrentParams: Filtered<Navigation | CurrentRoute, never, Readonly<
 export const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
-  ): <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, CurrentRoute<string>>, E, A>
+  ): <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, CurrentRoute>, E, A>
 
   <R, E, A, P extends string>(
     effect: Effect.Effect<R, E, A>,
     route: Route.Route<P>
-  ): Effect.Effect<Exclude<R, CurrentRoute<string>>, E, A>
+  ): Effect.Effect<Exclude<R, CurrentRoute>, E, A>
 } = dual(2, <R, E, A, P extends string>(
   effect: Effect.Effect<R, E, A>,
   route: Route.Route<P>

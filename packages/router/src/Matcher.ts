@@ -157,7 +157,7 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
     route: P | Route.Route<P>,
     ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
   ): Fx.Fx<R | Navigation.Navigation | CurrentEnvironment | CurrentRoute, Exclude<E, Navigation.RedirectError>, A> {
-    return this.notFound(() => makeHref(route, ...params).mapEffect(Navigation.redirectToPath))
+    return this.notFound(() => makeHref(route, ...params).mapEffect((s) => Effect.fail(Navigation.redirectToPath(s))))
   }
 }
 
