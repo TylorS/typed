@@ -30,7 +30,11 @@ const makeUrl = (urlOrPath: string | URL, origin: string): URL => {
   }
 }
 
-const makeNewDestination = (urlOrPath: string | URL, states: States, origin: string) =>
+const makeNewDestination = (
+  urlOrPath: string | URL,
+  states: States,
+  origin: string
+): Effect.Effect<Id.GetRandomValues, never, Destination> =>
   Effect.gen(function*(_) {
     const id = yield* _(Id.makeUuid)
     const key = yield* _(Id.makeNanoId)
@@ -47,12 +51,13 @@ const makeNewDestination = (urlOrPath: string | URL, states: States, origin: str
     return destination
   })
 
-function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<never, never, Navigation> {
+function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<Id.GetRandomValues, never, Navigation> {
   const maxEntries = memoryOptions.maxEntries || 50
   const origin = memoryOptions.origin || "http://localhost"
   const states = memoryOptions.states ?? new WeakMap<Destination, unknown>()
 
   return Effect.gen(function*(_) {
+    const getRandomValues = yield* _(Id.GetRandomValues)
     const currentDestinations = RefSubject.transform(
       yield* _(RefSubject.of(memoryOptions.entries)),
       (a): ReadonlyArray<Destination> => a.length > maxEntries ? ReadonlyArray.takeRight(a, maxEntries) : a,
@@ -131,7 +136,10 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<never
       options?: NavigateOptions
     ): Effect.Effect<never, NavigationError, Destination> =>
       Effect.gen(function*(_) {
-        const destination: Destination = yield* _(makeNewDestination(url, states, origin))
+        const destination: Destination = yield* _(
+          makeNewDestination(url, states, origin),
+          Id.GetRandomValues.provide(getRandomValues)
+        )
 
         if (options?.state) {
           states.set(destination, options.state)
@@ -250,10 +258,13 @@ function makeMemoryNavigation(memoryOptions: MemoryOptions): Effect.Effect<never
   })
 }
 
-export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
+export const memory = (options: MemoryOptions): Layer.Layer<Id.GetRandomValues, never, Navigation> =>
   Navigation.layer(makeMemoryNavigation(options))
 
-export function initialMemory(urlOrPath: string | URL, origin?: string): Layer.Layer<never, never, Navigation> {
+export function initialMemory(
+  urlOrPath: string | URL,
+  origin?: string
+): Layer.Layer<Id.GetRandomValues, never, Navigation> {
   return Navigation.layer(Effect.gen(function*(_) {
     const states = new WeakMap<Destination, unknown>()
     const destination = yield* _(makeNewDestination(urlOrPath, states, origin || "http://localhost"))
