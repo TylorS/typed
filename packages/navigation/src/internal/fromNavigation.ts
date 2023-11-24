@@ -1,20 +1,14 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-
-import { Context } from "@typed/context"
+import type { Context } from "@typed/context"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { Effect, Either, Option, Scope } from "effect"
-import {
-  type Destination,
-  type NavigateOptions,
-  type Navigation,
-  NavigationError,
-  NavigationHandler,
-  Redirect
-} from "../Navigation"
+import type { Scope } from "effect"
+import { Effect, Either, Option } from "effect"
+import { NavigationError } from "../Navigation"
+import type { Destination, NavigateOptions, Navigation, NavigationHandler, Redirect } from "../Navigation"
 
 export function fromNavigation(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   navigation: import("@virtualstate/navigation").Navigation
 ): Effect.Effect<Scope.Scope, never, Navigation> {
   return Effect.gen(function*(_) {
@@ -176,6 +170,7 @@ export function fromNavigation(
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 function shouldNotIntercept(navigationEvent: import("@virtualstate/navigation").NavigateEvent): boolean {
   return (
     !navigationEvent.canIntercept ||
@@ -192,6 +187,7 @@ function shouldNotIntercept(navigationEvent: import("@virtualstate/navigation").
 }
 
 function navigationHistoryEntryToDestination(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   entry: import("@virtualstate/navigation").NavigationHistoryEntry
 ): Destination {
   return {
@@ -204,6 +200,7 @@ function navigationHistoryEntryToDestination(
 }
 
 function navigationDestinationToDestination(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   destination: import("@virtualstate/navigation").NavigationDestination
 ): Destination {
   return {
@@ -216,6 +213,7 @@ function navigationDestinationToDestination(
 }
 
 function handleRedirect(
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   navigation: import("@virtualstate/navigation").Navigation,
   redirect: Redirect
 ) {

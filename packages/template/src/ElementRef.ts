@@ -8,6 +8,7 @@ import { ElementSource, getElements } from "@typed/template/ElementSource"
 import { adjustTime } from "@typed/template/internal/utils"
 import type { Placeholder } from "@typed/template/Placeholder"
 import { type Rendered } from "@typed/wire"
+import type { Scope } from "effect"
 import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual } from "effect/Function"
@@ -20,7 +21,7 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, never, T, never, NoSuchElementException, T>
+  extends Versioned<never, never, never, never, T, never, NoSuchElementException, T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
@@ -32,14 +33,14 @@ export interface ElementRef<T extends Rendered = Rendered>
 
 const strictEqual = Option.getEquivalence((a, b) => a === b)
 
-export function make<T extends Rendered = Rendered>(): Effect.Effect<never, never, ElementRef<T>> {
+export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
     RefSubject.of(Option.none<T>(), strictEqual),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
   )
 }
 
-export function of<T extends Rendered>(rendered: T): Effect.Effect<never, never, ElementRef<T>> {
+export function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
     RefSubject.of(Option.some<T>(rendered), strictEqual),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>

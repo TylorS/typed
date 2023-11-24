@@ -14,7 +14,7 @@ describe("ElementRef", () => {
       expect(yield* _(ref)).toBe(element)
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 
   it("allows querying for children", async () => {
@@ -25,7 +25,7 @@ describe("ElementRef", () => {
       expect(yield* _(child)).toEqual(Array.from(element.childNodes))
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 
   it("allows querying for children by reference", async () => {
@@ -36,7 +36,7 @@ describe("ElementRef", () => {
       expect(yield* _(child)).toEqual(Array.from(element.childNodes))
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 
   it("allows listening to events", async () => {
@@ -56,7 +56,7 @@ describe("ElementRef", () => {
       expect(event instanceof window.MouseEvent).toBe(true)
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 
   it("allows listening to events using element reference", async () => {
@@ -77,7 +77,7 @@ describe("ElementRef", () => {
       expect(event instanceof window.MouseEvent).toBe(true)
     })
 
-    await Effect.runPromise(test)
+    await Effect.runPromise(Effect.scoped(test))
   })
 })
 

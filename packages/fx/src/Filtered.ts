@@ -14,6 +14,7 @@ import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { FilteredTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
+import type { Context, Layer, Runtime } from "effect"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
@@ -28,7 +29,7 @@ import * as Option from "effect/Option"
  * @category models
  */
 export interface Filtered<out R, out E, out A>
-  extends Versioned.Versioned<R, R, E, A, R, E | Cause.NoSuchElementException, A>
+  extends Versioned.Versioned<R, never, R, E, A, R, E | Cause.NoSuchElementException, A>
 {
   readonly [FilteredTypeId]: FilteredTypeId
 
@@ -86,20 +87,32 @@ export interface Filtered<out R, out E, out A>
  * @since 1.18.0
  */
 export function Filtered<R, E, A, R2, E2, B>(
-  input: Versioned.Versioned<R, R, E, A, R, E | Cause.NoSuchElementException, A>,
+  input: Versioned.Versioned<R, never, R, E, A, R, E | Cause.NoSuchElementException, A>,
   f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
 ): Filtered<R | R2, E | E2, B> {
   return new FilteredImpl(input, f) as any
 }
 
-class FilteredImpl<R, E, A, R2, E2, B>
-  extends VersionedTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2 | Cause.NoSuchElementException, B>
-  implements Filtered<R | R2, E | E2, B>
-{
+class FilteredImpl<R, E, A, R2, E2, B> extends VersionedTransform<
+  R,
+  never,
+  R,
+  E,
+  A,
+  R,
+  E,
+  A,
+  R | R2,
+  E | E2,
+  B,
+  R | R2,
+  E | E2 | Cause.NoSuchElementException,
+  B
+> implements Filtered<R | R2, E | E2, B> {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
 
   constructor(
-    readonly input: Versioned.Versioned<R, R, E, A, R, E, A>,
+    readonly input: Versioned.Versioned<R, never, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
   ) {
     super(
@@ -159,6 +172,7 @@ export function combine<const Computeds extends ReadonlyArray<Filtered<any, any,
   return Filtered(
     Versioned.combine(computeds) as Versioned.Versioned<
       Fx.Fx.Context<Computeds[number]>,
+      never,
       Fx.Fx.Context<Computeds[number]>,
       Fx.Fx.Error<Computeds[number]>,
       { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[number]> },
@@ -182,6 +196,7 @@ export function struct<
   return Filtered(
     Versioned.struct(computeds) as Versioned.Versioned<
       Fx.Fx.Context<Computeds[keyof Computeds]>,
+      never,
       Fx.Fx.Context<Computeds[keyof Computeds]>,
       Fx.Fx.Error<Computeds[keyof Computeds]>,
       { readonly [K in keyof Computeds]: Fx.Fx.Success<Computeds[K]> },
@@ -211,3 +226,37 @@ export const fromTag: {
     )
   }
 )
+
+export const provide: {
+  <R2, E2, S>(
+    layer: Layer.Layer<R2, E2, S>
+  ): <R, E, A>(filtered: Filtered<R, E, A>) => Filtered<R2 | Exclude<R, S>, E | E2, A>
+
+  <S>(
+    runtime: Runtime.Runtime<S>
+  ): <R, E, A>(filtered: Filtered<R, E, A>) => Filtered<Exclude<R, S>, E, A>
+
+  <S>(
+    context: Context.Context<S>
+  ): <R, E, A>(filtered: Filtered<R, E, A>) => Filtered<Exclude<R, S>, E, A>
+
+  <R2, E2, S>(
+    layer: Layer.Layer<R2, E2, S>
+  ): <R, E, A>(filtered: Filtered<R, E, A>) => Filtered<R2 | Exclude<R, S>, E | E2, A>
+
+  <R, E, A, R2, E2, S>(
+    filtered: Filtered<R, E, A>,
+    layer: Layer.Layer<R2, E2, S>
+  ): Filtered<R2 | Exclude<R, S>, E | E2, A>
+
+  <R, E, A, S>(filtered: Filtered<R, E, A>, runtime: Runtime.Runtime<S>): Filtered<Exclude<R, S>, E, A>
+  <R, E, A, S>(filtered: Filtered<R, E, A>, context: Context.Context<S>): Filtered<Exclude<R, S>, E, A>
+} = dual(2, function provide<R, E, A, R2, E2, S>(
+  filtered: Filtered<R, E, A>,
+  layer: Layer.Layer<R2, E2, S>
+): Filtered<R2 | Exclude<R, S>, E | E2, A> {
+  return Filtered(
+    Versioned.provide(filtered, layer),
+    Effect.succeedSome
+  )
+})

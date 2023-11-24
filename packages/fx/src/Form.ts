@@ -37,7 +37,7 @@ export namespace Form {
    * Base interface is to improve type-checking performance by memoizing the derived R, E, I, and O values.
    */
   export interface Base<E, I, O, Entries extends Form.AnyEntries>
-    extends Versioned.Versioned<never, never, E | ParseError, I, never, E | ParseError, I>
+    extends Versioned.Versioned<never, never, never, E | ParseError, I, never, E | ParseError, I>
   {
     readonly [FormTypeId]: FormTypeId
 
@@ -183,6 +183,7 @@ const parseOptions: ParseOptions = { errors: "all", onExcessProperty: "ignore" }
 
 // @ts-expect-error
 class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
+  never,
   never,
   Form.Error<Entries> | ParseError,
   Form.Input<Entries>,

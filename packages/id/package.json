@@ -41,6 +41,6 @@
   "sideEffects": [],
   "dependencies": {
     "@typed/context": "workspace:*",
-    "effect": "2.0.0-next.55"
+    "effect": "2.0.0-next.56"
   }
 }

@@ -13,7 +13,7 @@ import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
-import type { Equivalence } from "effect"
+import type { Context, Equivalence, Layer, Runtime } from "effect"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import { dual } from "effect/Function"
@@ -24,7 +24,7 @@ import * as Option from "effect/Option"
  * @since 1.18.0
  * @category models
  */
-export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, R, E, A, R, E, A> {
+export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, never, R, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 
   /**
@@ -76,7 +76,7 @@ export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, R,
  * @since 1.18.0
  */
 export function Computed<R, E, A, R2, E2, B>(
-  input: Versioned.Versioned<R, R, E, A, R, E, A>,
+  input: Versioned.Versioned<R, never, R, E, A, R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, B>
 ): Computed<R | R2, E | E2, B> {
   return new ComputedImpl(input, f) as any
@@ -89,13 +89,13 @@ export namespace Computed {
 }
 
 class ComputedImpl<R, E, A, R2, E2, B>
-  extends VersionedTransform<R, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2, B>
+  extends VersionedTransform<R, never, R, E, A, R, E, A, R | R2, E | E2, B, R | R2, E | E2, B>
   implements Computed<R | R2, E | E2, B>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
 
   constructor(
-    readonly input: Versioned.Versioned<R, R, E, A, R, E, A>,
+    readonly input: Versioned.Versioned<R, never, R, E, A, R, E, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, B>
   ) {
     super(
@@ -130,7 +130,7 @@ class ComputedImpl<R, E, A, R2, E2, B>
 
   skipRepeats: (eq?: Equivalence.Equivalence<B> | undefined) => Computed<R | R2, E | E2, B> = (eq = equals) =>
     Computed<R | R2, E | E2, B, never, never, B>(
-      Versioned.transformFx<R | R2, R | R2, E | E2, B, R | R2, E | E2, B, R | R2, E | E2, B>(
+      Versioned.transformFx<R | R2, never, R | R2, E | E2, B, R | R2, E | E2, B, R | R2, E | E2, B>(
         this,
         core.skipRepeatsWith(eq)
       ),
@@ -146,6 +146,7 @@ export function combine<const Computeds extends ReadonlyArray<Computed<any, any,
   return Computed(
     Versioned.combine(computeds) as Versioned.Versioned<
       Fx.Context<Computeds[keyof Computeds]>,
+      never,
       Fx.Context<Computeds[keyof Computeds]>,
       Fx.Error<Computeds[keyof Computeds]>,
       { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> },
@@ -167,6 +168,7 @@ export function struct<const Computeds extends Readonly<Record<string, Computed<
   return Computed(
     Versioned.struct(computeds) as Versioned.Versioned<
       Computed.Context<Computeds[keyof Computeds]>,
+      never,
       Computed.Context<Computeds[keyof Computeds]>,
       Computed.Error<Computeds[keyof Computeds]>,
       { readonly [K in keyof Computeds]: Computed.Success<Computeds[K]> },
@@ -196,3 +198,37 @@ export const fromTag: {
     )
   }
 )
+
+export const provide: {
+  <R2, E2, S>(
+    layer: Layer.Layer<R2, E2, S>
+  ): <R, E, A>(computed: Computed<R, E, A>) => Computed<R2 | Exclude<R, S>, E | E2, A>
+
+  <S>(
+    runtime: Runtime.Runtime<S>
+  ): <R, E, A>(computed: Computed<R, E, A>) => Computed<Exclude<R, S>, E, A>
+
+  <S>(
+    context: Context.Context<S>
+  ): <R, E, A>(computed: Computed<R, E, A>) => Computed<Exclude<R, S>, E, A>
+
+  <R2, E2, S>(
+    layer: Layer.Layer<R2, E2, S>
+  ): <R, E, A>(computed: Computed<R, E, A>) => Computed<R2 | Exclude<R, S>, E | E2, A>
+
+  <R, E, A, R2, E2, S>(
+    computed: Computed<R, E, A>,
+    layer: Layer.Layer<R2, E2, S>
+  ): Computed<R2 | Exclude<R, S>, E | E2, A>
+
+  <R, E, A, S>(computed: Computed<R, E, A>, runtime: Runtime.Runtime<S>): Computed<Exclude<R, S>, E, A>
+  <R, E, A, S>(computed: Computed<R, E, A>, context: Context.Context<S>): Computed<Exclude<R, S>, E, A>
+} = dual(2, function provide<R, E, A, R2, E2, S>(
+  computed: Computed<R, E, A>,
+  layer: Layer.Layer<R2, E2, S>
+): Computed<R2 | Exclude<R, S>, E | E2, A> {
+  return Computed(
+    Versioned.provide(computed, layer),
+    Effect.succeed
+  )
+})

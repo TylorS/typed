@@ -40,6 +40,7 @@ type Any = RefSubject<any, any, any> | RefSubject<any, never, any> | Model<any>
 export interface Model<Refs extends Readonly<Record<string, Any>>> extends
   Versioned<
     Model.Identifier<Refs[keyof Refs]>,
+    never,
     Model.Identifier<Refs[keyof Refs]>,
     Model.Error<Refs[keyof Refs]>,
     {

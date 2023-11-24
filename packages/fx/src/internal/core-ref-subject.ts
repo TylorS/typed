@@ -205,7 +205,7 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 
   skipRepeats: (eq?: Equivalence<A> | undefined) => Computed<R, E, A> = (eq = equals) =>
     Computed<R, E, A, never, never, A>(
-      transformFx<R, R, E, A, R, E, A, R, E, A>(
+      transformFx<R, never, R, E, A, R, E, A, R, E, A>(
         this,
         core.skipRepeatsWith(eq)
       ),

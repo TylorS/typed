@@ -1,4 +1,4 @@
-import { GetRandomValues } from "@typed/id"
+import { GetRandomValues } from "@typed/id/GetRandomValues"
 import { Brand, Effect } from "effect"
 
 export type NanoId = string & Brand.Brand<"@typed/id/NanoId">

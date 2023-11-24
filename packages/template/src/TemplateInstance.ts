@@ -12,7 +12,7 @@ export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstan
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 
 export interface TemplateInstance<E, T extends Rendered = Rendered>
-  extends Versioned.Versioned<never, never, E, RenderEvent, never, E | NoSuchElementException, T>
+  extends Versioned.Versioned<never, never, never, E, RenderEvent, never, E | NoSuchElementException, T>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 

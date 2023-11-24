@@ -5,15 +5,15 @@ import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
-export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
-  extends FxEffectBase<R3, E3, C, R0 | R4, E4, D>
-  implements Versioned<R0, R3, E3, C, R0 | R4, E4, D>
+export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
+  extends FxEffectBase<R3, E3, C, R0 | R4, E0 | E4, D>
+  implements Versioned<never, never, R3, E3, C, R0 | R4, E0 | E4, D>
 {
   private _version = 0
   protected _currentValue: Option.Option<D> = Option.none()
 
   constructor(
-    readonly input: Versioned<R0, R, E, A, R2, E2, B>,
+    readonly input: Versioned<R0, E0, R, E, A, R2, E2, B>,
     private _transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
     private _transformGet: (effect: Effect.Effect<R2, E2, B>) => Effect.Effect<R4, E4, D>
   ) {
@@ -26,7 +26,7 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
     return this._transformFx(this.input)
   }
 
-  toEffect(): Effect.Effect<R0 | R4, E4, D> {
+  toEffect(): Effect.Effect<R0 | R4, E0 | E4, D> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
 
@@ -48,6 +48,4 @@ export class VersionedTransform<R0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
       return yield* _(update)
     })
   }
-
-  readonly get = Effect.suspend(() => this as any as Effect.Effect<R4, E4, D>)
 }

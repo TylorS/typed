@@ -2144,7 +2144,7 @@ export function fromEffect<R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A>
     Failure: (e) => failCause(e.i0 as Cause.Cause<E>),
     Left: (e) => fail(e.left as E),
     Right: (e) => succeed(e.right as A),
-    None: () => fail(Cause.NoSuchElementException() as E),
+    None: () => fail(new Cause.NoSuchElementException() as E),
     Some: (e) => succeed(e.value),
     Sync: (e) => sync(e.i0 as () => A),
     Otherwise: () => fromSink((sink) => Effect.matchCauseEffect(effect, sink))

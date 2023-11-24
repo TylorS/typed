@@ -39,7 +39,7 @@ function makeScopedFork(scope: Scope.Scope): ScopedFork {
       Sync: (e) => Effect.sync(() => Fiber.succeed(e.i0() as A)),
       Left: (e) => Effect.succeed(Fiber.fail(e.left as E)),
       Right: (e) => Effect.succeed(Fiber.succeed(e.right as A)),
-      None: () => Effect.succeed(Fiber.fail(NoSuchElementException() as E)),
+      None: () => Effect.succeed(Fiber.fail(new NoSuchElementException() as E)),
       Some: (e) => Effect.succeed(Fiber.succeed(e.value)),
       Otherwise: (e) => forkIn(e as Effect.Effect<R, E, A>)
     })

@@ -19,7 +19,7 @@ import type * as TQS from "typed-query-selector/parser"
 export interface ElementSource<
   T extends Rendered = Element,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends Versioned.Versioned<never, never, never, Rendered.Elements<T>, never, never, Rendered.Elements<T>> {
+> extends Versioned.Versioned<never, never, never, never, Rendered.Elements<T>, never, never, Rendered.Elements<T>> {
   readonly selector: Selector
 
   readonly query: {

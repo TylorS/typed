@@ -616,7 +616,7 @@ class TransformImpl<R, E, A, B> extends FxEffectBase<R, E, B, R, E, B> implement
 
   skipRepeats: (eq?: Equivalence<B> | undefined) => Computed<R, E, B> = (eq = equals) =>
     Computed<R, E, B, never, never, B>(
-      Versioned.transformFx<R, R, E, B, R, E, B, R, E, B>(
+      Versioned.transformFx<R, never, R, E, B, R, E, B, R, E, B>(
         this,
         skipRepeatsWith(eq)
       ),

@@ -1,4 +1,4 @@
-import { GetRandomValues } from "@typed/id"
+import { GetRandomValues } from "@typed/id/GetRandomValues"
 import * as Brand from "effect/Brand"
 import * as Effect from "effect/Effect"
 
