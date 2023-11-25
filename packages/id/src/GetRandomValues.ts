@@ -7,21 +7,24 @@ export const GetRandomValues = Context.Fn<(length: number) => Effect.Effect<neve
 )
 export type GetRandomValues = Context.Fn.Identifier<typeof GetRandomValues>
 
+const getRandomValuesWeb = (crypto: Crypto, length: number) => crypto.getRandomValues(new Uint8Array(length))
+
 export const webCrypto = (crypto: Crypto): Layer.Layer<never, never, GetRandomValues> =>
-  GetRandomValues.implement((length) => Effect.sync(() => crypto.getRandomValues(new Uint8Array(length))))
+  GetRandomValues.implement((length) => Effect.sync(() => getRandomValuesWeb(crypto, length)))
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const getRandomValuesNode = (crypto: typeof import("node:crypto"), length: number) => {
+  const bytes = crypto.randomBytes(length)
+  const view = new Uint8Array(length)
+  for (let i = 0; i < bytes.length; ++i) {
+    view[i] = bytes[i]
+  }
+  return view
+}
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 export const nodeCrypto = (crypto: typeof import("node:crypto")): Layer.Layer<never, never, GetRandomValues> =>
-  GetRandomValues.implement((length) =>
-    Effect.sync(() => {
-      const bytes = crypto.randomBytes(length)
-      const view = new Uint8Array(length)
-      for (let i = 0; i < bytes.length; ++i) {
-        view[i] = bytes[i]
-      }
-      return view
-    })
-  )
+  GetRandomValues.implement((length) => Effect.sync(() => getRandomValuesNode(crypto, length)))
 
 export const pseudoRandom: Layer.Layer<never, never, GetRandomValues> = GetRandomValues.implement((length) =>
   Effect.gen(function*(_) {
@@ -32,5 +35,17 @@ export const pseudoRandom: Layer.Layer<never, never, GetRandomValues> = GetRando
     }
 
     return view
+  })
+)
+
+export const getRandomValues: Layer.Layer<never, never, GetRandomValues> = GetRandomValues.layer(
+  Effect.gen(function*(_) {
+    if (typeof crypto === "undefined") {
+      const crypto = yield* _(Effect.promise(() => import("node:crypto")))
+
+      return (length: number) => Effect.sync(() => getRandomValuesNode(crypto, length))
+    } else {
+      return (length: number) => Effect.sync(() => getRandomValuesWeb(crypto, length))
+    }
   })
 )

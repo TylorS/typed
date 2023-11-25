@@ -11,6 +11,9 @@ import type { CurrentRoute } from "@typed/router/CurrentRoute"
 import { makeHref, withCurrentRoute } from "@typed/router/CurrentRoute"
 import { Effect, Option, type Scope } from "effect"
 
+// TODO: view transitions // Should delete to the Router
+// TODO: scroll restoration // Should delegate to the Router
+
 export interface RouteMatcher<R, E, A> {
   readonly match: {
     <const P extends string, R2, E2, B>(

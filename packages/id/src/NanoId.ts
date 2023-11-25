@@ -1,8 +1,15 @@
 import { GetRandomValues } from "@typed/id/GetRandomValues"
 import { Brand, Effect } from "effect"
 
+const nanoIdPattern = /[0-9a-zA-Z_-]/
+
+export const isNanoId = (id: string): id is NanoId => nanoIdPattern.test(id)
+
 export type NanoId = string & Brand.Brand<"@typed/id/NanoId">
-export const NanoId = Brand.nominal<NanoId>()
+export const NanoId = Brand.refined<NanoId>(
+  isNanoId,
+  (input) => Brand.error(`Expected a NanoID but received ${input}.`)
+)
 
 export type NanoIdSeed = readonly [
   zero: number,

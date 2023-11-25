@@ -38,18 +38,39 @@ export interface Navigation {
     options?: { readonly info?: unknown; readonly state?: unknown }
   ) => Effect.Effect<never, NavigationError, Destination>
 
+  readonly beforeNavigation: <R, R2>(
+    handler: BeforeNavigationHandler<R, R2>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
+
   readonly onNavigation: <R, R2>(
     handler: NavigationHandler<R, R2>
   ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
 }
 
-// TODO: Probably should have access to the Previous Destination
+export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
+
 export type NavigationHandler<R, R2> = (
-  destination: Destination,
-  info: unknown
+  event: NavigationEvent
 ) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, void>>>
 
-export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
+export interface NavigationEvent {
+  readonly type: NavigationType
+  readonly destination: Destination
+  readonly info: unknown
+}
+
+export type BeforeNavigationHandler<R, R2> = (
+  event: BeforeNavigationEvent
+) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, void>>>
+
+export interface BeforeNavigationEvent {
+  readonly type: NavigationType
+  readonly from: Destination
+  readonly to: Destination
+  readonly info: unknown
+}
+
+export type NavigationType = "push" | "replace" | "reload" | "traverse"
 
 export interface Destination {
   readonly id: string
@@ -174,12 +195,12 @@ type Blocked = {
   readonly _tag: "Blocked"
   readonly currentDestination: Destination
   readonly proposedDestination: Destination
-  readonly deferred: Deferred.Deferred<never, void>
+  readonly deferred: Deferred.Deferred<RedirectError | CancelNavigation, void>
 }
 
 const Blocked = (currentDestination: Destination, proposedDestination: Destination) =>
   Effect.map(
-    Deferred.make<never, void>(),
+    Deferred.make<RedirectError | CancelNavigation, void>(),
     (deferred): Blocked => ({ _tag: "Blocked", deferred, currentDestination, proposedDestination })
   )
 
@@ -199,12 +220,12 @@ export const blockNavigation: Effect.Effect<
   const BlockState = yield* _(RefSubject.of<BlockState>(Unblocked))
 
   yield* _(
-    navigation.onNavigation<never, never>((destination) =>
+    navigation.beforeNavigation<never, never>((event) =>
       BlockState.modifyEffect((state) =>
         Effect.gen(function*(_) {
           // Can't block twice
           if (state._tag === "Blocked") return [Option.none(), state] as const
-          const updated = yield* _(Blocked(yield* _(navigation.current), destination))
+          const updated = yield* _(Blocked(event.from, event.to))
 
           return [
             Option.some(Deferred.await(updated.deferred)),

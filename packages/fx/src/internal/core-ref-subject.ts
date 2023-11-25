@@ -124,16 +124,19 @@ export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> impl
 
   readonly runUpdate: RefSubject<R, E, A>["runUpdate"] = (updates, onInterrupt) =>
     Effect.uninterruptibleMask((restore) =>
-      updates(this.get, this.setUnlocked).pipe(
-        this._lock,
-        restore,
-        Effect.tapErrorCause(
-          (cause) =>
-            onInterrupt && isInterrupted(cause)
-              ? Effect.flatMap(this.get, onInterrupt)
-              : Effect.unit
-        )
-      )
+      Effect.flatMap(this.get, (initial) =>
+        updates(this.get, this.setUnlocked).pipe(
+          this._lock,
+          restore,
+          Effect.tapErrorCause(
+            (cause) =>
+              isInterrupted(cause)
+                ? onInterrupt ?
+                  Effect.flatMap(Effect.flatMap(this.get, onInterrupt), this.setUnlocked) :
+                  this.setUnlocked(initial) :
+                Effect.unit
+          )
+        ))
     )
 
   private setUnlocked = (a: A) =>

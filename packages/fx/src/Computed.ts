@@ -9,7 +9,6 @@ import { Filtered } from "@typed/fx/Filtered"
 import type { Fx } from "@typed/fx/Fx"
 import * as core from "@typed/fx/internal/core"
 import { fromFxEffect } from "@typed/fx/internal/fx"
-import { OnceEffect } from "@typed/fx/internal/protos"
 import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import { ComputedTypeId } from "@typed/fx/TypeId"
 import * as Versioned from "@typed/fx/Versioned"
@@ -186,7 +185,7 @@ export const fromTag: {
 } = dual(
   2,
   function fromTag<I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Computed<R2, E2, B>): Computed<I | R2, E2, B> {
-    const get = new OnceEffect(Effect.map(tag, f))
+    const get = Effect.map(tag, f)
 
     return Computed(
       Versioned.make({

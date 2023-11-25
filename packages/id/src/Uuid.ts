@@ -10,7 +10,7 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 export const isUuid: (value: string) => value is Uuid = (value: string): value is Uuid => uuidPattern.test(value)
 
 export type Uuid = string & Brand.Brand<"@typed/id/UUID">
-export const Uuid = Brand.refined<Uuid>(isUuid, (input) => Brand.error(`Expected a UUID`, { input }))
+export const Uuid = Brand.refined<Uuid>(isUuid, (input) => Brand.error(`Expected a UUID but received ${input}.`))
 
 export type UuidSeed = readonly [
   zero: number,
