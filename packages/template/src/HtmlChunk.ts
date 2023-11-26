@@ -11,7 +11,6 @@ import type {
   Text,
   TextOnlyElement
 } from "@typed/template/Template"
-import escapeHTML from "escape-html"
 
 export type HtmlChunk = TextChunk | PartChunk | SparsePartChunk
 
@@ -223,13 +222,92 @@ function closeTag(tagName: string): string {
   return `</${tagName}>`
 }
 
-function escape(s: unknown) {
+export function escape(s: unknown) {
   switch (typeof s) {
     case "string":
     case "number":
     case "boolean":
-      return escapeHTML(String(s))
+      return escapeHtml(String(s))
     default:
-      return escapeHTML(JSON.stringify(s))
+      return escapeHtml(JSON.stringify(s))
   }
+}
+
+export function unescape(s: string) {
+  const unescaped = unescapeHtml(s)
+  const couldBeJson = unescaped[0] === "[" || unescaped === "{"
+  if (couldBeJson) {
+    try {
+      return JSON.parse(unescaped)
+    } catch {
+      return unescaped
+    }
+  } else {
+    return unescaped
+  }
+}
+
+const unescapeHtmlRules = [
+  [/&quot;/g, "\""],
+  [/&#39;/g, "'"],
+  [/&#x3A;/g, ":"],
+  [/&lt;/g, "<"],
+  [/&gt;/g, ">"],
+  [/&amp;/g, "&"]
+] as const
+
+const matchHtmlRegExp = /["'&<>]/
+
+export function escapeHtml(str: string): string {
+  const match = matchHtmlRegExp.exec(str)
+
+  if (!match) {
+    return str
+  }
+
+  let escape
+  let html = ""
+  let index = 0
+  let lastIndex = 0
+
+  for (index = match.index; index < str.length; index++) {
+    switch (str.charCodeAt(index)) {
+      case 34: // "
+        escape = "&quot;"
+        break
+      case 38: // &
+        escape = "&amp;"
+        break
+      case 39: // '
+        escape = "&#39;"
+        break
+      case 60: // <
+        escape = "&lt;"
+        break
+      case 62: // >
+        escape = "&gt;"
+        break
+      default:
+        continue
+    }
+
+    if (lastIndex !== index) {
+      html += str.substring(lastIndex, index)
+    }
+
+    lastIndex = index + 1
+    html += escape
+  }
+
+  return lastIndex !== index
+    ? html + str.substring(lastIndex, index)
+    : html
+}
+
+export function unescapeHtml(html: string) {
+  for (const [from, to] of unescapeHtmlRules) {
+    html = html.replace(from, to)
+  }
+
+  return html
 }

@@ -24,7 +24,6 @@ import * as happyDOM from "happy-dom"
 import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 
 // TODO: Instrument RenderTemplate to log info about when specific values are hanging for too long
-// TODO: Fx.mergeRace
 // TODO: Input events
 // TODO: Form events
 // TODO: keyboard events

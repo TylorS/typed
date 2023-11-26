@@ -99,6 +99,22 @@ export const mapEffect: {
   return Guard.mapEffect(asGuard(route), f)
 })
 
+export const map: {
+  <P extends string, B>(
+    f: (params: Path.ParamsOf<P>) => B
+  ): (route: Route<P>) => Guard.Guard<string, never, never, B>
+
+  <P extends string, B>(
+    route: Route<P>,
+    f: (params: Path.ParamsOf<P>) => B
+  ): Guard.Guard<string, never, never, B>
+} = dual(2, function map<P extends string, B>(
+  route: Route<P>,
+  f: (params: Path.ParamsOf<P>) => B
+): Guard.Guard<string, never, never, B> {
+  return Guard.map(asGuard(route), f)
+})
+
 export const tap: {
   <P extends string, R2, E2, B>(
     f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>

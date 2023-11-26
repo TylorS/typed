@@ -439,7 +439,7 @@ function buildPartWithNode<T extends Rendered, E>(
       return Effect.succeed(sparse)
     }
     case "text-part":
-      return Effect.succeed(TextPartImpl.browser(part.index, node as Element, ctx))
+      return Effect.succeed(TextPartImpl.browser(document, part.index, node as Element, ctx))
   }
 }
 

@@ -197,21 +197,22 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
     super()
 
     this.schema = buildSchema(entries)
+    this.version = Effect.map(
+      // @ts-ignore Infinite type instantiation
+      Effect.all(Object.values(entries).map((e) => e.version)) as Effect.Effect<
+        never,
+        never,
+        ReadonlyArray<number>
+      >,
+      (versions) => versions.reduce((a, b) => a + b, 0)
+    )
   }
 
   get: Form<Entries>["get"] = (k) => this.entries[k]
 
   schema: Form<Entries>["schema"]
 
-  version: Form<Entries>["version"] = Effect.map(
-    // @ts-ignore Infinite type instantiation
-    Effect.all(Object.values(this.entries).map((e) => e.version)) as Effect.Effect<
-      never,
-      never,
-      ReadonlyArray<number>
-    >,
-    (versions) => versions.reduce((a, b) => a + b, 0)
-  )
+  version: Form<Entries>["version"]
 
   toFx(): Fx<
     never,

@@ -20,9 +20,6 @@ import { Navigation, NavigationError } from "@typed/navigation/v2/Navigation"
 import { Effect, Either, Option } from "effect"
 import type { Context, Layer, Scope } from "effect"
 
-// TODO: FormData events
-// TODO: Link click events
-
 type NavigationState = {
   readonly entries: ReadonlyArray<Destination>
   readonly index: number
@@ -35,12 +32,11 @@ const getUrl = (origin: string, urlOrPath: string | URL): URL => {
   return typeof urlOrPath === "string" ? new URL(urlOrPath, origin) : urlOrPath
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 type NativeNavigation = import("@virtualstate/navigation").Navigation
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type NativeEntry = import("@virtualstate/navigation").NavigationHistoryEntry
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type NativeEvent = import("@virtualstate/navigation").NavigationEventMap["navigate"]
+/* eslint-enable @typescript-eslint/consistent-type-imports */
 
 declare global {
   export interface Window {

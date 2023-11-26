@@ -3,6 +3,7 @@ import * as Fx from "@typed/fx/Fx"
 import { WithContext } from "@typed/fx/Sink"
 import type { ElementRef } from "@typed/template/ElementRef"
 import type { ElementSource } from "@typed/template/ElementSource"
+import { findHoleComment } from "@typed/template/internal/utils"
 import type {
   AttributePart,
   BooleanPart,
@@ -22,7 +23,7 @@ import type {
   TextPart
 } from "@typed/template/Part"
 import type { RenderContext } from "@typed/template/RenderContext"
-import type { Rendered } from "@typed/wire"
+import { isText, type Rendered } from "@typed/wire"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
@@ -32,6 +33,7 @@ import * as Fiber from "effect/Fiber"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
+import { unescape } from "querystring"
 
 const strictEq = strict<any>()
 
@@ -369,12 +371,13 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
   }
 
   static browser(index: number, node: Node, name: string, ctx: RenderContext) {
+    const existing = (node as Element).getAttribute(name)
+
     return new PropertyPartImpl(
       name,
       index,
       ({ part, value }) => ctx.queue.add(part, () => (node as any)[name] = value),
-      // TODO: Unescape
-      (node as any)[name]
+      existing ? unescape(existing) : null
     )
   }
 }
@@ -387,11 +390,16 @@ export class RefPartImpl implements RefPart {
 
 export class TextPartImpl extends base("text") implements TextPart {
   // TODO: Make this properly
-  static browser(index: number, element: Element, ctx: RenderContext) {
+  static browser(document: Document, index: number, element: Element, ctx: RenderContext) {
+    const comment = findHoleComment(element, index)
+    const text = comment.previousSibling && isText(comment.previousSibling)
+      ? comment.previousSibling
+      : document.createTextNode("")
+
     return new TextPartImpl(
       index,
-      ({ part, value }) => ctx.queue.add(part, () => element.textContent = value || ""),
-      element.textContent,
+      ({ part, value }) => ctx.queue.add(part, () => text.nodeValue = value ?? null),
+      text.nodeValue,
       strictEq
     )
   }

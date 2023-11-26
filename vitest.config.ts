@@ -23,7 +23,7 @@ export function makeTestConfig(
     ],
     test: {
       include: [testPath],
-      exclude: ["**/test/type-level/*.ts", "**/test/helpers/*"],
+      exclude: ["**/test/type-level/*.ts", "**/test/helpers/*", "**/test/fixtures/*"],
       globals: true,
       typecheck: {
         checker: "tsc"

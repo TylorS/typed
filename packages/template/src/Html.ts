@@ -156,11 +156,17 @@ function renderPart<R, E>(
   } else if (node._tag === "node") {
     return Fx.endWith(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
   } else {
-    return Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
+    const html = Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
 
       return s ? Option.some(HtmlRenderEvent(s)) : Option.none()
     })
+
+    if (node._tag === "text-part") {
+      return Fx.endWith(Fx.startWith(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
+    }
+
+    return html
   }
 }
 

@@ -462,7 +462,7 @@ export type MakeRefSubject<O> = {
     eq?: Equivalence<O>
   ): Effect.Effect<R | Scope.Scope, never, ToDerived<R, E, O>>
 
-  <R, E>(input: Effect.Effect<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R, never, ToRefSubject<E, O>>
+  <R, E>(input: Effect.Effect<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R | Scope.Scope, never, ToRefSubject<E, O>>
 
   <R, E>(
     input: Stream.Stream<R, E, O>,
@@ -471,7 +471,7 @@ export type MakeRefSubject<O> = {
 
   <R, E>(input: Fx.Fx<R, E, O>, eq?: Equivalence<O>): Effect.Effect<R | Scope.Scope, never, ToRefSubject<E, O>>
 
-  <E>(input: Cause.Cause<E>, eq?: Equivalence<O>): Effect.Effect<never, never, ToRefSubject<E, O>>
+  <E>(input: Cause.Cause<E>, eq?: Equivalence<O>): Effect.Effect<Scope.Scope, never, ToRefSubject<E, O>>
 
   <R, E>(
     input: Fx.FxInput<R, E, O>,

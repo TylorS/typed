@@ -261,10 +261,7 @@ async function testHtmlChunks(
   const actual = (
     await template.pipe(
       renderToHtml,
-      Fx.map((s) => {
-        console.log({ html: s })
-        return pipe(s, stripDataTyped, (x) => x.trim())
-      }),
+      Fx.map((s) => pipe(s, stripDataTyped, (x) => x.trim())),
       Fx.toReadonlyArray,
       provideResources,
       Effect.runPromise

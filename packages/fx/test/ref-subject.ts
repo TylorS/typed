@@ -75,7 +75,7 @@ describe.concurrent(__filename, () => {
         expect(yield* _(name)).toEqual(initial.name)
         expect(yield* _(city)).toEqual(initial.address.city)
         expect(yield* _(street)).toEqual(initial.address.street)
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -233,8 +233,11 @@ describe.concurrent(__filename, () => {
           yield* _(Effect.sleep(0))
 
           yield* _(ref.set(AsyncData.loading({ progress: Progress(1n) })))
+          yield* _(Effect.sleep(0)) // Allow fibers to run
           yield* _(ref.set(AsyncData.loading({ progress: Progress(100n) })))
+          yield* _(Effect.sleep(0)) // Allow fibers to run
           yield* _(ref.set(AsyncData.fail("hello")))
+          yield* _(Effect.sleep(0)) // Allow fibers to run
           yield* _(ref.set(AsyncData.success(41)))
 
           yield* _(ref.interrupt)
@@ -298,9 +301,13 @@ describe.concurrent(__filename, () => {
           yield* _(Effect.sleep(0))
 
           yield* _(RefAsyncData.succeed(ref, [a0, b0, c0]))
+          yield* _(Effect.sleep(0)) // Allow fibers to run
           yield* _(RefAsyncData.succeed(ref, [c1, a1, b0]))
+          yield* _(Effect.sleep(0))
           yield* _(RefAsyncData.succeed(ref, [c1, a1, b0])) // skips repeats
+          yield* _(Effect.sleep(0))
           yield* _(RefAsyncData.succeed(ref, [b0, c1, a1])) // rotate
+          yield* _(Effect.sleep(0))
 
           yield* _(ref.interrupt)
 

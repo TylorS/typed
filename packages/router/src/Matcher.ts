@@ -11,8 +11,11 @@ import type { CurrentRoute } from "@typed/router/CurrentRoute"
 import { makeHref, withCurrentRoute } from "@typed/router/CurrentRoute"
 import { Effect, Option, type Scope } from "effect"
 
-// TODO: view transitions // Should delete to the Router
-// TODO: scroll restoration // Should delegate to the Router
+// TODO: Link component
+// TODO: Form component
+// TODO: view transitions - opt-in via link/form component
+// TODO: scroll restoration
+// TODO: Utilize scroll events on Window to capture scroll positions and elements
 
 export interface RouteMatcher<R, E, A> {
   readonly match: {
