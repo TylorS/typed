@@ -314,14 +314,13 @@ function setupFromModelAndIntent(
   const navigate = (pathOrUrl: string | URL, options?: NavigateOptions, skipCommit: boolean = false) =>
     state.runUpdate((get, set) =>
       Effect.gen(function*(_) {
-        console.log("Navigating")
         const state = yield* _(get)
         const from = state.entries[state.index]
+        const history = options?.history ?? "auto"
         const to = yield* _(
           makeOrUpdateDestination(state, getUrl(origin, pathOrUrl), options?.state, origin),
           GetRandomValues.provide(getRandomValues)
         )
-        const history = options?.history ?? "auto"
         const type = history === "auto" ? from.key === to.key ? "replace" : "push" : history
         const event: BeforeNavigationEvent = {
           type,
@@ -561,16 +560,15 @@ function setupMemory(
   })
 }
 
-function makeOrUpdateDestination(navigationState: NavigationState, url: URL, state: unknown, origin: string) {
+function makeOrUpdateDestination(
+  navigationState: NavigationState,
+  url: URL,
+  state: unknown,
+  origin: string
+) {
   return Effect.gen(function*(_) {
     const current = navigationState.entries[navigationState.index]
     const isSameOriginAndPath = url.origin === current.url.origin && url.pathname === current.url.pathname
-
-    console.log("makeOrUpdateDestination", {
-      current,
-      url,
-      state
-    })
 
     if (isSameOriginAndPath) {
       const id = yield* _(makeUuid)
