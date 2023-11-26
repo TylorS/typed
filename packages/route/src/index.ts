@@ -4,8 +4,6 @@ import { Effect, Option, Pipeable } from "effect"
 import { dual } from "effect/Function"
 import * as ptr from "path-to-regexp"
 
-// TODO: More complete conversions to Guards map/tap/filter/filterMap
-
 export interface Route<P extends string> extends Pipeable.Pipeable {
   readonly path: P
 
@@ -113,6 +111,38 @@ export const map: {
   f: (params: Path.ParamsOf<P>) => B
 ): Guard.Guard<string, never, never, B> {
   return Guard.map(asGuard(route), f)
+})
+
+export const filterMap: {
+  <P extends string, B>(
+    f: (params: Path.ParamsOf<P>) => Option.Option<B>
+  ): (route: Route<P>) => Guard.Guard<string, never, never, B>
+
+  <P extends string, B>(
+    route: Route<P>,
+    f: (params: Path.ParamsOf<P>) => Option.Option<B>
+  ): Guard.Guard<string, never, never, B>
+} = dual(2, function filterMap<P extends string, B>(
+  route: Route<P>,
+  f: (params: Path.ParamsOf<P>) => Option.Option<B>
+): Guard.Guard<string, never, never, B> {
+  return Guard.filterMap(asGuard(route), f)
+})
+
+export const filter: {
+  <P extends string>(
+    f: (params: Path.ParamsOf<P>) => boolean
+  ): (route: Route<P>) => Guard.Guard<string, never, never, Path.ParamsOf<P>>
+
+  <P extends string>(
+    route: Route<P>,
+    f: (params: Path.ParamsOf<P>) => boolean
+  ): Guard.Guard<string, never, never, Path.ParamsOf<P>>
+} = dual(2, function filter<P extends string>(
+  route: Route<P>,
+  f: (params: Path.ParamsOf<P>) => boolean
+): Guard.Guard<string, never, never, Path.ParamsOf<P>> {
+  return Guard.filter(asGuard(route), f)
 })
 
 export const tap: {
