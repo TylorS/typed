@@ -3,6 +3,7 @@ import { Window } from "@typed/dom/Window"
 import { RefSubject } from "@typed/fx"
 import type { Computed } from "@typed/fx/Computed"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
+import type { Uuid } from "@typed/id"
 import { GetRandomValues, getRandomValues, makeUuid } from "@typed/id"
 import type {
   BeforeNavigationEvent,
@@ -23,8 +24,6 @@ import type { Context, Layer, Scope } from "effect"
 
 // TODO: Allow utilizing native Navigation API ??
 
-// TODO: popstate events // Must skip before handlers
-// TODO: hashchange events // Must skip before handlers
 // TODO: FormData events // Should this be delegated to our Router?
 // TODO: Link click events // Should this be delegated to our Router?
 
@@ -34,7 +33,7 @@ type NavigationState = {
   readonly transition: Option.Option<Transition>
 }
 
-type Commit = (event: BeforeNavigationEvent) => Effect.Effect<never, NavigationError, void>
+type Commit = (to: Destination, event: BeforeNavigationEvent) => Effect.Effect<never, NavigationError, void>
 
 const getUrl = (origin: string, urlOrPath: string | URL): URL => {
   return typeof urlOrPath === "string" ? new URL(urlOrPath, origin) : urlOrPath
@@ -50,6 +49,7 @@ export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.sco
         setupWithHistory(window, (event) => run(handleHistoryEvent(event))),
         GetRandomValues.provide(getRandomValues)
       )
+
       const navigation = setupFromModelAndIntent(
         modelAndIntent,
         window.location.origin,
@@ -57,26 +57,32 @@ export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.sco
         getRandomValues
       )
 
-      const handleHistoryEvent = (event: HistoryEvent) =>
-        Effect.gen(function*(_) {
+      return navigation
+
+      function handleHistoryEvent(event: HistoryEvent) {
+        return Effect.gen(function*(_) {
           if (event._tag === "PushState") {
-            return yield* _(navigation.navigate(event.url))
+            return yield* _(navigation.navigate(event.url, {}, event.skipCommit))
           } else if (event._tag === "ReplaceState") {
             if (Option.isSome(event.url)) {
-              return yield* _(navigation.navigate(event.url.value, { history: "replace" }))
+              return yield* _(
+                navigation.navigate(event.url.value, { history: "replace", state: event.state }, event.skipCommit)
+              )
             } else {
               return yield* _(navigation.updateCurrentEntry(event))
             }
-          } else {
+          } else if (event._tag === "Traverse") {
             const { entries, index } = yield* _(modelAndIntent.state)
             const toIndex = Math.min(Math.max(0, index + event.delta), entries.length - 1)
             const to = entries[toIndex]
 
-            return yield* _(navigation.traverseTo(to.key))
+            return yield* _(navigation.traverseTo(to.key, {}, event.skipCommit))
+          } else {
+            yield* _(navigation.traverseTo(event.key, {}, event.skipCommit))
+            return yield* _(navigation.updateCurrentEntry({ state: event.state }))
           }
         })
-
-      return navigation
+      }
     })
   )
 )
@@ -87,6 +93,7 @@ export interface MemoryOptions {
   readonly base?: string | undefined
   readonly currentIndex?: number | undefined
   readonly maxEntries?: number | undefined
+  readonly commit?: Commit
 }
 
 export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
@@ -108,6 +115,7 @@ export interface InitialMemoryOptions {
   readonly base?: string | undefined
   readonly maxEntries?: number | undefined
   readonly state?: unknown
+  readonly commit?: Commit
 }
 
 export function initialMemory(
@@ -225,16 +233,19 @@ function setupFromModelAndIntent(
     beforeEvent: BeforeNavigationEvent,
     get: Effect.Effect<never, never, NavigationState>,
     set: (a: NavigationState) => Effect.Effect<never, never, NavigationState>,
-    depth: number
+    depth: number,
+    skipCommit: boolean = false
   ): Effect.Effect<never, NavigationError, Destination> =>
     Effect.gen(function*(_) {
       let current = yield* _(get)
       current = yield* _(set({ ...current, transition: Option.some(beforeEvent) }))
 
-      const beforeError = yield* _(runBeforeHandlers(beforeEvent))
+      if (!skipCommit) {
+        const beforeError = yield* _(runBeforeHandlers(beforeEvent))
 
-      if (Option.isSome(beforeError)) {
-        return yield* _(handleError(beforeError.value, get, set, depth))
+        if (Option.isSome(beforeError)) {
+          return yield* _(handleError(beforeError.value, get, set, depth))
+        }
       }
 
       const to = isDestination(beforeEvent.to) ? beforeEvent.to : yield* _(upgradeProposedDestination(beforeEvent.to))
@@ -266,7 +277,9 @@ function setupFromModelAndIntent(
         yield* _(set({ ...current, index: nextIndex, transition: Option.none() }))
       }
 
-      yield* _(commit(beforeEvent))
+      if (!skipCommit) {
+        yield* _(commit(to, beforeEvent))
+      }
 
       yield* _(runHandlers(event))
 
@@ -298,15 +311,16 @@ function setupFromModelAndIntent(
       }
     })
 
-  const navigate = (pathOrUrl: string | URL, options?: NavigateOptions) =>
+  const navigate = (pathOrUrl: string | URL, options?: NavigateOptions, skipCommit: boolean = false) =>
     state.runUpdate((get, set) =>
       Effect.gen(function*(_) {
+        console.log("Navigating")
         const state = yield* _(get)
+        const from = state.entries[state.index]
         const to = yield* _(
           makeOrUpdateDestination(state, getUrl(origin, pathOrUrl), options?.state, origin),
           GetRandomValues.provide(getRandomValues)
         )
-        const from = state.entries[state.index]
         const history = options?.history ?? "auto"
         const type = history === "auto" ? from.key === to.key ? "replace" : "push" : history
         const event: BeforeNavigationEvent = {
@@ -317,11 +331,11 @@ function setupFromModelAndIntent(
           info: options?.info
         }
 
-        return yield* _(runNavigationEvent(event, get, set, 0))
+        return yield* _(runNavigationEvent(event, get, set, 0, skipCommit))
       })
     )
 
-  const traverseTo = (key: Destination["key"], options?: { readonly info?: unknown }) =>
+  const traverseTo = (key: Destination["key"], options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
     state.runUpdate((get, set) =>
       Effect.gen(function*(_) {
         const state = yield* _(get)
@@ -341,29 +355,29 @@ function setupFromModelAndIntent(
           info: options?.info
         }
 
-        return yield* _(runNavigationEvent(event, get, set, 0))
+        return yield* _(runNavigationEvent(event, get, set, 0, skipCommit))
       })
     )
 
-  const back = (options?: { readonly info?: unknown }) =>
+  const back = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
     Effect.gen(function*(_) {
       const { entries, index } = yield* _(state)
       if (index === 0) return entries[index]
       const { key } = entries[index - 1]
 
-      return yield* _(traverseTo(key, options))
+      return yield* _(traverseTo(key, options, skipCommit))
     })
 
-  const forward = (options?: { readonly info?: unknown }) =>
+  const forward = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
     Effect.gen(function*(_) {
       const { entries, index } = yield* _(state)
       if (index === entries.length - 1) return entries[index]
       const { key } = entries[index + 1]
 
-      return yield* _(traverseTo(key, options))
+      return yield* _(traverseTo(key, options, skipCommit))
     })
 
-  const reload = (options?: { readonly info?: unknown }) =>
+  const reload = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
     state.runUpdate((get, set) =>
       Effect.gen(function*(_) {
         const { entries, index } = yield* _(state)
@@ -377,7 +391,7 @@ function setupFromModelAndIntent(
           info: options?.info
         }
 
-        return yield* _(runNavigationEvent(event, get, set, 0))
+        return yield* _(runNavigationEvent(event, get, set, 0, skipCommit))
       })
     )
 
@@ -434,7 +448,7 @@ function setupFromModelAndIntent(
       })
     )
 
-  const navigation: Navigation = {
+  const navigation = {
     back,
     base,
     beforeNavigation,
@@ -450,7 +464,7 @@ function setupFromModelAndIntent(
     transition,
     traverseTo,
     updateCurrentEntry
-  }
+  } satisfies Navigation
 
   return navigation
 }
@@ -486,19 +500,18 @@ function setupWithHistory(
     const canGoBack = state.map((s) => s.index > 0)
     const canGoForward = state.map((s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
-    const commit: Commit = (event: BeforeNavigationEvent) =>
+    const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
       Effect.sync(() => {
         const { type } = event
-        const { state, url } = event.to
 
         if (type === "push") {
-          history.pushState(state, "", url)
+          history.pushState({ id, key, originalHistoryState: state }, "", url)
         } else if (type === "replace") {
-          history.replaceState(state, "", url)
+          history.replaceState({ id, key, originalHistoryState: state }, "", url)
         } else if (event.type === "reload") {
-          return location.reload()
+          location.reload()
         } else {
-          return history.go(event.delta)
+          history.go(event.delta)
         }
       })
 
@@ -535,7 +548,7 @@ function setupMemory(
     const canGoBack = state.map((s) => s.index > 0)
     const canGoForward = state.map((s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
-    const commit: Commit = () => Effect.unit
+    const commit: Commit = options.commit ?? (() => Effect.unit)
 
     return {
       state,
@@ -553,13 +566,19 @@ function makeOrUpdateDestination(navigationState: NavigationState, url: URL, sta
     const current = navigationState.entries[navigationState.index]
     const isSameOriginAndPath = url.origin === current.url.origin && url.pathname === current.url.pathname
 
+    console.log("makeOrUpdateDestination", {
+      current,
+      url,
+      state
+    })
+
     if (isSameOriginAndPath) {
       const id = yield* _(makeUuid)
       const destination: Destination = {
         id,
         key: current.key,
         url,
-        state,
+        state: getOriginalState(state),
         sameDocument: url.origin === origin
       }
 
@@ -572,6 +591,18 @@ function makeOrUpdateDestination(navigationState: NavigationState, url: URL, sta
 
 export function makeDestination(url: URL, state: unknown, origin: string) {
   return Effect.gen(function*(_) {
+    if (isPatchedState(state)) {
+      const destination: Destination = {
+        id: state.id,
+        key: state.key,
+        url,
+        state: state.originalHistoryState,
+        sameDocument: url.origin === origin
+      }
+
+      return destination
+    }
+
     const id = yield* _(makeUuid)
     const key = yield* _(makeUuid)
 
@@ -644,14 +675,42 @@ function makeRedirectEvent(
   })
 }
 
-type HistoryEvent = PushStateEvent | ReplaceStateEvent | TraverseEvent
+type HistoryEvent = PushStateEvent | ReplaceStateEvent | TraverseEvent | TraverseToEvent
 
-type PushStateEvent = { _tag: "PushState"; state: unknown; url: URL }
-type ReplaceStateEvent = { _tag: "ReplaceState"; state: unknown; url: Option.Option<URL> }
-type TraverseEvent = { _tag: "Traverse"; delta: number }
+type PushStateEvent = { _tag: "PushState"; state: unknown; url: URL; skipCommit: boolean }
+type ReplaceStateEvent = { _tag: "ReplaceState"; state: unknown; url: Option.Option<URL>; skipCommit: boolean }
+type TraverseEvent = { _tag: "Traverse"; delta: number; skipCommit: boolean }
+type TraverseToEvent = { _tag: "TraverseTo"; key: Uuid; state: unknown; skipCommit: boolean }
+
+type PatchedState = {
+  readonly id: Uuid
+  readonly key: Uuid
+  readonly originalHistoryState: unknown
+}
+
+function isPatchedState(state: unknown): state is PatchedState {
+  if (state === null || !(typeof state === "object") || Array.isArray(state)) return false
+  if ("id" in state && "key" in state && "originalHistoryState" in state) return true
+  return false
+}
+
+function getOriginalState(state: unknown) {
+  if (isPatchedState(state)) return state.originalHistoryState
+  return state
+}
 
 function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
   const { history, location } = window
+  const stateDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), "state")
+
+  const methods = {
+    pushState: history.pushState.bind(history),
+    replaceState: history.replaceState.bind(history),
+    go: history.go.bind(history),
+    back: history.back.bind(history),
+    forward: history.forward.bind(history)
+  }
+
   const original: History = {
     get length() {
       return history.length
@@ -663,36 +722,76 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
       history.scrollRestoration = mode
     },
     get state() {
-      return history.state
+      return stateDescriptor?.get?.() ?? history.state
     },
-    pushState: history.pushState.bind(history),
-    replaceState: history.replaceState.bind(history),
-    go: history.go.bind(history),
-    back: history.back.bind(history),
-    forward: history.forward.bind(history)
+    ...methods,
+    pushState(data, _, url) {
+      if (!stateDescriptor) {
+        ;(history as any).state = data
+      }
+
+      return methods.pushState(data, _, url)
+    },
+    replaceState(data, _, url) {
+      if (!stateDescriptor) {
+        ;(history as any).state = data
+      }
+
+      return methods.replaceState(data, _, url)
+    }
   }
 
   history.pushState = (state, _, url) => {
     if (url) {
-      onEvent({ _tag: "PushState", state, url: getUrl(location.origin, url) })
+      onEvent({ _tag: "PushState", state, url: getUrl(location.origin, url), skipCommit: false })
     } else {
-      onEvent({ _tag: "ReplaceState", state, url: Option.none() })
+      onEvent({ _tag: "ReplaceState", state, url: Option.none(), skipCommit: false })
     }
   }
   history.replaceState = (state, _, url) => {
-    onEvent({ _tag: "ReplaceState", state, url: url ? Option.some(getUrl(location.origin, url)) : Option.none() })
+    onEvent({
+      _tag: "ReplaceState",
+      state,
+      url: url ? Option.some(getUrl(location.origin, url)) : Option.none(),
+      skipCommit: false
+    })
   }
   history.go = (delta) => {
     if (delta && delta !== 0) {
-      onEvent({ _tag: "Traverse", delta })
+      onEvent({ _tag: "Traverse", delta, skipCommit: false })
     }
   }
   history.back = () => {
-    onEvent({ _tag: "Traverse", delta: -1 })
+    onEvent({ _tag: "Traverse", delta: -1, skipCommit: false })
   }
   history.forward = () => {
-    onEvent({ _tag: "Traverse", delta: 1 })
+    onEvent({ _tag: "Traverse", delta: 1, skipCommit: false })
   }
+
+  // In a proper browser this will allow patching to hide the id/key's associated with the state
+  if (stateDescriptor) {
+    Object.defineProperty(history, "state", {
+      get() {
+        return getOriginalState(original.state)
+      }
+    })
+  }
+
+  const onHashChange = () => {
+    onEvent({ _tag: "ReplaceState", state: history.state, url: Option.some(new URL(location.href)), skipCommit: false })
+  }
+
+  window.addEventListener("hashchange", onHashChange, { capture: true })
+
+  const onPopState = (ev: PopStateEvent) => {
+    if (isPatchedState(ev.state)) {
+      onEvent({ _tag: "TraverseTo", key: ev.state.key, state: ev.state.originalHistoryState, skipCommit: true })
+    } else {
+      onEvent({ _tag: "ReplaceState", state: ev.state, url: Option.some(new URL(location.href)), skipCommit: true })
+    }
+  }
+
+  window.addEventListener("popstate", onPopState, { capture: true })
 
   const unpatch = Effect.sync(() => {
     history.pushState = original.pushState
@@ -700,6 +799,13 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
     history.go = original.go
     history.back = original.back
     history.forward = original.forward
+
+    if (stateDescriptor) {
+      Object.defineProperty(history, "state", stateDescriptor)
+    }
+
+    window.removeEventListener("hashchange", onHashChange)
+    window.removeEventListener("popstate", onPopState)
   })
 
   return {

@@ -68,62 +68,180 @@ describe(__filename, () => {
       await Effect.runPromise(test)
     })
 
-    it("window", async () => {
+    describe("window", () => {
       const url = new URL("https://example.com/foo/1")
       const state = { x: Math.random() }
-      const window = makeWindow({ url: url.href }, state)
-      const test = Effect.gen(function*(_) {
-        const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } = yield* _(
-          Navigation.Navigation
+
+      it("manages navigation", async () => {
+        const window = makeWindow({ url: url.href }, state)
+        const test = Effect.gen(function*(_) {
+          const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
+            yield* _(
+              Navigation.Navigation
+            )
+          const initial = yield* _(currentEntry)
+
+          expect(isUuid(initial.id)).toEqual(true)
+          expect(isUuid(initial.key)).toEqual(true)
+          expect(initial.url).toEqual(url)
+          expect(initial.state).toEqual(state)
+          expect(initial.sameDocument).toEqual(true)
+          expect(yield* _(entries)).toEqual([initial])
+
+          const count = yield* _(RefSubject.of(0))
+
+          yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
+          yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+
+          const second = yield* _(navigate("/foo/2"))
+
+          expect(second.url).toEqual(new URL("/foo/2", url.origin))
+          expect(second.state).toEqual(undefined)
+          expect(second.sameDocument).toEqual(true)
+          expect(yield* _(entries)).toEqual([initial, second])
+
+          expect(yield* _(count)).toEqual(20)
+
+          expect(yield* _(back())).toEqual(initial)
+          expect(yield* _(forward())).toEqual(second)
+
+          expect(yield* _(count)).toEqual(140)
+
+          const third = yield* _(navigate("/foo/3"))
+
+          expect(third.url).toEqual(new URL("/foo/3", url.origin))
+          expect(third.state).toEqual(undefined)
+          expect(third.sameDocument).toEqual(true)
+          expect(yield* _(entries)).toEqual([initial, second, third])
+
+          expect(yield* _(count)).toEqual(300)
+
+          expect(yield* _(traverseTo(initial.key))).toEqual(initial)
+          expect(yield* _(forward())).toEqual(second)
+
+          expect(yield* _(count)).toEqual(1260)
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          Effect.scoped
         )
-        const initial = yield* _(currentEntry)
 
-        expect(isUuid(initial.id)).toEqual(true)
-        expect(isUuid(initial.key)).toEqual(true)
-        expect(initial.url).toEqual(url)
-        expect(initial.state).toEqual(state)
-        expect(initial.sameDocument).toEqual(true)
-        expect(yield* _(entries)).toEqual([initial])
+        await Effect.runPromise(test)
+      })
 
-        const count = yield* _(RefSubject.of(0))
+      it("manages state with History API", async () => {
+        const window = makeWindow({ url: url.href }, { id: "foo", key: "bar", originalHistoryState: state })
+        const test = Effect.gen(function*(_) {
+          const { history } = yield* _(Window)
 
-        yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
-        yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+          const current = yield* _(Navigation.CurrentEntry)
 
-        const second = yield* _(navigate("/foo/2"))
+          // Initializes from History state when possible
+          deepStrictEqual(current.id, "foo")
+          deepStrictEqual(current.key, "bar")
 
-        expect(second.url).toEqual(new URL("/foo/2", url.origin))
-        expect(second.state).toEqual(undefined)
-        expect(second.sameDocument).toEqual(true)
-        expect(yield* _(entries)).toEqual([initial, second])
+          deepStrictEqual(current.state, state)
+          deepStrictEqual(history.state, { id: current.id, key: current.key, originalHistoryState: state })
 
-        expect(yield* _(count)).toEqual(20)
+          const next = yield* _(Navigation.navigate("/foo/2"))
 
-        expect(yield* _(back())).toEqual(initial)
-        expect(yield* _(forward())).toEqual(second)
+          deepStrictEqual(next.state, undefined)
+          deepStrictEqual(history.state, { id: next.id, key: next.key, originalHistoryState: undefined })
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          Effect.scoped
+        )
 
-        expect(yield* _(count)).toEqual(140)
+        await Effect.runPromise(test)
+      })
 
-        const third = yield* _(navigate("/foo/3"))
+      it("responds to popstate events", async () => {
+        const window = makeWindow({ url: url.href }, { id: "foo", key: "bar", originalHistoryState: state })
+        const test = Effect.gen(function*(_) {
+          const { history, location } = yield* _(Window)
 
-        expect(third.url).toEqual(new URL("/foo/3", url.origin))
-        expect(third.state).toEqual(undefined)
-        expect(third.sameDocument).toEqual(true)
-        expect(yield* _(entries)).toEqual([initial, second, third])
+          const current = yield* _(Navigation.CurrentEntry)
 
-        expect(yield* _(count)).toEqual(300)
+          // Initializes from History state when possible
+          deepStrictEqual(current.id, "foo")
+          deepStrictEqual(current.key, "bar")
 
-        expect(yield* _(traverseTo(initial.key))).toEqual(initial)
-        expect(yield* _(forward())).toEqual(second)
+          deepStrictEqual(current.state, state)
+          deepStrictEqual(history.state, { id: current.id, key: current.key, originalHistoryState: state })
 
-        expect(yield* _(count)).toEqual(1260)
-      }).pipe(
-        Effect.provide(Navigation.fromWindow),
-        Window.provide(window),
-        Effect.scoped
-      )
+          const next = yield* _(Navigation.navigate("/foo/2"))
 
-      await Effect.runPromise(test)
+          deepStrictEqual(next.state, undefined)
+          deepStrictEqual(history.state, { id: next.id, key: next.key, originalHistoryState: undefined })
+
+          // Manually change the URL
+          location.href = url.href
+
+          const popstateEventState = { id: current.id, key: current.key, originalHistoryState: state }
+          const popstateEvent = new window.PopStateEvent("popstate")
+          ;(popstateEvent as any).state = popstateEventState
+
+          window.dispatchEvent(popstateEvent)
+
+          // Allow fibers to run
+          yield* _(Effect.sleep(0))
+
+          const popstate = yield* _(Navigation.CurrentEntry)
+
+          deepStrictEqual(popstate.id, "foo")
+          deepStrictEqual(popstate.key, "bar")
+
+          deepStrictEqual(popstate.state, state)
+          deepStrictEqual(history.state, popstateEventState)
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          Effect.scoped
+        )
+
+        await Effect.runPromise(test)
+      })
+
+      it("responds to hashchange events", async () => {
+        const initialState = { id: "foo", key: "bar", originalHistoryState: state }
+        const window = makeWindow({ url: url.href }, initialState)
+        const test = Effect.gen(function*(_) {
+          const { history, location } = yield* _(Window)
+          const { currentEntry } = yield* _(Navigation.Navigation)
+
+          const current = yield* _(currentEntry)
+
+          // Initializes from History state when possible
+          deepStrictEqual(current.key, "bar")
+          deepStrictEqual(current.url.hash, "")
+
+          deepStrictEqual(current.state, state)
+          deepStrictEqual(history.state, initialState)
+
+          // Manually change the URL
+          location.href += "#baz"
+
+          const hashChangeEvent = new window.HashChangeEvent("hashchange")
+
+          window.dispatchEvent(hashChangeEvent)
+
+          yield* _(Effect.sleep(0))
+
+          const hashChange = yield* _(currentEntry)
+
+          deepStrictEqual(hashChange.key, "bar")
+          deepStrictEqual(hashChange.url.hash, "#baz")
+          deepStrictEqual(hashChange.state, state)
+          deepStrictEqual(history.state, { ...initialState, id: hashChange.id })
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          Effect.scoped
+        )
+
+        await Effect.runPromise(test)
+      })
     })
 
     describe("beforeNavigation", () => {
