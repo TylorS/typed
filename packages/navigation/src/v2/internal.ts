@@ -3,29 +3,25 @@ import { Window } from "@typed/dom/Window"
 import { RefSubject } from "@typed/fx"
 import type { Computed } from "@typed/fx/Computed"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
-import type { Uuid } from "@typed/id"
-import { GetRandomValues, getRandomValues, makeUuid } from "@typed/id"
+import { GetRandomValues, getRandomValues, makeUuid, Uuid } from "@typed/id"
 import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
   CancelNavigation,
   Destination,
   NavigateOptions,
-  NavigationError,
   NavigationEvent,
   NavigationHandler,
   ProposedDestination,
   RedirectError,
   Transition
 } from "@typed/navigation/v2/Navigation"
-import { Navigation } from "@typed/navigation/v2/Navigation"
+import { Navigation, NavigationError } from "@typed/navigation/v2/Navigation"
 import { Effect, Either, Option } from "effect"
 import type { Context, Layer, Scope } from "effect"
 
-// TODO: Allow utilizing native Navigation API ??
-
-// TODO: FormData events // Should this be delegated to our Router?
-// TODO: Link click events // Should this be delegated to our Router?
+// TODO: FormData events
+// TODO: Link click events
 
 type NavigationState = {
   readonly entries: ReadonlyArray<Destination>
@@ -39,14 +35,30 @@ const getUrl = (origin: string, urlOrPath: string | URL): URL => {
   return typeof urlOrPath === "string" ? new URL(urlOrPath, origin) : urlOrPath
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type NativeNavigation = import("@virtualstate/navigation").Navigation
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type NativeEntry = import("@virtualstate/navigation").NavigationHistoryEntry
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type NativeEvent = import("@virtualstate/navigation").NavigationEventMap["navigate"]
+
+declare global {
+  export interface Window {
+    navigation?: NativeNavigation
+  }
+}
+
 export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.scoped(
   Window.withEffect((window) =>
     Effect.gen(function*(_) {
       const getRandomValues = (length: number) =>
         Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
-      const { run } = yield* _(scopedRuntime<never>())
+      const { run, runPromise } = yield* _(scopedRuntime<never>())
+      const hasNativeNavigation = !!window.navigation
       const modelAndIntent = yield* _(
-        setupWithHistory(window, (event) => run(handleHistoryEvent(event))),
+        hasNativeNavigation
+          ? setupWithNavigation(window.navigation!, runPromise)
+          : setupWithHistory(window, (event) => run(handleHistoryEvent(event))),
         GetRandomValues.provide(getRandomValues)
       )
 
@@ -54,7 +66,8 @@ export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.sco
         modelAndIntent,
         window.location.origin,
         getBaseHref(window),
-        getRandomValues
+        getRandomValues,
+        hasNativeNavigation ? () => getNavigationState(window.navigation!) : undefined
       )
 
       return navigation
@@ -175,7 +188,8 @@ function setupFromModelAndIntent(
   modelAndIntent: ModelAndIntent,
   origin: string,
   base: string,
-  getRandomValues: Fn.FnOf<typeof GetRandomValues>
+  getRandomValues: Fn.FnOf<typeof GetRandomValues>,
+  newNavigationState?: () => NavigationState
 ) {
   const { beforeHandlers, canGoBack, canGoForward, commit, handlers, state } = modelAndIntent
 
@@ -250,38 +264,44 @@ function setupFromModelAndIntent(
 
       const to = isDestination(beforeEvent.to) ? beforeEvent.to : yield* _(upgradeProposedDestination(beforeEvent.to))
 
-      const event: NavigationEvent = {
-        type: beforeEvent.type,
-        info: beforeEvent.info,
-        destination: to
-      }
-
-      if (beforeEvent.type === "push") {
-        const index = current.index + 1
-        const entries = current.entries.slice(0, index).concat([to])
-
-        yield* _(set({ entries, index, transition: Option.none() }))
-      } else if (beforeEvent.type === "replace") {
-        const index = current.index
-        const before = current.entries.slice(0, index)
-        const after = current.entries.slice(index + 1)
-        const entries = [...before, to, ...after]
-
-        yield* _(set({ entries, index, transition: Option.none() }))
-      } else if (beforeEvent.type === "reload") {
-        yield* _(set({ ...current, transition: Option.none() }))
-      } else {
-        const { delta } = beforeEvent
-        const nextIndex = current.index + delta
-
-        yield* _(set({ ...current, index: nextIndex, transition: Option.none() }))
-      }
-
       if (!skipCommit) {
         yield* _(commit(to, beforeEvent))
       }
 
-      yield* _(runHandlers(event))
+      if (newNavigationState) {
+        const { entries, index } = yield* _(set(newNavigationState()))
+
+        return entries[index]
+      } else {
+        const event: NavigationEvent = {
+          type: beforeEvent.type,
+          info: beforeEvent.info,
+          destination: to
+        }
+
+        if (beforeEvent.type === "push") {
+          const index = current.index + 1
+          const entries = current.entries.slice(0, index).concat([to])
+
+          yield* _(set({ entries, index, transition: Option.none() }))
+        } else if (beforeEvent.type === "replace") {
+          const index = current.index
+          const before = current.entries.slice(0, index)
+          const after = current.entries.slice(index + 1)
+          const entries = [...before, to, ...after]
+
+          yield* _(set({ entries, index, transition: Option.none() }))
+        } else if (beforeEvent.type === "reload") {
+          yield* _(set({ ...current, transition: Option.none() }))
+        } else {
+          const { delta } = beforeEvent
+          const nextIndex = current.index + delta
+
+          yield* _(set({ ...current, index: nextIndex, transition: Option.none() }))
+        }
+
+        yield* _(runHandlers(event))
+      }
 
       return to
     }).pipe(GetRandomValues.provide(getRandomValues))
@@ -344,7 +364,8 @@ function setupFromModelAndIntent(
 
         if (nextIndex === -1) return from
 
-        const to = entries[nextIndex]
+        const id = yield* _(makeUuid, GetRandomValues.provide(getRandomValues))
+        const to = { ...entries[nextIndex], id }
         const delta = nextIndex - index
         const event: BeforeNavigationEvent = {
           type: "traverse",
@@ -466,6 +487,123 @@ function setupFromModelAndIntent(
   } satisfies Navigation
 
   return navigation
+}
+
+const getNavigationState = (navigation: NativeNavigation): NavigationState => {
+  const entries = navigation.entries().map(nativeEntryToDestination)
+  const currentEntry = navigation.currentEntry
+  const index = currentEntry.index
+
+  return {
+    entries,
+    index,
+    transition: Option.none<Transition>()
+  }
+}
+
+function setupWithNavigation(
+  navigation: NativeNavigation,
+  runPromise: <E, A>(effect: Effect.Effect<Scope.Scope, E, A>) => Promise<A>
+): Effect.Effect<
+  Scope.Scope | GetRandomValues,
+  never,
+  ModelAndIntent
+> {
+  return Effect.gen(function*(_) {
+    const state = yield* _(RefSubject.fromEffect(Effect.sync((): NavigationState => getNavigationState(navigation))))
+    const canGoBack = state.map((s) => s.index > 0)
+    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const { beforeHandlers, handlers } = yield* _(makeHandlersState())
+    const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
+      Effect.gen(function*(_) {
+        const { key, state, url } = to
+        const { info, type } = event
+
+        if (type === "push" || type === "replace") {
+          yield* _(
+            Effect.promise(() => navigation.navigate(url.toString(), { history: type, state, info }).finished),
+            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
+          )
+        } else if (event.type === "reload") {
+          yield* _(
+            Effect.promise(() => navigation.reload({ state, info }).finished),
+            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
+          )
+        } else {
+          yield* _(
+            Effect.promise(() => navigation.traverseTo(key, { info }).finished),
+            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
+          )
+        }
+      })
+
+    const runHandlers = (native: NativeEvent) =>
+      Effect.gen(function*(_) {
+        const eventHandlers = yield* _(handlers)
+        const matches: Array<Effect.Effect<never, never, unknown>> = []
+
+        const event: NavigationEvent = {
+          type: native.navigationType,
+          destination: nativeEntryToDestination(navigation.currentEntry),
+          info: native.info
+        }
+
+        for (const [handler, ctx] of eventHandlers) {
+          const match = yield* _(handler(event), Effect.provide(ctx))
+          if (Option.isSome(match)) {
+            matches.push(Effect.provide(match.value, ctx))
+          }
+        }
+
+        if (matches.length > 0) {
+          yield* _(Effect.all(matches, { concurrency: "unbounded" }))
+        }
+      })
+
+    navigation.addEventListener("navigate", (ev) => {
+      if (shouldNotIntercept(ev)) return
+
+      ev.intercept({
+        handler: () => runPromise(runHandlers(ev))
+      })
+    })
+
+    return {
+      state,
+      canGoBack,
+      canGoForward,
+      beforeHandlers,
+      handlers,
+      commit
+    } as const
+  })
+}
+
+function nativeEntryToDestination(
+  entry: Pick<NativeEntry, "id" | "key" | "url" | "getState" | "sameDocument">
+): Destination {
+  return {
+    id: Uuid(entry.id),
+    key: Uuid(entry.key),
+    url: new URL(entry.url!),
+    state: entry.getState(),
+    sameDocument: entry.sameDocument
+  }
+}
+
+function shouldNotIntercept(navigationEvent: NativeEvent): boolean {
+  return (
+    !navigationEvent.canIntercept ||
+    // If this is just a hashChange,
+    // just let the browser handle scrolling to the content.
+    navigationEvent.hashChange ||
+    // If this is a download,
+    // let the browser perform the download.
+    !!navigationEvent.downloadRequest ||
+    // If this is a form submission,
+    // let that go to the server.
+    !!navigationEvent.formData
+  )
 }
 
 function setupWithHistory(

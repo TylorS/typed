@@ -10,6 +10,19 @@ import * as happyDOM from "happy-dom"
 import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 import { describe, it } from "vitest"
 
+const equalDestination = (a: Navigation.Destination, b: Navigation.Destination) => {
+  const { id: _aId, ...aRest } = a
+  const { id: _bId, ...bRest } = b
+  deepStrictEqual(aRest, bRest)
+}
+
+const equalDestinations = (a: ReadonlyArray<Navigation.Destination>, b: ReadonlyArray<Navigation.Destination>) => {
+  const as = a.map(({ id: _, ...rest }) => rest)
+  const bs = b.map(({ id: _, ...rest }) => rest)
+
+  return deepStrictEqual(as, bs)
+}
+
 describe(__filename, () => {
   describe("Navigation", () => {
     it("memory", async () => {
@@ -38,12 +51,12 @@ describe(__filename, () => {
         expect(second.url).toEqual(new URL("/foo/2", url.origin))
         expect(second.state).toEqual(undefined)
         expect(second.sameDocument).toEqual(true)
-        expect(yield* _(entries)).toEqual([initial, second])
+        equalDestinations(yield* _(entries), [initial, second])
 
         expect(yield* _(count)).toEqual(20)
 
-        expect(yield* _(back())).toEqual(initial)
-        expect(yield* _(forward())).toEqual(second)
+        equalDestination(yield* _(back()), initial)
+        equalDestination(yield* _(forward()), second)
 
         expect(yield* _(count)).toEqual(140)
 
@@ -52,12 +65,12 @@ describe(__filename, () => {
         expect(third.url).toEqual(new URL("/foo/3", url.origin))
         expect(third.state).toEqual(undefined)
         expect(third.sameDocument).toEqual(true)
-        expect(yield* _(entries)).toEqual([initial, second, third])
+        equalDestinations(yield* _(entries), [initial, second, third])
 
         expect(yield* _(count)).toEqual(300)
 
-        expect(yield* _(traverseTo(initial.key))).toEqual(initial)
-        expect(yield* _(forward())).toEqual(second)
+        equalDestination(yield* _(traverseTo(initial.key)), initial)
+        equalDestination(yield* _(forward()), second)
 
         expect(yield* _(count)).toEqual(1260)
       }).pipe(
@@ -98,12 +111,12 @@ describe(__filename, () => {
           expect(second.url).toEqual(new URL("/foo/2", url.origin))
           expect(second.state).toEqual(undefined)
           expect(second.sameDocument).toEqual(true)
-          expect(yield* _(entries)).toEqual([initial, second])
+          equalDestinations(yield* _(entries), [initial, second])
 
           expect(yield* _(count)).toEqual(20)
 
-          expect(yield* _(back())).toEqual(initial)
-          expect(yield* _(forward())).toEqual(second)
+          equalDestination(yield* _(back()), initial)
+          equalDestination(yield* _(forward()), second)
 
           expect(yield* _(count)).toEqual(140)
 
@@ -112,12 +125,12 @@ describe(__filename, () => {
           expect(third.url).toEqual(new URL("/foo/3", url.origin))
           expect(third.state).toEqual(undefined)
           expect(third.sameDocument).toEqual(true)
-          expect(yield* _(entries)).toEqual([initial, second, third])
+          equalDestinations(yield* _(entries), [initial, second, third])
 
           expect(yield* _(count)).toEqual(300)
 
-          expect(yield* _(traverseTo(initial.key))).toEqual(initial)
-          expect(yield* _(forward())).toEqual(second)
+          equalDestination(yield* _(traverseTo(initial.key)), initial)
+          equalDestination(yield* _(forward()), second)
 
           expect(yield* _(count)).toEqual(1260)
         }).pipe(
@@ -395,6 +408,129 @@ describe(__filename, () => {
           deepStrictEqual(event.to.url, nextUrl)
         }).pipe(Effect.provide(Navigation.initialMemory({ url })), Effect.scoped)
         await Effect.runPromise(test)
+      })
+    })
+
+    describe("native navigation", () => {
+      const url = new URL("https://example.com/foo/1")
+      const state = { x: Math.random() }
+
+      it("manages navigation", async () => {
+        const window = makeWindow({ url: url.href }, state)
+        const NavigationPolyfill = await import("@virtualstate/navigation")
+        const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
+        window.navigation = navigation as any
+        window.history = history as History
+        const test = Effect.gen(function*(_) {
+          const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
+            yield* _(
+              Navigation.Navigation
+            )
+          const initial = yield* _(currentEntry)
+
+          expect(isUuid(initial.id)).toEqual(true)
+          expect(isUuid(initial.key)).toEqual(true)
+          expect(initial.url).toEqual(url)
+          expect(initial.state).toEqual(state)
+          expect(initial.sameDocument).toEqual(true)
+          expect(yield* _(entries)).toEqual([initial])
+
+          const count = yield* _(RefSubject.of(0))
+
+          yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
+          yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+
+          const second = yield* _(navigate("/foo/2"))
+
+          expect(second.url).toEqual(new URL("/foo/2", url.origin))
+          expect(second.state).toEqual(undefined)
+          expect(second.sameDocument).toEqual(true)
+          equalDestinations(yield* _(entries), [initial, second])
+
+          expect(yield* _(count)).toEqual(20)
+
+          equalDestination(yield* _(back()), initial)
+          equalDestination(yield* _(forward()), second)
+
+          expect(yield* _(count)).toEqual(140)
+
+          const third = yield* _(navigate("/foo/3"))
+
+          expect(third.url).toEqual(new URL("/foo/3", url.origin))
+          expect(third.state).toEqual(undefined)
+          expect(third.sameDocument).toEqual(true)
+          equalDestinations(yield* _(entries), [initial, second, third])
+
+          expect(yield* _(count)).toEqual(300)
+
+          equalDestination(yield* _(traverseTo(initial.key)), initial)
+          equalDestination(yield* _(forward()), second)
+
+          expect(yield* _(count)).toEqual(1260)
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          Effect.scoped
+        )
+
+        await Effect.runPromise(test)
+      })
+
+      describe("onNavigation", () => {
+        const url = new URL("https://example.com/foo/1")
+        const redirectUrl = new URL("https://example.com/bar/42")
+        const redirect = Navigation.redirectToPath(redirectUrl)
+        const intermmediateUrl = new URL("https://example.com/foo/2")
+
+        it("runs only after the url has been committed", async () => {
+          const window = makeWindow({ url: url.href })
+          const NavigationPolyfill = await import("@virtualstate/navigation")
+          const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
+          window.navigation = navigation as any
+          window.history = history as History
+          const test = Effect.gen(function*(_) {
+            const navigation = yield* _(Navigation.Navigation)
+
+            let beforeCount = 0
+            let afterCount = 0
+
+            yield* _(navigation.beforeNavigation((event) =>
+              Effect.gen(function*(_) {
+                beforeCount++
+
+                if (event.to.url === intermmediateUrl) {
+                  return yield* _(Effect.fail(redirect))
+                }
+
+                return Option.none()
+              })
+            ))
+
+            yield* _(navigation.onNavigation((event) =>
+              Effect.sync(() => {
+                deepStrictEqual(event.destination.url, redirectUrl)
+
+                afterCount++
+                return Option.none()
+              })
+            ))
+
+            yield* _(navigation.navigate(intermmediateUrl))
+
+            // Called once for intermmediateUrl
+            // Then again for the redirectUrl
+            deepStrictEqual(beforeCount, 2)
+
+            // Only called once with the redirectUrl
+            deepStrictEqual(afterCount, 1)
+          }).pipe(
+            Effect.provide(Navigation.fromWindow),
+            Window.provide(window),
+            Effect.scoped
+          )
+
+          await Effect.runPromise(test)
+        })
       })
     })
   })

@@ -49,19 +49,26 @@ function makeScopedFork(scope: Scope.Scope): ScopedFork {
 export function withSwitchFork<R, E, A>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
-  return withScopedFork((fork, scope) =>
+  return withScopedFork((_, scope) =>
     Effect.flatMap(
       SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
-      (ref) =>
-        Effect.flatMap(
-          f((effect) =>
-            SynchronizedRef.updateAndGetEffect(
-              ref,
-              (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
-            ), scope),
-          () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
-        )
+      (ref) => runSwitchFork(ref, scope, f)
     )
+  )
+}
+
+export function runSwitchFork<R, E, A>(
+  ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, void>>,
+  scope: Scope.Scope,
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+) {
+  return Effect.flatMap(
+    f((effect) =>
+      SynchronizedRef.updateAndGetEffect(
+        ref,
+        (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => Effect.forkIn(effect, scope))
+      ), scope),
+    () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
   )
 }
 
