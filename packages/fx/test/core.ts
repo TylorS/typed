@@ -230,7 +230,7 @@ describe.concurrent(__filename, () => {
   })
 
   describe.concurrent("RefSubject", () => {
-    it.concurrent.only("allows keeping state", async () => {
+    it.concurrent("allows keeping state", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
