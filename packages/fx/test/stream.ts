@@ -2,6 +2,7 @@ import * as Fx from "@typed/fx/Fx"
 import * as Pull from "@typed/fx/Pull"
 import * as Sink from "@typed/fx/Sink"
 import * as FxStream from "@typed/fx/Stream"
+import { TestClock, TestContext } from "effect"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Schedule from "effect/Schedule"
@@ -31,15 +32,20 @@ describe.concurrent(__filename, () => {
             pull,
             Schedule.spaced(250),
             Sink.Sink(Effect.failCause, (a) => Effect.sync(() => values.push(a)))
-          )
+          ),
+          Effect.fork
         )
 
+        for (let i = 0; i < 10; ++i) {
+          yield* _(TestClock.adjust(250))
+        }
+
         return values
-      }).pipe(Effect.scoped)
+      }).pipe(Effect.provide(TestContext.TestContext), Effect.scoped)
 
       const values = await Effect.runPromise(test)
 
-      expect(values).toEqual([0, 2, 5, 7, 10, 12, 15, 17])
+      expect(values).toEqual([0, 2, 4, 7, 9, 12, 14, 17])
     })
   })
 
