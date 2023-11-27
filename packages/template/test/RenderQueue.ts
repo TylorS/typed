@@ -20,14 +20,14 @@ describe("RenderQueue", () => {
       yield* _(ctx.queue.add(testPart, add1A))
       yield* _(ctx.queue.add(testPart, add1B))
 
-      yield* _(Effect.sleep(0)) // Wait for the queue to be scheduled next tick
+      yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 
       deepStrictEqual(i, 1)
 
       yield* _(ctx.queue.add(testPart, add1C))
       yield* _(ctx.queue.add(testPart, add1D))
 
-      yield* _(Effect.sleep(0)) // Wait for the queue to be scheduled next tick
+      yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 
       deepStrictEqual(i, 2)
     }).pipe(
