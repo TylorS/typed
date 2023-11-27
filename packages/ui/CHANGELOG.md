@@ -1,5 +1,19 @@
 # @typed/ui
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`974fa90e`](https://github.com/TylorS/typed/commit/974fa90ef507ad724b3cc12d16e9ed7602070794), [`974fa90e`](https://github.com/TylorS/typed/commit/974fa90ef507ad724b3cc12d16e9ed7602070794)]:
+  - @typed/context@0.19.0
+  - @typed/dom@8.19.0
+  - @typed/environment@0.1.1
+  - @typed/fx@1.18.1
+  - @typed/navigation@0.6.1
+  - @typed/router@0.19.2
+  - @typed/template@0.1.1
+  - @typed/route@1.0.1
+
 ## 0.1.1
 
 ### Patch Changes

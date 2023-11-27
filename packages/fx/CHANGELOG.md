@@ -1,5 +1,12 @@
 # @typed/fx
 
+## 1.18.1
+
+### Patch Changes
+
+- Updated dependencies [[`974fa90e`](https://github.com/TylorS/typed/commit/974fa90ef507ad724b3cc12d16e9ed7602070794)]:
+  - @typed/context@0.19.0
+
 ## 1.18.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@typed/dom",
-  "version": "8.18.4",
+  "version": "8.19.0",
   "description": "",
   "publishConfig": {
     "access": "public",
