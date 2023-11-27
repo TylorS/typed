@@ -3,12 +3,12 @@
  * @since 1.0.0
  */
 
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
 import * as S from "effect/ScopedRef"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/ScopedRef

@@ -190,7 +190,6 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
           Option.match({
             onNone: () => Effect.succeedNone,
             onSome: ([when, ref]) => {
-              console.log("matching")
               return Fx.map(Fx.from(when.onMatch(ref)), Option.some)
             }
           })

@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
+import type * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Q from "effect/Queue"
 import { withActions } from "./Extensions"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
 import type { PubSub } from "./PubSub"
 import type { Queue } from "./Queue"
 import { Tag } from "./Tag"
-import type * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Q from "effect/Queue"
 
 /**
  * A Contextual wrapper around @effect/io/Queue.Enqueue

@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as PS from "effect/PubSub"
 import type * as Q from "effect/Queue"
 import type { Scope } from "effect/Scope"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/PubSub

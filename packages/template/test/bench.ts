@@ -63,7 +63,7 @@ const lotsOfAttributesTemplate = splitTemplateByParts(`<formgroup
     {{__PART24__}}
   </formgroup>`)
 
-benchmark("Old vs New Parser")
+export const bench = benchmark("Old vs New Parser")
   .comparison("simple", [{
     name: "old",
     effect: Effect.sync(() => Old.parser.parse(simpleDivTemplate))
@@ -101,12 +101,14 @@ benchmark("Old vs New Parser")
       effect: Effect.sync(() => New.parser.parse(lotsOfAttributesTemplate))
     }
   ])
-  .run(
-    // Only run 1 iteration because we want to compare the speed of parsing without the JIT
-    // being warmed up as it will be when first loading your application in your browser when
-    // we want to avoid as much blocking time as possible
-    { iterations: 1 }
-  )
+  
+  
+// bench.run(
+//     // Only run 1 iteration because we want to compare the speed of parsing without the JIT
+//     // being warmed up as it will be when first loading your application in your browser when
+//     // we want to avoid as much blocking time as possible
+//     { iterations: 1 }
+//   )
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends ReadonlyArray<any>>(template: TemplateStringsArray, ..._: Values) {

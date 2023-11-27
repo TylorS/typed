@@ -3,12 +3,12 @@
  * @since 1.0.0
  */
 
-import type { IdentifierFactory, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as R from "effect/Resource"
 import type * as Schedule from "effect/Schedule"
+import type { IdentifierFactory, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/Resource

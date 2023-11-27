@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import type { DurationInput } from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import * as KP from "effect/KeyedPool"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/KeyedPool

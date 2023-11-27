@@ -29,8 +29,6 @@ export function TemplateInstance<T extends Rendered = Rendered, E = never>(
   events: Fx.Fx<never, E, RenderEvent>,
   ref: ElementRef<T>
 ): TemplateInstance<E, T> {
-  console.log("Making Template Instance")
-
   return new TemplateInstanceImpl(events, ref) as any
 }
 

@@ -5,10 +5,10 @@
  * @since 1.0.0
  */
 
-import { ContextBuilder } from "./Builder"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
+import { ContextBuilder } from "./Builder"
 
 import type { EffectFn } from "./EffectFn"
 import type { Fn } from "./Fn"

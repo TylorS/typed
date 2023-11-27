@@ -3,14 +3,14 @@
  * @since 1.0.0
  */
 
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import type * as Chunk from "effect/Chunk"
 import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Option } from "effect/Option"
 import * as Q from "effect/Queue"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/data/Queue

@@ -3,9 +3,6 @@
  * @since 1.0.0
  */
 
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
 import type * as C from "effect/Cache"
 import type { DurationInput } from "effect/Duration"
 import type { Effect } from "effect/Effect"
@@ -14,6 +11,9 @@ import * as Layer from "effect/Layer"
 import type { Option } from "effect/Option"
 import type { Scope } from "effect/Scope"
 import * as SC from "effect/ScopedCache"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/ScopedCache
