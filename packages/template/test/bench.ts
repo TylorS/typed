@@ -110,6 +110,10 @@ export const bench = benchmark("Old vs New Parser")
 //     { iterations: 1 }
 //   )
 
+it("does stuff", () => {
+  // Here to make Vitest happy
+})
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function h<Values extends ReadonlyArray<any>>(template: TemplateStringsArray, ..._: Values) {
   return template
