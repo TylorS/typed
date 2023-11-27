@@ -1,5 +1,11 @@
 # @typed/context
 
+## 0.19.0
+
+### Minor Changes
+
+- [`974fa90e`](https://github.com/TylorS/typed/commit/974fa90ef507ad724b3cc12d16e9ed7602070794) Thanks [@TylorS](https://github.com/TylorS)! - Context: Fix published version
+
 ## 0.1.0
 
 ### Minor Changes

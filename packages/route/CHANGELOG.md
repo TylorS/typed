@@ -1,5 +1,12 @@
 # @typed/route
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/fx@1.18.1
+
 ## 1.0.0
 
 ### Minor Changes
