@@ -154,17 +154,17 @@ function setupWithNavigation(
 
         if (type === "push" || type === "replace") {
           yield* _(
-            Effect.promise(() => navigation.navigate(url.toString(), { history: type, state, info }).finished),
+            Effect.promise(() => navigation.navigate(url.toString(), { history: type, state, info }).committed),
             Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
           )
         } else if (event.type === "reload") {
           yield* _(
-            Effect.promise(() => navigation.reload({ state, info }).finished),
+            Effect.promise(() => navigation.reload({ state, info }).committed),
             Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
           )
         } else {
           yield* _(
-            Effect.promise(() => navigation.traverseTo(key, { info }).finished),
+            Effect.promise(() => navigation.traverseTo(key, { info }).committed),
             Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
           )
         }
