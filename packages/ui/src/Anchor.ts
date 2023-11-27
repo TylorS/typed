@@ -1,13 +1,17 @@
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"
-import type { Placeholder, Renderable, TemplateFx } from "@typed/template"
-import { Directive, EventHandler, html } from "@typed/template"
+import * as Directive from "@typed/template/Directive"
 import type { DefaultEventMap, ElementSource } from "@typed/template/ElementSource"
-import type { HTMLAnchorElementProperties } from "@typed/ui/internal/dom-properties"
+import * as EventHandler from "@typed/template/EventHandler"
+import type { Placeholder } from "@typed/template/Placeholder"
+import type { Renderable } from "@typed/template/Renderable"
+import type { TemplateFx } from "@typed/template/RenderTemplate"
+import { html } from "@typed/template/RenderTemplate"
 import type { Rendered } from "@typed/wire"
 import type { ReadonlyRecord, Scope } from "effect"
 import { Effect } from "effect"
 import { uncapitalize } from "effect/String"
+import type { HTMLAnchorElementProperties } from "./internal/dom-properties"
 
 export type AnchorProps =
   & {

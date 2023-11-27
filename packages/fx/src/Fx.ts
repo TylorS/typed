@@ -17,19 +17,6 @@
  */
 
 import type * as Context from "@typed/context"
-import type { Emitter } from "@typed/fx/Emitter"
-import * as core from "@typed/fx/internal/core"
-import * as internal from "@typed/fx/internal/fx"
-import * as primitive from "@typed/fx/internal/fx-primitive"
-import * as internalKeyed from "@typed/fx/internal/keyed"
-import * as internalRun from "@typed/fx/internal/run"
-import * as Share from "@typed/fx/internal/share"
-import * as strategies from "@typed/fx/internal/strategies"
-import * as internalWithKey from "@typed/fx/internal/withKey"
-import { type RefSubject, transform } from "@typed/fx/RefSubject"
-import type * as Sink from "@typed/fx/Sink"
-import type { Subject } from "@typed/fx/Subject"
-import { TypeId } from "@typed/fx/TypeId"
 import * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import type { DurationInput } from "effect/Duration"
@@ -53,8 +40,20 @@ import type * as Runtime from "effect/Runtime"
 import type * as Schedule from "effect/Schedule"
 import type { Scheduler } from "effect/Scheduler"
 import type * as Scope from "effect/Scope"
-import type { Stream } from "effect/Stream"
 import type * as Tracer from "effect/Tracer"
+import type { Emitter } from "./Emitter"
+import * as core from "./internal/core"
+import * as internal from "./internal/fx"
+import * as primitive from "./internal/fx-primitive"
+import * as internalKeyed from "./internal/keyed"
+import * as internalRun from "./internal/run"
+import * as Share from "./internal/share"
+import * as strategies from "./internal/strategies"
+import * as internalWithKey from "./internal/withKey"
+import { type RefSubject, transform } from "./RefSubject"
+import type * as Sink from "./Sink"
+import type { Subject } from "./Subject"
+import { TypeId } from "./TypeId"
 
 /* #region Model */
 
@@ -74,7 +73,7 @@ export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable, Inspectable
  * @since 1.18.0
  * @category models
  */
-export type FxInput<R, E, A> = Fx<R, E, A> | Stream<R, E, A> | Effect.Effect<R, E, A> | Cause.Cause<E> | Iterable<A>
+export type FxInput<R, E, A> = Fx<R, E, A> | Effect.Effect<R, E, A> | Cause.Cause<E> | Iterable<A>
 
 /**
  * @since 1.18.0
@@ -115,7 +114,6 @@ export namespace Fx {
     : [T] extends [Iterable<infer A>] ? Fx<never, never, A>
     : [T] extends [Cause.Cause<infer E>] ? Fx<never, E, never>
     : [T] extends [Fx<infer R, infer E, infer A>] ? Fx<R, E, A>
-    : [T] extends [Stream<infer R, infer E, infer A>] ? Fx<R, E, A>
     : [T] extends [Effect.Effect<infer R, infer E, infer A>] ? Fx<R, E, A>
     : never
 }

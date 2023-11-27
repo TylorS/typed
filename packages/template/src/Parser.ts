@@ -1,8 +1,9 @@
-import * as Template from "@typed/template/Template"
-import type { Token } from "@typed/template/Token"
-import { tokenize } from "@typed/template/Tokenizer"
 import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
+import { templateHash } from "./internal/parser"
+import * as Template from "./Template"
+import type { Token } from "./Token"
+import { tokenize } from "./Tokenizer"
 
 export interface Parser {
   parse(template: ReadonlyArray<string>, tokenStream?: Iterator<Token>): Template.Template
@@ -443,28 +444,4 @@ class ParserImpl {
   }
 }
 
-export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser"), () => new ParserImpl())
-
-const digestSize = 2
-const multiplier = 33
-const fill = 5381
-
-/**
- * Generates a hash for an ordered list of strings. Intended for the purposes
- * of server-side rendering with hydration.
- */
-export function templateHash(strings: ReadonlyArray<string>) {
-  const hashes = new Uint32Array(digestSize).fill(fill)
-
-  for (let i = 0; i < strings.length; i++) {
-    const s = strings[i]
-
-    for (let j = 0; j < s.length; j++) {
-      const key = j % digestSize
-
-      hashes[key] = (hashes[key] * multiplier) ^ s.charCodeAt(j)
-    }
-  }
-
-  return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)))
-}
+export const parser: Parser = globalValue(Symbol.for("./Parser"), () => new ParserImpl())

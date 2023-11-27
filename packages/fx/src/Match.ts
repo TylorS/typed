@@ -1,14 +1,14 @@
-import { RefSubject } from "@typed/fx"
-import * as Fx from "@typed/fx/Fx"
-import type { Guard } from "@typed/fx/Guard"
 import { Effect, Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import { identity } from "effect/Function"
 import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
+import * as Fx from "./Fx"
+import type { Guard } from "./Guard"
+import * as RefSubject from "./RefSubject"
 
-export const MatcherTypeId: unique symbol = Symbol.for("@typed/fx/Matcher")
+export const MatcherTypeId: unique symbol = Symbol.for("./Matcher")
 export type MatcherTypeId = typeof MatcherTypeId
 
 export interface TypeMatcher<R, E, I, O> {
@@ -189,7 +189,10 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
         Fx.switchMap(
           Option.match({
             onNone: () => Effect.succeedNone,
-            onSome: ([when, ref]) => Fx.map(Fx.from(when.onMatch(ref)), Option.some)
+            onSome: ([when, ref]) => {
+              console.log("matching")
+              return Fx.map(Fx.from(when.onMatch(ref)), Option.some)
+            }
           })
         )
       )

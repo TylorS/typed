@@ -2,8 +2,6 @@
  * Additional Stream integrations with Fx.
  * @since 1.18.0
  */
-import * as Fx from "@typed/fx/Fx"
-import { Sink } from "@typed/fx/Sink"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
@@ -13,6 +11,8 @@ import * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
+import * as Fx from "./Fx"
+import { Sink } from "./Sink"
 
 /**
  * Convert an Fx to a Stream

@@ -1,3 +1,4 @@
+import * as Token from "../Token"
 import {
   getAllTextUntilElementClose,
   getAttributeWithoutQuotes,
@@ -14,9 +15,8 @@ import {
   getWhitespace,
   PART_REGEX,
   PART_STRING
-} from "@typed/template/internal/chunks"
-import type { TextChunk } from "@typed/template/internal/chunks"
-import * as Token from "@typed/template/Token"
+} from "./chunks"
+import type { TextChunk } from "./chunks"
 
 export function tokenize(template: ReadonlyArray<string>): Iterable<Token.Token> {
   return new Tokenizer(template)

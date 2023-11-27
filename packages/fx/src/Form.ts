@@ -3,21 +3,20 @@ import type { ParseOptions } from "@effect/schema/AST"
 import { from } from "@effect/schema/Equivalence"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
-import type { Filtered } from "@typed/fx"
-import { Computed } from "@typed/fx/Computed"
-import * as FormEntry from "@typed/fx/FormEntry"
-import type { Fx } from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { FxEffectBase } from "@typed/fx/internal/protos"
-import { hold } from "@typed/fx/internal/share"
-import type { RefSubject } from "@typed/fx/RefSubject"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
-import type * as Versioned from "@typed/fx/Versioned"
 import type { Scope } from "effect"
 import { Effect } from "effect"
-import * as Stream from "effect/Stream"
+import { Computed } from "./Computed"
+import type * as Filtered from "./Filtered"
+import * as FormEntry from "./FormEntry"
+import type { Fx } from "./Fx"
+import * as core from "./internal/core"
+import { FxEffectBase } from "./internal/protos"
+import { hold } from "./internal/share"
+import type { RefSubject } from "./RefSubject"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId"
+import type * as Versioned from "./Versioned"
 
-export const FormTypeId = Symbol.for("@typed/fx/Form")
+export const FormTypeId = Symbol.for("./Form")
 export type FormTypeId = typeof FormTypeId
 
 type AnyObject = Readonly<Record<PropertyKey, any>>
@@ -119,12 +118,6 @@ export type MakeForm<
 
   <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<
     R,
-    never,
-    [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never
-  >
-
-  <R, E>(stream: Stream.Stream<R, E, O>): Effect.Effect<
-    R | Scope.Scope,
     never,
     [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never
   >
@@ -267,7 +260,7 @@ const deriveMakeEntries = <
   I extends Readonly<Record<PropertyKey, any>>,
   O extends Readonly<Record<keyof I, any>>
 >(
-  input: RefSubject<R, E, O> | Fx<R, E, O> | Stream.Stream<R, E, O> | Effect.Effect<R, E, O>,
+  input: RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<R, E, O>,
   ast: AST.AST
 ): Effect.Effect<R | Scope.Scope, never, DeriveEntries<E, I, O>> =>
   Effect.suspend(() => {
@@ -316,13 +309,11 @@ const propOf = <R, E, O>(
     | Computed<R, E, O>
     | Filtered.Filtered<R, E, O>
     | Fx<R, E, O>
-    | Stream.Stream<R, E, O>
     | Effect.Effect<R, E, O>,
   key: keyof O
 ) => {
   if (RefSubjectTypeId in input || ComputedTypeId in input || FilteredTypeId in input) {
     return input.map((o) => o[key])
   } else if (TypeId in input) return core.map(input, (o) => o[key])
-  else if (Effect.EffectTypeId in input) return Effect.map(input, (o) => o[key])
-  else return Stream.map(input, (o) => o[key])
+  else return Effect.map(input, (o) => o[key])
 }

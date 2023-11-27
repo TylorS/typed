@@ -1,11 +1,11 @@
-/// <reference types="./internal/module-augmentation" />
-
-import type { Fx } from "@typed/fx"
-import { isFx, RefSubject } from "@typed/fx"
+import "./internal/module-augmentation"
+import type { Fx } from "@typed/fx/Fx"
+import { isFx } from "@typed/fx/Fx"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
 import { Effect } from "effect"
 
-export const PlaceholderTypeId = Symbol.for("@typed/template/Placholder")
+export const PlaceholderTypeId = Symbol.for("./Placholder")
 export type PlaceholderTypeId = typeof PlaceholderTypeId
 
 export interface Placeholder<out R = never, out E = never, out A = unknown> {

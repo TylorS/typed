@@ -1,6 +1,6 @@
-import { GetRandomValues } from "@typed/id/GetRandomValues"
 import * as Brand from "effect/Brand"
 import * as Effect from "effect/Effect"
+import { GetRandomValues } from "./GetRandomValues"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /**

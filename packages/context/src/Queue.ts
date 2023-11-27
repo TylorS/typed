@@ -3,9 +3,9 @@
  * @since 1.0.0
  */
 
-import { withActions } from "@typed/context/Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { Tag } from "@typed/context/Tag"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 import type * as Chunk from "effect/Chunk"
 import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"

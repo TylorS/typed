@@ -1,28 +1,25 @@
 import * as Fx from "@typed/fx/Fx"
 import { Sink } from "@typed/fx/Sink"
-import * as FxStream from "@typed/fx/Stream"
 import { TypeId } from "@typed/fx/TypeId"
-import { isDirective } from "@typed/template/Directive"
-import * as ElementRef from "@typed/template/ElementRef"
-import type { ServerEntry } from "@typed/template/Entry"
-import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "@typed/template/HtmlChunk"
-import { templateToHtmlChunks } from "@typed/template/HtmlChunk"
-import { parse } from "@typed/template/internal/parser"
-import { partNodeToPart } from "@typed/template/internal/server"
-import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from "@typed/template/Meta"
-import type { Placeholder } from "@typed/template/Placeholder"
-import type { Renderable } from "@typed/template/Renderable"
-import { RenderContext } from "@typed/template/RenderContext"
-import { HtmlRenderEvent, isRenderEvent } from "@typed/template/RenderEvent"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import { RenderTemplate } from "@typed/template/RenderTemplate"
-import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
 import { join } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
-import * as Stream from "effect/Stream"
-import { StreamTypeId } from "effect/Stream"
+import { isDirective } from "./Directive"
+import * as ElementRef from "./ElementRef"
+import type { ServerEntry } from "./Entry"
+import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk"
+import { templateToHtmlChunks } from "./HtmlChunk"
+import { parse } from "./internal/parser"
+import { partNodeToPart } from "./internal/server"
+import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from "./Meta"
+import type { Placeholder } from "./Placeholder"
+import type { Renderable } from "./Renderable"
+import { RenderContext } from "./RenderContext"
+import { HtmlRenderEvent, isRenderEvent } from "./RenderEvent"
+import type { RenderEvent } from "./RenderEvent"
+import { RenderTemplate } from "./RenderTemplate"
+import { TemplateInstance } from "./TemplateInstance"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
 
@@ -45,12 +42,6 @@ export function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string> {
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
-}
-
-export function renderToStream<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>
-): Stream.Stream<Exclude<R, RenderTemplate> | RenderContext, E, Uint8Array> {
-  return Stream.encodeText(FxStream.toStream(renderToHtml(fx)))
 }
 
 function renderHtml(ctx: RenderContext) {
@@ -247,9 +238,7 @@ function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, a
         return Fx.combine(renderable.map(unwrapRenderable)) as any
       } else if (TypeId in renderable) {
         return renderable as any
-      } else if (StreamTypeId in renderable) return Fx.from(renderable)
-      // Unwrap Effects such that templates can be embeded directly
-      else if (Effect.EffectTypeId in renderable) {
+      } else if (Effect.EffectTypeId in renderable) {
         return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<any, any>))
       } else return Fx.succeed(renderable as any)
     }

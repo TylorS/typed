@@ -1,4 +1,4 @@
-import { TYPED_HASH } from "@typed/template/Meta"
+import { TYPED_HASH } from "./Meta"
 import type {
   Attribute,
   ElementNode,
@@ -10,7 +10,7 @@ import type {
   Template,
   Text,
   TextOnlyElement
-} from "@typed/template/Template"
+} from "./Template"
 
 export type HtmlChunk = TextChunk | PartChunk | SparsePartChunk
 

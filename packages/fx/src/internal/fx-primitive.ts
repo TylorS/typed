@@ -2,12 +2,12 @@ import type * as Cause from "effect/Cause"
 import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
 
-import { type EffectOperator, fuseEffectOperators, liftSyncOperator } from "@typed/fx/internal/effect-operator"
-import * as syncOperator from "@typed/fx/internal/sync-operator"
-import type * as Sink from "@typed/fx/Sink"
+import type * as Sink from "../Sink"
+import { type EffectOperator, fuseEffectOperators, liftSyncOperator } from "./effect-operator"
+import * as syncOperator from "./sync-operator"
 
-import type { FlattenStrategy, Fx, FxFork, WithEarlyExitParams, WithScopedForkParams } from "@typed/fx/Fx"
-import { FxProto } from "@typed/fx/internal/protos"
+import type { FlattenStrategy, Fx, FxFork, WithEarlyExitParams, WithScopedForkParams } from "../Fx"
+import { FxProto } from "./protos"
 
 export type Primitive =
   | Empty

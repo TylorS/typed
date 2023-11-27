@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema"
-import * as NanoId from "@typed/id/NanoId"
-import * as Uuid from "@typed/id/Uuid"
+import * as NanoId from "./NanoId"
+import * as Uuid from "./Uuid"
 
 export const uuid: Schema.Schema<string, Uuid.Uuid> = Schema.string.pipe(
   Schema.fromBrand(Uuid.Uuid)

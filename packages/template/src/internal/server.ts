@@ -1,4 +1,18 @@
-import type { HtmlChunk, PartChunk, SparsePartChunk } from "@typed/template/HtmlChunk"
+import * as Effect from "effect/Effect"
+import type { HtmlChunk, PartChunk, SparsePartChunk } from "../HtmlChunk"
+import type {
+  AttributePart,
+  ClassNamePart,
+  CommentPart,
+  Part,
+  SparseAttributePart,
+  SparseClassNamePart,
+  SparseCommentPart,
+  SparsePart,
+  StaticText
+} from "../Part"
+import type { Renderable } from "../Renderable"
+import type { PartNode, SparseAttrNode, SparseClassNameNode, SparseCommentNode, SparsePartNode } from "../Template"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -12,27 +26,7 @@ import {
   SparseCommentPartImpl,
   StaticTextImpl,
   TextPartImpl
-} from "@typed/template/internal/parts"
-import type {
-  AttributePart,
-  ClassNamePart,
-  CommentPart,
-  Part,
-  SparseAttributePart,
-  SparseClassNamePart,
-  SparseCommentPart,
-  SparsePart,
-  StaticText
-} from "@typed/template/Part"
-import type { Renderable } from "@typed/template/Renderable"
-import type {
-  PartNode,
-  SparseAttrNode,
-  SparseClassNameNode,
-  SparseCommentNode,
-  SparsePartNode
-} from "@typed/template/Template"
-import * as Effect from "effect/Effect"
+} from "./parts"
 
 export type RenderChunk<R, E> =
   | TextRenderChunk

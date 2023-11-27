@@ -1,5 +1,5 @@
-import { GetRandomValues } from "@typed/id/GetRandomValues"
 import { Brand, Effect } from "effect"
+import { GetRandomValues } from "./GetRandomValues"
 
 const nanoIdPattern = /[0-9a-zA-Z_-]/
 

@@ -1,4 +1,4 @@
-import type * as Fx from "@typed/fx/Fx"
+import type * as Fx from "../Fx"
 
 export const Unbounded: Fx.Unbounded = { _tag: "Unbounded" }
 

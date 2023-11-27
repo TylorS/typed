@@ -1,7 +1,7 @@
-import type { BeforeNavigationEvent, Destination, Navigation, NavigationError } from "@typed/navigation/Navigation"
 import type { Effect, Layer } from "effect"
 import * as internalFromWindow from "./internal/fromWindow"
 import * as internalMemory from "./internal/memory"
+import type { BeforeNavigationEvent, Destination, Navigation, NavigationError } from "./Navigation"
 
 export const fromWindow: Layer.Layer<Window, never, Navigation> = internalFromWindow.fromWindow
 

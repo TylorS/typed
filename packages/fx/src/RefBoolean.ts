@@ -1,10 +1,10 @@
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identifier"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 import type { Effect } from "effect"
 import { not } from "effect/Boolean"
 import { strict } from "effect/Equivalence"
 import type { Scope } from "effect/Scope"
+import type * as Fx from "./Fx"
+import * as RefSubject from "./RefSubject"
 
 /**
  * A RefSubject holding a boolean values

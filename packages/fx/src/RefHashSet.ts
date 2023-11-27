@@ -4,13 +4,13 @@
  */
 
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
-import type * as Computed from "@typed/fx/Computed"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashSet from "effect/HashSet"
 import type * as Scope from "effect/Scope"
+import type * as Computed from "./Computed"
+import type * as Fx from "./Fx"
+import * as RefSubject from "./RefSubject"
 
 /**
  * A RefHashSet is a RefSubject that is specialized over an HashSet of values.

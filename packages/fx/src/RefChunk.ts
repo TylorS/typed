@@ -4,16 +4,16 @@
  */
 
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
-import type * as Computed from "@typed/fx/Computed"
-import type * as Filtered from "@typed/fx/Filtered"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 import * as Chunk from "effect/Chunk"
 import type * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
 import { dual } from "effect/Function"
 import type * as Scope from "effect/Scope"
+import type * as Computed from "./Computed"
+import type * as Filtered from "./Filtered"
+import type * as Fx from "./Fx"
+import * as RefSubject from "./RefSubject"
 
 /**
  * A RefChunk is a RefSubject that is specialized over an Chunk of values.

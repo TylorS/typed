@@ -1,8 +1,4 @@
 import { getOption, unsafeGet } from "@typed/context"
-import type { FlattenStrategy, FxFork, ScopedFork } from "@typed/fx/Fx"
-import type { InternalEffect } from "@typed/fx/internal/effect-primitive"
-import { matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
-import type * as Sink from "@typed/fx/Sink"
 import { Effectable, Exit, TestClock } from "effect"
 import { type Cause, NoSuchElementException } from "effect/Cause"
 import type * as Duration from "effect/Duration"
@@ -13,6 +9,10 @@ import * as Ref from "effect/Ref"
 import * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
+import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx"
+import type * as Sink from "../Sink"
+import type { InternalEffect } from "./effect-primitive"
+import { matchEffectPrimitive } from "./effect-primitive"
 
 export function withScopedFork<R, E, A>(
   f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>

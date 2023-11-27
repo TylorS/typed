@@ -1,10 +1,10 @@
 import { getOption } from "@typed/context"
-import { TEXT_START, TYPED_START } from "@typed/template/Meta"
 import * as Chunk from "effect/Chunk"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { isSome } from "effect/Option"
 import { TestClock } from "effect/TestClock"
+import { TEXT_START, TYPED_START } from "../Meta"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE

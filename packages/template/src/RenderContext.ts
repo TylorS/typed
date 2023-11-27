@@ -10,11 +10,11 @@ import { Window } from "@typed/dom/Window"
 import type { Environment } from "@typed/environment"
 import { CurrentEnvironment } from "@typed/environment"
 import * as Idle from "@typed/fx/Idle"
-import type { Entry } from "@typed/template/Entry"
-import type { Part, SparsePart } from "@typed/template/Part"
 import type { Rendered } from "@typed/wire"
-import { Effect, Fiber, Layer, Option } from "effect"
+import { Effect, Layer, Option } from "effect"
 import * as Scope from "effect/Scope"
+import type { Entry } from "./Entry"
+import type { Part, SparsePart } from "./Part"
 
 /**
  * The context in which templates are rendered within
@@ -47,7 +47,7 @@ export interface RenderContext {
  * @since 1.0.0
  */
 export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Context.Tagged<RenderContext>(
-  "@typed/template/RenderContext"
+  "./RenderContext"
 )
 
 /**
@@ -184,39 +184,38 @@ class RenderQueueImpl implements RenderQueue {
 
     this.scheduled = true
 
-    return Scope.addFinalizer(this.scope, Fiber.interrupt(Effect.runFork(this.run)))
+    return this.run.pipe(
+      Scope.extend(this.scope),
+      Effect.forkIn(this.scope)
+    )
   })
 
-  run: Effect.Effect<never, never, void> = Effect.suspend(() =>
-    Effect.provideService(
-      Effect.flatMap(
-        Idle.whenIdle(this.options),
-        (deadline) =>
-          Effect.suspend(() => {
-            const iterator = this.queue.entries()
+  run: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() =>
+    Effect.flatMap(
+      Idle.whenIdle(this.options),
+      (deadline) =>
+        Effect.suspend(() => {
+          const iterator = this.queue.entries()
 
-            while (Idle.shouldContinue(deadline)) {
-              const result = iterator.next()
+          while (Idle.shouldContinue(deadline)) {
+            const result = iterator.next()
 
-              if (result.done) break
-              else {
-                const [part, task] = result.value
-                this.queue.delete(part)
-                task()
-              }
+            if (result.done) break
+            else {
+              const [part, task] = result.value
+              this.queue.delete(part)
+              task()
             }
+          }
 
-            if (this.queue.size > 0) {
-              return this.run
-            }
+          if (this.queue.size > 0) {
+            return this.run
+          }
 
-            this.scheduled = false
+          this.scheduled = false
 
-            return Effect.unit
-          })
-      ),
-      Scope.Scope,
-      this.scope
+          return Effect.unit
+        })
     )
   )
 }

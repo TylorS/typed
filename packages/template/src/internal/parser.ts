@@ -1,18 +1,10 @@
-import type { TextChunk } from "@typed/template/internal/chunks"
-import {
-  getPart,
-  getStrictPart,
-  getTextUntilCloseBrace,
-  getTextUntilPart,
-  getWhitespace,
-  PART_STRING
-} from "@typed/template/internal/chunks"
-import { templateHash } from "@typed/template/Parser"
-import * as Template from "@typed/template/Template"
-import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "@typed/template/Token"
 import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
+import * as Template from "../Template"
+import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token"
+import type { TextChunk } from "./chunks"
+import { getPart, getStrictPart, getTextUntilCloseBrace, getTextUntilPart, getWhitespace, PART_STRING } from "./chunks"
 
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization
@@ -618,4 +610,28 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   return out
 }
 
-export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser2"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("../Parser2"), () => new ParserImpl())
+
+const digestSize = 2
+const multiplier = 33
+const fill = 5381
+
+/**
+ * Generates a hash for an ordered list of strings. Intended for the purposes
+ * of server-side rendering with hydration.
+ */
+export function templateHash(strings: ReadonlyArray<string>) {
+  const hashes = new Uint32Array(digestSize).fill(fill)
+
+  for (let i = 0; i < strings.length; i++) {
+    const s = strings[i]
+
+    for (let j = 0; j < s.length; j++) {
+      const key = j % digestSize
+
+      hashes[key] = (hashes[key] * multiplier) ^ s.charCodeAt(j)
+    }
+  }
+
+  return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)))
+}

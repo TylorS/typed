@@ -4,10 +4,10 @@ import * as Fx from "@typed/fx/Fx"
 import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { RenderContext } from "@typed/template/RenderContext"
-import { type RenderEvent } from "@typed/template/RenderEvent"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import { RenderContext } from "./RenderContext"
+import { type RenderEvent } from "./RenderEvent"
 
 export function many<R, E, A, B, R2, E2>(
   values: Fx.Fx<R, E, ReadonlyArray<A>>,

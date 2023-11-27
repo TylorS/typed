@@ -1,9 +1,9 @@
-import * as internal from "@typed/async-data/internal/async-data"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "@typed/async-data/internal/tag"
-import * as Progress from "@typed/async-data/Progress"
 import type { Effect } from "effect"
 import { Cause, Data, Equal, Equivalence, Exit, Option, Unify } from "effect"
 import { dual } from "effect/Function"
+import * as internal from "./internal/async-data"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag"
+import * as Progress from "./Progress"
 
 export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A>
 

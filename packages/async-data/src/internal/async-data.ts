@@ -1,9 +1,9 @@
 // Internal
 
-import { type AsyncData, type Failure, type Loading, type Success } from "@typed/async-data/AsyncData"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "@typed/async-data/internal/tag"
 import { Cause, Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
 import { constant } from "effect/Function"
+import { type AsyncData, type Failure, type Loading, type Success } from "../AsyncData"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag"
 
 export class FailureImpl<E> extends Effectable.Class<never, E, never> implements Failure<E> {
   readonly _tag = "Failure"

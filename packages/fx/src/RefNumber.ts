@@ -1,9 +1,9 @@
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identifier"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 import type { Effect } from "effect"
 import { strict } from "effect/Equivalence"
 import type { Scope } from "effect/Scope"
+import type * as Fx from "./Fx"
+import * as RefSubject from "./RefSubject"
 
 const add = (x: number): number => x + 1
 const sub = (x: number): number => x - 1

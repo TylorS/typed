@@ -1,14 +1,14 @@
-import type { Fx } from "@typed/fx/Fx"
-import { withScopedFork } from "@typed/fx/internal/core"
-import { makeHoldSubject, makeReplaySubject, makeSubject } from "@typed/fx/internal/core-subject"
-import { ToFx } from "@typed/fx/internal/fx-primitive"
-import { run } from "@typed/fx/internal/run"
-import type { Subject } from "@typed/fx/Subject"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import { dual } from "effect/Function"
 import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
+import type { Fx } from "../Fx"
+import type { Subject } from "../Subject"
+import { withScopedFork } from "./core"
+import { makeHoldSubject, makeReplaySubject, makeSubject } from "./core-subject"
+import { ToFx } from "./fx-primitive"
+import { run } from "./run"
 
 export function share<R, E, A, R2>(
   fx: Fx<R, E, A>,

@@ -1,8 +1,8 @@
-import type { Fx } from "@typed/fx/Fx"
-import { succeed } from "@typed/fx/internal/core"
-import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
+import type { Fx } from "../Fx"
+import type { Versioned } from "../Versioned"
+import { succeed } from "./core"
+import { FxEffectBase } from "./protos"
 
 /**
  * Construct a Versioned type.

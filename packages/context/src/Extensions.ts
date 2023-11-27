@@ -6,8 +6,8 @@
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 
-import { ContextBuilder } from "@typed/context/Builder"
-import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
+import { ContextBuilder } from "./Builder"
+import type { IdentifierFactory, IdentifierOf } from "./Identifier"
 import { Tag } from "effect/Context"
 import type { Scope } from "effect/Scope"
 

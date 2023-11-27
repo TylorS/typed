@@ -3,9 +3,9 @@
  * @since 1.0.0
  */
 
-import { withActions } from "@typed/context/Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { Tag } from "@typed/context/Tag"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 import type { DurationInput } from "effect/Duration"
 import type * as Effect from "effect/Effect"
 import * as KP from "effect/KeyedPool"

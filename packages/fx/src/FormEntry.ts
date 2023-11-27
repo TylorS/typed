@@ -2,21 +2,19 @@ import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import * as schemaEquivalence from "@effect/schema/Equivalence"
 import { type ParseError } from "@effect/schema/ParseResult"
-import type { RefSubject } from "@typed/fx"
-import type { Computed } from "@typed/fx/Computed"
-import { type Fx, run } from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { RefSubjectImpl } from "@typed/fx/internal/core-ref-subject"
-import { makeHoldSubject } from "@typed/fx/internal/core-subject"
-import { DeferredRef } from "@typed/fx/internal/deferred-ref"
-import { Sink } from "@typed/fx/Sink"
-import { RefSubjectTypeId, TypeId } from "@typed/fx/TypeId"
 import { Deferred, Effect, Exit, Ref } from "effect"
 import type { Scope } from "effect"
 import * as Option from "effect/Option"
-import { type Stream, StreamTypeId } from "effect/Stream"
+import type { Computed } from "./Computed"
+import { type Fx, run } from "./Fx"
+import { RefSubjectImpl } from "./internal/core-ref-subject"
+import { makeHoldSubject } from "./internal/core-subject"
+import { DeferredRef } from "./internal/deferred-ref"
+import type { RefSubject } from "./RefSubject"
+import { Sink } from "./Sink"
+import { RefSubjectTypeId, TypeId } from "./TypeId"
 
-export interface FormEntry<in out E, in out I, in out O> extends RefSubject.RefSubject<never, E | ParseError, I> {
+export interface FormEntry<in out E, in out I, in out O> extends RefSubject<never, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
   readonly decoded: Computed<never, E | ParseError, O>
@@ -39,21 +37,18 @@ export interface FormEntryOptions<I, O> {
  */
 export type MakeFormEntry<I, O> = {
   <R, E>(
-    ref: RefSubject.RefSubject<R, E, O>
+    ref: RefSubject<R, E, O>
   ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>>
   <R, E>(fx: Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
-  <R, E>(stream: Stream<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
   <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<E, I, O>>
 }
 
 export function make<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O> {
-  return (<R, E>(input: RefSubject.RefSubject<R, E, O> | Fx<R, E, O> | Stream<R, E, O> | Effect.Effect<R, E, O>) => {
+  return (<R, E>(input: RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<R, E, O>) => {
     if (RefSubjectTypeId in input) {
       return makeDerivedFormEntry(input, options)
     } else if (TypeId in input) {
       return makeFxFormEntry(input, options)
-    } else if (StreamTypeId in input) {
-      return makeFxFormEntry(core.fromStream(input), options)
     } else {
       return makeEffectFormEntry(input, options)
     }
@@ -116,7 +111,7 @@ function makeFxFormEntry<R, E, I, O>(
 }
 
 function makeDerivedFormEntry<R, E, I, O>(
-  input: RefSubject.RefSubject<R, E, O>,
+  input: RefSubject<R, E, O>,
   options: FormEntryOptions<I, O>
 ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>> {
   const decode_ = Schema.decode(options.schema)

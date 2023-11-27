@@ -2,9 +2,13 @@ import "./styles.css"
 
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
+import type { Navigation } from "@typed/navigation"
+import type { CurrentRoute } from "@typed/router"
 import type { RenderContext, RenderEvent, RenderTemplate } from "@typed/template"
-import { html, many } from "@typed/template"
 import * as EventHandler from "@typed/template/EventHandler"
+import { many } from "@typed/template/Many"
+import { html } from "@typed/template/RenderTemplate"
+import { Link } from "@typed/ui/Link"
 import type { Scope } from "effect"
 import { Effect, flow } from "effect"
 import * as App from "./application"
@@ -16,17 +20,19 @@ const onEnterOrEscape = EventHandler.keys(
   "Escape"
 )
 
-export const TodoApp: Fx.Fx<
+type TodoAppContext =
   | App.CreateTodo
+  | App.FilterState
   | App.TodoList
   | App.TodoText
-  | App.FilterState
+  | CurrentRoute
+  | Location
+  | Navigation
   | RenderContext.RenderContext
   | RenderTemplate
-  | Scope.Scope,
-  never,
-  RenderEvent
-> = html`<section class="todoapp ${App.FilterState}">
+  | Scope.Scope
+
+export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section class="todoapp ${App.FilterState}">
     <header class="header">
       <h1>todos</h1>
       <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => App.createTodo)}>
@@ -117,11 +123,14 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
 
 function FilterLink(filterState: Domain.FilterState) {
   return html`<li>
-    <a
-      class="${Fx.when(App.FilterState.map((state) => state === filterState), "selected", "")}" 
-      href="${Infra.filterStateToPath(filterState)}"
-    >
-      ${filterState}
-    </a>
+    ${
+    Link(
+      {
+        className: Fx.when(App.FilterState.map((state) => state === filterState), "selected", ""),
+        to: Infra.filterStateToPath(filterState)
+      },
+      filterState
+    )
+  }
   </li>`
 }

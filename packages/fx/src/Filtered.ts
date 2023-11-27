@@ -5,15 +5,6 @@
  */
 
 import type { Tag } from "@typed/context"
-// eslint-disable-next-line import/no-cycle
-import { Computed } from "@typed/fx/Computed"
-import type * as Fx from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { fromFxEffect } from "@typed/fx/internal/fx"
-import { OnceEffect } from "@typed/fx/internal/protos"
-import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
-import { FilteredTypeId } from "@typed/fx/TypeId"
-import * as Versioned from "@typed/fx/Versioned"
 import type { Context, Layer, Runtime } from "effect"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -21,6 +12,15 @@ import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
+// eslint-disable-next-line import/no-cycle
+import { Computed } from "./Computed"
+import type * as Fx from "./Fx"
+import * as core from "./internal/core"
+import { fromFxEffect } from "./internal/fx"
+import { OnceEffect } from "./internal/protos"
+import { VersionedTransform } from "./internal/versioned-transform"
+import { FilteredTypeId } from "./TypeId"
+import * as Versioned from "./Versioned"
 
 /**
  * A Filtered is a Subject that has a current value that can be read and observed

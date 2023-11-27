@@ -1,4 +1,4 @@
-import "./internal/module-augmentation.d.ts"
+import "./internal/module-augmentation"
 
 export * as Directive from "./Directive"
 export * as ElementRef from "./ElementRef"
@@ -9,7 +9,6 @@ export * from "./Hydrate"
 export * from "./Many"
 export * from "./Part"
 export * from "./Placeholder"
-export * from "./Platform"
 export * from "./Render"
 export * from "./Renderable"
 export * as RenderContext from "./RenderContext"

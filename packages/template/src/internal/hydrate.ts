@@ -1,22 +1,23 @@
 import * as Fx from "@typed/fx/Fx"
 import { makeSubject } from "@typed/fx/internal/core-subject"
-import * as ElementRef from "@typed/template/ElementRef"
-import { indexRefCounter } from "@typed/template/internal/indexRefCounter"
-import type { Placeholder } from "@typed/template/Placeholder"
-import type { Renderable } from "@typed/template/Renderable"
-import type { RenderContext } from "@typed/template/RenderContext"
-import { DomRenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import type { Cause } from "effect"
 import { Effect } from "effect"
+import * as ElementRef from "../ElementRef"
+import type { Placeholder } from "../Placeholder"
+import type { Renderable } from "../Renderable"
+import type { RenderContext } from "../RenderContext"
+import { DomRenderEvent } from "../RenderEvent"
+import type { RenderTemplate } from "../RenderTemplate"
+import { TemplateInstance } from "../TemplateInstance"
+import { indexRefCounter } from "./indexRefCounter"
 
 import { unsafeGet } from "@typed/context"
 
-import { CouldNotFindCommentError, CouldNotFindRootElement } from "@typed/template/internal/errors"
-import { HydrateContext } from "@typed/template/internal/HydrateContext"
-import { buildParts, getBrowserEntry, renderTemplate, renderValues } from "@typed/template/internal/render"
+import type { Template } from "../Template"
+import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors"
+import { HydrateContext } from "./HydrateContext"
+import { buildParts, getBrowserEntry, renderTemplate, renderValues } from "./render"
 import {
   findPath,
   getPreviousNodes,
@@ -24,8 +25,9 @@ import {
   isCommentWithValue,
   isHtmlElement,
   type ParentChildNodes
-} from "@typed/template/internal/utils"
-import type { Template } from "@typed/template/Template"
+} from "./utils"
+
+// TODO: Handle missing comment errors
 
 /**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live

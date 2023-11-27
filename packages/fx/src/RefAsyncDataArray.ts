@@ -1,11 +1,11 @@
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identifier"
-import type * as Computed from "@typed/fx/Computed"
-import * as Fx from "@typed/fx/Fx"
-import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import type { Scope } from "effect"
 import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import type * as Computed from "./Computed"
+import * as Fx from "./Fx"
+import * as RefAsyncData from "./RefAsyncData"
 
 export interface RefAsyncDataArray<R, E, A> extends RefAsyncData.RefAsyncData<R, E, ReadonlyArray<A>> {}
 

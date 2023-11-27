@@ -5,24 +5,24 @@
  */
 
 import { type Context, ContextBuilder } from "@typed/context"
-import { Computed } from "@typed/fx/Computed"
-import { Filtered } from "@typed/fx/Filtered"
-import type { Fx, FxInput } from "@typed/fx/Fx"
-import { struct } from "@typed/fx/Fx"
-import { FxEffectBase } from "@typed/fx/internal/protos"
-import type { RefSubject } from "@typed/fx/RefSubject"
-import type { Versioned } from "@typed/fx/Versioned"
 import * as Effect from "effect/Effect"
 import type { Equivalence } from "effect/Equivalence"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type { Scope } from "effect/Scope"
+import { Computed } from "./Computed"
+import { Filtered } from "./Filtered"
+import type { Fx, FxInput } from "./Fx"
+import { struct } from "./Fx"
+import { FxEffectBase } from "./internal/protos"
+import type { RefSubject } from "./RefSubject"
+import type { Versioned } from "./Versioned"
 
 /**
  * @since 1.18.0
  * @category symbols
  */
-export const ModelTypeId = Symbol.for("@typed/fx/Model")
+export const ModelTypeId = Symbol.for("./Model")
 
 /**
  * @since 1.18.0
@@ -353,7 +353,7 @@ class ModelImpl<Refs extends Readonly<Record<string, Any>>> extends FxEffectBase
     ) =>
       Effect.all(
         entries.map(([k, ref]) => ref.set(state[k])),
-        { concurrency: "unbounded", discard: true }
+        { concurrency: "unbounded" }
       )
 
     this.delete = Effect.map(

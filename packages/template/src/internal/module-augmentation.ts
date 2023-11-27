@@ -1,4 +1,4 @@
-import type { Placeholder } from "@typed/template/Placeholder"
+import type { Placeholder } from "../Placeholder"
 
 declare global {
   export interface String extends Placeholder<never, never, string> {}

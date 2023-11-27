@@ -3,17 +3,17 @@ import { compact } from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
-import type { DefaultEventMap } from "@typed/template/ElementSource"
-import { ElementSource, getElements } from "@typed/template/ElementSource"
-import { adjustTime } from "@typed/template/internal/utils"
-import type { Placeholder } from "@typed/template/Placeholder"
 import { type Rendered } from "@typed/wire"
 import type { Scope } from "effect"
 import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual } from "effect/Function"
+import type { DefaultEventMap } from "./ElementSource"
+import { ElementSource, getElements } from "./ElementSource"
+import { adjustTime } from "./internal/utils"
+import type { Placeholder } from "./Placeholder"
 
-export const ElementRefTypeId = Symbol.for("@typed/template/ElementRef")
+export const ElementRefTypeId = Symbol.for("./ElementRef")
 export type ElementRefTypeId = typeof ElementRefTypeId
 
 /**

@@ -1,18 +1,11 @@
 import { Window } from "@typed/dom/Window"
-import { RefSubject } from "@typed/fx"
 import type { Computed } from "@typed/fx/Computed"
 import { scopedRuntime } from "@typed/fx/internal/helpers"
+import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
-import type { NavigationState } from "@typed/navigation/internal/shared"
-import {
-  getOriginalState,
-  getUrl,
-  isPatchedState,
-  makeDestination,
-  makeHandlersState,
-  setupFromModelAndIntent
-} from "@typed/navigation/internal/shared"
-import type { Commit } from "@typed/navigation/Layer"
+import { Effect, Option } from "effect"
+import type { Context, Layer, Scope } from "effect"
+import type { Commit } from "../Layer"
 import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
@@ -20,10 +13,17 @@ import type {
   NavigationEvent,
   NavigationHandler,
   Transition
-} from "@typed/navigation/Navigation"
-import { Navigation, NavigationError } from "@typed/navigation/Navigation"
-import { Effect, Option } from "effect"
-import type { Context, Layer, Scope } from "effect"
+} from "../Navigation"
+import { Navigation, NavigationError } from "../Navigation"
+import type { NavigationState } from "./shared"
+import {
+  getOriginalState,
+  getUrl,
+  isPatchedState,
+  makeDestination,
+  makeHandlersState,
+  setupFromModelAndIntent
+} from "./shared"
 
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 type NativeNavigation = import("@virtualstate/navigation").Navigation
@@ -38,17 +38,15 @@ declare global {
 }
 
 export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.scoped(
-  Window.withEffect((window) =>
-    Effect.gen(function*(_) {
-      const getRandomValues = (length: number) =>
-        Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
+  Window.withEffect((window) => {
+    const getRandomValues = (length: number) => Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
+    return Effect.gen(function*(_) {
       const { run, runPromise } = yield* _(scopedRuntime<never>())
       const hasNativeNavigation = !!window.navigation
       const modelAndIntent = yield* _(
         hasNativeNavigation
           ? setupWithNavigation(window.navigation!, runPromise)
-          : setupWithHistory(window, (event) => run(handleHistoryEvent(event))),
-        GetRandomValues.provide(getRandomValues)
+          : setupWithHistory(window, (event) => run(handleHistoryEvent(event)))
       )
 
       const navigation = setupFromModelAndIntent(
@@ -85,8 +83,10 @@ export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.sco
           }
         })
       }
-    })
-  )
+    }).pipe(
+      GetRandomValues.provide(getRandomValues)
+    )
+  })
 )
 
 function getBaseHref(window: Window) {
@@ -121,8 +121,7 @@ type ModelAndIntent = {
 
 const getNavigationState = (navigation: NativeNavigation): NavigationState => {
   const entries = navigation.entries().map(nativeEntryToDestination)
-  const currentEntry = navigation.currentEntry
-  const index = currentEntry.index
+  const { index } = navigation.currentEntry
 
   return {
     entries,
@@ -140,7 +139,11 @@ function setupWithNavigation(
   ModelAndIntent
 > {
   return Effect.gen(function*(_) {
-    const state = yield* _(RefSubject.fromEffect(Effect.sync((): NavigationState => getNavigationState(navigation))))
+    const state = yield* _(
+      RefSubject.fromEffect(
+        Effect.sync((): NavigationState => getNavigationState(navigation))
+      )
+    )
     const canGoBack = state.map((s) => s.index > 0)
     const canGoForward = state.map((s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
@@ -186,7 +189,7 @@ function setupWithNavigation(
         }
 
         if (matches.length > 0) {
-          yield* _(Effect.all(matches, { concurrency: "unbounded" }))
+          yield* _(Effect.all(matches))
         }
       })
 
@@ -311,6 +314,7 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
     back: history.back.bind(history),
     forward: history.forward.bind(history)
   }
+  const getState = stateDescriptor?.get?.bind(history)
 
   const original: History = {
     get length() {
@@ -323,7 +327,7 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
       history.scrollRestoration = mode
     },
     get state() {
-      return stateDescriptor?.get?.() ?? history.state
+      return getState?.() ?? history.state
     },
     ...methods,
     pushState(data, _, url) {
@@ -373,7 +377,7 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
   if (stateDescriptor) {
     Object.defineProperty(history, "state", {
       get() {
-        return getOriginalState(original.state)
+        return getOriginalState(stateDescriptor.get!.call(history))
       }
     })
   }

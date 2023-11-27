@@ -5,14 +5,14 @@
  * @since 1.18.0
  */
 
-import type * as Fx from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import * as fxEffectProto from "@typed/fx/internal/fx-effect-proto"
-import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
 import type { Context, Layer, Runtime } from "effect"
 import { Effect, identity } from "effect"
 import { dual } from "effect/Function"
 import { sum } from "effect/Number"
+import type * as Fx from "./Fx"
+import * as core from "./internal/core"
+import * as fxEffectProto from "./internal/fx-effect-proto"
+import { VersionedTransform } from "./internal/versioned-transform"
 
 /**
  * A data type which is both an Fx and an Effect. This is a more advanced type, and is the basis

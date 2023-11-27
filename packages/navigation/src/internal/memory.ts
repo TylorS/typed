@@ -1,17 +1,11 @@
-import { RefSubject } from "@typed/fx"
+import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, getRandomValues } from "@typed/id"
-import type { ModelAndIntent, NavigationState } from "@typed/navigation/internal/shared"
-import {
-  getOriginFromUrl,
-  getUrl,
-  makeDestination,
-  makeHandlersState,
-  setupFromModelAndIntent
-} from "@typed/navigation/internal/shared"
-import type { Commit, InitialMemoryOptions, MemoryOptions } from "@typed/navigation/Layer"
-import { Navigation } from "@typed/navigation/Navigation"
 import { Effect, Option } from "effect"
 import type { Layer, Scope } from "effect"
+import type { Commit, InitialMemoryOptions, MemoryOptions } from "../Layer"
+import { Navigation } from "../Navigation"
+import type { ModelAndIntent, NavigationState } from "./shared"
+import { getOriginFromUrl, getUrl, makeDestination, makeHandlersState, setupFromModelAndIntent } from "./shared"
 
 export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
   Navigation.scoped(

@@ -1,14 +1,14 @@
-import type { Fx, FxInput } from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { adjustTime } from "@typed/fx/internal/helpers"
-import { run } from "@typed/fx/internal/run"
-import * as RefSubject from "@typed/fx/RefSubject"
-import * as Sink from "@typed/fx/Sink"
+import type { Fx, FxInput } from "../Fx"
+import * as RefSubject from "../RefSubject"
+import * as Sink from "../Sink"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
+import * as core from "./core"
+import { adjustTime } from "./helpers"
+import { run } from "./run"
 
 export function withKey<R, E, A, B, R2, E2, C>(
   fx: Fx<R, E, A>,

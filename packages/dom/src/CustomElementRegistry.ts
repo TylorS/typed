@@ -1,4 +1,4 @@
-import * as context from "@typed/context"
+import { Tagged } from "@typed/context/Extensions"
 import type { NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
@@ -9,7 +9,7 @@ export type CustomElementConstructor = globalThis.CustomElementConstructor
 
 export type ElementDefinitionOptions = globalThis.ElementDefinitionOptions
 
-export const CustomElementRegistry: context.Tagged<CustomElementRegistry> = context.Tagged<CustomElementRegistry>(
+export const CustomElementRegistry: Tagged<CustomElementRegistry> = Tagged<CustomElementRegistry>(
   "@typed/dom/CustomElementRegister"
 )
 

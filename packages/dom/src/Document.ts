@@ -3,7 +3,7 @@
  * @since 8.19.0
  */
 
-import * as Context from "@typed/context"
+import * as Context from "@typed/context/Extensions"
 import type * as Effect from "effect/Effect"
 
 import type * as Scope from "effect/Scope"

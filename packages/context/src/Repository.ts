@@ -5,14 +5,14 @@
  * @since 1.0.0
  */
 
-import { ContextBuilder } from "@typed/context/Builder"
+import { ContextBuilder } from "./Builder"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
 
-import type { EffectFn } from "@typed/context/EffectFn"
-import type { Fn } from "@typed/context/Fn"
-import { struct, type TaggedStruct } from "@typed/context/Many"
+import type { EffectFn } from "./EffectFn"
+import type { Fn } from "./Fn"
+import { struct, type TaggedStruct } from "./Many"
 
 type AnyFns = Readonly<Record<string, Fn.Any>>
 

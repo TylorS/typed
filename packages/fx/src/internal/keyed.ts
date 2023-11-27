@@ -1,10 +1,3 @@
-import type * as Fx from "@typed/fx/Fx"
-import { from, skipRepeatsWith, withScopedFork } from "@typed/fx/internal/core"
-import { makeHoldSubject } from "@typed/fx/internal/core-subject"
-import { run } from "@typed/fx/internal/run"
-import { fromEffect, type RefSubject } from "@typed/fx/RefSubject"
-import { WithContext } from "@typed/fx/Sink"
-import type { Subject } from "@typed/fx/Subject"
 import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
@@ -13,6 +6,13 @@ import * as MutableHashMap from "effect/MutableHashMap"
 import * as Option from "effect/Option"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import * as Scope from "effect/Scope"
+import type * as Fx from "../Fx"
+import { fromEffect, type RefSubject } from "../RefSubject"
+import { WithContext } from "../Sink"
+import type { Subject } from "../Subject"
+import { from, skipRepeatsWith, withScopedFork } from "./core"
+import { makeHoldSubject } from "./core-subject"
+import { run } from "./run"
 
 export function keyed<R, E, A, B, R2, E2, C>(
   fx: Fx.Fx<R, E, ReadonlyArray<A>>,
@@ -108,7 +108,6 @@ function updateState<A, B, C, R2, E2, R3>({
       // Update values that are still in the stream
       yield* $(
         Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
-          concurrency: "unbounded",
           discard: true
         })
       )
@@ -116,7 +115,6 @@ function updateState<A, B, C, R2, E2, R3>({
       // Add values that are new to the stream
       yield* $(
         Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
-          concurrency: "unbounded",
           discard: true
         })
       )

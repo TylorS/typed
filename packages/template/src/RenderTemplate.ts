@@ -1,13 +1,13 @@
 import * as Context from "@typed/context"
 import * as Fx from "@typed/fx/Fx"
-import type { ElementRef } from "@typed/template/ElementRef"
-import type { Placeholder } from "@typed/template/Placeholder"
-import type { Renderable } from "@typed/template/Renderable"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import type { TemplateInstance } from "@typed/template/TemplateInstance"
 import type { Rendered } from "@typed/wire"
 import type * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
+import type { ElementRef } from "./ElementRef"
+import type { Placeholder } from "./Placeholder"
+import type { Renderable } from "./Renderable"
+import type { RenderEvent } from "./RenderEvent"
+import type { TemplateInstance } from "./TemplateInstance"
 
 export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
@@ -28,7 +28,7 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
   RenderTemplate,
   RenderTemplate
 >(
-  "@typed/template/RenderTemplate"
+  "./RenderTemplate"
 )
 
 export interface TemplateFx<R, E, T extends Rendered = Rendered> extends

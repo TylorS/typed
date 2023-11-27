@@ -5,8 +5,6 @@
  */
 
 import type * as Context from "@typed/context"
-import { dequeueIsActive } from "@typed/fx/internal/fx"
-import { cancelIdleCallback, requestIdleCallback } from "@typed/fx/internal/requestIdleCallback"
 import { MutableHashMap, Option } from "effect"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
@@ -17,6 +15,8 @@ import * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
 import * as Scheduler from "effect/Scheduler"
 import * as Scope from "effect/Scope"
+import { dequeueIsActive } from "./internal/fx"
+import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback"
 
 /**
  * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue
@@ -94,7 +94,7 @@ class IdleSchedulerImpl implements IdleScheduler {
  * @category instances
  */
 export const defaultIdleScheduler: IdleScheduler = globalValue(
-  Symbol("@typed/fx/Scheduler/Idle"),
+  Symbol("./Scheduler/Idle"),
   () => new IdleSchedulerImpl()
 )
 
@@ -236,7 +236,7 @@ class IdleQueueImpl<I extends Hash> implements IdleQueue<I> {
     })
 
   scheduleNextRun = Effect.suspend(() => {
-    if (MutableHashMap.size(this.queue) === 0 || this.scheduled) return Effect.unit
+    if (MutableHashMap.size(this.queue) === 0) return Effect.unit
 
     this.scheduled = true
 

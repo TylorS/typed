@@ -1,10 +1,10 @@
-import { NodePartImpl } from "@typed/template/internal/parts"
-import { findHoleComment, isCommentWithValue } from "@typed/template/internal/utils"
-import type { RenderContext } from "@typed/template/RenderContext"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import { isRenderEvent } from "@typed/template/RenderEvent"
 import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
+import type { RenderContext } from "../RenderContext"
+import type { RenderEvent } from "../RenderEvent"
+import { isRenderEvent } from "../RenderEvent"
+import { NodePartImpl } from "./parts"
+import { findHoleComment, isCommentWithValue } from "./utils"
 
 export function makeRenderNodePart(
   index: number,

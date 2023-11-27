@@ -2,11 +2,12 @@ import * as Headers from "@effect/platform/Http/Headers"
 import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import * as HttpServer from "@effect/platform/HttpServer"
 import type * as Fx from "@typed/fx/Fx"
-import { renderToStream } from "@typed/template/Html"
-import type * as RenderContext from "@typed/template/RenderContext"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
+import { toStream } from "@typed/fx/Stream"
 import { Effect, Option, Stream } from "effect"
+import { renderToHtml } from "./Html"
+import type * as RenderContext from "./RenderContext"
+import type { RenderEvent } from "./RenderEvent"
+import type { RenderTemplate } from "./RenderTemplate"
 
 const HTML_CONTENT_TYPE = "text/html"
 const CAMEL_CASE_CONTENT_TYPE = { contentType: HTML_CONTENT_TYPE }
@@ -18,7 +19,7 @@ export function htmlResponse<R, E>(
 ): Effect.Effect<RenderContext.RenderContext | Exclude<R, RenderTemplate>, E, HttpServer.response.ServerResponse> {
   return Effect.contextWithEffect((ctx) =>
     HttpServer.response.stream(
-      Stream.provideContext(renderToStream(fx), ctx),
+      Stream.provideContext(Stream.encodeText(toStream(renderToHtml(fx))), ctx),
       {
         ...CAMEL_CASE_CONTENT_TYPE,
         ...options,

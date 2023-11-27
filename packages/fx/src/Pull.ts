@@ -6,7 +6,6 @@
  * @since 1.18.0
  */
 
-import type { WithContext } from "@typed/fx/Sink"
 import * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
@@ -14,6 +13,7 @@ import * as Either from "effect/Either"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Schedule from "effect/Schedule"
+import type { WithContext } from "./Sink"
 
 /**
  * An Effect which can be used to pull values of a Stream.

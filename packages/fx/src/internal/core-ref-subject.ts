@@ -1,19 +1,3 @@
-import { Computed } from "@typed/fx/Computed"
-import { Filtered } from "@typed/fx/Filtered"
-import type { Fx, FxInput } from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { makeHoldSubject } from "@typed/fx/internal/core-subject"
-import { DeferredRef } from "@typed/fx/internal/deferred-ref"
-import { fromFxEffect } from "@typed/fx/internal/fx"
-import { matchFxInput } from "@typed/fx/internal/matchers"
-import { FxEffectBase } from "@typed/fx/internal/protos"
-import { run } from "@typed/fx/internal/run"
-import { share } from "@typed/fx/internal/share"
-import { type RefSubject } from "@typed/fx/RefSubject"
-import { Sink, WithContext } from "@typed/fx/Sink"
-import type * as Subject from "@typed/fx/Subject"
-import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
-import { transformFx } from "@typed/fx/Versioned"
 import { Ref, SubscriptionRef } from "effect"
 import { type Cause, isInterrupted } from "effect/Cause"
 import * as Deferred from "effect/Deferred"
@@ -26,6 +10,22 @@ import { sum } from "effect/Number"
 import * as Option from "effect/Option"
 import { getEquivalence } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
+import { Computed } from "../Computed"
+import { Filtered } from "../Filtered"
+import type { Fx, FxInput } from "../Fx"
+import { type RefSubject } from "../RefSubject"
+import { Sink, WithContext } from "../Sink"
+import type * as Subject from "../Subject"
+import { ComputedTypeId, RefSubjectTypeId } from "../TypeId"
+import { transformFx } from "../Versioned"
+import * as core from "./core"
+import { makeHoldSubject } from "./core-subject"
+import { DeferredRef } from "./deferred-ref"
+import { fromFxEffect } from "./fx"
+import { matchFxInput } from "./matchers"
+import { FxEffectBase } from "./protos"
+import { run } from "./run"
+import { share } from "./share"
 
 export class RefSubjectImpl<R, E, A> extends FxEffectBase<R, E, A, R, E, A> implements RefSubject<R, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
@@ -328,7 +328,6 @@ export function make<R, E, A>(
   return matchFxInput(fx, {
     RefSubject: (ref) => derivedRefSubject(ref, eq),
     Fx: (fx) => fxAsRef(fx, eq),
-    Stream: (stream) => fxAsRef(core.fromStream(stream), eq),
     Effect: (effect) => fromEffect(effect, eq),
     Cause: (cause) => fromEffect(Effect.failCause(cause), eq),
     Iterable: (iterable) => fromEffect<R, E, any>(Effect.succeed(Array.from(iterable)), getEquivalence(eq || equals)),
@@ -448,8 +447,8 @@ export function tuple<const REFS extends ReadonlyArray<RefSubject.Any>>(...refs:
 
   const fx = core.combine(refs) as Fx<_R, _E, _A>
   const sink: WithContext<_R, _E, _A> = WithContext(
-    (cause) => Effect.all(refs.map((ref) => ref.onFailure(cause as any)), UNBOUNDED),
-    (values) => Effect.all(refs.map((ref, i) => ref.onSuccess(values[i])), UNBOUNDED)
+    (cause) => Effect.all(refs.map((ref) => ref.onFailure(cause as any))),
+    (values) => Effect.all(refs.map((ref, i) => ref.onSuccess(values[i])))
   )
 
   return unsafeMake(
@@ -458,10 +457,10 @@ export function tuple<const REFS extends ReadonlyArray<RefSubject.Any>>(...refs:
       ...fx,
       ...sink,
       subscriberCount: Effect.map(
-        Effect.all(refs.map((ref) => ref.subscriberCount), UNBOUNDED),
+        Effect.all(refs.map((ref) => ref.subscriberCount)),
         (counts) => counts.reduce((a, b) => a + b, 0)
       ),
-      interrupt: Effect.all(refs.map((ref) => ref.interrupt), UNBOUNDED)
+      interrupt: Effect.all(refs.map((ref) => ref.interrupt))
     }
   )
 }
@@ -487,8 +486,8 @@ export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubjec
   const entries = Object.entries(refs)
   const values = Object.values(refs)
   const sink: WithContext<_R, _E, _A> = WithContext(
-    (cause) => Effect.all(values.map((ref) => ref.onFailure(cause as any)), UNBOUNDED),
-    (values) => Effect.all(entries.map(([k, ref]) => ref.onSuccess(values[k])), UNBOUNDED)
+    (cause) => Effect.all(values.map((ref) => ref.onFailure(cause as any))),
+    (values) => Effect.all(entries.map(([k, ref]) => ref.onSuccess(values[k])))
   )
 
   return unsafeMake(
@@ -497,10 +496,10 @@ export function struct<const REFS extends Readonly<Record<PropertyKey, RefSubjec
       ...fx,
       ...sink,
       subscriberCount: Effect.map(
-        Effect.all(values.map((ref) => ref.subscriberCount), UNBOUNDED),
+        Effect.all(values.map((ref) => ref.subscriberCount)),
         (counts) => counts.reduce(sum, 0)
       ),
-      interrupt: Effect.all(values.map((ref) => ref.interrupt), UNBOUNDED)
+      interrupt: Effect.all(values.map((ref) => ref.interrupt))
     }
   )
 }

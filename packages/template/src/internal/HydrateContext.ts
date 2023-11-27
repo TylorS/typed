@@ -1,6 +1,6 @@
 import { Tagged } from "@typed/context"
-import type { ParentChildNodes } from "@typed/template/internal/utils"
-import type { Template } from "@typed/template/Template"
+import type { Template } from "../Template"
+import type { ParentChildNodes } from "./utils"
 
 /**
  * Used Internally to pass context down to components for hydration

@@ -1,15 +1,31 @@
-import { TypeId } from "@typed/fx"
 import * as Fx from "@typed/fx/Fx"
 import { makeSubject } from "@typed/fx/internal/core-subject"
-import { isDirective } from "@typed/template/Directive"
-import * as ElementRef from "@typed/template/ElementRef"
-import type { BrowserEntry } from "@typed/template/Entry"
-import * as EventHandler from "@typed/template/EventHandler"
-import { makeRenderNodePart } from "@typed/template/internal/browser"
-import { HydrateContext } from "@typed/template/internal/HydrateContext"
-import type { IndexRefCounter } from "@typed/template/internal/indexRefCounter"
-import { indexRefCounter } from "@typed/template/internal/indexRefCounter"
-import { parse } from "@typed/template/internal/parser"
+import { TypeId } from "@typed/fx/TypeId"
+import type { Rendered } from "@typed/wire"
+import { persistent } from "@typed/wire"
+import { Effect } from "effect"
+import type { Cause } from "effect/Cause"
+import { replace } from "effect/ReadonlyArray"
+import type { Scope } from "effect/Scope"
+import { isDirective } from "../Directive"
+import * as ElementRef from "../ElementRef"
+import type { BrowserEntry } from "../Entry"
+import * as EventHandler from "../EventHandler"
+import type { AttributePart, ClassNamePart, CommentPart, Part, Parts, SparsePart, StaticText } from "../Part"
+import type { Placeholder } from "../Placeholder"
+import type { ToRendered } from "../Render"
+import type { Renderable } from "../Renderable"
+import type { RenderContext } from "../RenderContext"
+import type { RenderEvent } from "../RenderEvent"
+import { DomRenderEvent } from "../RenderEvent"
+import type { RenderTemplate } from "../RenderTemplate"
+import type * as Template from "../Template"
+import { TemplateInstance } from "../TemplateInstance"
+import { makeRenderNodePart } from "./browser"
+import { HydrateContext } from "./HydrateContext"
+import type { IndexRefCounter } from "./indexRefCounter"
+import { indexRefCounter } from "./indexRefCounter"
+import { parse } from "./parser"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -24,33 +40,9 @@ import {
   SparseCommentPartImpl,
   StaticTextImpl,
   TextPartImpl
-} from "@typed/template/internal/parts"
-import type { ParentChildNodes } from "@typed/template/internal/utils"
-import { findPath } from "@typed/template/internal/utils"
-import type {
-  AttributePart,
-  ClassNamePart,
-  CommentPart,
-  Part,
-  Parts,
-  SparsePart,
-  StaticText
-} from "@typed/template/Part"
-import type { Placeholder } from "@typed/template/Placeholder"
-import type { ToRendered } from "@typed/template/Render"
-import type { Renderable } from "@typed/template/Renderable"
-import type { RenderContext } from "@typed/template/RenderContext"
-import type { RenderEvent } from "@typed/template/RenderEvent"
-import { DomRenderEvent } from "@typed/template/RenderEvent"
-import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import type * as Template from "@typed/template/Template"
-import { TemplateInstance } from "@typed/template/TemplateInstance"
-import type { Rendered } from "@typed/wire"
-import { persistent } from "@typed/wire"
-import { Effect, Stream } from "effect"
-import type { Cause } from "effect/Cause"
-import { replace } from "effect/ReadonlyArray"
-import type { Scope } from "effect/Scope"
+} from "./parts"
+import type { ParentChildNodes } from "./utils"
+import { findPath } from "./utils"
 
 /**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
@@ -129,9 +121,7 @@ export function renderSparsePart(
         part.parts.map((p) => p._tag === "static/text" ? Fx.succeed(p.value) : values[p.index]),
         part
       ),
-      (value) => {
-        return Effect.tap(part.update(value as any), () => Effect.forEach(indexes, (a) => refCounter.release(a)))
-      }
+      (value) => Effect.tap(part.update(value as any), () => Effect.forEach(indexes, (a) => refCounter.release(a)))
     )
   )
 }
@@ -164,19 +154,23 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
       () => refCounter.release(partIndex)
     )
   } else if (part._tag === "node" && hydrateCtx) {
-    return Fx.observe(
-      unwrapRenderable(values[partIndex]),
+    if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
+
+    return handlePart(
+      values[partIndex],
       (value) => Effect.tap(part.update(value), () => refCounter.release(partIndex))
     ).pipe(
       HydrateContext.provide(hydrateCtx()),
       Effect.forkScoped
     )
   } else {
-    return Effect.forkScoped(
-      Fx.observe(
-        unwrapRenderable(values[partIndex]),
-        (value) => Effect.tap(part.update(value), () => refCounter.release(partIndex))
-      )
+    const renderable = values[partIndex]
+
+    if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
+
+    return handlePart(
+      values[partIndex],
+      (value) => Effect.tap(part.update(value as any), () => refCounter.release(partIndex))
     )
   }
 }
@@ -199,6 +193,29 @@ function getEventHandler<R, E>(
   return null
 }
 
+function handlePart<R, E>(
+  renderable: unknown,
+  update: (u: unknown) => Effect.Effect<Scope, never, unknown>
+): Effect.Effect<R | Scope, E, any> {
+  switch (typeof renderable) {
+    case "undefined":
+    case "object": {
+      if (renderable === null || renderable === undefined) return update(null)
+      else if (Array.isArray(renderable)) {
+        return renderable.length === 0
+          ? update(null)
+          : Effect.forkScoped(Fx.observe(Fx.combine(renderable.map(unwrapRenderable)) as any, update))
+      } else if (TypeId in renderable) {
+        return Effect.forkScoped(Fx.observe(renderable as any, update))
+      } else if (Effect.EffectTypeId in renderable) {
+        return Effect.flatMap(renderable as Effect.Effect<R, E, any>, update)
+      } else return update(renderable)
+    }
+    default:
+      return update(renderable)
+  }
+}
+
 function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
   switch (typeof renderable) {
     case "undefined":
@@ -208,9 +225,7 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
         return renderable.length === 0 ? Fx.succeed(null) : Fx.combine(renderable.map(unwrapRenderable)) as any
       } else if (TypeId in renderable) {
         return renderable as any
-      } else if (Stream.StreamTypeId in renderable) return Fx.from(renderable)
-      // Unwrap Effects such that templates can be embeded directly
-      else if (Effect.EffectTypeId in renderable) {
+      } else if (Effect.EffectTypeId in renderable) {
         return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<R, E>))
       } else return Fx.succeed(renderable as any)
     }

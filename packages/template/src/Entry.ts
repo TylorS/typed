@@ -1,5 +1,5 @@
-import type { HtmlChunk } from "@typed/template/HtmlChunk"
-import type { Template } from "@typed/template/Template"
+import type { HtmlChunk } from "./HtmlChunk"
+import type { Template } from "./Template"
 
 export type Entry = BrowserEntry | ServerEntry
 

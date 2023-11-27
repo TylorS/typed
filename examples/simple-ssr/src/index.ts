@@ -1,7 +1,8 @@
 import * as Http from "@effect/platform-node/HttpServer"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { runMain } from "@effect/platform-node/Runtime"
-import { html, htmlResponse, RenderContext } from "@typed/template"
+import { html, RenderContext } from "@typed/template"
+import { htmlResponse } from "@typed/template/Platform"
 import { Effect, Layer } from "effect"
 import { createServer } from "node:http"
 

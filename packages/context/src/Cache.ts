@@ -2,9 +2,9 @@
  * A Contextual wrapper around @effect/io/Cache
  * @since 1.0.0
  */
-import { withActions } from "@typed/context/Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { Tag } from "@typed/context/Tag"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Tag } from "./Tag"
 import * as C from "effect/Cache"
 import type { DurationInput } from "effect/Duration"
 import type { Effect } from "effect/Effect"

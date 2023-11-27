@@ -1,13 +1,13 @@
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
-import type { Computed } from "@typed/fx/Computed"
-import type { Filtered } from "@typed/fx/Filtered"
-import type * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
 import { HashSet, type Scope } from "effect"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import type { Option } from "effect/Option"
+import type { Computed } from "./Computed"
+import type { Filtered } from "./Filtered"
+import type * as Fx from "./Fx"
+import * as RefSubject from "./RefSubject"
 
 /**
  * A RefHashMap is a RefSubject that is specialized over a HashMap of values.

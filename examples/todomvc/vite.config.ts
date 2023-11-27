@@ -1,7 +1,7 @@
+import { visualizer } from "rollup-plugin-visualizer"
 import { defineConfig } from "vite"
 import compression from "vite-plugin-compression"
 import topLevelAwait from "vite-plugin-top-level-await"
-import tsconfigPaths from "vite-plugin-tsconfig-paths"
 
 export default defineConfig({
   build: {
@@ -11,8 +11,11 @@ export default defineConfig({
     sourcemap: true
   },
   plugins: [
-    tsconfigPaths({}),
     topLevelAwait({}),
-    compression()
+    compression(),
+    visualizer({
+      gzipSize: true,
+      brotliSize: true
+    })
   ]
 })

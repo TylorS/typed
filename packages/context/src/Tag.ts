@@ -4,9 +4,9 @@
  * @since 1.0.0
  */
 
-import type { Tagged } from "@typed/context/Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "@typed/context/Identifier"
-import { makeIdentifier } from "@typed/context/Identifier"
+import type { Tagged } from "./Extensions"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { makeIdentifier } from "./Identifier"
 import * as C from "effect/Context"
 
 /**

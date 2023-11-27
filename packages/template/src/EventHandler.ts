@@ -1,8 +1,8 @@
 import { type EventWithTarget, isUsingKeyModifier } from "@typed/dom/EventTarget"
-import type { Placeholder } from "@typed/template/Placeholder"
 import { type Effect, unit } from "effect/Effect"
+import type { Placeholder } from "./Placeholder"
 
-export const EventHandlerTypeId = Symbol.for("@typed/template/EventHandler")
+export const EventHandlerTypeId = Symbol.for("./EventHandler")
 export type EventHandlerTypeId = typeof EventHandlerTypeId
 
 export interface EventHandler<R, E, Ev extends Event = Event> extends Placeholder<R, E, null> {

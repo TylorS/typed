@@ -1,15 +1,15 @@
-import type { Fx } from "@typed/fx/Fx"
-import { fromSink } from "@typed/fx/internal/core"
-import { ToFx } from "@typed/fx/internal/fx-primitive"
-import { RingBuffer } from "@typed/fx/internal/helpers"
-import type { Sink } from "@typed/fx/Sink"
-import type { Subject } from "@typed/fx/Subject"
 import { type Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
+import type { Fx } from "../Fx"
+import type { Sink } from "../Sink"
+import type { Subject } from "../Subject"
+import { fromSink } from "./core"
+import { ToFx } from "./fx-primitive"
+import { RingBuffer } from "./helpers"
 
 export function makeSubject<E, A>(): Subject<never, E, A> {
   return new SubjectImpl<E, A>()
@@ -22,8 +22,6 @@ export function makeHoldSubject<E, A>(): Subject<never, E, A> {
 export function makeReplaySubject<E, A>(capacity: number): Subject<never, E, A> {
   return new ReplaySubjectImpl<E, A>(new RingBuffer(capacity))
 }
-
-const UNBOUNDED = { concurrency: "unbounded" } as const
 
 /**
  * @internal
@@ -79,12 +77,14 @@ export class SubjectImpl<E, A> extends ToFx<never, E, A> implements Subject<neve
 
   protected onEvent(a: A) {
     return Effect.suspend(() => {
-      return Effect.forEach(Array.from(this.sinks), (sink) => sink.onSuccess(a), UNBOUNDED)
+      return Effect.forEach(Array.from(this.sinks), (sink) => sink.onSuccess(a), { discard: true })
     })
   }
 
   protected onCause(cause: Cause<E>) {
-    return Effect.suspend(() => Effect.forEach(Array.from(this.sinks), (sink) => sink.onFailure(cause), UNBOUNDED))
+    return Effect.suspend(() =>
+      Effect.forEach(Array.from(this.sinks), (sink) => sink.onFailure(cause), { discard: true })
+    )
   }
 }
 

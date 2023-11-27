@@ -7,17 +7,6 @@
 
 import type { Schema } from "@effect/schema"
 import * as C from "@typed/context"
-import { Computed, fromTag } from "@typed/fx/Computed"
-import { Filtered } from "@typed/fx/Filtered"
-import type * as Fx from "@typed/fx/Fx"
-import { provide, skipRepeatsWith } from "@typed/fx/internal/core"
-import * as coreRefSubject from "@typed/fx/internal/core-ref-subject"
-import { exit, fromFxEffect } from "@typed/fx/internal/fx"
-import { FxEffectBase } from "@typed/fx/internal/protos"
-import { fromRefSubject, toRefSubject } from "@typed/fx/internal/schema-ref-subject"
-import type * as Subject from "@typed/fx/Subject"
-import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
-import * as Versioned from "@typed/fx/Versioned"
 import type { Stream, SubscriptionRef } from "effect"
 import { Cause, Exit, identity } from "effect"
 import * as Effect from "effect/Effect"
@@ -27,6 +16,17 @@ import { dual } from "effect/Function"
 import type * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
+import { Computed, fromTag } from "./Computed"
+import { Filtered } from "./Filtered"
+import type * as Fx from "./Fx"
+import { fromStream, provide, skipRepeatsWith } from "./internal/core"
+import * as coreRefSubject from "./internal/core-ref-subject"
+import { exit, fromFxEffect } from "./internal/fx"
+import { FxEffectBase } from "./internal/protos"
+import { fromRefSubject, toRefSubject } from "./internal/schema-ref-subject"
+import type * as Subject from "./Subject"
+import { ComputedTypeId, RefSubjectTypeId } from "./TypeId"
+import * as Versioned from "./Versioned"
 
 /**
  * A RefSubject is a Subject that has a current value that can be read and updated.
@@ -533,7 +533,7 @@ export const struct: <const REFS extends Readonly<Record<PropertyKey, RefSubject
 export function fromSubscriptionRef<A>(
   subscriptionRef: SubscriptionRef.SubscriptionRef<A>
 ): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
-  return coreRefSubject.make(subscriptionRef.changes)
+  return coreRefSubject.make(fromStream(subscriptionRef.changes))
 }
 
 export const transform: {

@@ -2,12 +2,12 @@ import * as Context from "@typed/context"
 import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
-import { attachRoot, renderTemplate } from "@typed/template/internal/render"
-import { RenderContext } from "@typed/template/RenderContext"
-import { type RenderEvent } from "@typed/template/RenderEvent"
-import { RenderTemplate } from "@typed/template/RenderTemplate"
 import { type Rendered } from "@typed/wire"
 import * as Effect from "effect/Effect"
+import { attachRoot, renderTemplate } from "./internal/render"
+import { RenderContext } from "./RenderContext"
+import { type RenderEvent } from "./RenderEvent"
+import { RenderTemplate } from "./RenderTemplate"
 
 export type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered | null : Rendered
 

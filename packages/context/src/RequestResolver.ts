@@ -8,11 +8,11 @@ import * as Layer from "effect/Layer"
 import type * as Req from "effect/Request"
 import * as RR from "effect/RequestResolver"
 
-import type { Context } from "@typed/context/Context"
-import { withActions } from "@typed/context/Extensions"
-import type { IdentifierFactory, IdentifierOf } from "@typed/context/Identifier"
-import type { Request } from "@typed/context/Request"
-import { Tag } from "@typed/context/Tag"
+import type { Context } from "./Context"
+import { withActions } from "./Extensions"
+import type { IdentifierFactory, IdentifierOf } from "./Identifier"
+import type { Request } from "./Request"
+import { Tag } from "./Tag"
 
 /**
  * Contextual wrappers around @effect/io/RequestResolver

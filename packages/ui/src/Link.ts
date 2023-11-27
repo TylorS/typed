@@ -1,12 +1,16 @@
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
-import { RefSubject } from "@typed/fx"
 import * as Fx from "@typed/fx/Fx"
+import * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
 import type { CurrentRoute } from "@typed/router"
 import { makeHref } from "@typed/router"
-import { EventHandler, Placeholder, type Renderable, type RenderEvent, type RenderTemplate } from "@typed/template"
-import { Anchor, type AnchorProps, getEventHandler } from "@typed/ui/Anchor"
+import * as EventHandler from "@typed/template/EventHandler"
+import { Placeholder } from "@typed/template/Placeholder"
+import type { Renderable } from "@typed/template/Renderable"
+import type { RenderEvent } from "@typed/template/RenderEvent"
+import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { Effect, type Scope } from "effect"
+import { Anchor, type AnchorProps, getEventHandler } from "./Anchor"
 
 export type LinkProps = Omit<AnchorProps, keyof URL> & {
   readonly to: string | Placeholder.Any<string>

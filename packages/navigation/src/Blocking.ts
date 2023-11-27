@@ -1,15 +1,9 @@
-import { RefSubject } from "@typed/fx"
 import type * as Computed from "@typed/fx/Computed"
-import type {
-  BeforeNavigationEvent,
-  CancelNavigation,
-  Destination,
-  NavigateOptions,
-  RedirectError
-} from "@typed/navigation/Navigation"
-import { cancelNavigation, Navigation, redirectToPath } from "@typed/navigation/Navigation"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
 import { Deferred, Effect, Option } from "effect"
+import type { BeforeNavigationEvent, CancelNavigation, Destination, NavigateOptions, RedirectError } from "./Navigation"
+import { cancelNavigation, Navigation, redirectToPath } from "./Navigation"
 
 export interface BlockNavigation extends Computed.Computed<never, never, Option.Option<Blocking>> {
   readonly isBlocking: Computed.Computed<never, never, boolean>

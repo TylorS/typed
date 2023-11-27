@@ -1,8 +1,8 @@
-import type { ElementSource } from "@typed/template/ElementSource"
-import type { EventHandler } from "@typed/template/EventHandler"
 import type { Cause } from "effect/Cause"
 import type { Effect } from "effect/Effect"
 import type { Scope } from "effect/Scope"
+import type { ElementSource } from "./ElementSource"
+import type { EventHandler } from "./EventHandler"
 
 export type Part =
   | AttributePart

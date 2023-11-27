@@ -7,9 +7,9 @@ import type * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
 import type * as Path from "@typed/path"
 import * as Route from "@typed/route"
-import type { CurrentRoute } from "@typed/router/CurrentRoute"
-import { makeHref, withCurrentRoute } from "@typed/router/CurrentRoute"
 import { Effect, Option, type Scope } from "effect"
+import type { CurrentRoute } from "./CurrentRoute"
+import { makeHref, withCurrentRoute } from "./CurrentRoute"
 
 // TODO: Link component
 // TODO: Form component

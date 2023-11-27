@@ -4,12 +4,12 @@ import { identity } from "effect/Function"
 import * as Hash from "effect/Hash"
 import { pipeArguments } from "effect/Pipeable"
 
-import type { Fx, ToFx } from "@typed/fx/Fx"
-import { TypeId } from "@typed/fx/TypeId"
 import { Effectable } from "effect"
 import * as Fiber from "effect/Fiber"
 import { NodeInspectSymbol } from "effect/Inspectable"
 import type { Inspectable } from "effect/Inspectable"
+import type { Fx, ToFx } from "../Fx"
+import { TypeId } from "../TypeId"
 
 export const Variance: Fx<any, any, any>[TypeId] = {
   _R: identity,

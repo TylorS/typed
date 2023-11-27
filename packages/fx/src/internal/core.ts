@@ -19,6 +19,7 @@ import {
 import { dual, identity } from "effect/Function"
 
 import { type Context, isContext, type Tag } from "@typed/context"
+import * as Schedule from "effect/Schedule"
 import {
   compileEffectLoop,
   FilterEffect,
@@ -26,14 +27,16 @@ import {
   liftSyncOperator,
   MapEffect,
   TapEffect
-} from "@typed/fx/internal/effect-operator"
-import * as helpers from "@typed/fx/internal/helpers"
-import * as Provide from "@typed/fx/internal/provide"
-import * as strategies from "@typed/fx/internal/strategies"
-import { compileSyncReducer, Filter, FilterMap, Map } from "@typed/fx/internal/sync-operator"
-import * as Schedule from "effect/Schedule"
+} from "./effect-operator"
+import * as helpers from "./helpers"
+import * as Provide from "./provide"
+import * as strategies from "./strategies"
+import { compileSyncReducer, Filter, FilterMap, Map } from "./sync-operator"
 
-import * as Emitter from "@typed/fx/Emitter"
+import type { DurationInput } from "effect/Duration"
+import type { Equivalence } from "effect/Equivalence"
+import type { Runtime } from "effect/Runtime"
+import * as Emitter from "../Emitter"
 import type {
   FlattenStrategy,
   Fx,
@@ -42,9 +45,10 @@ import type {
   WithEarlyExitParams,
   WithFlattenStrategyParams,
   WithScopedForkParams
-} from "@typed/fx/Fx"
-import { type Bounds, boundsFrom, mergeBounds } from "@typed/fx/internal/bounds"
-import { type InternalEffect, matchEffectPrimitive } from "@typed/fx/internal/effect-primitive"
+} from "../Fx"
+import * as Sink from "../Sink"
+import { type Bounds, boundsFrom, mergeBounds } from "./bounds"
+import { type InternalEffect, matchEffectPrimitive } from "./effect-primitive"
 import {
   Empty,
   Fail,
@@ -61,14 +65,10 @@ import {
   WithEarlyExit,
   WithFlattenStrategy,
   WithScopedFork
-} from "@typed/fx/internal/fx-primitive"
-import { adjustTime } from "@typed/fx/internal/helpers"
-import { matchFxInput } from "@typed/fx/internal/matchers"
-import { OnceEffect } from "@typed/fx/internal/protos"
-import * as Sink from "@typed/fx/Sink"
-import type { DurationInput } from "effect/Duration"
-import type { Equivalence } from "effect/Equivalence"
-import type { Runtime } from "effect/Runtime"
+} from "./fx-primitive"
+import { adjustTime } from "./helpers"
+import { matchFxInput } from "./matchers"
+import { OnceEffect } from "./protos"
 import { run } from "./run"
 
 const constUnit = () => Effect.unit
@@ -400,7 +400,6 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
     return matchFxInput(this.i1, {
       RefSubject: (fx2) => this.runScoped(this.i0, fx2, this.i2),
       Fx: (fx2) => this.runScoped(this.i0, fx2, this.i2),
-      Stream: (stream2) => this.runScoped(this.i0, fromStream(stream2), this.i2),
       Effect: (effect2) => mapEffect(this.i0, (a) => Effect.flatMap(effect2, (b) => this.i2(a, b))),
       Cause: (cause2) =>
         matchCause(this.i0, {
@@ -2184,7 +2183,6 @@ export function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>, options?: { 
 const matchers = {
   RefSubject: identity,
   Fx: identity,
-  Stream: fromStream,
   Effect: fromEffect,
   Cause: failCause,
   Iterable: fromIterable,

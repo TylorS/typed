@@ -1,31 +1,37 @@
+import { Schema } from "@effect/schema"
 import type * as Context from "@typed/context"
-import { RefSubject } from "@typed/fx"
 import type { Computed } from "@typed/fx/Computed"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import { GetRandomValues, makeUuid } from "@typed/id"
-import type { Commit } from "@typed/navigation/Layer"
+import type { Scope } from "effect"
+import { Effect, Either, Option } from "effect"
+import type { Commit } from "../Layer"
 import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
   CancelNavigation,
-  Destination,
   NavigateOptions,
   Navigation,
   NavigationError,
   NavigationEvent,
   NavigationHandler,
   ProposedDestination,
-  RedirectError,
-  Transition
-} from "@typed/navigation/Navigation"
-import type { Scope } from "effect"
-import { Effect, Either, Option } from "effect"
+  RedirectError
+} from "../Navigation"
+import { Destination, Transition } from "../Navigation"
 
 export type NavigationState = {
   readonly entries: ReadonlyArray<Destination>
   readonly index: number
   readonly transition: Option.Option<Transition>
 }
+
+export const NavigationState = Schema.struct({
+  entries: Schema.array(Destination),
+  index: Schema.number,
+  transition: Schema.optionFromNullable(Transition)
+})
 
 export const getUrl = (origin: string, urlOrPath: string | URL): URL => {
   return typeof urlOrPath === "string" ? new URL(urlOrPath, origin) : urlOrPath
@@ -111,7 +117,7 @@ export function setupFromModelAndIntent(
       }
 
       if (matches.length > 0) {
-        yield* _(Effect.all(matches, { concurrency: "unbounded" }))
+        yield* _(Effect.all(matches))
       }
     })
 

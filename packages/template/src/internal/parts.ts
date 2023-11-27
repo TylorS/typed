@@ -1,9 +1,19 @@
 import type { Context } from "@typed/context"
 import * as Fx from "@typed/fx/Fx"
 import { WithContext } from "@typed/fx/Sink"
-import type { ElementRef } from "@typed/template/ElementRef"
-import type { ElementSource } from "@typed/template/ElementSource"
-import { findHoleComment } from "@typed/template/internal/utils"
+import { isText, type Rendered } from "@typed/wire"
+import type { Cause } from "effect/Cause"
+import * as Effect from "effect/Effect"
+import { equals } from "effect/Equal"
+import { strict } from "effect/Equivalence"
+import type { Equivalence } from "effect/Equivalence"
+import * as Fiber from "effect/Fiber"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import type { Scope } from "effect/Scope"
+import * as SynchronizedRef from "effect/SynchronizedRef"
+import type { ElementRef } from "../ElementRef"
+import type { ElementSource } from "../ElementSource"
+import { unescape } from "../HtmlChunk"
 import type {
   AttributePart,
   BooleanPart,
@@ -21,19 +31,9 @@ import type {
   SparsePart,
   StaticText,
   TextPart
-} from "@typed/template/Part"
-import type { RenderContext } from "@typed/template/RenderContext"
-import { isText, type Rendered } from "@typed/wire"
-import type { Cause } from "effect/Cause"
-import * as Effect from "effect/Effect"
-import { equals } from "effect/Equal"
-import { strict } from "effect/Equivalence"
-import type { Equivalence } from "effect/Equivalence"
-import * as Fiber from "effect/Fiber"
-import * as ReadonlyArray from "effect/ReadonlyArray"
-import type { Scope } from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
-import { unescape } from "querystring"
+} from "../Part"
+import type { RenderContext } from "../RenderContext"
+import { findHoleComment } from "./utils"
 
 const strictEq = strict<any>()
 

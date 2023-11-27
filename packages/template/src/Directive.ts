@@ -1,8 +1,8 @@
-import type * as Part from "@typed/template/Part"
-import type { Placeholder } from "@typed/template/Placeholder"
 import * as Effect from "effect/Effect"
+import type * as Part from "./Part"
+import type { Placeholder } from "./Placeholder"
 
-export const DirectiveTypeId = Symbol.for("@typed/templateDirective")
+export const DirectiveTypeId = Symbol.for(".Directive")
 export type DirectiveTypeId = typeof DirectiveTypeId
 
 export interface Directive<R, E> extends Placeholder<R, E, unknown> {

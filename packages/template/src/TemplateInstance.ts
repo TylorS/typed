@@ -1,14 +1,14 @@
 import type * as Fx from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import type * as Versioned from "@typed/fx/Versioned"
-import { type ElementRef, ElementRefTypeId } from "@typed/template/ElementRef"
-import type { Placeholder } from "@typed/template/Placeholder"
-import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { Rendered } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
 import type * as Effect from "effect/Effect"
+import { type ElementRef, ElementRefTypeId } from "./ElementRef"
+import type { Placeholder } from "./Placeholder"
+import type { RenderEvent } from "./RenderEvent"
 
-export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstance")
+export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance")
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 
 export interface TemplateInstance<E, T extends Rendered = Rendered>
@@ -29,6 +29,8 @@ export function TemplateInstance<T extends Rendered = Rendered, E = never>(
   events: Fx.Fx<never, E, RenderEvent>,
   ref: ElementRef<T>
 ): TemplateInstance<E, T> {
+  console.log("Making Template Instance")
+
   return new TemplateInstanceImpl(events, ref) as any
 }
 

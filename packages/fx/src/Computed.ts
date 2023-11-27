@@ -4,19 +4,21 @@
  */
 
 import type { Tag } from "@typed/context"
-// eslint-disable-next-line import/no-cycle
-import { Filtered } from "@typed/fx/Filtered"
-import type { Fx } from "@typed/fx/Fx"
-import * as core from "@typed/fx/internal/core"
-import { fromFxEffect } from "@typed/fx/internal/fx"
-import { VersionedTransform } from "@typed/fx/internal/versioned-transform"
-import { ComputedTypeId } from "@typed/fx/TypeId"
-import * as Versioned from "@typed/fx/Versioned"
 import type { Context, Equivalence, Layer, Runtime } from "effect"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
+// eslint-disable-next-line import/no-cycle
+import { Filtered } from "./Filtered"
+import { type Fx } from "./Fx"
+import * as core from "./internal/core"
+import { fromFxEffect } from "./internal/fx"
+import { FxEffectBase } from "./internal/protos"
+import { hold } from "./internal/share"
+import { VersionedTransform } from "./internal/versioned-transform"
+import { ComputedTypeId } from "./TypeId"
+import * as Versioned from "./Versioned"
 
 /**
  * A Computed is a Subject that has a current value that can be read and observed
@@ -185,18 +187,48 @@ export const fromTag: {
 } = dual(
   2,
   function fromTag<I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Computed<R2, E2, B>): Computed<I | R2, E2, B> {
-    const get = Effect.map(tag, f)
-
-    return Computed(
-      Versioned.make({
-        fx: fromFxEffect(get),
-        effect: Effect.flatten(get),
-        version: Effect.flatMap(get, (c) => c.version)
-      }),
-      Effect.succeed
-    )
+    return new ContextImpl(tag, f)
   }
 )
+
+class ContextImpl<I, S, R2, E2, B> extends FxEffectBase<I | R2, E2, B, I | R2, E2, B>
+  implements Computed<I | R2, E2, B>
+{
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  private _computed: Effect.Effect<I, never, Computed<R2, E2, B>>
+  readonly version: Effect.Effect<I | R2, never, number>
+
+  constructor(readonly tag: Tag<I, S>, readonly f: (s: S) => Computed<R2, E2, B>) {
+    super()
+
+    this._computed = Effect.map(this.tag, this.f)
+    this.version = Effect.flatMap(this._computed, (c) => c.version)
+  }
+
+  protected toFx(): Fx<I | R2, E2, B> {
+    return hold(fromFxEffect(this._computed))
+  }
+
+  protected toEffect(): Effect.Effect<I | R2, E2, B> {
+    return Effect.flatten(this._computed)
+  }
+
+  mapEffect: Computed<I | R2, E2, B>["mapEffect"] = (f) => Computed(this, f)
+
+  map: Computed<I | R2, E2, B>["map"] = (f) => this.mapEffect((a) => Effect.sync(() => f(a)))
+
+  filterMapEffect: Computed<I | R2, E2, B>["filterMapEffect"] = (f) => Filtered(this, f)
+
+  filterMap: Computed<I | R2, E2, B>["filterMap"] = (f) => this.filterMapEffect((a) => Effect.sync(() => f(a)))
+
+  filterEffect: Computed<I | R2, E2, B>["filterEffect"] = (f) =>
+    this.filterMapEffect((a) => Effect.map(f(a), (b) => (b ? Option.some(a) : Option.none())))
+
+  filter: Computed<I | R2, E2, B>["filter"] = (f) => this.filterEffect((a) => Effect.sync(() => f(a)))
+
+  skipRepeats: (eq?: Equivalence.Equivalence<B> | undefined) => Computed<I | R2, E2, B> = (eq = equals) =>
+    new ContextImpl(this.tag, (s) => this.f(s).skipRepeats(eq))
+}
 
 export const provide: {
   <R2, E2, S>(

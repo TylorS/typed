@@ -1,16 +1,16 @@
 import type { AST } from "@effect/schema"
 import * as SchemaEquivalence from "@effect/schema/Equivalence"
 import * as Schema from "@effect/schema/Schema"
-import type { Fx, FxInput } from "@typed/fx/Fx"
-import { from, map } from "@typed/fx/internal/core"
-import { make, struct } from "@typed/fx/internal/core-ref-subject"
-import { matchFxInput } from "@typed/fx/internal/matchers"
-import type { MakeRefSubject, RefSubject, ToRefSubject } from "@typed/fx/RefSubject"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import { Option } from "effect"
 import * as Effect from "effect/Effect"
 import type * as Equivalence from "effect/Equivalence"
 import type * as Scope from "effect/Scope"
+import type { Fx, FxInput } from "../Fx"
+import type { MakeRefSubject, RefSubject, ToRefSubject } from "../RefSubject"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "../TypeId"
+import { map } from "./core"
+import { make, struct } from "./core-ref-subject"
+import { matchFxInput } from "./matchers"
 
 const makeSchema = <O>(
   f: <R, E>(
@@ -127,7 +127,6 @@ const go = <O>(
           }, // TODO: Expand
           Fx: (fx) =>
             makeSubjects(makeFxInputs(fx)),
-          Stream: (stream) => makeSubjects(makeFxInputs(from(stream))),
           Effect: (effect) => makeSubjects(makeEffectInputs(effect)),
           Cause: (cause) => makeSubjects(makeEffectInputs(Effect.failCause(cause))),
           // Shouldn't really happen, but just in case fallback to default Schema
