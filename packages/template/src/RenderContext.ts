@@ -68,8 +68,8 @@ export type RenderContextOptions = IdleRequestOptions & {
 /**
  * @since 1.0.0
  */
-export function make({ ...options }: Omit<RenderContextOptions, "scope">) {
-  return Effect.scopeWith((scope) => Effect.succeed(unsafeMake({ ...options, scope })))
+export function make({ ...options }: Omit<RenderContextOptions, "scope">, skipRenderScheduling?: boolean) {
+  return Effect.scopeWith((scope) => Effect.succeed(unsafeMake({ ...options, scope }, skipRenderScheduling)))
 }
 
 /**
@@ -79,12 +79,12 @@ export function unsafeMake({
   environment,
   scope,
   ...options
-}: RenderContextOptions): RenderContext {
+}: RenderContextOptions, skipRenderScheduling?: boolean): RenderContext {
   return {
     environment,
     renderCache: new WeakMap(),
     templateCache: new WeakMap(),
-    queue: new RenderQueueImpl(scope, options)
+    queue: new RenderQueueImpl(scope, options, skipRenderScheduling ?? false)
   }
 }
 
@@ -105,9 +105,9 @@ export function getTemplateCache(
   return Option.fromNullable(templateCache.get(key))
 }
 
-const buildWithCurrentEnvironment = (environment: Environment) =>
+const buildWithCurrentEnvironment = (environment: Environment, skipRenderScheduling?: boolean) =>
   Layer.mergeAll(
-    RenderContext.scoped(make({ environment })),
+    RenderContext.scoped(make({ environment }, skipRenderScheduling)),
     CurrentEnvironment.layer(environment)
   )
 
@@ -116,13 +116,14 @@ const buildWithCurrentEnvironment = (environment: Environment) =>
  */
 export const browser: (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
 ) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
   Layer.provideMerge(
     Layer.mergeAll(Window.layer(window), GlobalThis.layer(window)),
     Layer.mergeAll(
       buildWithCurrentEnvironment(
-        "browser"
+        "browser",
+        options?.skipRenderScheduling
       ),
       domServices(options)
     )
@@ -148,11 +149,17 @@ class RenderQueueImpl implements RenderQueue {
   queue = new Map<Part | SparsePart, () => void>()
   scheduled = false
 
-  constructor(readonly scope: Scope.Scope, readonly options?: IdleRequestOptions) {
+  constructor(
+    readonly scope: Scope.Scope,
+    readonly options?: IdleRequestOptions,
+    readonly skipRenderScheduling: boolean = false
+  ) {
     this.add.bind(this)
   }
 
   add(part: Part | SparsePart, task: () => void) {
+    if (this.skipRenderScheduling) return Effect.sync(task)
+
     return Effect.suspend(() => {
       this.queue.set(part, task)
 

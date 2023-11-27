@@ -70,7 +70,7 @@ export function testRender<R, E>(
         (rendered) => ElementRef.set(elementRef, rendered)
       )),
       Effect.forkScoped,
-      Effect.provide(RenderContext.browser(window))
+      Effect.provide(RenderContext.browser(window, { skipRenderScheduling: true }))
     )
 
     const test: TestRender<E> = {
@@ -87,6 +87,7 @@ export function testRender<R, E>(
     }
 
     // Allow our fibers to start
+    yield* _(adjustTime(1))
     yield* _(adjustTime(1))
 
     return test

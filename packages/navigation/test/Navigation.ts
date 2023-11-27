@@ -2,7 +2,7 @@ import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { isUuid } from "@typed/id"
-import * as Navigation from "@typed/navigation/v2"
+import * as Navigation from "@typed/navigation"
 import { deepStrictEqual, ok } from "assert"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
@@ -419,7 +419,7 @@ describe(__filename, () => {
         const window = makeWindow({ url: url.href }, state)
         const NavigationPolyfill = await import("@virtualstate/navigation")
         const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
-        window.navigation = navigation as any
+        ;(window as any).navigation = navigation as any
         window.history = history as History
         const test = Effect.gen(function*(_) {
           const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
@@ -486,7 +486,7 @@ describe(__filename, () => {
           const window = makeWindow({ url: url.href })
           const NavigationPolyfill = await import("@virtualstate/navigation")
           const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
-          window.navigation = navigation as any
+          ;(window as any).navigation = navigation as any
           window.history = history as History
           const test = Effect.gen(function*(_) {
             const navigation = yield* _(Navigation.Navigation)

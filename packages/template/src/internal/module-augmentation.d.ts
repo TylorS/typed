@@ -42,3 +42,7 @@ declare global {
 declare module "@typed/fx/Fx" {
   export interface Fx<R, E, A> extends Placeholder<R, E, A> {}
 }
+
+declare module "effect/Effect" {
+  export interface Effect<R, E, A> extends Placeholder<R, E, A> {}
+}

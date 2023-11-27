@@ -45,7 +45,7 @@ export interface RouteMatcher<R, E, A> {
   }
 
   readonly notFound: <R2, E2, B>(
-    f: (destination: typeof Navigation.CurrentDestination) => Fx.Fx<R2, E2, B>
+    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<R2, E2, B>
   ) => Fx.Fx<
     Navigation.Navigation | CurrentEnvironment | R | Exclude<R2, Scope.Scope>,
     Exclude<E | E2, Navigation.RedirectError>,
@@ -140,7 +140,7 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   > {
-    const onNotFound = Fx.scoped(Fx.from(f(Navigation.CurrentDestination)))
+    const onNotFound = Fx.scoped(Fx.from(f(Navigation.CurrentEntry)))
 
     return Fx.fromFxEffect(CurrentEnvironment.with((env) => {
       let matcher: Match.ValueMatcher<R | Exclude<R2, Scope.Scope> | Navigation.Navigation, E | E2, string, A | B> =

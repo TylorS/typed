@@ -2,7 +2,7 @@ import * as Context from "@typed/context"
 import * as Document from "@typed/dom/Document"
 import type { Filtered } from "@typed/fx/Filtered"
 import type { Destination, Navigation } from "@typed/navigation"
-import { CurrentDestination, CurrentPath } from "@typed/navigation"
+import { CurrentEntry, CurrentPath } from "@typed/navigation"
 import type { Layer } from "effect"
 import { Effect, Option, pipe } from "effect"
 import { dual } from "effect/Function"
@@ -127,7 +127,7 @@ export const server = (base: string = "/"): Layer.Layer<never, never, CurrentRou
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
   Object.fromEntries(destination.url.searchParams)
 
-export const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>> =
-  CurrentDestination.map(getSearchParams)
+export const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>> = CurrentEntry
+  .map(getSearchParams)
 
-export const CurrentState = CurrentDestination.mapEffect((d) => d.state)
+export const CurrentState = CurrentEntry.map((d) => d.state)

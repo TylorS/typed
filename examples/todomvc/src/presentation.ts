@@ -2,7 +2,7 @@ import "./styles.css"
 
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { RenderEvent, RenderTemplate } from "@typed/template"
+import type { RenderContext, RenderEvent, RenderTemplate } from "@typed/template"
 import { html, many } from "@typed/template"
 import * as EventHandler from "@typed/template/EventHandler"
 import type { Scope } from "effect"
@@ -17,7 +17,13 @@ const onEnterOrEscape = EventHandler.keys(
 )
 
 export const TodoApp: Fx.Fx<
-  App.CreateTodo | App.TodoList | App.TodoText | RenderTemplate | Scope.Scope,
+  | App.CreateTodo
+  | App.TodoList
+  | App.TodoText
+  | App.FilterState
+  | RenderContext.RenderContext
+  | RenderTemplate
+  | Scope.Scope,
   never,
   RenderEvent
 > = html`<section class="todoapp ${App.FilterState}">

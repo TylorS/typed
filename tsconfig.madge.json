@@ -139,6 +139,18 @@
       "@typed/template/examples/*": [
         "packages/template/build/examples/*"
       ],
+      "@typed/ui": [
+        "packages/ui/build/esm/index.js"
+      ],
+      "@typed/ui/*": [
+        "packages/ui/build/esm/*"
+      ],
+      "@typed/ui/test/*": [
+        "packages/ui/build/test/*"
+      ],
+      "@typed/ui/examples/*": [
+        "packages/ui/build/examples/*"
+      ],
       "@typed/wire": [
         "packages/wire/build/esm/index.js"
       ],
@@ -187,6 +199,9 @@
     "packages/template/build/esm/**/*",
     "packages/template/build/test/**/*",
     "packages/template/build/examples/**/*",
+    "packages/ui/build/esm/**/*",
+    "packages/ui/build/test/**/*",
+    "packages/ui/build/examples/**/*",
     "packages/wire/build/esm/**/*",
     "packages/wire/build/test/**/*",
     "packages/wire/build/examples/**/*"

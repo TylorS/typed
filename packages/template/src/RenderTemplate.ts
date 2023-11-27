@@ -31,19 +31,18 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
   "@typed/template/RenderTemplate"
 )
 
-export interface TemplateFx<Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>
-  extends
-    Fx.Fx<
-      RenderTemplate | Scope | Placeholder.Context<Values[number]>,
-      Placeholder.Error<Values[number]>,
-      RenderEvent
-    >
+export interface TemplateFx<R, E, T extends Rendered = Rendered> extends
+  Fx.Fx<
+    RenderTemplate | Scope | R,
+    E,
+    RenderEvent
+  >
 {
   readonly instance: Effect.Effect<
-    RenderTemplate | Scope | Placeholder.Context<Values[number]>,
+    RenderTemplate | Scope | R,
     never,
     TemplateInstance<
-      Placeholder.Error<Values[number]>,
+      E,
       T
     >
   >
@@ -52,7 +51,7 @@ export interface TemplateFx<Values extends ReadonlyArray<Renderable<any, any>>, 
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): TemplateFx<Values> {
+): TemplateFx<Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>> {
   const instance = RenderTemplate.withEffect((render) => render(template, values))
 
   return Object.assign(Fx.fromFxEffect(instance), { instance })
@@ -62,7 +61,7 @@ export function as<T extends Rendered = Rendered>(ref: ElementRef<T>) {
   return function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,
     ...values: Values
-  ): TemplateFx<Values, T> {
+  ): TemplateFx<Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, T> {
     const instance = RenderTemplate.withEffect((render) => render(template, values, ref))
 
     return Object.assign(Fx.fromFxEffect(instance), { instance })

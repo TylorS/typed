@@ -87,7 +87,7 @@ const AppLive = ModelLive.pipe(Layer.provideMerge(
 
 export const Live = AppLive
   .pipe(
-    Layer.use(Layer.mergeAll(Storage.layer(localStorage), Navigation.polyfill())),
+    Layer.use(Layer.mergeAll(Storage.layer(localStorage), Navigation.fromWindow)),
     Layer.use(Window.layer(window))
   )
 

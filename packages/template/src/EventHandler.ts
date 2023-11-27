@@ -11,6 +11,10 @@ export interface EventHandler<R, E, Ev extends Event = Event> extends Placeholde
   readonly options: AddEventListenerOptions | undefined
 }
 
+export type Context<T> = T extends EventHandler<infer R, infer _E, infer _Ev> ? R : never
+export type Error<T> = T extends EventHandler<infer _R, infer E, infer _Ev> ? E : never
+export type EventOf<T> = T extends EventHandler<infer _R, infer _E, infer Ev> ? Ev : never
+
 export function make<R, E, Ev extends Event>(
   handler: (event: Ev) => Effect<R, E, unknown>,
   options?: AddEventListenerOptions

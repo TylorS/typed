@@ -35,6 +35,9 @@
       "path": "packages/template"
     },
     {
+      "path": "packages/ui"
+    },
+    {
       "path": "packages/wire"
     },
     {

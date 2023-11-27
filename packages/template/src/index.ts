@@ -1,3 +1,5 @@
+import "./internal/module-augmentation.d.ts"
+
 export * as Directive from "./Directive"
 export * as ElementRef from "./ElementRef"
 export * as ElementSource from "./ElementSource"

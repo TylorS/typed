@@ -139,6 +139,18 @@
       "@typed/template/examples/*": [
         "packages/template/examples/*"
       ],
+      "@typed/ui": [
+        "packages/ui/src/index.ts"
+      ],
+      "@typed/ui/*": [
+        "packages/ui/src/*"
+      ],
+      "@typed/ui/test/*": [
+        "packages/ui/test/*"
+      ],
+      "@typed/ui/examples/*": [
+        "packages/ui/examples/*"
+      ],
       "@typed/wire": [
         "packages/wire/src/index.ts"
       ],

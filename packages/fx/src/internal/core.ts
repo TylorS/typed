@@ -809,9 +809,11 @@ export function combine<const FX extends ReadonlyArray<Fx<any, any, any>>>(
 > {
   return fromSink((sink) =>
     Effect.suspend(() => {
-      const values = new globalThis.Map<number, any>()
       const total = fxs.length
 
+      if (total === 0) return Effect.unit
+
+      const values = new globalThis.Map<number, any>()
       const sample = () =>
         Array.from({ length: total }, (_, i) => values.get(i)) as {
           readonly [K in keyof FX]: Fx.Success<FX[K]>

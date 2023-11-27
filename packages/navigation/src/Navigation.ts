@@ -1,16 +1,22 @@
+import { ParseResult } from "@effect/schema"
+import * as Schema from "@effect/schema/Schema"
 import { Tagged } from "@typed/context"
-import { RefSubject } from "@typed/fx"
 import * as Computed from "@typed/fx/Computed"
-import type * as Filtered from "@typed/fx/Filtered"
-import type { Scope } from "effect"
-import { Data, Deferred, Effect, Option } from "effect"
+import type { Uuid } from "@typed/id"
+import * as IdSchema from "@typed/id/Schema"
+import type { Option, Scope } from "effect"
+import { Data, Effect } from "effect"
 
 export interface Navigation {
-  readonly current: Computed.Computed<never, never, Destination>
+  readonly origin: string
 
-  readonly destinations: Computed.Computed<never, never, ReadonlyArray<Destination>>
+  readonly base: string
 
-  readonly isNavigating: Computed.Computed<never, never, boolean>
+  readonly currentEntry: Computed.Computed<never, never, Destination>
+
+  readonly entries: Computed.Computed<never, never, ReadonlyArray<Destination>>
+
+  readonly transition: Computed.Computed<never, never, Option.Option<Transition>>
 
   readonly canGoBack: Computed.Computed<never, never, boolean>
 
@@ -32,62 +38,144 @@ export interface Navigation {
 
   readonly updateCurrentEntry: (
     options: { readonly state: unknown }
-  ) => Effect.Effect<never, never, Destination>
+  ) => Effect.Effect<never, NavigationError, Destination>
 
   readonly reload: (
     options?: { readonly info?: unknown; readonly state?: unknown }
   ) => Effect.Effect<never, NavigationError, Destination>
 
-  readonly beforeNavigation: <R, R2>(
+  readonly beforeNavigation: <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
   ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
 
-  readonly onNavigation: <R, R2>(
+  readonly onNavigation: <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
   ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
 }
 
-export const Navigation = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
+export const Navigation: Tagged<Navigation> = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
 
-export type NavigationHandler<R, R2> = (
-  event: NavigationEvent
-) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, void>>>
+const urlSchema_ = Schema.instanceOf(URL).pipe(Schema.equivalence((a, b) => a.href === b.href))
 
-export interface NavigationEvent {
-  readonly type: NavigationType
-  readonly destination: Destination
-  readonly info: unknown
-}
+const urlSchema = Schema.string.pipe(
+  Schema.transformOrFail(
+    urlSchema_,
+    (s) =>
+      Effect.suspend(() => {
+        try {
+          return Effect.succeed(new URL(s))
+        } catch {
+          return Effect.fail(ParseResult.parseError([ParseResult.type(urlSchema_.ast, s, `Expected a URL`)]))
+        }
+      }),
+    (url) => Effect.succeed(url.toString())
+  )
+)
+
+export const Destination = Schema.struct({
+  id: IdSchema.uuid,
+  key: IdSchema.uuid,
+  url: urlSchema,
+  state: Schema.unknown,
+  sameDocument: Schema.boolean
+})
+
+export type DestinationJson = Schema.Schema.From<typeof Destination>
+export interface Destination extends Schema.Schema.To<typeof Destination> {}
+
+export const ProposedDestination = Destination.pipe(Schema.omit("id", "key"))
+
+export type ProposedDestinationJson = Schema.Schema.From<typeof ProposedDestination>
+export interface ProposedDestination extends Schema.Schema.To<typeof ProposedDestination> {}
+
+export const NavigationType = Schema.literal("push", "replace", "reload", "traverse")
+export type NavigationType = Schema.Schema.To<typeof NavigationType>
+
+export const Transition = Schema.struct({
+  type: NavigationType,
+  from: Destination,
+  to: Schema.union(ProposedDestination, Destination)
+})
+
+export type TransitionJson = Schema.Schema.From<typeof Transition>
+export interface Transition extends Schema.Schema.To<typeof Transition> {}
+
+export const BeforeNavigationEvent = Schema.struct({
+  type: NavigationType,
+  from: Destination,
+  delta: Schema.number,
+  to: Schema.union(ProposedDestination, Destination),
+  info: Schema.unknown
+})
+
+export type BeforeNavigationEventJson = Schema.Schema.From<typeof BeforeNavigationEvent>
+export interface BeforeNavigationEvent extends Schema.Schema.To<typeof BeforeNavigationEvent> {}
+
+export const NavigationEvent = Schema.struct({
+  type: NavigationType,
+  destination: Destination,
+  info: Schema.unknown
+})
+
+export type NavigationEventJson = Schema.Schema.From<typeof NavigationEvent>
+export interface NavigationEvent extends Schema.Schema.To<typeof NavigationEvent> {}
 
 export type BeforeNavigationHandler<R, R2> = (
   event: BeforeNavigationEvent
-) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, void>>>
+) => Effect.Effect<
+  R,
+  RedirectError | CancelNavigation,
+  Option.Option<
+    Effect.Effect<R2, RedirectError | CancelNavigation, unknown>
+  >
+>
 
-export interface BeforeNavigationEvent {
-  readonly type: NavigationType
-  readonly from: Destination
-  readonly to: Destination
-  readonly info: unknown
-}
+export type NavigationHandler<R, R2> = (
+  event: NavigationEvent
+) => Effect.Effect<
+  R,
+  never,
+  Option.Option<
+    Effect.Effect<R2, never, unknown>
+  >
+>
 
-export type NavigationType = "push" | "replace" | "reload" | "traverse"
+export class NavigationError extends Data.TaggedError("NavigationError")<{ readonly error: unknown }> {}
 
-export interface Destination {
-  readonly id: string
-  readonly key: string
-  readonly sameDocument: boolean
-  readonly url: URL
-  readonly state: Effect.Effect<never, never, unknown>
-}
+export class RedirectError extends Data.TaggedError("RedirectError")<
+  {
+    readonly path: string | URL
+    readonly options?: { readonly state?: unknown; readonly info?: unknown } | undefined
+  }
+> {}
 
-export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" | "hash">): string {
-  return location.pathname + location.search + location.hash
-}
+export class CancelNavigation extends Data.TaggedError("CancelNavigation")<{}> {}
 
 export interface NavigateOptions {
   readonly history?: "replace" | "push" | "auto"
   readonly state?: unknown
   readonly info?: unknown
+}
+
+export const cancelNavigation: CancelNavigation = new CancelNavigation()
+
+export function redirectToPath(
+  path: string | URL,
+  options?: { readonly state?: unknown; readonly info?: unknown }
+): RedirectError {
+  return new RedirectError({ path, options })
+}
+
+export function isNavigationError(e: unknown): e is NavigationError {
+  return e instanceof NavigationError
+}
+
+export function isRedirectError(e: unknown): e is RedirectError {
+  return e instanceof RedirectError
+}
+
+export function isCancelNavigation(e: unknown): e is CancelNavigation {
+  return e instanceof CancelNavigation
 }
 
 export const navigate = (
@@ -105,14 +193,15 @@ export const forward: (
 ) => Navigation.withEffect((n) => n.forward(opts))
 
 export const traverseTo: (
-  key: string,
+  key: Uuid,
   options?: { readonly info?: unknown }
 ) => Effect.Effect<Navigation, NavigationError, Destination> = (key, opts) =>
   Navigation.withEffect((n) => n.traverseTo(key, opts))
 
 export const updateCurrentEntry: (
   options: { readonly state: unknown }
-) => Effect.Effect<Navigation, never, Destination> = (opts) => Navigation.withEffect((n) => n.updateCurrentEntry(opts))
+) => Effect.Effect<Navigation, NavigationError, Destination> = (opts) =>
+  Navigation.withEffect((n) => n.updateCurrentEntry(opts))
 
 export const reload: (
   options?: { readonly info?: unknown; readonly state?: unknown }
@@ -120,18 +209,22 @@ export const reload: (
   opts
 ) => Navigation.withEffect((n) => n.reload(opts))
 
-export const CurrentDestination: Computed.Computed<Navigation, never, Destination> = Computed.fromTag(
+export const CurrentEntry: Computed.Computed<Navigation, never, Destination> = Computed.fromTag(
   Navigation,
-  (nav) => nav.current
+  (nav) => nav.currentEntry
 )
 
-export const CurrentPath: Computed.Computed<Navigation, never, string> = CurrentDestination.map((d) =>
+export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" | "hash">): string {
+  return location.pathname + location.search + location.hash
+}
+
+export const CurrentPath: Computed.Computed<Navigation, never, string> = CurrentEntry.map((d) =>
   getCurrentPathFromUrl(d.url)
 )
 
-export const Destinations: Computed.Computed<Navigation, never, ReadonlyArray<Destination>> = Computed.fromTag(
+export const CurrentEntries: Computed.Computed<Navigation, never, ReadonlyArray<Destination>> = Computed.fromTag(
   Navigation,
-  (n) => n.destinations
+  (n) => n.entries
 )
 
 export const CanGoForward: Computed.Computed<Navigation, never, boolean> = Computed.fromTag(
@@ -144,113 +237,6 @@ export const CanGoBack: Computed.Computed<Navigation, never, boolean> = Computed
   (n) => n.canGoBack
 )
 
-export class NavigationError extends Data.TaggedError("NavigationError")<{ readonly error: unknown }> {}
-
-export class RedirectError extends Data.TaggedError("RedirectError")<{ readonly redirect: Redirect }> {}
-
-export class CancelNavigation extends Data.TaggedError("CancelNavigation")<{}> {}
-
-export type Redirect = RedirectToPath | RedirectToDestination
-
-export interface RedirectToPath {
-  readonly _tag: "RedirectToPath"
-  readonly path: string | URL
-  readonly options?: NavigateOptions | undefined
+export function handleRedirect(error: RedirectError) {
+  return navigate(error.path, error.options)
 }
-
-export interface RedirectToDestination {
-  readonly _tag: "RedirectToDestination"
-  readonly key: Destination["key"]
-  readonly options?: { readonly info?: unknown } | undefined
-}
-
-export function redirectToPath(path: string | URL, options?: NavigateOptions): RedirectError {
-  return new RedirectError({ redirect: { _tag: "RedirectToPath", path, options } })
-}
-
-export function redirectToDestination(key: Destination["key"], options?: { readonly info?: unknown }): RedirectError {
-  return new RedirectError({ redirect: { _tag: "RedirectToDestination", key, options } })
-}
-
-export function isRedirectError(e: unknown): e is RedirectError {
-  return e instanceof RedirectError
-}
-
-export function handleRedirect({ redirect }: RedirectError): Effect.Effect<Navigation, NavigationError, Destination> {
-  if (redirect._tag === "RedirectToPath") {
-    return navigate(redirect.path.toString(), { history: "replace", ...redirect.options })
-  } else {
-    return traverseTo(redirect.key, redirect.options)
-  }
-}
-
-type BlockState = Unblocked | Blocked
-
-type Unblocked = {
-  readonly _tag: "Unblocked"
-}
-const Unblocked: Unblocked = { _tag: "Unblocked" }
-
-type Blocked = {
-  readonly _tag: "Blocked"
-  readonly currentDestination: Destination
-  readonly proposedDestination: Destination
-  readonly deferred: Deferred.Deferred<RedirectError | CancelNavigation, void>
-}
-
-const Blocked = (currentDestination: Destination, proposedDestination: Destination) =>
-  Effect.map(
-    Deferred.make<RedirectError | CancelNavigation, void>(),
-    (deferred): Blocked => ({ _tag: "Blocked", deferred, currentDestination, proposedDestination })
-  )
-
-export interface BlockNavigation {
-  readonly isBlocking: Computed.Computed<never, never, boolean>
-  readonly unblock: Effect.Effect<never, never, boolean>
-  readonly from: Filtered.Filtered<never, never, Destination>
-  readonly to: Filtered.Filtered<never, never, Destination>
-}
-
-export const blockNavigation: Effect.Effect<
-  Scope.Scope | Navigation,
-  never,
-  BlockNavigation
-> = Effect.gen(function*(_) {
-  const navigation = yield* _(Navigation)
-  const BlockState = yield* _(RefSubject.of<BlockState>(Unblocked))
-
-  yield* _(
-    navigation.beforeNavigation<never, never>((event) =>
-      BlockState.modifyEffect((state) =>
-        Effect.gen(function*(_) {
-          // Can't block twice
-          if (state._tag === "Blocked") return [Option.none(), state] as const
-          const updated = yield* _(Blocked(event.from, event.to))
-
-          return [
-            Option.some(Deferred.await(updated.deferred)),
-            updated
-          ] as const
-        })
-      )
-    )
-  )
-
-  const isBlocking = BlockState.map((s) => s._tag === "Blocked")
-
-  const unblock = BlockState.modifyEffect((state) => {
-    if (state._tag === "Unblocked") return Effect.succeed([false, state] as const)
-
-    return Deferred.succeed(state.deferred, undefined).pipe(Effect.as([true, Unblocked]))
-  })
-
-  const from = BlockState.filterMap((s) => s._tag === "Blocked" ? Option.some(s.currentDestination) : Option.none())
-  const to = BlockState.filterMap((s) => s._tag === "Blocked" ? Option.some(s.proposedDestination) : Option.none())
-
-  return {
-    isBlocking,
-    unblock,
-    from,
-    to
-  } as const
-})
