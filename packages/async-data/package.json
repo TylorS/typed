@@ -41,6 +41,7 @@
   "sideEffects": [],
   "dependencies": {
     "@effect/schema": "0.49.4",
-    "effect": "2.0.0-next.56"
+    "effect": "2.0.0-next.56",
+    "fast-check": "^3.14.0"
   }
 }

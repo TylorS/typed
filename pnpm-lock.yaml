@@ -284,6 +284,9 @@ importers:
       effect:
         specifier: 2.0.0-next.56
         version: 2.0.0-next.56
+      fast-check:
+        specifier: ^3.14.0
+        version: 3.14.0
     publishDirectory: dist
 
   packages/context:
