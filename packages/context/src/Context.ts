@@ -244,6 +244,7 @@ export {
 
 /**
  * Get multiple services from the context that corresponds to the given tags.
+ * @since 1.0.0
  */
 export const getMany: {
   <Services, T extends ReadonlyArray<ValidTagsById<Services>>>(

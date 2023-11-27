@@ -63,7 +63,11 @@ Extract the elements from a Rendered type
 **Signature**
 
 ```ts
-export type Elements<T extends Rendered> = ReadonlyArray<Exclude<T, DocumentFragment | Wire | ReadonlyArray<Rendered>>>
+export type Elements<T extends Rendered> = ReadonlyArray<
+  [Node] extends [Exclude<T, DocumentFragment | Wire | ReadonlyArray<Rendered>>]
+    ? HTMLElement | SVGElement
+    : Exclude<T, DocumentFragment | Wire | ReadonlyArray<Rendered>>
+>
 ```
 
 Added in v1.0.0

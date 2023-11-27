@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Context from "@typed/context"
 import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
@@ -12,6 +16,9 @@ import { RenderContext } from "./RenderContext"
 import { type RenderEvent } from "./RenderEvent"
 import { RenderTemplate } from "./RenderTemplate"
 
+/**
+ * @since 1.0.0
+ */
 export function hydrate<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
 ): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>> {
@@ -36,6 +43,9 @@ export function hydrate<R, E, T extends RenderEvent | null>(
   })) as Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function hydrateLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
 ) {

@@ -499,6 +499,12 @@ export const dedupeWith =
   <A>(valueEq: Equivalence<A>) => <R, E>(ref: RefArray<R, E, A>): Effect.Effect<R, E, ReadonlyArray<A>> =>
     ref.update(ReadonlyArray.dedupeWith(valueEq))
 
+/**
+ * @since 1.18.0
+ */
 export const last = <R, E, A>(ref: RefArray<R, E, A>): Filtered.Filtered<R, E, A> => ref.filterMap(ReadonlyArray.last)
 
+/**
+ * @since 1.18.0
+ */
 export const head = <R, E, A>(ref: RefArray<R, E, A>): Filtered.Filtered<R, E, A> => ref.filterMap(ReadonlyArray.head)

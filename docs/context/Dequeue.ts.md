@@ -66,7 +66,7 @@ export interface Dequeue<I, A> extends Tag<I, Q.Dequeue<A>> {
 
   // Provide
   readonly fromQueue: <I2>(queue: Queue<I2, A>) => Layer.Layer<I2, never, I>
-  readonly fromHub: <I2>(hub: Hub<I2, A>) => Layer.Layer<I2, never, I>
+  readonly fromPubSub: <I2>(PubSub: PubSub<I2, A>) => Layer.Layer<I2, never, I>
 }
 ```
 

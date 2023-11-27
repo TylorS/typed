@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Fx from "@typed/fx/Fx"
 import { Sink } from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
@@ -23,6 +27,9 @@ import { TemplateInstance } from "./TemplateInstance"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
 
+/**
+ * @since 1.0.0
+ */
 export function renderToHtml<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Fx.Fx<Exclude<R, RenderTemplate> | RenderContext, E, string> {
@@ -38,6 +45,9 @@ export function renderToHtml<R, E>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
 ): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string> {

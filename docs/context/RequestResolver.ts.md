@@ -67,12 +67,6 @@ export interface RequestResolver<Id, Requests extends Readonly<Record<string, Re
     f: (reqs: Array<Request.Req<Requests[keyof Requests]>>) => Array<Request.Success<Requests[keyof Requests]>>
   ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
 
-  readonly fromFunctionEffect: <R>(
-    f: (
-      req: Request.Req<Requests[keyof Requests]>
-    ) => Effect.Effect<R, Request.Error<Requests[keyof Requests]>, Request.Success<Requests[keyof Requests]>>
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
-
   readonly make: <R>(
     f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<R, never, void>
   ) => Layer.Layer<R, never, Id>

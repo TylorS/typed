@@ -1,10 +1,12 @@
 ---
 title: Renderable.ts
-nav_order: 14
+nav_order: 17
 parent: "@typed/template"
 ---
 
 ## Renderable overview
+
+Added in v1.0.0
 
 ---
 
@@ -28,12 +30,17 @@ parent: "@typed/template"
 export type Renderable<R = never, E = never> =
   | Renderable.Value
   | { readonly [key: string]: Renderable.Value } // TODO: Should we manage data attributes this way?
-  | Placeholder<R, E, Renderable.Value>
-  | Effect<R, E, Renderable<R, E>>
+  | Placeholder<R, E, any>
+  | Effect<R, E, any>
+  | Fx<R, E, any>
   | ReadonlyArray<Renderable<R, E>>
 ```
 
+Added in v1.0.0
+
 ## Renderable (namespace)
+
+Added in v1.0.0
 
 ### Primitive (type alias)
 
@@ -43,6 +50,8 @@ export type Renderable<R = never, E = never> =
 export type Primitive = string | number | boolean | null | undefined | void | ReadonlyArray<Primitive>
 ```
 
+Added in v1.0.0
+
 ### Value (type alias)
 
 **Signature**
@@ -50,3 +59,5 @@ export type Primitive = string | number | boolean | null | undefined | void | Re
 ```ts
 export type Value = Primitive | Rendered | RenderEvent
 ```
+
+Added in v1.0.0

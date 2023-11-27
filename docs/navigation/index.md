@@ -2,7 +2,12 @@
 title: "@typed/navigation"
 has_children: true
 permalink: /docs/navigation
-nav_order: 5
+nav_order: 8
 ---
 
-Navigation is an Effect-based workflow for working with the browser's Navigation API.
+# @typed/navigation
+
+> WIP
+
+Docs: https://tylors.github.io/typed/docs/navigation
+

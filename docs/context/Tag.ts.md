@@ -71,8 +71,8 @@ Extract the Identifier of a Tag
 export type Identifier<T> = [T] extends [C.Tag<infer I, infer _>]
   ? I
   : [T] extends [Tagged<infer I, infer _>]
-  ? I
-  : never
+    ? I
+    : never
 ```
 
 Added in v1.0.0

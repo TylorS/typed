@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
 import * as TestClock from "effect/TestClock"
@@ -5,8 +8,20 @@ import * as TestContext from "effect/TestContext"
 import type * as TestServices from "effect/TestServices"
 import * as vitest from "vitest"
 
-export { describe, expect } from "vitest"
+export {
+  /**
+   * @since 1.0.0
+   */
+  describe,
+  /**
+   * @since 1.0.0
+   */
+  expect
+} from "vitest"
 
+/**
+ * @since 1.0.0
+ */
 export function it<E, A>(
   name: string,
   test: () => Effect.Effect<Scope, E, A>,
@@ -23,6 +38,9 @@ export function it<E, A>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function test<E, A>(
   name: string,
   test: (options: {

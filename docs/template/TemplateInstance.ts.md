@@ -1,10 +1,12 @@
 ---
 title: TemplateInstance.ts
-nav_order: 19
+nav_order: 22
 parent: "@typed/template"
 ---
 
 ## TemplateInstance overview
+
+Added in v1.0.0
 
 ---
 
@@ -27,10 +29,11 @@ parent: "@typed/template"
 ```ts
 export declare function TemplateInstance<T extends Rendered = Rendered, E = never>(
   events: Fx.Fx<never, E, RenderEvent>,
-  ref: ElementRef<T, E>,
-  parts: Parts
+  ref: ElementRef<T>
 ): TemplateInstance<E, T>
 ```
+
+Added in v1.0.0
 
 ## TemplateInstance (interface)
 
@@ -38,17 +41,20 @@ export declare function TemplateInstance<T extends Rendered = Rendered, E = neve
 
 ```ts
 export interface TemplateInstance<E, T extends Rendered = Rendered>
-  extends Fx.Fx<never, E, RenderEvent>,
-    Effect<never, E | NoSuchElementException, T> {
+  extends Versioned.Versioned<never, never, never, E, RenderEvent, never, E | NoSuchElementException, T> {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
-  readonly parts: Parts
+  readonly query: ElementRef<T>["query"]
 
-  readonly query: ElementRef<T, E>['query']
-  readonly events: ElementRef<T, E>['events']
-  readonly elements: ElementRef<T, E>['elements']
+  readonly events: ElementRef<T>["events"]
+
+  readonly elements: ElementRef<T>["elements"]
+
+  readonly dispatchEvent: ElementRef<T>["dispatchEvent"]
 }
 ```
+
+Added in v1.0.0
 
 ## TemplateInstanceTypeId
 
@@ -58,6 +64,8 @@ export interface TemplateInstance<E, T extends Rendered = Rendered>
 export declare const TemplateInstanceTypeId: typeof TemplateInstanceTypeId
 ```
 
+Added in v1.0.0
+
 ## TemplateInstanceTypeId (type alias)
 
 **Signature**
@@ -65,3 +73,5 @@ export declare const TemplateInstanceTypeId: typeof TemplateInstanceTypeId
 ```ts
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 ```
+
+Added in v1.0.0

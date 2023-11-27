@@ -1,12 +1,12 @@
 ---
 title: Meta.ts
-nav_order: 9
+nav_order: 11
 parent: "@typed/template"
 ---
 
 ## Meta overview
 
-// Used to mark where the typed templates are in the html.
+Added in v1.0.0
 
 ---
 
@@ -28,16 +28,20 @@ parent: "@typed/template"
 **Signature**
 
 ```ts
-export declare const TEXT_START: '<!--text-->'
+export declare const TEXT_START: "<!--text-->"
 ```
+
+Added in v1.0.0
 
 ## TYPED_END
 
 **Signature**
 
 ```ts
-export declare const TYPED_END: '<!--typed-end-->'
+export declare const TYPED_END: "<!--typed-end-->"
 ```
+
+Added in v1.0.0
 
 ## TYPED_HASH
 
@@ -47,6 +51,8 @@ export declare const TYPED_END: '<!--typed-end-->'
 export declare const TYPED_HASH: (hash: string) => string
 ```
 
+Added in v1.0.0
+
 ## TYPED_HOLE
 
 **Signature**
@@ -55,10 +61,14 @@ export declare const TYPED_HASH: (hash: string) => string
 export declare const TYPED_HOLE: (index: number) => string
 ```
 
+Added in v1.0.0
+
 ## TYPED_START
 
 **Signature**
 
 ```ts
-export declare const TYPED_START: '<!--typed-start-->'
+export declare const TYPED_START: "<!--typed-start-->"
 ```
+
+Added in v1.0.0

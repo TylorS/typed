@@ -6,6 +6,8 @@ parent: "@typed/template"
 
 ## Directive overview
 
+Added in v1.0.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -39,6 +41,8 @@ parent: "@typed/template"
 export declare function Directive<R, E>(directive: (part: Part.Part) => Effect.Effect<R, E, unknown>): Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## Directive (interface)
 
 **Signature**
@@ -51,6 +55,8 @@ export interface Directive<R, E> extends Placeholder<R, E, unknown> {
 }
 ```
 
+Added in v1.0.0
+
 ## DirectiveTypeId
 
 **Signature**
@@ -59,6 +65,8 @@ export interface Directive<R, E> extends Placeholder<R, E, unknown> {
 export declare const DirectiveTypeId: typeof DirectiveTypeId
 ```
 
+Added in v1.0.0
+
 ## DirectiveTypeId (type alias)
 
 **Signature**
@@ -66,6 +74,8 @@ export declare const DirectiveTypeId: typeof DirectiveTypeId
 ```ts
 export type DirectiveTypeId = typeof DirectiveTypeId
 ```
+
+Added in v1.0.0
 
 ## attribute
 
@@ -77,6 +87,8 @@ export declare const attribute: <R, E>(
 ) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## boolean
 
 **Signature**
@@ -86,6 +98,8 @@ export declare const boolean: <R, E>(
   directive: (part: Part.BooleanPart) => Effect.Effect<R, E, unknown>
 ) => Directive<R, E>
 ```
+
+Added in v1.0.0
 
 ## className
 
@@ -97,6 +111,8 @@ export declare const className: <R, E>(
 ) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## comment
 
 **Signature**
@@ -107,6 +123,8 @@ export declare const comment: <R, E>(
 ) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## data
 
 **Signature**
@@ -114,6 +132,8 @@ export declare const comment: <R, E>(
 ```ts
 export declare const data: <R, E>(directive: (part: Part.DataPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
 ```
+
+Added in v1.0.0
 
 ## event
 
@@ -123,15 +143,17 @@ export declare const data: <R, E>(directive: (part: Part.DataPart) => Effect.Eff
 export declare const event: <R, E>(directive: (part: Part.EventPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## isDirective
 
 **Signature**
 
 ```ts
-export declare function isDirective<R, E>(
-  renderable: Renderable<R, E> | Placeholder<R, E>
-): renderable is Directive<R, E>
+export declare function isDirective<R, E>(renderable: unknown): renderable is Directive<R, E>
 ```
+
+Added in v1.0.0
 
 ## node
 
@@ -140,6 +162,8 @@ export declare function isDirective<R, E>(
 ```ts
 export declare const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
 ```
+
+Added in v1.0.0
 
 ## property
 
@@ -151,6 +175,8 @@ export declare const property: <R, E>(
 ) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## ref
 
 **Signature**
@@ -159,6 +185,8 @@ export declare const property: <R, E>(
 export declare const ref: <R, E>(directive: (part: Part.RefPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
 ```
 
+Added in v1.0.0
+
 ## text
 
 **Signature**
@@ -166,3 +194,5 @@ export declare const ref: <R, E>(directive: (part: Part.RefPart) => Effect.Effec
 ```ts
 export declare const text: <R, E>(directive: (part: Part.TextPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
 ```
+
+Added in v1.0.0

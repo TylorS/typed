@@ -1,10 +1,12 @@
 ---
 title: Parser.ts
-nav_order: 10
+nav_order: 12
 parent: "@typed/template"
 ---
 
 ## Parser overview
+
+Added in v1.0.0
 
 ---
 
@@ -13,7 +15,6 @@ parent: "@typed/template"
 - [utils](#utils)
   - [Parser (interface)](#parser-interface)
   - [parser](#parser)
-  - [templateHash](#templatehash)
 
 ---
 
@@ -29,6 +30,8 @@ export interface Parser {
 }
 ```
 
+Added in v1.0.0
+
 ## parser
 
 **Signature**
@@ -37,13 +40,4 @@ export interface Parser {
 export declare const parser: Parser
 ```
 
-## templateHash
-
-Generates a hash for an ordered list of strings. Intended for the purposes
-of server-side rendering with hydration.
-
-**Signature**
-
-```ts
-export declare function templateHash(strings: ReadonlyArray<string>)
-```
+Added in v1.0.0

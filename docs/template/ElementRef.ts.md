@@ -6,33 +6,24 @@ parent: "@typed/template"
 
 ## ElementRef overview
 
+Added in v1.0.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [ElementRef](#elementref)
   - [ElementRef (interface)](#elementref-interface)
   - [ElementRefTypeId](#elementreftypeid)
   - [ElementRefTypeId (type alias)](#elementreftypeid-type-alias)
+  - [dispatchEvent](#dispatchevent)
+  - [make](#make)
   - [of](#of)
   - [set](#set)
 
 ---
 
 # utils
-
-## ElementRef
-
-**Signature**
-
-```ts
-export declare function ElementRef<T extends Rendered = Rendered, E = never>(): Effect.Effect<
-  never,
-  never,
-  ElementRef<T, E>
->
-```
 
 ## ElementRef (interface)
 
@@ -41,13 +32,14 @@ A reference to a rendered element.
 **Signature**
 
 ```ts
-export interface ElementRef<T extends Rendered = Rendered, E = never>
-  extends Versioned<never, never, E, T, never, E | NoSuchElementException, T> {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, E, Option.Option<T>>
+export interface ElementRef<T extends Rendered = Rendered>
+  extends Versioned<never, never, never, never, T, never, NoSuchElementException, T> {
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
-  readonly query: ElementSource<T, E>['query']
-  readonly events: ElementSource<T, E>['events']
-  readonly elements: ElementSource<T, E>['elements']
+  readonly query: ElementSource<T>["query"]
+  readonly events: ElementSource<T>["events"]
+  readonly elements: ElementSource<T>["elements"]
+  readonly dispatchEvent: ElementSource<T>["dispatchEvent"]
 }
 ```
 
@@ -69,13 +61,35 @@ export declare const ElementRefTypeId: typeof ElementRefTypeId
 export type ElementRefTypeId = typeof ElementRefTypeId
 ```
 
+## dispatchEvent
+
+**Signature**
+
+```ts
+export declare function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Event)
+```
+
+Added in v1.0.0
+
+## make
+
+**Signature**
+
+```ts
+export declare function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>>
+```
+
+Added in v1.0.0
+
 ## of
 
 **Signature**
 
 ```ts
-export declare function of<T extends Rendered, E = never>(rendered: T): Effect.Effect<never, never, ElementRef<T, E>>
+export declare function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>>
 ```
+
+Added in v1.0.0
 
 ## set
 
@@ -83,7 +97,9 @@ export declare function of<T extends Rendered, E = never>(rendered: T): Effect.E
 
 ```ts
 export declare const set: {
-  <A extends Rendered>(value: A): <E>(elementRef: ElementRef<A, E>) => Effect.Effect<never, never, A>
-  <A extends Rendered, E>(elementRef: ElementRef<A, E>, value: A): Effect.Effect<never, never, A>
+  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
+  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
 }
 ```
+
+Added in v1.0.0

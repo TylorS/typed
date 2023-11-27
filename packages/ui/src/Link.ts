@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -12,6 +15,9 @@ import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { Effect, type Scope } from "effect"
 import { Anchor, type AnchorProps, getEventHandler } from "./Anchor"
 
+/**
+ * @since 1.0.0
+ */
 export type LinkProps = Omit<AnchorProps, keyof URL> & {
   readonly to: string | Placeholder.Any<string>
   readonly relative?: boolean | Placeholder.Any<boolean>
@@ -20,6 +26,9 @@ export type LinkProps = Omit<AnchorProps, keyof URL> & {
   readonly reloadDocument?: boolean | Placeholder.Any<boolean>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function Link<Props extends LinkProps, Children extends ReadonlyArray<Renderable<any, any>> = readonly []>(
   props: Props,
   ...children: Children

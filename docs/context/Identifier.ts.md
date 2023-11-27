@@ -1,6 +1,6 @@
 ---
 title: Identifier.ts
-nav_order: 10
+nav_order: 9
 parent: "@typed/context"
 ---
 
@@ -112,9 +112,9 @@ Extract the Identifier from a Contextual implementation.
 export type IdentifierOf<T> = T extends (_id: typeof id) => IdentifierConstructor<infer _>
   ? InstanceType<ReturnType<T>>
   : // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  T extends IdentifierConstructor<infer _>
-  ? InstanceType<T>
-  : T
+    T extends IdentifierConstructor<infer _>
+    ? InstanceType<T>
+    : T
 ```
 
 Added in v1.0.0

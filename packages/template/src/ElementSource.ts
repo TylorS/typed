@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
 import { Filtered } from "@typed/fx/Filtered"
@@ -16,6 +20,9 @@ import { PlaceholderTypeId } from "./Placeholder"
 
 import type * as TQS from "typed-query-selector/parser"
 
+/**
+ * @since 1.0.0
+ */
 export interface ElementSource<
   T extends Rendered = Element,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
@@ -42,16 +49,25 @@ export interface ElementSource<
   readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
   rootElement: Filtered<never, never, T>
 ): ElementSource<T, EventMap> {
   return new ElementSourceImpl<T, EventMap>(rootElement) as any
 }
 
+/**
+ * @since 1.0.0
+ */
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
   : Fallback extends globalThis.Element ? TQS.ParseSelector<T, Fallback>
   : Fallback
 
+/**
+ * @since 1.0.0
+ */
 export type DefaultEventMap<T> = T extends Window ? WindowEventMap
   : T extends Document ? DocumentEventMap
   : T extends HTMLVideoElement ? HTMLVideoElementEventMap
@@ -61,10 +77,16 @@ export type DefaultEventMap<T> = T extends Window ? WindowEventMap
   : T extends Element ? ElementEventMap & Readonly<Record<string, Event>>
   : Readonly<Record<string, Event>>
 
+/**
+ * @since 1.0.0
+ */
 export const ROOT_CSS_SELECTOR = `:root` as const
 
 type RenderedWithoutArray = Exclude<Rendered, ReadonlyArray<Rendered>>
 
+/**
+ * @since 1.0.0
+ */
 export function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
   if (Array.isArray(element)) return element.flatMap(getElements)
   if (isWire(element as RenderedWithoutArray)) {
@@ -256,6 +278,7 @@ function isElement(element: RenderedWithoutArray): element is Element {
 
 /**
  * @internal
+ * @since 1.0.0
  */
 // @ts-expect-error
 export class ElementSourceImpl<
@@ -352,13 +375,22 @@ export class ElementSourceImpl<
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type Selector = CssSelectors | ElementSelector
 
+/**
+ * @since 1.0.0
+ */
 export interface CssSelectors {
   readonly _tag: "css"
   readonly selectors: ReadonlyArray<string>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function CssSelectors(selectors: ReadonlyArray<string>): CssSelectors {
   return {
     _tag: "css",
@@ -366,11 +398,17 @@ export function CssSelectors(selectors: ReadonlyArray<string>): CssSelectors {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface ElementSelector {
   readonly _tag: "element"
   readonly element: Element
 }
 
+/**
+ * @since 1.0.0
+ */
 export function ElementSelector(element: Element): ElementSelector {
   return {
     _tag: "element",

@@ -1,16 +1,33 @@
+/**
+ * @since 1.0.0
+ */
+
 import { Brand, Effect } from "effect"
 import { GetRandomValues } from "./GetRandomValues"
 
 const nanoIdPattern = /[0-9a-zA-Z_-]/
 
+/**
+ * @since 1.0.0
+ */
 export const isNanoId = (id: string): id is NanoId => nanoIdPattern.test(id)
 
+/**
+ * @since 1.0.0
+ */
 export type NanoId = string & Brand.Brand<"@typed/id/NanoId">
+
+/**
+ * @since 1.0.0
+ */
 export const NanoId = Brand.refined<NanoId>(
   isNanoId,
   (input) => Brand.error(`Expected a NanoID but received ${input}.`)
 )
 
+/**
+ * @since 1.0.0
+ */
 export type NanoIdSeed = readonly [
   zero: number,
   one: number,
@@ -54,8 +71,17 @@ const characters = Array.from({ length: 64 }, (_, i) => {
   return numToCharacter(i)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) => id + characters[x], ""))
 
+/**
+ * @since 1.0.0
+ */
 export const makeNanoIdSeed: Effect.Effect<GetRandomValues, never, NanoIdSeed> = GetRandomValues.apply(21) as any
 
+/**
+ * @since 1.0.0
+ */
 export const makeNanoId: Effect.Effect<GetRandomValues, never, NanoId> = Effect.map(makeNanoIdSeed, nanoId)

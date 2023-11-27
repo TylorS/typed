@@ -1,10 +1,12 @@
 ---
 title: Token.ts
-nav_order: 20
+nav_order: 24
 parent: "@typed/template"
 ---
 
 ## Token overview
+
+Added in v1.0.0
 
 ---
 
@@ -72,10 +74,10 @@ parent: "@typed/template"
 **Signature**
 
 ```ts
-export declare class AttributeEndToken {
-  constructor(readonly name: string)
-}
+export declare class AttributeEndToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -90,10 +92,10 @@ readonly _tag: "attribute-end"
 **Signature**
 
 ```ts
-export declare class AttributeStartToken {
-  constructor(readonly name: string)
-}
+export declare class AttributeStartToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -108,10 +110,13 @@ readonly _tag: "attribute-start"
 **Signature**
 
 ```ts
-export declare class AttributeToken {
-  constructor(readonly name: string, readonly value: string)
-}
+export declare class AttributeToken { constructor(
+    readonly name: string,
+    readonly value: string
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -126,10 +131,10 @@ readonly _tag: "attribute"
 **Signature**
 
 ```ts
-export declare class BooleanAttributeEndToken {
-  constructor(readonly name: string)
-}
+export declare class BooleanAttributeEndToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -144,10 +149,10 @@ readonly _tag: "boolean-attribute-end"
 **Signature**
 
 ```ts
-export declare class BooleanAttributeStartToken {
-  constructor(readonly name: string)
-}
+export declare class BooleanAttributeStartToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -162,10 +167,10 @@ readonly _tag: "boolean-attribute-start"
 **Signature**
 
 ```ts
-export declare class BooleanAttributeToken {
-  constructor(readonly name: string)
-}
+export declare class BooleanAttributeToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -183,6 +188,8 @@ readonly _tag: "boolean-attribute"
 export declare class ClassNameAttributeEndToken
 ```
 
+Added in v1.0.0
+
 ### \_tag (property)
 
 **Signature**
@@ -199,6 +206,8 @@ readonly _tag: "className-attribute-end"
 export declare class ClassNameAttributeStartToken
 ```
 
+Added in v1.0.0
+
 ### \_tag (property)
 
 **Signature**
@@ -212,10 +221,13 @@ readonly _tag: "className-attribute-start"
 **Signature**
 
 ```ts
-export declare class ClosingTagToken {
-  constructor(readonly name: string, readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name))
-}
+export declare class ClosingTagToken { constructor(
+    readonly name: string,
+    readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -230,10 +242,10 @@ readonly _tag: "closing-tag"
 **Signature**
 
 ```ts
-export declare class CommentEndToken {
-  constructor(readonly value: string)
-}
+export declare class CommentEndToken { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -248,10 +260,10 @@ readonly _tag: "comment-end"
 **Signature**
 
 ```ts
-export declare class CommentStartToken {
-  constructor(readonly value: string)
-}
+export declare class CommentStartToken { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -266,10 +278,10 @@ readonly _tag: "comment-start"
 **Signature**
 
 ```ts
-export declare class CommentToken {
-  constructor(readonly value: string)
-}
+export declare class CommentToken { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -287,6 +299,8 @@ readonly _tag: "comment"
 export declare class DataAttributeEndToken
 ```
 
+Added in v1.0.0
+
 ### \_tag (property)
 
 **Signature**
@@ -303,6 +317,8 @@ readonly _tag: "data-attribute-end"
 export declare class DataAttributeStartToken
 ```
 
+Added in v1.0.0
+
 ### \_tag (property)
 
 **Signature**
@@ -316,10 +332,10 @@ readonly _tag: "data-attribute-start"
 **Signature**
 
 ```ts
-export declare class EventAttributeEndToken {
-  constructor(readonly name: string)
-}
+export declare class EventAttributeEndToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -334,10 +350,10 @@ readonly _tag: "event-attribute-end"
 **Signature**
 
 ```ts
-export declare class EventAttributeStartToken {
-  constructor(readonly name: string)
-}
+export declare class EventAttributeStartToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -352,14 +368,14 @@ readonly _tag: "event-attribute-start"
 **Signature**
 
 ```ts
-export declare class OpeningTagEndToken {
-  constructor(
+export declare class OpeningTagEndToken { constructor(
     readonly name: string,
     readonly selfClosing: boolean = SELF_CLOSING_TAGS.has(name),
     readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
-  )
-}
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -374,14 +390,14 @@ readonly _tag: "opening-tag-end"
 **Signature**
 
 ```ts
-export declare class OpeningTagToken {
-  constructor(
+export declare class OpeningTagToken { constructor(
     readonly name: string,
     readonly isSelfClosing: boolean = SELF_CLOSING_TAGS.has(name),
     readonly textOnly: boolean = TEXT_ONLY_NODES_REGEX.has(name)
-  )
-}
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -396,10 +412,10 @@ readonly _tag: "opening-tag"
 **Signature**
 
 ```ts
-export declare class PartToken {
-  constructor(readonly index: number)
-}
+export declare class PartToken { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -414,10 +430,10 @@ readonly _tag: "part-token"
 **Signature**
 
 ```ts
-export declare class PropertyAttributeEndToken {
-  constructor(readonly name: string)
-}
+export declare class PropertyAttributeEndToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -432,10 +448,10 @@ readonly _tag: "property-attribute-end"
 **Signature**
 
 ```ts
-export declare class PropertyAttributeStartToken {
-  constructor(readonly name: string)
-}
+export declare class PropertyAttributeStartToken { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -453,6 +469,8 @@ readonly _tag: "property-attribute-start"
 export declare class RefAttributeEndToken
 ```
 
+Added in v1.0.0
+
 ### \_tag (property)
 
 **Signature**
@@ -468,6 +486,8 @@ readonly _tag: "ref-attribute-end"
 ```ts
 export declare class RefAttributeStartToken
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -485,6 +505,8 @@ readonly _tag: "ref-attribute-start"
 export declare const SELF_CLOSING_TAGS: Set<string>
 ```
 
+Added in v1.0.0
+
 ## TEXT_ONLY_NODES_REGEX
 
 **Signature**
@@ -493,15 +515,17 @@ export declare const SELF_CLOSING_TAGS: Set<string>
 export declare const TEXT_ONLY_NODES_REGEX: Set<string>
 ```
 
+Added in v1.0.0
+
 ## TextToken (class)
 
 **Signature**
 
 ```ts
-export declare class TextToken {
-  constructor(readonly value: string)
-}
+export declare class TextToken { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -542,3 +566,5 @@ export type Token =
   | TextToken
   | PartToken
 ```
+
+Added in v1.0.0

@@ -1,6 +1,6 @@
 ---
 title: Document.ts
-nav_order: 1
+nav_order: 2
 parent: "@typed/dom"
 ---
 
@@ -205,18 +205,18 @@ export type LinkParams = {
   readonly rel: string
   readonly href: string
 
-  readonly crossOrigin?: 'anonymous' | 'use-credentials'
+  readonly crossOrigin?: "anonymous" | "use-credentials"
   readonly hreflang?: string
   readonly media?: string
   readonly referrerPolicy?:
-    | 'no-referrer'
-    | 'no-referrer-when-downgrade'
-    | 'origin'
-    | 'origin-when-cross-origin'
-    | 'same-origin'
-    | 'strict-origin'
-    | 'strict-origin-when-cross-origin'
-    | 'unsafe-url'
+    | "no-referrer"
+    | "no-referrer-when-downgrade"
+    | "origin"
+    | "origin-when-cross-origin"
+    | "same-origin"
+    | "strict-origin"
+    | "strict-origin-when-cross-origin"
+    | "unsafe-url"
   readonly sizes?: string
   readonly type?: string
 }

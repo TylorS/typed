@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
@@ -9,6 +12,9 @@ import { dual } from "effect/Function"
 import { RenderContext } from "./RenderContext"
 import { type RenderEvent } from "./RenderEvent"
 
+/**
+ * @since 1.0.0
+ */
 export function many<R, E, A, B, R2, E2>(
   values: Fx.Fx<R, E, ReadonlyArray<A>>,
   getKey: (a: A) => B,
@@ -34,6 +40,9 @@ export function many<R, E, A, B, R2, E2>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const manyAsyncData: {
   <
     E1,

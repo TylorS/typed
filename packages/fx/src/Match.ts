@@ -1,3 +1,7 @@
+/**
+ * @since 1.18.0
+ */
+
 import { Effect, Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
@@ -8,9 +12,18 @@ import * as Fx from "./Fx"
 import type { Guard } from "./Guard"
 import * as RefSubject from "./RefSubject"
 
+/**
+ * @since 1.18.0
+ */
 export const MatcherTypeId: unique symbol = Symbol.for("./Matcher")
+/**
+ * @since 1.18.0
+ */
 export type MatcherTypeId = typeof MatcherTypeId
 
+/**
+ * @since 1.18.0
+ */
 export interface TypeMatcher<R, E, I, O> {
   readonly _tag: "TypeMatcher"
 
@@ -29,6 +42,9 @@ export interface TypeMatcher<R, E, I, O> {
   readonly run: <R2 = never, E2 = never>(input: Fx.FxInput<R2, E2, I>) => Fx.Fx<R | R2, E | E2, Option.Option<O>>
 }
 
+/**
+ * @since 1.18.0
+ */
 export interface ValueMatcher<R, E, I, O> {
   readonly _tag: "ValueMatcher"
 
@@ -53,7 +69,13 @@ export interface ValueMatcher<R, E, I, O> {
   ) => Fx.Fx<R | R2, E | E2, O | B>
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace Matcher {
+  /**
+   * @since 1.18.0
+   */
   export interface Variance<R, E, I, O> {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => E
@@ -62,9 +84,15 @@ export namespace Matcher {
   }
 }
 
+/**
+ * @since 1.18.0
+ */
 export const type = <I>(): TypeMatcher<never, never, I, never> =>
   new TypeMatcherImpl<never, never, I, never>(Chunk.empty())
 
+/**
+ * @since 1.18.0
+ */
 export const value = <R, E, I>(input: Fx.FxInput<R, E, I>): ValueMatcher<R, E, I, never> =>
   new ValueMatcherImpl(Fx.from(input), type<I>())
 
@@ -232,6 +260,9 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
     Fx.suspend(() => Fx.getOrElse(this.matcher.run(this.value), f))
 }
 
+/**
+ * @since 1.18.0
+ */
 export interface AsGuard<I, R, E, A> {
   readonly asGuard: () => Guard<I, R, E, A>
 }

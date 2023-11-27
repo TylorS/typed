@@ -1,9 +1,16 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Guard from "@typed/fx/Guard"
 import * as Path from "@typed/path"
 import { Effect, Option, Pipeable } from "effect"
 import { dual } from "effect/Function"
 import * as ptr from "path-to-regexp"
 
+/**
+ * @since 1.0.0
+ */
 export interface Route<P extends string> extends Pipeable.Pipeable {
   readonly path: P
 
@@ -23,12 +30,24 @@ export interface Route<P extends string> extends Pipeable.Pipeable {
   readonly asGuard: () => Guard.Guard<string, never, never, Path.ParamsOf<P>>
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Route {
+  /**
+   * @since 1.0.0
+   */
   export type Path<T> = T extends Route<infer P> ? P : never
 
+  /**
+   * @since 1.0.0
+   */
   export type ParamsOf<T> = T extends Route<infer P> ? Path.ParamsOf<P> : never
 }
 
+/**
+ * @since 1.0.0
+ */
 export function fromPath<const P extends string>(path: P, params: FromPathParams = {}): Route<P> {
   const match_ = ptr.match(path, { end: false, ...params.match })
   const match = (path: string) => {
@@ -72,15 +91,24 @@ function mergeRouteOptions(options1: FromPathParams | undefined, options2: FromP
  * Options for creating and matching a route with path-to-regexp
  * @since 1.0.0
  */
+/**
+ * @since 1.0.0
+ */
 export interface FromPathParams {
   readonly make?: ptr.ParseOptions & ptr.TokensToFunctionOptions
   readonly match?: ptr.ParseOptions & ptr.TokensToRegexpOptions & ptr.RegexpToFunctionOptions
 }
 
+/**
+ * @since 1.0.0
+ */
 export function asGuard<P extends string>(route: Route<P>): Guard.Guard<string, never, never, Path.ParamsOf<P>> {
   return route.asGuard()
 }
 
+/**
+ * @since 1.0.0
+ */
 export const mapEffect: {
   <P extends string, R2, E2, B>(
     f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
@@ -97,6 +125,9 @@ export const mapEffect: {
   return Guard.mapEffect(asGuard(route), f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const map: {
   <P extends string, B>(
     f: (params: Path.ParamsOf<P>) => B
@@ -113,6 +144,9 @@ export const map: {
   return Guard.map(asGuard(route), f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const filterMap: {
   <P extends string, B>(
     f: (params: Path.ParamsOf<P>) => Option.Option<B>
@@ -129,6 +163,9 @@ export const filterMap: {
   return Guard.filterMap(asGuard(route), f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const filter: {
   <P extends string>(
     f: (params: Path.ParamsOf<P>) => boolean
@@ -145,6 +182,9 @@ export const filter: {
   return Guard.filter(asGuard(route), f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const tap: {
   <P extends string, R2, E2, B>(
     f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
@@ -161,6 +201,9 @@ export const tap: {
   return Guard.tap(asGuard(route), f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export function any<Routes extends Readonly<Record<string, Route<any>>>>(
   routes: Routes
 ): Guard.Guard<string, never, never, AnyOutput<Routes>> {
@@ -176,6 +219,9 @@ export function any<Routes extends Readonly<Record<string, Route<any>>>>(
     })
 }
 
+/**
+ * @since 1.0.0
+ */
 export type AnyOutput<Routes extends Readonly<Record<string, Route<any>>>> = [
   {
     [K in keyof Routes]: [{ readonly _tag: K } & Route.ParamsOf<Routes[K]>] extends [infer R]

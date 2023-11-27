@@ -1,6 +1,6 @@
 ---
 title: Stream.ts
-nav_order: 18
+nav_order: 23
 parent: "@typed/fx"
 ---
 
@@ -91,9 +91,9 @@ that have not yet been pulled.
 
 ```ts
 export declare const toStreamQueued: {
-  <E, A, R2, E2>(make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>): <R>(
-    fx: Fx.Fx<R, E, A>
-  ) => Stream.Stream<R2 | R, E | E2, A>
+  <E, A, R2, E2>(
+    make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
+  ): <R>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R2 | R, E | E2, A>
   <R, E, A, R2, E2>(
     fx: Fx.Fx<R, E, A>,
     make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>

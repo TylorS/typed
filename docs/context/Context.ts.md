@@ -26,7 +26,7 @@ Added in v1.0.0
 - [models](#models)
   - [Context](#context)
   - [TagUnify](#tagunify)
-  - [TagUnifyBlacklist](#tagunifyblacklist)
+  - [TagUnifyIgnore](#tagunifyignore)
   - [ValidTagsById](#validtagsbyid)
 - [symbol](#symbol)
   - [TagTypeId](#tagtypeid)
@@ -35,6 +35,7 @@ Added in v1.0.0
   - [unsafeGet](#unsafeget)
 - [utils](#utils)
   - [add](#add)
+  - [getMany](#getmany)
   - [merge](#merge)
   - [omit](#omit)
   - [pick](#pick)
@@ -56,7 +57,7 @@ export declare const empty: () => Context<never>
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 assert.strictEqual(Context.isContext(Context.empty()), true)
 ```
@@ -76,7 +77,7 @@ export declare const isContext: (input: unknown) => input is Context<never>
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 assert.strictEqual(Context.isContext(Context.empty()), true)
 ```
@@ -96,7 +97,7 @@ export declare const make: <T extends Tag<any, any>>(tag: T, service: Tag.Servic
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 const Port = Context.Tag<{ PORT: number }>()
 
@@ -125,8 +126,8 @@ export declare const get: {
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
-import { pipe } from '@effect/data/Function'
+import * as Context from "effect/Context"
+import { pipe } from "effect/Function"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -155,8 +156,8 @@ export declare const getOption: {
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
-import * as O from '@effect/data/Option'
+import * as Context from "effect/Context"
+import * as O from "effect/Option"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -184,7 +185,7 @@ export declare const isTag: (input: unknown) => input is Tag<any, any>
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 assert.strictEqual(Context.isTag(Context.Tag()), true)
 ```
@@ -213,12 +214,12 @@ export declare const TagUnify: any
 
 Added in v1.0.0
 
-## TagUnifyBlacklist
+## TagUnifyIgnore
 
 **Signature**
 
 ```ts
-export declare const TagUnifyBlacklist: any
+export declare const TagUnifyIgnore: any
 ```
 
 Added in v1.0.0
@@ -276,7 +277,7 @@ export declare const unsafeGet: {
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -299,20 +300,23 @@ Adds a service to a given `Context`.
 
 ```ts
 export declare const add: {
-  <T extends Tag<any, any>>(tag: T, service: Tag.Service<T>): <Services>(
-    self: Context<Services>
-  ) => Context<Services | Tag.Identifier<T>>
-  <Services, T extends Tag<any, any>>(self: Context<Services>, tag: T, service: Tag.Service<T>): Context<
-    Services | Tag.Identifier<T>
-  >
+  <T extends Tag<any, any>>(
+    tag: T,
+    service: Tag.Service<T>
+  ): <Services>(self: Context<Services>) => Context<Services | Tag.Identifier<T>>
+  <Services, T extends Tag<any, any>>(
+    self: Context<Services>,
+    tag: T,
+    service: Tag.Service<T>
+  ): Context<Services | Tag.Identifier<T>>
 }
 ```
 
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
-import { pipe } from '@effect/data/Function'
+import * as Context from "effect/Context"
+import { pipe } from "effect/Function"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -323,6 +327,26 @@ const Services = pipe(someContext, Context.add(Timeout, { TIMEOUT: 5000 }))
 
 assert.deepStrictEqual(Context.get(Services, Port), { PORT: 8080 })
 assert.deepStrictEqual(Context.get(Services, Timeout), { TIMEOUT: 5000 })
+```
+
+Added in v1.0.0
+
+## getMany
+
+Get multiple services from the context that corresponds to the given tags.
+
+**Signature**
+
+```ts
+export declare const getMany: {
+  <Services, T extends readonly ValidTagsById<Services>[]>(
+    ...tags: T
+  ): (self: Context<Services>) => { readonly [K in keyof T]: Tag.Service<T[K]> }
+  <Services, T extends readonly ValidTagsById<Services>[]>(
+    self: Context<Services>,
+    ...tags: T
+  ): { readonly [K in keyof T]: Tag.Service<T[K]> }
+}
 ```
 
 Added in v1.0.0
@@ -343,7 +367,7 @@ export declare const merge: {
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
+import * as Context from "effect/Context"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()
@@ -388,9 +412,9 @@ export declare const pick: <Services, S extends ValidTagsById<Services>[]>(
 **Example**
 
 ```ts
-import * as Context from '@effect/data/Context'
-import { pipe } from '@effect/data/Function'
-import * as O from '@effect/data/Option'
+import * as Context from "effect/Context"
+import { pipe } from "effect/Function"
+import * as O from "effect/Option"
 
 const Port = Context.Tag<{ PORT: number }>()
 const Timeout = Context.Tag<{ TIMEOUT: number }>()

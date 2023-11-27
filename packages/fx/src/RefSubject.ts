@@ -104,7 +104,13 @@ export interface RefSubject<R, in out E, in out A> extends Computed<R, E, A>, Su
   readonly interrupt: Effect.Effect<R, never, void>
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace RefSubject {
+  /**
+   * @since 1.18.0
+   */
   export type Any =
     | RefSubject<any, any, any>
     | RefSubject<never, any, any>
@@ -514,6 +520,9 @@ export function deriveToSchema<I, O>(schema: Schema.Schema<I, O>): MakeRefSubjec
   return toRefSubject(schema)
 }
 
+/**
+ * @since 1.18.0
+ */
 export const tuple: <const REFS extends ReadonlyArray<RefSubject.Any>>(
   ...refs: REFS
 ) => RefSubject<
@@ -522,6 +531,9 @@ export const tuple: <const REFS extends ReadonlyArray<RefSubject.Any>>(
   { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
 > = coreRefSubject.tuple
 
+/**
+ * @since 1.18.0
+ */
 export const struct: <const REFS extends Readonly<Record<PropertyKey, RefSubject.Any>>>(
   refs: REFS
 ) => RefSubject<
@@ -530,12 +542,18 @@ export const struct: <const REFS extends Readonly<Record<PropertyKey, RefSubject
   { readonly [K in keyof REFS]: RefSubject.Success<REFS[K]> }
 > = coreRefSubject.struct
 
+/**
+ * @since 1.18.0
+ */
 export function fromSubscriptionRef<A>(
   subscriptionRef: SubscriptionRef.SubscriptionRef<A>
 ): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
   return coreRefSubject.make(fromStream(subscriptionRef.changes))
 }
 
+/**
+ * @since 1.18.0
+ */
 export const transform: {
   <A, B>(from: (a: A) => B, to: (b: B) => A): <R, E>(ref: RefSubject<R, E, A>) => RefSubject<R, E, B>
   <R, E, A, B>(ref: RefSubject<R, E, A>, from: (a: A) => B, to: (b: B) => A): RefSubject<R, E, B>

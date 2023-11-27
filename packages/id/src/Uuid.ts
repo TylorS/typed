@@ -1,17 +1,31 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Brand from "effect/Brand"
 import * as Effect from "effect/Effect"
 import { GetRandomValues } from "./GetRandomValues"
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 /**
  * Returns `true` if a string is a UUID.
- * @name isUuid(value: string): value is Uuid
+ * @since 1.0.0
  */
 export const isUuid: (value: string) => value is Uuid = (value: string): value is Uuid => uuidPattern.test(value)
 
+/**
+ * @since 1.0.0
+ */
 export type Uuid = string & Brand.Brand<"@typed/id/UUID">
+/**
+ * @since 1.0.0
+ */
 export const Uuid = Brand.refined<Uuid>(isUuid, (input) => Brand.error(`Expected a UUID but received ${input}.`))
 
+/**
+ * @since 1.0.0
+ */
 export type UuidSeed = readonly [
   zero: number,
   one: number,
@@ -31,8 +45,14 @@ export type UuidSeed = readonly [
   fifteen: number
 ]
 
+/**
+ * @since 1.0.0
+ */
 export const makeUuidSeed: Effect.Effect<GetRandomValues, never, UuidSeed> = GetRandomValues.apply(32) as any
 
+/**
+ * @since 1.0.0
+ */
 export const makeUuid: Effect.Effect<GetRandomValues, never, Uuid> = Effect.map(makeUuidSeed, uuid4)
 
 /**
@@ -45,6 +65,9 @@ for (let i = 0; i < 256; ++i) {
   byteToHex.push((i + 0x100).toString(16).slice(1))
 }
 
+/**
+ * @since 1.0.0
+ */
 export function uuid4(seed: UuidSeed): Uuid {
   // Note: Be careful editing this code!  It's been tuned for performance
   // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434

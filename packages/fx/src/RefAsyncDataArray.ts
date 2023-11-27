@@ -1,3 +1,8 @@
+/**
+ * A RefAsyncDataArray is a RefSubject that holds a AsyncData value of an array.
+ * @since 1.18.0
+ */
+
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identifier"
 import type { Scope } from "effect"
@@ -7,15 +12,31 @@ import type * as Computed from "./Computed"
 import * as Fx from "./Fx"
 import * as RefAsyncData from "./RefAsyncData"
 
+/**
+ * A RefAsyncDataArray is a RefSubject that holds a AsyncData value of an array.
+ * @since 1.18.0
+ */
 export interface RefAsyncDataArray<R, E, A> extends RefAsyncData.RefAsyncData<R, E, ReadonlyArray<A>> {}
 
+/**
+ * @since 1.18.0
+ */
 export namespace RefAsyncDataArray {
+  /**
+   * @since 1.18.0
+   */
   export interface Tagged<I, E, A> extends RefAsyncData.RefAsyncData.Tagged<I, E, ReadonlyArray<A>> {}
 }
 
+/**
+ * @since 1.18.0
+ */
 export const make = <E, A>(): Effect.Effect<Scope.Scope, never, RefAsyncDataArray<never, E, A>> =>
   RefAsyncData.make<E, ReadonlyArray<A>>()
 
+/**
+ * @since 1.18.0
+ */
 export const tagged = <E, A>(): {
   <const I extends IdentifierConstructor<any>>(
     identifier: (id: <const T>(uniqueIdentifier: T) => IdentifierConstructor<T>) => I
@@ -23,6 +44,9 @@ export const tagged = <E, A>(): {
   <const I>(identifier: I | string): RefAsyncDataArray.Tagged<IdentifierOf<I>, E, A>
 } => RefAsyncData.tagged<E, ReadonlyArray<A>>()
 
+/**
+ * @since 1.18.0
+ */
 export const matchKeyed: {
   <
     E1,

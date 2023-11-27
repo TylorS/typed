@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 12
+nav_order: 9
 parent: "@typed/fx"
 ---
 
@@ -14,12 +14,6 @@ Any `Fx`, shorthand for "Effects", can emit 0 or more errors or events over an
 indefinite period of time. This is in contrast to `Effect` which can only
 produce exactly 1 error or event.
 
-It is defined as a super-type of `Effect`, `Stream`, and `Cause`. This
-allows for all operators that accept an `Fx` to also capable of
-accepting an `Effect`, `Stream`, or `Cause`. An Effect or Cause represents a single
-event or error, while a Stream represents a series of events or errors that will
-be pulled from the producer as soon as possible.
-
 Added in v1.18.0
 
 ---
@@ -31,7 +25,6 @@ Added in v1.18.0
   - [From "./Filtered"](#from-filtered)
   - [From "./Fx"](#from-fx)
   - [From "./RefArray"](#from-refarray)
-  - [From "./RefRemoteData"](#from-refremotedata)
   - [From "./RefSubject"](#from-refsubject)
   - [From "./Sink"](#from-sink)
   - [From "./Subject"](#from-subject)
@@ -52,124 +45,106 @@ Any `Fx`, shorthand for "Effects", can emit 0 or more errors or events over an
 indefinite period of time. This is in contrast to `Effect` which can only
 produce exactly 1 error or event.
 
-It is defined as a super-type of `Effect`, `Stream`, and `Cause`. This
-allows for all operators that accept an `Fx` to also capable of
-accepting an `Effect`, `Stream`, or `Cause`. An Effect or Cause represents a single
-event or error, while a Stream represents a series of events or errors that will
-be pulled from the producer as soon as possible.
-
 **Signature**
 
 ```ts
-export * from './Computed'
+export * as Computed from "./Computed"
 ```
 
 Added in v1.18.0
 
 ## From "./Filtered"
 
-[Filtered documentation](https://tylors.github.io/typed-fp/fx/Filtered.ts.html)
+[Filtered documentation](https://tylors.github.io/typed/fx/Filtered.ts.html)
 
 **Signature**
 
 ```ts
-export * from './Filtered'
+export * as Filtered from "./Filtered"
 ```
 
 Added in v1.18.0
 
 ## From "./Fx"
 
-[Fx documentation](https://tylors.github.io/typed-fp/fx/Fx.ts.html)
+[Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)
 
 **Signature**
 
 ```ts
-export * from './Fx'
+export * from "./Fx"
 ```
 
 Added in v1.18.0
 
 ## From "./RefArray"
 
-[RefArray documentation](https://tylors.github.io/typed-fp/fx/RefArray.ts.html)
+[RefArray documentation](https://tylors.github.io/typed/fx/RefArray.ts.html)
 
 **Signature**
 
 ```ts
-export * from './RefArray'
-```
-
-Added in v1.18.0
-
-## From "./RefRemoteData"
-
-[RefRemoteData documentation](https://tylors.github.io/typed-fp/fx/RefRemoteData.ts.html)
-
-**Signature**
-
-```ts
-export * from './RefRemoteData'
+export * as RefArray from "./RefArray"
 ```
 
 Added in v1.18.0
 
 ## From "./RefSubject"
 
-[RefSubject documentation](https://tylors.github.io/typed-fp/fx/RefSubject.ts.html)
+[RefSubject documentation](https://tylors.github.io/typed/fx/RefSubject.ts.html)
 
 **Signature**
 
 ```ts
-export * from './RefSubject'
+export * as RefSubject from "./RefSubject"
 ```
 
 Added in v1.18.0
 
 ## From "./Sink"
 
-[Sink documentation](https://tylors.github.io/typed-fp/fx/Sink.ts.html)
+[Sink documentation](https://tylors.github.io/typed/fx/Sink.ts.html)
 
 **Signature**
 
 ```ts
-export * from './Sink'
+export * as Sink from "./Sink"
 ```
 
 Added in v1.18.0
 
 ## From "./Subject"
 
-[Subject documentation](https://tylors.github.io/typed-fp/fx/Subject.ts.html)
+[Subject documentation](https://tylors.github.io/typed/fx/Subject.ts.html)
 
 **Signature**
 
 ```ts
-export * from './Subject'
+export * as Subject from "./Subject"
 ```
 
 Added in v1.18.0
 
 ## From "./TypeId"
 
-[TypeId documentation](https://tylors.github.io/typed-fp/fx/TypeId.ts.html)
+[TypeId documentation](https://tylors.github.io/typed/fx/TypeId.ts.html)
 
 **Signature**
 
 ```ts
-export * from './TypeId'
+export * from "./TypeId"
 ```
 
 Added in v1.18.0
 
 ## From "./Typeclass"
 
-[Typeclass documentation](https://tylors.github.io/typed-fp/fx/Typeclass.ts.html)
+[Typeclass documentation](https://tylors.github.io/typed/fx/Typeclass.ts.html)
 
 **Signature**
 
 ```ts
-export * from './Typeclass'
+export * as Typeclass from "./Typeclass"
 ```
 
 Added in v1.18.0

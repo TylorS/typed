@@ -1,6 +1,6 @@
 ---
 title: Sink.ts
-nav_order: 17
+nav_order: 22
 parent: "@typed/fx"
 ---
 
@@ -114,9 +114,9 @@ Transform the input Cause of a Sink using an Effect.
 
 ```ts
 export declare const mapErrorCauseEffect: {
-  <E2, R2, E, A>(f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>): <R>(
-    sink: WithContext<R, E, A>
-  ) => WithContext<R2 | R, E2, A>
+  <E2, R2, E, A>(
+    f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>
+  ): <R>(sink: WithContext<R, E, A>) => WithContext<R2 | R, E2, A>
   <R, E, A, R2, E2>(
     sink: WithContext<R, E, A>,
     f: (e: Cause.Cause<E2>) => Effect.Effect<R2, E, Cause.Cause<E>>

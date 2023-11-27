@@ -188,9 +188,18 @@ export interface Model<Refs extends Readonly<Record<string, Any>>> extends
   >
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace Model {
+  /**
+   * @since 1.18.0
+   */
   export type AnyTagged = RefSubject.Tagged<any, any, any> | RefSubject.Tagged<any, never, any> | Model.Tagged<any>
 
+  /**
+   * @since 1.18.0
+   */
   export interface Tagged<Refs extends Readonly<Record<string, AnyTagged>>> extends Model<Refs> {
     /**
      * Provide a Model to an Effect

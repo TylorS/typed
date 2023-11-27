@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"
 import * as Directive from "@typed/template/Directive"
@@ -13,6 +17,9 @@ import { Effect } from "effect"
 import { uncapitalize } from "effect/String"
 import type { HTMLAnchorElementProperties } from "./internal/dom-properties"
 
+/**
+ * @since 1.0.0
+ */
 export type AnchorProps =
   & {
     readonly [K in keyof HTMLAnchorElementProperties]:
@@ -26,6 +33,9 @@ export type AnchorProps =
   }
   & EventHandlerProps<HTMLAnchorElement>
 
+/**
+ * @since 1.0.0
+ */
 export type EventHandlerProps<El extends HTMLElement | SVGElement, EventMap extends {} = DefaultEventMap<El>> = {
   readonly [K in keyof EventMap as K extends string ? `on${Capitalize<K>}` : never]?:
     | EventHandler.EventHandler<
@@ -39,6 +49,9 @@ export type EventHandlerProps<El extends HTMLElement | SVGElement, EventMap exte
 }
 type ReturnOf<T> = T extends (...args: any) => infer R ? R : never
 
+/**
+ * @since 1.0.0
+ */
 export function Anchor<
   const Props extends AnchorProps,
   Children extends ReadonlyArray<Renderable<any, any>> = readonly []
@@ -102,6 +115,9 @@ export function Anchor<
   >${children}</a>` as any
 }
 
+/**
+ * @since 1.0.0
+ */
 export function addEventListeners<Props extends EventHandlerProps<any>, T extends Rendered>(
   props: Props,
   ref: ElementSource<T>
@@ -125,12 +141,18 @@ type ValuesOf<T> = [T[keyof T]] extends [infer R] ? R : never
 
 type ToEventType<T> = T extends `on${infer S}` ? Uncapitalize<S> : never
 
+/**
+ * @since 1.0.0
+ */
 export type GetEventHandlersContext<T extends EventHandlerProps<any>> = ValuesOf<
   {
     readonly [K in keyof T as K extends `on${string}` ? K : never]: EventHandler.Context<GetEventHandler<T[K]>>
   }
 >
 
+/**
+ * @since 1.0.0
+ */
 export type GetEventHandlers<T extends EventHandlerProps<any>> = [
   ReadonlyArray<
     ValuesOf<
@@ -147,6 +169,9 @@ type GetEventHandler<
   : T extends Effect.Effect<infer R, infer E, infer _> ? EventHandler.EventHandler<R, E, Event>
   : never
 
+/**
+ * @since 1.0.0
+ */
 export function getEventHandlers<Props extends EventHandlerProps<any>>(props: Props) {
   const eventHandlers: Array<readonly [string, EventHandler.EventHandler<any, any, any>]> = Object.keys(props).filter((
     x
@@ -169,6 +194,9 @@ export function getEventHandlers<Props extends EventHandlerProps<any>>(props: Pr
   return eventHandlers as any as GetEventHandlers<Props>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function getEventHandler<R, E, Ev extends Event = Event>(
   handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<R, E, unknown> | null | undefined
 ): EventHandler.EventHandler<R, E, Ev> | null {

@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Context from "@typed/context"
 import * as Fx from "@typed/fx/Fx"
 import type { Rendered } from "@typed/wire"
@@ -9,6 +13,9 @@ import type { Renderable } from "./Renderable"
 import type { RenderEvent } from "./RenderEvent"
 import type { TemplateInstance } from "./TemplateInstance"
 
+/**
+ * @since 1.0.0
+ */
 export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
@@ -24,6 +31,9 @@ export interface RenderTemplate {
   >
 }
 
+/**
+ * @since 1.0.0
+ */
 export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Context.Tagged<
   RenderTemplate,
   RenderTemplate
@@ -31,6 +41,9 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
   "./RenderTemplate"
 )
 
+/**
+ * @since 1.0.0
+ */
 export interface TemplateFx<R, E, T extends Rendered = Rendered> extends
   Fx.Fx<
     RenderTemplate | Scope | R,
@@ -48,6 +61,9 @@ export interface TemplateFx<R, E, T extends Rendered = Rendered> extends
   >
 }
 
+/**
+ * @since 1.0.0
+ */
 export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
@@ -57,6 +73,9 @@ export function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   return Object.assign(Fx.fromFxEffect(instance), { instance })
 }
 
+/**
+ * @since 1.0.0
+ */
 export function as<T extends Rendered = Rendered>(ref: ElementRef<T>) {
   return function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
     template: TemplateStringsArray,

@@ -6,6 +6,8 @@ parent: "@typed/template"
 
 ## ElementSource overview
 
+Added in v1.0.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -21,6 +23,7 @@ parent: "@typed/template"
   - [ParseSelector (type alias)](#parseselector-type-alias)
   - [ROOT_CSS_SELECTOR](#root_css_selector)
   - [Selector (type alias)](#selector-type-alias)
+  - [getElements](#getelements)
 
 ---
 
@@ -34,16 +37,20 @@ parent: "@typed/template"
 export declare function CssSelectors(selectors: ReadonlyArray<string>): CssSelectors
 ```
 
+Added in v1.0.0
+
 ## CssSelectors (interface)
 
 **Signature**
 
 ```ts
 export interface CssSelectors {
-  readonly _tag: 'css'
+  readonly _tag: "css"
   readonly selectors: ReadonlyArray<string>
 }
 ```
+
+Added in v1.0.0
 
 ## DefaultEventMap (type alias)
 
@@ -53,19 +60,21 @@ export interface CssSelectors {
 export type DefaultEventMap<T> = T extends Window
   ? WindowEventMap
   : T extends Document
-  ? DocumentEventMap
-  : T extends HTMLVideoElement
-  ? HTMLVideoElementEventMap
-  : T extends HTMLMediaElement
-  ? HTMLMediaElementEventMap
-  : T extends HTMLElement
-  ? HTMLElementEventMap
-  : T extends SVGElement
-  ? SVGElementEventMap
-  : T extends Element
-  ? ElementEventMap & Readonly<Record<string, Event>>
-  : Readonly<Record<string, Event>>
+    ? DocumentEventMap
+    : T extends HTMLVideoElement
+      ? HTMLVideoElementEventMap
+      : T extends HTMLMediaElement
+        ? HTMLMediaElementEventMap
+        : T extends HTMLElement
+          ? HTMLElementEventMap
+          : T extends SVGElement
+            ? SVGElementEventMap
+            : T extends Element
+              ? ElementEventMap & Readonly<Record<string, Event>>
+              : Readonly<Record<string, Event>>
 ```
+
+Added in v1.0.0
 
 ## ElementSelector
 
@@ -75,16 +84,20 @@ export type DefaultEventMap<T> = T extends Window
 export declare function ElementSelector(element: Element): ElementSelector
 ```
 
+Added in v1.0.0
+
 ## ElementSelector (interface)
 
 **Signature**
 
 ```ts
 export interface ElementSelector {
-  readonly _tag: 'element'
+  readonly _tag: "element"
   readonly element: Element
 }
 ```
+
+Added in v1.0.0
 
 ## ElementSource
 
@@ -96,45 +109,41 @@ export declare function ElementSource<T extends Rendered, EventMap extends {} = 
 ): ElementSource<T, EventMap>
 ```
 
+Added in v1.0.0
+
 ## ElementSource (interface)
 
 **Signature**
 
 ```ts
-export interface ElementSource<T extends Rendered = Element, E = never, EventMap extends {} = DefaultEventMap<T>>
-  extends Versioned.Versioned<
-    never,
-    never,
-    E,
-    Rendered.Elements<T>,
-    never,
-    E | NoSuchElementException,
-    Rendered.Elements<T>
-  > {
+export interface ElementSource<
+  T extends Rendered = Element,
+  EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
+> extends Versioned.Versioned<never, never, never, never, Rendered.Elements<T>, never, never, Rendered.Elements<T>> {
   readonly selector: Selector
 
   readonly query: {
-    <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(selector: S): ElementSource<
-      ParseSelector<S, Element>,
-      E,
-      Ev
-    >
+    <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+      selector: S
+    ): ElementSource<ParseSelector<S, Element>, Ev>
 
-    <Target extends Rendered, EventMap extends {} = DefaultEventMap<Target>>(rendered: Target): ElementSource<
-      Target,
-      E,
-      EventMap
-    >
+    <Target extends Rendered, EventMap extends {} = DefaultEventMap<Target>>(
+      rendered: Target
+    ): ElementSource<Target, EventMap>
   }
 
-  readonly elements: Filtered<never, E, Rendered.Elements<T>>
+  readonly elements: Filtered<never, never, Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<never, E, EventWithCurrentTarget<T, EventMap[Type]>>
+  ) => Fx.Fx<never, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+
+  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
 }
 ```
+
+Added in v1.0.0
 
 ## ParseSelector (type alias)
 
@@ -144,17 +153,21 @@ export interface ElementSource<T extends Rendered = Element, E = never, EventMap
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR]
   ? Fallback
   : Fallback extends globalThis.Element
-  ? TQS.ParseSelector<T, Fallback>
-  : Fallback
+    ? TQS.ParseSelector<T, Fallback>
+    : Fallback
 ```
+
+Added in v1.0.0
 
 ## ROOT_CSS_SELECTOR
 
 **Signature**
 
 ```ts
-export declare const ROOT_CSS_SELECTOR: ':root'
+export declare const ROOT_CSS_SELECTOR: ":root"
 ```
+
+Added in v1.0.0
 
 ## Selector (type alias)
 
@@ -163,3 +176,15 @@ export declare const ROOT_CSS_SELECTOR: ':root'
 ```ts
 export type Selector = CssSelectors | ElementSelector
 ```
+
+Added in v1.0.0
+
+## getElements
+
+**Signature**
+
+```ts
+export declare function getElements<T extends Rendered>(element: T): ReadonlyArray<Element>
+```
+
+Added in v1.0.0

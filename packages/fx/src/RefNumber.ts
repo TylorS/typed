@@ -1,3 +1,7 @@
+/**
+ * @since 1.18.0
+ */
+
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identifier"
 import type { Effect } from "effect"
 import { strict } from "effect/Equivalence"

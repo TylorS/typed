@@ -1,12 +1,12 @@
 ---
-title: Hub.ts
-nav_order: 9
+title: PubSub.ts
+nav_order: 15
 parent: "@typed/context"
 ---
 
-## Hub overview
+## PubSub overview
 
-Contextual wrappers around @effect/io/Hub
+Contextual wrappers around @effect/io/PubSub
 
 Added in v1.0.0
 
@@ -15,24 +15,24 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructors](#constructors)
-  - [Hub](#hub)
+  - [PubSub](#pubsub)
 - [models](#models)
-  - [Hub (interface)](#hub-interface)
+  - [PubSub (interface)](#pubsub-interface)
 
 ---
 
 # constructors
 
-## Hub
+## PubSub
 
-Construct a Hub implementation to be utilized from the Effect Context.
+Construct a PubSub implementation to be utilized from the Effect Context.
 
 **Signature**
 
 ```ts
-export declare function Hub<A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): Hub<IdentifierOf<I>, A>
-  <const I>(identifier: I): Hub<IdentifierOf<I>, A>
+export declare function PubSub<A>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): PubSub<IdentifierOf<I>, A>
+  <const I>(identifier: I): PubSub<IdentifierOf<I>, A>
 }
 ```
 
@@ -40,90 +40,90 @@ Added in v1.0.0
 
 # models
 
-## Hub (interface)
+## PubSub (interface)
 
-Contextual wrappers around @effect/io/Hub
+Contextual wrappers around @effect/io/PubSub
 
 **Signature**
 
 ```ts
-export interface Hub<I, A> extends Tag<I, H.Hub<A>> {
+export interface PubSub<I, A> extends Tag<I, PS.PubSub<A>> {
   /**
-   * The capacity of the Hub
+   * The capacity of the PubSub
    */
   readonly capacity: Effect.Effect<I, never, number>
 
   /**
-   * Is the Hub active?
+   * Is the PubSub active?
    */
   readonly isActive: Effect.Effect<I, never, boolean>
 
   /**
-   * The current size of the Hub
+   * The current size of the PubSub
    */
   readonly size: Effect.Effect<I, never, number>
 
   /**
-   * Is the Hub full?
+   * Is the PubSub full?
    */
   readonly isFull: Effect.Effect<I, never, boolean>
 
   /**
-   * Is the Hub empty?
+   * Is the PubSub empty?
    */
   readonly isEmpty: Effect.Effect<I, never, boolean>
 
   /**
-   * Shutdown the Hub
+   * Shutdown the PubSub
    */
   readonly shutdown: Effect.Effect<I, never, void>
 
   /**
-   * Is the Hub shutdown?
+   * Is the PubSub shutdown?
    */
   readonly isShutdown: Effect.Effect<I, never, boolean>
 
   /**
-   * Wait for the Hub to shutdown
+   * Wait for the PubSub to shutdown
    */
   readonly awaitShutdown: Effect.Effect<I, never, void>
 
-  // Hub
+  // PubSub
 
   /**
-   * Publish a value to the Hub
+   * Publish a value to the PubSub
    */
   readonly publish: (a: A) => Effect.Effect<I, never, boolean>
 
   /**
-   * Publish multiple values to the Hub
+   * Publish multiple values to the PubSub
    */
   readonly publishAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
 
   /**
-   * Subscribe to the Hub
+   * Subscribe to the PubSub
    */
   readonly subscribe: Effect.Effect<I | Scope, never, Q.Dequeue<A>>
 
   // Constructors
 
   /**
-   * Create a bounded Hub
+   * Create a bounded PubSub
    */
   readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
 
   /**
-   * Create a dropping Hub
+   * Create a dropping PubSub
    */
   readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
 
   /**
-   * Create a sliding Hub
+   * Create a sliding PubSub
    */
   readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
 
   /**
-   * Create an unbounded Hub
+   * Create an unbounded PubSub
    */
   readonly unbounded: Layer.Layer<never, never, I>
 }

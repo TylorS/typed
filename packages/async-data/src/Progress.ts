@@ -1,11 +1,21 @@
+/**
+ * @since 1.0.0
+ */
+
 import { Equivalence, Option } from "effect"
 import { dual } from "effect/Function"
 
+/**
+ * @since 1.0.0
+ */
 export interface Progress {
   readonly loaded: bigint
   readonly total: Option.Option<bigint>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function Progress(loaded: bigint, total: Option.Option<bigint> = Option.none()): Progress {
   return {
     loaded,
@@ -13,8 +23,14 @@ export function Progress(loaded: bigint, total: Option.Option<bigint> = Option.n
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const make = (loaded: bigint, total?: bigint | null): Progress => Progress(loaded, Option.fromNullable(total))
 
+/**
+ * @since 1.0.0
+ */
 export const setLoaded: {
   (loaded: bigint): (progress: Progress) => Progress
   (progress: Progress, loaded: bigint): Progress
@@ -25,6 +41,9 @@ export const setLoaded: {
   )
 })
 
+/**
+ * @since 1.0.0
+ */
 export const setTotal: {
   (total: bigint): (progress: Progress) => Progress
   (progress: Progress, total: bigint): Progress
@@ -35,6 +54,9 @@ export const setTotal: {
   )
 })
 
+/**
+ * @since 1.0.0
+ */
 export const equals: Equivalence.Equivalence<Progress> = Equivalence.struct<
   { readonly [K in keyof Progress]: Equivalence.Equivalence<Progress[K]> }
 >({

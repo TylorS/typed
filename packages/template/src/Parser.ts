@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import { templateHash } from "./internal/parser"
@@ -5,6 +9,9 @@ import * as Template from "./Template"
 import type { Token } from "./Token"
 import { tokenize } from "./Tokenizer"
 
+/**
+ * @since 1.0.0
+ */
 export interface Parser {
   parse(template: ReadonlyArray<string>, tokenStream?: Iterator<Token>): Template.Template
 }
@@ -444,4 +451,7 @@ class ParserImpl {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const parser: Parser = globalValue(Symbol.for("./Parser"), () => new ParserImpl())

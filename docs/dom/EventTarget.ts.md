@@ -1,6 +1,6 @@
 ---
 title: EventTarget.ts
-nav_order: 3
+nav_order: 4
 parent: "@typed/dom"
 ---
 
@@ -77,9 +77,9 @@ Add an event listener to an EventTarget
 
 ```ts
 export declare const addEventListener: {
-  <T extends EventTarget, EventName extends string, R = never>(options: AddEventListenerOptions<T, EventName, R>): (
-    target: T
-  ) => Effect.Effect<Scope.Scope | R, never, void>
+  <T extends EventTarget, EventName extends string, R = never>(
+    options: AddEventListenerOptions<T, EventName, R>
+  ): (target: T) => Effect.Effect<Scope.Scope | R, never, void>
   <T extends EventTarget, EventName extends string, R = never>(
     target: T,
     options: AddEventListenerOptions<T, EventName, R>
@@ -97,9 +97,10 @@ Dispatch an event from an EventTarget
 
 ```ts
 export declare const dispatchEvent: {
-  <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(event: EventName, options?: EventInit): (
-    target: T
-  ) => Effect.Effect<GlobalThis, never, boolean>
+  <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
+    event: EventName,
+    options?: EventInit
+  ): (target: T) => Effect.Effect<GlobalThis, never, boolean>
   <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
     target: T,
     event: EventName,

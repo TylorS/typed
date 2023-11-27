@@ -6,6 +6,8 @@ parent: "@typed/template"
 
 ## Entry overview
 
+Added in v1.0.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -25,11 +27,13 @@ parent: "@typed/template"
 
 ```ts
 export interface BrowserEntry {
-  readonly _tag: 'Browser'
+  readonly _tag: "Browser"
   readonly template: Template
   readonly content: DocumentFragment
 }
 ```
+
+Added in v1.0.0
 
 ## Entry (type alias)
 
@@ -39,14 +43,18 @@ export interface BrowserEntry {
 export type Entry = BrowserEntry | ServerEntry
 ```
 
+Added in v1.0.0
+
 ## ServerEntry (interface)
 
 **Signature**
 
 ```ts
 export interface ServerEntry {
-  readonly _tag: 'Server'
+  readonly _tag: "Server"
   readonly template: Template
   readonly chunks: ReadonlyArray<HtmlChunk>
 }
 ```
+
+Added in v1.0.0

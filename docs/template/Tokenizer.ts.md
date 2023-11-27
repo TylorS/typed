@@ -1,10 +1,12 @@
 ---
 title: Tokenizer.ts
-nav_order: 21
+nav_order: 25
 parent: "@typed/template"
 ---
 
 ## Tokenizer overview
+
+Added in v1.0.0
 
 ---
 
@@ -24,3 +26,5 @@ parent: "@typed/template"
 ```ts
 export declare const tokenize: (template: ReadonlyArray<string>) => Iterable<Token>
 ```
+
+Added in v1.0.0

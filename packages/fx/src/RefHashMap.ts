@@ -1,3 +1,7 @@
+/**
+ * @since 1.18.0
+ */
+
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
 import { HashSet, type Scope } from "effect"
 import * as Effect from "effect/Effect"
@@ -292,6 +296,10 @@ export function compact<R, E, K, V>(refHashMap: RefHashMap<R, E, K, Option<V>>):
   return refHashMap.map(HashMap.compact)
 }
 
+/**
+ * @since 1.18.0
+ * @category filtered
+ */
 export const get: {
   <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Filtered<R, E, V>
   <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Filtered<R, E, V>
@@ -299,6 +307,10 @@ export const get: {
   return refHashMap.filterMap(HashMap.get(key))
 })
 
+/**
+ * @since 1.18.0
+ * @category filtered
+ */
 export const getHash: {
   <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Filtered<R, E, V>
   <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): Filtered<R, E, V>

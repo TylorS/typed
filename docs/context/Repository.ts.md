@@ -67,7 +67,7 @@ Constructs a record of methods from a collection of Fns.
 
 ```ts
 export type RepositoryFns<Fns extends AnyFns> = {
-  readonly [K in keyof Fns]: Fns[K]['apply']
+  readonly [K in keyof Fns]: Fns[K]["apply"]
 }
 ```
 

@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
@@ -5,10 +9,16 @@ import { Deferred, Effect, Option } from "effect"
 import type { BeforeNavigationEvent, CancelNavigation, Destination, NavigateOptions, RedirectError } from "./Navigation"
 import { cancelNavigation, Navigation, redirectToPath } from "./Navigation"
 
+/**
+ * @since 1.0.0
+ */
 export interface BlockNavigation extends Computed.Computed<never, never, Option.Option<Blocking>> {
   readonly isBlocking: Computed.Computed<never, never, boolean>
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface Blocking extends BeforeNavigationEvent {
   readonly cancel: Effect.Effect<never, never, Destination>
   readonly confirm: Effect.Effect<never, never, Destination>
@@ -34,10 +44,16 @@ const Blocked = (event: BeforeNavigationEvent) =>
     (deferred): Blocked => ({ _tag: "Blocked", deferred, event })
   )
 
+/**
+ * @since 1.0.0
+ */
 export interface UseBlockNavigationParams<R = never> {
   readonly shouldBlock?: (event: BeforeNavigationEvent) => Effect.Effect<R, RedirectError | CancelNavigation, boolean>
 }
 
+/**
+ * @since 1.0.0
+ */
 export const useBlockNavigation = <R = never>(
   params: UseBlockNavigationParams<R> = {}
 ): Effect.Effect<Navigation | R | Scope.Scope, never, BlockNavigation> =>

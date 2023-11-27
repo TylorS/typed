@@ -1,10 +1,12 @@
 ---
 title: Template.ts
-nav_order: 18
+nav_order: 21
 parent: "@typed/template"
 ---
 
 ## Template overview
+
+Added in v1.0.0
 
 ---
 
@@ -71,10 +73,13 @@ parent: "@typed/template"
 **Signature**
 
 ```ts
-export declare class AttrPartNode {
-  constructor(readonly name: string, readonly index: number)
-}
+export declare class AttrPartNode { constructor(
+    readonly name: string,
+    readonly index: number
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -103,15 +108,20 @@ export type Attribute =
   | RefPartNode
 ```
 
+Added in v1.0.0
+
 ## AttributeNode (class)
 
 **Signature**
 
 ```ts
-export declare class AttributeNode {
-  constructor(readonly name: string, readonly value: string)
-}
+export declare class AttributeNode { constructor(
+    readonly name: string,
+    readonly value: string
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -126,10 +136,10 @@ readonly _tag: "attribute"
 **Signature**
 
 ```ts
-export declare class BooleanNode {
-  constructor(readonly name: string)
-}
+export declare class BooleanNode { constructor(readonly name: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -144,10 +154,13 @@ readonly _tag: "boolean"
 **Signature**
 
 ```ts
-export declare class BooleanPartNode {
-  constructor(readonly name: string, readonly index: number)
-}
+export declare class BooleanPartNode { constructor(
+    readonly name: string,
+    readonly index: number
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -165,15 +178,17 @@ readonly _tag: "boolean-part"
 export type ClassNameNode = TextNode | ClassNamePartNode
 ```
 
+Added in v1.0.0
+
 ## ClassNamePartNode (class)
 
 **Signature**
 
 ```ts
-export declare class ClassNamePartNode {
-  constructor(readonly index: number)
-}
+export declare class ClassNamePartNode { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -191,15 +206,17 @@ readonly _tag: "className-part"
 export type Comment = CommentNode | CommentPartNode | SparseCommentNode
 ```
 
+Added in v1.0.0
+
 ## CommentNode (class)
 
 **Signature**
 
 ```ts
-export declare class CommentNode {
-  constructor(readonly value: string)
-}
+export declare class CommentNode { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -214,10 +231,10 @@ readonly _tag: "comment"
 **Signature**
 
 ```ts
-export declare class CommentPartNode {
-  constructor(readonly index: number)
-}
+export declare class CommentPartNode { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -232,10 +249,10 @@ readonly _tag: "comment-part"
 **Signature**
 
 ```ts
-export declare class DataPartNode {
-  constructor(readonly index: number)
-}
+export declare class DataPartNode { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -250,10 +267,14 @@ readonly _tag: "data"
 **Signature**
 
 ```ts
-export declare class ElementNode {
-  constructor(readonly tagName: string, readonly attributes: Array<Attribute>, readonly children: Array<Node>)
-}
+export declare class ElementNode { constructor(
+    readonly tagName: string,
+    readonly attributes: Array<Attribute>,
+    readonly children: Array<Node>
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -268,10 +289,13 @@ readonly _tag: "element"
 **Signature**
 
 ```ts
-export declare class EventPartNode {
-  constructor(readonly name: string, readonly index: number)
-}
+export declare class EventPartNode { constructor(
+    readonly name: string,
+    readonly index: number
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -289,15 +313,17 @@ readonly _tag: "event"
 export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart | Comment
 ```
 
+Added in v1.0.0
+
 ## NodePart (class)
 
 **Signature**
 
 ```ts
-export declare class NodePart {
-  constructor(readonly index: number)
-}
+export declare class NodePart { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -314,6 +340,8 @@ readonly _tag: "node"
 ```ts
 export type ParentNode = ElementNode | SelfClosingElementNode | TextOnlyElement
 ```
+
+Added in v1.0.0
 
 ## PartNode (type alias)
 
@@ -333,15 +361,20 @@ export type PartNode =
   | CommentPartNode
 ```
 
+Added in v1.0.0
+
 ## PropertyPartNode (class)
 
 **Signature**
 
 ```ts
-export declare class PropertyPartNode {
-  constructor(readonly name: string, readonly index: number)
-}
+export declare class PropertyPartNode { constructor(
+    readonly name: string,
+    readonly index: number
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -356,10 +389,10 @@ readonly _tag: "property"
 **Signature**
 
 ```ts
-export declare class RefPartNode {
-  constructor(readonly index: number)
-}
+export declare class RefPartNode { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -374,10 +407,13 @@ readonly _tag: "ref"
 **Signature**
 
 ```ts
-export declare class SelfClosingElementNode {
-  constructor(readonly tagName: string, readonly attributes: Array<Attribute>)
-}
+export declare class SelfClosingElementNode { constructor(
+    readonly tagName: string,
+    readonly attributes: Array<Attribute>
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -392,10 +428,13 @@ readonly _tag: "self-closing-element"
 **Signature**
 
 ```ts
-export declare class SparseAttrNode {
-  constructor(readonly name: string, readonly nodes: Array<AttrPartNode | TextNode>)
-}
+export declare class SparseAttrNode { constructor(
+    readonly name: string,
+    readonly nodes: Array<AttrPartNode | TextNode>
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -410,10 +449,10 @@ readonly _tag: "sparse-attr"
 **Signature**
 
 ```ts
-export declare class SparseClassNameNode {
-  constructor(readonly nodes: Array<ClassNameNode>)
-}
+export declare class SparseClassNameNode { constructor(readonly nodes: Array<ClassNameNode>) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -428,10 +467,10 @@ readonly _tag: "sparse-class-name"
 **Signature**
 
 ```ts
-export declare class SparseCommentNode {
-  constructor(readonly nodes: Array<TextNode | CommentPartNode>)
-}
+export declare class SparseCommentNode { constructor(readonly nodes: Array<TextNode | CommentPartNode>) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -449,20 +488,22 @@ readonly _tag: "sparse-comment"
 export type SparsePartNode = SparseAttrNode | SparseClassNameNode | SparseCommentNode
 ```
 
+Added in v1.0.0
+
 ## Template (class)
 
 **Signature**
 
 ```ts
-export declare class Template {
-  constructor(
+export declare class Template { constructor(
     readonly nodes: ReadonlyArray<Node>,
     readonly hash: string,
     // Parts are a array of Parts to the respective path from the root node to access it during
     readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: Chunk<number>]>
-  )
-}
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -480,15 +521,17 @@ readonly _tag: "template"
 export type Text = TextNode | TextPartNode
 ```
 
+Added in v1.0.0
+
 ## TextNode (class)
 
 **Signature**
 
 ```ts
-export declare class TextNode {
-  constructor(readonly value: string)
-}
+export declare class TextNode { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -503,10 +546,14 @@ readonly _tag: "text"
 **Signature**
 
 ```ts
-export declare class TextOnlyElement {
-  constructor(readonly tagName: string, readonly attributes: Array<Attribute>, readonly children: Array<Text>)
-}
+export declare class TextOnlyElement { constructor(
+    readonly tagName: string,
+    readonly attributes: Array<Attribute>,
+    readonly children: Array<Text>
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -521,10 +568,10 @@ readonly _tag: "text-only-element"
 **Signature**
 
 ```ts
-export declare class TextPartNode {
-  constructor(readonly index: number)
-}
+export declare class TextPartNode { constructor(readonly index: number) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 

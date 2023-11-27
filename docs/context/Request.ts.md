@@ -127,7 +127,9 @@ Construct a Request implementation to be utilized from the Effect Context.
 
 ```ts
 export interface RequestConstructor {
-  <Input, Req extends R.Request<any, any>>(makeRequest: (input: Input) => Req): {
+  <Input, Req extends R.Request<any, any>>(
+    makeRequest: (input: Input) => Req
+  ): {
     <const Id extends IdentifierFactory<any>>(id: Id): Request<IdentifierOf<Id>, Input, Req>
     <const Id>(id: Id): Request<IdentifierOf<Id>, Input, Req>
   }
@@ -138,18 +140,14 @@ export interface RequestConstructor {
    * @category constructors
    */
   readonly tagged: <Req extends R.Request<any, any> & { readonly _tag: string }>(
-    tag: Req['_tag']
+    tag: Req["_tag"]
   ) => {
-    <const Id extends IdentifierFactory<any>>(id: Id): Request<
-      IdentifierOf<Id>,
-      Compact<Omit<Req, '_tag' | typeof R.RequestTypeId | keyof Data.Case>>,
-      Req
-    >
-    <const Id>(id: Id): Request<
-      IdentifierOf<Id>,
-      Compact<Omit<Req, '_tag' | typeof R.RequestTypeId | keyof Data.Case>>,
-      Req
-    >
+    <const Id extends IdentifierFactory<any>>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
+    <const Id>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
   }
   /**
    * Construct a Request implementation to be utilized from the Effect Context.
@@ -157,11 +155,9 @@ export interface RequestConstructor {
    * @category constructors
    */
   readonly of: <Req extends R.Request<any, any>>() => {
-    <const Id extends IdentifierFactory<any>>(id: Id): Request<
-      IdentifierOf<Id>,
-      Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>,
-      Req
-    >
+    <const Id extends IdentifierFactory<any>>(
+      id: Id
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
     <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
   }
 }

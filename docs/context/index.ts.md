@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 11
+nav_order: 10
 parent: "@typed/context"
 ---
 
@@ -13,319 +13,319 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "@typed/context/Builder"](#from-typedcontextbuilder)
-  - [From "@typed/context/Cache"](#from-typedcontextcache)
-  - [From "@typed/context/Context"](#from-typedcontextcontext)
-  - [From "@typed/context/Dequeue"](#from-typedcontextdequeue)
-  - [From "@typed/context/EffectFn"](#from-typedcontexteffectfn)
-  - [From "@typed/context/Enqueue"](#from-typedcontextenqueue)
-  - [From "@typed/context/Extensions"](#from-typedcontextextensions)
-  - [From "@typed/context/Fn"](#from-typedcontextfn)
-  - [From "@typed/context/Hub"](#from-typedcontexthub)
-  - [From "@typed/context/Identifier"](#from-typedcontextidentifier)
-  - [From "@typed/context/KeyedPool"](#from-typedcontextkeyedpool)
-  - [From "@typed/context/Many"](#from-typedcontextmany)
-  - [From "@typed/context/Model"](#from-typedcontextmodel)
-  - [From "@typed/context/Pool"](#from-typedcontextpool)
-  - [From "@typed/context/Queue"](#from-typedcontextqueue)
-  - [From "@typed/context/Ref"](#from-typedcontextref)
-  - [From "@typed/context/Repository"](#from-typedcontextrepository)
-  - [From "@typed/context/Request"](#from-typedcontextrequest)
-  - [From "@typed/context/RequestResolver"](#from-typedcontextrequestresolver)
-  - [From "@typed/context/Resource"](#from-typedcontextresource)
-  - [From "@typed/context/ScopedCache"](#from-typedcontextscopedcache)
-  - [From "@typed/context/ScopedRef"](#from-typedcontextscopedref)
-  - [From "@typed/context/SynchronizedRef"](#from-typedcontextsynchronizedref)
-  - [From "@typed/context/Tag"](#from-typedcontexttag)
+  - [From "./Builder"](#from-builder)
+  - [From "./Cache"](#from-cache)
+  - [From "./Context"](#from-context)
+  - [From "./Dequeue"](#from-dequeue)
+  - [From "./EffectFn"](#from-effectfn)
+  - [From "./Enqueue"](#from-enqueue)
+  - [From "./Extensions"](#from-extensions)
+  - [From "./Fn"](#from-fn)
+  - [From "./Identifier"](#from-identifier)
+  - [From "./KeyedPool"](#from-keyedpool)
+  - [From "./Many"](#from-many)
+  - [From "./Model"](#from-model)
+  - [From "./Pool"](#from-pool)
+  - [From "./PubSub"](#from-pubsub)
+  - [From "./Queue"](#from-queue)
+  - [From "./Ref"](#from-ref)
+  - [From "./Repository"](#from-repository)
+  - [From "./Request"](#from-request)
+  - [From "./RequestResolver"](#from-requestresolver)
+  - [From "./Resource"](#from-resource)
+  - [From "./ScopedCache"](#from-scopedcache)
+  - [From "./ScopedRef"](#from-scopedref)
+  - [From "./SynchronizedRef"](#from-synchronizedref)
+  - [From "./Tag"](#from-tag)
 
 ---
 
 # exports
 
-## From "@typed/context/Builder"
+## From "./Builder"
 
-Re-exports all named exports from the "@typed/context/Builder" module.
+Re-exports all named exports from the "./Builder" module.
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Builder'
+export * from "./Builder"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Cache"
+## From "./Cache"
 
-[Cache Documentation](https://tylors.github.io/typed-fp/context/Cache.ts.html)
+[Cache Documentation](https://tylors.github.io/typed/context/Cache.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Cache'
+export * from "./Cache"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Context"
+## From "./Context"
 
-[Context Documentation](https://tylors.github.io/typed-fp/context/Context.ts.html)
+[Context Documentation](https://tylors.github.io/typed/context/Context.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Context'
+export * from "./Context"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Dequeue"
+## From "./Dequeue"
 
-[Dequeue Documentation](https://tylors.github.io/typed-fp/context/Dequeue.ts.html)
+[Dequeue Documentation](https://tylors.github.io/typed/context/Dequeue.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Dequeue'
+export * from "./Dequeue"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/EffectFn"
+## From "./EffectFn"
 
-[EffectFn Documentation](https://tylors.github.io/typed-fp/context/EffectFn.ts.html)
+[EffectFn Documentation](https://tylors.github.io/typed/context/EffectFn.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/EffectFn'
+export * from "./EffectFn"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Enqueue"
+## From "./Enqueue"
 
-[Enqueue Documentation](https://tylors.github.io/typed-fp/context/Enqueue.ts.html)
+[Enqueue Documentation](https://tylors.github.io/typed/context/Enqueue.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Enqueue'
+export * from "./Enqueue"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Extensions"
+## From "./Extensions"
 
-[Extensions Documentation](https://tylors.github.io/typed-fp/context/Extensions.ts.html)
+[Extensions Documentation](https://tylors.github.io/typed/context/Extensions.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Extensions'
+export * from "./Extensions"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Fn"
+## From "./Fn"
 
-[Fn Documentation](https://tylors.github.io/typed-fp/context/Fn.ts.html)
+[Fn Documentation](https://tylors.github.io/typed/context/Fn.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Fn'
+export * from "./Fn"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Hub"
+## From "./Identifier"
 
-[Hub Documentation](https://tylors.github.io/typed-fp/context/Hub.ts.html)
+[Identifier Documentation](https://tylors.github.io/typed/context/Identifier.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Hub'
+export * from "./Identifier"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Identifier"
+## From "./KeyedPool"
 
-[Identifier Documentation](https://tylors.github.io/typed-fp/context/Identifier.ts.html)
+[KeyedPool Documentation](https://tylors.github.io/typed/context/KeyedPool.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Identifier'
+export * from "./KeyedPool"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/KeyedPool"
+## From "./Many"
 
-[KeyedPool Documentation](https://tylors.github.io/typed-fp/context/KeyedPool.ts.html)
+[Many Documentation](https://tylors.github.io/typed/context/Many.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/KeyedPool'
+export * from "./Many"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Many"
+## From "./Model"
 
-[Many Documentation](https://tylors.github.io/typed-fp/context/Many.ts.html)
+[Model Documentation](https://tylors.github.io/typed/context/Model.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Many'
+export * from "./Model"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Model"
+## From "./Pool"
 
-[Model Documentation](https://tylors.github.io/typed-fp/context/Model.ts.html)
+[Pool Documentation](https://tylors.github.io/typed/context/Pool.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Model'
+export * from "./Pool"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Pool"
+## From "./PubSub"
 
-[Pool Documentation](https://tylors.github.io/typed-fp/context/Pool.ts.html)
+[PubSub Documentation](https://tylors.github.io/typed/context/PubSub.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Pool'
+export * from "./PubSub"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Queue"
+## From "./Queue"
 
-[Queue Documentation](https://tylors.github.io/typed-fp/context/Queue.ts.html)
+[Queue Documentation](https://tylors.github.io/typed/context/Queue.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Queue'
+export * from "./Queue"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Ref"
+## From "./Ref"
 
-[Ref Documentation](https://tylors.github.io/typed-fp/context/Ref.ts.html)
+[Ref Documentation](https://tylors.github.io/typed/context/Ref.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Ref'
+export * from "./Ref"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Repository"
+## From "./Repository"
 
-[Repository Documentation](https://tylors.github.io/typed-fp/context/Repository.ts.html)
+[Repository Documentation](https://tylors.github.io/typed/context/Repository.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Repository'
+export * from "./Repository"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Request"
+## From "./Request"
 
-[Request Documentation](https://tylors.github.io/typed-fp/context/Request.ts.html)
+[Request Documentation](https://tylors.github.io/typed/context/Request.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Request'
+export * from "./Request"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/RequestResolver"
+## From "./RequestResolver"
 
-[RequestResolver Documentation](https://tylors.github.io/typed-fp/context/RequestResolver.ts.html)
+[RequestResolver Documentation](https://tylors.github.io/typed/context/RequestResolver.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/RequestResolver'
+export * from "./RequestResolver"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Resource"
+## From "./Resource"
 
-[Resource Documentation](https://tylors.github.io/typed-fp/context/Resource.ts.html)
+[Resource Documentation](https://tylors.github.io/typed/context/Resource.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Resource'
+export * from "./Resource"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/ScopedCache"
+## From "./ScopedCache"
 
-[ScopedCache Documentation](https://tylors.github.io/typed-fp/context/ScopedCache.ts.html)
+[ScopedCache Documentation](https://tylors.github.io/typed/context/ScopedCache.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/ScopedCache'
+export * from "./ScopedCache"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/ScopedRef"
+## From "./ScopedRef"
 
-[ScopedRef Documentation](https://tylors.github.io/typed-fp/context/ScopedRef.ts.html)
+[ScopedRef Documentation](https://tylors.github.io/typed/context/ScopedRef.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/ScopedRef'
+export * from "./ScopedRef"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/SynchronizedRef"
+## From "./SynchronizedRef"
 
-[SynchronizedRef Documentation](https://tylors.github.io/typed-fp/context/SynchronizedRef.ts.html)
+[SynchronizedRef Documentation](https://tylors.github.io/typed/context/SynchronizedRef.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/SynchronizedRef'
+export * from "./SynchronizedRef"
 ```
 
 Added in v1.0.0
 
-## From "@typed/context/Tag"
+## From "./Tag"
 
-[Tag Documentation](https://tylors.github.io/typed-fp/context/Tag.ts.html)
+[Tag Documentation](https://tylors.github.io/typed/context/Tag.ts.html)
 
 **Signature**
 
 ```ts
-export * from '@typed/context/Tag'
+export * from "./Tag"
 ```
 
 Added in v1.0.0

@@ -197,6 +197,9 @@ export function dequeueWhileIdle<I, A, R2, E2, B>(
   })
 }
 
+/**
+ * @since 1.18.0
+ */
 export interface IdleQueue<I extends Hash> {
   readonly add: <R>(
     part: I,
@@ -204,6 +207,9 @@ export interface IdleQueue<I extends Hash> {
   ) => Effect.Effect<R | Scope.Scope, never, void>
 }
 
+/**
+ * @since 1.18.0
+ */
 export const makeIdleQueue = <I extends Hash>(
   options?: IdleRequestOptions
 ): Effect.Effect<Scope.Scope, never, IdleQueue<I>> =>

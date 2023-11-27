@@ -1,10 +1,12 @@
 ---
 title: RenderEvent.ts
-nav_order: 16
+nav_order: 19
 parent: "@typed/template"
 ---
 
 ## RenderEvent overview
+
+Added in v1.0.0
 
 ---
 
@@ -30,17 +32,21 @@ parent: "@typed/template"
 export declare function DomRenderEvent(rendered: Rendered): DomRenderEvent
 ```
 
+Added in v1.0.0
+
 ## DomRenderEvent (type alias)
 
 **Signature**
 
 ```ts
 export type DomRenderEvent = {
-  readonly _tag: 'dom'
+  readonly _tag: "dom"
   readonly rendered: Rendered
   readonly valueOf: () => Rendered
 }
 ```
+
+Added in v1.0.0
 
 ## HtmlRenderEvent
 
@@ -50,17 +56,21 @@ export type DomRenderEvent = {
 export declare function HtmlRenderEvent(html: string): HtmlRenderEvent
 ```
 
+Added in v1.0.0
+
 ## HtmlRenderEvent (type alias)
 
 **Signature**
 
 ```ts
 export type HtmlRenderEvent = {
-  readonly _tag: 'html'
+  readonly _tag: "html"
   readonly html: string
   readonly valueOf: () => string
 }
 ```
+
+Added in v1.0.0
 
 ## RenderEvent (type alias)
 
@@ -70,6 +80,8 @@ export type HtmlRenderEvent = {
 export type RenderEvent = DomRenderEvent | HtmlRenderEvent
 ```
 
+Added in v1.0.0
+
 ## isRenderEvent
 
 **Signature**
@@ -77,3 +89,5 @@ export type RenderEvent = DomRenderEvent | HtmlRenderEvent
 ```ts
 export declare function isRenderEvent(value: unknown): value is RenderEvent
 ```
+
+Added in v1.0.0

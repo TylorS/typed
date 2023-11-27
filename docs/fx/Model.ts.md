@@ -1,6 +1,6 @@
 ---
-title: Context/Model.ts
-nav_order: 3
+title: Model.ts
+nav_order: 11
 parent: "@typed/fx"
 ---
 
@@ -14,6 +14,7 @@ Added in v1.18.0
 
 - [constructors](#constructors)
   - [Model](#model)
+  - [tagged](#tagged)
 - [models](#models)
   - [Model (interface)](#model-interface)
 - [symbols](#symbols)
@@ -21,6 +22,9 @@ Added in v1.18.0
   - [ModelTypeId (type alias)](#modeltypeid-type-alias)
 - [utils](#utils)
   - [Model (namespace)](#model-namespace)
+    - [Tagged (interface)](#tagged-interface)
+    - [AnyTagged (type alias)](#anytagged-type-alias)
+  - [Model (namespace)](#model-namespace-1)
     - [Error (type alias)](#error-type-alias)
     - [Identifier (type alias)](#identifier-type-alias)
     - [State (type alias)](#state-type-alias)
@@ -41,6 +45,20 @@ export declare function Model<const Refs extends Readonly<Record<string, Any>>>(
 
 Added in v1.18.0
 
+## tagged
+
+Create a Model from a collection of Refs.
+
+**Signature**
+
+```ts
+export declare function tagged<const Refs extends Readonly<Record<string, Model.AnyTagged>>>(
+  refs: Refs
+): Model.Tagged<Refs>
+```
+
+Added in v1.18.0
+
 # models
 
 ## Model (interface)
@@ -51,8 +69,9 @@ A Model is a collection of Refs that can be utilized as a single unit from the E
 
 ```ts
 export interface Model<Refs extends Readonly<Record<string, Any>>>
-  extends VersionedFxEffect<
+  extends Versioned<
     Model.Identifier<Refs[keyof Refs]>,
+    never,
     Model.Identifier<Refs[keyof Refs]>,
     Model.Error<Refs[keyof Refs]>,
     {
@@ -177,7 +196,45 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
       readonly [K in keyof Refs]: Model.State<Refs[K]>
     }
   >
+}
+```
 
+Added in v1.18.0
+
+# symbols
+
+## ModelTypeId
+
+**Signature**
+
+```ts
+export declare const ModelTypeId: typeof ModelTypeId
+```
+
+Added in v1.18.0
+
+## ModelTypeId (type alias)
+
+**Signature**
+
+```ts
+export type ModelTypeId = typeof ModelTypeId
+```
+
+Added in v1.18.0
+
+# utils
+
+## Model (namespace)
+
+Added in v1.18.0
+
+### Tagged (interface)
+
+**Signature**
+
+```ts
+export interface Tagged<Refs extends Readonly<Record<string, AnyTagged>>> extends Model<Refs> {
   /**
    * Provide a Model to an Effect
    * @since 1.18.0
@@ -235,29 +292,15 @@ export interface Model<Refs extends Readonly<Record<string, Any>>>
 
 Added in v1.18.0
 
-# symbols
-
-## ModelTypeId
+### AnyTagged (type alias)
 
 **Signature**
 
 ```ts
-export declare const ModelTypeId: typeof ModelTypeId
+export type AnyTagged = RefSubject.Tagged<any, any, any> | RefSubject.Tagged<any, never, any> | Model.Tagged<any>
 ```
 
 Added in v1.18.0
-
-## ModelTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ModelTypeId = typeof ModelTypeId
-```
-
-Added in v1.18.0
-
-# utils
 
 ## Model (namespace)
 
@@ -272,9 +315,11 @@ Extract the Error of a Model
 ```ts
 export type Error<T> = T extends RefSubject<infer _, infer E, infer _>
   ? E
-  : T extends Model<infer R>
-  ? { readonly [K in keyof R]: Error<R[K]> }[keyof R]
-  : never
+  : T extends Model.Tagged<infer R>
+    ? { readonly [K in keyof R]: Error<R[K]> }[keyof R]
+    : T extends Model<infer R>
+      ? { readonly [K in keyof R]: Error<R[K]> }[keyof R]
+      : never
 ```
 
 Added in v1.18.0
@@ -288,9 +333,11 @@ Extract the Identifier of a Model
 ```ts
 export type Identifier<T> = T extends RefSubject<infer I, infer _, infer __>
   ? I
-  : T extends Model<infer R>
-  ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
-  : never
+  : [T] extends [Model.Tagged<infer R>]
+    ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
+    : T extends Model<infer R>
+      ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
+      : never
 ```
 
 Added in v1.18.0
@@ -304,9 +351,15 @@ Extract the State of a Model
 ```ts
 export type State<T> = T extends RefSubject<infer _, infer __, infer S>
   ? S
-  : T extends Model<infer R>
-  ? { readonly [K in keyof R]: State<R[K]> }
-  : never
+  : T extends Model.Tagged<infer R>
+    ? [keyof R] extends [never]
+      ? R
+      : { readonly [K in keyof R]: State<R[K]> }
+    : T extends Model<infer R>
+      ? [keyof R] extends [never]
+        ? R
+        : { readonly [K in keyof R]: State<R[K]> }
+      : never
 ```
 
 Added in v1.18.0

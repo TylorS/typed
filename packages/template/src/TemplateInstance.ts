@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type * as Fx from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
 import type * as Versioned from "@typed/fx/Versioned"
@@ -8,9 +12,18 @@ import { type ElementRef, ElementRefTypeId } from "./ElementRef"
 import type { Placeholder } from "./Placeholder"
 import type { RenderEvent } from "./RenderEvent"
 
+/**
+ * @since 1.0.0
+ */
 export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance")
+/**
+ * @since 1.0.0
+ */
 export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
 
+/**
+ * @since 1.0.0
+ */
 export interface TemplateInstance<E, T extends Rendered = Rendered>
   extends Versioned.Versioned<never, never, never, E, RenderEvent, never, E | NoSuchElementException, T>
 {
@@ -25,6 +38,9 @@ export interface TemplateInstance<E, T extends Rendered = Rendered>
   readonly dispatchEvent: ElementRef<T>["dispatchEvent"]
 }
 
+/**
+ * @since 1.0.0
+ */
 export function TemplateInstance<T extends Rendered = Rendered, E = never>(
   events: Fx.Fx<never, E, RenderEvent>,
   ref: ElementRef<T>

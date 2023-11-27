@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type { Document } from "@typed/dom/Document"
 import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServices"
 import type { GlobalThis } from "@typed/dom/GlobalThis"
@@ -29,6 +32,9 @@ import type { RenderTemplate } from "./RenderTemplate"
 // TODO: keyboard events
 // TODO: drag and drop events
 
+/**
+ * @since 1.0.0
+ */
 export interface TestRender<E> {
   readonly window: Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
   readonly document: Document
@@ -42,6 +48,9 @@ export interface TestRender<E> {
   readonly click: (options?: Omit<EventOptions, "event">) => Effect.Effect<never, Cause.NoSuchElementException, void>
 }
 
+/**
+ * @since 1.0.0
+ */
 export function testRender<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
   options?:
@@ -94,6 +103,9 @@ export function testRender<R, E>(
   })
 }
 
+/**
+ * @since 1.0.0
+ */
 export type EventOptions = {
   readonly event: string
   readonly selector?: string
@@ -103,6 +115,9 @@ export type EventOptions = {
 // TODO: Find more events to add here
 const NON_BUBBLING_EVENTS = new Set(["focus", "blur"])
 
+/**
+ * @since 1.0.0
+ */
 export function dispatchEvent<E>(
   { elementRef, makeEvent }: Pick<TestRender<E>, "elementRef" | "makeEvent">,
   options: EventOptions
@@ -119,6 +134,9 @@ export function dispatchEvent<E>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function click<E>(
   rendered: Pick<TestRender<E>, "elementRef" | "makeEvent">,
   options?: Omit<EventOptions, "event">

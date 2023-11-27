@@ -35,10 +35,19 @@ export interface Versioned<R0, E0, R, E, A, R2, E2, B> extends Fx.Fx<R, E, A>, E
   readonly version: Effect.Effect<R0, E0, number>
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace Versioned {
+  /**
+   * @since 1.18.0
+   */
   export type VersionContext<T> = T extends
     Versioned<infer R0, infer _E0, infer _R, infer _E, infer _A, infer _R2, infer _E2, infer _B> ? R0 : never
 
+  /**
+   * @since 1.18.0
+   */
   export type VersionError<T> = T extends
     Versioned<infer _R0, infer E0, infer _R, infer _E, infer _A, infer _R2, infer _E2, infer _B> ? E0 : never
 }
@@ -192,6 +201,9 @@ export const mapEffect: {
   return transform(versioned, core.mapEffect(options.onFx), Effect.flatMap(options.onEffect))
 })
 
+/**
+ * @since 1.0.0
+ */
 export function combine<const VS extends ReadonlyArray<Versioned<any, any, any, any, any, any, any, any>>>(
   versioneds: VS
 ): Versioned<
@@ -211,6 +223,9 @@ export function combine<const VS extends ReadonlyArray<Versioned<any, any, any, 
   })
 }
 
+/**
+ * @since 1.0.0
+ */
 export function struct<const VS extends Readonly<Record<string, Versioned<any, any, any, any, any, any, any, any>>>>(
   versioneds: VS
 ): Versioned<
@@ -236,6 +251,9 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const provide: {
   <R3, E3, C3>(
     layer: Layer.Layer<R3, E3, C3>

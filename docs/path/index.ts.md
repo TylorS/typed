@@ -144,7 +144,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const prefix: <P extends string, A extends `:${string}` | '(.*)'>(prefix: P, param: A) => `{${P}${A}}`
+export declare const prefix: <P extends string, A extends `:${string}` | "(.*)">(prefix: P, param: A) => `{${P}${A}}`
 ```
 
 Added in v1.0.0
@@ -166,7 +166,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const queryParams: <P extends readonly [any, ...any[]]>(...params: P) => QueryParams<P, ''>
+export declare const queryParams: <P extends readonly [any, ...any[]]>(...params: P) => QueryParams<P, "">
 ```
 
 Added in v1.0.0
@@ -176,7 +176,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const unnamed: '(.*)'
+export declare const unnamed: "(.*)"
 ```
 
 Added in v1.0.0
@@ -327,14 +327,14 @@ Added in v1.0.0
 export type FormatPart<P extends string> = A.Equals<string, P> extends 1
   ? `/${string}`
   : `` extends P
-  ? P
-  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
-  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-  : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
-  ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-  : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
-  ? P
-  : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
+    ? P
+    : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
+      ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+      : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
+        ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+        : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
+          ? P
+          : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
 ```
 
 Added in v1.0.0
@@ -355,40 +355,40 @@ export type InpterpolateParts<
   ? A.Equals<string, H> extends 1
     ? InpterpolateParts<T, Params, [...R, H], AST>
     : H extends Optional<Prefix<infer Pre, Unnamed>>
-    ? FindNextIndex<AST> extends keyof Params
-      ? InpterpolateParts<
-          T,
-          Params,
-          AppendPrefix<R, Pre, `${A.Cast<Params[FindNextIndex<AST>], string | number>}`>,
-          AST & Record<H, Params[FindNextIndex<AST>]>
-        >
-      : InpterpolateParts<T, Params, R, AST>
-    : H extends Prefix<infer Pre, Unnamed>
-    ? InpterpolateParts<
-        T,
-        Params,
-        AppendPrefix<R, Pre, `${A.Cast<Params[A.Cast<FindNextIndex<AST>, keyof Params>], string | number>}`>,
-        AST & Record<H, Params[A.Cast<FindNextIndex<AST>, keyof Params>]>
-      >
-    : H extends Optional<Prefix<infer Pre, Param<infer P>>>
-    ? P extends keyof Params
-      ? InpterpolateParts<
-          T,
-          Params,
-          AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
-          AST & Record<H, Params[A.Cast<P, keyof Params>]>
-        >
-      : InpterpolateParts<T, Params, R, AST>
-    : H extends Prefix<infer Pre, Param<infer P>>
-    ? InpterpolateParts<
-        T,
-        Params,
-        AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
-        AST & Record<H, Params[A.Cast<P, keyof Params>]>
-      >
-    : InterpolatePart<H, Params, AST> extends readonly [infer A, infer B]
-    ? InpterpolatePartsWithNext<T, Params, R, readonly [A, B]>
-    : InpterpolateParts<T, Params, R, AST>
+      ? FindNextIndex<AST> extends keyof Params
+        ? InpterpolateParts<
+            T,
+            Params,
+            AppendPrefix<R, Pre, `${A.Cast<Params[FindNextIndex<AST>], string | number>}`>,
+            AST & Record<H, Params[FindNextIndex<AST>]>
+          >
+        : InpterpolateParts<T, Params, R, AST>
+      : H extends Prefix<infer Pre, Unnamed>
+        ? InpterpolateParts<
+            T,
+            Params,
+            AppendPrefix<R, Pre, `${A.Cast<Params[A.Cast<FindNextIndex<AST>, keyof Params>], string | number>}`>,
+            AST & Record<H, Params[A.Cast<FindNextIndex<AST>, keyof Params>]>
+          >
+        : H extends Optional<Prefix<infer Pre, Param<infer P>>>
+          ? P extends keyof Params
+            ? InpterpolateParts<
+                T,
+                Params,
+                AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
+                AST & Record<H, Params[A.Cast<P, keyof Params>]>
+              >
+            : InpterpolateParts<T, Params, R, AST>
+          : H extends Prefix<infer Pre, Param<infer P>>
+            ? InpterpolateParts<
+                T,
+                Params,
+                AppendPrefix<R, Pre, A.Cast<Params[A.Cast<P, keyof Params>], string>>,
+                AST & Record<H, Params[A.Cast<P, keyof Params>]>
+              >
+            : InterpolatePart<H, Params, AST> extends readonly [infer A, infer B]
+              ? InpterpolatePartsWithNext<T, Params, R, readonly [A, B]>
+              : InpterpolateParts<T, Params, R, AST>
   : readonly [R, AST]
 ```
 
@@ -416,13 +416,13 @@ Interpolate a path with a set of parameters
 **Signature**
 
 ```ts
-export type Interpolate<P extends string, Params extends ParamsOf<P>> = [Params] extends [never]
+export type Interpolate<P extends string, Params extends ParamsOf<P>> = [keyof Params] extends [never]
   ? P
   : P extends `${infer Head}\\?${infer Tail}`
-  ? PathJoin<
-      InterpolateWithQueryParams<SplitQueryParams<Tail>, Params, InpterpolateParts<PathToParts<Head>, Params>>[0]
-    >
-  : PathJoin<InpterpolateParts<PathToParts<P>, Params>[0]>
+    ? PathJoin<
+        InterpolateWithQueryParams<SplitQueryParams<Tail>, Params, InpterpolateParts<PathToParts<Head>, Params>>[0]
+      >
+    : PathJoin<InpterpolateParts<PathToParts<P>, Params>[0]>
 ```
 
 Added in v1.0.0
@@ -435,24 +435,24 @@ Added in v1.0.0
 export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
   ? R extends keyof Params
     ? readonly [Params[R], AST & Record<R, Params[R]>]
-    : readonly ['', AST]
+    : readonly ["", AST]
   : P extends Param<infer R>
-  ? R extends keyof Params
-    ? readonly [Params[R], AST & Record<R, Params[R]>]
-    : readonly [P, AST]
-  : P extends Unnamed
-  ? FindNextIndex<AST> extends keyof Params
-    ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
-    : readonly [P, AST]
-  : P extends Prefix<infer Pre, Param<infer R>>
-  ? R extends keyof Params
-    ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
-    : []
-  : P extends Optional<Prefix<infer Pre, Param<infer R>>>
-  ? R extends keyof Params
-    ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
-    : []
-  : readonly [P, AST]
+    ? R extends keyof Params
+      ? readonly [Params[R], AST & Record<R, Params[R]>]
+      : readonly [P, AST]
+    : P extends Unnamed
+      ? FindNextIndex<AST> extends keyof Params
+        ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
+        : readonly [P, AST]
+      : P extends Prefix<infer Pre, Param<infer R>>
+        ? R extends keyof Params
+          ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
+          : []
+        : P extends Optional<Prefix<infer Pre, Param<infer R>>>
+          ? R extends keyof Params
+            ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
+            : []
+          : readonly [P, AST]
 ```
 
 Added in v1.0.0
@@ -512,26 +512,26 @@ Added in v1.0.0
 export type PartToParam<A extends string, AST> = A extends `\\${infer R}`
   ? PartsToParams<QueryParamsToParts<R, []>, AST>
   : A extends Unnamed
-  ? {
-      readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string
-    }
-  : A extends `${infer _}${Unnamed}}?`
-  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]?: string }
-  : A extends `${infer _}${Unnamed}}`
-  ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string }
-  : A extends `${infer _}${Param<infer R>}}?`
-  ? { readonly [K in R]?: string }
-  : A extends `${infer _}${Param<infer R>}}`
-  ? { readonly [K in R]: string }
-  : A extends `${infer _}${Param<infer R>}?`
-  ? { readonly [K in R]?: string }
-  : A extends `${infer _}${Param<infer R>}+`
-  ? { readonly [K in R]: readonly [string, ...Array<string>] }
-  : A extends `${infer _}${Param<infer R>}*`
-  ? { readonly [K in R]: ReadonlyArray<string> }
-  : A extends `${infer _}${Param<infer R>}`
-  ? { readonly [K in R]: string }
-  : {}
+    ? {
+        readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string
+      }
+    : A extends `${infer _}${Unnamed}}?`
+      ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]?: string }
+      : A extends `${infer _}${Unnamed}}`
+        ? { readonly [K in FindNextIndex<AST> extends number ? FindNextIndex<AST> : never]: string }
+        : A extends `${infer _}${Param<infer R>}}?`
+          ? { readonly [K in R]?: string }
+          : A extends `${infer _}${Param<infer R>}}`
+            ? { readonly [K in R]: string }
+            : A extends `${infer _}${Param<infer R>}?`
+              ? { readonly [K in R]?: string }
+              : A extends `${infer _}${Param<infer R>}+`
+                ? { readonly [K in R]: readonly [string, ...Array<string>] }
+                : A extends `${infer _}${Param<infer R>}*`
+                  ? { readonly [K in R]: ReadonlyArray<string> }
+                  : A extends `${infer _}${Param<infer R>}`
+                    ? { readonly [K in R]: string }
+                    : {}
 ```
 
 Added in v1.0.0
@@ -580,14 +580,14 @@ Convert a path back into a tuple of path parts
 export type PathToParts<P> = P extends `${infer Head}\\?${infer Tail}`
   ? readonly [...PathToParts<Head>, `\\?${Tail}`]
   : P extends `${infer Head}/${infer Tail}`
-  ? readonly [...PathToParts<Head>, ...PathToParts<Tail>]
-  : P extends `${infer Head}{${infer Q}}?${infer Tail}`
-  ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
-  : P extends `${infer Head}{${infer Q}}${infer Tail}`
-  ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
-  : A.Equals<``, P> extends 1
-  ? readonly []
-  : readonly [P]
+    ? readonly [...PathToParts<Head>, ...PathToParts<Tail>]
+    : P extends `${infer Head}{${infer Q}}?${infer Tail}`
+      ? readonly [...PathToParts<Head>, `{${Q}}?`, ...PathToParts<`${Tail}`>]
+      : P extends `${infer Head}{${infer Q}}${infer Tail}`
+        ? readonly [...PathToParts<Head>, `{${Q}}`, ...PathToParts<`${Tail}`>]
+        : A.Equals<``, P> extends 1
+          ? readonly []
+          : readonly [P]
 ```
 
 Added in v1.0.0
@@ -624,10 +624,10 @@ Added in v1.0.0
 export type QueryParamsToParts<Q extends string, R extends ReadonlyArray<string>> = Q extends `\\?${infer Q}`
   ? QueryParamsToParts<Q, R>
   : Q extends `?${infer Q}`
-  ? QueryParamsToParts<Q, R>
-  : Q extends `${infer Head}&${infer Tail}`
-  ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
-  : readonly [...R, QueryParamValue<Q>]
+    ? QueryParamsToParts<Q, R>
+    : Q extends `${infer Head}&${infer Tail}`
+      ? QueryParamsToParts<Tail, QueryParamsToParts<Head, R>>
+      : readonly [...R, QueryParamValue<Q>]
 ```
 
 Added in v1.0.0
@@ -640,12 +640,12 @@ Added in v1.0.0
 export type QueryToParams<Q extends string, AST = {}> = Q extends `${infer Head}&${infer Tail}`
   ? QueryToParams<Tail, QueryToParams<Head, AST>>
   : Q extends `?${infer K}`
-  ? QueryToParams<K, AST>
-  : Q extends `${infer K}?`
-  ? AST & Partial<QueryParamAst<K>>
-  : Q extends `${infer K}`
-  ? AST & QueryParamAst<K>
-  : AST
+    ? QueryToParams<K, AST>
+    : Q extends `${infer K}?`
+      ? AST & Partial<QueryParamAst<K>>
+      : Q extends `${infer K}`
+        ? AST & QueryParamAst<K>
+        : AST
 ```
 
 Added in v1.0.0

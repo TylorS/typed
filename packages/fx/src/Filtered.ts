@@ -162,6 +162,9 @@ class FilteredImpl<R, E, A, R2, E2, B> extends VersionedTransform<
   readonly option: Filtered<R | R2, E | E2, B>["option"]
 }
 
+/**
+ * @since 1.18.0
+ */
 export function combine<const Computeds extends ReadonlyArray<Filtered<any, any, any> | Computed<any, any, any>>>(
   computeds: Computeds
 ): Filtered<
@@ -184,6 +187,9 @@ export function combine<const Computeds extends ReadonlyArray<Filtered<any, any,
   )
 }
 
+/**
+ * @since 1.18.0
+ */
 export function struct<
   const Computeds extends Readonly<Record<string, Filtered<any, any, any | Computed<any, any, any>>>>
 >(
@@ -208,6 +214,9 @@ export function struct<
   )
 }
 
+/**
+ * @since 1.18.0
+ */
 export const fromTag: {
   <S, R2, E2, B>(f: (s: S) => Filtered<R2, E2, B>): <I>(tag: Tag<I, S>) => Filtered<I | R2, E2, B>
   <I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Filtered<R2, E2, B>): Filtered<I | R2, E2, B>
@@ -227,6 +236,9 @@ export const fromTag: {
   }
 )
 
+/**
+ * @since 1.18.0
+ */
 export const provide: {
   <R2, E2, S>(
     layer: Layer.Layer<R2, E2, S>

@@ -1,6 +1,6 @@
 ---
 title: RenderContext.ts
-nav_order: 15
+nav_order: 18
 parent: "@typed/template"
 ---
 
@@ -15,8 +15,6 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [Environment](#environment)
-  - [Environment (type alias)](#environment-type-alias)
   - [RenderContext](#rendercontext)
   - [RenderContext (interface)](#rendercontext-interface)
   - [RenderContextOptions (type alias)](#rendercontextoptions-type-alias)
@@ -27,30 +25,11 @@ Added in v1.0.0
   - [make](#make)
   - [server](#server)
   - [static](#static)
+  - [unsafeMake](#unsafemake)
 
 ---
 
 # utils
-
-## Environment
-
-**Signature**
-
-```ts
-export declare const Environment: { readonly server: 'server'; readonly browser: 'browser'; readonly static: 'static' }
-```
-
-Added in v1.0.0
-
-## Environment (type alias)
-
-**Signature**
-
-```ts
-export type Environment = RenderContext['environment']
-```
-
-Added in v1.0.0
 
 ## RenderContext
 
@@ -73,14 +52,9 @@ The context in which templates are rendered within
 ```ts
 export interface RenderContext {
   /**
-   * The current environment.
+   * The current environment we are rendering within
    */
-  readonly environment: 'server' | 'browser' | 'static'
-
-  /**
-   * Whether or not the current render is for a bot.
-   */
-  readonly isBot: boolean
+  readonly environment: Environment
 
   /**
    * Cache for root Node's being rendered into.
@@ -107,9 +81,8 @@ Added in v1.0.0
 
 ```ts
 export type RenderContextOptions = IdleRequestOptions & {
-  readonly environment: RenderContext['environment']
+  readonly environment: Environment
   readonly scope: Scope.Scope
-  readonly isBot?: RenderContext['isBot'] | undefined
 }
 ```
 
@@ -132,7 +105,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const browser: Layer.Layer<never, never, RenderContext>
+export declare const browser: (
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices>
 ```
 
 Added in v1.0.0
@@ -142,7 +118,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function getRenderCache<T>(renderCache: RenderContext['renderCache'], key: object): Option.Option<T>
+export declare function getRenderCache<T>(renderCache: RenderContext["renderCache"], key: object): Option.Option<T>
 ```
 
 Added in v1.0.0
@@ -153,7 +129,7 @@ Added in v1.0.0
 
 ```ts
 export declare function getTemplateCache(
-  templateCache: RenderContext['templateCache'],
+  templateCache: RenderContext["templateCache"],
   key: TemplateStringsArray
 ): Option.Option<Entry>
 ```
@@ -165,7 +141,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make({ environment, isBot = false, scope, ...options }: RenderContextOptions): RenderContext
+export declare function make({ ...options }: Omit<RenderContextOptions, "scope">, skipRenderScheduling?: boolean)
 ```
 
 Added in v1.0.0
@@ -175,7 +151,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const server: (isBot?: boolean) => Layer.Layer<never, never, RenderContext>
+export declare const server: Layer.Layer<never, never, RenderContext | CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -185,7 +161,20 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const static: (isBot?: boolean | undefined) => Layer.Layer<never, never, RenderContext>
+export declare const static: Layer.Layer<never, never, RenderContext | CurrentEnvironment>
+```
+
+Added in v1.0.0
+
+## unsafeMake
+
+**Signature**
+
+```ts
+export declare function unsafeMake(
+  { environment, scope, ...options }: RenderContextOptions,
+  skipRenderScheduling?: boolean
+): RenderContext
 ```
 
 Added in v1.0.0

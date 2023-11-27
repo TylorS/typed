@@ -110,6 +110,9 @@ export namespace Fx {
     }
   }
 
+  /**
+   * @since 1.18.0
+   */
   export type FromInput<T extends FxInput<any, any, any>> = [T] extends [ReadonlyArray<infer A>] ? Fx<never, never, A>
     : [T] extends [Iterable<infer A>] ? Fx<never, never, A>
     : [T] extends [Cause.Cause<infer E>] ? Fx<never, E, never>
@@ -2502,12 +2505,18 @@ export const matchTags: {
   }
 )
 
+/**
+ * @since 1.18.0
+ */
 export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
   readonly [Tag in A["_tag"]]: (
     value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
   ) => FxInput<any, any, any>
 }
 
+/**
+ * @since 1.18.0
+ */
 export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs: FXS) => Layer.Layer<
   Exclude<Fx.Context<FXS[number]>, Scope.Scope>,
   never,
@@ -2516,10 +2525,16 @@ export const drainLayer: <FXS extends ReadonlyArray<Fx<any, never, any>>>(...fxs
 
 /* #endregion */
 
+/**
+ * @since 1.18.0
+ */
 export function isFx<R = unknown, E = unknown, A = unknown>(u: unknown): u is Fx<R, E, A> {
   return typeof u === "object" && u !== null && TypeId in u
 }
 
+/**
+ * @since 1.18.0
+ */
 export const matchOption: {
   <A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
     onNone: () => FxInput<R2, E2, B>,
@@ -2545,6 +2560,9 @@ export const matchOption: {
   }
 )
 
+/**
+ * @since 1.18.0
+ */
 export const getOrElse: {
   <A, R2 = never, E2 = never, B = never>(
     orElse: () => FxInput<R2, E2, B>
@@ -2564,6 +2582,9 @@ export const getOrElse: {
   }
 )
 
+/**
+ * @since 1.18.0
+ */
 export const matchEither: {
   <E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
     onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
@@ -2589,16 +2610,28 @@ export const matchEither: {
   }
 )
 
+/**
+ * @since 1.18.0
+ */
 export const fork = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> =>
   Effect.fork(drain(fx))
 
+/**
+ * @since 1.18.0
+ */
 export const forkScoped = <R, E, A>(
   fx: Fx<R, E, A>
 ): Effect.Effect<R | Scope.Scope, never, Fiber.RuntimeFiber<E, void>> => Effect.forkScoped(drain(fx))
 
+/**
+ * @since 1.18.0
+ */
 export const forkDaemon = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> =>
   Effect.forkDaemon(drain(fx))
 
+/**
+ * @since 1.18.0
+ */
 export const forkIn: {
   (scope: Scope.Scope): <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
   <R, E, A>(fx: Fx<R, E, A>, scope: Scope.Scope): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
@@ -2607,6 +2640,9 @@ export const forkIn: {
   scope: Scope.Scope
 ): Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>> => Effect.forkIn(drain(fx), scope))
 
+/**
+ * @since 1.18.0
+ */
 export const mergeRace: {
   <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>

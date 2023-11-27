@@ -6,6 +6,8 @@ parent: "@typed/template"
 
 ## HtmlChunk overview
 
+Added in v1.0.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -19,7 +21,11 @@ parent: "@typed/template"
     - [\_tag (property)](#_tag-property-1)
   - [TextChunk (class)](#textchunk-class)
     - [\_tag (property)](#_tag-property-2)
+  - [escape](#escape)
+  - [escapeHtml](#escapehtml)
   - [templateToHtmlChunks](#templatetohtmlchunks)
+  - [unescape](#unescape)
+  - [unescapeHtml](#unescapehtml)
 
 ---
 
@@ -33,6 +39,8 @@ parent: "@typed/template"
 export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
 ```
 
+Added in v1.0.0
+
 ## HtmlChunk (type alias)
 
 **Signature**
@@ -41,15 +49,20 @@ export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
 export type HtmlChunk = TextChunk | PartChunk | SparsePartChunk
 ```
 
+Added in v1.0.0
+
 ## PartChunk (class)
 
 **Signature**
 
 ```ts
-export declare class PartChunk {
-  constructor(readonly node: PartNode, readonly render: (value: unknown) => string)
-}
+export declare class PartChunk { constructor(
+    readonly node: PartNode,
+    readonly render: (value: unknown) => string
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -64,10 +77,13 @@ readonly _tag: "part"
 **Signature**
 
 ```ts
-export declare class SparsePartChunk {
-  constructor(readonly node: SparseAttrNode | SparseClassNameNode, readonly render: (value: AttrValue) => string)
-}
+export declare class SparsePartChunk { constructor(
+    readonly node: SparseAttrNode | SparseClassNameNode,
+    readonly render: (value: AttrValue) => string
+  ) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -82,10 +98,10 @@ readonly _tag: "sparse-part"
 **Signature**
 
 ```ts
-export declare class TextChunk {
-  constructor(readonly value: string)
-}
+export declare class TextChunk { constructor(readonly value: string) }
 ```
+
+Added in v1.0.0
 
 ### \_tag (property)
 
@@ -95,6 +111,26 @@ export declare class TextChunk {
 readonly _tag: "text"
 ```
 
+## escape
+
+**Signature**
+
+```ts
+export declare function escape(s: unknown)
+```
+
+Added in v1.0.0
+
+## escapeHtml
+
+**Signature**
+
+```ts
+export declare function escapeHtml(str: string): string
+```
+
+Added in v1.0.0
+
 ## templateToHtmlChunks
 
 **Signature**
@@ -102,3 +138,25 @@ readonly _tag: "text"
 ```ts
 export declare function templateToHtmlChunks({ hash, nodes }: Template)
 ```
+
+Added in v1.0.0
+
+## unescape
+
+**Signature**
+
+```ts
+export declare function unescape(s: string)
+```
+
+Added in v1.0.0
+
+## unescapeHtml
+
+**Signature**
+
+```ts
+export declare function unescapeHtml(html: string)
+```
+
+Added in v1.0.0

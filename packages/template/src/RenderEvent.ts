@@ -1,13 +1,26 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { Rendered } from "@typed/wire"
 
+/**
+ * @since 1.0.0
+ */
 export type RenderEvent = DomRenderEvent | HtmlRenderEvent
 
+/**
+ * @since 1.0.0
+ */
 export type DomRenderEvent = {
   readonly _tag: "dom"
   readonly rendered: Rendered
   readonly valueOf: () => Rendered
 }
 
+/**
+ * @since 1.0.0
+ */
 export function DomRenderEvent(rendered: Rendered): DomRenderEvent {
   return {
     _tag: "dom",
@@ -16,12 +29,18 @@ export function DomRenderEvent(rendered: Rendered): DomRenderEvent {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type HtmlRenderEvent = {
   readonly _tag: "html"
   readonly html: string
   readonly valueOf: () => string
 }
 
+/**
+ * @since 1.0.0
+ */
 export function HtmlRenderEvent(html: string): HtmlRenderEvent {
   return {
     _tag: "html",
@@ -30,6 +49,9 @@ export function HtmlRenderEvent(html: string): HtmlRenderEvent {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export function isRenderEvent(value: unknown): value is RenderEvent {
   return isTaggedObject(value) && (value._tag === "html" || value._tag === "dom")
 }

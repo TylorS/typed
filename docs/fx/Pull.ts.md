@@ -1,6 +1,6 @@
 ---
 title: Pull.ts
-nav_order: 13
+nav_order: 12
 parent: "@typed/fx"
 ---
 
@@ -47,9 +47,10 @@ using Effect.repeat.
 
 ```ts
 export declare const repeat: {
-  <R2, R3, E, A>(schedule: Schedule.Schedule<R2, unknown, unknown>, sink: WithContext<R3, E, A>): <R>(
-    pull: Pull<R, E, A>
-  ) => Effect.Effect<R2 | R3 | R, never, unknown>
+  <R2, R3, E, A>(
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R2 | R3 | R, never, unknown>
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
@@ -69,9 +70,10 @@ using Effect.schedule.
 
 ```ts
 export declare const schedule: {
-  <R2, R3, E, A>(schedule: Schedule.Schedule<R2, unknown, unknown>, sink: WithContext<R3, E, A>): <R>(
-    pull: Pull<R, E, A>
-  ) => Effect.Effect<R2 | R3 | R, never, unknown>
+  <R2, R3, E, A>(
+    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    sink: WithContext<R3, E, A>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R2 | R3 | R, never, unknown>
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,

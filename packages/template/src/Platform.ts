@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Headers from "@effect/platform/Http/Headers"
 import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import * as HttpServer from "@effect/platform/HttpServer"
@@ -13,6 +17,9 @@ const HTML_CONTENT_TYPE = "text/html"
 const CAMEL_CASE_CONTENT_TYPE = { contentType: HTML_CONTENT_TYPE }
 const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
 
+/**
+ * @since 1.0.0
+ */
 export function htmlResponse<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
   options?: HttpServer.response.Options
@@ -29,6 +36,9 @@ export function htmlResponse<R, E>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function htmlResponseString(
   html: string,
   options?: HttpServer.response.Options
@@ -43,6 +53,9 @@ export function htmlResponseString(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function getUrlFromServerRequest(request: ServerRequest): URL {
   const { headers } = request
   const host = Headers.get(headers, "x-forwarded-host").pipe(

@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import type { Fx } from "@typed/fx/Fx"
 import { compact } from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/internal/protos"
@@ -33,6 +36,9 @@ export interface ElementRef<T extends Rendered = Rendered>
 
 const strictEqual = Option.getEquivalence((a, b) => a === b)
 
+/**
+ * @since 1.0.0
+ */
 export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
     RefSubject.of(Option.none<T>(), strictEqual),
@@ -40,6 +46,9 @@ export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
     RefSubject.of(Option.some<T>(rendered), strictEqual),
@@ -85,6 +94,9 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, n
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const set: {
   <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
   <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
@@ -92,6 +104,9 @@ export const set: {
   return Effect.as(elementRef[ElementRefTypeId].set(Option.some(value)), value)
 })
 
+/**
+ * @since 1.0.0
+ */
 export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Event) {
   return ref.pipe(
     Effect.flatMap((rendered) => {

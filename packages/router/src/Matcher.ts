@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import { CurrentEnvironment } from "@typed/environment"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
@@ -17,6 +21,9 @@ import { makeHref, withCurrentRoute } from "./CurrentRoute"
 // TODO: scroll restoration
 // TODO: Utilize scroll events on Window to capture scroll positions and elements
 
+/**
+ * @since 1.0.0
+ */
 export interface RouteMatcher<R, E, A> {
   readonly match: {
     <const P extends string, R2, E2, B>(
@@ -182,8 +189,23 @@ function getRoute<const P extends string>(route: Route.Route<P> | P): Route.Rout
   return typeof route === "string" ? Route.fromPath(route) : route
 }
 
+/**
+ * @since 1.0.0
+ */
 export function empty(): RouteMatcher<never, never, never> {
   return new RouteMatcherImpl<never, never, never>([]) as any
 }
 
-export const { match, to } = empty()
+/**
+ * @since 1.18.0
+ */
+export const {
+  /**
+   * @since 1.0.0
+   */
+  match,
+  /**
+   * @since 1.0.0
+   */
+  to
+} = empty()

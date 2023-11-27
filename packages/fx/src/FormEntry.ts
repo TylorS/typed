@@ -1,3 +1,6 @@
+/**
+ * @since 1.18.0
+ */
 import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import * as schemaEquivalence from "@effect/schema/Equivalence"
@@ -14,18 +17,30 @@ import type { RefSubject } from "./RefSubject"
 import { Sink } from "./Sink"
 import { RefSubjectTypeId, TypeId } from "./TypeId"
 
+/**
+ * @since 1.18.0
+ */
 export interface FormEntry<in out E, in out I, in out O> extends RefSubject<never, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
   readonly decoded: Computed<never, E | ParseError, O>
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace FormEntry {
+  /**
+   * @since 1.18.0
+   */
   export interface Derived<R, E, I, O> extends FormEntry<E, I, O> {
     readonly persist: Effect.Effect<R, E | ParseError, O>
   }
 }
 
+/**
+ * @since 1.18.0
+ */
 export interface FormEntryOptions<I, O> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
@@ -33,6 +48,9 @@ export interface FormEntryOptions<I, O> {
 
 /**
  * MakeRefSubject is a RefSubject factory function dervied from a Schema.
+ * @since 1.18.0
+ */
+/**
  * @since 1.18.0
  */
 export type MakeFormEntry<I, O> = {
@@ -43,6 +61,9 @@ export type MakeFormEntry<I, O> = {
   <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<E, I, O>>
 }
 
+/**
+ * @since 1.18.0
+ */
 export function make<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O> {
   return (<R, E>(input: RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<R, E, O>) => {
     if (RefSubjectTypeId in input) {

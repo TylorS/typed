@@ -144,7 +144,9 @@ export interface Provision<I, S> {
    * Create a Layer from the service
    * @since 1.0.0
    */
-  readonly layer: <R, E>(effect: Effect.Effect<R, E, S>) => Layer.Layer<R, E, I>
+  readonly layer: <R = never, E = never>(
+    effect: Effect.Effect<R, E, S> | Exclude<S, Effect.Effect<any, any, any>>
+  ) => Layer.Layer<R, E, I>
 
   /**
    * Create a Layer from the service that is scoped.

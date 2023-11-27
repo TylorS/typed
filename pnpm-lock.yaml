@@ -130,7 +130,7 @@ importers:
         version: 1.4.1(typescript@5.3.2)(vite@5.0.2)
       vitest:
         specifier: 0.34.6
-        version: 0.34.6
+        version: 0.34.6(happy-dom@12.10.3)
 
   examples/counter:
     dependencies:
@@ -486,6 +486,9 @@ importers:
       happy-dom:
         specifier: ^12.10.3
         version: 12.10.3
+      vitest:
+        specifier: 0.34.6
+        version: 0.34.6(happy-dom@12.10.3)
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -3756,7 +3759,7 @@ packages:
       std-env: 3.5.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 0.34.6
+      vitest: 0.34.6(happy-dom@12.10.3)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8718,7 +8721,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@0.34.6:
+  /vitest@0.34.6(happy-dom@12.10.3):
     resolution: {integrity: sha512-+5CALsOvbNKnS+ZHMXtuUC7nL8/7F1F2DnHGjSsszX8zCjWSSviphCb/NuS9Nzf4Q03KyyDRBAXhF/8lffME4Q==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -8762,6 +8765,7 @@ packages:
       cac: 6.7.14
       chai: 4.3.10
       debug: 4.3.4
+      happy-dom: 12.10.3
       local-pkg: 0.4.3
       magic-string: 0.30.5
       pathe: 1.1.1

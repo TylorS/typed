@@ -83,9 +83,21 @@ export function Computed<R, E, A, R2, E2, B>(
   return new ComputedImpl(input, f) as any
 }
 
+/**
+ * @since 1.18.0
+ */
 export namespace Computed {
+  /**
+   * @since 1.18.0
+   */
   export type Context<T> = [T] extends [Computed<infer R, infer _E, infer _A>] ? R : never
+  /**
+   * @since 1.18.0
+   */
   export type Error<T> = [T] extends [Computed<infer _R, infer E, infer _A>] ? E : never
+  /**
+   * @since 1.18.0
+   */
   export type Success<T> = [T] extends [Computed<infer _R, infer _E, infer A>] ? A : never
 }
 
@@ -139,6 +151,9 @@ class ComputedImpl<R, E, A, R2, E2, B>
     )
 }
 
+/**
+ * @since 1.18.0
+ */
 export function combine<const Computeds extends ReadonlyArray<Computed<any, any, any>>>(computeds: Computeds): Computed<
   Fx.Context<Computeds[keyof Computeds]>,
   Fx.Error<Computeds[keyof Computeds]>,
@@ -159,6 +174,9 @@ export function combine<const Computeds extends ReadonlyArray<Computed<any, any,
   )
 }
 
+/**
+ * @since 1.18.0
+ */
 export function struct<const Computeds extends Readonly<Record<string, Computed<any, any, any>>>>(
   computeds: Computeds
 ): Computed<
@@ -181,6 +199,9 @@ export function struct<const Computeds extends Readonly<Record<string, Computed<
   )
 }
 
+/**
+ * @since 1.18.0
+ */
 export const fromTag: {
   <S, R2, E2, B>(f: (s: S) => Computed<R2, E2, B>): <I>(tag: Tag<I, S>) => Computed<I | R2, E2, B>
   <I, S, R2, E2, B>(tag: Tag<I, S>, f: (s: S) => Computed<R2, E2, B>): Computed<I | R2, E2, B>
@@ -230,6 +251,9 @@ class ContextImpl<I, S, R2, E2, B> extends FxEffectBase<I | R2, E2, B, I | R2, E
     new ContextImpl(this.tag, (s) => this.f(s).skipRepeats(eq))
 }
 
+/**
+ * @since 1.18.0
+ */
 export const provide: {
   <R2, E2, S>(
     layer: Layer.Layer<R2, E2, S>

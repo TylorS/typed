@@ -1,6 +1,6 @@
 ---
 title: DomServices.ts
-nav_order: 2
+nav_order: 3
 parent: "@typed/dom"
 ---
 
@@ -118,8 +118,8 @@ The elements to use for the root and parent elements
 
 ```ts
 export type DomServicesElementParams = {
-  readonly rootElement?: HTMLElement
-  readonly parentElement?: HTMLElement
+  readonly rootElement?: HTMLElement | undefined
+  readonly parentElement?: HTMLElement | undefined
 }
 ```
 
@@ -135,8 +135,8 @@ Parameters for creating DomServices
 export type DomServicesParams = {
   readonly window: Window
   readonly globalThis: GlobalThis
-  readonly rootElement?: HTMLElement
-  readonly parentElement?: HTMLElement
+  readonly rootElement?: HTMLElement | undefined
+  readonly parentElement?: HTMLElement | undefined
 }
 ```
 

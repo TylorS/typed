@@ -1,3 +1,6 @@
+/**
+ * @since 1.18.0
+ */
 import { AST } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import { from } from "@effect/schema/Equivalence"
@@ -16,12 +19,21 @@ import type { RefSubject } from "./RefSubject"
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId"
 import type * as Versioned from "./Versioned"
 
+/**
+ * @since 1.18.0
+ */
 export const FormTypeId = Symbol.for("./Form")
+/**
+ * @since 1.18.0
+ */
 export type FormTypeId = typeof FormTypeId
 
 type AnyObject = Readonly<Record<PropertyKey, any>>
 type AnyObjectWithKeys<K extends PropertyKey> = Readonly<Record<K, any>>
 
+/**
+ * @since 1.18.0
+ */
 export interface Form<Entries extends Form.AnyEntries> extends
   Form.Base<
     Form.Error<Entries[keyof Entries]>,
@@ -31,9 +43,15 @@ export interface Form<Entries extends Form.AnyEntries> extends
   >
 {}
 
+/**
+ * @since 1.18.0
+ */
 export namespace Form {
   /**
    * Base interface is to improve type-checking performance by memoizing the derived R, E, I, and O values.
+   */
+  /**
+   * @since 1.18.0
    */
   export interface Base<E, I, O, Entries extends Form.AnyEntries>
     extends Versioned.Versioned<never, never, never, E | ParseError, I, never, E | ParseError, I>
@@ -56,6 +74,9 @@ export namespace Form {
     >
   }
 
+  /**
+   * @since 1.18.0
+   */
   export type AnyEntry =
     | FormEntry.FormEntry<any, any, any>
     | FormEntry.FormEntry<never, any, any>
@@ -63,12 +84,21 @@ export namespace Form {
     | FormEntry.FormEntry<never, never, any>
     | Base<any, any, any, any>
 
+  /**
+   * @since 1.18.0
+   */
   export type AnyEntries = Readonly<Record<PropertyKey, AnyEntry>>
 
+  /**
+   * @since 1.18.0
+   */
   export type Error<T> = [T] extends [FormEntry.FormEntry<infer E, infer _I, infer _>] ? E :
     [T] extends [Base<infer _E, infer _I, infer _O, infer _Entries>] ? _E :
     never
 
+  /**
+   * @since 1.18.0
+   */
   export type Input<T> = [T] extends [FormEntry.FormEntry<infer _E, infer I, infer _>] ? I :
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Input<Entries[K]>
@@ -78,6 +108,9 @@ export namespace Form {
       } :
     never
 
+  /**
+   * @since 1.18.0
+   */
   export type Output<T> = [T] extends [FormEntry.FormEntry<infer _E, infer _I, infer O>] ? O :
     T extends Form<infer Entries> ? {
         readonly [K in keyof Entries]: Output<Entries[K]>
@@ -87,6 +120,9 @@ export namespace Form {
       } :
     never
 
+  /**
+   * @since 1.18.0
+   */
   export interface Derived<R, Entries extends AnyEntries> extends Form<Entries> {
     readonly persist: Effect.Effect<
       R,
@@ -96,10 +132,16 @@ export namespace Form {
   }
 }
 
+/**
+ * @since 1.18.0
+ */
 export function Form<Entries extends Form.AnyEntries>(entries: Entries): Form<Entries> {
   return new FormImpl(entries) as any
 }
 
+/**
+ * @since 1.18.0
+ */
 export type MakeForm<
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
@@ -123,6 +165,9 @@ export type MakeForm<
   >
 }
 
+/**
+ * @since 1.18.0
+ */
 export type FormFromIO<
   E,
   I extends AnyObject,
@@ -131,6 +176,9 @@ export type FormFromIO<
   [FormEntriesFromIO<E, I, O>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 >
 
+/**
+ * @since 1.18.0
+ */
 export type FormEntriesFromIO<
   E,
   I extends AnyObject,
@@ -142,6 +190,9 @@ export type FormEntriesFromIO<
     FormEntry.FormEntry<E, I[K], O[K]>
 }
 
+/**
+ * @since 1.18.0
+ */
 export type DerivedFromIO<
   R,
   E,
@@ -154,6 +205,9 @@ export type DerivedFromIO<
   }
 >
 
+/**
+ * @since 1.18.0
+ */
 export function make<
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>

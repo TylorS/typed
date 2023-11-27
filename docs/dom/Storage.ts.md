@@ -1,6 +1,6 @@
 ---
 title: Storage.ts
-nav_order: 10
+nav_order: 11
 parent: "@typed/dom"
 ---
 
@@ -75,7 +75,7 @@ Helpers for constructing a SchemaStorage
 
 ```ts
 export type SchemaUtils = {
-  readonly json: typeof parseJson
+  readonly json: <I, A>(schema: S.Schema<I, A>) => Schema.Schema<string, A>
 }
 ```
 

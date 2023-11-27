@@ -25,6 +25,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [Fn (namespace)](#fn-namespace)
     - [Any (type alias)](#any-type-alias)
+    - [Context (type alias)](#context-type-alias)
     - [FnOf (type alias)](#fnof-type-alias)
     - [Identifier (type alias)](#identifier-type-alias)
 
@@ -57,9 +58,7 @@ an Effect.
 **Signature**
 
 ```ts
-export interface Fn<Key, T extends EffectFn>
-  // Brand T so that functions do not collide so easily
-  extends Tag<Key, T> {
+export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
   readonly [FnTypeId]: FnTypeId
 
   /**
@@ -68,7 +67,7 @@ export interface Fn<Key, T extends EffectFn>
    */
   readonly apply: <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
-  ) => Effect.Effect<Key | EffectFn.Context<T>, EffectFn.Error<T>, EffectFn.Success<T>>
+  ) => Effect.Effect<I | EffectFn.Context<T>, EffectFn.Error<T>, EffectFn.Success<T>>
 
   /**
    * A helper to implement a Layer for your effectful function which
@@ -77,22 +76,23 @@ export interface Fn<Key, T extends EffectFn>
    */
   readonly implement: <T2 extends EffectFn.Extendable<T>>(
     implementation: T2
-  ) => Layer.Layer<EffectFn.Context<T2>, never, Key>
+  ) => Layer.Layer<EffectFn.Context<T2>, never, I>
 
   /**
    * A helper for implementing an providing a Layer to an Effect.
    * @since 1.0.0
    */
   readonly provideImplementation: {
-    <T2 extends EffectFn.Extendable<T>>(implementation: T2): <R, E, A>(
+    <T2 extends EffectFn.Extendable<T>>(
+      implementation: T2
+    ): <R, E, A>(
       effect: Effect.Effect<R, E, A>
-    ) => Effect.Effect<Exclude<R, Key> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
+    ) => Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
 
-    <R, E, A, T2 extends EffectFn.Extendable<T>>(effect: Effect.Effect<R, E, A>, implementation: T2): Effect.Effect<
-      Exclude<R, Key> | EffectFn.Context<T2>,
-      E | EffectFn.Error<T2>,
-      A
-    >
+    <R, E, A, T2 extends EffectFn.Extendable<T>>(
+      effect: Effect.Effect<R, E, A>,
+      implementation: T2
+    ): Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
   }
 }
 ```
@@ -135,6 +135,20 @@ Any Fn
 
 ```ts
 export type Any = Fn<any, any>
+```
+
+Added in v1.0.0
+
+### Context (type alias)
+
+Extract the Identifier of a Fn
+
+**Signature**
+
+```ts
+export type Context<T extends Fn<any, any>> = T extends Fn<infer K, infer F>
+  ? K | Effect.Effect.Context<ReturnType<F>>
+  : never
 ```
 
 Added in v1.0.0

@@ -1,30 +1,35 @@
 ---
 title: Render.ts
-nav_order: 13
+nav_order: 16
 parent: "@typed/template"
 ---
 
 ## Render overview
+
+Added in v1.0.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [buildTemplate](#buildtemplate)
+  - [ToRendered (type alias)](#torendered-type-alias)
   - [render](#render)
+  - [renderLayer](#renderlayer)
 
 ---
 
 # utils
 
-## buildTemplate
+## ToRendered (type alias)
 
 **Signature**
 
 ```ts
-export declare function buildTemplate(document: Document, { nodes }: Template.Template): DocumentFragment
+export type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered | null : Rendered
 ```
+
+Added in v1.0.0
 
 ## render
 
@@ -35,3 +40,15 @@ export declare function render<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
 ): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>>
 ```
+
+Added in v1.0.0
+
+## renderLayer
+
+**Signature**
+
+```ts
+export declare function renderLayer<R, E, T extends RenderEvent | null>(rendered: Fx.Fx<R, E, T>)
+```
+
+Added in v1.0.0

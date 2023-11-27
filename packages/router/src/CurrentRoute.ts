@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Context from "@typed/context"
 import * as Document from "@typed/dom/Document"
 import type { Filtered } from "@typed/fx/Filtered"
@@ -11,13 +15,22 @@ import type * as Computed from "@typed/fx/Computed"
 import type { ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"
 
+/**
+ * @since 1.0.0
+ */
 export interface CurrentRoute<P extends string = string> {
   readonly route: Route.Route<P>
   readonly parent: Option.Option<CurrentRoute>
 }
 
+/**
+ * @since 1.0.0
+ */
 export const CurrentRoute: Context.Tagged<CurrentRoute> = Context.Tagged<CurrentRoute>("@typed/router/CurrentRoute")
 
+/**
+ * @since 1.0.0
+ */
 export function make<P extends string>(
   route: Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
@@ -28,9 +41,15 @@ export function make<P extends string>(
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export const CurrentParams: Filtered<Navigation | CurrentRoute, never, Readonly<Record<string, string>>> = CurrentPath
   .filterMapEffect((path) => CurrentRoute.with(({ route }) => route.match(path)))
 
+/**
+ * @since 1.0.0
+ */
 export const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
@@ -70,6 +89,9 @@ const makeHref_ = <P extends string, P2 extends string>(
   return Option.some(fullRoute.make(fullParams as any))
 }
 
+/**
+ * @since 1.0.0
+ */
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
@@ -97,6 +119,9 @@ const isActive_ = <P extends string, P2 extends string>(
 
   return fullPath === currentPath || currentPath.startsWith(fullPath)
 }
+/**
+ * @since 1.0.0
+ */
 export function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
@@ -108,6 +133,9 @@ export function isActive<const P extends string>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const browser: Layer.Layer<Document.Document, never, CurrentRoute> = CurrentRoute.layer(
   Effect.gen(function*(_) {
     const document = yield* _(Document.Document)
@@ -121,13 +149,22 @@ export const browser: Layer.Layer<Document.Document, never, CurrentRoute> = Curr
   })
 )
 
+/**
+ * @since 1.0.0
+ */
 export const server = (base: string = "/"): Layer.Layer<never, never, CurrentRoute> =>
   CurrentRoute.layer({ route: Route.fromPath(base), parent: Option.none() })
 
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
   Object.fromEntries(destination.url.searchParams)
 
+/**
+ * @since 1.0.0
+ */
 export const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>> = CurrentEntry
   .map(getSearchParams)
 
+/**
+ * @since 1.0.0
+ */
 export const CurrentState = CurrentEntry.map((d) => d.state)

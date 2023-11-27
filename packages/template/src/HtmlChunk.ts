@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { TYPED_HASH } from "./Meta"
 import type {
   Attribute,
@@ -12,13 +15,22 @@ import type {
   TextOnlyElement
 } from "./Template"
 
+/**
+ * @since 1.0.0
+ */
 export type HtmlChunk = TextChunk | PartChunk | SparsePartChunk
 
+/**
+ * @since 1.0.0
+ */
 export class TextChunk {
   readonly _tag = "text"
   constructor(readonly value: string) {}
 }
 
+/**
+ * @since 1.0.0
+ */
 export class PartChunk {
   readonly _tag = "part"
 
@@ -28,6 +40,9 @@ export class PartChunk {
   ) {}
 }
 
+/**
+ * @since 1.0.0
+ */
 export class SparsePartChunk {
   readonly _tag = "sparse-part"
 
@@ -37,11 +52,17 @@ export class SparsePartChunk {
   ) {}
 }
 
+/**
+ * @since 1.0.0
+ */
 export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
 
 // TODO: Should we escape more things?
 // TODO: We should manually optimize the text fusion
 
+/**
+ * @since 1.0.0
+ */
 export function templateToHtmlChunks({ hash, nodes }: Template) {
   return fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
 }
@@ -222,6 +243,9 @@ function closeTag(tagName: string): string {
   return `</${tagName}>`
 }
 
+/**
+ * @since 1.0.0
+ */
 export function escape(s: unknown) {
   switch (typeof s) {
     case "string":
@@ -233,6 +257,9 @@ export function escape(s: unknown) {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export function unescape(s: string) {
   const unescaped = unescapeHtml(s)
   const couldBeJson = unescaped[0] === "[" || unescaped === "{"
@@ -258,6 +285,9 @@ const unescapeHtmlRules = [
 
 const matchHtmlRegExp = /["'&<>]/
 
+/**
+ * @since 1.0.0
+ */
 export function escapeHtml(str: string): string {
   const match = matchHtmlRegExp.exec(str)
 
@@ -304,6 +334,9 @@ export function escapeHtml(str: string): string {
     : html
 }
 
+/**
+ * @since 1.0.0
+ */
 export function unescapeHtml(html: string) {
   for (const [from, to] of unescapeHtmlRules) {
     html = html.replace(from, to)

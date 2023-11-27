@@ -1,10 +1,12 @@
 ---
 title: RenderTemplate.ts
-nav_order: 17
+nav_order: 20
 parent: "@typed/template"
 ---
 
 ## RenderTemplate overview
+
+Added in v1.0.0
 
 ---
 
@@ -13,6 +15,7 @@ parent: "@typed/template"
 - [utils](#utils)
   - [RenderTemplate](#rendertemplate)
   - [RenderTemplate (interface)](#rendertemplate-interface)
+  - [TemplateFx (interface)](#templatefx-interface)
   - [as](#as)
   - [html](#html)
 
@@ -28,6 +31,8 @@ parent: "@typed/template"
 export declare const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate>
 ```
 
+Added in v1.0.0
+
 ## RenderTemplate (interface)
 
 **Signature**
@@ -37,18 +42,39 @@ export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
     values: Values,
-    ref?: ElementRef<T, Placeholder.Error<Values[number]>>
-  ): Effect<Scope | Placeholder.Context<Values[number]>, never, TemplateInstance<Placeholder.Error<Values[number]>, T>>
+    ref?: ElementRef<T>
+  ): Effect.Effect<
+    Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
+    never,
+    TemplateInstance<Placeholder.Error<Values[number]>, T>
+  >
 }
 ```
+
+Added in v1.0.0
+
+## TemplateFx (interface)
+
+**Signature**
+
+```ts
+export interface TemplateFx<R, E, T extends Rendered = Rendered>
+  extends Fx.Fx<RenderTemplate | Scope | R, E, RenderEvent> {
+  readonly instance: Effect.Effect<RenderTemplate | Scope | R, never, TemplateInstance<E, T>>
+}
+```
+
+Added in v1.0.0
 
 ## as
 
 **Signature**
 
 ```ts
-export declare function as<T extends Rendered = Rendered, E = never>(ref: ElementRef<T, E>)
+export declare function as<T extends Rendered = Rendered>(ref: ElementRef<T>)
 ```
+
+Added in v1.0.0
 
 ## html
 
@@ -58,9 +84,7 @@ export declare function as<T extends Rendered = Rendered, E = never>(ref: Elemen
 export declare function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Effect<
-  RenderTemplate | Scope | Placeholder.Context<Values[number]>,
-  never,
-  TemplateInstance<Placeholder.Error<Values[number]>, Rendered>
->
+): TemplateFx<Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>>
 ```
+
+Added in v1.0.0

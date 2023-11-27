@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Arbitrary from "@effect/schema/Arbitrary"
 import * as AST from "@effect/schema/AST"
 import * as ParseResult from "@effect/schema/ParseResult"
@@ -34,6 +38,9 @@ const causeArbitrary = <A>(item: Arbitrary.Arbitrary<A>): Arbitrary.Arbitrary<Ca
 
 const causePretty = <A>(): Pretty.Pretty<Cause.Cause<A>> => Cause.pretty
 
+/**
+ * @since 1.0.0
+ */
 export const cause = <EI, E>(error: Schema.Schema<EI, E>): Schema.Schema<Cause.Cause<EI>, Cause.Cause<E>> => {
   const parseE = Schema.parse(Schema.chunkFromSelf(error))
 
@@ -106,6 +113,9 @@ const asyncDataArbitrary = <E, A>(
     valueArbitrary(fc).map((a) => AsyncData.success(a))
   )
 
+/**
+ * @since 1.0.0
+ */
 export const asyncData = <EI, E, AI, A>(
   error: Schema.Schema<EI, E>,
   value: Schema.Schema<AI, A>

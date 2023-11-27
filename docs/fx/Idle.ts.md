@@ -1,6 +1,6 @@
 ---
 title: Idle.ts
-nav_order: 11
+nav_order: 8
 parent: "@typed/fx"
 ---
 
@@ -28,7 +28,9 @@ Added in v1.18.0
 - [scoped](#scoped)
   - [whenIdle](#whenidle)
 - [utils](#utils)
+  - [IdleQueue (interface)](#idlequeue-interface)
   - [dequeueWhileIdle](#dequeuewhileidle)
+  - [makeIdleQueue](#makeidlequeue)
   - [shouldContinue](#shouldcontinue)
   - [whileIdle](#whileidle)
 
@@ -128,6 +130,18 @@ Added in v1.18.0
 
 # utils
 
+## IdleQueue (interface)
+
+**Signature**
+
+```ts
+export interface IdleQueue<I extends Hash> {
+  readonly add: <R>(part: I, task: Effect.Effect<R, never, unknown>) => Effect.Effect<R | Scope.Scope, never, void>
+}
+```
+
+Added in v1.18.0
+
 ## dequeueWhileIdle
 
 Dequeue values and perform an Effect while the event loop is not busy with any other work.
@@ -150,6 +164,18 @@ export declare function dequeueWhileIdle<I = never, A = unknown, R2 = never, E2 
   f: (a: A) => Effect.Effect<R2, E2, B>,
   options?: IdleRequestOptions
 ): Effect.Effect<I | R2 | Scope.Scope, E2, void>
+```
+
+Added in v1.18.0
+
+## makeIdleQueue
+
+**Signature**
+
+```ts
+export declare const makeIdleQueue: <I extends Hash>(
+  options?: IdleRequestOptions
+) => Effect.Effect<Scope.Scope, never, IdleQueue<I>>
 ```
 
 Added in v1.18.0
