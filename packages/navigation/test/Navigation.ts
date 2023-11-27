@@ -517,6 +517,9 @@ describe(__filename, () => {
 
             yield* _(navigation.navigate(intermmediateUrl))
 
+            // Let fibers start
+            yield* _(Effect.sleep(1))
+
             // Called once for intermmediateUrl
             // Then again for the redirectUrl
             deepStrictEqual(beforeCount, 2)
