@@ -1,6 +1,6 @@
 {
   "name": "@typed/path",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Type-safe utilities for building path-to-regexp formatted strings",
   "publishConfig": {
     "access": "public",

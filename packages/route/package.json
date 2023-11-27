@@ -1,6 +1,6 @@
 {
   "name": "@typed/route",
-  "version": "0.14.1",
+  "version": "1.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",
