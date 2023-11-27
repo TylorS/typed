@@ -101,8 +101,7 @@ export const bench = benchmark("Old vs New Parser")
       effect: Effect.sync(() => New.parser.parse(lotsOfAttributesTemplate))
     }
   ])
-  
-  
+
 // bench.run(
 //     // Only run 1 iteration because we want to compare the speed of parsing without the JIT
 //     // being warmed up as it will be when first loading your application in your browser when
