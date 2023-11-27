@@ -48,6 +48,5 @@
     "**/target": true
   },
   "files.insertFinalNewline": true,
-  "nixEnvSelector.nixFile": "${workspaceRoot}/flake.nix",
   "testing.automaticallyOpenPeekView": "never"
 }

@@ -442,7 +442,7 @@ class Snapshot<R, E, A, R2, E2, B, R3, E3, C> extends ToFx<R | R2 | R3, E | E2 |
             )
           )),
           () =>
-            adjustTime(0).pipe(Effect.zipRight(run(
+            adjustTime(1).pipe(Effect.zipRight(run(
               fx,
               Sink.WithContext(
                 sink.onFailure,
@@ -1872,7 +1872,7 @@ export const during: {
           })
         )),
         () =>
-          adjustTime(0).pipe(Effect.zipRight(run(
+          adjustTime(1).pipe(Effect.zipRight(run(
             fx,
             Sink.Sink(
               sink.onFailure,

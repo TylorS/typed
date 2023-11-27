@@ -116,8 +116,8 @@ export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Eve
       return Effect.sync(() => elements[0].dispatchEvent(event))
     }),
     // Allow changes to take place
-    Effect.zipRight(adjustTime(0)),
+    Effect.zipRight(adjustTime(1)),
     // Allow additional fibers to start
-    Effect.zipRight(adjustTime(0))
+    Effect.zipRight(adjustTime(1))
   )
 }

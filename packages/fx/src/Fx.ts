@@ -17,6 +17,7 @@
  */
 
 import type * as Context from "@typed/context"
+import type { Stream } from "effect"
 import * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import type { DurationInput } from "effect/Duration"
@@ -316,6 +317,13 @@ export const fromIterable: {
   <A extends ReadonlyArray<any>>(array: A): Fx<never, never, A[number]>
   <A>(iterable: Iterable<A>): Fx<never, never, A>
 } = core.fromIterable
+
+/**
+ * Construct an Fx<R, E, A> from an Effect<R, E, A>
+ * @since 1.18.0
+ * @category constructors
+ */
+export const fromStream: <R, E, A>(effect: Stream.Stream<R, E, A>) => Fx<R, E, A> = core.fromStream
 
 /**
  * Construct an Fx<R, E, A> from an Effect<R, E, A>

@@ -46,7 +46,7 @@ export function withKey<R, E, A, B, R2, E2, C>(
             current = Option.some([key, currentValue, ref, fiber])
 
             // Allow our Fibers to start
-            yield* _(adjustTime(0))
+            yield* _(adjustTime(1))
           })
         )
 

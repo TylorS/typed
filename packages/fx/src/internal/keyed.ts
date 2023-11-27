@@ -12,6 +12,7 @@ import { WithContext } from "../Sink"
 import type { Subject } from "../Subject"
 import { from, skipRepeatsWith, withScopedFork } from "./core"
 import { makeHoldSubject } from "./core-subject"
+import { adjustTime } from "./helpers"
 import { run } from "./run"
 
 export function keyed<R, E, A, B, R2, E2, C>(
@@ -26,6 +27,8 @@ export function keyed<R, E, A, B, R2, E2, C>(
 
       // Let output emit to the sink, it is closes by the surrounding scope
       yield* $(fork(run(skipRepeatsWith(state.output, ReadonlyArray.getEquivalence(equals)), sink)))
+
+      yield* $(adjustTime(1))
 
       // Listen to the input and update the state
       yield* $(
@@ -108,6 +111,7 @@ function updateState<A, B, C, R2, E2, R3>({
       // Update values that are still in the stream
       yield* $(
         Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
+          concurrency: "unbounded",
           discard: true
         })
       )
@@ -115,6 +119,7 @@ function updateState<A, B, C, R2, E2, R3>({
       // Add values that are new to the stream
       yield* $(
         Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
+          concurrency: "unbounded",
           discard: true
         })
       )
@@ -200,7 +205,7 @@ function addValue<A, B, C, R2, E2, R3>({
   error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
   getKey: (a: A) => B
 }) {
-  return Effect.suspend(() => {
+  return Effect.uninterruptible(Effect.suspend(() => {
     const key = getKey(value)
 
     // Set the initial value
@@ -235,7 +240,7 @@ function addValue<A, B, C, R2, E2, R3>({
         )
       )
     )
-  })
+  }))
 }
 
 function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => B) {

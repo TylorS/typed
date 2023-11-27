@@ -115,7 +115,7 @@ describe.concurrent(__filename, () => {
           yield* _(sink.onSuccess(3))
         })
       ),
-      Fx.from(Stream.fromIterable([4, 5, 6])),
+      Fx.fromStream(Stream.fromIterable([4, 5, 6])),
       Fx.from(Effect.delay(Effect.succeed(7), 50))
     ]).pipe(
       Fx.toReadonlyArray
@@ -1095,11 +1095,13 @@ describe.concurrent("Fx.keyed", () => {
 
       const fx = Fx.keyed(
         inputs,
-        (source) => {
-          calls++
-          return source
+        (x) => {
+          return x
         },
-        (x) => x
+        (x) => {
+          calls++
+          return x
+        }
       )
 
       const events = yield* $(Fx.toReadonlyArray(fx))
@@ -1120,13 +1122,6 @@ describe.concurrent("Fx.keyed", () => {
   describe.concurrent("Fx.from", () => {
     it.concurrent("does returns an Fx as-is", async () => {
       const test = Fx.from(Fx.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1, 2, 3])
-    })
-
-    it.concurrent("lifts a Stream", async () => {
-      const test = Fx.from(Stream.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
       const events = await Effect.runPromise(test)
 
       expect(events).toEqual([1, 2, 3])
