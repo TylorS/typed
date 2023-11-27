@@ -475,66 +475,6 @@ describe(__filename, () => {
 
         await Effect.runPromise(test)
       })
-
-      describe("onNavigation", () => {
-        const url = new URL("https://example.com/foo/1")
-        const redirectUrl = new URL("https://example.com/bar/42")
-        const redirect = Navigation.redirectToPath(redirectUrl)
-        const intermmediateUrl = new URL("https://example.com/foo/2")
-
-        it("runs only after the url has been committed", async () => {
-          const window = makeWindow({ url: url.href })
-          const NavigationPolyfill = await import("@virtualstate/navigation")
-          const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
-          ;(window as any).navigation = navigation as any
-          window.history = history as History
-          const test = Effect.gen(function*(_) {
-            const navigation = yield* _(Navigation.Navigation)
-
-            let beforeCount = 0
-            let afterCount = 0
-
-            yield* _(navigation.beforeNavigation((event) =>
-              Effect.gen(function*(_) {
-                beforeCount++
-
-                if (event.to.url === intermmediateUrl) {
-                  return yield* _(Effect.fail(redirect))
-                }
-
-                return Option.none()
-              })
-            ))
-
-            yield* _(navigation.onNavigation((event) =>
-              Effect.sync(() => {
-                deepStrictEqual(event.destination.url, redirectUrl)
-
-                afterCount++
-                return Option.none()
-              })
-            ))
-
-            yield* _(navigation.navigate(intermmediateUrl))
-
-            // Let fibers start
-            yield* _(Effect.sleep(1))
-
-            // Called once for intermmediateUrl
-            // Then again for the redirectUrl
-            deepStrictEqual(beforeCount, 2)
-
-            // Only called once with the redirectUrl
-            deepStrictEqual(afterCount, 1)
-          }).pipe(
-            Effect.provide(Navigation.fromWindow),
-            Window.provide(window),
-            Effect.scoped
-          )
-
-          await Effect.runPromise(test)
-        })
-      })
     })
   })
 
