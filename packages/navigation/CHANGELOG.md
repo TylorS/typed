@@ -1,5 +1,11 @@
 # @typed/navigation
 
+## 0.6.0
+
+### Minor Changes
+
+- [`51729c4c`](https://github.com/TylorS/typed/commit/51729c4c394ee525f84b3dc6886a4156751ff725) Thanks [@TylorS](https://github.com/TylorS)! - Pre-alpha release
+
 ## 0.1.0
 
 ### Minor Changes
