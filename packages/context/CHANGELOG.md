@@ -1,5 +1,11 @@
 # @typed/context
 
+## 0.19.1
+
+### Patch Changes
+
+- [`bd591ce4`](https://github.com/TylorS/typed/commit/bd591ce436247967cd0daeb5413335f06aea4418) Thanks [@TylorS](https://github.com/TylorS)! - Fix ESM builds
+
 ## 0.19.0
 
 ### Minor Changes

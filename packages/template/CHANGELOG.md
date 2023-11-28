@@ -1,5 +1,18 @@
 # @typed/template
 
+## 0.1.3
+
+### Patch Changes
+
+- [`bd591ce4`](https://github.com/TylorS/typed/commit/bd591ce436247967cd0daeb5413335f06aea4418) Thanks [@TylorS](https://github.com/TylorS)! - Fix ESM builds
+
+- Updated dependencies [[`bd591ce4`](https://github.com/TylorS/typed/commit/bd591ce436247967cd0daeb5413335f06aea4418)]:
+  - @typed/context@0.19.1
+  - @typed/dom@8.19.1
+  - @typed/environment@0.1.2
+  - @typed/fx@1.18.3
+  - @typed/wire@0.2.1
+
 ## 0.1.2
 
 ### Patch Changes
