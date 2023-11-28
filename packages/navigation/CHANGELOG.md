@@ -1,5 +1,14 @@
 # @typed/navigation
 
+## 0.6.2
+
+### Patch Changes
+
+- [`a8442403`](https://github.com/TylorS/typed/commit/a84424031f97e5c5c13bf535901bc8e6b9e2afa4) Thanks [@TylorS](https://github.com/TylorS)! - Fix: Ensure no internal imports exist
+
+- Updated dependencies [[`a8442403`](https://github.com/TylorS/typed/commit/a84424031f97e5c5c13bf535901bc8e6b9e2afa4)]:
+  - @typed/fx@1.18.2
+
 ## 0.6.1
 
 ### Patch Changes
