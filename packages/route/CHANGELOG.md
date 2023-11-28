@@ -1,5 +1,12 @@
 # @typed/route
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`a8442403`](https://github.com/TylorS/typed/commit/a84424031f97e5c5c13bf535901bc8e6b9e2afa4)]:
+  - @typed/fx@1.18.2
+
 ## 1.0.1
 
 ### Patch Changes
