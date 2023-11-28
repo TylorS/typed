@@ -1,5 +1,11 @@
 # @typed/path
 
+## 0.7.2
+
+### Patch Changes
+
+- [`b79f52b8`](https://github.com/TylorS/typed/commit/b79f52b8f30b33db609880e1c7304a0d82e3bc7f) Thanks [@TylorS](https://github.com/TylorS)! - Fix internal ESM imports
+
 ## 0.7.1
 
 ### Patch Changes
