@@ -1,5 +1,5 @@
 import { Tagged } from "@typed/context"
-import type { Template } from "../Template"
+import type { Template } from "../Template.js"
 import type { ParentChildNodes } from "./utils.js"
 
 /**

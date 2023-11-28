@@ -11,9 +11,9 @@ import * as Fiber from "effect/Fiber"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
-import type { ElementRef } from "../ElementRef"
-import type { ElementSource } from "../ElementSource"
-import { unescape } from "../HtmlChunk"
+import type { ElementRef } from "../ElementRef.js"
+import type { ElementSource } from "../ElementSource.js"
+import { unescape } from "../HtmlChunk.js"
 import type {
   AttributePart,
   BooleanPart,
@@ -31,8 +31,8 @@ import type {
   SparsePart,
   StaticText,
   TextPart
-} from "../Part"
-import type { RenderContext } from "../RenderContext"
+} from "../Part.js"
+import type { RenderContext } from "../RenderContext.js"
 import { findHoleComment } from "./utils.js"
 
 const strictEq = strict<any>()

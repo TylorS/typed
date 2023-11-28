@@ -8,8 +8,8 @@ import { Effectable } from "effect"
 import * as Fiber from "effect/Fiber"
 import { NodeInspectSymbol } from "effect/Inspectable"
 import type { Inspectable } from "effect/Inspectable"
-import type { Fx, ToFx } from "../Fx"
-import { TypeId } from "../TypeId"
+import type { Fx, ToFx } from "../Fx.js"
+import { TypeId } from "../TypeId.js"
 
 export const Variance: Fx<any, any, any>[TypeId] = {
   _R: identity,

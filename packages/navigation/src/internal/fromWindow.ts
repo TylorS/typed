@@ -5,7 +5,7 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
 import { Effect, Exit, Fiber, Option, Runtime, Scope } from "effect"
 import type { Context, Layer } from "effect"
-import type { Commit } from "../Layer"
+import type { Commit } from "../Layer.js"
 import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
@@ -13,8 +13,8 @@ import type {
   NavigationEvent,
   NavigationHandler,
   Transition
-} from "../Navigation"
-import { Navigation, NavigationError } from "../Navigation"
+} from "../Navigation.js"
+import { Navigation, NavigationError } from "../Navigation.js"
 import type { NavigationState } from "./shared.js"
 import {
   getOriginalState,

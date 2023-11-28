@@ -6,7 +6,7 @@ import type { Uuid } from "@typed/id"
 import { GetRandomValues, makeUuid } from "@typed/id"
 import type { Scope } from "effect"
 import { Effect, Either, Option } from "effect"
-import type { Commit } from "../Layer"
+import type { Commit } from "../Layer.js"
 import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
@@ -18,8 +18,8 @@ import type {
   NavigationHandler,
   ProposedDestination,
   RedirectError
-} from "../Navigation"
-import { Destination, Transition } from "../Navigation"
+} from "../Navigation.js"
+import { Destination, Transition } from "../Navigation.js"
 
 export type NavigationState = {
   readonly entries: ReadonlyArray<Destination>

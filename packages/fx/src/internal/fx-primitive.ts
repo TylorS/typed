@@ -2,11 +2,11 @@ import type * as Cause from "effect/Cause"
 import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
 
-import type * as Sink from "../Sink"
+import type * as Sink from "../Sink.js"
 import { type EffectOperator, fuseEffectOperators, liftSyncOperator } from "./effect-operator.js"
 import * as syncOperator from "./sync-operator.js"
 
-import type { FlattenStrategy, Fx, FxFork, WithEarlyExitParams, WithScopedForkParams } from "../Fx"
+import type { FlattenStrategy, Fx, FxFork, WithEarlyExitParams, WithScopedForkParams } from "../Fx.js"
 import { FxProto } from "./protos.js"
 
 export type Primitive =

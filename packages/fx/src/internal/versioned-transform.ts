@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import type { Fx } from "../Fx"
-import type { Versioned } from "../Versioned"
+import type { Fx } from "../Fx.js"
+import type { Versioned } from "../Versioned.js"
 import { MulticastEffect } from "./helpers.js"
 import { FxEffectBase } from "./protos.js"
 

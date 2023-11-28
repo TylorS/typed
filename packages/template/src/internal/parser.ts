@@ -1,8 +1,8 @@
 import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
-import * as Template from "../Template"
-import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token"
+import * as Template from "../Template.js"
+import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token.js"
 import type { TextChunk } from "./chunks.js"
 import {
   getPart,
@@ -617,7 +617,7 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   return out
 }
 
-export const parser: Parser = globalValue(Symbol.for("../Parser2"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("../Parser2.js"), () => new ParserImpl())
 
 const digestSize = 2
 const multiplier = 33

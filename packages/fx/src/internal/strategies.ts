@@ -1,4 +1,4 @@
-import type * as Fx from "../Fx"
+import type * as Fx from "../Fx.js"
 
 export const Unbounded: Fx.Unbounded = { _tag: "Unbounded" }
 

@@ -36,7 +36,7 @@ import { compileSyncReducer, Filter, FilterMap, Map } from "./sync-operator.js"
 import type { DurationInput } from "effect/Duration"
 import type { Equivalence } from "effect/Equivalence"
 import type { Runtime } from "effect/Runtime"
-import * as Emitter from "../Emitter"
+import * as Emitter from "../Emitter.js"
 import type {
   FlattenStrategy,
   Fx,
@@ -45,8 +45,8 @@ import type {
   WithEarlyExitParams,
   WithFlattenStrategyParams,
   WithScopedForkParams
-} from "../Fx"
-import * as Sink from "../Sink"
+} from "../Fx.js"
+import * as Sink from "../Sink.js"
 import { type Bounds, boundsFrom, mergeBounds } from "./bounds.js"
 import { type InternalEffect, matchEffectPrimitive } from "./effect-primitive.js"
 import {

@@ -1,8 +1,8 @@
 import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
-import type { RenderContext } from "../RenderContext"
-import type { RenderEvent } from "../RenderEvent"
-import { isRenderEvent } from "../RenderEvent"
+import type { RenderContext } from "../RenderContext.js"
+import type { RenderEvent } from "../RenderEvent.js"
+import { isRenderEvent } from "../RenderEvent.js"
 import { NodePartImpl } from "./parts.js"
 import { findHoleComment, isCommentWithValue } from "./utils.js"
 

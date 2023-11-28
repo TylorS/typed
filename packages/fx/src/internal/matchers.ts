@@ -1,11 +1,11 @@
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
-import * as TypeId from "../TypeId"
+import * as TypeId from "../TypeId.js"
 
-import type * as Sink from "../Sink"
+import type * as Sink from "../Sink.js"
 
-import type { Fx, FxInput } from "../Fx"
-import type { RefSubject } from "../RefSubject"
+import type { Fx, FxInput } from "../Fx.js"
+import type { RefSubject } from "../RefSubject.js"
 import type * as Primitive from "./fx-primitive.js"
 
 export function matchFxPrimitive<B>(

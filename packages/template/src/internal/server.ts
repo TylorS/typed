@@ -1,5 +1,5 @@
 import * as Effect from "effect/Effect"
-import type { HtmlChunk, PartChunk, SparsePartChunk } from "../HtmlChunk"
+import type { HtmlChunk, PartChunk, SparsePartChunk } from "../HtmlChunk.js"
 import type {
   AttributePart,
   ClassNamePart,
@@ -10,9 +10,9 @@ import type {
   SparseCommentPart,
   SparsePart,
   StaticText
-} from "../Part"
-import type { Renderable } from "../Renderable"
-import type { PartNode, SparseAttrNode, SparseClassNameNode, SparseCommentNode, SparsePartNode } from "../Template"
+} from "../Part.js"
+import type { Renderable } from "../Renderable.js"
+import type { PartNode, SparseAttrNode, SparseClassNameNode, SparseCommentNode, SparsePartNode } from "../Template.js"
 import {
   AttributePartImpl,
   BooleanPartImpl,

@@ -1,4 +1,4 @@
-import type { Placeholder } from "../Placeholder"
+import type { Placeholder } from "../Placeholder.js"
 
 declare global {
   export interface String extends Placeholder<never, never, string> {}

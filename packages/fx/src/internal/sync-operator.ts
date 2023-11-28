@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import { WithContext } from "../Sink"
+import { WithContext } from "../Sink.js"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 

@@ -1,4 +1,4 @@
-import * as Token from "../Token"
+import * as Token from "../Token.js"
 import {
   getAllTextUntilElementClose,
   getAttributeWithoutQuotes,

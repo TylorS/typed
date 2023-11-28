@@ -4,7 +4,7 @@ import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { isSome } from "effect/Option"
 import { TestClock } from "effect/TestClock"
-import { TEXT_START, TYPED_START } from "../Meta"
+import { TEXT_START, TYPED_START } from "../Meta.js"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE
