@@ -8,9 +8,9 @@ import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type * as Layer from "effect/Layer"
 
-import type { EffectFn } from "./EffectFn"
-import { Tagged } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import type { EffectFn } from "./EffectFn.js"
+import { Tagged } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
 
 /**
  * @category symbols

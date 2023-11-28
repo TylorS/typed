@@ -5,8 +5,8 @@
 import type { Cause } from "effect/Cause"
 import type { Effect } from "effect/Effect"
 import type { Scope } from "effect/Scope"
-import type { ElementSource } from "./ElementSource"
-import type { EventHandler } from "./EventHandler"
+import type { ElementSource } from "./ElementSource.js"
+import type { EventHandler } from "./EventHandler.js"
 
 /**
  * @since 1.0.0

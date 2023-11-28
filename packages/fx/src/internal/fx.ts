@@ -25,9 +25,9 @@ import * as Tracer from "effect/Tracer"
 import type { Fx, FxInput } from "../Fx"
 import * as Sink from "../Sink"
 import * as Typeclass from "../Typeclass"
-import * as core from "./core"
-import { run } from "./run"
-import { multicast } from "./share"
+import * as core from "./core.js"
+import { run } from "./run.js"
+import { multicast } from "./share.js"
 
 /**
  * Create an Fx which will emit a value after waiting for a specified duration.

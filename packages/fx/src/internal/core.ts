@@ -27,11 +27,11 @@ import {
   liftSyncOperator,
   MapEffect,
   TapEffect
-} from "./effect-operator"
-import * as helpers from "./helpers"
-import * as Provide from "./provide"
-import * as strategies from "./strategies"
-import { compileSyncReducer, Filter, FilterMap, Map } from "./sync-operator"
+} from "./effect-operator.js"
+import * as helpers from "./helpers.js"
+import * as Provide from "./provide.js"
+import * as strategies from "./strategies.js"
+import { compileSyncReducer, Filter, FilterMap, Map } from "./sync-operator.js"
 
 import type { DurationInput } from "effect/Duration"
 import type { Equivalence } from "effect/Equivalence"
@@ -47,8 +47,8 @@ import type {
   WithScopedForkParams
 } from "../Fx"
 import * as Sink from "../Sink"
-import { type Bounds, boundsFrom, mergeBounds } from "./bounds"
-import { type InternalEffect, matchEffectPrimitive } from "./effect-primitive"
+import { type Bounds, boundsFrom, mergeBounds } from "./bounds.js"
+import { type InternalEffect, matchEffectPrimitive } from "./effect-primitive.js"
 import {
   Empty,
   Fail,
@@ -65,11 +65,11 @@ import {
   WithEarlyExit,
   WithFlattenStrategy,
   WithScopedFork
-} from "./fx-primitive"
-import { adjustTime } from "./helpers"
-import { matchFxInput } from "./matchers"
-import { OnceEffect } from "./protos"
-import { run } from "./run"
+} from "./fx-primitive.js"
+import { adjustTime } from "./helpers.js"
+import { matchFxInput } from "./matchers.js"
+import { OnceEffect } from "./protos.js"
+import { run } from "./run.js"
 
 const constUnit = () => Effect.unit
 

@@ -10,14 +10,14 @@ import type { RenderContext } from "../RenderContext"
 import { DomRenderEvent } from "../RenderEvent"
 import type { RenderTemplate } from "../RenderTemplate"
 import { TemplateInstance } from "../TemplateInstance"
-import { indexRefCounter } from "./indexRefCounter"
+import { indexRefCounter } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
 import type { Template } from "../Template"
-import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors"
-import { HydrateContext } from "./HydrateContext"
-import { buildParts, getBrowserEntry, renderTemplate, renderValues } from "./render"
+import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors.js"
+import { HydrateContext } from "./HydrateContext.js"
+import { buildParts, getBrowserEntry, renderTemplate, renderValues } from "./render.js"
 import {
   findPath,
   getPreviousNodes,
@@ -25,7 +25,7 @@ import {
   isCommentWithValue,
   isHtmlElement,
   type ParentChildNodes
-} from "./utils"
+} from "./utils.js"
 
 // TODO: Handle missing comment errors
 

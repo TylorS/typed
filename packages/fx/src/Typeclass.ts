@@ -23,10 +23,10 @@ import type { Either } from "effect/Either"
 import { dual } from "effect/Function"
 import type * as HKT from "effect/HKT"
 import { getLeft, getRight } from "effect/Option"
-import type { Fx } from "./Fx"
+import type { Fx } from "./Fx.js"
 
-import * as core from "./internal/core"
-import { multicast } from "./internal/share"
+import * as core from "./internal/core.js"
+import { multicast } from "./internal/share.js"
 
 /**
  * TypeLambda for an Fx

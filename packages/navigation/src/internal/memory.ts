@@ -4,8 +4,8 @@ import { Effect, Option } from "effect"
 import type { Layer, Scope } from "effect"
 import type { Commit, InitialMemoryOptions, MemoryOptions } from "../Layer"
 import { Navigation } from "../Navigation"
-import type { ModelAndIntent, NavigationState } from "./shared"
-import { getOriginFromUrl, getUrl, makeDestination, makeHandlersState, setupFromModelAndIntent } from "./shared"
+import type { ModelAndIntent, NavigationState } from "./shared.js"
+import { getOriginFromUrl, getUrl, makeDestination, makeHandlersState, setupFromModelAndIntent } from "./shared.js"
 
 export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
   Navigation.scoped(

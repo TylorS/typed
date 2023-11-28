@@ -7,8 +7,8 @@ import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Scope from "effect/Scope"
 
-import { GlobalThis } from "./GlobalThis"
-import { createScopedRuntime, type DefaultEventMap } from "./internal/_helpers"
+import { GlobalThis } from "./GlobalThis.js"
+import { createScopedRuntime, type DefaultEventMap } from "./internal/_helpers.js"
 
 /**
  * Add an event listener to an EventTarget

@@ -8,10 +8,10 @@ import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashMap from "effect/HashMap"
 import type { Option } from "effect/Option"
-import type { Computed } from "./Computed"
-import type { Filtered } from "./Filtered"
-import type * as Fx from "./Fx"
-import * as RefSubject from "./RefSubject"
+import type { Computed } from "./Computed.js"
+import type { Filtered } from "./Filtered.js"
+import type * as Fx from "./Fx.js"
+import * as RefSubject from "./RefSubject.js"
 
 /**
  * A RefHashMap is a RefSubject that is specialized over a HashMap of values.

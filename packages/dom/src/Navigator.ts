@@ -8,7 +8,7 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import { fromNullable, type Option } from "effect/Option"
 
-import { GlobalThis } from "./GlobalThis"
+import { GlobalThis } from "./GlobalThis.js"
 
 /**
  * A Context for the Navigator API

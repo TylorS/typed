@@ -15,8 +15,8 @@ import * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
 import * as Scheduler from "effect/Scheduler"
 import * as Scope from "effect/Scope"
-import { dequeueIsActive } from "./internal/fx"
-import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback"
+import { dequeueIsActive } from "./internal/fx.js"
+import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback.js"
 
 /**
  * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue
@@ -94,7 +94,7 @@ class IdleSchedulerImpl implements IdleScheduler {
  * @category instances
  */
 export const defaultIdleScheduler: IdleScheduler = globalValue(
-  Symbol("./Scheduler/Idle"),
+  Symbol("./Scheduler/Idle.js"),
   () => new IdleSchedulerImpl()
 )
 

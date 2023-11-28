@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { TYPED_HASH } from "./Meta"
+import { TYPED_HASH } from "./Meta.js"
 import type {
   Attribute,
   ElementNode,
@@ -13,7 +13,7 @@ import type {
   Template,
   Text,
   TextOnlyElement
-} from "./Template"
+} from "./Template.js"
 
 /**
  * @since 1.0.0

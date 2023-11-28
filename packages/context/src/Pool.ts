@@ -9,9 +9,9 @@ import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as P from "effect/Pool"
 import type { Scope } from "effect/Scope"
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
+import { withActions } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
+import { Tag } from "./Tag.js"
 
 /**
  * Contextual wrapper for @effect/io/Pool

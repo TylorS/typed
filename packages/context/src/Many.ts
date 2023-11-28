@@ -7,8 +7,8 @@ import type * as C from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 
-import { ContextBuilder } from "./Builder"
-import type { Actions, Provision } from "./Extensions"
+import { ContextBuilder } from "./Builder.js"
+import type { Actions, Provision } from "./Extensions.js"
 
 type TupleOfTags = ReadonlyArray<C.Tag<any, any>>
 

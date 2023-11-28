@@ -13,7 +13,7 @@ import type * as Layer from "effect/Layer"
 import * as O from "effect/Option"
 
 import { Schema } from "@effect/schema"
-import { Window } from "./Window"
+import { Window } from "./Window.js"
 
 /**
  * The (local/session)Storage interface is a simple key/value store, used to store data

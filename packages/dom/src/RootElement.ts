@@ -7,8 +7,8 @@ import * as Context from "@typed/context"
 import type * as Effect from "effect/Effect"
 
 import type * as Scope from "effect/Scope"
-import type { AddEventListenerOptions } from "./EventTarget"
-import { addEventListener } from "./EventTarget"
+import type { AddEventListenerOptions } from "./EventTarget.js"
+import { addEventListener } from "./EventTarget.js"
 
 /**
  * The root element of your application

@@ -9,8 +9,8 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import { makeHold } from "@typed/fx/Subject"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
-import { RenderContext } from "./RenderContext"
-import { type RenderEvent } from "./RenderEvent"
+import { RenderContext } from "./RenderContext.js"
+import { type RenderEvent } from "./RenderEvent.js"
 
 /**
  * @since 1.0.0

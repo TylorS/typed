@@ -8,11 +8,11 @@ import * as C from "@typed/context"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
-import { type Fx, ToFx } from "./Fx"
-import { provide } from "./internal/core"
-import * as internal from "./internal/core-subject"
-import { fromFxEffect } from "./internal/fx"
-import type { WithContext } from "./Sink"
+import { type Fx, ToFx } from "./Fx.js"
+import * as internal from "./internal/core-subject.js"
+import { provide } from "./internal/core.js"
+import { fromFxEffect } from "./internal/fx.js"
+import type { WithContext } from "./Sink.js"
 
 /**
  * A Subject is an Fx which is also a Sink, and can be used to

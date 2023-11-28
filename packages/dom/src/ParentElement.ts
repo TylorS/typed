@@ -8,8 +8,8 @@ import type * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import type * as Scope from "effect/Scope"
 
-import * as EventTarget from "./EventTarget"
-import type { GlobalThis } from "./GlobalThis"
+import * as EventTarget from "./EventTarget.js"
+import type { GlobalThis } from "./GlobalThis.js"
 
 /**
  * A Context for the parentElement of an HTMLElement

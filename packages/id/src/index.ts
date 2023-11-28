@@ -5,12 +5,12 @@
 /**
  * @since 1.18.0
  */
-export * from "./GetRandomValues"
+export * from "./GetRandomValues.js"
 /**
  * @since 1.18.0
  */
-export * from "./NanoId"
+export * from "./NanoId.js"
 /**
  * @since 1.18.0
  */
-export * from "./Uuid"
+export * from "./Uuid.js"

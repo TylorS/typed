@@ -8,14 +8,14 @@ import type * as Versioned from "@typed/fx/Versioned"
 import type { Rendered } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
 import type * as Effect from "effect/Effect"
-import { type ElementRef, ElementRefTypeId } from "./ElementRef"
-import type { Placeholder } from "./Placeholder"
-import type { RenderEvent } from "./RenderEvent"
+import { type ElementRef, ElementRefTypeId } from "./ElementRef.js"
+import type { Placeholder } from "./Placeholder.js"
+import type { RenderEvent } from "./RenderEvent.js"
 
 /**
  * @since 1.0.0
  */
-export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance")
+export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance.js")
 /**
  * @since 1.0.0
  */

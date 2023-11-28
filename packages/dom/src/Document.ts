@@ -7,8 +7,8 @@ import * as Context from "@typed/context/Extensions"
 import type * as Effect from "effect/Effect"
 
 import type * as Scope from "effect/Scope"
-import type { AddEventListenerOptions } from "./EventTarget"
-import { addEventListener } from "./EventTarget"
+import type { AddEventListenerOptions } from "./EventTarget.js"
+import { addEventListener } from "./EventTarget.js"
 
 /**
  * @since 8.19.0

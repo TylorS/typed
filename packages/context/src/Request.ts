@@ -8,8 +8,8 @@ import type * as Data from "effect/Data"
 import type { Effect } from "effect/Effect"
 import * as R from "effect/Request"
 
-import { Fn } from "./Fn"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
+import { Fn } from "./Fn.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
 
 /**
  * Contextual wrappers around @effect/io/Request

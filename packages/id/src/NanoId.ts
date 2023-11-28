@@ -3,7 +3,7 @@
  */
 
 import { Brand, Effect } from "effect"
-import { GetRandomValues } from "./GetRandomValues"
+import { GetRandomValues } from "./GetRandomValues.js"
 
 const nanoIdPattern = /[0-9a-zA-Z_-]/
 

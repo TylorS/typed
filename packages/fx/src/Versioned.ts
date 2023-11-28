@@ -9,10 +9,10 @@ import type { Context, Layer, Runtime } from "effect"
 import { Effect, identity } from "effect"
 import { dual } from "effect/Function"
 import { sum } from "effect/Number"
-import type * as Fx from "./Fx"
-import * as core from "./internal/core"
-import * as fxEffectProto from "./internal/fx-effect-proto"
-import { VersionedTransform } from "./internal/versioned-transform"
+import type * as Fx from "./Fx.js"
+import * as core from "./internal/core.js"
+import * as fxEffectProto from "./internal/fx-effect-proto.js"
+import { VersionedTransform } from "./internal/versioned-transform.js"
 
 /**
  * A data type which is both an Fx and an Effect. This is a more advanced type, and is the basis

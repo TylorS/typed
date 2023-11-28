@@ -3,9 +3,9 @@
  */
 
 import type { Effect, Layer } from "effect"
-import * as internalFromWindow from "./internal/fromWindow"
-import * as internalMemory from "./internal/memory"
-import type { BeforeNavigationEvent, Destination, Navigation, NavigationError } from "./Navigation"
+import * as internalFromWindow from "./internal/fromWindow.js"
+import * as internalMemory from "./internal/memory.js"
+import type { BeforeNavigationEvent, Destination, Navigation, NavigationError } from "./Navigation.js"
 
 /**
  * @since 1.0.0

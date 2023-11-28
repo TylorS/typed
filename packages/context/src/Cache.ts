@@ -8,9 +8,9 @@ import type { Effect } from "effect/Effect"
 import type { Either } from "effect/Either"
 import type { Exit } from "effect/Exit"
 import * as Layer from "effect/Layer"
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
+import { withActions } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
+import { Tag } from "./Tag.js"
 
 /**
  * A Contextual wrapper around @effect/io/Cache

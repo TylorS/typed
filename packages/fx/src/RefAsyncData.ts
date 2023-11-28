@@ -12,12 +12,12 @@ import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type { Schedule } from "effect/Schedule"
-import type * as Computed from "./Computed"
-import type * as Filtered from "./Filtered"
-import * as Fx from "./Fx"
-import * as RefSubject from "./RefSubject"
-import * as Sink from "./Sink"
-import { RefSubjectTypeId } from "./TypeId"
+import type * as Computed from "./Computed.js"
+import type * as Filtered from "./Filtered.js"
+import * as Fx from "./Fx.js"
+import * as RefSubject from "./RefSubject.js"
+import * as Sink from "./Sink.js"
+import { RefSubjectTypeId } from "./TypeId.js"
 
 /**
  * A RefAsyncData is a RefSubject that holds an AsyncData value.

@@ -15,8 +15,8 @@ import {
   getWhitespace,
   PART_REGEX,
   PART_STRING
-} from "./chunks"
-import type { TextChunk } from "./chunks"
+} from "./chunks.js"
+import type { TextChunk } from "./chunks.js"
 
 export function tokenize(template: ReadonlyArray<string>): Iterable<Token.Token> {
   return new Tokenizer(template)

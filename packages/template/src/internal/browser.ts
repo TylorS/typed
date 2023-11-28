@@ -3,8 +3,8 @@ import udomdiff from "udomdiff"
 import type { RenderContext } from "../RenderContext"
 import type { RenderEvent } from "../RenderEvent"
 import { isRenderEvent } from "../RenderEvent"
-import { NodePartImpl } from "./parts"
-import { findHoleComment, isCommentWithValue } from "./utils"
+import { NodePartImpl } from "./parts.js"
+import { findHoleComment, isCommentWithValue } from "./utils.js"
 
 export function makeRenderNodePart(
   index: number,

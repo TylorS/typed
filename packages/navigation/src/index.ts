@@ -6,12 +6,12 @@
 /**
  * @since 1.0.0
  */
-export * from "./Blocking"
+export * from "./Blocking.js"
 /**
  * @since 1.0.0
  */
-export * from "./Layer"
+export * from "./Layer.js"
 /**
  * @since 1.0.0
  */
-export * from "./Navigation"
+export * from "./Navigation.js"

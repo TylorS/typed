@@ -5,9 +5,9 @@
 /**
  * @since 1.0.0
  */
-export * from "./CurrentRoute"
+export * from "./CurrentRoute.js"
 
 /**
  * @since 1.0.0
  */
-export * from "./Matcher"
+export * from "./Matcher.js"

@@ -8,14 +8,14 @@ import * as Chunk from "effect/Chunk"
 import { identity } from "effect/Function"
 import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
-import * as Fx from "./Fx"
-import type { Guard } from "./Guard"
-import * as RefSubject from "./RefSubject"
+import * as Fx from "./Fx.js"
+import type { Guard } from "./Guard.js"
+import * as RefSubject from "./RefSubject.js"
 
 /**
  * @since 1.18.0
  */
-export const MatcherTypeId: unique symbol = Symbol.for("./Matcher")
+export const MatcherTypeId: unique symbol = Symbol.for("./Matcher.js")
 /**
  * @since 1.18.0
  */

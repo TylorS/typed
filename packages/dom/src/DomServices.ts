@@ -7,14 +7,14 @@ import * as Context from "@typed/context"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 
-import { Document } from "./Document"
-import { GlobalThis } from "./GlobalThis"
-import { History } from "./History"
-import { Location } from "./Location"
-import { Navigator } from "./Navigator"
-import { ParentElement } from "./ParentElement"
-import { RootElement } from "./RootElement"
-import { Window } from "./Window"
+import { Document } from "./Document.js"
+import { GlobalThis } from "./GlobalThis.js"
+import { History } from "./History.js"
+import { Location } from "./Location.js"
+import { Navigator } from "./Navigator.js"
+import { ParentElement } from "./ParentElement.js"
+import { RootElement } from "./RootElement.js"
+import { Window } from "./Window.js"
 
 /**
  * All of the core DOM services

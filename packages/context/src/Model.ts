@@ -9,10 +9,10 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
 import { ScopedRefTypeId } from "effect/ScopedRef"
-import { ContextBuilder } from "./Builder"
-import type { Ref } from "./Ref"
-import type { ScopedRef } from "./ScopedRef"
-import type { SynchronizedRef } from "./SynchronizedRef"
+import { ContextBuilder } from "./Builder.js"
+import type { Ref } from "./Ref.js"
+import type { ScopedRef } from "./ScopedRef.js"
+import type { SynchronizedRef } from "./SynchronizedRef.js"
 
 /**
  * A ModelRef<I, A> is a Ref/ScopedRef/SynchronizedRef that is part of a Model.

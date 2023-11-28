@@ -6,8 +6,8 @@ import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identif
 import type { Effect } from "effect"
 import { strict } from "effect/Equivalence"
 import type { Scope } from "effect/Scope"
-import type * as Fx from "./Fx"
-import * as RefSubject from "./RefSubject"
+import type * as Fx from "./Fx.js"
+import * as RefSubject from "./RefSubject.js"
 
 const add = (x: number): number => x + 1
 const sub = (x: number): number => x - 1

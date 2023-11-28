@@ -13,8 +13,8 @@ import * as Idle from "@typed/fx/Idle"
 import type { Rendered } from "@typed/wire"
 import { Effect, Layer, Option } from "effect"
 import * as Scope from "effect/Scope"
-import type { Entry } from "./Entry"
-import type { Part, SparsePart } from "./Part"
+import type { Entry } from "./Entry.js"
+import type { Part, SparsePart } from "./Part.js"
 
 /**
  * The context in which templates are rendered within
@@ -47,7 +47,7 @@ export interface RenderContext {
  * @since 1.0.0
  */
 export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Context.Tagged<RenderContext>(
-  "./RenderContext"
+  "./RenderContext.js"
 )
 
 /**

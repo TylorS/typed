@@ -10,19 +10,19 @@ import type { Equivalence } from "effect/Equivalence"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type { Scope } from "effect/Scope"
-import { Computed } from "./Computed"
-import { Filtered } from "./Filtered"
-import type { Fx, FxInput } from "./Fx"
-import { struct } from "./Fx"
-import { FxEffectBase } from "./internal/protos"
-import type { RefSubject } from "./RefSubject"
-import type { Versioned } from "./Versioned"
+import { Computed } from "./Computed.js"
+import { Filtered } from "./Filtered.js"
+import type { Fx, FxInput } from "./Fx.js"
+import { struct } from "./Fx.js"
+import { FxEffectBase } from "./internal/protos.js"
+import type { RefSubject } from "./RefSubject.js"
+import type { Versioned } from "./Versioned.js"
 
 /**
  * @since 1.18.0
  * @category symbols
  */
-export const ModelTypeId = Symbol.for("./Model")
+export const ModelTypeId = Symbol.for("./Model.js")
 
 /**
  * @since 1.18.0

@@ -6,8 +6,14 @@ import type * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
 import { Deferred, Effect, Option } from "effect"
-import type { BeforeNavigationEvent, CancelNavigation, Destination, NavigateOptions, RedirectError } from "./Navigation"
-import { cancelNavigation, Navigation, redirectToPath } from "./Navigation"
+import type {
+  BeforeNavigationEvent,
+  CancelNavigation,
+  Destination,
+  NavigateOptions,
+  RedirectError
+} from "./Navigation.js"
+import { cancelNavigation, Navigation, redirectToPath } from "./Navigation.js"
 
 /**
  * @since 1.0.0

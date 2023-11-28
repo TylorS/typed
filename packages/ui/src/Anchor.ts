@@ -15,7 +15,7 @@ import type { Rendered } from "@typed/wire"
 import type { ReadonlyRecord, Scope } from "effect"
 import { Effect } from "effect"
 import { uncapitalize } from "effect/String"
-import type { HTMLAnchorElementProperties } from "./internal/dom-properties"
+import type { HTMLAnchorElementProperties } from "./internal/dom-properties.js"
 
 /**
  * @since 1.0.0

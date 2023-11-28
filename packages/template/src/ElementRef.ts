@@ -10,12 +10,12 @@ import type { Scope } from "effect"
 import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual } from "effect/Function"
-import type { DefaultEventMap } from "./ElementSource"
-import { ElementSource, getElements } from "./ElementSource"
-import { adjustTime } from "./internal/utils"
-import type { Placeholder } from "./Placeholder"
+import type { DefaultEventMap } from "./ElementSource.js"
+import { ElementSource, getElements } from "./ElementSource.js"
+import { adjustTime } from "./internal/utils.js"
+import type { Placeholder } from "./Placeholder.js"
 
-export const ElementRefTypeId = Symbol.for("./ElementRef")
+export const ElementRefTypeId = Symbol.for("./ElementRef.js")
 export type ElementRefTypeId = typeof ElementRefTypeId
 
 /**

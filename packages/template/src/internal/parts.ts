@@ -33,7 +33,7 @@ import type {
   TextPart
 } from "../Part"
 import type { RenderContext } from "../RenderContext"
-import { findHoleComment } from "./utils"
+import { findHoleComment } from "./utils.js"
 
 const strictEq = strict<any>()
 

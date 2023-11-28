@@ -1,8 +1,8 @@
 import * as Effect from "effect/Effect"
 import type { Fx } from "../Fx"
 import type { Versioned } from "../Versioned"
-import { succeed } from "./core"
-import { FxEffectBase } from "./protos"
+import { succeed } from "./core.js"
+import { FxEffectBase } from "./protos.js"
 
 /**
  * Construct a Versioned type.

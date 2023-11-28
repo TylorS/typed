@@ -1,12 +1,12 @@
 import * as Effect from "effect/Effect"
 
 import * as Sink from "../Sink"
-import { compileCauseEffectOperatorSink, compileEffectOperatorSink } from "./effect-operator"
-import * as helpers from "./helpers"
-import { compileSyncOperatorFailureSink, compileSyncOperatorSink } from "./sync-operator"
+import { compileCauseEffectOperatorSink, compileEffectOperatorSink } from "./effect-operator.js"
+import * as helpers from "./helpers.js"
+import { compileSyncOperatorFailureSink, compileSyncOperatorSink } from "./sync-operator.js"
 
 import type { Fx } from "../Fx"
-import { matchFxPrimitive } from "./matchers"
+import { matchFxPrimitive } from "./matchers.js"
 
 const constUnit = () => Effect.unit
 

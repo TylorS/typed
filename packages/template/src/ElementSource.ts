@@ -15,8 +15,8 @@ import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 import * as Scope from "effect/Scope"
-import { adjustTime } from "./internal/utils"
-import { PlaceholderTypeId } from "./Placeholder"
+import { adjustTime } from "./internal/utils.js"
+import { PlaceholderTypeId } from "./Placeholder.js"
 
 import type * as TQS from "typed-query-selector/parser"
 

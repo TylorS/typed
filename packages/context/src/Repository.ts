@@ -8,11 +8,11 @@
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
-import { ContextBuilder } from "./Builder"
+import { ContextBuilder } from "./Builder.js"
 
-import type { EffectFn } from "./EffectFn"
-import type { Fn } from "./Fn"
-import { struct, type TaggedStruct } from "./Many"
+import type { EffectFn } from "./EffectFn.js"
+import type { Fn } from "./Fn.js"
+import { struct, type TaggedStruct } from "./Many.js"
 
 type AnyFns = Readonly<Record<string, Fn.Any>>
 

@@ -13,52 +13,52 @@
  * [Computed documentation](https://tylors.github.io/typed/fx/Computed.ts.html)
  * @since 1.18.0
  */
-export * as Computed from "./Computed"
+export * as Computed from "./Computed.js"
 
 /**
  * [Filtered documentation](https://tylors.github.io/typed/fx/Filtered.ts.html)
  * @since 1.18.0
  */
-export * as Filtered from "./Filtered"
+export * as Filtered from "./Filtered.js"
 
 /**
  * [Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)
  * @since 1.18.0
  */
-export * from "./Fx"
+export * from "./Fx.js"
 
 /**
  * [RefArray documentation](https://tylors.github.io/typed/fx/RefArray.ts.html)
  * @since 1.18.0
  */
-export * as RefArray from "./RefArray"
+export * as RefArray from "./RefArray.js"
 
 /**
  * [RefSubject documentation](https://tylors.github.io/typed/fx/RefSubject.ts.html)
  * @since 1.18.0
  */
-export * as RefSubject from "./RefSubject"
+export * as RefSubject from "./RefSubject.js"
 
 /**
  * [Sink documentation](https://tylors.github.io/typed/fx/Sink.ts.html)
  * @since 1.18.0
  */
-export * as Sink from "./Sink"
+export * as Sink from "./Sink.js"
 
 /**
  * [Subject documentation](https://tylors.github.io/typed/fx/Subject.ts.html)
  * @since 1.18.0
  */
-export * as Subject from "./Subject"
+export * as Subject from "./Subject.js"
 
 /**
  * [Typeclass documentation](https://tylors.github.io/typed/fx/Typeclass.ts.html)
  * @since 1.18.0
  */
-export * as Typeclass from "./Typeclass"
+export * as Typeclass from "./Typeclass.js"
 
 /**
  * [TypeId documentation](https://tylors.github.io/typed/fx/TypeId.ts.html)
  * @since 1.18.0
  */
-export * from "./TypeId"
+export * from "./TypeId.js"

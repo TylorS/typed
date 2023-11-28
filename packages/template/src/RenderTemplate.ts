@@ -7,11 +7,11 @@ import * as Fx from "@typed/fx/Fx"
 import type { Rendered } from "@typed/wire"
 import type * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
-import type { ElementRef } from "./ElementRef"
-import type { Placeholder } from "./Placeholder"
-import type { Renderable } from "./Renderable"
-import type { RenderEvent } from "./RenderEvent"
-import type { TemplateInstance } from "./TemplateInstance"
+import type { ElementRef } from "./ElementRef.js"
+import type { Placeholder } from "./Placeholder.js"
+import type { Renderable } from "./Renderable.js"
+import type { RenderEvent } from "./RenderEvent.js"
+import type { TemplateInstance } from "./TemplateInstance.js"
 
 /**
  * @since 1.0.0
@@ -38,7 +38,7 @@ export const RenderTemplate: Context.Tagged<RenderTemplate, RenderTemplate> = Co
   RenderTemplate,
   RenderTemplate
 >(
-  "./RenderTemplate"
+  "./RenderTemplate.js"
 )
 
 /**

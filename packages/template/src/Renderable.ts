@@ -4,8 +4,8 @@
 import type { Fx } from "@typed/fx/Fx"
 import type { Rendered } from "@typed/wire"
 import type { Effect } from "effect/Effect"
-import type { Placeholder } from "./Placeholder"
-import type { RenderEvent } from "./RenderEvent"
+import type { Placeholder } from "./Placeholder.js"
+import type { RenderEvent } from "./RenderEvent.js"
 
 /**
  * @since 1.0.0

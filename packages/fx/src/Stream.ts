@@ -11,8 +11,8 @@ import * as Option from "effect/Option"
 import * as Queue from "effect/Queue"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
-import * as Fx from "./Fx"
-import { Sink } from "./Sink"
+import * as Fx from "./Fx.js"
+import { Sink } from "./Sink.js"
 
 /**
  * Convert an Fx to a Stream

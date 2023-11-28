@@ -5,10 +5,10 @@ import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
 import type { Fx } from "../Fx"
 import type { Subject } from "../Subject"
-import { withScopedFork } from "./core"
-import { makeHoldSubject, makeReplaySubject, makeSubject } from "./core-subject"
-import { ToFx } from "./fx-primitive"
-import { run } from "./run"
+import { makeHoldSubject, makeReplaySubject, makeSubject } from "./core-subject.js"
+import { withScopedFork } from "./core.js"
+import { ToFx } from "./fx-primitive.js"
+import { run } from "./run.js"
 
 export function share<R, E, A, R2>(
   fx: Fx<R, E, A>,

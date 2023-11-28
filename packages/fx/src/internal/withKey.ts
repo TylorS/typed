@@ -6,9 +6,9 @@ import * as Scope from "effect/Scope"
 import type { Fx, FxInput } from "../Fx"
 import * as RefSubject from "../RefSubject"
 import * as Sink from "../Sink"
-import * as core from "./core"
-import { adjustTime } from "./helpers"
-import { run } from "./run"
+import * as core from "./core.js"
+import { adjustTime } from "./helpers.js"
+import { run } from "./run.js"
 
 export function withKey<R, E, A, B, R2, E2, C>(
   fx: Fx<R, E, A>,

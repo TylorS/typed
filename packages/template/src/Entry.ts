@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import type { HtmlChunk } from "./HtmlChunk"
-import type { Template } from "./Template"
+import type { HtmlChunk } from "./HtmlChunk.js"
+import type { Template } from "./Template.js"
 
 /**
  * @since 1.0.0

@@ -5,9 +5,9 @@
  */
 
 import * as C from "effect/Context"
-import type { Tagged } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { makeIdentifier } from "./Identifier"
+import type { Tagged } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
+import { makeIdentifier } from "./Identifier.js"
 
 /**
  * Provides extensions to the `Context` module's Tag implementation to

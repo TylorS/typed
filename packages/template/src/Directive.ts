@@ -3,8 +3,8 @@
  */
 
 import * as Effect from "effect/Effect"
-import type * as Part from "./Part"
-import type { Placeholder } from "./Placeholder"
+import type * as Part from "./Part.js"
+import type { Placeholder } from "./Placeholder.js"
 
 /**
  * @since 1.0.0

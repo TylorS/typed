@@ -8,9 +8,9 @@
 import type { Effect } from "effect"
 import { Cause, Data, Equal, Equivalence, Exit, Option, Unify } from "effect"
 import { dual } from "effect/Function"
-import * as internal from "./internal/async-data"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag"
-import * as Progress from "./Progress"
+import * as internal from "./internal/async-data.js"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag.js"
+import * as Progress from "./Progress.js"
 
 /**
  * AsyncData represents a piece of data which is acquired asynchronously with loading, failure, and progress states

@@ -8,21 +8,21 @@ import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import type { Scope } from "effect"
 import { Effect } from "effect"
-import { Computed } from "./Computed"
-import type * as Filtered from "./Filtered"
-import * as FormEntry from "./FormEntry"
-import type { Fx } from "./Fx"
-import * as core from "./internal/core"
-import { FxEffectBase } from "./internal/protos"
-import { hold } from "./internal/share"
-import type { RefSubject } from "./RefSubject"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId"
-import type * as Versioned from "./Versioned"
+import { Computed } from "./Computed.js"
+import type * as Filtered from "./Filtered.js"
+import * as FormEntry from "./FormEntry.js"
+import type { Fx } from "./Fx.js"
+import * as core from "./internal/core.js"
+import { FxEffectBase } from "./internal/protos.js"
+import { hold } from "./internal/share.js"
+import type { RefSubject } from "./RefSubject.js"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
+import type * as Versioned from "./Versioned.js"
 
 /**
  * @since 1.18.0
  */
-export const FormTypeId = Symbol.for("./Form")
+export const FormTypeId = Symbol.for("./Form.js")
 /**
  * @since 1.18.0
  */

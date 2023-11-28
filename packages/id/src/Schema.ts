@@ -3,8 +3,8 @@
  */
 
 import * as Schema from "@effect/schema/Schema"
-import * as NanoId from "./NanoId"
-import * as Uuid from "./Uuid"
+import * as NanoId from "./NanoId.js"
+import * as Uuid from "./Uuid.js"
 
 /**
  * @since 1.0.0

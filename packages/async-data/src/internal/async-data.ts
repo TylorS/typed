@@ -3,7 +3,7 @@
 import { Cause, Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
 import { constant } from "effect/Function"
 import { type AsyncData, type Failure, type Loading, type Success } from "../AsyncData"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag.js"
 
 export class FailureImpl<E> extends Effectable.Class<never, E, never> implements Failure<E> {
   readonly _tag = "Failure"

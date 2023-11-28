@@ -2,8 +2,8 @@ import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import type { Fx } from "../Fx"
 import type { Versioned } from "../Versioned"
-import { MulticastEffect } from "./helpers"
-import { FxEffectBase } from "./protos"
+import { MulticastEffect } from "./helpers.js"
+import { FxEffectBase } from "./protos.js"
 
 export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
   extends FxEffectBase<R3, E3, C, R0 | R4, E0 | E4, D>

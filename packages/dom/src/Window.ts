@@ -7,7 +7,7 @@ import * as Context from "@typed/context"
 import * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
 
-import * as EventTarget from "./EventTarget"
+import * as EventTarget from "./EventTarget.js"
 
 /**
  * Context for the Window object

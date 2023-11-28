@@ -7,8 +7,8 @@ import type { Effect } from "effect"
 import { not } from "effect/Boolean"
 import { strict } from "effect/Equivalence"
 import type { Scope } from "effect/Scope"
-import type * as Fx from "./Fx"
-import * as RefSubject from "./RefSubject"
+import type * as Fx from "./Fx.js"
+import * as RefSubject from "./RefSubject.js"
 
 /**
  * A RefSubject holding a boolean values

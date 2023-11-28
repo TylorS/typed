@@ -8,9 +8,9 @@ import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashSet from "effect/HashSet"
 import type * as Scope from "effect/Scope"
-import type * as Computed from "./Computed"
-import type * as Fx from "./Fx"
-import * as RefSubject from "./RefSubject"
+import type * as Computed from "./Computed.js"
+import type * as Fx from "./Fx.js"
+import * as RefSubject from "./RefSubject.js"
 
 /**
  * A RefHashSet is a RefSubject that is specialized over an HashSet of values.

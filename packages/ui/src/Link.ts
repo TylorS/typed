@@ -13,7 +13,7 @@ import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { Effect, type Scope } from "effect"
-import { Anchor, type AnchorProps, getEventHandler } from "./Anchor"
+import { Anchor, type AnchorProps, getEventHandler } from "./Anchor.js"
 
 /**
  * @since 1.0.0

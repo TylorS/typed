@@ -8,10 +8,10 @@ import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
 import { type Rendered } from "@typed/wire"
 import * as Effect from "effect/Effect"
-import { attachRoot, renderTemplate } from "./internal/render"
-import { RenderContext } from "./RenderContext"
-import { type RenderEvent } from "./RenderEvent"
-import { RenderTemplate } from "./RenderTemplate"
+import { attachRoot, renderTemplate } from "./internal/render.js"
+import { RenderContext } from "./RenderContext.js"
+import { type RenderEvent } from "./RenderEvent.js"
+import { RenderTemplate } from "./RenderTemplate.js"
 
 /**
  * @since 1.0.0

@@ -6,7 +6,7 @@ import type * as Sink from "../Sink"
 
 import type { Fx, FxInput } from "../Fx"
 import type { RefSubject } from "../RefSubject"
-import type * as Primitive from "./fx-primitive"
+import type * as Primitive from "./fx-primitive.js"
 
 export function matchFxPrimitive<B>(
   matchers: {

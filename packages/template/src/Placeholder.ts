@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 
-import "./internal/module-augmentation"
+import "./internal/module-augmentation.js"
 import type { Fx } from "@typed/fx/Fx"
 import { isFx } from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -12,7 +12,7 @@ import { Effect } from "effect"
 /**
  * @since 1.0.0
  */
-export const PlaceholderTypeId = Symbol.for("./Placholder")
+export const PlaceholderTypeId = Symbol.for("./Placholder.js")
 /**
  * @since 1.0.0
  */

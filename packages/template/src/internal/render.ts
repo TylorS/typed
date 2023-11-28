@@ -21,11 +21,11 @@ import { DomRenderEvent } from "../RenderEvent"
 import type { RenderTemplate } from "../RenderTemplate"
 import type * as Template from "../Template"
 import { TemplateInstance } from "../TemplateInstance"
-import { makeRenderNodePart } from "./browser"
-import { HydrateContext } from "./HydrateContext"
-import type { IndexRefCounter } from "./indexRefCounter"
-import { indexRefCounter } from "./indexRefCounter"
-import { parse } from "./parser"
+import { makeRenderNodePart } from "./browser.js"
+import { HydrateContext } from "./HydrateContext.js"
+import type { IndexRefCounter } from "./indexRefCounter.js"
+import { indexRefCounter } from "./indexRefCounter.js"
+import { parse } from "./parser.js"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -40,9 +40,9 @@ import {
   SparseCommentPartImpl,
   StaticTextImpl,
   TextPartImpl
-} from "./parts"
-import type { ParentChildNodes } from "./utils"
-import { findPath } from "./utils"
+} from "./parts.js"
+import type { ParentChildNodes } from "./utils.js"
+import { findPath } from "./utils.js"
 
 /**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live

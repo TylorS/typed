@@ -12,8 +12,8 @@ import * as Navigation from "@typed/navigation"
 import type * as Path from "@typed/path"
 import * as Route from "@typed/route"
 import { Effect, Option, type Scope } from "effect"
-import type { CurrentRoute } from "./CurrentRoute"
-import { makeHref, withCurrentRoute } from "./CurrentRoute"
+import type { CurrentRoute } from "./CurrentRoute.js"
+import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
 
 // TODO: Link component
 // TODO: Form component

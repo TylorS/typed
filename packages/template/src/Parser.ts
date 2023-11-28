@@ -4,10 +4,10 @@
 
 import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
-import { templateHash } from "./internal/parser"
-import * as Template from "./Template"
-import type { Token } from "./Token"
-import { tokenize } from "./Tokenizer"
+import { templateHash } from "./internal/parser.js"
+import * as Template from "./Template.js"
+import type { Token } from "./Token.js"
+import { tokenize } from "./Tokenizer.js"
 
 /**
  * @since 1.0.0
@@ -454,4 +454,4 @@ class ParserImpl {
 /**
  * @since 1.0.0
  */
-export const parser: Parser = globalValue(Symbol.for("./Parser"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("./Parser.js"), () => new ParserImpl())

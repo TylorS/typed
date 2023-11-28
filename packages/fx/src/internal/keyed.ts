@@ -10,10 +10,10 @@ import type * as Fx from "../Fx"
 import { fromEffect, type RefSubject } from "../RefSubject"
 import { WithContext } from "../Sink"
 import type { Subject } from "../Subject"
-import { from, skipRepeatsWith, withScopedFork } from "./core"
-import { makeHoldSubject } from "./core-subject"
-import { adjustTime } from "./helpers"
-import { run } from "./run"
+import { makeHoldSubject } from "./core-subject.js"
+import { from, skipRepeatsWith, withScopedFork } from "./core.js"
+import { adjustTime } from "./helpers.js"
+import { run } from "./run.js"
 
 export function keyed<R, E, A, B, R2, E2, C>(
   fx: Fx.Fx<R, E, ReadonlyArray<A>>,

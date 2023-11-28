@@ -9,9 +9,9 @@ import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
-import type { ScopedRuntime } from "./internal/helpers"
-import { scopedRuntime } from "./internal/helpers"
-import type * as Sink from "./Sink"
+import type { ScopedRuntime } from "./internal/helpers.js"
+import { scopedRuntime } from "./internal/helpers.js"
+import type * as Sink from "./Sink.js"
 
 /**
  * An Emitter is a a Sink-like type which is can be utilized to adapt external

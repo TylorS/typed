@@ -3,12 +3,12 @@
  */
 import { type EventWithTarget, isUsingKeyModifier } from "@typed/dom/EventTarget"
 import { type Effect, unit } from "effect/Effect"
-import type { Placeholder } from "./Placeholder"
+import type { Placeholder } from "./Placeholder.js"
 
 /**
  * @since 1.0.0
  */
-export const EventHandlerTypeId = Symbol.for("./EventHandler")
+export const EventHandlerTypeId = Symbol.for("./EventHandler.js")
 /**
  * @since 1.0.0
  */

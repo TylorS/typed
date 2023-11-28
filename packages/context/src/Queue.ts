@@ -8,9 +8,9 @@ import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Option } from "effect/Option"
 import * as Q from "effect/Queue"
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import { Tag } from "./Tag"
+import { withActions } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
+import { Tag } from "./Tag.js"
 
 /**
  * Contextual wrappers around @effect/data/Queue

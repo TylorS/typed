@@ -7,9 +7,9 @@ import * as Scope from "effect/Scope"
 import type { Fx } from "../Fx"
 import type { Sink } from "../Sink"
 import type { Subject } from "../Subject"
-import { fromSink } from "./core"
-import { ToFx } from "./fx-primitive"
-import { RingBuffer } from "./helpers"
+import { fromSink } from "./core.js"
+import { ToFx } from "./fx-primitive.js"
+import { RingBuffer } from "./helpers.js"
 
 export function makeSubject<E, A>(): Subject<never, E, A> {
   return new SubjectImpl<E, A>()

@@ -3,8 +3,15 @@ import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
 import * as Template from "../Template"
 import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token"
-import type { TextChunk } from "./chunks"
-import { getPart, getStrictPart, getTextUntilCloseBrace, getTextUntilPart, getWhitespace, PART_STRING } from "./chunks"
+import type { TextChunk } from "./chunks.js"
+import {
+  getPart,
+  getStrictPart,
+  getTextUntilCloseBrace,
+  getTextUntilPart,
+  getWhitespace,
+  PART_STRING
+} from "./chunks.js"
 
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization

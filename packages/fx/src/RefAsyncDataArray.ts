@@ -8,9 +8,9 @@ import type { IdentifierConstructor, IdentifierOf } from "@typed/context/Identif
 import type { Scope } from "effect"
 import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
-import type * as Computed from "./Computed"
-import * as Fx from "./Fx"
-import * as RefAsyncData from "./RefAsyncData"
+import type * as Computed from "./Computed.js"
+import * as Fx from "./Fx.js"
+import * as RefAsyncData from "./RefAsyncData.js"
 
 /**
  * A RefAsyncDataArray is a RefSubject that holds a AsyncData value of an array.

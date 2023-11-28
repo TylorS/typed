@@ -13,7 +13,7 @@ import * as Either from "effect/Either"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Schedule from "effect/Schedule"
-import type { WithContext } from "./Sink"
+import type { WithContext } from "./Sink.js"
 
 /**
  * An Effect which can be used to pull values of a Stream.

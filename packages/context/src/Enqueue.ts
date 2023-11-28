@@ -6,11 +6,11 @@
 import type * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Q from "effect/Queue"
-import { withActions } from "./Extensions"
-import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier"
-import type { PubSub } from "./PubSub"
-import type { Queue } from "./Queue"
-import { Tag } from "./Tag"
+import { withActions } from "./Extensions.js"
+import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
+import type { PubSub } from "./PubSub.js"
+import type { Queue } from "./Queue.js"
+import { Tag } from "./Tag.js"
 
 /**
  * A Contextual wrapper around @effect/io/Queue.Enqueue

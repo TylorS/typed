@@ -13,14 +13,14 @@ import type { Equivalence } from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 // eslint-disable-next-line import/no-cycle
-import { Computed } from "./Computed"
-import type * as Fx from "./Fx"
-import * as core from "./internal/core"
-import { fromFxEffect } from "./internal/fx"
-import { OnceEffect } from "./internal/protos"
-import { VersionedTransform } from "./internal/versioned-transform"
-import { FilteredTypeId } from "./TypeId"
-import * as Versioned from "./Versioned"
+import { Computed } from "./Computed.js"
+import type * as Fx from "./Fx.js"
+import * as core from "./internal/core.js"
+import { fromFxEffect } from "./internal/fx.js"
+import { OnceEffect } from "./internal/protos.js"
+import { VersionedTransform } from "./internal/versioned-transform.js"
+import { FilteredTypeId } from "./TypeId.js"
+import * as Versioned from "./Versioned.js"
 
 /**
  * A Filtered is a Subject that has a current value that can be read and observed

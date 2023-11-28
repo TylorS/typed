@@ -8,8 +8,8 @@ import * as Layer from "effect/Layer"
 
 import { Tag } from "effect/Context"
 import type { Scope } from "effect/Scope"
-import { ContextBuilder } from "./Builder"
-import type { IdentifierFactory, IdentifierOf } from "./Identifier"
+import { ContextBuilder } from "./Builder.js"
+import type { IdentifierFactory, IdentifierOf } from "./Identifier.js"
 
 /**
  * A Tagged service is a @effect/data/Context.Tag with additional methods for

@@ -26,7 +26,7 @@ import {
   SparseCommentPartImpl,
   StaticTextImpl,
   TextPartImpl
-} from "./parts"
+} from "./parts.js"
 
 export type RenderChunk<R, E> =
   | TextRenderChunk

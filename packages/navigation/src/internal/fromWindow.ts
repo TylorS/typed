@@ -15,7 +15,7 @@ import type {
   Transition
 } from "../Navigation"
 import { Navigation, NavigationError } from "../Navigation"
-import type { NavigationState } from "./shared"
+import type { NavigationState } from "./shared.js"
 import {
   getOriginalState,
   getUrl,
@@ -23,7 +23,7 @@ import {
   makeDestination,
   makeHandlersState,
   setupFromModelAndIntent
-} from "./shared"
+} from "./shared.js"
 
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 type NativeNavigation = import("@virtualstate/navigation").Navigation

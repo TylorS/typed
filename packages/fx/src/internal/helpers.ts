@@ -11,8 +11,8 @@ import * as Scope from "effect/Scope"
 import * as SynchronizedRef from "effect/SynchronizedRef"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx"
 import type * as Sink from "../Sink"
-import type { InternalEffect } from "./effect-primitive"
-import { matchEffectPrimitive } from "./effect-primitive"
+import type { InternalEffect } from "./effect-primitive.js"
+import { matchEffectPrimitive } from "./effect-primitive.js"
 
 export function withScopedFork<R, E, A>(
   f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>

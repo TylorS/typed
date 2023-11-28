@@ -8,9 +8,9 @@ import type * as Scope from "effect/Scope"
 import type { Fx, FxInput } from "../Fx"
 import type { MakeRefSubject, RefSubject, ToRefSubject } from "../RefSubject"
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "../TypeId"
-import { map } from "./core"
-import { make, struct } from "./core-ref-subject"
-import { matchFxInput } from "./matchers"
+import { make, struct } from "./core-ref-subject.js"
+import { map } from "./core.js"
+import { matchFxInput } from "./matchers.js"
 
 const makeSchema = <O>(
   f: <R, E>(
