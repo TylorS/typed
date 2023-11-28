@@ -2,8 +2,7 @@
  * @since 1.0.0
  */
 import type { Fx } from "@typed/fx/Fx"
-import { compact } from "@typed/fx/Fx"
-import { FxEffectBase } from "@typed/fx/internal/protos"
+import { compact, FxEffectBase } from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import { type Rendered } from "@typed/wire"

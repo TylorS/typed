@@ -4,9 +4,9 @@
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
-import { makeHoldSubject } from "@typed/fx/internal/core-subject"
 import * as RefAsyncData from "@typed/fx/RefAsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
+import { makeHold } from "@typed/fx/Subject"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import { RenderContext } from "./RenderContext"
@@ -30,7 +30,7 @@ export function many<R, E, A, B, R2, E2>(
         Effect.map(Fx.first(values), (values) =>
           values._tag === "None" ? Fx.empty : Fx.mergeBuffer(
             values.value.map((value) => {
-              const ref = RefSubject.unsafeMake(Effect.succeed(value), makeHoldSubject())
+              const ref = RefSubject.unsafeMake(Effect.succeed(value), makeHold())
 
               return f({ ...ref, ...Fx.take(ref, 1) } as RefSubject.RefSubject<never, never, A>, getKey(value))
             })

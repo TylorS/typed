@@ -47,6 +47,7 @@ import * as core from "./internal/core"
 import * as internal from "./internal/fx"
 import * as primitive from "./internal/fx-primitive"
 import * as internalKeyed from "./internal/keyed"
+import * as internalProtos from "./internal/protos"
 import * as internalRun from "./internal/run"
 import * as Share from "./internal/share"
 import * as strategies from "./internal/strategies"
@@ -2655,3 +2656,13 @@ export const mergeRace: {
   <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
 } = internal.mergeRace
+
+/**
+ * @since 1.18.0
+ */
+export abstract class FxEffectBase<R, E, A, R2, E2, B> extends internalProtos.FxEffectBase<R, E, A, R2, E2, B>
+  implements Fx<R, E, A>, Effect.Effect<R2, E2, B>
+{
+  protected abstract toFx(): Fx<R, E, A>
+  protected abstract toEffect(): Effect.Effect<R2, E2, B>
+}

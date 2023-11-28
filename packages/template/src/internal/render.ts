@@ -1,5 +1,5 @@
 import * as Fx from "@typed/fx/Fx"
-import { makeSubject } from "@typed/fx/internal/core-subject"
+import * as Subject from "@typed/fx/Subject"
 import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
@@ -58,7 +58,7 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
     Effect.gen(function*(_) {
       const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
       const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = makeSubject<Placeholder.Error<Values[number]>, never>()
+      const errors = Subject.make<Placeholder.Error<Values[number]>, never>()
       const entry = getBrowserEntry(document, ctx, templateStrings)
       const content = document.importNode(entry.content, true) // Clone our template
 

@@ -1,10 +1,10 @@
+import { unsafeGet } from "@typed/context"
 import { Window } from "@typed/dom/Window"
 import type { Computed } from "@typed/fx/Computed"
-import { scopedRuntime } from "@typed/fx/internal/helpers"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
-import { Effect, Option } from "effect"
-import type { Context, Layer, Scope } from "effect"
+import { Effect, Exit, Fiber, Option, Runtime, Scope } from "effect"
+import type { Context, Layer } from "effect"
 import type { Commit } from "../Layer"
 import type {
   BeforeNavigationEvent,
@@ -418,4 +418,51 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
     patched: history,
     unpatch
   } as const
+}
+
+type ScopedRuntime<R> = {
+  readonly runtime: Runtime.Runtime<R | Scope.Scope>
+  readonly scope: Scope.Scope
+  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.RuntimeFiber<E, A>
+  readonly runPromise: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Promise<A>
+}
+
+function scopedRuntime<R>(): Effect.Effect<
+  R | Scope.Scope,
+  never,
+  ScopedRuntime<R>
+> {
+  return Effect.gen(function*(_) {
+    const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
+    const scope = unsafeGet(runtime.context, Scope.Scope)
+    const runFork = Runtime.runFork(runtime)
+
+    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
+      const fiber: Fiber.RuntimeFiber<E, A> = Scope.addFinalizer(
+        scope,
+        Effect.suspend(() => Fiber.interrupt(fiber))
+      ).pipe(
+        Effect.zipRight(effect),
+        runFork
+      )
+
+      return fiber
+    }
+
+    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
+      new Promise((resolve, reject) => {
+        const fiber = run(effect)
+        fiber.addObserver(Exit.match({
+          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
+          onSuccess: resolve
+        }))
+      })
+
+    return {
+      runtime,
+      scope,
+      run,
+      runPromise
+    } as const
+  })
 }

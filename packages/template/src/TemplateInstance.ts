@@ -3,7 +3,7 @@
  */
 
 import type * as Fx from "@typed/fx/Fx"
-import { FxEffectBase } from "@typed/fx/internal/protos"
+import { FxEffectBase } from "@typed/fx/Fx"
 import type * as Versioned from "@typed/fx/Versioned"
 import type { Rendered } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"

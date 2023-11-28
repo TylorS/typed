@@ -1,5 +1,5 @@
 import * as Fx from "@typed/fx/Fx"
-import { makeSubject } from "@typed/fx/internal/core-subject"
+import * as Subject from "@typed/fx/Subject"
 import type { Rendered } from "@typed/wire"
 import type { Cause } from "effect"
 import { Effect } from "effect"
@@ -51,7 +51,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
       const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
       const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = makeSubject<Placeholder.Error<Values[number]>, never>()
+      const errors = Subject.make<Placeholder.Error<Values[number]>, never>()
 
       const { getParts, template, where, wire } = getHydrateEntry({
         ...hydrateCtx,
