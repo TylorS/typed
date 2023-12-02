@@ -40,12 +40,12 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "0.49.4",
+    "@effect/schema": "0.51.1",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/id": "workspace:*",
-    "effect": "2.0.0-next.56"
+    "effect": "2.0.0-next.58"
   },
   "optionalPeerDependencies": {
     "@virtualstate/navigation": "1.0.1-alpha.199"
