@@ -157,7 +157,7 @@ class ComputedImpl<R, E, A, R2, E2, B>
 export function combine<const Computeds extends ReadonlyArray<Computed<any, any, any>>>(computeds: Computeds): Computed<
   Fx.Context<Computeds[keyof Computeds]>,
   Fx.Error<Computeds[keyof Computeds]>,
-  { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> }
+  { readonly [K in keyof Computeds]: Fx.Success<Computeds[K]> }
 > {
   return Computed(
     Versioned.combine(computeds) as Versioned.Versioned<
