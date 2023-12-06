@@ -88,7 +88,7 @@ export function RequestResolver<
       Request.Identifier<Requests[keyof Requests]>
     >
     const provideMerge = <R>(resolverLayer: Layer.Layer<R, never, IdentifierOf<Id>>) =>
-      Layer.provideMerge(resolverLayer, requestLayer)
+      Layer.provideMerge(requestLayer, resolverLayer)
 
     const derivedRequests = Object.fromEntries(
       Object.entries(requests).map(

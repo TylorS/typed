@@ -16,7 +16,7 @@ const Counter = Fx.gen(function*(_) {
 })
 
 renderLayer(Counter).pipe(
-  Layer.use(RenderContext.browser(window)),
+  Layer.provide(RenderContext.browser(window)),
   Layer.launch,
   Effect.runFork
 )

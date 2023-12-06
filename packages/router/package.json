@@ -47,6 +47,6 @@
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
-    "effect": "2.0.0-next.58"
+    "effect": "2.0.0-next.59"
   }
 }

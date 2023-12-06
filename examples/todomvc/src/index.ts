@@ -1,17 +1,17 @@
-import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
+import * as Navigation from "@typed/navigation"
 import { renderLayer } from "@typed/template/Render"
 import * as RenderContext from "@typed/template/RenderContext"
 import { Effect, Layer } from "effect"
 import { Live } from "./infrastructure"
 import { TodoApp } from "./presentation"
+import { Storage } from "@typed/dom/Storage"
 
-TodoApp.pipe(
-  renderLayer,
-  Layer.use(Live),
-  Layer.use(Router.browser),
-  Layer.use(Navigation.fromWindow),
-  Layer.use(RenderContext.browser(window)),
-  Layer.launch,
-  Effect.runFork
+const environment = Live.pipe(
+  Layer.provideMerge(Storage.layer(localStorage)),
+  Layer.provideMerge(Router.browser),
+  Layer.provideMerge(Navigation.fromWindow),
+  Layer.provideMerge(RenderContext.browser(window)),
 )
+
+TodoApp.pipe(renderLayer, Layer.provide(environment), Layer.launch, Effect.runFork)

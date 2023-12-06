@@ -96,11 +96,11 @@ function mergeLayer<R, E, A, R2, E2, B>(
   provide: Provide<R2, E2, B>
 ): Provide<Exclude<R, B> | R2, E | E2, A | B> {
   return matchProvide(provide, {
-    ProvideContext: (ctx) => ProvideLayer(Layer.provideMerge(Layer.succeedContext(ctx), layer)),
-    ProvideLayer: (layerB) => ProvideLayer(Layer.provideMerge(layerB, layer)),
-    ProvideRuntime: (runtime) => ProvideLayer(Layer.provideMerge(runtimeToLayer(runtime), layer)),
-    ProvideService: (tag, service) => ProvideLayer(Layer.provideMerge(Layer.succeed(tag, service), layer)),
-    ProvideServiceEffect: (tag, service) => ProvideLayer(Layer.provideMerge(Layer.effect(tag, service), layer))
+    ProvideContext: (ctx) => ProvideLayer(Layer.provideMerge(layer, Layer.succeedContext(ctx))),
+    ProvideLayer: (layerB) => ProvideLayer(Layer.provideMerge(layer, layerB)),
+    ProvideRuntime: (runtime) => ProvideLayer(Layer.provideMerge(layer, runtimeToLayer(runtime))),
+    ProvideService: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.succeed(tag, service))),
+    ProvideServiceEffect: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.effect(tag, service)))
   })
 }
 

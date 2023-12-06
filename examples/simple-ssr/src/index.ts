@@ -23,9 +23,9 @@ const server = Http.router.empty.pipe(
 const ServerLive = Http.server.layer(() => createServer(), { port: 3000 })
 
 const HttpLive = Layer.scopedDiscard(server).pipe(
-  Layer.use(ServerLive),
-  Layer.use(NodeContext.layer),
-  Layer.use(RenderContext.server)
+  Layer.provide(ServerLive),
+  Layer.provide(NodeContext.layer),
+  Layer.provide(RenderContext.server)
 )
 
 Layer.launch(HttpLive).pipe(

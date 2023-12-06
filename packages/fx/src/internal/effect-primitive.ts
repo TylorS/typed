@@ -96,15 +96,15 @@ export interface Async extends
 /** @internal */
 export interface Blocked<R = any, E = any, A = any> extends
   Op<OpCodes.OP_BLOCKED, {
-    readonly i0: BlockedRequests.RequestBlock<R>
+    readonly i0: BlockedRequests.RequestBlock
     readonly i1: Effect.Effect<R, E, A>
   }>
 {}
 
 /** @internal */
-export interface RunBlocked<R = any> extends
+export interface RunBlocked extends
   Op<OpCodes.OP_RUN_BLOCKED, {
-    readonly i0: BlockedRequests.RequestBlock<R>
+    readonly i0: BlockedRequests.RequestBlock
   }>
 {}
 

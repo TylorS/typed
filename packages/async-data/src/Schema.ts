@@ -50,7 +50,7 @@ export const cause = <EI, E>(error: Schema.Schema<EI, E>): Schema.Schema<Cause.C
       Schema.struct({}),
       () => (input, options) =>
         Effect.gen(function*(_) {
-          if (!Cause.isCause(input)) return yield* _(ParseResult.failure(ParseResult.unexpected(input)))
+          if (!Cause.isCause(input)) return yield* _(ParseResult.fail(ParseResult.unexpected(input)))
 
           let output: Cause.Cause<E> = Cause.empty
           for (const cause of Cause.linearize<E>(input)) {
@@ -133,7 +133,7 @@ export const asyncData = <EI, E, AI, A>(
 
       return (input, options) => {
         return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData<EI, AI>(input)) return yield* _(ParseResult.failure(ParseResult.unexpected(input)))
+          if (!AsyncData.isAsyncData<EI, AI>(input)) return yield* _(ParseResult.fail(ParseResult.unexpected(input)))
 
           switch (input._tag) {
             case "NoData":

@@ -12,7 +12,6 @@ import * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
 import * as O from "effect/Option"
 
-import { Schema } from "@effect/schema"
 import { Window } from "./Window.js"
 
 /**
@@ -155,20 +154,6 @@ export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
   readonly remove: StorageEffect<never, never, void>
 }
 
-const json = Schema.parseJson(Schema.string)
-const parseJson = <I, A>(schema: S.Schema<I, A>): Schema.Schema<string, A> => Schema.compose(json, schema)
-
-/**
- * Helpers for constructing a SchemaStorage
- * @since 8.19.0
- * @category constructors
- */
-export type SchemaUtils = {
-  readonly json: <I, A>(schema: S.Schema<I, A>) => Schema.Schema<string, A>
-}
-
-const utils: SchemaUtils = { json: parseJson }
-
 /**
  * Construct a SchemaStorage
  * @since 8.19.0
@@ -176,8 +161,7 @@ const utils: SchemaUtils = { json: parseJson }
  */
 export function SchemaStorage<
   const Schemas extends Readonly<Record<string, S.Schema<string, any>>>
->(getSchemas: (utils: SchemaUtils) => Schemas): SchemaStorage<Schemas> {
-  const schemas = getSchemas(utils)
+>(schemas: Schemas): SchemaStorage<Schemas> {
   const decoders: Partial<
     {
       [K in keyof Schemas]: (

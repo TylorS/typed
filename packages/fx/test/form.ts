@@ -18,7 +18,7 @@ describe.concurrent("Form", () => {
         Schema.maxLength(20),
         Schema.message(() => "ID cannot be longer than 20 characters")
       ),
-      timestamp: Schema.dateFromString(Schema.string)
+      timestamp: Schema.compose(Schema.dateFromString(Schema.string), Schema.ValidDateFromSelf)
     })
     type FooInput = Schema.Schema.From<typeof Foo>
     type FooOutput = Schema.Schema.To<typeof Foo>
