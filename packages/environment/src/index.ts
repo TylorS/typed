@@ -8,16 +8,24 @@ import type * as Effect from "effect/Effect"
 /**
  * @since 1.0.0
  */
-export type Environment = "browser" | "server" | "static" | "test"
+export type Environment =
+  | "browser"
+  | "server"
+  | "serviceWorker"
+  | "static"
+  | "test"
+  | "webWorker"
 
 /**
  * @since 1.0.0
  */
 export const Environment: { readonly [_ in Environment]: _ } = {
-  server: "server",
   browser: "browser",
+  server: "server",
+  serviceWorker: "serviceWorker",
   static: "static",
-  test: "test"
+  test: "test",
+  webWorker: "webWorker"
 }
 
 /**
@@ -57,3 +65,17 @@ export const isStatic: Effect.Effect<CurrentEnvironment, never, boolean> = Curre
  * @since 1.0.0
  */
 export const isTest: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "test")
+
+/**
+ * @since 1.0.0
+ */
+export const isServiceWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+  e === "serviceWorker"
+)
+
+/**
+ * @since 1.0.0
+ */
+export const isWebWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+  e === "webWorker"
+)
