@@ -1,4 +1,5 @@
-import { Effect, Scope } from "effect"
+import type { Exit } from "effect"
+import { Effect, Equal, Equivalence, Scope } from "effect"
 import type * as Sink from "../Sink.js"
 
 export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
@@ -49,3 +50,12 @@ export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
 
 export const withScope = <R, E, A>(f: (scope: Scope.Scope) => Effect.Effect<R, E, A>): Effect.Effect<R, E, A> =>
   Effect.acquireUseRelease(Scope.make(), f, Scope.close)
+
+export const getExitEquivalence = <E, A>(A: Equivalence.Equivalence<A>) =>
+  Equivalence.make<Exit.Exit<E, A>>((a, b) => {
+    if (a._tag === "Failure") {
+      return b._tag === "Failure" && Equal.equals(a.cause, b.cause)
+    } else {
+      return b._tag === "Success" && A(a.value, b.value)
+    }
+  })

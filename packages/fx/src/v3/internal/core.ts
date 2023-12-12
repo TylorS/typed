@@ -16,7 +16,7 @@ class Success<A> extends FxBase<never, never, A> {
   }
 }
 
-export const success = <A>(value: A): Fx<never, never, A> => new Success(value)
+export const succeed = <A>(value: A): Fx<never, never, A> => new Success(value)
 
 class FailCause<E> extends FxBase<never, E, never> {
   constructor(readonly i0: Cause.Cause<E>) {
