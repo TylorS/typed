@@ -3,8 +3,8 @@ import type { Cause, Predicate } from "effect"
 import { dual } from "effect/Function"
 
 export interface Sink<out R, in E, in A> {
-  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>
-  readonly onSuccess: (value: A) => Effect.Effect<R, never, unknown>
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown>
+  onSuccess(value: A): Effect.Effect<R, never, unknown>
 }
 
 export function make<E, R, A, R2>(
@@ -56,26 +56,66 @@ export const map: {
   sink: Sink<R, E, A>,
   f: (b: B) => A
 ): Sink<R, E, B> {
-  return make(
-    sink.onFailure,
-    (a) => sink.onSuccess(f(a))
-  )
+  return new MapSink(sink, f)
 })
 
-export function filter<R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A> {
-  return make(
-    sink.onFailure,
-    (a) => predicate(a) ? sink.onSuccess(a) : Effect.unit
-  )
+class MapSink<R, E, A, B> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, E, B>,
+    readonly f: (a: A) => B
+  ) {}
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    return this.sink.onSuccess(this.f(value))
+  }
 }
 
-export function filterMap<R, E, A, B>(sink: Sink<R, E, B>, predicate: (a: A) => Option.Option<B>): Sink<R, E, A> {
-  return make(
-    sink.onFailure,
-    (a) => {
-      const b = predicate(a)
-      if (Option.isSome(b)) return sink.onSuccess(b.value)
-      else return Effect.unit
-    }
-  )
+export function filter<R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A> {
+  return new FilterSink(sink, predicate)
 }
+
+class FilterSink<R, E, A> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, E, A>,
+    readonly predicate: Predicate.Predicate<A>
+  ) {}
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    if (this.predicate(value)) return this.sink.onSuccess(value)
+    else return Effect.unit
+  }
+}
+
+export function filterMap<R, E, A, B>(sink: Sink<R, E, B>, f: (a: A) => Option.Option<B>): Sink<R, E, A> {
+  return new FilterMapSink(sink, f)
+}
+
+class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, E, B>,
+    readonly f: (a: A) => Option.Option<B>
+  ) {}
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    const option = this.f(value)
+    if (Option.isSome(option)) return this.sink.onSuccess(option.value)
+    else return Effect.unit
+  }
+}
+
+// TODO: Effect operators
+// TODO: Loop operators
+// TODO: Snapshot operators
+// TODO: Higher-order operators

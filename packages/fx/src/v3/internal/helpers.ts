@@ -1,4 +1,4 @@
-import { Effect } from "effect"
+import { Effect, Scope } from "effect"
 import type * as Sink from "../Sink.js"
 
 export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
@@ -46,3 +46,6 @@ export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
     onEnd
   } as const
 }
+
+export const withScope = <R, E, A>(f: (scope: Scope.Scope) => Effect.Effect<R, E, A>): Effect.Effect<R, E, A> =>
+  Effect.acquireUseRelease(Scope.make(), f, Scope.close)

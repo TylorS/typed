@@ -1,8 +1,6 @@
-import type { Effect, Scope } from "effect"
-import { Effectable, identity, Unify } from "effect"
+import type { Effect } from "effect"
+import { Effectable, identity } from "effect"
 import { TypeId } from "../../TypeId"
-import type { Fusable } from "../Fusion"
-import { FusableTypeId } from "../Fusion"
 import type { Fx } from "../Fx"
 import type { Sink } from "../Sink"
 
@@ -15,23 +13,12 @@ const Variance: Fx.Variance<never, never, never> = {
 export abstract class FxBase<R, E, A> implements Fx<R, E, A> {
   readonly [TypeId]: Fx.Variance<R, E, A> = Variance
 
-  abstract run<R2>(sink: Sink<R2, E, A>, scope: Scope.Scope): Effect.Effect<R | R2, never, unknown>
-
-  /**
-   * @since 1.0.0
-   */
-  readonly [Unify.typeSymbol]!: unknown
-  /**
-   * @since 1.0.0
-   */
-  readonly [Unify.unifySymbol]!: Fx.Unify<this>
-  /**
-   * @since 1.0.0
-   */
-  readonly [Unify.ignoreSymbol]!: Fx.IgnoreList
+  abstract run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown>
 }
 
-export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B> {
+export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B>
+  implements Fx<R, E, A>, Effect.Effect<R2, E2, B>
+{
   readonly [TypeId]: Fx.Variance<R, E, A> = Variance
 
   abstract run<R3>(sink: Sink<R3, E, A>): Effect.Effect<R | R3, never, unknown>
@@ -48,11 +35,17 @@ export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.Struct
   }
 }
 
-export abstract class FusableFx<R, E, A> extends FxBase<R, E, A> implements Fusable {
-  readonly [FusableTypeId]: PropertyKey
+export abstract class EffectBase<R, E, A> extends Effectable.StructuralClass<R, E, A>
+  implements Effect.Effect<R, E, A>
+{
+  abstract toEffect(): Effect.Effect<R, E, A>
 
-  constructor(name: PropertyKey) {
-    super()
-    this[FusableTypeId] = name
+  private _effect: Effect.Effect<R, E, A> | undefined
+  commit(): Effect.Effect<R, E, A> {
+    if (this._effect === undefined) {
+      return (this._effect = this.toEffect())
+    } else {
+      return this._effect
+    }
   }
 }

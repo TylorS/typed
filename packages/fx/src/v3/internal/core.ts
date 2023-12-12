@@ -1,299 +1,196 @@
-import type { FiberId, Predicate, Scope } from "effect"
-import { Cause, Effect, flow, Option } from "effect"
-import type { TypeLambda } from "effect/HKT"
-import { matchFusable } from "../Fusion"
-import type { Fx } from "../Fx"
+import { Cause, Effect, Option } from "effect"
 import * as Sink from "../Sink"
-import { FusableFx } from "./protos"
+import { EffectBase, FxBase } from "./protos"
 
-const SuccessTypeId = Symbol.for("@typed/fx/internal/Success")
-const FailCauseTypeId = Symbol.for("@typed/fx/internal/FailCause")
-const NeverTypeId = Symbol.for("@typed/fx/internal/Never")
-const EmptyTypeId = Symbol.for("@typed/fx/internal/Empty")
-const SuspendTypeId = Symbol.for("@typed/fx/internal/Suspend")
-const MapTypeId = Symbol.for("@typed/fx/internal/Map")
-const FilterTypeId = Symbol.for("@typed/fx/internal/Filter")
-const FilterMapTypeId = Symbol.for("@typed/fx/internal/FilterMap")
-const SuspendedMapTypeId = Symbol.for("@typed/fx/internal/SuspendedMap")
-const SuspendedFilterTypeId = Symbol.for("@typed/fx/internal/SuspendedFilter")
-const SuspendedFilterMapTypeId = Symbol.for("@typed/fx/internal/SuspendedFilterMap")
+import type { Predicate } from "effect"
+import type { Fx } from "../Fx"
+import * as SyncOp from "./sync-operator"
 
-const FILTER_MAP_FUSION_IDS = [
-  SuccessTypeId,
-  FailCauseTypeId,
-  EmptyTypeId,
-  NeverTypeId,
-  MapTypeId,
-  FilterTypeId,
-  FilterMapTypeId,
-  SuspendedMapTypeId,
-  SuspendedFilterTypeId,
-  SuspendedFilterMapTypeId
-] as const
+class Success<A> extends FxBase<never, never, A> {
+  constructor(readonly i0: A) {
+    super()
+  }
 
-declare module "../Fusion.js" {
-  export interface FusionMap {
-    readonly [SuccessTypeId]: SuccessTypeLambda
-    readonly [FailCauseTypeId]: FailCauseTypeLambda
-    readonly [EmptyTypeId]: EmptyTypeLambda
-    readonly [NeverTypeId]: NeverTypeLambda
-    readonly [SuspendTypeId]: SuspendTypeLambda
-    readonly [MapTypeId]: MapTypeLambda
-    readonly [FilterTypeId]: FilterTypeLambda
-    readonly [FilterMapTypeId]: FilterMapTypeLambda
-    readonly [SuspendedMapTypeId]: SuspendedMapTypeLambda
-    readonly [SuspendedFilterTypeId]: SuspendedFilterTypeLambda
-    readonly [SuspendedFilterMapTypeId]: SuspendedFilterMapTypeLambda
+  run<R2>(sink: Sink.Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
+    return sink.onSuccess(this.i0)
   }
 }
 
-interface SuccessTypeLambda extends TypeLambda {
-  readonly type: Success<this["Target"]>
-}
+export const success = <A>(value: A): Fx<never, never, A> => new Success(value)
 
-class Success<A> extends FusableFx<never, never, A> {
-  constructor(readonly value: A) {
-    super(SuccessTypeId)
+class FailCause<E> extends FxBase<never, E, never> {
+  constructor(readonly i0: Cause.Cause<E>) {
+    super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, never, A>) {
-    return sink.onSuccess(this.value)
-  }
-}
-
-export const succeed = <A>(value: A): Fx<never, never, A> => new Success(value)
-
-interface FailCauseTypeLambda extends TypeLambda {
-  readonly type: FailCause<this["Out1"]>
-}
-
-class FailCause<E> extends FusableFx<never, E, never> {
-  constructor(readonly cause: Cause.Cause<E>) {
-    super(FailCauseTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, E, never>) {
-    return sink.onFailure(this.cause)
+  run<R2>(sink: Sink.Sink<R2, E, never>): Effect.Effect<R2, never, unknown> {
+    return sink.onFailure(this.i0)
   }
 }
 
 export const failCause = <E>(cause: Cause.Cause<E>): Fx<never, E, never> => new FailCause(cause)
 
-export const fail = <E>(error: E): Fx<never, E, never> => failCause(Cause.fail(error))
+export const fail = <E>(error: E): Fx<never, E, never> => new FailCause(Cause.fail(error))
 
-export const die = (error: unknown): Fx<never, never, never> => failCause(Cause.die(error))
+export const die = (error: unknown): Fx<never, never, never> => new FailCause(Cause.die(error))
 
-export const interrupt = (id: FiberId.FiberId): Fx<never, never, never> => failCause(Cause.interrupt(id))
-
-interface NeverTypeLambda extends TypeLambda {
-  readonly type: Fx<never, never, never>
-}
-
-export const never: Fx<never, never, never> = new (class Never extends FusableFx<never, never, never> {
-  constructor() {
-    super(NeverTypeId)
+class SyncTransformer<R, E, A> extends FxBase<R, E, A> {
+  constructor(readonly i0: Fx<R, E, any>, readonly i1: SyncOp.SyncOperator) {
+    super()
   }
 
-  run() {
-    return Effect.never
-  }
-})()
-
-interface EmptyTypeLambda extends TypeLambda {
-  readonly type: Fx<never, never, never>
-}
-
-export const empty: Fx<never, never, never> = new (class Empty extends FusableFx<never, never, never> {
-  constructor() {
-    super(EmptyTypeId)
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+    return this.i0.run(SyncOp.compileSyncOperatorSink(this.i1, sink))
   }
 
-  run() {
-    return Effect.unit
-  }
-})()
-
-interface SuspendTypeLambda extends TypeLambda {
-  readonly type: Suspend<this["Out2"], this["Out1"], this["Target"]>
-}
-
-class Suspend<R, E, A> extends FusableFx<R, E, A> {
-  constructor(readonly f: () => Fx<R, E, A>) {
-    super(SuspendTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, E, A>, scope: Scope.Scope) {
-    return this.f().run(sink, scope)
+  static make<R, E, A, B>(fx: Fx<R, E, A>, operator: SyncOp.SyncOperator): Fx<R, E, B> {
+    if (fx instanceof SyncTransformer) {
+      return new SyncTransformer(fx.i0, SyncOp.fuseSyncOperators(fx.i1, operator))
+    } else if (fx instanceof FromArray) {
+      return new FromArraySyncTransform(fx.i0, operator)
+    } else if (fx instanceof FromArraySyncTransform) {
+      return new FromArraySyncTransform(fx.i0, SyncOp.fuseSyncOperators(fx.i1, operator))
+    } else {
+      return new SyncTransformer<R, E, B>(fx, operator)
+    }
   }
 }
 
-export const suspend = <R, E, A>(f: () => Fx<R, E, A>): Fx<R, E, A> => new Suspend(f)
+export const map = <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B> => SyncTransformer.make(fx, SyncOp.Map(f))
 
-interface MapTypeLambda extends TypeLambda {
-  readonly type: Map<this["Out2"], this["Out1"], any, this["Target"]>
+export const filter = <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A> =>
+  SyncTransformer.make(fx, SyncOp.Filter(f))
+
+export const filterMap = <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B> =>
+  SyncTransformer.make(fx, SyncOp.Map(f))
+
+class FromArray<A> extends FxBase<never, never, A> {
+  constructor(readonly i0: ReadonlyArray<A>) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
+    return arrayToSink(this.i0, sink)
+  }
 }
 
-class Map<R, E, A, B> extends FusableFx<R, E, B> {
-  constructor(readonly source: Fx<R, E, A>, readonly f: (a: A) => B) {
-    super(MapTypeId)
+function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink.Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
+  if (array.length === 0) return Effect.unit
+  else if (array.length === 1) return sink.onSuccess(array[0])
+  else {
+    const [first, ...rest] = array
+    let effect = sink.onSuccess(first)
+    for (const item of rest) {
+      effect = Effect.zipRight(effect, sink.onSuccess(item))
+    }
+    return effect
+  }
+}
+
+export const fromArray = <const A extends ReadonlyArray<any>>(array: A): Fx<never, never, A[number]> =>
+  new FromArray<A[number]>(array)
+
+class FromArraySyncTransform<A, B> extends FxBase<never, never, B> {
+  constructor(readonly i0: ReadonlyArray<A>, readonly i1: SyncOp.SyncOperator) {
+    super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, B>, scope: Scope.Scope) {
-    const { f } = this
+  run<R2>(sink: Sink.Sink<R2, never, B>): Effect.Effect<R2, never, unknown> {
+    return arrayToSink(SyncOp.applyArray<A, B>(this.i0, this.i1), sink)
+  }
+}
 
-    return this.source.run(Sink.map(sink, f), scope)
+class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
+  constructor(
+    readonly fx: Fx<R, E, A>,
+    readonly f: (a: A) => Effect.Effect<R2, E2, B>
+  ) {
+    super()
   }
 
-  static make<R, E, A, B>(
-    source: Fx<R, E, A>,
-    f: (a: A) => B
-  ): Fx<R, E, B> {
-    return matchFusable(source, FILTER_MAP_FUSION_IDS, {
-      [SuccessTypeId]: (success) => new SuspendedMap(success.value, f),
-      [FailCauseTypeId]: (failCause) => failCause,
-      [EmptyTypeId]: (empty) => empty,
-      [NeverTypeId]: (never) => never,
-      [MapTypeId]: (map) => new Map(map.source, flow(map.f, f)),
-      [FilterTypeId]: (filter) =>
-        new FilterMap(filter.source, (a) => filter.predicate(a) ? Option.some(f(a)) : Option.none()),
-      [FilterMapTypeId]: (filterMap) => new FilterMap(filterMap.source, (a) => Option.map(filterMap.predicate(a), f)),
-      [SuspendedMapTypeId]: (s) => new SuspendedMap(s.value, flow(s.f, f)),
-      [SuspendedFilterTypeId]: (s) =>
-        new SuspendedFilterMap(s.value, (a) => s.predicate(a) ? Option.some(f(a)) : Option.none()),
-      [SuspendedFilterMapTypeId]: (s) => new SuspendedFilterMap(s.value, (a) => Option.map(s.f(a), f)),
-      _: () => new Map(source, f)
+  toEffect(): Effect.Effect<R | R2, E | E2, void> {
+    return Effect.asyncEffect((resume) => {
+      const { f, fx } = this
+      const onFailure = (cause: Cause.Cause<E | E2>) => Effect.sync(() => resume(Effect.failCause(cause)))
+
+      return Effect.zipRight(
+        fx.run(Sink.make(onFailure, (a) =>
+          Effect.matchCauseEffect(f(a), {
+            onFailure,
+            onSuccess: () => Effect.unit
+          }))),
+        Effect.sync(() => resume(Effect.unit))
+      )
     })
   }
 }
 
-interface FilterTypeLambda extends TypeLambda {
-  readonly type: Filter<this["Out2"], this["Out1"], this["Target"]>
-}
+export const observe = <R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Effect.Effect<R | R2, E | E2, void> => new Observe(fx, f)
 
-class Filter<R, E, A> extends FusableFx<R, E, A> {
-  constructor(readonly source: Fx<R, E, A>, readonly predicate: Predicate.Predicate<A>) {
-    super(FilterTypeId)
+class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
+  constructor(readonly fx: Fx<R, E, A>, readonly seed: B, readonly f: (acc: B, a: A) => B) {
+    super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>, scope: Scope.Scope) {
-    return this.source.run(Sink.filter(sink, this.predicate), scope)
-  }
-
-  static make<R, E, A>(
-    source: Fx<R, E, A>,
-    predicate: Predicate.Predicate<A>
-  ): Fx<R, E, A> {
-    return matchFusable(source, FILTER_MAP_FUSION_IDS, {
-      [SuccessTypeId]: (s) => new SuspendedFilter(s.value, predicate),
-      [FailCauseTypeId]: (failCause) => failCause,
-      [EmptyTypeId]: (empty) => empty,
-      [NeverTypeId]: (never) => never,
-      [MapTypeId]: (map) =>
-        new FilterMap(map.source, (a) => {
-          const b = map.f(a)
-          return predicate(b) ? Option.some(b) : Option.none()
-        }),
-      [FilterTypeId]: (filter) => new Filter(filter.source, (a) => filter.predicate(a) && predicate(a)),
-      [FilterMapTypeId]: (filterMap) =>
-        new FilterMap(filterMap.source, (a) => Option.filter(filterMap.predicate(a), predicate)),
-      [SuspendedMapTypeId]: (map) =>
-        new SuspendedFilterMap(map.value, (a) => {
-          const b = map.f(a)
-          return predicate(b) ? Option.some(b) : Option.none()
-        }),
-      [SuspendedFilterTypeId]: (filter) =>
-        new SuspendedFilter(filter.value, (a) => filter.predicate(a) && predicate(a)),
-      [SuspendedFilterMapTypeId]: (filterMap) =>
-        new SuspendedFilterMap(filterMap.value, (a) => Option.filter(filterMap.f(a), predicate)),
-      _: () => new Filter(source, predicate)
-    })
-  }
-}
-
-interface FilterMapTypeLambda extends TypeLambda {
-  readonly type: FilterMap<this["Out2"], this["Out1"], any, this["Target"]>
-}
-
-class FilterMap<R, E, A, B> extends FusableFx<R, E, B> {
-  constructor(readonly source: Fx<R, E, A>, readonly predicate: (a: A) => Option.Option<B>) {
-    super(FilterTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, E, B>, scope: Scope.Scope) {
-    return this.source.run(Sink.filterMap(sink, this.predicate), scope)
-  }
-
-  static make<R, E, A, B>(
-    source: Fx<R, E, A>,
-    f: (a: A) => Option.Option<B>
-  ): Fx<R, E, B> {
-    return matchFusable(source, FILTER_MAP_FUSION_IDS, {
-      [SuccessTypeId]: (s) => new SuspendedFilterMap(s.value, f),
-      [FailCauseTypeId]: (failCause) => failCause,
-      [EmptyTypeId]: (empty) => empty,
-      [NeverTypeId]: (never) => never,
-      [MapTypeId]: (map) => new FilterMap(map.source, flow(map.f, f)),
-      [FilterTypeId]: (filter) => new FilterMap(filter.source, (a) => filter.predicate(a) ? f(a) : Option.none()),
-      [FilterMapTypeId]: (filterMap) =>
-        new FilterMap(filterMap.source, (a) => Option.flatMap(filterMap.predicate(a), f)),
-      [SuspendedMapTypeId]: (map) => new SuspendedFilterMap(map.value, flow(map.f, f)),
-      [SuspendedFilterTypeId]: (filter) =>
-        new SuspendedFilterMap(filter.value, (a) => filter.predicate(a) ? f(a) : Option.none()),
-      [SuspendedFilterMapTypeId]: (filterMap) =>
-        new SuspendedFilterMap(filterMap.value, (a) => Option.flatMap(filterMap.f(a), f)),
-      _: () => new FilterMap(source, f)
-    })
-  }
-}
-
-interface SuspendedMapTypeLambda extends TypeLambda {
-  readonly type: SuspendedMap<any, this["Target"]>
-}
-
-class SuspendedMap<A, B> extends FusableFx<never, never, B> {
-  constructor(readonly value: A, readonly f: (a: A) => B) {
-    super(SuspendedMapTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, never, B>) {
-    return Effect.suspend(() => sink.onSuccess(this.f(this.value)))
-  }
-}
-
-interface SuspendedFilterTypeLambda extends TypeLambda {
-  readonly type: SuspendedFilter<this["Target"]>
-}
-
-class SuspendedFilter<A> extends FusableFx<never, never, A> {
-  constructor(readonly value: A, readonly predicate: Predicate.Predicate<A>) {
-    super(SuspendedFilterTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, never, A>) {
+  toEffect(): Effect.Effect<R, E, B> {
     return Effect.suspend(() => {
-      if (this.predicate(this.value)) {
-        return sink.onSuccess(this.value)
-      } else {
-        return Effect.unit
-      }
+      let acc = this.seed
+
+      return Effect.map(
+        observe(this.fx, (a) => Effect.sync(() => acc = this.f(acc, a))),
+        () => acc
+      )
     })
   }
-}
 
-interface SuspendedFilterMapTypeLambda extends TypeLambda {
-  readonly type: SuspendedFilterMap<any, this["Target"]>
-}
-
-class SuspendedFilterMap<A, B> extends FusableFx<never, never, B> {
-  constructor(readonly value: A, readonly f: (a: A) => Option.Option<B>) {
-    super(SuspendedFilterMapTypeId)
-  }
-
-  run<R2>(sink: Sink.Sink<R2, never, B>) {
-    return Effect.suspend(() => {
-      const option = this.f(this.value)
-      if (Option.isSome(option)) return sink.onSuccess(option.value)
-      else return Effect.unit
-    })
+  static make<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B) {
+    if (fx instanceof FromArraySyncTransform) {
+      const reducer = SyncOp.compileSyncReducer(fx.i1, f)
+      return lazyOnce(() => reduceFilterArray(fx.i0, seed, reducer))
+    } else {
+      return new Reduce(fx, seed, f)
+    }
   }
 }
+
+function reduceFilterArray<A, B>(
+  iterable: ReadonlyArray<A>,
+  seed: B,
+  f: (acc: B, a: A) => Option.Option<B>
+): B {
+  const length = iterable.length
+  let acc = seed,
+    option: Option.Option<B> = Option.none(),
+    i = 0
+
+  while (i < length) {
+    option = f(acc, iterable[i])
+    if (Option.isSome(option)) {
+      acc = option.value
+    }
+    ;++i
+  }
+
+  return acc
+}
+
+const lazyOnce = <A>(f: () => A): Effect.Effect<never, never, A> => {
+  let memoized: Option.Option<A> = Option.none()
+  const get = () => {
+    if (Option.isSome(memoized)) {
+      return memoized.value
+    } else {
+      const a = f()
+      memoized = Option.some(a)
+      return a
+    }
+  }
+
+  return Effect.sync(get)
+}
+
+export const reduce = <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B> =>
+  Reduce.make(fx, seed, f)
