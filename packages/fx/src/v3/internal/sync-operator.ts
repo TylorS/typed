@@ -2,6 +2,7 @@ import { flow, ReadonlyArray } from "effect"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
+import type * as SyncProducer from "./sync-producer.js"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 
@@ -129,7 +130,7 @@ export function applyArray<A, B>(array: ReadonlyArray<A>, operator: SyncOperator
 }
 
 export function applyArrayReducer<A, B>(
-  array: ReadonlyArray<any>,
+  array: Iterable<any>,
   operator: SyncOperator,
   seed: B,
   f: (acc: B, a: A) => B
@@ -144,4 +145,27 @@ export function applyArrayReducer<A, B>(
         else return b
       })
   })
+}
+
+export function runSyncReduce<A, B>(
+  producer: SyncProducer.SyncProducer<A>,
+  op: SyncOperator,
+  seed: B,
+  f: (acc: B, a: any) => B
+): B {
+  switch (producer._tag) {
+    case "Success":
+      return matchSyncOperator(op, {
+        Map: (op) => f(seed, op.f(producer.source)),
+        Filter: (op) => op.f(producer.source) ? f(seed, producer.source) : seed,
+        FilterMap: (op) =>
+          Option.match(op.f(producer.source), {
+            onNone: () => seed,
+            onSome: (a) => f(seed, a)
+          })
+      })
+    case "FromArray":
+    case "FromIterable":
+      return applyArrayReducer(producer.source, op, seed, f)
+  }
 }
