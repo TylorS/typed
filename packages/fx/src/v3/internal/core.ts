@@ -1,11 +1,12 @@
+import type { Equivalence, Predicate, Schedule } from "effect"
 import { Cause, Effect, Equal, Option } from "effect"
-import type { Equivalence, Predicate } from "effect"
 import type { Bounds } from "../../internal/bounds.js"
 import { boundsFrom, mergeBounds } from "../../internal/bounds.js"
 import type { Fx } from "../Fx.js"
 import * as Sink from "../Sink.js"
 import * as EffectLoopOp from "./effect-loop-operator.js"
 import * as EffectOp from "./effect-operator.js"
+import * as EffectProducer from "./effect-producer.js"
 import * as SyncLoopOp from "./loop-operator.js"
 import * as Op from "./operator.js"
 import { EffectBase, FxBase } from "./protos.js"
@@ -13,7 +14,6 @@ import * as SyncOp from "./sync-operator.js"
 import * as SyncProducer from "./sync-producer.js"
 
 // TODO: empty/never
-// TODO: fromEffect
 // TODO: startWith/endWith/padWith + Effect variants
 // TODO: takeWhile/dropWhile/skipAfter + Effect variants
 // TODO: flatMap/switchMap/exhaustMap/exhaustMapLatest + Effect variants
@@ -41,6 +41,39 @@ function isProducer<R, E, A>(fx: Fx<R, E, A>): fx is Producer<A> {
 }
 
 export const succeed = <A>(value: A): Fx<never, never, A> => new Producer(SyncProducer.Success(value))
+
+export const fromArray = <const A extends ReadonlyArray<any>>(array: A): Fx<never, never, A[number]> =>
+  new Producer(SyncProducer.FromArray(array))
+
+export const fromIterable = <A>(iterable: Iterable<A>): Fx<never, never, A> =>
+  new Producer(SyncProducer.FromIterable(iterable))
+
+class ProducerEffect<R, E, A> extends FxBase<R, E, A> {
+  constructor(readonly i0: EffectProducer.EffectProducer<R, E, A>) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+    return EffectProducer.runSink(this.i0, sink)
+  }
+}
+
+function isProducerEffect<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffect<R, E, A> {
+  return fx.constructor === ProducerEffect
+}
+
+export const fromEffect = <R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A> =>
+  new ProducerEffect(EffectProducer.FromEffect(effect))
+
+export const fromScheduled = <R, E, I, O>(
+  input: Effect.Effect<R, E, I>,
+  schedule: Schedule.Schedule<R, I, O>
+): Fx<R, E, O> => new ProducerEffect(EffectProducer.FromScheduled(input, schedule))
+
+export const schedule = <R, E, A, O>(
+  input: Effect.Effect<R, E, A>,
+  schedule: Schedule.Schedule<R, unknown, O>
+): Fx<R, E, A> => new ProducerEffect(EffectProducer.Scheduled(input, schedule))
 
 class FailCause<E> extends FxBase<never, E, never> {
   constructor(readonly i0: Cause.Cause<E>) {
@@ -72,14 +105,19 @@ class Transformer<R, E, A> extends FxBase<R, E, A> {
   }
 
   static make<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, operator: Op.Operator): Fx<R | R2, E | E2, B> {
-    if (isTransformer(fx)) {
-      return new Transformer(fx.i0, Op.fuseOperators(fx.i1, operator))
-    } else if (isProducer(fx)) {
+    if (isProducer(fx)) {
       return new ProducerSyncTransformer(fx.i0, operator)
+    } else if (isTransformer(fx)) {
+      return new Transformer(fx.i0, Op.fuseOperators(fx.i1, operator))
     } else if (isProducerSyncTransformer(fx)) {
       return new ProducerSyncTransformer(fx.i0, Op.fuseOperators(fx.i1, operator))
-    } else if (isFailCause(fx)) return fx
-    else {
+    } else if (isProducerEffect(fx)) {
+      return new ProducerEffectTransformer(fx.i0, operator)
+    } else if (isProducerEffectTransformer(fx)) {
+      return new ProducerEffectTransformer(fx.i0, Op.fuseOperators(fx.i1, operator))
+    } else if (isFailCause(fx)) {
+      return fx
+    } else {
       return new Transformer<R, E, B>(fx, operator)
     }
   }
@@ -152,12 +190,6 @@ export const filterMapLoopEffect = <R, E, A, R2, E2, B, C>(
   f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
 ): Fx<R | R2, E | E2, C> => Transformer.make(fx, EffectLoopOp.FilterMapLoopEffectOperator(seed, f))
 
-export const fromArray = <const A extends ReadonlyArray<any>>(array: A): Fx<never, never, A[number]> =>
-  new Producer(SyncProducer.FromArray(array))
-
-export const fromIterable = <A>(iterable: Iterable<A>): Fx<never, never, A> =>
-  new Producer(SyncProducer.FromIterable(iterable))
-
 export const observe = <R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Effect.Effect<R2, E2, B>
@@ -187,6 +219,8 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
     fx: Fx<R, E, A>,
     f: (a: A) => Effect.Effect<R2, E2, B>
   ): Effect.Effect<R | R2, E | E2, void> {
+    // TODO: optimize Effect producers
+
     if (isProducer(fx)) {
       return SyncProducer.runEffect(fx.i0, f)
     } else if (isProducerSyncTransformer(fx)) {
@@ -289,6 +323,8 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
   }
 
   static make<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B) {
+    // TODO: optimize Effect producers
+
     if (isProducer(fx)) {
       return SyncProducer.runReduce(fx.i0, seed, f)
     } else if (isProducerSyncTransformer(fx)) {
@@ -365,8 +401,6 @@ class Slice<R, E, A> extends FxBase<R, E, A> {
   }
 
   static make<R, E, A>(fx: Fx<R, E, A>, bounds: Bounds): Fx<R, E, A> {
-    // TODO: Optimizations for SyncProducer???
-
     if (isSlice(fx)) {
       return new Slice(fx.source, mergeBounds(fx.bounds, bounds))
     } else if (isTransformer(fx) && fx.i1._tag === "Map") {
@@ -399,4 +433,18 @@ export function skipRepeats<R, E, A>(
   fx: Fx<R, E, A>
 ): Fx<R, E, A> {
   return skipRepeatsWith(fx, Equal.equals)
+}
+
+class ProducerEffectTransformer<R, E, A, R2, E2, B> extends FxBase<R | R2, E | E2, B> {
+  constructor(readonly i0: EffectProducer.EffectProducer<R, E, A>, readonly i1: Op.Operator) {
+    super()
+  }
+
+  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<R | R2 | R3, never, unknown> {
+    return EffectProducer.runSink(this.i0, Op.compileOperatorSink(this.i1, sink))
+  }
+}
+
+function isProducerEffectTransformer<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffectTransformer<R, E, any, R, E, A> {
+  return fx.constructor === ProducerEffectTransformer
 }

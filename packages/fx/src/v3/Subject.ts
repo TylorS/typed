@@ -10,6 +10,8 @@ export interface Subject<R, E, A> extends Push<R, E, A, R, E, A> {
   readonly interrupt: Effect.Effect<never, never, void>
 }
 
+const DISCARD = { discard: true } as const
+
 /**
  * @internal
  */
@@ -71,24 +73,14 @@ export class SubjectImpl<E, A> extends FxBase<never, E, A> implements Subject<ne
   readonly subscriberCount: Effect.Effect<never, never, number> = Effect.sync(() => this.sinks.size)
 
   protected onEvent(a: A) {
-    return Effect.suspend(() => {
-      if (this.sinks.size === 0) return Effect.unit
-      else if (this.sinks.size === 1) {
-        return Effect.forEach(this.sinks, ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), { discard: true })
-      } else {
-        return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), {
-          discard: true
-        })
-      }
-    })
+    if (this.sinks.size === 0) return Effect.unit
+    else {
+      return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
+    }
   }
 
   protected onCause(cause: Cause.Cause<E>) {
-    return Effect.suspend(() =>
-      Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx), {
-        discard: true
-      })
-    )
+    return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx), DISCARD)
   }
 }
 

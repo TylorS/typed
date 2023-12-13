@@ -33,6 +33,7 @@ export interface RefSubject<R, E, A> extends Computed<R, E, A>, Subject.Subject<
 export interface RefSubjectOptions<A> {
   readonly eq?: Equivalence.Equivalence<A>
   readonly replay?: number
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy
 }
 
 export function fromEffect<R, E, A>(
@@ -53,10 +54,7 @@ export function fromFx<R, E, A>(
     yield* _(
       fx.run(Sink.make(
         (cause) => Effect.sync(() => deferredRef.done(Exit.failCause(cause))),
-        (value) =>
-          Effect.sync(() => {
-            deferredRef.done(Exit.succeed(value))
-          })
+        (value) => Effect.sync(() => deferredRef.done(Exit.succeed(value)))
       )),
       Effect.forkIn(core.scope)
     )
@@ -69,8 +67,8 @@ export function make<R, E, A>(
   fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>,
   options?: RefSubjectOptions<A>
 ): Effect.Effect<R | Scope.Scope, never, RefSubject<never, E, A>> {
-  if (TypeId in fxOrEffect) return fromFx(fxOrEffect as Fx<R, E, A>, options)
-  else return fromEffect(fxOrEffect as Effect.Effect<R, E, A>, options)
+  if (TypeId in fxOrEffect) return fromFx(fxOrEffect, options)
+  else return fromEffect(fxOrEffect, options)
 }
 
 class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2>, E, A, Exclude<R, R2>, E, A>
@@ -119,7 +117,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2>, E, A, Exc
   }
 
   toEffect(): Effect.Effect<Exclude<R, R2>, E, A> {
-    return getOrInitializeCore(this.core, true)
+    return getOrInitializeCore(this.core, true, this.core.executionStrategy)
   }
 }
 
@@ -141,9 +139,9 @@ export interface GetSetDelete<R, E, A> {
 
 function getSetDelete<R, E, A, R2>(ref: RefSubjectCore<R, E, A, R2>): GetSetDelete<Exclude<R, R2>, E, A> {
   return {
-    get: getOrInitializeCore(ref, false),
+    get: getOrInitializeCore(ref, false, ref.executionStrategy),
     set: (a) => setCore(ref, a),
-    delete: deleteCore(ref, false)
+    delete: deleteCore(ref, false, ref.executionStrategy)
   }
 }
 
@@ -155,7 +153,7 @@ export function updateEffect<R, E, A, R2, E2>(
 }
 
 export function update<R, E, A>(ref: RefSubject<R, E, A>, f: (value: A) => A) {
-  return updateEffect(ref, (value) => Effect.sync(() => f(value)))
+  return updateEffect(ref, (value) => Effect.succeed(f(value)))
 }
 
 export function modifyEffect<R, E, A, R2, E2, B>(
@@ -172,7 +170,7 @@ export function modifyEffect<R, E, A, R2, E2, B>(
 }
 
 export function modify<R, E, A, B>(ref: RefSubject<R, E, A>, f: (value: A) => readonly [B, A]) {
-  return modifyEffect(ref, (value) => Effect.sync(() => f(value)))
+  return modifyEffect(ref, (value) => Effect.succeed(f(value)))
 }
 
 export function runUpdates<R, E, A, R2, E2, B, R3 = never, E3 = never, C = never>(
@@ -193,11 +191,11 @@ export function runUpdates<R, E, A, R2, E2, B, R3 = never, E3 = never, C = never
           (initial) =>
             f(ref).pipe(
               restore,
-              Effect.tapErrorCause((cause) =>
+              Effect.tapErrorCause(Effect.unifiedFn((cause) =>
                 Cause.isInterruptedOnly(cause)
                   ? options.onInterrupt(initial)
                   : Effect.unit
-              )
+              ))
             )
         )
       )
@@ -207,11 +205,11 @@ export function runUpdates<R, E, A, R2, E2, B, R3 = never, E3 = never, C = never
       Effect.uninterruptibleMask((restore) =>
         f(ref).pipe(
           restore,
-          Effect.tapErrorCause((cause) =>
+          Effect.tapErrorCause(Effect.unifiedFn((cause) =>
             Cause.isInterruptedOnly(cause)
               ? Effect.flatMap(ref.get, options.onInterrupt)
               : Effect.unit
-          )
+          ))
         )
       )
     )
@@ -224,6 +222,7 @@ class RefSubjectCore<R, E, A, R2> {
     readonly subject: Subject.Subject<R, E, A>,
     readonly context: Context.Context<R2>,
     readonly scope: Scope.CloseableScope,
+    readonly executionStrategy: ExecutionStrategy.ExecutionStrategy,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
     readonly semaphore: Effect.Semaphore
   ) {}
@@ -237,19 +236,24 @@ function makeCore<R, E, A>(
 ) {
   return Effect.context<R | Scope.Scope>().pipe(
     Effect.bindTo("ctx"),
-    Effect.bind("scope", ({ ctx }) => Scope.fork(Context.get(ctx, Scope.Scope), ExecutionStrategy.parallel)),
+    Effect.let("executionStrategy", () => options?.executionStrategy ?? ExecutionStrategy.parallel),
+    Effect.bind(
+      "scope",
+      ({ ctx, executionStrategy }) => Scope.fork(Context.get(ctx, Scope.Scope), executionStrategy)
+    ),
     Effect.bind(
       "deferredRef",
       () => DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals))
     ),
     Effect.let("subject", () => Subject.unsafeMake<E, A>(options?.replay ?? 1)),
     Effect.tap(({ scope, subject }) => Scope.addFinalizer(scope, subject.interrupt)),
-    Effect.map(({ ctx, deferredRef, scope, subject }) =>
+    Effect.map(({ ctx, deferredRef, executionStrategy, scope, subject }) =>
       new RefSubjectCore(
         initial,
         subject,
         ctx,
         scope,
+        executionStrategy,
         deferredRef,
         Effect.unsafeMakeSemaphore(1)
       )
@@ -259,11 +263,12 @@ function makeCore<R, E, A>(
 
 function getOrInitializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lockInitialize: boolean
+  lockInitialize: boolean,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<Exclude<R, R2>, E, A> {
   return Effect.suspend(() => {
     if (core._fiber === undefined && Option.isNone(core.deferredRef.current)) {
-      return initializeCore(core, lockInitialize)
+      return initializeCore(core, lockInitialize, executionStrategy)
     } else {
       return core.deferredRef
     }
@@ -272,7 +277,8 @@ function getOrInitializeCore<R, E, A, R2>(
 
 function initializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lock: boolean
+  lock: boolean,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<Exclude<R, R2>, E, A> {
   const initialize = Effect.onExit(
     Effect.provide(core.initial, core.context),
@@ -283,7 +289,7 @@ function initializeCore<R, E, A, R2>(
       })
   )
 
-  return Scope.fork(core.scope, ExecutionStrategy.sequential).pipe(
+  return Scope.fork(core.scope, executionStrategy).pipe(
     Effect.flatMap((scope) =>
       Effect.forkIn(
         lock ? core.semaphore.withPermits(1)(initialize) : initialize,
@@ -331,7 +337,8 @@ function interruptCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>): Effect.E
 
 function deleteCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lockInitialize: boolean
+  lockInitialize: boolean,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<Exclude<R, R2>, E, Option.Option<A>> {
   return Effect.gen(function*(_) {
     const current = core.deferredRef.current
@@ -349,7 +356,7 @@ function deleteCore<R, E, A, R2>(
         yield* _(Fiber.interrupt(core._fiber))
       }
 
-      yield* _(Effect.forkIn(initializeCore(core, lockInitialize), core.scope))
+      yield* _(Effect.forkIn(initializeCore(core, lockInitialize, executionStrategy), core.scope))
     }
 
     // Reset the current state and version
