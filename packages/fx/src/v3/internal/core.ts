@@ -142,7 +142,7 @@ export const loopEffect = <R, E, A, R2, E2, B, C>(
   f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
 ): Fx<R | R2, E | E2, C> => Transformer.make(fx, EffectLoopOp.LoopEffectOperator(seed, f))
 
-export const filterLoopEffect = <R, E, A, R2, E2, B, C>(
+export const filterMapLoopEffect = <R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
   f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
@@ -297,19 +297,19 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
       return Op.matchOperator(fx.i1, {
         SyncOperator: (op) => SyncProducer.syncOnce(() => SyncOp.runSyncReduce(fx.i0, op, seed, f)),
         EffectOperator: (op) => EffectOp.runSyncReduce(fx.i0, op, seed, f),
-        SyncLoopOperator: (op) => {
-          switch (op._tag) {
-            case "Loop":
-              return Effect.map(
+        SyncLoopOperator: (op) =>
+          SyncLoopOp.matchSyncLoopOperator(op, {
+            Loop: (op) =>
+              Effect.map(
                 SyncProducer.runReduce(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
                   const [c, b] = op.f(opAcc, a)
                   const newAcc = f(acc, c)
                   return [b, newAcc] as const
                 }),
                 (x) => x[1]
-              )
-            case "FilterMapLoop":
-              return Effect.map(
+              ),
+            FilterMapLoop: (op) =>
+              Effect.map(
                 SyncProducer.runReduce(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
                   const [c, b] = op.f(opAcc, a)
                   const newAcc = Option.match(c, { onNone: () => acc, onSome: () => f(acc, b) })
@@ -317,8 +317,7 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
                 }),
                 (x) => x[1]
               )
-          }
-        },
+          }),
         EffectLoopOperator: (op) => {
           switch (op._tag) {
             case "LoopEffect": {
@@ -335,9 +334,9 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
             case "FilterMapLoopEffect": {
               return Effect.map(
                 SyncProducer.runReduceEffect(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
-                  return Effect.flatMap(op.f(opAcc, a), ([c, b]) => {
+                  return Effect.map(op.f(opAcc, a), ([c, b]) => {
                     const newAcc = Option.match(c, { onNone: () => acc, onSome: () => f(acc, b) })
-                    return Effect.succeed([b, newAcc] as const)
+                    return [b, newAcc] as const
                   })
                 }),
                 (x) => x[1]
@@ -376,6 +375,7 @@ class Slice<R, E, A> extends FxBase<R, E, A> {
     if (isSlice(fx)) {
       return new Slice(fx.source, mergeBounds(fx.bounds, bounds))
     } else if (isTransformer(fx) && fx.i1._tag === "Map") {
+      // Commute map and slice
       return map(Slice.make(fx.i0, bounds), fx.i1.f)
     } else {
       return new Slice(fx, bounds)
