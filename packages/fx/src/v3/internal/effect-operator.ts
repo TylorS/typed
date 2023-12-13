@@ -2,7 +2,7 @@ import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
-import type { SyncOperator } from "./sync-operator.js"
+import * as SyncOp from "./sync-operator.js"
 import * as SyncProducer from "./sync-producer.js"
 
 // Effect operators are a subset of operators which can be safely fused together assynchronously
@@ -158,15 +158,13 @@ export function fuseEffectOperators(op1: EffectOperator, op2: EffectOperator): E
   return EffectOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
 
-export function liftSyncOperator(op: SyncOperator): EffectOperator {
-  switch (op._tag) {
-    case "Filter":
-      return FilterEffect((a) => Effect.sync(() => op.f(a)))
-    case "FilterMap":
-      return FilterMapEffect((a) => Effect.sync(() => op.f(a)))
-    case "Map":
-      return MapEffect((a) => Effect.sync(() => op.f(a)))
-  }
+// TODO: We should probably do more specific fusions
+export function liftSyncOperator(op: SyncOp.SyncOperator): EffectOperator {
+  return SyncOp.matchSyncOperator(op, {
+    Filter: (op): EffectOperator => FilterEffect((a) => Effect.succeed(op.f(a))),
+    FilterMap: (op) => FilterMapEffect((a) => Effect.succeed(op.f(a))),
+    Map: (op) => MapEffect((a) => Effect.succeed(op.f(a)))
+  })
 }
 
 export function matchEffectOperator<A, B, C, D>(

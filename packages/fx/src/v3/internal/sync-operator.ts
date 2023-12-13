@@ -73,14 +73,7 @@ export function matchSyncOperator<A>(operator: SyncOperator, matchers: {
   readonly Filter: (f: Filter<any>) => A
   readonly FilterMap: (f: FilterMap<any, any>) => A
 }): A {
-  switch (operator._tag) {
-    case "Map":
-      return matchers.Map(operator)
-    case "Filter":
-      return matchers.Filter(operator)
-    case "FilterMap":
-      return matchers.FilterMap(operator)
-  }
+  return matchers[operator._tag](operator as any)
 }
 
 export function compileSyncOperatorSink<R>(

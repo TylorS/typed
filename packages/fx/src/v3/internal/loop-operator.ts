@@ -45,14 +45,13 @@ export function fuseSyncOperatorBefore(
   loopOp: SyncLoopOperator
 ): SyncLoopOperator {
   return SyncOp.matchSyncOperator(syncOp, {
-    Map: (op): SyncLoopOperator => {
-      return matchSyncLoopOperator(loopOp, {
+    Map: (op): SyncLoopOperator =>
+      matchSyncLoopOperator(loopOp, {
         Loop: (lOp): SyncLoopOperator => LoopOperator(lOp.seed, (acc, a) => lOp.f(acc, op.f(a))),
         FilterMapLoop: (lOp) => FilterMapLoopOperator(lOp.seed, (acc, a) => lOp.f(acc, op.f(a)))
-      })
-    },
-    Filter: (op) => {
-      return matchSyncLoopOperator(loopOp, {
+      }),
+    Filter: (op) =>
+      matchSyncLoopOperator(loopOp, {
         Loop: (lOp): SyncLoopOperator =>
           FilterMapLoopOperator(lOp.seed, (acc, a) => {
             const [b, c] = lOp.f(acc, a)
@@ -70,10 +69,9 @@ export function fuseSyncOperatorBefore(
               return lOp.f(acc, a)
             }
           })
-      })
-    },
-    FilterMap: (op) => {
-      return matchSyncLoopOperator(loopOp, {
+      }),
+    FilterMap: (op) =>
+      matchSyncLoopOperator(loopOp, {
         Loop: (lOp): SyncLoopOperator =>
           FilterMapLoopOperator(lOp.seed, (acc, a) => {
             const [b, c] = lOp.f(acc, a)
@@ -85,7 +83,6 @@ export function fuseSyncOperatorBefore(
             return [Option.flatMap(b, op.f), c]
           })
       })
-    }
   })
 }
 
@@ -93,9 +90,9 @@ export function fuseSyncOperatorAfter(
   loopOp: SyncLoopOperator,
   syncOp: SyncOp.SyncOperator
 ): SyncLoopOperator {
-  switch (loopOp._tag) {
-    case "Loop": {
-      return SyncOp.matchSyncOperator(syncOp, {
+  return matchSyncLoopOperator(loopOp, {
+    Loop: (loopOp) =>
+      SyncOp.matchSyncOperator(syncOp, {
         Map: (op): SyncLoopOperator =>
           LoopOperator(loopOp.seed, (acc, a) => {
             const [b, c] = loopOp.f(acc, a)
@@ -118,10 +115,9 @@ export function fuseSyncOperatorAfter(
               onSome: (d) => [Option.some(d), c]
             })
           })
-      })
-    }
-    case "FilterMapLoop": {
-      return SyncOp.matchSyncOperator(syncOp, {
+      }),
+    FilterMapLoop: (loopOp) =>
+      SyncOp.matchSyncOperator(syncOp, {
         Map: (op): SyncLoopOperator =>
           FilterMapLoopOperator(loopOp.seed, (acc, a) => {
             const [b, c] = loopOp.f(acc, a)
@@ -138,8 +134,7 @@ export function fuseSyncOperatorAfter(
             return [Option.flatMap(b, op.f), c]
           })
       })
-    }
-  }
+  })
 }
 
 export function fuseLoopOperators<A, B, C, D, E>(

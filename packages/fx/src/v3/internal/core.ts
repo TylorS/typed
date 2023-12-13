@@ -1,5 +1,5 @@
-import { Cause, Effect, Option } from "effect"
-import type { Predicate } from "effect"
+import { Cause, Effect, Equal, Option } from "effect"
+import type { Equivalence, Predicate } from "effect"
 import type { Bounds } from "../../internal/bounds.js"
 import { boundsFrom, mergeBounds } from "../../internal/bounds.js"
 import type { Fx } from "../Fx.js"
@@ -17,10 +17,14 @@ import * as SyncProducer from "./sync-producer.js"
 // TODO: startWith/endWith/padWith + Effect variants
 // TODO: takeWhile/dropWhile/skipAfter + Effect variants
 // TODO: flatMap/switchMap/exhaustMap/exhaustMapLatest + Effect variants
+// TODO: Cause/Error + Effect variants
 // TODO: takeUntil/dropUntil/during + Effect variants
 // TODO: snapshot/sample + Effect variants
 // TODO: sharing
 // TODO: Provide resources
+// TODO: Effect middleware
+// TODO: Scheduling
+// TODO:
 
 class Producer<A> extends FxBase<never, never, A> {
   constructor(readonly i0: SyncProducer.SyncProducer<A>) {
@@ -219,37 +223,33 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
               ),
             TapEffect: (op) => SyncProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), () => f(a)))
           }),
-        SyncLoopOperator: (op) => {
-          switch (op._tag) {
-            case "Loop": {
-              return SyncProducer.effectOnce(() =>
+        SyncLoopOperator: (op) =>
+          SyncLoopOp.matchSyncLoopOperator(op, {
+            Loop: (op) =>
+              SyncProducer.effectOnce(() =>
                 SyncProducer.runReduceEffect(fx.i0, op.seed, (acc, a) => {
                   const [c, b] = op.f(acc, a)
                   return Effect.as(f(c), b)
                 })
-              )
-            }
-            case "FilterMapLoop": {
-              return SyncProducer.effectOnce(() =>
+              ),
+            FilterMapLoop: (op) =>
+              SyncProducer.effectOnce(() =>
                 SyncProducer.runReduceEffect(fx.i0, op.seed, (acc, a) => {
                   const [c, b] = op.f(acc, a)
                   return Option.match(c, { onNone: () => Effect.succeed(acc), onSome: (c) => Effect.as(f(c), b) })
                 })
               )
-            }
-          }
-        },
-        EffectLoopOperator: (op) => {
-          switch (op._tag) {
-            case "LoopEffect": {
-              return SyncProducer.runReduceEffect(
+          }),
+        EffectLoopOperator: (op) =>
+          EffectLoopOp.matchEffectLoopOperator(op, {
+            LoopEffect: (op) =>
+              SyncProducer.runReduceEffect(
                 fx.i0,
                 op.seed,
                 (acc, a) => Effect.flatMap(op.f(acc, a), ([c, b]) => Effect.as(f(c), b))
-              )
-            }
-            case "FilterMapLoopEffect": {
-              return SyncProducer.runReduceEffect(
+              ),
+            FilterMapLoopEffect: (op) =>
+              SyncProducer.runReduceEffect(
                 fx.i0,
                 op.seed,
                 (acc, a) =>
@@ -259,9 +259,7 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
                       onSome: (c) => Effect.as(f(c), b)
                     }))
               )
-            }
-          }
-        }
+          })
       })
     } else if (isFailCause(fx)) {
       return Effect.failCause(fx.i0)
@@ -318,10 +316,10 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
                 (x) => x[1]
               )
           }),
-        EffectLoopOperator: (op) => {
-          switch (op._tag) {
-            case "LoopEffect": {
-              return Effect.map(
+        EffectLoopOperator: (op) =>
+          EffectLoopOp.matchEffectLoopOperator(op, {
+            LoopEffect: (op) =>
+              Effect.map(
                 SyncProducer.runReduceEffect(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
                   return Effect.flatMap(op.f(opAcc, a), ([c, b]) => {
                     const newAcc = f(acc, c)
@@ -329,10 +327,9 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
                   })
                 }),
                 (x) => x[1]
-              )
-            }
-            case "FilterMapLoopEffect": {
-              return Effect.map(
+              ),
+            FilterMapLoopEffect: (op) =>
+              Effect.map(
                 SyncProducer.runReduceEffect(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
                   return Effect.map(op.f(opAcc, a), ([c, b]) => {
                     const newAcc = Option.match(c, { onNone: () => acc, onSome: () => f(acc, b) })
@@ -341,9 +338,7 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
                 }),
                 (x) => x[1]
               )
-            }
-          }
-        }
+          })
       })
     } else if (isFailCause(fx)) {
       return Effect.failCause(fx.i0)
@@ -385,4 +380,23 @@ class Slice<R, E, A> extends FxBase<R, E, A> {
 
 function isSlice<R, E, A>(fx: Fx<R, E, A>): fx is Slice<R, E, A> {
   return fx.constructor === Slice
+}
+
+export function skipRepeatsWith<R, E, A>(
+  fx: Fx<R, E, A>,
+  eq: Equivalence.Equivalence<A>
+): Fx<R, E, A> {
+  return filterMapLoop(fx, Option.none<A>(), (previous, a) => {
+    if (Option.isSome(previous) && eq(a, previous.value)) {
+      return [Option.none<A>(), Option.some<A>(a)] as const
+    } else {
+      return [Option.some<A>(a), Option.some<A>(a)] as const
+    }
+  })
+}
+
+export function skipRepeats<R, E, A>(
+  fx: Fx<R, E, A>
+): Fx<R, E, A> {
+  return skipRepeatsWith(fx, Equal.equals)
 }
