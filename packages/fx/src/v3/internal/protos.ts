@@ -1,5 +1,6 @@
 import type { Effect } from "effect"
 import { Effectable, identity } from "effect"
+import { pipeArguments } from "effect/Pipeable"
 import { TypeId } from "../../TypeId"
 import type { Fx } from "../Fx"
 import type { Sink } from "../Sink"
@@ -14,6 +15,10 @@ export abstract class FxBase<R, E, A> implements Fx<R, E, A> {
   readonly [TypeId]: Fx.Variance<R, E, A> = Variance
 
   abstract run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown>
+
+  pipe() {
+    return pipeArguments(this, arguments)
+  }
 }
 
 export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B>

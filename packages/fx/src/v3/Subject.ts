@@ -1,11 +1,11 @@
 import type { Cause, Context } from "effect"
-import { Effect, Exit, MutableRef, Option, Scope } from "effect"
+import { Effect, ExecutionStrategy, Exit, MutableRef, Option, Scope } from "effect"
 import { awaitScopeClose, RingBuffer } from "../internal/helpers"
 import { FxBase } from "./internal/protos"
 import type { Push } from "./Push"
 import type { Sink } from "./Sink"
 
-export interface Subject<R, E, A> extends Push<R, E, A, R, E, A> {
+export interface Subject<R, E, A> extends Push<R, E, A, R | Scope.Scope, E, A> {
   readonly subscriberCount: Effect.Effect<never, never, number>
   readonly interrupt: Effect.Effect<never, never, void>
 }
@@ -15,11 +15,17 @@ const DISCARD = { discard: true } as const
 /**
  * @internal
  */
-export class SubjectImpl<E, A> extends FxBase<never, E, A> implements Subject<never, E, A> {
+export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subject<never, E, A> {
   protected sinks: Set<readonly [Sink<any, E, A>, Context.Context<any>]> = new Set()
   protected scopes: Set<Scope.CloseableScope> = new Set()
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2, never, unknown> {
+  constructor() {
+    super()
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2 | Scope.Scope, never, unknown> {
     return this.addSink(sink, awaitScopeClose)
   }
 
@@ -38,35 +44,28 @@ export class SubjectImpl<E, A> extends FxBase<never, E, A> implements Subject<ne
   protected addSink<R, R2, B>(
     sink: Sink<R, E, A>,
     f: (scope: Scope.Scope) => Effect.Effect<R2, never, B>
-  ): Effect.Effect<R2, never, B> {
-    return Effect.acquireUseRelease(
-      Scope.make(),
-      (scope) =>
-        Effect.contextWithEffect((ctx) => {
-          const entry = [sink, ctx] as const
+  ): Effect.Effect<R2 | Scope.Scope, never, B> {
+    return Effect.scopeWith((outerScope) =>
+      Effect.flatMap(
+        Scope.fork(outerScope, ExecutionStrategy.sequential),
+        (innerScope) =>
+          Effect.contextWithEffect((ctx) => {
+            const entry = [sink, ctx] as const
+            const add = Effect.sync(() => {
+              this.sinks.add(entry)
+              this.scopes.add(innerScope)
+            })
+            const remove = Effect.sync(() => {
+              this.sinks.delete(entry)
+              this.scopes.delete(innerScope)
+            })
 
-          return Effect.flatMap(
-            Effect.provideService(
-              Effect.acquireRelease(
-                Effect.sync(() => {
-                  this.sinks.add(entry)
-                  this.scopes.add(scope)
-
-                  return this.sinks.size
-                }),
-                () =>
-                  Effect.sync(() => {
-                    this.sinks.delete(entry)
-                    this.scopes.delete(scope)
-                  })
-              ),
-              Scope.Scope,
-              scope
-            ),
-            () => f(scope)
-          )
-        }),
-      (scope, exit) => Scope.close(scope, exit)
+            return Effect.zipRight(
+              Scope.addFinalizer(innerScope, remove),
+              Effect.zipRight(add, f(innerScope))
+            )
+          })
+      )
     )
   }
 
@@ -98,7 +97,7 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
       return this.onEvent(a)
     })
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2, never, unknown> {
+  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2 | Scope.Scope, never, unknown> {
     return this.addSink(sink, (scope) =>
       Option.match(MutableRef.get(this.lastValue), {
         onNone: () => awaitScopeClose(scope),
@@ -123,22 +122,12 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
       return this.onEvent(a)
     })
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2, never, unknown> {
+  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R2 | Scope.Scope, never, unknown> {
     return this.addSink(sink, (scope) => Effect.zipRight(this.buffer.forEach(sink.onSuccess), awaitScopeClose(scope)))
   }
 }
 
-export function make<E, A>(replay?: number): Effect.Effect<Scope.Scope, never, Subject<never, E, A>> {
-  return Effect.scopeWith((scope) =>
-    Effect.suspend(() => {
-      const subject = unsafeMake<E, A>(replay)
-
-      return Effect.as(Scope.addFinalizer(scope, subject.interrupt), subject)
-    })
-  )
-}
-
-export function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A> {
+export function make<E, A>(replay: number = 0): Subject<never, E, A> {
   replay = Math.max(0, replay)
 
   if (replay === 0) {

@@ -13,7 +13,6 @@ import { EffectBase, FxBase } from "./protos.js"
 import * as SyncOp from "./sync-operator.js"
 import * as SyncProducer from "./sync-producer.js"
 
-// TODO: empty/never
 // TODO: startWith/endWith/padWith + Effect variants
 // TODO: takeWhile/dropWhile/skipAfter + Effect variants
 // TODO: flatMap/switchMap/exhaustMap/exhaustMapLatest + Effect variants
@@ -35,8 +34,10 @@ class Producer<A> extends FxBase<never, never, A> {
     return SyncProducer.runSink(this.i0, sink)
   }
 }
-
-function isProducer<R, E, A>(fx: Fx<R, E, A>): fx is Producer<A> {
+/**
+ * @internal
+ */
+export function isProducer<R, E, A>(fx: Fx<R, E, A>): fx is Producer<A> {
   return fx.constructor === Producer
 }
 
@@ -58,7 +59,10 @@ class ProducerEffect<R, E, A> extends FxBase<R, E, A> {
   }
 }
 
-function isProducerEffect<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffect<R, E, A> {
+/**
+ * @internal
+ */
+export function isProducerEffect<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffect<R, E, A> {
   return fx.constructor === ProducerEffect
 }
 
@@ -85,7 +89,10 @@ class FailCause<E> extends FxBase<never, E, never> {
   }
 }
 
-function isFailCause<R, E, A>(fx: Fx<R, E, A>): fx is FailCause<E> {
+/**
+ * @internal
+ */
+export function isFailCause<R, E, A>(fx: Fx<R, E, A>): fx is FailCause<E> {
   return fx.constructor === FailCause
 }
 
@@ -105,7 +112,8 @@ class Transformer<R, E, A> extends FxBase<R, E, A> {
   }
 
   static make<R, E, A, R2, E2, B>(fx: Fx<R, E, A>, operator: Op.Operator): Fx<R | R2, E | E2, B> {
-    if (isProducer(fx)) {
+    if (isEmpty(fx) || isNever(fx)) return fx
+    else if (isProducer(fx)) {
       return new ProducerSyncTransformer(fx.i0, operator)
     } else if (isTransformer(fx)) {
       return new Transformer(fx.i0, Op.fuseOperators(fx.i1, operator))
@@ -123,11 +131,14 @@ class Transformer<R, E, A> extends FxBase<R, E, A> {
   }
 }
 
-function isTransformer<R, E, A>(fx: Fx<R, E, A>): fx is Transformer<R, E, A> {
+/**
+ * @internal
+ */
+export function isTransformer<R, E, A>(fx: Fx<R, E, A>): fx is Transformer<R, E, A> {
   return fx.constructor === Transformer
 }
 
-class ProducerSyncTransformer<R, E, A> extends FxBase<R, E, A> {
+class ProducerSyncTransformer<R, E, A> extends FxBase<R, E, A> implements Fx<R, E, A> {
   constructor(readonly i0: SyncProducer.SyncProducer<any>, readonly i1: Op.Operator) {
     super()
   }
@@ -137,7 +148,10 @@ class ProducerSyncTransformer<R, E, A> extends FxBase<R, E, A> {
   }
 }
 
-function isProducerSyncTransformer<R, E, A>(fx: Fx<R, E, A>): fx is ProducerSyncTransformer<R, E, A> {
+/**
+ * @internal
+ */
+export function isProducerSyncTransformer<R, E, A>(fx: Fx<R, E, A>): fx is ProducerSyncTransformer<R, E, A> {
   return fx.constructor === ProducerSyncTransformer
 }
 
@@ -221,7 +235,11 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
   ): Effect.Effect<R | R2, E | E2, void> {
     // TODO: optimize Effect producers
 
-    if (isProducer(fx)) {
+    if (isEmpty(fx)) {
+      return Effect.unit
+    } else if (isNever(fx)) {
+      return Effect.never
+    } else if (isProducer(fx)) {
       return SyncProducer.runEffect(fx.i0, f)
     } else if (isProducerSyncTransformer(fx)) {
       return Op.matchOperator(fx.i1, {
@@ -324,8 +342,8 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
 
   static make<R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B) {
     // TODO: optimize Effect producers
-
-    if (isProducer(fx)) {
+    if (isEmpty(fx)) return Effect.succeed(seed)
+    else if (isProducer(fx)) {
       return SyncProducer.runReduce(fx.i0, seed, f)
     } else if (isProducerSyncTransformer(fx)) {
       return Op.matchOperator(fx.i1, {
@@ -346,7 +364,8 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
               Effect.map(
                 SyncProducer.runReduce(fx.i0, [op.seed, seed] as const, ([opAcc, acc], a) => {
                   const [c, b] = op.f(opAcc, a)
-                  const newAcc = Option.match(c, { onNone: () => acc, onSome: () => f(acc, b) })
+                  const newAcc = Option.match(c, { onNone: () => acc, onSome: (c) => f(acc, c) })
+
                   return [b, newAcc] as const
                 }),
                 (x) => x[1]
@@ -384,6 +403,15 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
   }
 }
 
+export const toReadonlyArray = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, ReadonlyArray<A>> =>
+  Effect.suspend(() => {
+    const init = [] as Array<A>
+    return Reduce.make(fx, init, (acc, a) => {
+      acc.push(a)
+      return acc
+    })
+  })
+
 export const slice = <R, E, A>(fx: Fx<R, E, A>, drop: number, take: number): Fx<R, E, A> =>
   Slice.make(fx, boundsFrom(drop, take))
 
@@ -412,7 +440,10 @@ class Slice<R, E, A> extends FxBase<R, E, A> {
   }
 }
 
-function isSlice<R, E, A>(fx: Fx<R, E, A>): fx is Slice<R, E, A> {
+/**
+ * @internal
+ */
+export function isSlice<R, E, A>(fx: Fx<R, E, A>): fx is Slice<R, E, A> {
   return fx.constructor === Slice
 }
 
@@ -445,6 +476,112 @@ class ProducerEffectTransformer<R, E, A, R2, E2, B> extends FxBase<R | R2, E | E
   }
 }
 
-function isProducerEffectTransformer<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffectTransformer<R, E, any, R, E, A> {
+/**
+ * @internal
+ */
+export function isProducerEffectTransformer<R, E, A>(
+  fx: Fx<R, E, A>
+): fx is ProducerEffectTransformer<R, E, any, R, E, A> {
   return fx.constructor === ProducerEffectTransformer
+}
+
+class Empty extends FxBase<never, never, never> {
+  run<R2>(): Effect.Effect<R2, never, unknown> {
+    return Effect.unit
+  }
+}
+
+/**
+ * @internal
+ */
+export function isEmpty<R, E, A>(fx: Fx<R, E, A>): fx is Empty {
+  return fx.constructor === Empty
+}
+
+export const empty: Fx<never, never, never> = new Empty()
+
+class Never extends FxBase<never, never, never> {
+  run<R2>(): Effect.Effect<R2, never, unknown> {
+    return Effect.never
+  }
+}
+
+/**
+ * @internal
+ */
+export function isNever<R, E, A>(fx: Fx<R, E, A>): fx is Never {
+  return fx.constructor === Never
+}
+
+export const never: Fx<never, never, never> = new Never()
+
+export function padWith<R, E, A, B extends ReadonlyArray<any>, C extends ReadonlyArray<any>>(
+  fx: Fx<R, E, A>,
+  start: B,
+  end: C
+): Fx<R, E, A | B | C> {
+  return new PadWith(fx, start, end)
+}
+
+export function prependAll<R, E, A, B extends ReadonlyArray<any>>(
+  fx: Fx<R, E, A>,
+  start: B
+): Fx<R, E, A | B> {
+  return new PadWith(fx, start, [])
+}
+
+export function appendAll<R, E, A, C extends ReadonlyArray<any>>(
+  fx: Fx<R, E, A>,
+  end: C
+): Fx<R, E, A | C> {
+  return new PadWith(fx, [], end)
+}
+
+export function prepend<R, E, A, B>(fx: Fx<R, E, A>, start: B): Fx<R, E, A | B> {
+  return new PadWith(fx, [start], [])
+}
+
+export function append<R, E, A, C>(fx: Fx<R, E, A>, end: C): Fx<R, E, A | C> {
+  return new PadWith(fx, [], [end])
+}
+
+class PadWith<
+  R,
+  E,
+  A,
+  B extends ReadonlyArray<any>,
+  C extends ReadonlyArray<any>
+> extends FxBase<R, E, A | B[number] | C[number]> {
+  constructor(readonly source: Fx<R, E, A>, readonly start: B, readonly end: C) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, E, A | B[number] | C[number]>): Effect.Effect<R | R2, never, unknown> {
+    return Effect.forEach(this.start, sink.onSuccess).pipe(
+      Effect.zipRight(this.source.run(sink)),
+      Effect.zipRight(Effect.forEach(this.end, sink.onSuccess))
+    )
+  }
+
+  static make<R, E, A, B extends ReadonlyArray<any> | ReadonlyArray<never>, C extends ReadonlyArray<any>>(
+    fx: Fx<R, E, A>,
+    start: B,
+    end: C
+  ): Fx<R, E, A | B[number] | C[number]> {
+    if (isEmpty(fx) || isNever(fx)) return fx
+    else if (isPadWith(fx)) {
+      return new PadWith(fx.source, [...start, ...fx.start], [...fx.end, ...end])
+    } else {
+      return new PadWith(fx, start, end)
+    }
+  }
+}
+
+/**
+ * @internal
+ */
+export function isPadWith<R, E, A, B extends ReadonlyArray<any>, C extends ReadonlyArray<any>>(
+  fx: Fx<R, E, A>
+): fx is PadWith<R, E, A, B, C> {
+  return fx.constructor === PadWith
 }

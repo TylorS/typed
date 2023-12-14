@@ -1,5 +1,5 @@
-import type { Equivalence } from "effect"
-import { Cause, Context, Effect, Equal, ExecutionStrategy, Exit, Fiber, Option, Scope } from "effect"
+import type { Equivalence, Fiber } from "effect"
+import { Cause, Context, Effect, Equal, ExecutionStrategy, Exit, Option, Scope } from "effect"
 import type { FilteredTypeId } from "../TypeId.js"
 import { ComputedTypeId, RefSubjectTypeId, TypeId } from "../TypeId.js"
 import type { Fx } from "./Fx.js"
@@ -16,11 +16,13 @@ import type { Versioned } from "./Versioned.js"
 // TODO: RefTransformer
 // TODO: tuple/struct/all
 
-export interface Computed<R, E, A> extends Versioned<R, never, R, E, A, R, E, A> {
+export interface Computed<R, E, A> extends Versioned<R, never, R | Scope.Scope, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 }
 
-export interface Filtered<R, E, A> extends Versioned<R, never, R, E, A, R, E | Cause.NoSuchElementException, A> {
+export interface Filtered<R, E, A>
+  extends Versioned<R, never, R | Scope.Scope, E, A, R, E | Cause.NoSuchElementException, A>
+{
   readonly [FilteredTypeId]: FilteredTypeId
 }
 
@@ -71,7 +73,14 @@ export function make<R, E, A>(
   else return fromEffect(fxOrEffect, options)
 }
 
-class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2>, E, A, Exclude<R, R2>, E, A>
+export function of<A>(
+  a: A,
+  options?: RefSubjectOptions<A>
+): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
+  return make(Effect.succeed(a), options)
+}
+
+class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Scope, E, A, Exclude<R, R2>, E, A>
   implements RefSubject<Exclude<R, R2>, E, A>
 {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
@@ -98,7 +107,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2>, E, A, Exc
     this.onFailure = this.onFailure.bind(this)
   }
 
-  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<Exclude<R, R2> | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<Exclude<R, R2> | R3 | Scope.Scope, never, unknown> {
     return Effect.provide(this.core.subject.run(sink), this.core.context)
   }
 
@@ -117,7 +126,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2>, E, A, Exc
   }
 
   toEffect(): Effect.Effect<Exclude<R, R2>, E, A> {
-    return getOrInitializeCore(this.core, true, this.core.executionStrategy)
+    return getOrInitializeCore(this.core, true)
   }
 }
 
@@ -139,9 +148,9 @@ export interface GetSetDelete<R, E, A> {
 
 function getSetDelete<R, E, A, R2>(ref: RefSubjectCore<R, E, A, R2>): GetSetDelete<Exclude<R, R2>, E, A> {
   return {
-    get: getOrInitializeCore(ref, false, ref.executionStrategy),
+    get: getOrInitializeCore(ref, false),
     set: (a) => setCore(ref, a),
-    delete: deleteCore(ref, false, ref.executionStrategy)
+    delete: deleteCore(ref, false)
   }
 }
 
@@ -222,7 +231,6 @@ class RefSubjectCore<R, E, A, R2> {
     readonly subject: Subject.Subject<R, E, A>,
     readonly context: Context.Context<R2>,
     readonly scope: Scope.CloseableScope,
-    readonly executionStrategy: ExecutionStrategy.ExecutionStrategy,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
     readonly semaphore: Effect.Semaphore
   ) {}
@@ -245,15 +253,14 @@ function makeCore<R, E, A>(
       "deferredRef",
       () => DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals))
     ),
-    Effect.let("subject", () => Subject.unsafeMake<E, A>(options?.replay ?? 1)),
+    Effect.let("subject", () => Subject.make<E, A>(options?.replay ?? 1)),
     Effect.tap(({ scope, subject }) => Scope.addFinalizer(scope, subject.interrupt)),
-    Effect.map(({ ctx, deferredRef, executionStrategy, scope, subject }) =>
+    Effect.map(({ ctx, deferredRef, scope, subject }) =>
       new RefSubjectCore(
         initial,
         subject,
         ctx,
         scope,
-        executionStrategy,
         deferredRef,
         Effect.unsafeMakeSemaphore(1)
       )
@@ -263,12 +270,11 @@ function makeCore<R, E, A>(
 
 function getOrInitializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lockInitialize: boolean,
-  executionStrategy: ExecutionStrategy.ExecutionStrategy
+  lockInitialize: boolean
 ): Effect.Effect<Exclude<R, R2>, E, A> {
   return Effect.suspend(() => {
     if (core._fiber === undefined && Option.isNone(core.deferredRef.current)) {
-      return initializeCore(core, lockInitialize, executionStrategy)
+      return initializeCore(core, lockInitialize)
     } else {
       return core.deferredRef
     }
@@ -277,27 +283,26 @@ function getOrInitializeCore<R, E, A, R2>(
 
 function initializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lock: boolean,
-  executionStrategy: ExecutionStrategy.ExecutionStrategy
+  lock: boolean
 ): Effect.Effect<Exclude<R, R2>, E, A> {
   const initialize = Effect.onExit(
     Effect.provide(core.initial, core.context),
     (exit) =>
       Effect.sync(() => {
         core._fiber = undefined
-        return core.deferredRef.done(exit)
+        core.deferredRef.done(exit)
       })
   )
 
-  return Scope.fork(core.scope, executionStrategy).pipe(
-    Effect.flatMap((scope) =>
+  return Effect.zipRight(
+    Effect.tap(
       Effect.forkIn(
         lock ? core.semaphore.withPermits(1)(initialize) : initialize,
-        scope
-      )
+        core.scope
+      ),
+      (fiber) => Effect.sync(() => core._fiber = fiber)
     ),
-    Effect.tap((fiber) => Effect.sync(() => core._fiber = fiber)),
-    Effect.zipRight(tapEventCore(core, core.deferredRef))
+    tapEventCore(core, core.deferredRef)
   )
 }
 
@@ -337,8 +342,7 @@ function interruptCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>): Effect.E
 
 function deleteCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
-  lockInitialize: boolean,
-  executionStrategy: ExecutionStrategy.ExecutionStrategy
+  lockInitialize: boolean
 ): Effect.Effect<Exclude<R, R2>, E, Option.Option<A>> {
   return Effect.gen(function*(_) {
     const current = core.deferredRef.current
@@ -350,13 +354,8 @@ function deleteCore<R, E, A, R2>(
     const count = yield* _(core.subject.subscriberCount)
 
     // Ensure current subscribers get an updated value
-    if (count > 0) {
-      // Interrupt the current fiber if it exists
-      if (core._fiber) {
-        yield* _(Fiber.interrupt(core._fiber))
-      }
-
-      yield* _(Effect.forkIn(initializeCore(core, lockInitialize, executionStrategy), core.scope))
+    if (count > 0 && !core._fiber) {
+      yield* _(Effect.forkIn(initializeCore(core, lockInitialize), core.scope))
     }
 
     // Reset the current state and version

@@ -1,4 +1,6 @@
+import type { Either } from "effect"
 import { Option } from "effect"
+import type { Bounds } from "../../internal/bounds.js"
 import * as Sink from "../Sink.js"
 import * as SyncOp from "./sync-operator.js"
 
@@ -27,6 +29,28 @@ export function FilterMapLoopOperator<const B, A, C>(
   f: (acc: B, a: A) => readonly [Option.Option<C>, B]
 ): FilterMapLoopOperator<B, A, C> {
   return { _tag: "FilterMapLoop", seed, f }
+}
+
+export interface SliceOperator {
+  readonly _tag: "Slice"
+  readonly bounds: Bounds
+}
+
+export function SliceOperator(bounds: Bounds): SliceOperator {
+  return { _tag: "Slice", bounds }
+}
+
+export interface FilterMapSliceOperator<A, B, C> {
+  readonly _tag: "FilterMapSlice"
+  readonly seed: B
+  readonly f: (acc: B, a: A) => Either.Either<Option.Option<C>, readonly [Option.Option<C>, B]>
+}
+
+export function FilterMapSliceOperator<const B, A, C>(
+  seed: B,
+  f: (acc: B, a: A) => Either.Either<Option.Option<C>, readonly [Option.Option<C>, B]>
+): FilterMapSliceOperator<A, B, C> {
+  return { _tag: "FilterMapSlice", seed, f }
 }
 
 export function matchSyncLoopOperator<A, B, C, D>(operator: SyncLoopOperator<A, B, C>, matchers: {
@@ -74,13 +98,24 @@ export function fuseSyncOperatorBefore(
       matchSyncLoopOperator(loopOp, {
         Loop: (lOp): SyncLoopOperator =>
           FilterMapLoopOperator(lOp.seed, (acc, a) => {
-            const [b, c] = lOp.f(acc, a)
-            return [op.f(b), c]
+            const x = op.f(a)
+
+            if (Option.isNone(x)) {
+              return [Option.none(), acc]
+            } else {
+              const [b, c] = lOp.f(acc, x.value)
+              return [Option.some(b), c]
+            }
           }),
         FilterMapLoop: (lOp) =>
           FilterMapLoopOperator(lOp.seed, (acc, a) => {
-            const [b, c] = lOp.f(acc, a)
-            return [Option.flatMap(b, op.f), c]
+            const x = op.f(a)
+
+            if (Option.isNone(x)) {
+              return [Option.none(), acc]
+            } else {
+              return lOp.f(acc, x.value)
+            }
           })
       })
   })
