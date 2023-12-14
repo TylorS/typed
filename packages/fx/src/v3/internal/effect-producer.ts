@@ -1,5 +1,6 @@
+import type { Cause } from "effect"
 import { Effect, Schedule } from "effect"
-import { type Sink, withEarlyExit } from "../Sink"
+import type * as Sink from "../Sink"
 
 export type EffectProducer<R = any, E = any, A = any> =
   | FromEffect<R, E, A>
@@ -43,7 +44,7 @@ export function Scheduled<R, E, A, R2, O>(
 
 export function runSink<R, E, A, R2>(
   producer: EffectProducer<R, E, A>,
-  sink: Sink<R2, E, A>
+  sink: Sink.Sink<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
   switch (producer._tag) {
     case "FromEffect":
@@ -57,28 +58,67 @@ export function runSink<R, E, A, R2>(
 
 function runFromScheduled<R, E, I, O, R2>(
   scheduled: FromScheduled<R, E, I, O>,
-  sink: Sink<R2, E, O>
+  sink: Sink.Sink<R2, E, O>
 ): Effect.Effect<R | R2, never, unknown> {
-  return withEarlyExit(
-    sink,
-    (sink) =>
-      Effect.flatMap(
-        scheduled.input,
-        (i) =>
-          Effect.catchAllCause(
-            Effect.scheduleFrom(scheduled.input, i, Schedule.mapEffect(scheduled.schedule, sink.onSuccess)),
-            sink.onFailure
-          )
-      )
+  return Effect.catchAllCause(
+    Effect.flatMap(
+      scheduled.input,
+      (i) => Effect.scheduleFrom(scheduled.input, i, Schedule.mapEffect(scheduled.schedule, sink.onSuccess))
+    ),
+    sink.onFailure
   )
 }
 
 function runSchedule<R, E, A, O, R2>(
   scheduled: Scheduled<R, E, A, O>,
-  sink: Sink<R2, E, A>
+  sink: Sink.Sink<R2, E, A>
 ): Effect.Effect<R | R2, never, unknown> {
-  return withEarlyExit(
-    sink,
-    (sink) => Effect.schedule(Effect.matchCauseEffect(scheduled.input, sink), scheduled.schedule)
+  return Effect.catchAllCause(
+    Effect.schedule(Effect.matchCauseEffect(scheduled.input, sink), scheduled.schedule),
+    sink.onFailure
   )
+}
+
+export function runEffect<R, E, A, R2, E2, B>(
+  producer: EffectProducer<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Effect.Effect<R | R2, E | E2, unknown> {
+  switch (producer._tag) {
+    case "FromEffect":
+      return Effect.flatMap(producer.source, f)
+    case "FromScheduled":
+      return Effect.flatMap(
+        producer.input,
+        (i) =>
+          Effect.asyncEffect<never, E | E2, unknown, R | R2, never, unknown>((resume) => {
+            const onFailure = (cause: Cause.Cause<E | E2>) => Effect.succeed(resume(Effect.failCause(cause)))
+
+            return Effect.matchCauseEffect(
+              Effect.scheduleFrom(
+                producer.input,
+                i,
+                Schedule.mapEffect(
+                  producer.schedule,
+                  (a) => Effect.catchAllCause(f(a), onFailure)
+                )
+              ),
+              { onFailure, onSuccess: () => Effect.succeed(resume(Effect.unit)) }
+            )
+          })
+      )
+    case "Scheduled":
+      return Effect.schedule(Effect.flatMap(producer.input, f), producer.schedule)
+  }
+}
+
+export function runReduceEffect<R, E, A, R2, E2, B>(
+  producer: EffectProducer<R, E, A>,
+  initial: B,
+  f: (b: B, a: A) => Effect.Effect<R2, E2, B>
+): Effect.Effect<R | R2, E | E2, B> {
+  return Effect.suspend(() => {
+    let acc = initial
+
+    return Effect.map(runEffect(producer, (a) => Effect.map(f(acc, a), (b) => (acc = b))), () => acc)
+  })
 }

@@ -28,6 +28,24 @@ describe("V3", () => {
 
       deepStrictEqual(values, [0, 3, 24, 75, 168])
     })
+
+    it("fromArray + switchMap", async () => {
+      const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
+        (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
+      )
+      const test = Effect.scoped(core.toReadonlyArray(fx))
+
+      deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
+    })
+
+    it("fromEffect + switchMap", async () => {
+      const fx = core.fromEffect(Effect.succeed(10)).pipe(
+        (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
+      )
+      const test = Effect.scoped(core.toReadonlyArray(fx))
+
+      deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
+    })
   })
 
   describe("RefSubject", () => {
