@@ -13,202 +13,202 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Directive"](#from-directive)
-  - [From "./ElementRef"](#from-elementref)
-  - [From "./ElementSource"](#from-elementsource)
-  - [From "./EventHandler"](#from-eventhandler)
-  - [From "./Html"](#from-html)
-  - [From "./Hydrate"](#from-hydrate)
-  - [From "./Many"](#from-many)
-  - [From "./Part"](#from-part)
-  - [From "./Placeholder"](#from-placeholder)
-  - [From "./Render"](#from-render)
-  - [From "./RenderContext"](#from-rendercontext)
-  - [From "./RenderEvent"](#from-renderevent)
-  - [From "./RenderTemplate"](#from-rendertemplate)
-  - [From "./Renderable"](#from-renderable)
-  - [From "./TemplateInstance"](#from-templateinstance)
+  - [From "./Directive.js"](#from-directivejs)
+  - [From "./ElementRef.js"](#from-elementrefjs)
+  - [From "./ElementSource.js"](#from-elementsourcejs)
+  - [From "./EventHandler.js"](#from-eventhandlerjs)
+  - [From "./Html.js"](#from-htmljs)
+  - [From "./Hydrate.js"](#from-hydratejs)
+  - [From "./Many.js"](#from-manyjs)
+  - [From "./Part.js"](#from-partjs)
+  - [From "./Placeholder.js"](#from-placeholderjs)
+  - [From "./Render.js"](#from-renderjs)
+  - [From "./RenderContext.js"](#from-rendercontextjs)
+  - [From "./RenderEvent.js"](#from-rendereventjs)
+  - [From "./RenderTemplate.js"](#from-rendertemplatejs)
+  - [From "./Renderable.js"](#from-renderablejs)
+  - [From "./TemplateInstance.js"](#from-templateinstancejs)
 
 ---
 
 # exports
 
-## From "./Directive"
+## From "./Directive.js"
 
-Re-exports all named exports from the "./Directive" module as `Directive`.
+Re-exports all named exports from the "./Directive.js" module as `Directive`.
 
 **Signature**
 
 ```ts
-export * as Directive from "./Directive"
+export * as Directive from "./Directive.js"
 ```
 
 Added in v1.0.0
 
-## From "./ElementRef"
+## From "./ElementRef.js"
 
-Re-exports all named exports from the "./ElementRef" module as `ElementRef`.
+Re-exports all named exports from the "./ElementRef.js" module as `ElementRef`.
 
 **Signature**
 
 ```ts
-export * as ElementRef from "./ElementRef"
+export * as ElementRef from "./ElementRef.js"
 ```
 
 Added in v1.0.0
 
-## From "./ElementSource"
+## From "./ElementSource.js"
 
-Re-exports all named exports from the "./ElementSource" module as `ElementSource`.
+Re-exports all named exports from the "./ElementSource.js" module as `ElementSource`.
 
 **Signature**
 
 ```ts
-export * as ElementSource from "./ElementSource"
+export * as ElementSource from "./ElementSource.js"
 ```
 
 Added in v1.0.0
 
-## From "./EventHandler"
+## From "./EventHandler.js"
 
-Re-exports all named exports from the "./EventHandler" module as `EventHandler`.
+Re-exports all named exports from the "./EventHandler.js" module as `EventHandler`.
 
 **Signature**
 
 ```ts
-export * as EventHandler from "./EventHandler"
+export * as EventHandler from "./EventHandler.js"
 ```
 
 Added in v1.0.0
 
-## From "./Html"
+## From "./Html.js"
 
-Re-exports all named exports from the "./Html" module.
+Re-exports all named exports from the "./Html.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Html"
+export * from "./Html.js"
 ```
 
 Added in v1.0.0
 
-## From "./Hydrate"
+## From "./Hydrate.js"
 
-Re-exports all named exports from the "./Hydrate" module.
+Re-exports all named exports from the "./Hydrate.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Hydrate"
+export * from "./Hydrate.js"
 ```
 
 Added in v1.0.0
 
-## From "./Many"
+## From "./Many.js"
 
-Re-exports all named exports from the "./Many" module.
+Re-exports all named exports from the "./Many.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Many"
+export * from "./Many.js"
 ```
 
 Added in v1.0.0
 
-## From "./Part"
+## From "./Part.js"
 
-Re-exports all named exports from the "./Part" module.
+Re-exports all named exports from the "./Part.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Part"
+export * from "./Part.js"
 ```
 
 Added in v1.0.0
 
-## From "./Placeholder"
+## From "./Placeholder.js"
 
-Re-exports all named exports from the "./Placeholder" module.
+Re-exports all named exports from the "./Placeholder.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Placeholder"
+export * from "./Placeholder.js"
 ```
 
 Added in v1.0.0
 
-## From "./Render"
+## From "./Render.js"
 
-Re-exports all named exports from the "./Render" module.
+Re-exports all named exports from the "./Render.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Render"
+export * from "./Render.js"
 ```
 
 Added in v1.0.0
 
-## From "./RenderContext"
+## From "./RenderContext.js"
 
-Re-exports all named exports from the "./RenderContext" module as `RenderContext`.
+Re-exports all named exports from the "./RenderContext.js" module as `RenderContext`.
 
 **Signature**
 
 ```ts
-export * as RenderContext from "./RenderContext"
+export * as RenderContext from "./RenderContext.js"
 ```
 
 Added in v1.0.0
 
-## From "./RenderEvent"
+## From "./RenderEvent.js"
 
-Re-exports all named exports from the "./RenderEvent" module.
+Re-exports all named exports from the "./RenderEvent.js" module.
 
 **Signature**
 
 ```ts
-export * from "./RenderEvent"
+export * from "./RenderEvent.js"
 ```
 
 Added in v1.0.0
 
-## From "./RenderTemplate"
+## From "./RenderTemplate.js"
 
-Re-exports all named exports from the "./RenderTemplate" module.
+Re-exports all named exports from the "./RenderTemplate.js" module.
 
 **Signature**
 
 ```ts
-export * from "./RenderTemplate"
+export * from "./RenderTemplate.js"
 ```
 
 Added in v1.0.0
 
-## From "./Renderable"
+## From "./Renderable.js"
 
-Re-exports all named exports from the "./Renderable" module.
+Re-exports all named exports from the "./Renderable.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Renderable"
+export * from "./Renderable.js"
 ```
 
 Added in v1.0.0
 
-## From "./TemplateInstance"
+## From "./TemplateInstance.js"
 
-Re-exports all named exports from the "./TemplateInstance" module.
+Re-exports all named exports from the "./TemplateInstance.js" module.
 
 **Signature**
 
 ```ts
-export * from "./TemplateInstance"
+export * from "./TemplateInstance.js"
 ```
 
 Added in v1.0.0

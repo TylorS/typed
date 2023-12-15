@@ -117,6 +117,7 @@ Added in v1.18.0
   - [fromPubSub](#frompubsub)
   - [fromScheduled](#fromscheduled)
   - [fromSink](#fromsink)
+  - [fromStream](#fromstream)
   - [gen](#gen)
   - [genScoped](#genscoped)
   - [interrupt](#interrupt)
@@ -250,6 +251,9 @@ Added in v1.18.0
     - [Error (type alias)](#error-type-alias)
     - [FromInput (type alias)](#frominput-type-alias)
     - [Success (type alias)](#success-type-alias)
+  - [FxEffectBase (class)](#fxeffectbase-class)
+    - [toFx (method)](#tofx-method-1)
+    - [toEffect (method)](#toeffect-method)
   - [drainLayer](#drainlayer)
   - [fork](#fork)
   - [forkDaemon](#forkdaemon)
@@ -1532,6 +1536,18 @@ to emit events and errors.
 
 ```ts
 export declare const fromSink: <R, E, A>(f: (sink: Sink.Sink<E, A>) => Effect.Effect<R, E, unknown>) => Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## fromStream
+
+Construct an Fx<R, E, A> from an Effect<R, E, A>
+
+**Signature**
+
+```ts
+export declare const fromStream: <R, E, A>(effect: Stream.Stream<R, E, A>) => Fx<R, E, A>
 ```
 
 Added in v1.18.0
@@ -3584,6 +3600,36 @@ Extract the Success type from an Fx
 
 ```ts
 export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+```
+
+Added in v1.18.0
+
+## FxEffectBase (class)
+
+**Signature**
+
+```ts
+export declare class FxEffectBase<R, E, A, R2, E2, B>
+```
+
+Added in v1.18.0
+
+### toFx (method)
+
+**Signature**
+
+```ts
+protected abstract toFx(): Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+### toEffect (method)
+
+**Signature**
+
+```ts
+protected abstract toEffect(): Effect.Effect<R2, E2, B>
 ```
 
 Added in v1.18.0

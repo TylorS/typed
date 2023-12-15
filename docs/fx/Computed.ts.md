@@ -147,7 +147,7 @@ export declare function combine<const Computeds extends ReadonlyArray<Computed<a
 ): Computed<
   Fx.Context<Computeds[keyof Computeds]>,
   Fx.Error<Computeds[keyof Computeds]>,
-  { readonly [K in keyof Computeds]: Fx.Success<Computeds[keyof Computeds]> }
+  { readonly [K in keyof Computeds]: Fx.Success<Computeds[K]> }
 >
 ```
 

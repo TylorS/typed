@@ -13,33 +13,59 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Anchor"](#from-anchor)
-  - [From "./Link"](#from-link)
+  - [From "./Anchor.js"](#from-anchorjs)
+  - [From "./Link.js"](#from-linkjs)
+  - [From "./useClickAway.js"](#from-useclickawayjs)
+  - [From "./usePagination.js"](#from-usepaginationjs)
 
 ---
 
 # exports
 
-## From "./Anchor"
+## From "./Anchor.js"
 
-Re-exports all named exports from the "./Anchor" module.
+Re-exports all named exports from the "./Anchor.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Anchor"
+export * from "./Anchor.js"
 ```
 
 Added in v1.0.0
 
-## From "./Link"
+## From "./Link.js"
 
-Re-exports all named exports from the "./Link" module.
+Re-exports all named exports from the "./Link.js" module.
 
 **Signature**
 
 ```ts
-export * from "./Link"
+export * from "./Link.js"
+```
+
+Added in v1.0.0
+
+## From "./useClickAway.js"
+
+Re-exports all named exports from the "./useClickAway.js" module.
+
+**Signature**
+
+```ts
+export * from "./useClickAway.js"
+```
+
+Added in v1.0.0
+
+## From "./usePagination.js"
+
+Re-exports all named exports from the "./usePagination.js" module.
+
+**Signature**
+
+```ts
+export * from "./usePagination.js"
 ```
 
 Added in v1.0.0

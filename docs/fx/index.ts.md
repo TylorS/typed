@@ -21,21 +21,21 @@ Added in v1.18.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Computed"](#from-computed)
-  - [From "./Filtered"](#from-filtered)
-  - [From "./Fx"](#from-fx)
-  - [From "./RefArray"](#from-refarray)
-  - [From "./RefSubject"](#from-refsubject)
-  - [From "./Sink"](#from-sink)
-  - [From "./Subject"](#from-subject)
-  - [From "./TypeId"](#from-typeid)
-  - [From "./Typeclass"](#from-typeclass)
+  - [From "./Computed.js"](#from-computedjs)
+  - [From "./Filtered.js"](#from-filteredjs)
+  - [From "./Fx.js"](#from-fxjs)
+  - [From "./RefArray.js"](#from-refarrayjs)
+  - [From "./RefSubject.js"](#from-refsubjectjs)
+  - [From "./Sink.js"](#from-sinkjs)
+  - [From "./Subject.js"](#from-subjectjs)
+  - [From "./TypeId.js"](#from-typeidjs)
+  - [From "./Typeclass.js"](#from-typeclassjs)
 
 ---
 
 # exports
 
-## From "./Computed"
+## From "./Computed.js"
 
 Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
 the time dimension. It operates within a context `R`, can fail with an `E`,
@@ -48,103 +48,103 @@ produce exactly 1 error or event.
 **Signature**
 
 ```ts
-export * as Computed from "./Computed"
+export * as Computed from "./Computed.js"
 ```
 
 Added in v1.18.0
 
-## From "./Filtered"
+## From "./Filtered.js"
 
 [Filtered documentation](https://tylors.github.io/typed/fx/Filtered.ts.html)
 
 **Signature**
 
 ```ts
-export * as Filtered from "./Filtered"
+export * as Filtered from "./Filtered.js"
 ```
 
 Added in v1.18.0
 
-## From "./Fx"
+## From "./Fx.js"
 
 [Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./Fx"
+export * from "./Fx.js"
 ```
 
 Added in v1.18.0
 
-## From "./RefArray"
+## From "./RefArray.js"
 
 [RefArray documentation](https://tylors.github.io/typed/fx/RefArray.ts.html)
 
 **Signature**
 
 ```ts
-export * as RefArray from "./RefArray"
+export * as RefArray from "./RefArray.js"
 ```
 
 Added in v1.18.0
 
-## From "./RefSubject"
+## From "./RefSubject.js"
 
 [RefSubject documentation](https://tylors.github.io/typed/fx/RefSubject.ts.html)
 
 **Signature**
 
 ```ts
-export * as RefSubject from "./RefSubject"
+export * as RefSubject from "./RefSubject.js"
 ```
 
 Added in v1.18.0
 
-## From "./Sink"
+## From "./Sink.js"
 
 [Sink documentation](https://tylors.github.io/typed/fx/Sink.ts.html)
 
 **Signature**
 
 ```ts
-export * as Sink from "./Sink"
+export * as Sink from "./Sink.js"
 ```
 
 Added in v1.18.0
 
-## From "./Subject"
+## From "./Subject.js"
 
 [Subject documentation](https://tylors.github.io/typed/fx/Subject.ts.html)
 
 **Signature**
 
 ```ts
-export * as Subject from "./Subject"
+export * as Subject from "./Subject.js"
 ```
 
 Added in v1.18.0
 
-## From "./TypeId"
+## From "./TypeId.js"
 
 [TypeId documentation](https://tylors.github.io/typed/fx/TypeId.ts.html)
 
 **Signature**
 
 ```ts
-export * from "./TypeId"
+export * from "./TypeId.js"
 ```
 
 Added in v1.18.0
 
-## From "./Typeclass"
+## From "./Typeclass.js"
 
 [Typeclass documentation](https://tylors.github.io/typed/fx/Typeclass.ts.html)
 
 **Signature**
 
 ```ts
-export * as Typeclass from "./Typeclass"
+export * as Typeclass from "./Typeclass.js"
 ```
 
 Added in v1.18.0

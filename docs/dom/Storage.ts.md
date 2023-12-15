@@ -17,7 +17,6 @@ Added in v8.19.0
 - [constructors](#constructors)
   - [SchemaKeyStorage](#schemakeystorage)
   - [SchemaStorage](#schemastorage)
-  - [SchemaUtils (type alias)](#schemautils-type-alias)
   - [StorageEffect](#storageeffect)
 - [context](#context)
   - [Storage](#storage)
@@ -61,22 +60,8 @@ Construct a SchemaStorage
 
 ```ts
 export declare function SchemaStorage<const Schemas extends Readonly<Record<string, S.Schema<string, any>>>>(
-  getSchemas: (utils: SchemaUtils) => Schemas
+  schemas: Schemas
 ): SchemaStorage<Schemas>
-```
-
-Added in v8.19.0
-
-## SchemaUtils (type alias)
-
-Helpers for constructing a SchemaStorage
-
-**Signature**
-
-```ts
-export type SchemaUtils = {
-  readonly json: <I, A>(schema: S.Schema<I, A>) => Schema.Schema<string, A>
-}
 ```
 
 Added in v8.19.0
