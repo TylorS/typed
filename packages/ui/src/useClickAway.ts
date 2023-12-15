@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import { Document } from "@typed/dom/Document"
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"

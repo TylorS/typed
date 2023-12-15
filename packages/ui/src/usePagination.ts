@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
