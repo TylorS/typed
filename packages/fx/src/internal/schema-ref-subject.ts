@@ -57,7 +57,7 @@ const go = <O>(
     case "VoidKeyword":
     case "Union": // TODO: Union should probably be better somehow
       return defaultSchema<O>(getDefaultEq(ast))
-    case "Lazy": {
+    case "Suspend": {
       const get = memoizeThunk(() => go<O>(ast.f(), getDefaultEq))
 
       return makeSchema((input, eq) => get()(input, eq))

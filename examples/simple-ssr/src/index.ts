@@ -22,13 +22,15 @@ const server = Http.router.empty.pipe(
 
 const ServerLive = Http.server.layer(() => createServer(), { port: 3000 })
 
-const HttpLive = Layer.scopedDiscard(server).pipe(
+const HttpLive = server.pipe(
   Layer.provide(ServerLive),
   Layer.provide(NodeContext.layer),
   Layer.provide(RenderContext.server)
 )
 
-Layer.launch(HttpLive).pipe(
+HttpLive.pipe(
+  Layer.launch,
+  Effect.scoped,
   Effect.tapErrorCause(Effect.logError),
   runMain
 )

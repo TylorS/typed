@@ -44,7 +44,7 @@ const causePretty = <A>(): Pretty.Pretty<Cause.Cause<A>> => Cause.pretty
 export const cause = <EI, E>(error: Schema.Schema<EI, E>): Schema.Schema<Cause.Cause<EI>, Cause.Cause<E>> => {
   const parseE = Schema.parse(Schema.chunkFromSelf(error))
 
-  const self: Schema.Schema<Cause.Cause<EI>, Cause.Cause<E>> = Schema.lazy(() =>
+  const self: Schema.Schema<Cause.Cause<EI>, Cause.Cause<E>> = Schema.suspend(() =>
     Schema.declare(
       [error],
       Schema.struct({}),

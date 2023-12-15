@@ -40,8 +40,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.33.0",
-    "@effect/schema": "0.52.0",
+    "@effect/platform": "^0.37.5",
+    "@effect/schema": "0.53.3",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/environment": "workspace:*",
@@ -50,7 +50,7 @@
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
-    "csstype": "^3.1.2",
-    "effect": "2.0.0-next.59"
+    "csstype": "^3.1.3",
+    "effect": "2.0.0-next.60"
   }
 }
