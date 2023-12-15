@@ -37,7 +37,7 @@ export interface Scheduled<R, E, A, O> {
 
 export function Scheduled<R, E, A, R2, O>(
   input: Effect.Effect<R, E, A>,
-  schedule: Schedule.Schedule<R, unknown, O>
+  schedule: Schedule.Schedule<R2, unknown, O>
 ): Scheduled<R | R2, E, A, O> {
   return { _tag: "Scheduled", schedule, input }
 }

@@ -54,7 +54,6 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.0.4",
     "@vitest/expect": "^1.0.4",
-    "@vitest/ui": "^1.0.4",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "cac": "^6.7.14",
     "concurrently": "^8.2.2",

@@ -1,8 +1,9 @@
-import type { Exit } from "effect"
 import { Effect, Option, ReadonlyArray } from "effect"
 import type { Sink } from "../Sink"
 
-export type SyncProducer<A> = Success<A> | FromArray<A> | FromIterable<A>
+const DISCARD = { discard: true } as const
+
+export type SyncProducer<A> = Success<A> | FromSync<A> | FromArray<A> | FromIterable<A>
 
 export interface Success<A> {
   readonly _tag: "Success"
@@ -10,6 +11,13 @@ export interface Success<A> {
 }
 
 export const Success = <A>(value: A): Success<A> => ({ _tag: "Success", source: value })
+
+export interface FromSync<A> {
+  readonly _tag: "FromSync"
+  readonly source: () => A
+}
+
+export const FromSync = <A>(f: () => A): FromSync<A> => ({ _tag: "FromSync", source: f })
 
 export interface FromArray<A> {
   readonly _tag: "FromArray"
@@ -25,18 +33,28 @@ export interface FromIterable<A> {
 
 export const FromIterable = <A>(iterable: Iterable<A>): FromIterable<A> => ({ _tag: "FromIterable", source: iterable })
 
+export const matchSyncProducer = <A, R>(
+  producer: SyncProducer<A>,
+  matchers: {
+    readonly Success: (a: A) => R
+    readonly FromSync: (a: () => A) => R
+    readonly FromArray: (a: ReadonlyArray<A>) => R
+    readonly FromIterable: (a: Iterable<A>) => R
+  }
+): R => {
+  return matchers[producer._tag](producer.source as any)
+}
+
 export function runSink<A, R, E>(
   producer: SyncProducer<A>,
   sink: Sink<R, E, A>
 ): Effect.Effect<R, never, unknown> {
-  switch (producer._tag) {
-    case "Success":
-      return sink.onSuccess(producer.source)
-    case "FromArray":
-      return arrayToSink(producer.source, sink)
-    case "FromIterable":
-      return iterableToSink(producer.source, sink)
-  }
+  return matchSyncProducer(producer, {
+    Success: (a) => sink.onSuccess(a),
+    FromSync: (a) => Effect.suspend(() => sink.onSuccess(a())),
+    FromArray: (a) => arrayToSink(a, sink),
+    FromIterable: (a) => iterableToSink(a, sink)
+  })
 }
 
 export function runReduce<A, B>(
@@ -44,13 +62,12 @@ export function runReduce<A, B>(
   initial: B,
   f: (b: B, a: any) => B
 ): Effect.Effect<never, never, B> {
-  switch (producer._tag) {
-    case "Success":
-      return syncOnce(() => f(initial, producer.source))
-    case "FromArray":
-    case "FromIterable":
-      return syncOnce(() => ReadonlyArray.reduce(producer.source, initial, f))
-  }
+  return matchSyncProducer(producer, {
+    Success: (a) => syncOnce(() => f(initial, a)),
+    FromSync: (a) => syncOnce(() => f(initial, a())),
+    FromArray: (a) => syncOnce(() => ReadonlyArray.reduce(a, initial, f)),
+    FromIterable: (a) => syncOnce(() => ReadonlyArray.reduce(a, initial, f))
+  })
 }
 
 export function runReduceEffect<A, R2, E2, B>(
@@ -58,13 +75,12 @@ export function runReduceEffect<A, R2, E2, B>(
   initial: B,
   f: (b: B, a: any) => Effect.Effect<R2, E2, B>
 ): Effect.Effect<R2, E2, B> {
-  switch (producer._tag) {
-    case "Success":
-      return effectOnce(() => f(initial, producer.source))
-    case "FromArray":
-    case "FromIterable":
-      return effectOnce(() => Effect.reduce(producer.source, initial, f))
-  }
+  return matchSyncProducer(producer, {
+    Success: (a) => effectOnce(() => f(initial, a)),
+    FromSync: (a) => Effect.suspend(() => f(initial, a())),
+    FromArray: (a) => Effect.reduce(a, initial, f),
+    FromIterable: (a) => Effect.reduce(a, initial, f)
+  })
 }
 
 function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
@@ -106,16 +122,13 @@ export const syncOnce = <A>(f: () => A): Effect.Effect<never, never, A> => {
 }
 
 export const effectOnce = <R, E, A>(f: () => Effect.Effect<R, E, A>): Effect.Effect<R, E, A> => {
-  let memoized: Option.Option<Exit.Exit<E, A>> = Option.none()
+  let memoized: Option.Option<A> = Option.none()
 
   return Effect.suspend(() => {
     if (Option.isSome(memoized)) {
-      return memoized.value
+      return Effect.succeed(memoized.value)
     } else {
-      return Effect.flatten(Effect.tap(Effect.exit(f()), (exit) =>
-        Effect.sync(() => {
-          memoized = Option.some(exit)
-        })))
+      return Effect.tap(f(), (a) => Effect.sync(() => memoized = Option.some(a)))
     }
   })
 }
@@ -124,11 +137,10 @@ export function runEffect<A, R2, E2, B>(
   producer: SyncProducer<A>,
   f: (a: A) => Effect.Effect<R2, E2, B>
 ): Effect.Effect<R2, E2, void> {
-  switch (producer._tag) {
-    case "Success":
-      return f(producer.source)
-    case "FromArray":
-    case "FromIterable":
-      return Effect.forEach(producer.source, f)
-  }
+  return matchSyncProducer(producer, {
+    Success: (a): Effect.Effect<R2, E2, void> => f(a),
+    FromSync: (a) => Effect.suspend(() => f(a())),
+    FromArray: (a) => Effect.forEach(a, f, DISCARD),
+    FromIterable: (a) => Effect.forEach(a, f, DISCARD)
+  })
 }

@@ -39,7 +39,7 @@ export function withEarlyExit<R, E, A, R2, B>(
     }
 
     return Effect.matchCauseEffect(f(earlyExit), {
-      onFailure: sink.onFailure,
+      onFailure: (cause) => sink.onFailure(cause),
       onSuccess: () => earlyExit.earlyExit
     })
   })
@@ -373,6 +373,5 @@ class SliceSink<R, E, A> implements Sink<R, E, A> {
   }
 }
 
-// TODO: Slice operators
 // TODO: Snapshot operators
 // TODO: Higher-order operators

@@ -5,9 +5,9 @@ import * as Subject from "@typed/fx/v3/Subject"
 import { deepStrictEqual } from "assert"
 import { Effect, Fiber, Option } from "effect"
 
-describe("V3", () => {
-  describe("Fx", () => {
-    it("filter + map + loop fusion", async () => {
+describe.concurrent("V3", () => {
+  describe.concurrent("Fx", () => {
+    it.concurrent("filter + map + loop fusion", async () => {
       const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
         (x) => core.filter(x, (x) => x % 2 === 0),
         (x) => core.map(x, (x) => x + 1),
@@ -29,7 +29,7 @@ describe("V3", () => {
       deepStrictEqual(values, [0, 3, 24, 75, 168])
     })
 
-    it("fromArray + switchMap", async () => {
+    it.concurrent("fromArray + switchMap", async () => {
       const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
         (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
       )
@@ -38,7 +38,7 @@ describe("V3", () => {
       deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
     })
 
-    it("fromEffect + switchMap", async () => {
+    it.concurrent("fromEffect + switchMap", async () => {
       const fx = core.fromEffect(Effect.succeed(10)).pipe(
         (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
       )
@@ -46,10 +46,61 @@ describe("V3", () => {
 
       deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
     })
+
+    it.concurrent("switchMap favors the latest inner Fx", async () => {
+      const test = core.toReadonlyArray(core.switchMap(
+        core.make<number>((sink) =>
+          Effect.gen(function*(_) {
+            yield* _(sink.onSuccess(1))
+            yield* _(sink.onSuccess(2))
+            yield* _(sink.onSuccess(3))
+          })
+        ),
+        (x) => core.succeed(String(x + 1))
+      ))
+
+      const array = await Effect.runPromise(Effect.scoped(test))
+
+      expect(array).toEqual(["4"])
+    })
+
+    it.concurrent("exhaustMap favors the first inner Fx", async () => {
+      const test = core.toReadonlyArray(core.exhaustMap(
+        core.make<number>((sink) =>
+          Effect.gen(function*(_) {
+            yield* _(sink.onSuccess(1))
+            yield* _(sink.onSuccess(2))
+            yield* _(sink.onSuccess(3))
+          })
+        ),
+        (x) => core.succeed(String(x + 1))
+      ))
+
+      const array = await Effect.runPromise(Effect.scoped(test))
+
+      expect(array).toEqual(["2"])
+    })
+
+    it.concurrent("exhaustMapLatest favors the first and last inner Fx", async () => {
+      const test = core.toReadonlyArray(core.exhaustMapLatest(
+        core.make<number>((sink) =>
+          Effect.gen(function*(_) {
+            yield* _(sink.onSuccess(1))
+            yield* _(sink.onSuccess(2))
+            yield* _(sink.onSuccess(3))
+          })
+        ),
+        (x) => core.succeed(String(x + 1))
+      ))
+
+      const array = await Effect.runPromise(Effect.scoped(test))
+
+      expect(array).toEqual(["2", "4"])
+    })
   })
 
-  describe("RefSubject", () => {
-    it("allows managing state via Effect", async () => {
+  describe.concurrent("RefSubject", () => {
+    it.concurrent("allows managing state via Effect", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(Effect.succeed(0)))
 
@@ -67,7 +118,7 @@ describe("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it("allows managing state via Fx", async () => {
+    it.concurrent("allows managing state via Fx", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(core.succeed(0)))
 
@@ -86,7 +137,7 @@ describe("V3", () => {
     })
 
     describe.concurrent("runUpdate", () => {
-      it("allows changing the value of a ref multiple times withing a single workflow", async () => {
+      it.concurrent("allows changing the value of a ref multiple times withing a single workflow", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(1))
           const fiber = yield* _(core.toReadonlyArray(core.take(ref, 10)), Effect.fork)
@@ -138,7 +189,7 @@ describe("V3", () => {
     })
   })
 
-  describe("Subject", () => {
+  describe.concurrent("Subject", () => {
     it.concurrent("can map the input values using Sink combinators", async () => {
       const subject = Subject.make<never, number>()
       const sink = subject.pipe(Sink.map((x: string) => x.length))

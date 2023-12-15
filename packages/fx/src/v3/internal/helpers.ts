@@ -1,5 +1,5 @@
 import type { ExecutionStrategy, Exit } from "effect"
-import { Effect, Equal, Equivalence, Fiber, Option, Ref, Scope, SynchronizedRef } from "effect"
+import { Cause, Effect, Equal, Equivalence, Fiber, Option, Ref, Scope, SynchronizedRef } from "effect"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
@@ -68,7 +68,28 @@ export function withScopedFork<R, E, A>(
   f: (fork: ScopedFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<R | Scope.Scope, E, A> {
-  return withScope((scope) => f(Effect.forkIn(scope), scope), executionStrategy)
+  return withScope((scope) => f(makeForkInScope(scope), scope), executionStrategy)
+}
+
+function makeForkInScope(scope: Scope.Scope) {
+  return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+    matchEffectPrimitive<R, E, A, Effect.Effect<R, never, Fiber.Fiber<E, A>>>(effect, {
+      Success: (a) => Effect.succeed(Fiber.succeed(a)),
+      Failure: (cause) => Effect.succeed(Fiber.failCause(cause)),
+      Sync: (f) =>
+        Effect.sync(() => {
+          try {
+            return Fiber.succeed(f())
+          } catch (e) {
+            return Fiber.failCause(Cause.die(e))
+          }
+        }),
+      Left: (e) => Effect.succeed(Fiber.fail(e)),
+      Right: (a) => Effect.succeed(Fiber.succeed(a)),
+      Some: (a) => Effect.succeed(Fiber.succeed(a)),
+      None: () => Effect.succeed(Fiber.fail(new Cause.NoSuchElementException() as E)),
+      Otherwise: Effect.forkIn(scope)
+    })
 }
 
 export function withSwitchFork<R, E, A>(
@@ -172,23 +193,24 @@ export function withUnboundedFork<R, E, A>(
 ) {
   return withScopedFork((fork, scope) =>
     Effect.flatMap(
-      Ref.make<Set<Fiber.Fiber<never, void>>>(new Set()),
+      Ref.make<Map<symbol, Fiber.Fiber<never, void>>>(new Map()),
       (ref) =>
         Effect.flatMap(
-          f((effect) =>
-            fork(effect).pipe(
-              Effect.tap((fiber) => Ref.update(ref, (set) => set.add(fiber))),
-              Effect.tap((fiber) =>
-                Scope.addFinalizer(
-                  scope,
-                  Ref.update(ref, (set) => {
-                    set.delete(fiber)
-                    return set
-                  })
-                )
-              )
-            ), scope),
-          () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
+          f((effect) => {
+            const id = Symbol()
+
+            return Effect.tap(
+              fork(Effect.onExit(effect, () => Ref.update(ref, (map) => (map.delete(id), map)))),
+              (fiber) => {
+                if (Fiber.isRuntimeFiber(fiber)) {
+                  return Ref.update(ref, (map) => map.set(id, fiber))
+                } else {
+                  return Effect.unit
+                }
+              }
+            )
+          }, scope),
+          () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers.values()) : Effect.unit)
         )
     ), executionStrategy)
 }
@@ -239,5 +261,40 @@ export function withFlattenStrategy(
       return withSwitchFork
     case "Unbounded":
       return withUnboundedFork
+  }
+}
+
+export function matchEffectPrimitive<R, E, A, Z>(
+  effect: Effect.Effect<R, E, A>,
+  matchers: {
+    Success: (a: A) => Z
+    Failure: (e: Cause.Cause<E>) => Z
+    Sync: (f: () => A) => Z
+    Left: (e: E) => Z
+    Right: (a: A) => Z
+    Some: (a: A) => Z
+    None: () => Z
+    Otherwise: (effect: Effect.Effect<R, E, A>) => Z
+  }
+): Z {
+  const eff = effect as any
+
+  switch (eff._tag) {
+    case "Success":
+      return matchers.Success(eff.i0)
+    case "Failure":
+      return matchers.Failure(eff.cause)
+    case "Sync":
+      return matchers.Sync(eff.i0)
+    case "Left":
+      return matchers.Left(eff.left)
+    case "Right":
+      return matchers.Right(eff.right)
+    case "Some":
+      return matchers.Some(eff.value)
+    case "None":
+      return matchers.None()
+    default:
+      return matchers.Otherwise(effect)
   }
 }

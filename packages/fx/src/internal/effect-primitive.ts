@@ -211,7 +211,7 @@ export interface Yield extends Op<OpCodes.OP_YIELD> {}
 export function matchEffectPrimitive<B>(
   effect: InternalEffect,
   matchers: {
-    readonly Success: (succes: Success) => B
+    readonly Success: (success: Success) => B
     readonly Failure: (failure: Failure) => B
     readonly Sync: (sync: Sync) => B
     readonly Left: (left: Either.Left<any, any>) => B
