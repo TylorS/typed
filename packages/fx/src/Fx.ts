@@ -2663,6 +2663,12 @@ export const mergeRace: {
 export abstract class FxEffectBase<R, E, A, R2, E2, B> extends internalProtos.FxEffectBase<R, E, A, R2, E2, B>
   implements Fx<R, E, A>, Effect.Effect<R2, E2, B>
 {
+  /**
+   * @since 1.18.0
+   */
   protected abstract toFx(): Fx<R, E, A>
+  /**
+   * @since 1.18.0
+   */
   protected abstract toEffect(): Effect.Effect<R2, E2, B>
 }
