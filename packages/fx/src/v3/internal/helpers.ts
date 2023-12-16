@@ -108,12 +108,13 @@ export function runSwitchFork<R, E, A>(
   scope: Scope.CloseableScope,
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>
 ) {
+  const fork = makeForkInScope(scope)
   return Effect.zipRight(
     f(
       (effect) =>
         SynchronizedRef.updateAndGetEffect(
           ref,
-          (fiber) => Effect.zipRight(Fiber.interrupt(fiber), Effect.forkIn(effect, scope))
+          (fiber) => Effect.zipRight(Fiber.interrupt(fiber), fork(effect))
         ),
       scope
     ),
