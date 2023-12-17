@@ -1,50 +1,50 @@
 export type ElementProperties = {
-  className?: string
-  id?: string
-  scrollLeft?: number
-  scrollTop?: number
-  slot?: string
+  className?: string | undefined
+  id?: string | undefined
+  scrollLeft?: number | undefined
+  scrollTop?: number | undefined
+  slot?: string | undefined
 }
 
 export type HTMLElementProperties =
   & ElementProperties
   & {
-    accessKey?: string
-    contentEditable?: string
-    dir?: string
-    draggable?: boolean
-    hidden?: boolean
-    hideFocus?: boolean
-    lang?: string
-    spellcheck?: boolean
-    tabIndex?: boolean
-    title?: string
+    accessKey?: string | undefined
+    contentEditable?: string | undefined
+    dir?: string | undefined
+    draggable?: boolean | undefined
+    hidden?: boolean | undefined
+    hideFocus?: boolean | undefined
+    lang?: string | undefined
+    spellcheck?: boolean | undefined
+    tabIndex?: boolean | undefined
+    title?: string | undefined
   }
 
 export type HTMLAnchorElementProperties =
   & HTMLElementProperties
   & {
-    Methods?: string
-    charset?: string
-    coords?: string
-    download?: string
-    hash?: string
-    host?: string
-    hostname?: string
-    href?: string
-    hreflang?: string
-    name?: string
-    pathname?: string
-    port?: string
-    protocol?: string
-    rel?: string
-    rev?: string
-    search?: string
-    shape?: string
-    target?: string
-    text?: string
-    type?: string
-    urn?: string
+    Methods?: string | undefined
+    charset?: string | undefined
+    coords?: string | undefined
+    download?: string | undefined
+    hash?: string | undefined
+    host?: string | undefined
+    hostname?: string | undefined
+    href?: string | undefined
+    hreflang?: string | undefined
+    name?: string | undefined
+    pathname?: string | undefined
+    port?: string | undefined
+    protocol?: string | undefined
+    rel?: string | undefined
+    rev?: string | undefined
+    search?: string | undefined
+    shape?: string | undefined
+    target?: string | undefined
+    text?: string | undefined
+    type?: string | undefined
+    urn?: string | undefined
   }
 
 export type HTMLAppletElementProperties =

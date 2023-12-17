@@ -2,11 +2,11 @@ import type { Context } from "@typed/context"
 import * as Fx from "@typed/fx/Fx"
 import { WithContext } from "@typed/fx/Sink"
 import { isText, type Rendered } from "@typed/wire"
+import { Data } from "effect"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
-import { strict } from "effect/Equivalence"
-import type { Equivalence } from "effect/Equivalence"
+import * as Equivalence from "effect/Equivalence"
 import * as Fiber from "effect/Fiber"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
@@ -23,6 +23,7 @@ import type {
   EventPart,
   NodePart,
   Part,
+  PropertiesPart,
   PropertyPart,
   RefPart,
   SparseAttributePart,
@@ -35,7 +36,7 @@ import type {
 import type { RenderContext } from "../RenderContext.js"
 import { findHoleComment } from "./utils.js"
 
-const strictEq = strict<any>()
+const strictEq = Equivalence.strict<any>()
 
 const base = <T extends Part["_tag"]>(tag: T) =>
   class Base {
@@ -51,7 +52,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
         }
       ) => Effect.Effect<Scope, never, void>,
       public value: Extract<Part, { readonly _tag: T }>["value"],
-      readonly eq: Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
+      readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
     ) {
       this.update = this.update.bind(this)
     }
@@ -405,6 +406,132 @@ export class TextPartImpl extends base("text") implements TextPart {
   }
 }
 
+export class PropertiesPartImpl extends base("properties") implements PropertiesPart {
+  constructor(
+    index: number,
+    commit: PropertiesPartImpl["commit"],
+    value: PropertiesPartImpl["value"]
+  ) {
+    super(index, commit, value, equals)
+  }
+
+  getValue(value: unknown): unknown {
+    if (value == null) return null
+    return Data.struct(value)
+  }
+
+  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
+    return new PropertiesPartImpl(
+      index,
+      ({ part, previous, value }) =>
+        ctx.queue.add(
+          part,
+          () => {
+            const diff = diffProperties(previous, value)
+            if (diff) {
+              const { added, removed } = diff
+
+              console.log(added, removed)
+
+              removed.forEach((nv) => removeNameValue(element, nv))
+              added.forEach((nv) => {
+                if (nv.name[0] === "o" && nv.name[1] === "n") return
+
+                return addNameValue(element, nv)
+              })
+            }
+          }
+        ),
+      {}
+    )
+  }
+}
+
+function removeNameValue(element: HTMLElement | SVGElement, { name, type }: NameValue) {
+  switch (type) {
+    case "attr":
+    case "bool":
+      return element.removeAttribute(name)
+    case "prop":
+      return delete (element as any)[name]
+  }
+}
+
+function addNameValue(element: HTMLElement | SVGElement, { name, type, value }: NameValue) {
+  switch (type) {
+    case "attr":
+      return value == null ? element.removeAttribute(name) : element.setAttribute(name, value)
+    case "bool":
+      return value == null ? element.removeAttribute(name) : element.toggleAttribute(name, value)
+    case "prop":
+      return value == null ? (delete (element as any)[name]) : (element as any)[name] = value
+  }
+}
+
+type AttrNameValue = {
+  readonly type: "attr"
+  readonly name: string
+  readonly value: string
+}
+
+type BoolAttrNameValue = {
+  readonly type: "bool"
+  readonly name: string
+  readonly value: boolean
+}
+
+type PropNameValue = {
+  readonly type: "prop"
+  readonly name: string
+  readonly value: unknown
+}
+
+type NameValue = AttrNameValue | BoolAttrNameValue | PropNameValue
+
+function diffProperties(
+  a: Record<string, unknown> | null | undefined,
+  b: Record<string, unknown> | null | undefined
+): { added: Array<NameValue>; removed: ReadonlyArray<NameValue> } | null {
+  if (!a) {
+    if (b) {
+      return { added: Object.entries(b).flatMap(([k, v]) => fromKeyValue(k, v)), removed: [] }
+    } else return null
+  } else if (!b) {
+    return { added: [], removed: Object.entries(a).flatMap(([k, v]) => fromKeyValue(k, v)) }
+  } else {
+    const { added, removed, unchanged } = diffStrings(Object.keys(a), Object.keys(b))
+
+    return {
+      added: added.concat(unchanged).flatMap((k) => fromKeyValue(k, b[k])),
+      removed: removed.flatMap((k) => fromKeyValue(k, a[k]))
+    }
+  }
+}
+
+function fromKeyValue(name: string, value: unknown): Array<NameValue> {
+  if (name[0] === ".") {
+    return value == null ? [] : [{
+      type: "prop",
+      name: name.slice(1),
+      value
+    }]
+  } else if (typeof value === "boolean") {
+    return [{
+      type: "bool",
+      name,
+      value
+    }]
+  } else {
+    if (name[0] === "o" || name[1] === "n") return []
+
+    return value == null ? [] : [{
+      type: "attr",
+      name,
+      value: String(value)
+    }]
+  }
+}
+
 const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
   class Base {
     readonly _tag: T = tag
@@ -418,7 +545,8 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
         }
       ) => Effect.Effect<Scope, never, void>,
       public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
-      readonly eq: Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> = equals
+      readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
+        equals
     ) {}
 
     update = (value: this["value"]) => {

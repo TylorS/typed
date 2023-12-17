@@ -11,7 +11,16 @@ import { isDirective } from "../Directive.js"
 import * as ElementRef from "../ElementRef.js"
 import type { BrowserEntry } from "../Entry.js"
 import * as EventHandler from "../EventHandler.js"
-import type { AttributePart, ClassNamePart, CommentPart, Part, Parts, SparsePart, StaticText } from "../Part.js"
+import type {
+  AttributePart,
+  ClassNamePart,
+  CommentPart,
+  Part,
+  Parts,
+  PropertiesPart,
+  SparsePart,
+  StaticText
+} from "../Part.js"
 import type { Placeholder } from "../Placeholder.js"
 import type { ToRendered } from "../Render.js"
 import type { Renderable } from "../Renderable.js"
@@ -33,6 +42,7 @@ import {
   CommentPartImpl,
   DataPartImpl,
   EventPartImpl,
+  PropertiesPartImpl,
   PropertyPartImpl,
   RefPartImpl,
   SparseAttributePartImpl,
@@ -136,6 +146,8 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   const partIndex = part.index
   const renderable = values[partIndex]
 
+  if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
+
   if (isDirective(renderable)) {
     return renderable(part).pipe(
       Effect.tap(() => refCounter.release(partIndex)),
@@ -146,7 +158,7 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   } else if (part._tag === "event") {
     return Effect.tap(
       part.update(
-        getEventHandler(values[partIndex], onCause) as EventHandler.EventHandler<
+        getEventHandler(renderable, onCause) as EventHandler.EventHandler<
           Placeholder.Context<Values[number]>,
           never
         >
@@ -154,25 +166,36 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
       () => refCounter.release(partIndex)
     )
   } else if (part._tag === "node" && hydrateCtx) {
-    if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
-
     return handlePart(
-      values[partIndex],
+      renderable,
       (value) => Effect.tap(part.update(value), () => refCounter.release(partIndex))
     ).pipe(
       HydrateContext.provide(hydrateCtx()),
       Effect.forkScoped
     )
+  } else if (part._tag === "properties") {
+    return handlePropertiesPart(renderable, part, refCounter)
   } else {
-    const renderable = values[partIndex]
-
-    if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
-
     return handlePart(
-      values[partIndex],
+      renderable,
       (value) => Effect.tap(part.update(value as any), () => refCounter.release(partIndex))
     )
   }
+}
+
+function handlePropertiesPart<R, E>(
+  renderable: unknown,
+  part: PropertiesPart,
+  refCounter: IndexRefCounter
+): Effect.Effect<R | Scope, E, void> {
+  if (renderable && typeof renderable === "object") {
+    return handlePart(
+      Fx.struct(Object.fromEntries(Object.entries(renderable).map(([k, v]) => [k, unwrapRenderable(v)] as const))),
+      (value) => Effect.tap(part.update(value as any), () => refCounter.release(part.index))
+    )
+  }
+
+  return Effect.succeed(void 0)
 }
 
 function getEventHandler<R, E>(
@@ -365,6 +388,8 @@ function buildPartWithNode<T extends Rendered, E>(
       )
     case "property":
       return Effect.succeed(PropertyPartImpl.browser(part.index, node, part.name, ctx))
+    case "properties":
+      return Effect.succeed(PropertiesPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
     case "ref":
       return Effect.succeed(new RefPartImpl(ref.query(node as HTMLElement | SVGElement), part.index)) as any
     case "sparse-attr": {

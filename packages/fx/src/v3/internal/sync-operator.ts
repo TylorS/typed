@@ -2,7 +2,7 @@ import { flow, ReadonlyArray } from "effect"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
-import type * as SyncProducer from "./sync-producer.js"
+import * as SyncProducer from "./sync-producer.js"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 
@@ -146,19 +146,19 @@ export function runSyncReduce<A, B>(
   seed: B,
   f: (acc: B, a: any) => B
 ): B {
-  switch (producer._tag) {
-    case "Success":
-      return matchSyncOperator(op, {
-        Map: (op) => f(seed, op.f(producer.source)),
-        Filter: (op) => op.f(producer.source) ? f(seed, producer.source) : seed,
+  return SyncProducer.matchSyncProducer(producer, {
+    Success: (a) =>
+      matchSyncOperator(op, {
+        Map: (op) => f(seed, op.f(a)),
+        Filter: (op) => op.f(a) ? f(seed, a) : seed,
         FilterMap: (op) =>
-          Option.match(op.f(producer.source), {
+          Option.match(op.f(a), {
             onNone: () => seed,
             onSome: (a) => f(seed, a)
           })
-      })
-    case "FromArray":
-    case "FromIterable":
-      return applyArrayReducer(producer.source, op, seed, f)
-  }
+      }),
+    FromSync: (g) => f(seed, g()),
+    FromArray: (array) => applyArrayReducer(array, op, seed, f),
+    FromIterable: (iterable) => applyArrayReducer(iterable, op, seed, f)
+  })
 }

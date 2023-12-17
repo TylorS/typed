@@ -201,6 +201,17 @@ const attrMap: AttrMap = {
     new PartChunk(attr, (value) => value == null ? `` : datasetToString(value as Readonly<Record<string, string>>)),
   event: () => new TextChunk(""),
   property: (attr) => new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${escape(value)}"`)),
+  properties: (attr) =>
+    new PartChunk(
+      attr,
+      (
+        value
+      ) => (value == null
+        ? ``
+        : " " + Object.entries(value).map(([key, value]) =>
+          value === true ? key : value === false ? "" : `${key}="${escape(value)}"`
+        ).join(" "))
+    ),
   ref: () => new TextChunk(""),
   "sparse-attr": (attr) =>
     new SparsePartChunk(attr, (values) => {

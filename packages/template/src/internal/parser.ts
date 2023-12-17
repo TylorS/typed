@@ -366,11 +366,13 @@ class ParserImpl implements Parser {
       case ".": {
         const property = name.slice(1)
 
-        return this.addPart(
-          property === "data"
-            ? new Template.DataPartNode(unsafeParsePartIndex(text))
-            : new Template.PropertyPartNode(property, unsafeParsePartIndex(text))
-        )
+        if (property === "data") {
+          return this.addPart(new Template.DataPartNode(unsafeParsePartIndex(text)))
+        } else if (property === "props" || property === "properties") {
+          return this.addPart(new Template.PropertiesPartNode(unsafeParsePartIndex(text)))
+        } else {
+          return this.addPart(new Template.PropertyPartNode(property, unsafeParsePartIndex(text)))
+        }
       }
       case "@":
         return this.addPart(new Template.EventPartNode(name.slice(1), unsafeParsePartIndex(text)))

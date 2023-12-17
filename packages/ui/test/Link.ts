@@ -78,5 +78,19 @@ describe("Link", () => {
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
         Router.withCurrentRoute(Route.fromPath("/foo"))
       ))
+
+    Vitest.test("sets other anchor attributes", () =>
+      Effect.gen(function*(_) {
+        const { elementRef, window } = yield* _(testRender(Link({ to: "/test", hidden: true }, "Hello")))
+        const element = yield* _(elementRef)
+
+        ok(element instanceof window.HTMLAnchorElement)
+        deepStrictEqual(element.href, "/foo/test")
+        deepStrictEqual(element.hidden, true)
+        deepStrictEqual(element.textContent, "Hello")
+      }).pipe(
+        Effect.provide(Navigation.initialMemory({ url: initialUrl })),
+        Router.withCurrentRoute(Route.fromPath("/foo"))
+      ))
   })
 })

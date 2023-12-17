@@ -18,6 +18,7 @@ describe.concurrent("V3", () => {
       )
 
       // Verify Fx has been fused into a single ProducerSyncTransformer
+      // @ts-ignore
       expect(core.isProducerSyncTransformer(fx)).toBe(true)
 
       const test = fx.pipe(core.toReadonlyArray, Effect.timed)
