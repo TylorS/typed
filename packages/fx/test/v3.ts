@@ -100,10 +100,10 @@ describe.concurrent("V3", () => {
       expect(array).toEqual(["2", "4"])
     })
 
-    describe.concurrent.only("hold", () => {
+    describe.concurrent("hold", () => {
       it.concurrent("shares a value with replay of the last", async () => {
         let i = 0
-        const delay = 100
+        const delay = 10
         const iterator = Effect.sync(() => i++)
 
         const sut = Fx.periodic(iterator, delay).pipe(

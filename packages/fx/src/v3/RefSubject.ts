@@ -14,18 +14,19 @@ import * as Versioned from "./Versioned.js"
 // TODO: Add support for Context-based impelmentations
 // TODO: Support for custom RefSubjects backed by something than in-memory
 // TODO: tuple/struct/all
+// TODO: Provide resources
 
-export interface Computed<R, E, A> extends Versioned.Versioned<R, never, R | Scope.Scope, E, A, R, E, A> {
+export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, never, R | Scope.Scope, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 }
 
-export interface Filtered<R, E, A>
+export interface Filtered<out R, out E, out A>
   extends Versioned.Versioned<R, never, R | Scope.Scope, E, A, R, E | Cause.NoSuchElementException, A>
 {
   readonly [FilteredTypeId]: FilteredTypeId
 }
 
-export interface RefSubject<R, E, A> extends Computed<R, E, A>, Subject.Subject<R, E, A> {
+export interface RefSubject<out R, in out E, in out A> extends Computed<R, E, A>, Subject.Subject<R, E, A> {
   readonly runUpdates: <R2, E2, B>(
     f: (ref: GetSetDelete<R, E, A>) => Effect.Effect<R2, E2, B>
   ) => Effect.Effect<R2, E2, B>

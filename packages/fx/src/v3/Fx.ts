@@ -260,10 +260,13 @@ export const schedule: {
   ): Fx<R | R2, E, A>
 } = dual(2, core.schedule)
 
-export const periodic = <R, E, A>(
+export const periodic: {
+  (period: Duration.DurationInput): <R, E, A>(iterator: Effect.Effect<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(iterator: Effect.Effect<R, E, A>, period: Duration.DurationInput): Fx<R, E, A>
+} = dual(2, <R, E, A>(
   iterator: Effect.Effect<R, E, A>,
   period: Duration.DurationInput
-): Fx<R, E, A> => schedule(iterator, Schedule.spaced(period))
+): Fx<R, E, A> => schedule(iterator, Schedule.spaced(period)))
 
 export const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E, never> = core.failCause
 
