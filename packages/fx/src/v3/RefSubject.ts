@@ -1,27 +1,26 @@
 import type { Equivalence, Fiber } from "effect"
-import { Cause, Context, Effect, Equal, ExecutionStrategy, Exit, Option, Scope } from "effect"
-import type { FilteredTypeId } from "../TypeId.js"
-import { ComputedTypeId, RefSubjectTypeId, TypeId } from "../TypeId.js"
+import { Cause, Context, Effect, Equal, ExecutionStrategy, Exit, identity, Option, Scope } from "effect"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "../TypeId.js"
 import type { Fx } from "./Fx.js"
+import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
 import { getExitEquivalence } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
+import { hold } from "./internal/share.js"
 import * as Sink from "./Sink.js"
 import * as Subject from "./Subject.js"
-import type { Versioned } from "./Versioned.js"
+import * as Versioned from "./Versioned.js"
 
 // TODO: Add support for Context-based impelmentations
-// TODO: Expanded Computed + Filtered types
 // TODO: Support for custom RefSubjects backed by something than in-memory
-// TODO: RefTransformer
 // TODO: tuple/struct/all
 
-export interface Computed<R, E, A> extends Versioned<R, never, R | Scope.Scope, E, A, R, E, A> {
+export interface Computed<R, E, A> extends Versioned.Versioned<R, never, R | Scope.Scope, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 }
 
 export interface Filtered<R, E, A>
-  extends Versioned<R, never, R | Scope.Scope, E, A, R, E | Cause.NoSuchElementException, A>
+  extends Versioned.Versioned<R, never, R | Scope.Scope, E, A, R, E | Cause.NoSuchElementException, A>
 {
   readonly [FilteredTypeId]: FilteredTypeId
 }
@@ -87,8 +86,8 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
   readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
   readonly version: Effect.Effect<never, never, number>
-  readonly interrupt: Effect.Effect<never, never, void>
-  readonly subscriberCount: Effect.Effect<never, never, number>
+  readonly interrupt: Effect.Effect<Exclude<R, R2>, never, void>
+  readonly subscriberCount: Effect.Effect<Exclude<R, R2>, never, number>
 
   private readonly getSetDelete: GetSetDelete<Exclude<R, R2>, E, A>
 
@@ -99,7 +98,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
 
     this.version = Effect.sync(() => core.deferredRef.version)
     this.interrupt = interruptCore(core)
-    this.subscriberCount = core.subject.subscriberCount
+    this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.context)
     this.getSetDelete = getSetDelete(core)
 
     this.runUpdates = this.runUpdates.bind(this)
@@ -108,7 +107,10 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
   }
 
   run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<Exclude<R, R2> | R3 | Scope.Scope, never, unknown> {
-    return Effect.provide(this.core.subject.run(sink), this.core.context)
+    return Effect.matchCauseEffect(this.toEffect(), {
+      onFailure: (cause) => sink.onFailure(cause),
+      onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.context)
+    })
   }
 
   runUpdates<R3, E3, B>(
@@ -253,7 +255,7 @@ function makeCore<R, E, A>(
       "deferredRef",
       () => DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals))
     ),
-    Effect.let("subject", () => Subject.make<E, A>(options?.replay ?? 1)),
+    Effect.let("subject", () => Subject.make<E, A>(Math.max(1, options?.replay ?? 1))),
     Effect.tap(({ scope, subject }) => Scope.addFinalizer(scope, subject.interrupt)),
     Effect.map(({ ctx, deferredRef, scope, subject }) =>
       new RefSubjectCore(
@@ -351,7 +353,7 @@ function deleteCore<R, E, A, R2>(
       return Option.none()
     }
 
-    const count = yield* _(core.subject.subscriberCount)
+    const count = yield* _(core.subject.subscriberCount, Effect.provide(core.context))
 
     // Ensure current subscribers get an updated value
     if (count > 0 && !core._fiber) {
@@ -390,5 +392,354 @@ function sendEvent<R, E, A, R2>(
     return Effect.provide(core.subject.onSuccess(exit.value), core.context)
   } else {
     return Effect.provide(core.subject.onFailure(exit.cause), core.context)
+  }
+}
+
+export function mapEffect<R, E, A, R2, E2, B>(
+  ref: RefSubject<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Computed<R | R2, E | E2, B>
+
+export function mapEffect<R, E, A, R2, E2, B>(
+  ref: Computed<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Computed<R | R2, E | E2, B>
+
+export function mapEffect<R, E, A, R2, E2, B>(
+  ref: Filtered<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, B>
+): Filtered<R | R2, E | E2, B>
+
+export function mapEffect<R0, E0, R, E, A, R2, E2, R3, E3, C>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, C>
+): Computed<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, C>
+
+export function mapEffect<R0, E0, R, E, A, R2, E2, R3, E3, C>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, C>
+):
+  | Computed<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, C>
+  | Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, C>
+{
+  return FilteredTypeId in versioned
+    ? FilteredImpl.make(versioned, (a) => Effect.asSome(f(a)))
+    : ComputedImpl.make(versioned, f)
+}
+
+export function map<R, E, A, B>(ref: RefSubject<R, E, A>, f: (a: A) => B): Computed<R, E, B>
+
+export function map<R, E, A, B>(ref: Computed<R, E, A>, f: (a: A) => B): Computed<R, E, B>
+
+export function map<R, E, A, B>(ref: Filtered<R, E, A>, f: (a: A) => B): Filtered<R, E, B>
+
+export function map<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => B
+): Computed<R0 | Exclude<R, Scope.Scope> | R2, E0 | E | E2, B>
+
+export function map<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => B
+):
+  | Computed<R0 | Exclude<R, Scope.Scope> | R2, E0 | E | E2, B>
+  | Filtered<R0 | Exclude<R, Scope.Scope> | R2, E0 | E | E2, B>
+{
+  return mapEffect(versioned, (a) => Effect.succeed(f(a)))
+}
+
+export function filterMapEffect<R, E, A, R2, E2, B>(
+  ref: RefSubject<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+): Filtered<R | R2, E | E2, B>
+
+export function filterMapEffect<R, E, A, R2, E2, B>(
+  ref: Computed<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+): Filtered<R | R2, E | E2, B>
+
+export function filterMapEffect<R, E, A, R2, E2, B>(
+  ref: Filtered<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+): Filtered<R | R2, E | E2, B>
+
+export function filterMapEffect<R0, E0, R, E, A, R2, E2, B, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, Option.Option<B>>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, B>
+
+export function filterMapEffect<R0, E0, R, E, A, R2, E2, B, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, Option.Option<B>>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, B> {
+  return FilteredImpl.make(versioned, f)
+}
+
+export function filterMap<R, E, A, B>(ref: RefSubject<R, E, A>, f: (a: A) => Option.Option<B>): Filtered<R, E, B>
+
+export function filterMap<R, E, A, B>(ref: Computed<R, E, A>, f: (a: A) => Option.Option<B>): Filtered<R, E, B>
+
+export function filterMap<R, E, A, B>(ref: Filtered<R, E, A>, f: (a: A) => Option.Option<B>): Filtered<R, E, B>
+
+export function filterMap<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Option.Option<B>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R2, E0 | E | E2, B>
+
+export function filterMap<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Option.Option<B>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R2, E0 | E | E2, B> {
+  return FilteredImpl.make(versioned, (a) => Effect.succeed(f(a)))
+}
+
+export function filterEffect<R, E, A, R2, E2>(
+  ref: RefSubject<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, boolean>
+): Filtered<R | R2, E | E2, A>
+
+export function filterEffect<R, E, A, R2, E2>(
+  ref: Computed<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, boolean>
+): Filtered<R | R2, E | E2, A>
+
+export function filterEffect<R, E, A, R2, E2>(
+  ref: Filtered<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, boolean>
+): Filtered<R | R2, E | E2, A>
+
+export function filterEffect<R0, E0, R, E, A, R2, E2, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, boolean>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, A>
+
+export function filterEffect<R0, E0, R, E, A, R2, E2, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => Effect.Effect<R3, E3, boolean>
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, A> {
+  return FilteredImpl.make(versioned, (a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
+}
+
+export function filter<R, E, A>(ref: RefSubject<R, E, A>, f: (a: A) => boolean): Filtered<R, E, A>
+
+export function filter<R, E, A>(ref: Computed<R, E, A>, f: (a: A) => boolean): Filtered<R, E, A>
+
+export function filter<R, E, A>(ref: Filtered<R, E, A>, f: (a: A) => boolean): Filtered<R, E, A>
+
+export function filter<R0, E0, R, E, A, R2, E2, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => boolean
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, A>
+
+export function filter<R0, E0, R, E, A, R2, E2, R3, E3>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+  f: (a: A) => boolean
+): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, A> {
+  return FilteredImpl.make(versioned, (a) => Effect.succeed(f(a) ? Option.some(a) : Option.none()))
+}
+
+class ComputedImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.VersionedTransform<
+  R0,
+  E0,
+  R,
+  E,
+  A,
+  R2,
+  E2,
+  A,
+  R0 | Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope,
+  E0 | E | E2 | E3,
+  C,
+  R0 | Exclude<R, Scope.Scope> | R2 | R3,
+  E0 | E | E2 | E3,
+  C
+> implements Computed<R0 | Exclude<R, Scope.Scope> | R2 | R3, E0 | E | E2 | E3, C> {
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+
+  constructor(
+    readonly input: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+    readonly f: (a: A) => Effect.Effect<R3, E3, C>
+  ) {
+    super(
+      input,
+      (fx) => hold(core.mapEffect(fx, f)) as any,
+      Effect.flatMap(f)
+    )
+  }
+
+  static make<R0, E0, R, E, A, R2, E2, R3, E3, C>(
+    input: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+    f: (a: A) => Effect.Effect<R3, E3, C>
+  ): Computed<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, C> {
+    if (isComputedImpl(input)) {
+      return new ComputedImpl(input.input, (a) => Effect.flatMap(input.f(a), f))
+    } else {
+      return new ComputedImpl(input, f)
+    }
+  }
+}
+
+class FilteredImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.VersionedTransform<
+  R0,
+  E0,
+  R,
+  E,
+  A,
+  R2,
+  E2,
+  A,
+  Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope,
+  E0 | E | E2 | E3,
+  C,
+  R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3,
+  E0 | E | E2 | E3 | Cause.NoSuchElementException,
+  C
+> implements Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3, E0 | E | E2 | E3, C> {
+  readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
+
+  constructor(
+    readonly input: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+    readonly f: (a: A) => Effect.Effect<R3, E3, Option.Option<C>>
+  ) {
+    super(
+      input,
+      (fx) => hold(core.filterMapEffect(fx, f) as any),
+      (effect) => Effect.flatten(Effect.flatMap(effect, f))
+    )
+  }
+
+  static make<R0, E0, R, E, A, R2, E2, R3, E3, C>(
+    input: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
+    f: (a: A) => Effect.Effect<R3, E3, Option.Option<C>>
+  ): Filtered<
+    R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3,
+    E0 | E | Exclude<E2, Cause.NoSuchElementException> | E3,
+    C
+  > {
+    if (isFilteredImpl(input)) {
+      return new FilteredImpl(
+        (input as any).input,
+        (a) => Effect.flatMap(Effect.flatten(input.f(a)), f)
+      ) as any
+    } else {
+      return new FilteredImpl(input, f) as any
+    }
+  }
+}
+
+function isComputedImpl<R0, E0, R, E, A, R2, E2>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>
+): versioned is ComputedImpl<any, any, any, any, any, any, any, any, any, any> {
+  return versioned instanceof ComputedImpl
+}
+
+function isFilteredImpl<R0, E0, R, E, A, R2, E2>(
+  versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>
+): versioned is FilteredImpl<any, any, any, any, any, any, any, any, any, any> {
+  return versioned instanceof FilteredImpl
+}
+
+export function skipRepeatsWith<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A>,
+  eq: Equivalence.Equivalence<A>
+): Computed<R, E, A>
+
+export function skipRepeatsWith<R, E, A>(
+  ref: Filtered<R, E, A>,
+  eq: Equivalence.Equivalence<A>
+): Filtered<R, E, A>
+
+export function skipRepeatsWith<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
+  eq: Equivalence.Equivalence<A>
+): Computed<R, E, A> | Filtered<R, E, A>
+
+export function skipRepeatsWith<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
+  eq: Equivalence.Equivalence<A>
+): Computed<R, E, A> | Filtered<R, E, A> {
+  const versioned = Versioned.transform(ref, (fx) => core.skipRepeatsWith(fx, eq), identity)
+
+  if (isFilteredImpl(ref)) {
+    return FilteredImpl.make(versioned, Effect.succeedSome)
+  } else {
+    return ComputedImpl.make(versioned, Effect.succeed) as any
+  }
+}
+
+export function skipRepeats<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A>
+): Computed<R, E, A>
+
+export function skipRepeats<R, E, A>(
+  ref: Filtered<R, E, A>
+): Filtered<R, E, A>
+
+export function skipRepeats<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>
+): Computed<R, E, A> | Filtered<R, E, A>
+
+export function skipRepeats<R, E, A>(
+  ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>
+): Computed<R, E, A> | Filtered<R, E, A> {
+  return skipRepeatsWith(ref, Equal.equals)
+}
+
+export function transform<R, E, A, B>(
+  ref: RefSubject<R, E, A>,
+  from: (a: A) => B,
+  to: (b: B) => A
+): RefSubject<R, E, B> {
+  return new RefSubjectTransform(ref, from, to)
+}
+
+class RefSubjectTransform<R, E, A, B> extends FxEffectBase<R | Scope.Scope, E, B, R, E, B>
+  implements RefSubject<R, E, B>
+{
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly version: Effect.Effect<R, never, number>
+  readonly interrupt: Effect.Effect<R, never, void>
+  readonly subscriberCount: Effect.Effect<R, never, number>
+
+  constructor(
+    readonly ref: RefSubject<R, E, A>,
+    readonly from: (a: A) => B,
+    readonly to: (b: B) => A
+  ) {
+    super()
+
+    this.version = ref.version
+    this.interrupt = ref.interrupt
+    this.subscriberCount = ref.subscriberCount
+  }
+
+  run<R2 = never>(sink: Sink.Sink<R2, E, B>): Effect.Effect<R | Scope.Scope | R2, never, unknown> {
+    return this.ref.run(Sink.map(sink, this.from))
+  }
+
+  runUpdates<R2, E2, C>(
+    run: (ref: GetSetDelete<R, E, B>) => Effect.Effect<R2, E2, C>
+  ) {
+    return this.ref.runUpdates((ref) =>
+      run({
+        get: Effect.map(ref.get, this.from),
+        set: (b) => Effect.map(ref.set(this.to(b)), this.from),
+        delete: Effect.map(ref.delete, Option.map(this.from))
+      })
+    )
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.ref.onFailure(cause)
+  }
+
+  onSuccess(value: B): Effect.Effect<R, never, unknown> {
+    return this.ref.onSuccess(this.to(value))
+  }
+
+  toEffect(): Effect.Effect<R, E, B> {
+    return Effect.map(this.ref, this.from)
   }
 }

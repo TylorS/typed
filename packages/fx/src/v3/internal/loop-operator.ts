@@ -223,6 +223,13 @@ export function compileLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sin
   })
 }
 
+export function compileCauseLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sink.Sink<R, any, any>) {
+  return matchSyncLoopOperator(operator, {
+    Loop: (op) => Sink.loopCause(sink, op.seed, op.f),
+    FilterMapLoop: (op) => Sink.filterMapLoopCause(sink, op.seed, op.f)
+  })
+}
+
 export function applyArray<A, B>(array: ReadonlyArray<A>, operator: SyncLoopOperator): ReadonlyArray<B> {
   return matchSyncLoopOperator(operator, {
     Loop: (op) => loopArray(array, op.seed, op.f),

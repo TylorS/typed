@@ -1,5 +1,5 @@
-import { Effect, Option } from "effect"
-import type { Cause, Predicate } from "effect"
+import type { Context, Predicate, Tracer } from "effect"
+import { Cause, Clock, Effect, Option } from "effect"
 import { dual } from "effect/Function"
 import { type Bounds } from "../internal/bounds"
 
@@ -64,7 +64,10 @@ class MapSink<R, E, A, B> implements Sink<R, E, A> {
   constructor(
     readonly sink: Sink<R, E, B>,
     readonly f: (a: A) => B
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
     return this.sink.onFailure(cause)
@@ -83,7 +86,10 @@ class FilterSink<R, E, A> implements Sink<R, E, A> {
   constructor(
     readonly sink: Sink<R, E, A>,
     readonly predicate: Predicate.Predicate<A>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
     return this.sink.onFailure(cause)
@@ -103,7 +109,10 @@ class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
   constructor(
     readonly sink: Sink<R, E, B>,
     readonly f: (a: A) => Option.Option<B>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
     return this.sink.onFailure(cause)
@@ -127,7 +136,10 @@ class MapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
   constructor(
     readonly sink: Sink<R, E | E2, A>,
     readonly f: (b: B) => Effect.Effect<R2, E2, A>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E2>): Effect.Effect<R | R2, never, unknown> {
     return this.sink.onFailure(cause)
@@ -149,7 +161,10 @@ class FilterMapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
   constructor(
     readonly sink: Sink<R, E | E2, A>,
     readonly f: (b: B) => Effect.Effect<R2, E2, Option.Option<A>>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E2>): Effect.Effect<R | R2, never, unknown> {
     return this.sink.onFailure(cause)
@@ -177,7 +192,10 @@ class FilterEffectSink<R, E, A> implements Sink<R, E, A> {
   constructor(
     readonly sink: Sink<R, E, A>,
     readonly f: (a: A) => Effect.Effect<R, E, boolean>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
     return this.sink.onFailure(cause)
@@ -205,7 +223,10 @@ class TapEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
   constructor(
     readonly sink: Sink<R, E | E2, A>,
     readonly f: (a: A) => Effect.Effect<R2, E2, unknown>
-  ) {}
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R | R2, never, unknown> {
     return this.sink.onFailure(cause)
@@ -233,6 +254,8 @@ class LoopSink<R, E, A, B, C> implements Sink<R, E, A> {
     private seed: B,
     readonly f: (acc: B, a: A) => readonly [C, B]
   ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
   }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
@@ -243,6 +266,35 @@ class LoopSink<R, E, A, B, C> implements Sink<R, E, A> {
     const [c, acc] = this.f(this.seed, value)
     this.seed = acc
     return this.sink.onSuccess(c)
+  }
+}
+
+export function loopCause<R, E, A, B, C>(
+  sink: Sink<R, C, A>,
+  seed: B,
+  f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
+): Sink<R, E, A> {
+  return new LoopCauseSink(sink, seed, f)
+}
+
+class LoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, C, A>,
+    private seed: B,
+    readonly f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    const [c, acc] = this.f(this.seed, cause)
+    this.seed = acc
+    return this.sink.onFailure(c)
+  }
+
+  onSuccess(value: A) {
+    return this.sink.onSuccess(value)
   }
 }
 
@@ -260,6 +312,8 @@ class FilterMapLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
     private seed: B,
     readonly f: (acc: B, a: A) => readonly [Option.Option<C>, B]
   ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
   }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
@@ -271,6 +325,36 @@ class FilterMapLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
     this.seed = acc
     if (Option.isSome(option)) return this.sink.onSuccess(option.value)
     else return Effect.unit
+  }
+}
+
+export function filterMapLoopCause<R, E, A, B, C>(
+  sink: Sink<R, C, A>,
+  seed: B,
+  f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
+): Sink<R, E, A> {
+  return new FilterMapLoopCauseSink(sink, seed, f)
+}
+
+class FilterMapLoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, C, A>,
+    private seed: B,
+    readonly f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    const [option, acc] = this.f(this.seed, cause)
+    this.seed = acc
+    if (Option.isSome(option)) return this.sink.onFailure(option.value)
+    else return Effect.unit
+  }
+
+  onSuccess(value: A) {
+    return this.sink.onSuccess(value)
   }
 }
 
@@ -288,6 +372,8 @@ class LoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
     private seed: B,
     readonly f: (acc: B, a: A) => Effect.Effect<R, E, readonly [C, B]>
   ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
   }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
@@ -305,20 +391,22 @@ class LoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
-export function filterMapLoopEffect<R, E, A, B, C>(
+export function filterMapLoopEffect<R, E, A, B, R2, C>(
   sink: Sink<R, E, C>,
   seed: B,
-  f: (acc: B, a: A) => Effect.Effect<R, E, readonly [Option.Option<C>, B]>
-): Sink<R, E, A> {
+  f: (acc: B, a: A) => Effect.Effect<R2, E, readonly [Option.Option<C>, B]>
+): Sink<R | R2, E, A> {
   return new FilterMapLoopEffectSink(sink, seed, f)
 }
 
-class FilterMapLoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
+class FilterMapLoopEffectSink<R, E, A, B, R2, C> implements Sink<R | R2, E, A> {
   constructor(
     readonly sink: Sink<R, E, C>,
     private seed: B,
-    readonly f: (acc: B, a: A) => Effect.Effect<R, E, readonly [Option.Option<C>, B]>
+    readonly f: (acc: B, a: A) => Effect.Effect<R2, E, readonly [Option.Option<C>, B]>
   ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
   }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
@@ -334,6 +422,73 @@ class FilterMapLoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
         else return Effect.unit
       }
     })
+  }
+}
+
+export function loopCauseEffect<R, E, A, B, C>(
+  sink: Sink<R, E | C, A>,
+  seed: B,
+  f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R, E, readonly [Cause.Cause<C>, B]>
+): Sink<R, E | C, A> {
+  return new LoopCauseEffectSink(sink, seed, f)
+}
+
+class LoopCauseEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, E | C, A>,
+    private seed: B,
+    readonly f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R, E, readonly [Cause.Cause<C>, B]>
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return Effect.matchCauseEffect(this.f(this.seed, cause), {
+      onFailure: (cause2) => this.sink.onFailure(Cause.sequential(cause, cause2)),
+      onSuccess: ([c, acc]) => {
+        this.seed = acc
+        return this.sink.onFailure(c)
+      }
+    })
+  }
+
+  onSuccess(value: A) {
+    return this.sink.onSuccess(value)
+  }
+}
+
+export function filterMapLoopCauseEffect<R, E, A, B, C>(
+  sink: Sink<R, E | C, A>,
+  seed: B,
+  f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R, E, readonly [Option.Option<Cause.Cause<C>>, B]>
+): Sink<R, E | C, A> {
+  return new FilterMapLoopCauseEffectSink(sink, seed, f)
+}
+
+class FilterMapLoopCauseEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
+  constructor(
+    readonly sink: Sink<R, E | C, A>,
+    private seed: B,
+    readonly f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R, E, readonly [Option.Option<Cause.Cause<C>>, B]>
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return Effect.matchCauseEffect(this.f(this.seed, cause), {
+      onFailure: (cause2) => this.sink.onFailure(Cause.sequential(cause, cause2)),
+      onSuccess: ([option, acc]) => {
+        this.seed = acc
+        if (Option.isSome(option)) return this.sink.onFailure(option.value)
+        else return Effect.unit
+      }
+    })
+  }
+
+  onSuccess(value: A) {
+    return this.sink.onSuccess(value)
   }
 }
 
@@ -355,6 +510,9 @@ class SliceSink<R, E, A> implements Sink<R, E, A> {
   ) {
     this.drop = this.bounds.min
     this.take = this.bounds.max
+
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
   }
 
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
@@ -372,6 +530,159 @@ class SliceSink<R, E, A> implements Sink<R, E, A> {
     return this.sink.earlyExit
   }
 }
+
+export function takeWhile<R, E, A, R2, B>(
+  sink: Sink<R, E, A>,
+  predicate: Predicate.Predicate<A>,
+  f: (sink: Sink<R, E, A>) => Effect.Effect<R2, E, B>
+) {
+  return withEarlyExit(sink, (s) => f(new TakeWhileSink(s, predicate)))
+}
+
+class TakeWhileSink<R, E, A> implements Sink<R, E, A> {
+  private take: boolean
+
+  constructor(
+    readonly sink: WithEarlyExit<R, E, A>,
+    readonly predicate: Predicate.Predicate<A>
+  ) {
+    this.take = true
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    if (this.take === true && (this.take = this.predicate(value))) return this.sink.onSuccess(value)
+    else {
+      this.take = false
+      return this.sink.earlyExit
+    }
+  }
+}
+
+export function dropWhile<R, E, A>(
+  sink: Sink<R, E, A>,
+  predicate: Predicate.Predicate<A>
+): Sink<R, E, A> {
+  return filterMapLoop(sink, true, (drop: boolean, a: A) => {
+    const drop2 = drop && predicate(a)
+    return [drop2 ? Option.none() : Option.some(a), drop2]
+  })
+}
+
+export function dropAfter<R, E, A>(
+  sink: Sink<R, E, A>,
+  predicate: Predicate.Predicate<A>
+) {
+  return filterMapLoop(sink, false, (drop: boolean, a: A) => {
+    if (drop === true) return [Option.none(), drop]
+
+    const drop2 = predicate(a)
+    return [Option.some(a), drop2]
+  })
+}
+
+export function takeWhileEffect<R, E, A, R2, E2, R3, E3, B>(
+  sink: Sink<R, E | E2 | E3, A>,
+  predicate: (a: A) => Effect.Effect<R2, E2, boolean>,
+  f: (sink: Sink<R | R2, E, A>) => Effect.Effect<R3, E3, B>
+) {
+  return withEarlyExit(sink, (s) => f(new TakeWhileEffectSink(s, predicate)))
+}
+
+class TakeWhileEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
+  private take: boolean
+
+  constructor(
+    readonly sink: WithEarlyExit<R, E | E2, A>,
+    readonly predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+  ) {
+    this.take = true
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E | E2>): Effect.Effect<R | R2, never, unknown> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    if (this.take === true) {
+      return Effect.matchCauseEffect(this.predicate(value), {
+        onFailure: (cause) => this.sink.onFailure(cause),
+        onSuccess: (b) => {
+          if ((this.take = b)) return this.sink.onSuccess(value)
+          else return this.sink.earlyExit
+        }
+      })
+    } else return this.sink.earlyExit
+  }
+}
+
+export function dropWhileEffect<R, E, A, R2, E2>(
+  sink: Sink<R, E | E2, A>,
+  predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+): Sink<R | R2, E | E2, A> {
+  return filterMapLoopEffect<R, E | E2, A, boolean, R2, A>(sink, true, (drop: boolean, a: A) => {
+    if (drop === false) return Effect.succeed([Option.some(a), drop as boolean] as const)
+
+    return Effect.map(predicate(a), (b) => [b ? Option.none<A>() : Option.some(a), b] as const)
+  })
+}
+
+export function dropAfterEffect<R, E, A, R2, E2>(
+  sink: Sink<R, E | E2, A>,
+  predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+): Sink<R | R2, E | E2, A> {
+  return filterMapLoopEffect<R, E | E2, A, boolean, R2, A>(sink, false, (drop: boolean, a: A) => {
+    if (drop === true) return Effect.succeed([Option.none(), drop as boolean] as const)
+
+    return Effect.map(predicate(a), (b) => [Option.some(a), b] as const)
+  })
+}
+
+export function provide<R, E, A, R2>(
+  sink: Sink<R, E, A>,
+  ctx: Context.Context<R2>
+): Sink<Exclude<R, R2>, E, A> {
+  return make(
+    (cause) => Effect.provide(sink.onFailure(cause), ctx),
+    (a) => Effect.provide(sink.onSuccess(a), ctx)
+  )
+}
+
+export function setSpan<R, E, A>(
+  self: Sink<R, E, A>,
+  span: Tracer.Span
+): Sink<R, E, A> {
+  return make(
+    (cause) =>
+      addEvent(self.onFailure(cause), "fx.failure", span, {
+        "cause": Cause.pretty(cause)
+      }),
+    (a) =>
+      addEvent(self.onSuccess(a), "fx.success", span, {
+        "value": JSON.stringify(a)
+      })
+  )
+}
+
+const addEvent = <R, E, A>(
+  effect: Effect.Effect<R, E, A>,
+  name: string,
+  span: Tracer.Span,
+  attributes: Record<string, unknown>
+): Effect.Effect<R, E, A> =>
+  Effect.flatMap(Clock.currentTimeNanos, (time) =>
+    Effect.suspend(() => {
+      span.event(name, time, attributes)
+
+      return effect
+    }))
 
 // TODO: Snapshot operators
 // TODO: Higher-order operators

@@ -76,3 +76,12 @@ export function compileOperatorSink<R, R2>(operator: Operator, sink: Sink<R, any
     EffectLoopOperator: (op) => EffectLoopOp.compileLoopEffectOperatorSink(op, sink)
   })
 }
+
+export function compileOperatorSinkCause<R, R2>(operator: Operator, sink: Sink<R, any, any>): Sink<R | R2, any, any> {
+  return matchOperator(operator, {
+    SyncOperator: (op) => SyncOp.compileCauseSyncOperatorSink(op, sink),
+    EffectOperator: (op) => EffectOp.compileCauseEffectOperatorSink(op, sink),
+    SyncLoopOperator: (op) => LoopOp.compileCauseLoopOperatorSink(op, sink),
+    EffectLoopOperator: (op) => EffectLoopOp.compileCauseLoopEffectOperatorSinkCause(op, sink)
+  })
+}

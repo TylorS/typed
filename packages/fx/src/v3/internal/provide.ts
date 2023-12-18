@@ -1,5 +1,6 @@
 import type * as Context from "@typed/context"
 import { Effect, FiberRefsPatch, Layer, Runtime, RuntimeFlags } from "effect"
+import type { Scope } from "effect"
 
 export type Provide<R, E, A> =
   | ProvideContext<A>
@@ -82,45 +83,40 @@ export function merge<R = never, E = never, A = never, R2 = never, E2 = never, B
   self: Provide<R, E, A>,
   that: Provide<R2, E2, B>
 ): Provide<Exclude<R, B> | R2, E | E2, A | B> {
-  return matchProvide(self, {
-    ProvideContext: (a) => mergeLayer(Layer.succeedContext(a), that),
-    ProvideLayer: (a) => mergeLayer(a, that),
-    ProvideRuntime: (a) => mergeLayer(runtimeToLayer(a), that),
-    ProvideService: (tag, service) => mergeLayer(Layer.succeed(tag, service), that),
-    ProvideServiceEffect: (tag, service) => mergeLayer(Layer.effect(tag, service), that)
-  })
+  return ProvideLayer(Layer.provideMerge(toLayer(self), toLayer(that)))
 }
 
-function mergeLayer<R, E, A, R2, E2, B>(
-  layer: Layer.Layer<R, E, A>,
-  provide: Provide<R2, E2, B>
-): Provide<Exclude<R, B> | R2, E | E2, A | B> {
-  return matchProvide(provide, {
-    ProvideContext: (ctx) => ProvideLayer(Layer.provideMerge(layer, Layer.succeedContext(ctx))),
-    ProvideLayer: (layerB) => ProvideLayer(Layer.provideMerge(layer, layerB)),
-    ProvideRuntime: (runtime) => ProvideLayer(Layer.provideMerge(layer, runtimeToLayer(runtime))),
-    ProvideService: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.succeed(tag, service))),
-    ProvideServiceEffect: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.effect(tag, service)))
-  })
+export function buildWithScope<R, E, A>(
+  provide: Provide<R, E, A>,
+  scope: Scope.Scope
+) {
+  return Layer.buildWithScope(toLayer(provide), scope)
+}
+
+export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<R, E, A> {
+  switch (provide._tag) {
+    case "ProvideContext":
+      return Layer.succeedContext(provide.i0)
+    case "ProvideLayer":
+      return provide.i0
+    case "ProvideRuntime":
+      return runtimeToLayer(provide.i0)
+    case "ProvideService":
+      return Layer.succeed(provide.i0, provide.i1)
+    case "ProvideServiceEffect":
+      return Layer.effect(provide.i0, provide.i1)
+  }
 }
 
 export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
   effect: Effect.Effect<R, E, A>,
   provide: Provide<R2, E2, S>
 ): Effect.Effect<Exclude<R, S> | R2, E | E2, A> {
-  switch (provide._tag) {
-    case "ProvideContext":
-    case "ProvideLayer":
-    case "ProvideRuntime":
-      return Effect.provide(effect, provide.i0 as Layer.Layer<R2, E2, S>)
-    case "ProvideService":
-      return Effect.provideService(effect, provide.i0, provide.i1)
-    case "ProvideServiceEffect":
-      return Effect.provideServiceEffect(effect, provide.i0, provide.i1)
-  }
+  return Effect.provide(effect, toLayer(provide))
 }
 
 function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
+  // Calculate patch
   const patchRefs = FiberRefsPatch.diff(Runtime.defaultRuntime.fiberRefs, runtime.fiberRefs)
   const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)
 
@@ -140,9 +136,9 @@ function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, neve
       const rollbackRefs = FiberRefsPatch.diff(newRefs, oldRefs)
       const rollbackFlags = RuntimeFlags.diff(newFlags, oldFlags)
 
+      // Rollback when scope is closed
       yield* _(
         Effect.addFinalizer(() =>
-          // Rollback when scope is closed
           Effect.zipRight(Effect.patchFiberRefs(rollbackRefs), Effect.patchRuntimeFlags(rollbackFlags))
         )
       )

@@ -453,3 +453,13 @@ export function matchEffectLoopOperator<A, B, R, E, C, D>(
     return matchers.FilterMapLoopEffect(operator)
   }
 }
+
+export function compileCauseLoopEffectOperatorSinkCause<R>(
+  operator: EffectLoopOperator,
+  sink: Sink.Sink<R, any, any>
+): Sink.Sink<R, any, any> {
+  return matchEffectLoopOperator(operator, {
+    LoopEffect: (op) => Sink.loopCauseEffect(sink, op.seed, op.f),
+    FilterMapLoopEffect: (op) => Sink.filterMapLoopCauseEffect(sink, op.seed, op.f)
+  })
+}

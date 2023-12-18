@@ -87,7 +87,7 @@ export function compileSyncOperatorSink<R>(
   })
 }
 
-export function compileSyncOperatorFailureSink<R>(
+export function compileCauseSyncOperatorSink<R>(
   operator: SyncOperator,
   sink: Sink.Sink<R, any, any>
 ): Sink.Sink<R, any, any> {

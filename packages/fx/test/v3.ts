@@ -1,3 +1,4 @@
+import * as Fx from "@typed/fx/v3/Fx"
 import * as core from "@typed/fx/v3/internal/core"
 import * as RefSubject from "@typed/fx/v3/RefSubject"
 import * as Sink from "@typed/fx/v3/Sink"
@@ -98,6 +99,40 @@ describe.concurrent("V3", () => {
 
       expect(array).toEqual(["2", "4"])
     })
+
+    describe.concurrent.only("hold", () => {
+      it.concurrent("shares a value with replay of the last", async () => {
+        let i = 0
+        const delay = 100
+        const iterator = Effect.sync(() => i++)
+
+        const sut = Fx.periodic(iterator, delay).pipe(
+          Fx.take(5),
+          Fx.hold,
+          Fx.toReadonlyArray
+        )
+
+        const test = Effect.gen(function*(_) {
+          // start first fiber
+          const a = yield* _(Effect.fork(sut))
+
+          // Allow fiber to start
+          yield* _(Effect.sleep(delay))
+
+          // Allow 2 events to occur
+          yield* _(Effect.sleep(delay * 2))
+
+          // Start the second
+          const b = yield* _(Effect.fork(sut))
+
+          // Validate the outputs
+          expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+          expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+    })
   })
 
   describe.concurrent("RefSubject", () => {
@@ -187,6 +222,23 @@ describe.concurrent("V3", () => {
 
         await Effect.runPromise(test)
       })
+    })
+  })
+
+  describe.concurrent("Computed", () => {
+    it("allows mapping values from a RefSubject", async () => {
+      const test = Effect.gen(function*(_) {
+        const ref = yield* _(RefSubject.of(0))
+        const computed = RefSubject.map(ref, (x) => x + 1)
+
+        expect(yield* _(computed)).toEqual(1)
+
+        yield* _(RefSubject.update(ref, (x) => x + 1))
+
+        expect(yield* _(computed)).toEqual(2)
+      }).pipe(Effect.scoped)
+
+      await Effect.runPromise(test)
     })
   })
 

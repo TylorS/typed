@@ -1,5 +1,6 @@
-import type { ExecutionStrategy, Exit } from "effect"
-import { Cause, Effect, Equal, Equivalence, Fiber, Option, Ref, Scope, SynchronizedRef } from "effect"
+import { getOption } from "@typed/context"
+import type { Duration, ExecutionStrategy, Exit } from "effect"
+import { Cause, Effect, Equal, Equivalence, Fiber, Option, Ref, Scope, SynchronizedRef, TestClock } from "effect"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
@@ -274,7 +275,7 @@ export function matchEffectPrimitive<R, E, A, Z>(
     Left: (e: E) => Z
     Right: (a: A) => Z
     Some: (a: A) => Z
-    None: () => Z
+    None: (e: E) => Z
     Otherwise: (effect: Effect.Effect<R, E, A>) => Z
   }
 ): Z {
@@ -282,7 +283,7 @@ export function matchEffectPrimitive<R, E, A, Z>(
 
   switch (eff._tag) {
     case "Success":
-      return matchers.Success(eff.i0)
+      return matchers.Success(eff.value)
     case "Failure":
       return matchers.Failure(eff.cause)
     case "Sync":
@@ -294,8 +295,23 @@ export function matchEffectPrimitive<R, E, A, Z>(
     case "Some":
       return matchers.Some(eff.value)
     case "None":
-      return matchers.None()
+      return matchers.None(new Cause.NoSuchElementException() as E)
     default:
       return matchers.Otherwise(effect)
   }
+}
+
+export function adjustTime(input: Duration.DurationInput = 1) {
+  return Effect.flatMap(
+    Effect.context<never>(),
+    Effect.unifiedFn((ctx) => {
+      const testClock = getOption(ctx, TestClock.TestClock)
+
+      if (Option.isSome(testClock)) {
+        return testClock.value.adjust(input)
+      } else {
+        return Effect.sleep(input)
+      }
+    })
+  )
 }
