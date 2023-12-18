@@ -8,6 +8,10 @@ import * as Sink from "./Sink"
 
 export interface Push<R, E, A, R2, E2, B> extends Sink.Sink<R, E, A>, Fx<R2, E2, B>, Pipeable.Pipeable {}
 
+export namespace Push {
+  export interface Any extends Push<any, any, any, any, any, any> {}
+}
+
 export function make<R, E, A, R2, E2, B>(
   sink: Sink.Sink<R, E, A>,
   fx: Fx<R2, E2, B>
@@ -40,10 +44,10 @@ class PushImpl<R, E, A, R2, E2, B> extends FxBase<R2, E2, B> implements Push<R, 
   }
 }
 
-export function mapInput<R, E, A, R2, E2, B, C>(
-  push: Push<R, E, A, R2, E2, B>,
-  f: (c: C) => A
-): Push<R, E, C, R2, E2, B> {
+export function mapInput<P extends Push.Any, C>(
+  push: P,
+  f: (c: C) => Sink.Success<P>
+): Push<Sink.Context<P>, Sink.Error<P>, C, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>> {
   return make(
     Sink.map(push, f),
     push

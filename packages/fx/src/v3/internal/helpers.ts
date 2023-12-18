@@ -315,3 +315,25 @@ export function adjustTime(input: Duration.DurationInput = 1) {
     })
   )
 }
+
+export function tupleSink<R, E, A extends ReadonlyArray<any>, R2, E2, B>(
+  sink: Sink.Sink<R, E, A>,
+  f: (sink: (index: number, value: A[number]) => Effect.Effect<R, never, unknown>) => Effect.Effect<R2, E2, B>,
+  expected: number
+) {
+  return Effect.suspend(() => {
+    const values = new Map<number, A[number]>()
+
+    const getValues = () => Array.from({ length: expected }, (_, i) => values.get(i)!) as any as A
+
+    return f((index: number, value: A[number]) => {
+      values.set(index, value)
+
+      if (values.size === expected) {
+        return sink.onSuccess(getValues())
+      } else {
+        return Effect.unit
+      }
+    })
+  })
+}

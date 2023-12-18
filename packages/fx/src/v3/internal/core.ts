@@ -34,7 +34,14 @@ import * as Sink from "../Sink.js"
 import * as EffectLoopOp from "./effect-loop-operator.js"
 import * as EffectOp from "./effect-operator.js"
 import * as EffectProducer from "./effect-producer.js"
-import { adjustTime, matchEffectPrimitive, withBuffers, withFlattenStrategy, withScopedFork } from "./helpers.js"
+import {
+  adjustTime,
+  matchEffectPrimitive,
+  tupleSink,
+  withBuffers,
+  withFlattenStrategy,
+  withScopedFork
+} from "./helpers.js"
 import * as SyncLoopOp from "./loop-operator.js"
 import * as Op from "./operator.js"
 import { EffectBase, FxBase } from "./protos.js"
@@ -43,6 +50,7 @@ import * as SyncOp from "./sync-operator.js"
 import * as SyncProducer from "./sync-producer.js"
 
 const DISCARD = { discard: true } as const
+const UNBOUNDED = { concurrency: "unbounded" } as const
 
 // TODO: Optimizations for take/drop and variants
 // TODO: Slice optimizations on synchronous producers
@@ -2203,4 +2211,49 @@ export function exhaustMatchLatestError<R, E, A, R2, E2, B, R3, E3, C>(
   opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
 ) {
   return matchErrorWithStrategy(fx, ExhaustLatest, opts)
+}
+
+export function tuple<const FX extends ReadonlyArray<Fx<any, any, any>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
+  {
+    readonly [K in keyof FX]: Fx.Success<FX[K]>
+  }
+> {
+  return new Tuple(fx)
+}
+
+class Tuple<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
+  {
+    readonly [K in keyof FX]: Fx.Success<FX[K]>
+  }
+> {
+  constructor(readonly i0: FX) {
+    super()
+  }
+
+  run<R2>(
+    sink: Sink.Sink<R2, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  ): Effect.Effect<Fx.Context<FX[number]> | R2, never, unknown> {
+    return tupleSink(
+      sink,
+      (onSuccess) =>
+        Effect.forEach(
+          this.i0,
+          (fx, i) =>
+            fx.run(
+              Sink.make(
+                sink.onFailure,
+                (a) => onSuccess(i, a)
+              )
+            ),
+          UNBOUNDED
+        ),
+      this.i0.length
+    )
+  }
 }

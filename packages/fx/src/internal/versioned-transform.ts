@@ -28,14 +28,12 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
 
   toEffect(): Effect.Effect<R0 | R4, E0 | E4, D> {
     // Use MulticastEffect to ensure at most 1 effect is running at a time
-    const update = new MulticastEffect(Effect.gen(this, function*(_) {
-      const x = yield* _(this._transformGet(this.input as any as Effect.Effect<R2, E2, B>))
-
-      this._currentValue = Option.some(x)
-      this._version = yield* _(this.input.version)
-
-      return x
-    }))
+    const transformed = this._transformGet(this.input as any as Effect.Effect<R2, E2, B>)
+    const update = new MulticastEffect(Effect.tap(transformed, (value) =>
+      Effect.sync(() => {
+        this._currentValue = Option.some(value)
+        this._version++
+      })))
 
     return Effect.gen(this, function*(_) {
       if (Option.isSome(this._currentValue) && (yield* _(this.input.version)) === this._version) {

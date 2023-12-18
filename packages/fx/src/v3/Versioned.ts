@@ -1,6 +1,9 @@
 import { Effect, flow, Option } from "effect"
+import { dual } from "effect/Function"
+import { sum } from "effect/Number"
 import { MulticastEffect } from "../internal/helpers"
 import type { Fx } from "./Fx"
+import * as core from "./internal/core"
 import { FxEffectBase } from "./internal/protos"
 import type { Sink } from "./Sink"
 
@@ -17,6 +20,10 @@ export namespace Versioned {
     Versioned<infer R1, infer E1, infer R2, infer E2, infer A2, infer R3, infer E3, infer A3> | infer _
     ? Versioned<R1, E1, R2, E2, A2, R3, E3, A3>
     : never
+
+  export type VersionContext<T> = T extends Versioned<infer R, any, any, any, any, any, any, any> ? R : never
+
+  export type VersionError<T> = T extends Versioned<any, infer E, any, any, any, any, any, any> ? E : never
 }
 
 export function make<R1, E1, R2, E2, A2, R3, E3, A3>(
@@ -91,24 +98,22 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
   }
 
   toEffect(): Effect.Effect<R0 | R4, E0 | E4, D> {
-    const transformed = this._transformEffect(this.input as any as Effect.Effect<R2, E2, B>)
-    // Use MulticastEffect to ensure at most 1 effect is running at a time
-    const update = new MulticastEffect(Effect.gen(this, function*(_) {
-      const x = yield* _(transformed)
+    const update = Effect.tap(
+      this._transformEffect(this.input as any as Effect.Effect<R2, E2, B>),
+      (value) =>
+        Effect.sync(() => {
+          this._currentValue = Option.some(value)
+          this._version++
+        })
+    )
 
-      this._currentValue = Option.some(x)
-      this._version = yield* _(this.input.version)
-
-      return x
-    }))
-
-    return Effect.gen(this, function*(_) {
-      if (Option.isSome(this._currentValue) && (yield* _(this.input.version)) === this._version) {
-        return this._currentValue.value
+    return new MulticastEffect(Effect.flatMap(this.input.version, (version) => {
+      if (version === this._version && Option.isSome(this._currentValue)) {
+        return Effect.succeed(this._currentValue.value)
       }
 
-      return yield* _(update)
-    })
+      return update
+    }))
   }
 }
 
@@ -116,4 +121,112 @@ function isVersionedTransform(
   u: unknown
 ): u is VersionedTransform<any, any, any, any, any, any, any, any, any, any, any, any, any, any> {
   return u instanceof VersionedTransform
+}
+
+/**
+ * Transform a Versioned's output value as both an Fx and Effect.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const map: {
+  <R, E, A, C, B, D>(
+    options: {
+      onFx: (a: A) => C
+      onEffect: (b: B) => D
+    }
+  ): <R0, E0, R2, E2>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+  ) => Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D>
+
+  <R0, E0, R, E, A, R2, E2, B, C, D>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+    options: {
+      onFx: (a: A) => C
+      onEffect: (b: B) => D
+    }
+  ): Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D>
+} = dual(2, function map<R0, E0, R, E, A, R2, E2, B, C, D>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  options: {
+    onFx: (a: A) => C
+    onEffect: (b: B) => D
+  }
+): Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D> {
+  return transform(versioned, (fx) => core.map(fx, options.onFx), Effect.map(options.onEffect))
+})
+
+/**
+ * Transform a Versioned's output value as both an Fx and Effect using an Effect.
+ * @since 1.18.0
+ * @category combinators
+ */
+export const mapEffect: {
+  <A, R3, E3, C, B, R4, E4, D>(
+    options: { onFx: (a: A) => Effect.Effect<R3, E3, C>; onEffect: (b: B) => Effect.Effect<R4, E4, D> }
+  ): <R0, E0, R, E, R2, E2>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+  ) => Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D>
+
+  <R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+    options: { onFx: (a: A) => Effect.Effect<R3, E3, C>; onEffect: (b: B) => Effect.Effect<R4, E4, D> }
+  ): Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D>
+} = dual(2, function mapEffect<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  options: {
+    onFx: (a: A) => Effect.Effect<R3, E3, C>
+    onEffect: (b: B) => Effect.Effect<R4, E4, D>
+  }
+): Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D> {
+  return transform(versioned, (fx) => core.mapEffect(fx, options.onFx), Effect.flatMap(options.onEffect))
+})
+
+/**
+ * @since 1.0.0
+ */
+export function tuple<const VS extends ReadonlyArray<Versioned<any, any, any, any, any, any, any, any>>>(
+  versioneds: VS
+): Versioned<
+  Versioned.VersionContext<VS[number]>,
+  Versioned.VersionError<VS[number]>,
+  Fx.Context<VS[number]>,
+  Fx.Error<VS[number]>,
+  { readonly [K in keyof VS]: Fx.Success<VS[K]> },
+  Effect.Effect.Context<VS[number]>,
+  Effect.Effect.Error<VS[number]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+> {
+  return make(
+    Effect.map(Effect.all(versioneds.map((v) => v.version)), (versions) => versions.reduce(sum, 0)),
+    core.tuple(versioneds),
+    Effect.all(versioneds, { concurrency: "unbounded" }) as any
+  )
+}
+
+/**
+ * @since 1.0.0
+ */
+export function struct<const VS extends Readonly<Record<string, Versioned<any, any, any, any, any, any, any, any>>>>(
+  versioneds: VS
+): Versioned<
+  Versioned.VersionContext<VS[keyof VS]>,
+  Versioned.VersionError<VS[keyof VS]>,
+  Fx.Context<VS[keyof VS]>,
+  Fx.Error<VS[keyof VS]>,
+  { readonly [K in keyof VS]: Fx.Success<VS[K]> },
+  Effect.Effect.Context<VS[keyof VS]>,
+  Effect.Effect.Error<VS[keyof VS]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+> {
+  return map(
+    tuple(
+      Object.entries(versioneds).map(([k, v]) =>
+        map(v, { onFx: (x) => [k, x] as const, onEffect: (x) => [k, x] as const })
+      )
+    ),
+    {
+      onFx: Object.fromEntries,
+      onEffect: Object.fromEntries
+    }
+  )
 }

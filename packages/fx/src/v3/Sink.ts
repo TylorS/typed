@@ -8,6 +8,16 @@ export interface Sink<out R, in E, in A> {
   onSuccess(value: A): Effect.Effect<R, never, unknown>
 }
 
+export namespace Sink {
+  export type Context<T> = T extends Sink<infer R, infer _E, infer _A> ? R : never
+  export type Error<T> = T extends Sink<infer _R, infer E, infer _A> ? E : never
+  export type Success<T> = T extends Sink<infer _R, infer _E, infer A> ? A : never
+}
+
+export type Context<T> = Sink.Context<T>
+export type Error<T> = Sink.Error<T>
+export type Success<T> = Sink.Success<T>
+
 export function make<E, R, A, R2>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
   onSuccess: (value: A) => Effect.Effect<R2, never, unknown>

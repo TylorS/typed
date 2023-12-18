@@ -160,7 +160,7 @@ export function combine<const Computeds extends ReadonlyArray<Computed<any, any,
   { readonly [K in keyof Computeds]: Fx.Success<Computeds[K]> }
 > {
   return Computed(
-    Versioned.combine(computeds) as Versioned.Versioned<
+    Versioned.tuple(computeds) as Versioned.Versioned<
       Fx.Context<Computeds[keyof Computeds]>,
       never,
       Fx.Context<Computeds[keyof Computeds]>,

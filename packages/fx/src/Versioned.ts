@@ -204,7 +204,7 @@ export const mapEffect: {
 /**
  * @since 1.0.0
  */
-export function combine<const VS extends ReadonlyArray<Versioned<any, any, any, any, any, any, any, any>>>(
+export function tuple<const VS extends ReadonlyArray<Versioned<any, any, any, any, any, any, any, any>>>(
   versioneds: VS
 ): Versioned<
   Versioned.VersionContext<VS[number]>,
@@ -239,7 +239,7 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
   { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
 > {
   return map(
-    combine(
+    tuple(
       Object.entries(versioneds).map(([k, v]) =>
         map(v, { onFx: (x) => [k, x] as const, onEffect: (x) => [k, x] as const })
       )
