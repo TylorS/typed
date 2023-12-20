@@ -313,6 +313,8 @@ describe.concurrent(__filename, () => {
 
           const values = yield* _(Effect.fromFiber(fiber))
 
+          console.log(values)
+
           expect(values).toEqual([
             [],
             [0, 2, 3],

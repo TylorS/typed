@@ -1,6 +1,7 @@
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
 import * as Fx from "@typed/fx/v3/Fx"
 import * as core from "@typed/fx/v3/internal/core"
+import * as diff from "@typed/fx/v3/internal/diff"
 import * as RefSubject from "@typed/fx/v3/RefSubject"
 import * as Sink from "@typed/fx/v3/Sink"
 import * as Subject from "@typed/fx/v3/Subject"
@@ -134,6 +135,80 @@ describe.concurrent("V3", () => {
         }).pipe(Effect.scoped, Effect.provide(TestContext.TestContext))
 
         await Effect.runPromise(test)
+      })
+    })
+
+    describe.concurrent("Fx.keyed", () => {
+      it.concurrent("allow keeping a reference to a running stream", async () => {
+        const test = Effect.gen(function*($) {
+          const inputs = Fx.mergeAll([
+            Fx.succeed([1, 2, 3]),
+            Fx.at([3, 2, 1], 50),
+            Fx.at([4, 5, 6, 1], 100)
+          ])
+
+          let calls = 0
+
+          const fx = Fx.keyed(
+            inputs,
+            {
+              getKey: (x) => x,
+              onValue: (x) => {
+                calls++
+                return x
+              }
+            }
+          )
+
+          const events = yield* $(Fx.toReadonlyArray(fx))
+
+          expect(events).toEqual([
+            [1, 2, 3],
+            [3, 2, 1],
+            [4, 5, 6, 1]
+          ])
+
+          // Should only be called once for each unique value
+          expect(calls).toEqual(6)
+        })
+
+        await Effect.runPromise(Effect.scoped(test))
+      })
+
+      it.concurrent("allow providing a debounce", async () => {
+        const test = Effect.gen(function*($) {
+          const inputs = Fx.mergeAll([
+            Fx.succeed([1, 2, 3]),
+            Fx.at([3, 2, 1], 50),
+            Fx.at([4, 5, 6, 1], 150)
+          ])
+
+          let calls = 0
+
+          const fx = Fx.keyed(
+            inputs,
+            {
+              getKey: (x) => x,
+              onValue: (x) => {
+                calls++
+                return x
+              },
+              debounce: 50
+            }
+          )
+
+          const events = yield* $(Fx.toReadonlyArray(fx))
+
+          expect(events).toEqual([
+            [3, 2, 1],
+            [4, 5, 6, 1]
+          ])
+
+          // Should only be called once for each unique value
+          expect(calls).toEqual(6)
+        })
+
+        await Effect.runPromise(Effect.scoped(test))
       })
     })
   })
@@ -489,6 +564,43 @@ describe.concurrent("V3", () => {
       }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
+    })
+  })
+
+  describe.concurrent("internal / diff", () => {
+    const makeSimpleDiffer = () => {
+      return <A extends PropertyKey>(
+        old: ReadonlyArray<A>,
+        newValue: ReadonlyArray<A>,
+        expected: ReadonlyArray<diff.Diff<A>>
+      ) => {
+        const actual = diff.diff(old, newValue)
+
+        try {
+          expect(actual).toEqual(expected)
+        } catch (error) {
+          console.error("old", old)
+          console.error("new", newValue)
+          console.error("expected", expected)
+          console.error("actual", actual)
+
+          throw error
+        }
+      }
+    }
+
+    it("diffs 2 arrays using Equivalence instance", () => {
+      const test = makeSimpleDiffer()
+
+      test([1, 2, 3], [1, 2, 3], [])
+      test([1, 2, 3], [1, 2, 3, 4], [diff.add(4, 3)])
+      test([1, 2, 3], [1, 2, 4], [diff.remove(3, 2), diff.add(4, 2)])
+      test([1, 2, 3], [1, 2, 4, 5], [diff.remove(3, 2), diff.add(4, 2), diff.add(5, 3)])
+      test([1, 2, 3], [1, 2, 3, 4, 5], [diff.add(4, 3), diff.add(5, 4)])
+      test([1, 2, 3], [1, 2, 3, 4, 5, 6], [diff.add(4, 3), diff.add(5, 4), diff.add(6, 5)])
+      test([1, 2, 3], [3], [diff.remove(1, 0), diff.remove(2, 1), diff.moved(3, 2, 0)])
+      test([1, 2, 3], [4, 1, 2], [diff.remove(3, 2), diff.add(4, 0), diff.moved(1, 0, 1), diff.moved(2, 1, 2)])
+      test([1, 2, 3], [3, 2, 1], [diff.moved(1, 0, 2), diff.moved(3, 2, 0)])
     })
   })
 })

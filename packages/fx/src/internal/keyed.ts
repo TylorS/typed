@@ -105,24 +105,30 @@ function updateState<A, B, C, R2, E2, R3>({
     Effect.gen(function*($) {
       const { added, removed, unchanged } = diffValues(state, updated, getKey)
 
-      // Remove values that are no longer in the stream
-      yield* $(Effect.forEach(removed, (key) => removeValue(state, key), { discard: true }))
+      if (removed.length > 0) {
+        // Remove values that are no longer in the stream
+        yield* $(Effect.forEach(removed, (key) => removeValue(state, key), { discard: true }))
+      }
 
-      // Update values that are still in the stream
-      yield* $(
-        Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
-          concurrency: "unbounded",
-          discard: true
-        })
-      )
+      if (unchanged.length === 0) {
+        // Update values that are still in the stream
+        yield* $(
+          Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
+            concurrency: "unbounded",
+            discard: true
+          })
+        )
+      }
 
-      // Add values that are new to the stream
-      yield* $(
-        Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
-          concurrency: "unbounded",
-          discard: true
-        })
-      )
+      if (added.length > 0) {
+        // Add values that are new to the stream
+        yield* $(
+          Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
+            concurrency: "unbounded",
+            discard: true
+          })
+        )
+      }
 
       // If nothing was added, emit the current values
       if (added.length === 0) {

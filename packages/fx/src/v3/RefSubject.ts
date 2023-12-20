@@ -143,9 +143,10 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
   }
 
   runUpdates<R3, E3, B>(
-    run: (ref: GetSetDelete<Exclude<R, R2>, E, A>) => Effect.Effect<R3, E3, B>
+    run: (ref: GetSetDelete<Exclude<R, R2>, E, A>) => Effect.Effect<R3, E3, B>,
+    lock: boolean = true
   ) {
-    return this.core.semaphore.withPermits(1)(run(this.getSetDelete))
+    return lock ? this.core.semaphore.withPermits(1)(run(this.getSetDelete)) : run(this.getSetDelete)
   }
 
   onSuccess(value: A): Effect.Effect<Exclude<R, R2>, never, unknown> {
@@ -328,7 +329,7 @@ function initializeCore<R, E, A, R2>(
   return Effect.zipRight(
     Effect.tap(
       Effect.forkIn(
-        lock ? core.semaphore.withPermits(1)(initialize) : initialize,
+        lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize,
         core.scope
       ),
       (fiber) => Effect.sync(() => core._fiber = fiber)

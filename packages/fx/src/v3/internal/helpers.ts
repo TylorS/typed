@@ -1,6 +1,18 @@
 import { getOption } from "@typed/context"
-import type { Duration, ExecutionStrategy, Exit } from "effect"
-import { Cause, Effect, Equal, Equivalence, Fiber, Option, Ref, Scope, SynchronizedRef, TestClock } from "effect"
+import type { Duration, Exit } from "effect"
+import {
+  Cause,
+  Effect,
+  Equal,
+  Equivalence,
+  ExecutionStrategy,
+  Fiber,
+  Option,
+  Ref,
+  Scope,
+  SynchronizedRef,
+  TestClock
+} from "effect"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
@@ -74,7 +86,7 @@ export function withScopedFork<R, E, A>(
 
 function makeForkInScope(scope: Scope.Scope) {
   return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
-    matchEffectPrimitive<R, E, A, Effect.Effect<R, never, Fiber.Fiber<E, A>>>(effect, {
+    matchEffectPrimitive<R, E, A, Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<E, A>>>(effect, {
       Success: (a) => Effect.succeed(Fiber.succeed(a)),
       Failure: (cause) => Effect.succeed(Fiber.failCause(cause)),
       Sync: (f) =>
@@ -89,7 +101,7 @@ function makeForkInScope(scope: Scope.Scope) {
       Right: (a) => Effect.succeed(Fiber.succeed(a)),
       Some: (a) => Effect.succeed(Fiber.succeed(a)),
       None: () => Effect.succeed(Fiber.fail(new Cause.NoSuchElementException() as E)),
-      Otherwise: Effect.forkIn(scope)
+      Otherwise: (eff) => Effect.forkIn(Effect.provideService(eff, Scope.Scope, scope), scope)
     })
 }
 
@@ -97,23 +109,26 @@ export function withSwitchFork<R, E, A>(
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
-  return withScopedFork((_, scope) =>
-    Effect.flatMap(
-      SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
-      (ref) => runSwitchFork(ref, scope, f)
-    ), executionStrategy)
+  return withScopedFork(
+    (fork, scope) =>
+      Effect.flatMap(
+        SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
+        (ref) => runSwitchFork(ref, fork, scope, f)
+      ),
+    executionStrategy
+  )
 }
 
 export function runSwitchFork<R, E, A>(
   ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, void>>,
+  fork: ScopedFork,
   scope: Scope.CloseableScope,
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>
 ) {
-  const fork = makeForkInScope(scope)
   return Effect.zipRight(
     f(
       (effect) =>
-        SynchronizedRef.updateAndGetEffect(
+        SynchronizedRef.updateEffect(
           ref,
           (fiber) => Effect.zipRight(Fiber.interrupt(fiber), fork(effect))
         ),
@@ -336,4 +351,14 @@ export function tupleSink<R, E, A extends ReadonlyArray<any>, R2, E2, B>(
       }
     })
   })
+}
+
+export function debounce<R, E, A>(
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  duration: Duration.DurationInput
+) {
+  return withSwitchFork(
+    (fork, scope) => f((eff) => fork(Effect.delay(eff, duration)), scope),
+    ExecutionStrategy.sequential
+  )
 }

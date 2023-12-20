@@ -1,10 +1,9 @@
-import { Schedule } from "effect"
+import type * as Ctx from "@typed/context"
+import { Effect, Schedule } from "effect"
 import type {
   Cause,
   ConfigProvider,
-  Context,
   Duration,
-  Effect,
   Equivalence,
   ExecutionStrategy,
   Exit,
@@ -16,6 +15,7 @@ import type {
   Option,
   Pipeable,
   Predicate,
+  Queue,
   Request,
   Runtime,
   Scope,
@@ -26,7 +26,9 @@ import type * as Types from "effect/Types"
 import * as strategies from "../internal/strategies.js"
 import { TypeId } from "../TypeId.js"
 import * as core from "./internal/core.js"
+import * as coreKeyed from "./internal/keyed.js"
 import * as coreShare from "./internal/share.js"
+import type { RefSubject } from "./RefSubject.js"
 import type { Sink } from "./Sink.js"
 import type { Subject } from "./Subject.js"
 
@@ -823,7 +825,7 @@ export const withSpan: {
     readonly links?: ReadonlyArray<Tracer.SpanLink>
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
-    readonly context?: Context.Context<never>
+    readonly context?: Ctx.Context<never>
   }): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
 
   <R, E, A>(self: Fx<R, E, A>, name: string, options?: {
@@ -831,13 +833,13 @@ export const withSpan: {
     readonly links?: ReadonlyArray<Tracer.SpanLink>
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
-    readonly context?: Context.Context<never>
+    readonly context?: Ctx.Context<never>
   }): Fx<R, E, A>
 } = dual(3, core.withSpan)
 
 export const provideContext: {
-  <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
 } = dual(2, core.provideContext)
 
 export const provideLayer: {
@@ -851,36 +853,36 @@ export const provideRuntime: {
 } = dual(2, core.provideRuntime)
 
 export const provideService: {
-  <I, S>(service: Context.Tag<I, S>, instance: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, service: Context.Tag<I, S>, instance: S): Fx<Exclude<R, I>, E, A>
+  <I, S>(service: Ctx.Tag<I, S>, instance: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
+  <R, E, A, I, S>(fx: Fx<R, E, A>, service: Ctx.Tag<I, S>, instance: S): Fx<Exclude<R, I>, E, A>
 } = dual(3, core.provideService)
 
 export const provideServiceEffect: {
   <I, S, R2, E2>(
-    service: Context.Tag<I, S>,
+    service: Ctx.Tag<I, S>,
     instance: Effect.Effect<R2, E2, S>
   ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E | E2, A>
   <R, E, A, I, S, R2, E2>(
     fx: Fx<R, E, A>,
-    service: Context.Tag<I, S>,
+    service: Ctx.Tag<I, S>,
     instance: Effect.Effect<R2, E2, S>
   ): Fx<R2 | Exclude<R, I>, E | E2, A>
 } = dual(3, core.provideServiceEffect)
 
 export const provide: {
-  <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
   <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
   <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
   <R2 = never, E2 = never, S = never>(
-    provide: Layer.Layer<R2, E2, S> | Context.Context<S> | Runtime.Runtime<S>
+    provide: Layer.Layer<R2, E2, S> | Ctx.Context<S> | Runtime.Runtime<S>
   ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
 
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
   <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
   <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
   <R, E, A, R2 = never, E2 = never, S = never>(
     fx: Fx<R, E, A>,
-    provide: Layer.Layer<R2, E2, S> | Context.Context<S> | Runtime.Runtime<S>
+    provide: Layer.Layer<R2, E2, S> | Ctx.Context<S> | Runtime.Runtime<S>
   ): Fx<R2 | Exclude<R, S>, E | E2, A>
 } = dual(2, core.provide)
 
@@ -1358,3 +1360,38 @@ export const exhaustMatchLatestError: {
     opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
   ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
 } = dual(2, core.exhaustMatchLatestError)
+
+export const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<E, A>> = core.exit
+
+export const toEnqueue: {
+  <R2 = never, A = never>(
+    queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>
+  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R | R2, E, void>
+  <R, E, A, R2 = never>(fx: Fx<R, E, A>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<R | R2, E, void>
+} = dual(2, core.toEnqueue)
+
+export interface KeyedOptions<A, B, R2, E2, C> {
+  readonly getKey: (a: A) => B
+  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly debounce?: Duration.DurationInput
+}
+
+export const keyed: {
+  <A, B extends PropertyKey, R2, E2, C>(
+    options: KeyedOptions<A, B, R2, E2, C>
+  ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<C>>
+
+  <R, E, A, B extends PropertyKey, R2, E2, C>(
+    fx: Fx<R, E, ReadonlyArray<A>>,
+    options: KeyedOptions<A, B, R2, E2, C>
+  ): Fx<R | R2, E | E2, ReadonlyArray<C>>
+} = dual(2, coreKeyed.keyed)
+
+export const at: {
+  (duration: Duration.DurationInput): <A>(value: A) => Fx<never, never, A>
+  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A>
+} = dual(
+  2,
+  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A> =>
+    fromEffect(Effect.delay(Effect.succeed(value), duration))
+)

@@ -1,10 +1,12 @@
+import * as Context from "@typed/context"
 import type {
   ConfigProvider,
+  Duration,
   Equivalence,
-  Exit,
   FiberId,
   FiberRef,
   HashSet,
+  Queue,
   Request,
   Runtime,
   Schedule,
@@ -14,11 +16,11 @@ import {
   Boolean,
   Cause,
   Clock,
-  Context,
   Effect,
   Either,
   Equal,
   ExecutionStrategy,
+  Exit,
   Layer,
   Option,
   Predicate,
@@ -251,6 +253,9 @@ export const tapEffect = <R, E, A, R2, E2>(
 
 export const loop = <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C> =>
   Transformer.make(fx, SyncLoopOp.LoopOperator(seed, f))
+
+export const withPrevious = <R, E, A>(fx: Fx<R, E, A>): Fx<R, E, readonly [Option.Option<A>, A]> =>
+  loop(fx, Option.none<A>(), (acc, a) => [[acc, a], Option.some(a)] as const)
 
 export const filterMapLoop = <R, E, A, B, C>(
   fx: Fx<R, E, A>,
@@ -809,6 +814,21 @@ export function exhaustMapLatestEffect<R, E, A, R2, E2, B>(
   return exhaustMapLatest(fx, (a) => fromEffect(f(a)), executionStrategy)
 }
 
+export function exhaustFilterMapLatestEffect<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
+  executionStrategy?: ExecutionStrategy.ExecutionStrategy
+): Fx<R | R2 | Scope.Scope, E | E2, B> {
+  return exhaustMapLatest(fx, (a) =>
+    fromFxEffect(Effect.map(
+      f(a),
+      Option.match({
+        onNone: () => empty,
+        onSome: succeed
+      })
+    )), executionStrategy)
+}
+
 export function flatMapConcurrently<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
   f: (a: A) => Fx<R2, E2, B>,
@@ -875,17 +895,19 @@ class FlatMapWithStrategy<
   ) {
     super()
 
-    this.withFork = withFlattenStrategy(this.i2)
+    this.withFork = withFlattenStrategy(i2)
   }
 
   run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<R | R2 | R3 | Scope.Scope, never, unknown> {
     return this.withFork(
       (fork) =>
-        this.i0.run(Sink.make((cause) => sink.onFailure(cause), (a) => {
-          const inner = this.i1(a)
-          // TODO: Optimize behaviors based on type of inner Fx
-          return fork(inner.run(sink))
-        })),
+        Sink.withEarlyExit(sink, (sink) =>
+          this.i0.run(
+            Sink.make(
+              (cause) => Cause.isInterruptedOnly(cause) ? sink.earlyExit : sink.onFailure(cause),
+              (a) => fork(this.i1(a).run(sink))
+            )
+          )),
       this.i3
     )
   }
@@ -2256,4 +2278,33 @@ class Tuple<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
       this.i0.length
     )
   }
+}
+
+export function exit<R, E, A>(
+  fx: Fx<R, E, A>
+): Fx<R, never, Exit.Exit<E, A>> {
+  return new ExitFx(fx)
+}
+
+class ExitFx<R, E, A> extends FxBase<R, never, Exit.Exit<E, A>> {
+  constructor(readonly i0: Fx<R, E, A>) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, never, Exit.Exit<E, A>>): Effect.Effect<R | R2, never, unknown> {
+    return this.i0.run(
+      Sink.make((cause) => sink.onSuccess(Exit.failCause(cause)), (a) => sink.onSuccess(Exit.succeed(a)))
+    )
+  }
+}
+
+export function toEnqueue<R, E, A, R2 = never>(
+  fx: Fx<R, E, A>,
+  queue: Context.Enqueue<R2, A> | Queue.Enqueue<A>
+) {
+  return observe(fx, (a) => queue.offer(a))
+}
+
+export function debounce<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
+  return switchMapEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
 }

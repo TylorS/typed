@@ -1082,13 +1082,50 @@ describe.concurrent("Fx.partitionMap", () => {
   })
 })
 
+describe.concurrent("Fx.from", () => {
+  it.concurrent("does returns an Fx as-is", async () => {
+    const test = Fx.from(Fx.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
+    const events = await Effect.runPromise(test)
+
+    expect(events).toEqual([1, 2, 3])
+  })
+
+  it.concurrent("lifts an Effect", async () => {
+    const test = Fx.from(Effect.succeed(1)).pipe(Fx.toReadonlyArray)
+    const events = await Effect.runPromise(test)
+
+    expect(events).toEqual([1])
+  })
+
+  it.concurrent("lifts a Cause", async () => {
+    const test = Fx.from(Cause.fail(1)).pipe(Fx.flip, Fx.toReadonlyArray)
+    const events = await Effect.runPromise(test)
+
+    expect(events).toEqual([1])
+  })
+
+  it.concurrent("lifts an Iterable", async () => {
+    const test = Fx.from(new Set([1, 2, 3])).pipe(Fx.toReadonlyArray)
+    const events = await Effect.runPromise(test)
+
+    expect(events).toEqual([1, 2, 3])
+  })
+
+  it.concurrent("lifts a value", async () => {
+    const test = Fx.from(1).pipe(Fx.toReadonlyArray)
+    const events = await Effect.runPromise(test)
+
+    expect(events).toEqual([1])
+  })
+})
+
 describe.concurrent("Fx.keyed", () => {
   it.concurrent("allow keeping a reference to a running stream", async () => {
     const test = Effect.gen(function*($) {
       const inputs = Fx.merge([
         Fx.succeed([1, 2, 3]),
-        Fx.at([3, 2, 1], 200),
-        Fx.at([4, 5, 6, 1], 400)
+        Fx.at([3, 2, 1], 50),
+        Fx.at([4, 5, 6, 1], 100)
       ])
 
       let calls = 0
@@ -1104,7 +1141,9 @@ describe.concurrent("Fx.keyed", () => {
         }
       )
 
+      console.time("fx.keyed")
       const events = yield* $(Fx.toReadonlyArray(fx))
+      console.timeEnd("fx.keyed")
 
       expect(events).toEqual([
         [1, 2, 3],
@@ -1117,42 +1156,5 @@ describe.concurrent("Fx.keyed", () => {
     })
 
     await Effect.runPromise(Effect.scoped(test))
-  })
-
-  describe.concurrent("Fx.from", () => {
-    it.concurrent("does returns an Fx as-is", async () => {
-      const test = Fx.from(Fx.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1, 2, 3])
-    })
-
-    it.concurrent("lifts an Effect", async () => {
-      const test = Fx.from(Effect.succeed(1)).pipe(Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1])
-    })
-
-    it.concurrent("lifts a Cause", async () => {
-      const test = Fx.from(Cause.fail(1)).pipe(Fx.flip, Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1])
-    })
-
-    it.concurrent("lifts an Iterable", async () => {
-      const test = Fx.from(new Set([1, 2, 3])).pipe(Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1, 2, 3])
-    })
-
-    it.concurrent("lifts a value", async () => {
-      const test = Fx.from(1).pipe(Fx.toReadonlyArray)
-      const events = await Effect.runPromise(test)
-
-      expect(events).toEqual([1])
-    })
   })
 })
