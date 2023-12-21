@@ -8,9 +8,9 @@ import * as Subject from "@typed/fx/v3/Subject"
 import { deepStrictEqual, ok } from "assert"
 import { Effect, Fiber, Option, TestClock, TestContext } from "effect"
 
-describe.concurrent("V3", () => {
-  describe.concurrent("Fx", () => {
-    it.concurrent("filter + map + loop fusion", async () => {
+describe("V3", () => {
+  describe("Fx", () => {
+    it("filter + map + loop fusion", async () => {
       const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
         (x) => core.filter(x, (x) => x % 2 === 0),
         (x) => core.map(x, (x) => x + 1),
@@ -33,42 +33,73 @@ describe.concurrent("V3", () => {
       deepStrictEqual(values, [0, 3, 24, 75, 168])
     })
 
-    it.concurrent("fromArray + switchMap", async () => {
-      const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
-        (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
-      )
-      const test = Effect.scoped(core.toReadonlyArray(fx))
+    describe("switchMap", () => {
+      it("fromArray + switchMap", async () => {
+        const fx = core.fromArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).pipe(
+          (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
+        )
+        const test = Effect.scoped(core.toReadonlyArray(fx))
 
-      deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
+        deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
+      })
+
+      it("fromEffect + switchMap", async () => {
+        const fx = core.fromEffect(Effect.succeed(10)).pipe(
+          (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
+        )
+        const test = Effect.scoped(core.toReadonlyArray(fx))
+
+        deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
+      })
+
+      it("switchMap favors the latest inner Fx", async () => {
+        const test = core.toReadonlyArray(core.switchMap(
+          core.make<number>((sink) =>
+            Effect.gen(function*(_) {
+              yield* _(sink.onSuccess(1))
+              yield* _(sink.onSuccess(2))
+              yield* _(sink.onSuccess(3))
+            })
+          ),
+          (x) => core.succeed(String(x + 1))
+        ))
+
+        const array = await Effect.runPromise(Effect.scoped(test))
+
+        expect(array).toEqual(["4"])
+      })
+
+      it("manages the scopes of inner Fx", async () => {
+        const test = Effect.gen(function*(_) {
+          const finalized: Array<number> = []
+
+          const fx = core.switchMap(
+            core.mergeAll(
+              [
+                core.succeed(1),
+                core.debounce(core.succeed(2), 10),
+                core.debounce(core.succeed(3), 20)
+              ]
+            ),
+            (x) =>
+              core.fromFxEffect(
+                Effect.gen(function*(_) {
+                  yield* _(Effect.addFinalizer(() => Effect.sync(() => finalized.push(x))))
+                  return core.succeed(x)
+                })
+              )
+          )
+
+          yield* _(core.toReadonlyArray(fx))
+
+          expect(finalized).toEqual([1, 2, 3])
+        })
+
+        await Effect.runPromise(Effect.scoped(test))
+      })
     })
 
-    it.concurrent("fromEffect + switchMap", async () => {
-      const fx = core.fromEffect(Effect.succeed(10)).pipe(
-        (x) => core.switchMap(x, (x) => core.fromArray([x, x + 1, x + 2]))
-      )
-      const test = Effect.scoped(core.toReadonlyArray(fx))
-
-      deepStrictEqual(await Effect.runPromise(test), [10, 11, 12])
-    })
-
-    it.concurrent("switchMap favors the latest inner Fx", async () => {
-      const test = core.toReadonlyArray(core.switchMap(
-        core.make<number>((sink) =>
-          Effect.gen(function*(_) {
-            yield* _(sink.onSuccess(1))
-            yield* _(sink.onSuccess(2))
-            yield* _(sink.onSuccess(3))
-          })
-        ),
-        (x) => core.succeed(String(x + 1))
-      ))
-
-      const array = await Effect.runPromise(Effect.scoped(test))
-
-      expect(array).toEqual(["4"])
-    })
-
-    it.concurrent("exhaustMap favors the first inner Fx", async () => {
+    it("exhaustMap favors the first inner Fx", async () => {
       const test = core.toReadonlyArray(core.exhaustMap(
         core.make<number>((sink) =>
           Effect.gen(function*(_) {
@@ -85,7 +116,7 @@ describe.concurrent("V3", () => {
       expect(array).toEqual(["2"])
     })
 
-    it.concurrent("exhaustMapLatest favors the first and last inner Fx", async () => {
+    it("exhaustMapLatest favors the first and last inner Fx", async () => {
       const test = core.toReadonlyArray(core.exhaustMapLatest(
         core.make<number>((sink) =>
           Effect.gen(function*(_) {
@@ -102,8 +133,8 @@ describe.concurrent("V3", () => {
       expect(array).toEqual(["2", "4"])
     })
 
-    describe.concurrent("hold", () => {
-      it.concurrent("shares a value with replay of the last", async () => {
+    describe("hold", () => {
+      it("shares a value with replay of the last", async () => {
         let i = 0
         const delay = 10
         const iterator = Effect.sync(() => i++)
@@ -138,13 +169,13 @@ describe.concurrent("V3", () => {
       })
     })
 
-    describe.concurrent("Fx.keyed", () => {
-      it.concurrent("allow keeping a reference to a running stream", async () => {
+    describe("Fx.keyed", () => {
+      it("allow keeping a reference to a running stream", async () => {
         const test = Effect.gen(function*($) {
           const inputs = Fx.mergeAll([
             Fx.succeed([1, 2, 3]),
-            Fx.at([3, 2, 1], 50),
-            Fx.at([4, 5, 6, 1], 100)
+            Fx.at([3, 2, 1], 100),
+            Fx.at([4, 5, 6, 1], 200)
           ])
 
           let calls = 0
@@ -175,7 +206,7 @@ describe.concurrent("V3", () => {
         await Effect.runPromise(Effect.scoped(test))
       })
 
-      it.concurrent("allow providing a debounce", async () => {
+      it("allow providing a debounce", async () => {
         const test = Effect.gen(function*($) {
           const inputs = Fx.mergeAll([
             Fx.succeed([1, 2, 3]),
@@ -213,8 +244,8 @@ describe.concurrent("V3", () => {
     })
   })
 
-  describe.concurrent("RefSubject", () => {
-    it.concurrent("allows managing state via Effect", async () => {
+  describe("RefSubject", () => {
+    it("allows managing state via Effect", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(Effect.succeed(0)))
 
@@ -232,7 +263,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("allows managing state via Fx", async () => {
+    it("allows managing state via Fx", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.make(core.succeed(0)))
 
@@ -250,8 +281,8 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    describe.concurrent("runUpdate", () => {
-      it.concurrent("allows changing the value of a ref multiple times withing a single workflow", async () => {
+    describe("runUpdate", () => {
+      it("allows changing the value of a ref multiple times withing a single workflow", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(1))
           const fiber = yield* _(core.toReadonlyArray(core.take(ref, 10)), Effect.fork)
@@ -302,7 +333,7 @@ describe.concurrent("V3", () => {
       })
     })
 
-    it.concurrent("allows subscribing to those state changes", async () => {
+    it("allows subscribing to those state changes", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
@@ -320,7 +351,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("allow transforming inputs with Sink", async () => {
+    it("allow transforming inputs with Sink", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
         const sink = Sink.map(ref, (x: string) => x.length)
@@ -341,7 +372,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("tracks the current version", async () => {
+    it("tracks the current version", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0, { eq: (a, b) => a === b }))
 
@@ -364,7 +395,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("can be combined in tuple", async () => {
+    it("can be combined in tuple", async () => {
       const test = Effect.gen(function*(_) {
         const a = yield* _(RefSubject.of(0))
         const b = yield* _(RefSubject.of(""))
@@ -394,8 +425,8 @@ describe.concurrent("V3", () => {
     })
   })
 
-  describe.concurrent("Computed", () => {
-    it.concurrent("allows mapping values from a RefSubject", async () => {
+  describe("Computed", () => {
+    it("allows mapping values from a RefSubject", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
         const computed = RefSubject.map(ref, (x) => x + 1)
@@ -410,7 +441,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("allows mapping values from a Computed", async () => {
+    it("allows mapping values from a Computed", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
         const middle = RefSubject.map(ref, (x) => x + 1)
@@ -426,7 +457,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("allows subscribing to those state changes", async () => {
+    it("allows subscribing to those state changes", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
         const computed = RefSubject.map(ref, (x) => x + 1)
@@ -449,7 +480,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("avoids recomputing when source has not changed", async () => {
+    it("avoids recomputing when source has not changed", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
         let called = 0
@@ -474,7 +505,7 @@ describe.concurrent("V3", () => {
       await Effect.runPromise(test)
     })
 
-    it.concurrent("can be combined in tuple", async () => {
+    it("can be combined in tuple", async () => {
       const test = Effect.gen(function*(_) {
         const source = yield* _(RefSubject.of(0))
         const a = RefSubject.map(source, (x) => x + 1)
@@ -497,9 +528,9 @@ describe.concurrent("V3", () => {
     })
   })
 
-  describe.concurrent("Filtered,Effect.optionFromOptional", () => {
-    describe.concurrent("filterMap to filtered values", () => {
-      it.concurrent("returns Cause.NoSuchElementException when filtered", async () => {
+  describe("Filtered,Effect.optionFromOptional", () => {
+    describe("filterMap to filtered values", () => {
+      it("returns Cause.NoSuchElementException when filtered", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(0))
           const filtered = RefSubject.filterMap(ref, Option.liftPredicate((x) => x % 2 === 0))
@@ -518,7 +549,7 @@ describe.concurrent("V3", () => {
         await Effect.runPromise(test)
       })
 
-      it.concurrent("can be combined in tuple", async () => {
+      it("can be combined in tuple", async () => {
         const test = Effect.gen(function*(_) {
           const source = yield* _(RefSubject.of(0))
           const a = RefSubject.filterMap(source, Option.liftPredicate((x) => x % 2 === 0))
@@ -546,8 +577,8 @@ describe.concurrent("V3", () => {
     })
   })
 
-  describe.concurrent("Subject", () => {
-    it.concurrent("can map the input values using Sink combinators", async () => {
+  describe("Subject", () => {
+    it("can map the input values using Sink combinators", async () => {
       const subject = Subject.make<never, number>()
       const sink = subject.pipe(Sink.map((x: string) => x.length))
       const test = Effect.gen(function*(_) {
@@ -567,7 +598,7 @@ describe.concurrent("V3", () => {
     })
   })
 
-  describe.concurrent("internal / diff", () => {
+  describe("internal / diff", () => {
     const makeSimpleDiffer = () => {
       return <A extends PropertyKey>(
         old: ReadonlyArray<A>,

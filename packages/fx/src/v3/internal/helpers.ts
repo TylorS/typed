@@ -130,7 +130,17 @@ export function runSwitchFork<R, E, A>(
       (effect) =>
         SynchronizedRef.updateEffect(
           ref,
-          (fiber) => Effect.zipRight(Fiber.interrupt(fiber), fork(effect))
+          (fiber) =>
+            Effect.flatMap(Scope.fork(scope, ExecutionStrategy.sequential), (childScope) =>
+              Effect.zipRight(
+                Fiber.interrupt(fiber),
+                fork(
+                  Effect.onExit(
+                    Effect.provideService(effect, Scope.Scope, childScope),
+                    (exit) => Scope.close(childScope, exit)
+                  )
+                )
+              ))
         ),
       scope
     ),
@@ -150,7 +160,15 @@ export function withExhaustFork<R, E, A>(
           f((effect) =>
             SynchronizedRef.updateEffect(
               ref,
-              (fiber) => fiber ? Effect.succeed(fiber) : fork(Effect.onExit(effect, () => Ref.set(ref, null)))
+              (fiber) =>
+                fiber
+                  ? Effect.succeed(fiber)
+                  : fork(
+                    Effect.onExit(
+                      effect,
+                      () => Ref.set(ref, null)
+                    )
+                  )
             ), scope),
           () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
         )
@@ -197,7 +215,15 @@ export function withExhaustLatestFork<R, E, A>(
           Effect.flatMap(Ref.get(ref), (currentFiber) =>
             currentFiber
               ? Ref.set(nextEffect, Option.some(eff))
-              : Effect.flatMap(fork(Effect.ensuring(eff, Effect.zip(reset, runNext))), (fiber) => Ref.set(ref, fiber)))
+              : Effect.flatMap(
+                fork(
+                  Effect.ensuring(
+                    eff,
+                    Effect.zip(reset, runNext)
+                  )
+                ),
+                (fiber) => Ref.set(ref, fiber)
+              ))
 
         return Effect.zip(f(exhaustLatestFork, scope), awaitNext)
       }
