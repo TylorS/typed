@@ -91,6 +91,50 @@ export function diff<A>(
   return diff.sort(sortDiff)
 }
 
+export function diffIterator<A extends PropertyKey>(
+  oldValue: ReadonlyArray<A>,
+  newValue: ReadonlyArray<A>,
+  options?: Omit<DiffOptions<A>, "getKey">
+): Generator<Diff<A>>
+
+export function diffIterator<A>(
+  oldValue: ReadonlyArray<A>,
+  newValue: ReadonlyArray<A>,
+  options: DiffOptions<A>
+): Generator<Diff<A>>
+
+export function* diffIterator<A>(
+  a: ReadonlyArray<A>,
+  b: ReadonlyArray<A>,
+  options: Partial<DiffOptions<A>> = {}
+): Generator<Diff<A>> {
+  const { eq = Equal.equals, getKey = identity as any } = options
+  const oldKeyMap = options.keyMap ?? getKeyMap(a, getKey)
+  const keyMap = getKeyMap(b, getKey)
+
+  for (let i = 0; i < a.length; ++i) {
+    const aValue = a[i]
+    const bIndex = keyMap.get(getKey(aValue))
+    if (bIndex === undefined) {
+      yield remove(aValue, i)
+    }
+  }
+
+  for (let i = 0; i < b.length; ++i) {
+    const bValue = b[i]
+    const aIndex = oldKeyMap.get(getKey(bValue))
+    if (aIndex === undefined) {
+      yield add(bValue, i)
+    } else {
+      if (aIndex !== i) {
+        yield moved(bValue, aIndex, i)
+      } else if (!eq(a[aIndex], bValue)) {
+        yield update(bValue, i)
+      }
+    }
+  }
+}
+
 function sortDiff<A>(a: Diff<A>, b: Diff<A>): number {
   if (a._tag === "Remove" && b._tag !== "Remove") return -1
   if (b._tag === "Remove") return 1

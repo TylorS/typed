@@ -14,7 +14,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
   [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
-  constructor(readonly cause: Cause.Cause<E>, readonly refreshing: Option.Option<Loading>) {
+  constructor(readonly cause: Cause.Cause<E>, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
 
     this.commit = constant(Effect.failCause(cause))
@@ -23,6 +23,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
   [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Failure"
       && Equal.equals(this.cause, that.cause)
+      && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
   };
 
@@ -44,7 +45,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
   [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
-  constructor(readonly value: A, readonly refreshing: Option.Option<Loading>) {
+  constructor(readonly value: A, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
 
     this.commit = constant(Effect.succeed(value))
@@ -53,6 +54,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
   [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Success"
       && Equal.equals(this.value, that.value)
+      && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
   };
 

@@ -3,7 +3,7 @@ import type { Fx, KeyedOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"
 import type { Add, Moved, Remove, Update } from "./diff.js"
-import { diff } from "./diff.js"
+import { diffIterator } from "./diff.js"
 import { debounce, withExhaustLatestFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
 
@@ -64,8 +64,9 @@ function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
   return debounce(
     (forkDebounce, parentScope) =>
       withExhaustLatestFork(
-        (fork) => {
+        (forkExhaustLatest) => {
           const state = emptyKeyedState<A, B, C>()
+          // Uses debounce to avoid glitches
           const scheduleNextEmit = forkDebounce(Effect.suspend(() => sink.onSuccess(getReadyIndices(state))))
 
           function diffAndPatch(values: ReadonlyArray<A>) {
@@ -76,7 +77,7 @@ function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
             let added = false
 
             return Effect.flatMap(
-              Effect.forEach(diff(previous, keys), (patch) => {
+              Effect.forEach(diffIterator(previous, keys), (patch) => {
                 if (patch._tag === "Remove") return removeValue(state, patch)
                 else if (patch._tag === "Add") {
                   added = true
@@ -90,7 +91,9 @@ function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
           return fx.run(
             Sink.make(
               (cause) => sink.onFailure(cause),
-              (values) => fork(Effect.suspend(() => diffAndPatch(values)))
+              // Use exhaust to ensure only 1 diff is running at a time
+              // Skipping an intermediate changes that occur while diffing
+              (values) => forkExhaustLatest(Effect.suspend(() => diffAndPatch(values)))
             )
           )
         },

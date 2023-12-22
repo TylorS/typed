@@ -1,3 +1,5 @@
+import type * as Context from "@typed/context"
+import type { Layer, Runtime } from "effect"
 import { Effect, flow, Option } from "effect"
 import { dual } from "effect/Function"
 import { sum } from "effect/Number"
@@ -81,7 +83,7 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
   extends FxEffectBase<R3, E3, C, R0 | R4, E0 | E4, D>
   implements Versioned<never, never, R3, E3, C, R0 | R4, E0 | E4, D>
 {
-  protected _version = 0
+  protected _version = -1
   protected _currentValue: Option.Option<D> = Option.none()
   private _fx: Fx<R3, E3, C>
 
@@ -102,21 +104,23 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
   }
 
   toEffect(): Effect.Effect<R0 | R4, E0 | E4, D> {
-    const update = Effect.tap(
-      this._transformEffect(this.input as any as Effect.Effect<R2, E2, B>),
-      (value) =>
-        Effect.sync(() => {
-          this._currentValue = Option.some(value)
-          this._version++
-        })
-    )
+    const transformed = this._transformEffect(this.input as any as Effect.Effect<R2, E2, B>)
+    const update = (v: number) =>
+      Effect.tap(
+        transformed,
+        (value) =>
+          Effect.sync(() => {
+            this._currentValue = Option.some(value)
+            this._version = v
+          })
+      )
 
     return new MulticastEffect(Effect.flatMap(this.input.version, (version) => {
       if (version === this._version && Option.isSome(this._currentValue)) {
         return Effect.succeed(this._currentValue.value)
       }
 
-      return update
+      return update(version)
     }))
   }
 }
@@ -234,3 +238,37 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
     }
   )
 }
+
+export const provide: {
+  <S>(ctx: Context.Context<S> | Runtime.Runtime<S>): <R0, E0, R, E, A, R2, E2, B>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+  ) => Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
+
+  <R3, S>(layer: Layer.Layer<R3, never, S>): <R0, E0, R, E, A, R2, E2, B>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+  ) => Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
+
+  <R0, E0, R, E, A, R2, E2, B, S>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+    context: Context.Context<S> | Runtime.Runtime<S>
+  ): Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
+
+  <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+    context: Layer.Layer<R3, never, S>
+  ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
+
+  <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
+    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+    context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<R3, never, S>
+  ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
+} = dual(2, function provide<R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<R3, never, S>
+): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B> {
+  return make(
+    Effect.provide(versioned.version, context as Layer.Layer<R3, never, S>),
+    core.provide(versioned, context),
+    Effect.provide(versioned, context as Layer.Layer<R3, never, S>)
+  )
+})

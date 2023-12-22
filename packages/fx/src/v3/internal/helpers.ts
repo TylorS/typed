@@ -112,7 +112,7 @@ export function withSwitchFork<R, E, A>(
   return withScopedFork(
     (fork, scope) =>
       Effect.flatMap(
-        SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
+        SynchronizedRef.make<Fiber.Fiber<never, unknown>>(Fiber.unit),
         (ref) => runSwitchFork(ref, fork, scope, f)
       ),
     executionStrategy
@@ -120,27 +120,38 @@ export function withSwitchFork<R, E, A>(
 }
 
 export function runSwitchFork<R, E, A>(
-  ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, void>>,
+  ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, unknown>>,
   fork: ScopedFork,
   scope: Scope.CloseableScope,
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>
 ) {
+  const forkScope = Scope.fork(scope, ExecutionStrategy.sequential)
+
+  function run<R>(
+    effect: Effect.Effect<R, never, unknown>,
+    fiber: Fiber.Fiber<never, unknown>
+  ): Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<never, unknown>> {
+    return Effect.flatMap(
+      forkScope,
+      (childScope) =>
+        Effect.zipRight(
+          Fiber.interrupt(fiber),
+          fork(
+            Effect.onExit(
+              Effect.provideService(effect, Scope.Scope, childScope),
+              (exit) => Scope.close(childScope, exit)
+            )
+          )
+        )
+    )
+  }
+
   return Effect.zipRight(
     f(
       (effect) =>
         SynchronizedRef.updateEffect(
           ref,
-          (fiber) =>
-            Effect.flatMap(Scope.fork(scope, ExecutionStrategy.sequential), (childScope) =>
-              Effect.zipRight(
-                Fiber.interrupt(fiber),
-                fork(
-                  Effect.onExit(
-                    Effect.provideService(effect, Scope.Scope, childScope),
-                    (exit) => Scope.close(childScope, exit)
-                  )
-                )
-              ))
+          (fiber) => run(effect, fiber)
         ),
       scope
     ),
@@ -152,8 +163,8 @@ export function withExhaustFork<R, E, A>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
-  return withScopedFork((fork, scope) =>
-    Effect.flatMap(
+  return withScopedFork((fork, scope) => {
+    return Effect.flatMap(
       SynchronizedRef.make<Fiber.Fiber<never, void> | null>(null),
       (ref) =>
         Effect.flatMap(
@@ -172,7 +183,8 @@ export function withExhaustFork<R, E, A>(
             ), scope),
           () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
         )
-    ), executionStrategy)
+    )
+  }, executionStrategy)
 }
 
 export function withExhaustLatestFork<R, E, A>(

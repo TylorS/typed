@@ -115,7 +115,7 @@ export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
   return Effect.provide(effect, toLayer(provide))
 }
 
-function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
+export function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
   // Calculate patch
   const patchRefs = FiberRefsPatch.diff(Runtime.defaultRuntime.fiberRefs, runtime.fiberRefs)
   const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)

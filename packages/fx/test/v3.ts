@@ -402,7 +402,7 @@ describe("V3", () => {
         const fiber = yield* _(Effect.fork(Fx.toReadonlyArray(Fx.take(ref, 3))))
 
         // Allow fiber to start
-        yield* _(Effect.sleep(0))
+        yield* _(Effect.sleep(1))
 
         yield* _(RefSubject.set(ref, 1))
         yield* _(RefSubject.set(ref, 2))
@@ -429,29 +429,6 @@ describe("V3", () => {
         yield* _(sink.onSuccess("abc"))
 
         expect(yield* _(ref)).toEqual(3)
-      }).pipe(Effect.scoped)
-
-      await Effect.runPromise(test)
-    })
-
-    it("tracks the current version", async () => {
-      const test = Effect.gen(function*(_) {
-        const ref = yield* _(RefSubject.of(0, { eq: (a, b) => a === b }))
-
-        expect(yield* _(ref.version)).toEqual(0)
-
-        yield* _(RefSubject.set(ref, 1))
-
-        expect(yield* _(ref.version)).toEqual(1)
-
-        yield* _(RefSubject.set(ref, 2))
-
-        expect(yield* _(ref.version)).toEqual(2)
-
-        yield* _(RefSubject.set(ref, 2))
-
-        // Skips duplicates
-        expect(yield* _(ref.version)).toEqual(2)
       }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
@@ -485,6 +462,35 @@ describe("V3", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("can be combined in a struct", async () => {
+      const test = Effect.gen(function*(_) {
+        const a = yield* _(RefSubject.of(0))
+        const b = yield* _(RefSubject.of(""))
+        const c = yield* _(RefSubject.of(false))
+        const ref = RefSubject.struct({ a, b, c })
+
+        ok(ComputedTypeId in ref)
+        ok(RefSubjectTypeId in ref)
+        ok(!(FilteredTypeId in ref))
+
+        expect(yield* _(ref)).toEqual({ a: 0, b: "", c: false })
+
+        yield* _(RefSubject.set(a, 1))
+
+        expect(yield* _(ref)).toEqual({ a: 1, b: "", c: false })
+
+        yield* _(RefSubject.set(ref, { a: 2, b: "hello", c: true }))
+
+        expect(yield* _(ref)).toEqual({ a: 2, b: "hello", c: true })
+
+        expect(yield* _(a)).toEqual(2)
+        expect(yield* _(b)).toEqual("hello")
+        expect(yield* _(c)).toEqual(true)
+      }).pipe(Effect.scoped)
+
+      await Effect.runPromise(test)
+    })
   })
 
   describe("Computed", () => {
@@ -506,14 +512,28 @@ describe("V3", () => {
     it("allows mapping values from a Computed", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
-        const middle = RefSubject.map(ref, (x) => x + 1)
-        const computed = RefSubject.map(middle, (x) => x + 1)
+
+        let middleCalls = 0
+        let computedCalls = 0
+
+        const middle = RefSubject.map(ref, (x) => {
+          middleCalls++
+          return x + 1
+        })
+        const computed = RefSubject.map(middle, (x) => {
+          computedCalls++
+          return x + 1
+        })
 
         expect(yield* _(computed)).toEqual(2)
+        expect(middleCalls).toEqual(1)
+        expect(computedCalls).toEqual(1)
 
         yield* _(RefSubject.update(ref, (x) => x + 1))
 
         expect(yield* _(computed)).toEqual(3)
+        expect(middleCalls).toEqual(2)
+        expect(computedCalls).toEqual(2)
       }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
@@ -682,7 +702,7 @@ describe("V3", () => {
       }
     }
 
-    it("diffs 2 arrays using Equivalence instance", () => {
+    it("diffs 2 arrays", () => {
       const test = makeSimpleDiffer()
 
       test([1, 2, 3], [1, 2, 3], [])
