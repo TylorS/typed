@@ -12,10 +12,7 @@ import * as Sink from "./Sink"
 export function asyncDataRequest<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.Fx<R, never, AsyncData.AsyncData<E, A>> {
   return Fx.make((sink) =>
     Effect.flatMap(
-      Effect.zipRight(
-        sink.onSuccess(AsyncData.noData()),
-        Effect.zipRight(sink.onSuccess(AsyncData.loading()), Effect.exit(effect))
-      ),
+      Effect.zipRight(sink.onSuccess(AsyncData.loading()), Effect.exit(effect)),
       (exit) => sink.onSuccess(AsyncData.fromExit(exit))
     )
   )
