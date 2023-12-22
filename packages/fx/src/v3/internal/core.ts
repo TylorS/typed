@@ -16,18 +16,21 @@ import {
   Boolean,
   Cause,
   Clock,
+  Deferred,
   Effect,
   Either,
   Equal,
   ExecutionStrategy,
   Exit,
+  Fiber,
   Layer,
   Option,
   Predicate,
+  Ref,
   Scope,
   Tracer
 } from "effect"
-import { constTrue } from "effect/Function"
+import { constFalse, constTrue } from "effect/Function"
 import type { Bounds } from "../../internal/bounds.js"
 import { boundsFrom, mergeBounds } from "../../internal/bounds.js"
 import { Bounded, Exhaust, ExhaustLatest, Ordered, Switch, Unbounded, Unordered } from "../../internal/strategies.js"
@@ -57,12 +60,8 @@ const UNBOUNDED = { concurrency: "unbounded" } as const
 // TODO: Optimizations for take/drop and variants
 // TODO: Slice optimizations on synchronous producers
 // TODO: Error/Cause operator fusion
-
-// TODO: snapshot/sample + Effect variants
-// TODO: race / mergeRace
-// TODO: mergeFirst
-// TODO: tuple / struct / all
-// TODO: withKey / keyed
+// TODO: Double-check other optimiation opportunities
+// TODO: expose FxBase and FxEffectBase
 
 export function make<A>(run: Fx<never, never, A>["run"]): Fx<never, never, A>
 export function make<E, A>(run: Fx<never, E, A>["run"]): Fx<never, E, A>
@@ -974,6 +973,26 @@ class FromFxEffect<
       onSuccess: (fx) => fx.run(sink)
     })
   }
+}
+
+export function gen<Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+  f: (_: Effect.Adapter) => Generator<Y, FX, any>
+): Fx<
+  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>,
+  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
+  Fx.Success<FX>
+> {
+  return fromFxEffect(Effect.gen(f))
+}
+
+export function genScoped<Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+  f: (_: Effect.Adapter) => Generator<Y, FX, any>
+): Fx<
+  Exclude<Effect.Effect.Context<Y["value"]> | Fx.Context<FX>, Scope.Scope>,
+  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
+  Fx.Success<FX>
+> {
+  return scoped(fromFxEffect(Effect.gen(f)))
 }
 
 export function continueWith<R, E, A, R2, E2, B>(
@@ -2280,6 +2299,47 @@ class Tuple<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
   }
 }
 
+export function struct<const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[string]>,
+  Fx.Error<FX[string]>,
+  {
+    readonly [K in keyof FX]: Fx.Success<FX[K]>
+  }
+> {
+  const entries: ReadonlyArray<readonly [keyof FX, FX[keyof FX]]> = Object.entries(fx) as any
+
+  return map(tuple(entries.map(([key, fx]) => map(fx, (a) => [key, a] as const))), Object.fromEntries)
+}
+
+export function all<const FX extends ReadonlyArray<Fx<any, any, any>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
+  { readonly [K in keyof FX]: Fx.Success<FX[K]> }
+>
+
+export function all<const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[string]>,
+  Fx.Error<FX[string]>,
+  { readonly [K in keyof FX]: Fx.Success<FX[K]> }
+>
+
+export function all<const FX extends ReadonlyArray<Fx<any, any, any> | Readonly<Record<string, Fx<any, any, any>>>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[keyof FX]>,
+  Fx.Error<FX[keyof FX]>,
+  any
+> {
+  if (Array.isArray(fx)) return tuple(fx)
+  else return struct(fx as any) as any
+}
+
 export function exit<R, E, A>(
   fx: Fx<R, E, A>
 ): Fx<R, never, Exit.Exit<E, A>> {
@@ -2307,4 +2367,274 @@ export function toEnqueue<R, E, A, R2 = never>(
 
 export function debounce<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
   return switchMapEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
+}
+
+export function throttle<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
+  return exhaustMapEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
+}
+
+export function throttleLatest<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
+  return exhaustMapLatestEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
+}
+
+export function fromAsyncIterable<A>(iterable: AsyncIterable<A>): Fx<never, never, A> {
+  return new FromAsyncIterable(iterable)
+}
+
+class FromAsyncIterable<A> extends FxBase<never, never, A> {
+  constructor(readonly i0: AsyncIterable<A>) {
+    super()
+  }
+
+  run<R>(sink: Sink.Sink<R, never, A>): Effect.Effect<R, never, unknown> {
+    return Effect.asyncEffect((cb) => {
+      const iterator = this.i0[Symbol.asyncIterator]()
+      const loop = (result: IteratorResult<A>): Effect.Effect<R, never, unknown> =>
+        result.done
+          ? Effect.sync(() => cb(Effect.unit))
+          : Effect.zipRight(sink.onSuccess(result.value), Effect.flatMap(Effect.promise(() => iterator.next()), loop))
+
+      return Effect.flatMap(
+        Effect.promise(() => iterator.next()),
+        loop
+      )
+    })
+  }
+}
+
+export function findFirst<R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<R, E, A> {
+  return Effect.asyncEffect((cb) =>
+    observe(fx, (a) => predicate(a) ? Effect.sync(() => cb(Effect.succeed(a))) : Effect.unit)
+  )
+}
+
+export function first<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, A> {
+  return findFirst(fx, constTrue)
+}
+
+export function either<R, E, A>(fx: Fx<R, E, A>): Fx<R, never, Either.Either<E, A>> {
+  return new EitherFx(fx)
+}
+
+class EitherFx<R, E, A> extends FxBase<R, never, Either.Either<E, A>> {
+  constructor(readonly i0: Fx<R, E, A>) {
+    super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, never, Either.Either<E, A>>): Effect.Effect<R | R2, never, unknown> {
+    return this.i0.run(
+      Sink.make(
+        (cause) =>
+          Either.match(Cause.failureOrCause(cause), {
+            onLeft: (e) => sink.onSuccess(Either.left(e)),
+            onRight: (cause) => sink.onFailure(cause)
+          }),
+        (a) => sink.onSuccess(Either.right(a))
+      )
+    )
+  }
+}
+
+export function mergeFirst<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  that: Fx<R2, E2, B>
+): Fx<R | R2, E | E2, A> {
+  return merge(fx, filter(that, constFalse) as Fx<R2, E2, never>)
+}
+
+export function mergeRace<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  that: Fx<R2, E2, B>
+): Fx<R | R2, E | E2, A | B> {
+  return new MergeRace(fx, that)
+}
+
+class MergeRace<R, E, A, R2, E2, B> extends FxBase<R | R2, E | E2, A | B> {
+  constructor(readonly i0: Fx<R, E, A>, readonly i1: Fx<R2, E2, B>) {
+    super()
+  }
+
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3, never, unknown> {
+    return Effect.gen(this, function*(_) {
+      const fiber1 = yield* _(Effect.fork(this.i0.run(Sink.make(
+        sink.onFailure,
+        (a) => Effect.flatMap(sink.onSuccess(a), () => Fiber.interrupt(fiber2))
+      ))))
+      const fiber2 = yield* _(Effect.fork(this.i1.run(sink)))
+
+      return yield* _(Fiber.joinAll([fiber1, fiber2]))
+    })
+  }
+}
+
+export function raceAll<const FX extends ReadonlyArray<Fx<any, any, any>>>(
+  fx: FX
+): Fx<
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
+  Fx.Success<FX[number]>
+> {
+  return new RaceAll(fx)
+}
+
+export function race<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  that: Fx<R2, E2, B>
+): Fx<R | R2, E | E2, A | B> {
+  return raceAll([fx, that])
+}
+
+class RaceAll<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
+  Fx.Context<FX[number]>,
+  Fx.Error<FX[number]>,
+  Fx.Success<FX[number]>
+> {
+  constructor(readonly i0: FX) {
+    super()
+  }
+
+  run<R2>(
+    sink: Sink.Sink<R2, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  ): Effect.Effect<Fx.Context<FX[number]> | R2, never, unknown> {
+    return Effect.gen(this, function*(_) {
+      const winner = yield* _(Deferred.make<never, Fiber.RuntimeFiber<never, unknown>>())
+      const fibers: Array<Fiber.RuntimeFiber<never, unknown>> = []
+
+      for (const fx of this.i0) {
+        const fiber: Fiber.RuntimeFiber<never, unknown> = yield* _(Effect.fork(fx.run(Sink.make(
+          sink.onFailure,
+          (a) => Effect.flatMap(Deferred.succeed(winner, fiber), () => sink.onSuccess(a))
+        ))))
+        fibers.push(fiber)
+      }
+
+      const winningFiber = yield* _(Deferred.await(winner))
+
+      yield* _(Fiber.interruptAll(fibers.filter((x) => x !== winningFiber)))
+
+      return yield* _(Fiber.join(winningFiber))
+    })
+  }
+}
+
+export function snapshot<R, E, A, R2, E2, B, C>(
+  fx: Fx<R, E, A>,
+  sampled: Fx<R2, E2, B>,
+  f: (a: A, b: B) => C
+): Fx<R | R2, E | E2, C> {
+  return new Snapshot(fx, sampled, f)
+}
+
+export function sample<R, E, A, R2, E2, B>(
+  fx: Fx<R, E, A>,
+  sampled: Fx<R2, E2, B>
+): Fx<R | R2, E | E2, B> {
+  return snapshot(fx, sampled, (_, b) => b)
+}
+
+class Snapshot<R, E, A, R2, E2, B, C> extends FxBase<R | R2, E | E2, C> {
+  constructor(
+    readonly i0: Fx<R, E, A>,
+    readonly i1: Fx<R2, E2, B>,
+    readonly i2: (a: A, b: B) => C
+  ) {
+    super()
+  }
+
+  run<R3>(sink: Sink.Sink<R3, E | E2, C>): Effect.Effect<R | R2 | R3, never, unknown> {
+    return Effect.flatMap(
+      Ref.make(Option.none<B>()),
+      (ref) =>
+        Effect.flatMap(
+          Effect.tap(
+            Effect.fork(
+              this.i1.run(Sink.make(
+                sink.onFailure,
+                (b) => Ref.set(ref, Option.some(b))
+              ))
+            ),
+            () =>
+              this.i0.run(Sink.make(sink.onFailure, (a) =>
+                Effect.flatMap(
+                  Ref.get(ref),
+                  Option.match({
+                    onNone: () => Effect.unit,
+                    onSome: (b) => sink.onSuccess(this.i2(a, b))
+                  })
+                )))
+          ),
+          Fiber.interrupt
+        )
+    )
+  }
+}
+
+export function snapshotEffect<R, E, A, R2, E2, B, R3, E3, C>(
+  fx: Fx<R, E, A>,
+  sampled: Fx<R2, E2, B>,
+  f: (a: A, b: B) => Effect.Effect<R3, E3, C>
+): Fx<R | R2 | R3, E | E2 | E3, C> {
+  return new SnapshotEffect(fx, sampled, f)
+}
+
+class SnapshotEffect<R, E, A, R2, E2, B, R3, E3, C> extends FxBase<R | R2 | R3, E | E2 | E3, C> {
+  constructor(
+    readonly i0: Fx<R, E, A>,
+    readonly i1: Fx<R2, E2, B>,
+    readonly i2: (a: A, b: B) => Effect.Effect<R3, E3, C>
+  ) {
+    super()
+  }
+
+  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, C>): Effect.Effect<R | R2 | R3 | R4, never, unknown> {
+    return Effect.flatMap(
+      Ref.make(Option.none<B>()),
+      (ref) =>
+        Effect.flatMap(
+          Effect.tap(
+            Effect.fork(
+              this.i1.run(Sink.make(
+                sink.onFailure,
+                (b) => Ref.set(ref, Option.some(b))
+              ))
+            ),
+            () =>
+              this.i0.run(Sink.make(sink.onFailure, (a) =>
+                Effect.flatMap(
+                  Ref.get(ref),
+                  Option.match({
+                    onNone: () => Effect.unit,
+                    onSome: (b) => Effect.matchCauseEffect(this.i2(a, b), sink)
+                  })
+                )))
+          ),
+          Fiber.interrupt
+        )
+    )
+  }
+}
+
+function if_<R, E, R2, E2, B, R3, E3, C>(
+  bool: Fx<R, E, boolean>,
+  options: {
+    readonly onTrue: Fx<R2, E2, B>
+    readonly onFalse: Fx<R3, E3, C>
+  }
+): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C> {
+  return switchMap(bool, (b): Fx<R2 | R3, E2 | E3, B | C> => b ? options.onTrue : options.onFalse)
+}
+
+export { if_ as if }
+
+export function when<R, E, B, C>(
+  bool: Fx<R, E, boolean>,
+  options: {
+    readonly onTrue: B
+    readonly onFalse: C
+  }
+): Fx<R | Scope.Scope, E, B | C> {
+  return if_(bool, {
+    onTrue: succeed(options.onTrue),
+    onFalse: succeed(options.onFalse)
+  })
 }

@@ -53,6 +53,8 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
       const events = Fx.map(elementRef, DomRenderEvent)
       const errors = Subject.make<Placeholder.Error<Values[number]>, never>()
 
+      yield* _(Effect.addFinalizer(() => errors.interrupt))
+
       const { getParts, template, where, wire } = getHydrateEntry({
         ...hydrateCtx,
         document,
@@ -85,7 +87,13 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
       yield* _(ElementRef.set(elementRef, wire as T))
 
       // Return the Template instance
-      return TemplateInstance(Fx.merge([events, errors]), elementRef)
+      return TemplateInstance(
+        Fx.merge([
+          events,
+          errors
+        ]),
+        elementRef
+      )
     })
   }
 

@@ -53,20 +53,20 @@ export const toStreamQueued: {
   fx: Fx.Fx<R, E, A>,
   make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
 ): Stream.Stream<R | R2, E | E2, A> {
-  return Stream.flattenExitOption(Stream.unwrapScoped(Effect.gen(function*(_) {
-    const queue = yield* _(make)
-
-    yield* _(
-      fx,
-      Fx.mapError(Option.some),
-      Fx.exit,
-      Fx.toEnqueue(queue),
-      Effect.ensuring(queue.offer(Exit.fail(Option.none()))),
-      Effect.forkScoped
-    )
-
-    return Stream.fromQueue(queue)
-  })))
+  return make.pipe(
+    Effect.tap((queue) =>
+      fx.pipe(
+        Fx.mapError(Option.some),
+        Fx.exit,
+        Fx.toEnqueue(queue),
+        Effect.ensuring(queue.offer(Exit.fail(Option.none()))),
+        Effect.forkScoped
+      )
+    ),
+    Effect.map((queue) => Stream.fromQueue(queue)),
+    Stream.unwrapScoped,
+    Stream.flattenExitOption
+  )
 })
 
 /**

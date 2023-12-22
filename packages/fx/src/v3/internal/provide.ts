@@ -121,29 +121,27 @@ function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, neve
   const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)
 
   return Layer.scopedContext(
-    Effect.gen(function*(_) {
-      const oldRefs = yield* _(Effect.getFiberRefs)
-      const oldFlags = yield* _(Effect.getRuntimeFlags)
-
-      // Patch
-      yield* _(Effect.patchFiberRefs(patchRefs))
-      yield* _(Effect.patchRuntimeFlags(patchFlags))
-
-      const newRefs = yield* _(Effect.getFiberRefs)
-      const newFlags = yield* _(Effect.getRuntimeFlags)
-
-      // Calculate rollback
-      const rollbackRefs = FiberRefsPatch.diff(newRefs, oldRefs)
-      const rollbackFlags = RuntimeFlags.diff(newFlags, oldFlags)
-
-      // Rollback when scope is closed
-      yield* _(
+    Effect.Do.pipe(
+      // Get Current Refs + Flags
+      Effect.bind("oldRefs", () => Effect.getFiberRefs),
+      Effect.bind("oldFlags", () => Effect.getRuntimeFlags),
+      // Patch Refs + Flags
+      Effect.tap(() => Effect.patchFiberRefs(patchRefs)),
+      Effect.tap(() => Effect.patchRuntimeFlags(patchFlags)),
+      // Get the new Refs + Flags
+      Effect.bind("newRefs", () => Effect.getFiberRefs),
+      Effect.bind("newFlags", () => Effect.getRuntimeFlags),
+      // Calculate rollback patch
+      Effect.let("rollbackRefs", ({ newRefs, oldRefs }) => FiberRefsPatch.diff(newRefs, oldRefs)),
+      Effect.let("rollbackFlags", ({ newFlags, oldFlags }) => RuntimeFlags.diff(newFlags, oldFlags)),
+      // Apply the rollbacks when the current scope is closed
+      Effect.tap(({ rollbackFlags, rollbackRefs }) =>
         Effect.addFinalizer(() =>
           Effect.zipRight(Effect.patchFiberRefs(rollbackRefs), Effect.patchRuntimeFlags(rollbackFlags))
         )
-      )
-
-      return runtime.context
-    })
+      ),
+      // Provide the runtime's context
+      Effect.map(() => runtime.context)
+    )
   )
 }
