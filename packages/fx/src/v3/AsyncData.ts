@@ -3,11 +3,11 @@ import type { Progress } from "@typed/async-data/Progress"
 import type { Duration, Exit, Scope } from "effect"
 import { Cause, Effect, Either, Option } from "effect"
 import { dual } from "effect/Function"
-import { RefSubjectTypeId } from "../TypeId"
-import * as Fx from "./Fx"
-import { keyed } from "./internal/keyed"
-import * as RefSubject from "./RefSubject"
-import * as Sink from "./Sink"
+import { RefSubjectTypeId } from "../TypeId.js"
+import * as Fx from "./Fx.js"
+import { keyed } from "./internal/keyed.js"
+import * as RefSubject from "./RefSubject.js"
+import * as Sink from "./Sink.js"
 
 export function asyncDataRequest<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.Fx<R, never, AsyncData.AsyncData<E, A>> {
   return Fx.make((sink) =>

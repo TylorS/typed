@@ -3,11 +3,11 @@ import type { Layer, Runtime } from "effect"
 import { Effect, flow, Option } from "effect"
 import { dual } from "effect/Function"
 import { sum } from "effect/Number"
-import { MulticastEffect } from "../internal/helpers"
-import type { Fx } from "./Fx"
-import * as core from "./internal/core"
-import { FxEffectBase } from "./internal/protos"
-import type { Sink } from "./Sink"
+import { MulticastEffect } from "../internal/helpers.js"
+import type { Fx } from "./Fx.js"
+import * as core from "./internal/core.js"
+import { FxEffectBase } from "./internal/protos.js"
+import type { Sink } from "./Sink.js"
 
 // TODO: dualize
 // TODO: context abstraction

@@ -2,7 +2,7 @@ import * as C from "@typed/context"
 import { Cause, Clock, Effect, Layer, Option } from "effect"
 import type { Predicate, Tracer } from "effect"
 import { dual } from "effect/Function"
-import { type Bounds } from "../internal/bounds"
+import { type Bounds } from "../internal/bounds.js"
 
 export interface Sink<out R, in E, in A> {
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown>

@@ -1,5 +1,5 @@
 import { Effect, Option, ReadonlyArray } from "effect"
-import type { Sink } from "../Sink"
+import type { Sink } from "../Sink.js"
 
 const DISCARD = { discard: true } as const
 

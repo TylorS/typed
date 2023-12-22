@@ -2,10 +2,10 @@ import type { Effect, Option, Pipeable, Scope } from "effect"
 import type { Cause } from "effect/Cause"
 import { dual } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
-import type { Fx } from "./Fx"
-import * as core from "./internal/core"
-import { FxBase } from "./internal/protos"
-import * as Sink from "./Sink"
+import type { Fx } from "./Fx.js"
+import * as core from "./internal/core.js"
+import { FxBase } from "./internal/protos.js"
+import * as Sink from "./Sink.js"
 
 export interface Push<R, E, A, R2, E2, B> extends Sink.Sink<R, E, A>, Fx<R2, E2, B>, Pipeable.Pipeable {}
 

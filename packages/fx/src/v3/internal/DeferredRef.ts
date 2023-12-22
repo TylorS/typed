@@ -3,7 +3,7 @@ import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as Option from "effect/Option"
-import { EffectBase } from "./protos"
+import { EffectBase } from "./protos.js"
 
 export class DeferredRef<E, A> extends EffectBase<never, E, A> {
   // Keep track of the latest value emitted by the stream

@@ -1,8 +1,8 @@
 import type { Sink } from "../Sink"
-import * as EffectLoopOp from "./effect-loop-operator"
-import * as EffectOp from "./effect-operator"
-import * as LoopOp from "./loop-operator"
-import * as SyncOp from "./sync-operator"
+import * as EffectLoopOp from "./effect-loop-operator.js"
+import * as EffectOp from "./effect-operator.js"
+import * as LoopOp from "./loop-operator.js"
+import * as SyncOp from "./sync-operator.js"
 
 export type Operator =
   | SyncOp.SyncOperator
