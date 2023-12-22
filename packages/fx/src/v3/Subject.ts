@@ -235,6 +235,10 @@ class TaggedImpl<I, E, A> extends FromTag<I, Subject<never, E, A>, never, E, A> 
   }
 
   make(replay?: number): Layer.Layer<never, never, I> {
-    return this.tag.layer(Effect.sync(() => make<E, A>(replay)))
+    return this.tag.scoped(Effect.suspend(() => {
+      const subject = make<E, A>(replay)
+
+      return Effect.as(Effect.addFinalizer(() => subject.interrupt), subject)
+    }))
   }
 }
