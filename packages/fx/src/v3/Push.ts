@@ -1,10 +1,13 @@
 import type { Effect, Option, Pipeable, Scope } from "effect"
 import type { Cause } from "effect/Cause"
+import { dual } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
 import type { Fx } from "./Fx"
 import * as core from "./internal/core"
 import { FxBase } from "./internal/protos"
 import * as Sink from "./Sink"
+
+// TODO: context abstraction
 
 export interface Push<R, E, A, R2, E2, B> extends Sink.Sink<R, E, A>, Fx<R2, E2, B>, Pipeable.Pipeable {}
 
@@ -12,12 +15,15 @@ export namespace Push {
   export interface Any extends Push<any, any, any, any, any, any> {}
 }
 
-export function make<R, E, A, R2, E2, B>(
+export const make: {
+  <R2, E2, B>(fx: Fx<R2, E2, B>): <R, E, A>(sink: Sink.Sink<R, E, A>) => Push<R, E, A, R2, E2, B>
+  <R, E, A, R2, E2, B>(sink: Sink.Sink<R, E, A>, fx: Fx<R2, E2, B>): Push<R, E, A, R2, E2, B>
+} = dual(2, function make<R, E, A, R2, E2, B>(
   sink: Sink.Sink<R, E, A>,
   fx: Fx<R2, E2, B>
 ): Push<R, E, A, R2, E2, B> {
   return new PushImpl(sink, fx)
-}
+})
 
 class PushImpl<R, E, A, R2, E2, B> extends FxBase<R2, E2, B> implements Push<R, E, A, R2, E2, B> {
   constructor(readonly sink: Sink.Sink<R, E, A>, readonly fx: Fx<R2, E2, B>) {
@@ -44,7 +50,18 @@ class PushImpl<R, E, A, R2, E2, B> extends FxBase<R2, E2, B> implements Push<R, 
   }
 }
 
-export function mapInput<P extends Push.Any, C>(
+export const mapInput: {
+  <P extends Push.Any, C>(
+    f: (c: C) => Sink.Success<P>
+  ): (
+    push: P
+  ) => Push<Sink.Context<P>, Sink.Error<P>, C, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>>
+
+  <P extends Push.Any, C>(
+    push: P,
+    f: (c: C) => Sink.Sink.Success<P>
+  ): Push<Sink.Sink.Context<P>, Sink.Sink.Error<P>, C, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>>
+} = dual(2, function mapInput<P extends Push.Any, C>(
   push: P,
   f: (c: C) => Sink.Success<P>
 ): Push<Sink.Context<P>, Sink.Error<P>, C, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>> {
@@ -52,9 +69,18 @@ export function mapInput<P extends Push.Any, C>(
     Sink.map(push, f),
     push
   )
-}
+})
 
-export function mapInputEffect<R, E, A, R2, E2, B, R3, C>(
+export const mapInputEffect: {
+  <C, R3, E, A>(
+    f: (c: C) => Effect.Effect<R3, E, A>
+  ): <R, R2, E2, B>(push: Push<R, E, A, R2, E2, B>) => Push<R | R3, E, C, R2, E2, B>
+
+  <R, E, A, R2, E2, B, R3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (c: C) => Effect.Effect<R3, E, A>
+  ): Push<R | R3, E, C, R2, E2, B>
+} = dual(2, function mapInputEffect<R, E, A, R2, E2, B, R3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (c: C) => Effect.Effect<R3, E, A>
 ): Push<R | R3, E, C, R2, E2, B> {
@@ -62,9 +88,14 @@ export function mapInputEffect<R, E, A, R2, E2, B, R3, C>(
     Sink.mapEffect(push, f),
     push
   )
-}
+})
 
-export function filterInput<R, E, A, R2, E2, B>(
+export const filterInput: {
+  <A>(f: (a: A) => boolean): <P extends Push.Any>(
+    push: P
+  ) => Push<Sink.Context<P>, Sink.Error<P>, A, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>>
+  <R, E, A, R2, E2, B>(push: Push<R, E, A, R2, E2, B>, f: (a: A) => boolean): Push<R, E, A, R2, E2, B>
+} = dual(2, function filterInput<R, E, A, R2, E2, B>(
   push: Push<R, E, A, R2, E2, B>,
   f: (a: A) => boolean
 ): Push<R, E, A, R2, E2, B> {
@@ -72,9 +103,18 @@ export function filterInput<R, E, A, R2, E2, B>(
     Sink.filter(push, f),
     push
   )
-}
+})
 
-export function filterInputEffect<R, E, A, R2, E2, B, R3>(
+export const filterInputEffect: {
+  <A, R3, E>(f: (a: A) => Effect.Effect<R3, E, boolean>): <R, R2, E2, B>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R | R3, E, A, R2, E2, B>
+
+  <R, E, A, R2, E2, B, R3>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (a: A) => Effect.Effect<R3, E, boolean>
+  ): Push<R | R3, E, A, R2, E2, B>
+} = dual(2, function filterInputEffect<R, E, A, R2, E2, B, R3>(
   push: Push<R, E, A, R2, E2, B>,
   f: (a: A) => Effect.Effect<R3, E, boolean>
 ): Push<R | R3, E, A, R2, E2, B> {
@@ -82,9 +122,14 @@ export function filterInputEffect<R, E, A, R2, E2, B, R3>(
     Sink.filterEffect<R | R3, E, A>(push, f),
     push
   )
-}
+})
 
-export function filterMapInput<R, E, A, R2, E2, B, C>(
+export const filterMapInput: {
+  <C, A>(f: (c: C) => Option.Option<A>): <P extends Push.Any>(
+    push: P
+  ) => Push<Sink.Context<P>, Sink.Error<P>, C, Fx.Context<P>, Fx.Error<P>, Fx.Success<P>>
+  <R, E, A, R2, E2, B, C>(push: Push<R, E, A, R2, E2, B>, f: (c: C) => Option.Option<A>): Push<R, E, C, R2, E2, B>
+} = dual(2, function filterMapInput<R, E, A, R2, E2, B, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (c: C) => Option.Option<A>
 ): Push<R, E, C, R2, E2, B> {
@@ -92,9 +137,17 @@ export function filterMapInput<R, E, A, R2, E2, B, C>(
     Sink.filterMap(push, f),
     push
   )
-}
+})
 
-export function filterMapInputEffect<R, E, A, R2, E2, B, R3, C>(
+export const filterMapInputEffect: {
+  <C, R3, E, A>(f: (c: C) => Effect.Effect<R3, E, Option.Option<A>>): <R, R2, E2, B>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R | R3, E, C, R2, E2, B>
+  <R, E, A, R2, E2, B, R3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (c: C) => Effect.Effect<R3, E, Option.Option<A>>
+  ): Push<R | R3, E, C, R2, E2, B>
+} = dual(2, function filterMapInputEffect<R, E, A, R2, E2, B, R3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (c: C) => Effect.Effect<R3, E, Option.Option<A>>
 ): Push<R | R3, E, C, R2, E2, B> {
@@ -102,9 +155,12 @@ export function filterMapInputEffect<R, E, A, R2, E2, B, R3, C>(
     Sink.filterMapEffect(push, f),
     push
   )
-}
+})
 
-export function map<R, E, A, R2, E2, B, C>(
+export const map: {
+  <B, C>(f: (b: B) => C): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, R2, E2, C>
+  <R, E, A, R2, E2, B, C>(push: Push<R, E, A, R2, E2, B>, f: (b: B) => C): Push<R, E, A, R2, E2, C>
+} = dual(2, function map<R, E, A, R2, E2, B, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => C
 ): Push<R, E, A, R2, E2, C> {
@@ -112,9 +168,17 @@ export function map<R, E, A, R2, E2, B, C>(
     push,
     core.map(push, f)
   )
-}
+})
 
-export function mapEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const mapEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, C>
+  ): Push<R, E, A, R2 | R3, E2 | E3, C>
+} = dual(2, function mapEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, C>
 ): Push<R, E, A, R2 | R3, E2 | E3, C> {
@@ -122,9 +186,12 @@ export function mapEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.mapEffect(push, f)
   )
-}
+})
 
-export function filter<R, E, A, R2, E2, B>(
+export const filter: {
+  <B>(f: (b: B) => boolean): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, R2, E2, B>
+  <R, E, A, R2, E2, B>(push: Push<R, E, A, R2, E2, B>, f: (b: B) => boolean): Push<R, E, A, R2, E2, B>
+} = dual(2, function filter<R, E, A, R2, E2, B>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => boolean
 ): Push<R, E, A, R2, E2, B> {
@@ -132,9 +199,17 @@ export function filter<R, E, A, R2, E2, B>(
     push,
     core.filter(push, f)
   )
-}
+})
 
-export function filterEffect<R, E, A, R2, E2, B, R3, E3>(
+export const filterEffect: {
+  <B, R3, E3>(f: (b: B) => Effect.Effect<R3, E3, boolean>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3, E2 | E3, B>
+  <R, E, A, R2, E2, B, R3, E3>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, boolean>
+  ): Push<R, E, A, R2 | R3, E2 | E3, B>
+} = dual(2, function filterEffect<R, E, A, R2, E2, B, R3, E3>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, boolean>
 ): Push<R, E, A, R2 | R3, E2 | E3, B> {
@@ -142,9 +217,14 @@ export function filterEffect<R, E, A, R2, E2, B, R3, E3>(
     push,
     core.filterEffect(push, f)
   )
-}
+})
 
-export function filterMap<R, E, A, R2, E2, B, C>(
+export const filterMap: {
+  <B, C>(f: (b: B) => Option.Option<C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2, E2, C>
+  <R, E, A, R2, E2, B, C>(push: Push<R, E, A, R2, E2, B>, f: (b: B) => Option.Option<C>): Push<R, E, A, R2, E2, C>
+} = dual(2, function filterMap<R, E, A, R2, E2, B, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Option.Option<C>
 ): Push<R, E, A, R2, E2, C> {
@@ -152,9 +232,17 @@ export function filterMap<R, E, A, R2, E2, B, C>(
     push,
     core.filterMap(push, f)
   )
-}
+})
 
-export function filterMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const filterMapEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>
+  ): Push<R, E, A, R2 | R3, E2 | E3, C>
+} = dual(2, function filterMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>
 ): Push<R, E, A, R2 | R3, E2 | E3, C> {
@@ -162,9 +250,17 @@ export function filterMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.filterMapEffect(push, f)
   )
-}
+})
 
-export function switchMap<R, E, A, R2, E2, B, R3, E3, C>(
+export const switchMap: {
+  <B, R3, E3, C>(f: (b: B) => Fx<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Fx<R3, E3, C>
+  ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+} = dual(2, function switchMap<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Fx<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -172,9 +268,17 @@ export function switchMap<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.switchMap(push, f)
   )
-}
+})
 
-export function switchMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const switchMapEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, C>
+  ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+} = dual(2, function switchMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -182,9 +286,17 @@ export function switchMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.switchMapEffect(push, f)
   )
-}
+})
 
-export function flatMap<R, E, A, R2, E2, B, R3, E3, C>(
+export const flatMap: {
+  <B, R3, E3, C>(f: (b: B) => Fx<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Fx<R3, E3, C>
+  ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+} = dual(2, function flatMap<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Fx<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -192,9 +304,17 @@ export function flatMap<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.flatMap(push, f)
   )
-}
+})
 
-export function flatMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const flatMapEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, C>
+  ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+} = dual(2, function flatMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -202,9 +322,17 @@ export function flatMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.flatMapEffect(push, f)
   )
-}
+})
 
-export function exhaustMap<R, E, A, R2, E2, B, R3, E3, C>(
+export const exhaustMap: {
+  <B, R3, E3, C>(f: (b: B) => Fx<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Fx<R3, E3, C>
+  ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+} = dual(2, function exhaustMap<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Fx<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -212,9 +340,17 @@ export function exhaustMap<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.exhaustMap(push, f)
   )
-}
+})
 
-export function exhaustMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const exhaustMapEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, C>
+  ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+} = dual(2, function exhaustMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -222,9 +358,17 @@ export function exhaustMapEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.exhaustMapEffect(push, f)
   )
-}
+})
 
-export function exhaustMapLatest<R, E, A, R2, E2, B, R3, E3, C>(
+export const exhaustMapLatest: {
+  <B, R3, E3, C>(f: (b: B) => Fx<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Fx<R3, E3, C>
+  ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+} = dual(2, function exhaustMapLatest<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Fx<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -232,9 +376,17 @@ export function exhaustMapLatest<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.exhaustMapLatest(push, f)
   )
-}
+})
 
-export function exhaustMapLatestEffect<R, E, A, R2, E2, B, R3, E3, C>(
+export const exhaustMapLatestEffect: {
+  <B, R3, E3, C>(f: (b: B) => Effect.Effect<R3, E3, C>): <R, E, A, R2, E2>(
+    push: Push<R, E, A, R2, E2, B>
+  ) => Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    push: Push<R, E, A, R2, E2, B>,
+    f: (b: B) => Effect.Effect<R3, E3, C>
+  ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
+} = dual(2, function exhaustMapLatestEffect<R, E, A, R2, E2, B, R3, E3, C>(
   push: Push<R, E, A, R2, E2, B>,
   f: (b: B) => Effect.Effect<R3, E3, C>
 ): Push<R, E, A, R2 | R3 | Scope.Scope, E2 | E3, C> {
@@ -242,4 +394,4 @@ export function exhaustMapLatestEffect<R, E, A, R2, E2, B, R3, E3, C>(
     push,
     core.exhaustMapLatestEffect(push, f)
   )
-}
+})

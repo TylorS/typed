@@ -7,6 +7,10 @@ import * as core from "./internal/core"
 import { FxEffectBase } from "./internal/protos"
 import type { Sink } from "./Sink"
 
+// TODO: dualize
+// TODO: context abstraction
+// TODO: More operators
+
 export interface Versioned<R1, E1, R2, E2, A2, R3, E3, A3> extends Fx<R2, E2, A2>, Effect.Effect<R3, E3, A3> {
   readonly version: Effect.Effect<R1, E1, number>
 }

@@ -1,4 +1,5 @@
-import type { Equivalence, Fiber } from "effect"
+import * as C from "@typed/context"
+import type { Equivalence, Fiber, Layer } from "effect"
 import { Cause, Context, Effect, Equal, ExecutionStrategy, Exit, identity, Option, ReadonlyArray, Scope } from "effect"
 import { sum } from "effect/Number"
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "../TypeId.js"
@@ -7,7 +8,7 @@ import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
 import { getExitEquivalence } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
-import { hold } from "./internal/share.js"
+import * as share from "./internal/share.js"
 import type { UnionToTuple } from "./internal/UnionToTuple.js"
 import * as Sink from "./Sink.js"
 import * as Subject from "./Subject.js"
@@ -15,9 +16,10 @@ import * as Versioned from "./Versioned.js"
 
 // TODO: Add support for Context-based impelmentations
 // TODO: Support for custom RefSubjects backed by something than in-memory
-// TODO: tuple/struct/all
+// TODO: all
 // TODO: Provide resources
 // TODO: Utilize subscriptions to set the current value + version
+// TODO: dualize
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
 
@@ -50,7 +52,7 @@ export namespace Filtered {
 export interface RefSubject<out R, in out E, in out A> extends Computed<R, E, A>, Subject.Subject<R, E, A> {
   readonly runUpdates: <R2, E2, B>(
     f: (ref: GetSetDelete<R, E, A>) => Effect.Effect<R2, E2, B>
-  ) => Effect.Effect<R2, E2, B>
+  ) => Effect.Effect<R | R2, E2, B>
 }
 
 export namespace RefSubject {
@@ -59,6 +61,11 @@ export namespace RefSubject {
     | RefSubject<never, any, any>
     | RefSubject<any, never, any>
     | RefSubject<never, never, any>
+
+  export interface Tagged<I, E, A> extends RefSubject<I, E, A> {
+    readonly tag: C.Tagged<I, RefSubject<never, E, A>>
+    readonly make: <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
+  }
 }
 
 export interface RefSubjectOptions<A> {
@@ -592,7 +599,7 @@ class ComputedImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.Version
     super(
       input,
       (fx) =>
-        hold(core.tapEffect(core.mapEffect(fx, f), (c) =>
+        share.hold(core.tapEffect(core.mapEffect(fx, f), (c) =>
           Effect.flatMap(input.version, (v) =>
             Effect.sync(() => {
               this._version = v
@@ -638,7 +645,7 @@ class FilteredImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => hold(core.filterMapEffect(fx, f) as any),
+      (fx) => share.hold(core.filterMapEffect(fx, f) as any),
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }
@@ -1205,3 +1212,133 @@ type RefSubjectStructFrom<
     readonly [K in keyof Refs]: Effect.Effect.Success<Refs[K]>
   }
 >
+
+export function tagged<E, A>(replay?: number): {
+  <const I extends C.IdentifierFactory<any>>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+  <const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
+} {
+  return <const I>(identifier: I) => new RefSubjectTagged(C.Tagged<I, RefSubject<never, E, A>>(identifier), replay)
+}
+
+class RefSubjectTagged<I, E, A> extends FxEffectBase<
+  I | Scope.Scope,
+  E,
+  A,
+  I,
+  E,
+  A
+> implements RefSubject.Tagged<I, E, A> {
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly version: Effect.Effect<I, E, number>
+  readonly interrupt: Effect.Effect<I, never, void>
+  readonly subscriberCount: Effect.Effect<I, never, number>
+  private _fx: Fx<Scope.Scope | I, E, A>
+
+  constructor(
+    readonly tag: C.Tagged<I, RefSubject<never, E, A>>,
+    readonly replay: number = 0
+  ) {
+    super()
+
+    this.version = tag.withEffect((ref) => ref.version)
+    this.interrupt = tag.withEffect((ref) => ref.interrupt)
+    this.subscriberCount = tag.withEffect((ref) => ref.subscriberCount)
+
+    this.runUpdates = this.runUpdates.bind(this)
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+
+    this._fx = share.replay(core.fromFxEffect(tag.with((ref) => ref)), replay)
+  }
+
+  run<R2 = never>(
+    sink: Sink.Sink<R2, E, A>
+  ): Effect.Effect<I | R2 | Scope.Scope, never, unknown> {
+    return this._fx.run(sink)
+  }
+
+  toEffect(): Effect.Effect<I, E, A> {
+    return this.tag.withEffect((ref) => ref)
+  }
+
+  runUpdates<R2, E2, C>(
+    run: (ref: GetSetDelete<I, E, A>) => Effect.Effect<R2, E2, C>
+  ): Effect.Effect<I | R2, E2, C> {
+    return this.tag.withEffect((ref) => ref.runUpdates(run))
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<I, never, unknown> {
+    return this.tag.withEffect((ref) => ref.onFailure(cause))
+  }
+
+  onSuccess(value: A): Effect.Effect<I, never, unknown> {
+    return this.tag.withEffect((ref) => ref.onSuccess(value))
+  }
+
+  make = <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>): Layer.Layer<R, never, I> =>
+    this.tag.scoped(make(fxOrEffect))
+}
+
+export function fromTag<I, S, R, E, A>(
+  tag: C.Tag<I, S>,
+  f: (s: S) => RefSubject<R, E, A>
+): RefSubject<I | R, E, A> {
+  return new RefSubjectFromTag(tag, f)
+}
+
+class RefSubjectFromTag<I, S, R, E, A> extends FxEffectBase<
+  I | R | Scope.Scope,
+  E,
+  A,
+  I | R,
+  E,
+  A
+> implements RefSubject<I | R, E, A> {
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly version: Effect.Effect<I | R, E, number>
+  readonly interrupt: Effect.Effect<I | R, never, void>
+  readonly subscriberCount: Effect.Effect<I | R, never, number>
+
+  private _get: Effect.Effect<I, never, RefSubject<R, E, A>>
+  private _fx: Fx<I | R | Scope.Scope, E, A>
+
+  constructor(
+    readonly tag: C.Tag<I, S>,
+    readonly f: (s: S) => RefSubject<R, E, A>
+  ) {
+    super()
+
+    this._get = Effect.map(tag, f)
+    this._fx = core.fromFxEffect(this._get)
+
+    this.version = Effect.flatMap(this._get, (ref) => ref.version)
+    this.interrupt = Effect.flatMap(this._get, (ref) => ref.interrupt)
+    this.subscriberCount = Effect.flatMap(this._get, (ref) => ref.subscriberCount)
+  }
+
+  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<I | R | R3 | Scope.Scope, never, unknown> {
+    return this._fx.run(sink)
+  }
+
+  toEffect(): Effect.Effect<I | R, E, A> {
+    return Effect.flatten(this._get)
+  }
+
+  runUpdates<R2, E2, C>(
+    run: (ref: GetSetDelete<I | R, E, A>) => Effect.Effect<R2, E2, C>
+  ): Effect.Effect<I | R | R2, E2, C> {
+    return Effect.flatMap(this._get, (ref) => ref.runUpdates(run))
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<I | R, never, unknown> {
+    return Effect.flatMap(this._get, (ref) => ref.onFailure(cause))
+  }
+
+  onSuccess(value: A): Effect.Effect<I | R, never, unknown> {
+    return Effect.flatMap(this._get, (ref) => ref.onSuccess(value))
+  }
+}

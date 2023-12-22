@@ -4,6 +4,8 @@ import type { Predicate, Tracer } from "effect"
 import { dual } from "effect/Function"
 import { type Bounds } from "../internal/bounds"
 
+// TODO: dualize
+
 export interface Sink<out R, in E, in A> {
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown>
   onSuccess(value: A): Effect.Effect<R, never, unknown>
