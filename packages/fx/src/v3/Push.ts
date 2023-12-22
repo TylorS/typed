@@ -7,8 +7,6 @@ import * as core from "./internal/core"
 import { FxBase } from "./internal/protos"
 import * as Sink from "./Sink"
 
-// TODO: context abstraction
-
 export interface Push<R, E, A, R2, E2, B> extends Sink.Sink<R, E, A>, Fx<R2, E2, B>, Pipeable.Pipeable {}
 
 export namespace Push {
