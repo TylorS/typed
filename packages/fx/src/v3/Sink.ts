@@ -1,5 +1,6 @@
-import type { Context, Predicate, Tracer } from "effect"
-import { Cause, Clock, Effect, Option } from "effect"
+import * as C from "@typed/context"
+import { Cause, Clock, Effect, Layer, Option } from "effect"
+import type { Predicate, Tracer } from "effect"
 import { dual } from "effect/Function"
 import { type Bounds } from "../internal/bounds"
 
@@ -12,6 +13,11 @@ export namespace Sink {
   export type Context<T> = T extends Sink<infer R, infer _E, infer _A> ? R : never
   export type Error<T> = T extends Sink<infer _R, infer E, infer _A> ? E : never
   export type Success<T> = T extends Sink<infer _R, infer _E, infer A> ? A : never
+
+  export interface Tagged<I, E, A> extends Sink<I, E, A> {
+    readonly tag: C.Tagged<I, Sink<never, E, A>>
+    readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<R, never, I>
+  }
 }
 
 export type Context<T> = Sink.Context<T>
@@ -657,7 +663,7 @@ export function dropAfterEffect<R, E, A, R2, E2>(
 
 export function provide<R, E, A, R2>(
   sink: Sink<R, E, A>,
-  ctx: Context.Context<R2>
+  ctx: C.Context<R2>
 ): Sink<Exclude<R, R2>, E, A> {
   return make(
     (cause) => Effect.provide(sink.onFailure(cause), ctx),
@@ -694,5 +700,47 @@ const addEvent = <R, E, A>(
       return effect
     }))
 
-// TODO: Snapshot operators
-// TODO: Higher-order operators
+export function tagged<E, A>(): {
+  <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
+  <const I>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
+} {
+  return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Sink<never, E, A>>(identifier))
+}
+
+class TaggedImpl<I, E, A> implements Sink.Tagged<I, E, A> {
+  constructor(readonly tag: C.Tagged<I, Sink<never, E, A>>) {}
+
+  onSuccess(value: A): Effect.Effect<I, never, unknown> {
+    return this.tag.withEffect((sink) => sink.onSuccess(value))
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<I, never, unknown> {
+    return this.tag.withEffect((sink) => sink.onFailure(cause))
+  }
+
+  make: <R>(sink: Sink<R, E, A>) => Layer.Layer<R, never, I> = <R>(sink: Sink<R, E, A>) =>
+    Layer.flatMap(Layer.context<R>(), (ctx) => this.tag.layer(provide(sink, ctx)))
+}
+
+export function fromTag<I, S, R2, E2, B>(
+  tag: C.Tag<I, S>,
+  f: (s: S) => Sink<R2, E2, B>
+): Sink<I | R2, E2, B> {
+  return new FromTag(tag, f)
+}
+
+class FromTag<I, S, R2, E2, B> implements Sink<I | R2, E2, B> {
+  readonly get: Effect.Effect<I, never, Sink<R2, E2, B>>
+
+  constructor(readonly tag: C.Tag<I, S>, readonly f: (s: S) => Sink<R2, E2, B>) {
+    this.get = Effect.map(tag, f)
+  }
+
+  onSuccess(value: B): Effect.Effect<I | R2, never, unknown> {
+    return Effect.flatMap(this.get, (sink) => sink.onSuccess(value))
+  }
+
+  onFailure(cause: Cause.Cause<E2>): Effect.Effect<I | R2, never, unknown> {
+    return Effect.flatMap(this.get, (sink) => sink.onFailure(cause))
+  }
+}
