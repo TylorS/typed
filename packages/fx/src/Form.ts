@@ -22,7 +22,7 @@ import type * as Versioned from "./Versioned.js"
 /**
  * @since 1.18.0
  */
-export const FormTypeId = Symbol.for("./Form.js")
+export const FormTypeId = Symbol.for("@typed/fx/Form")
 /**
  * @since 1.18.0
  */

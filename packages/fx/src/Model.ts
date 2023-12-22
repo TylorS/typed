@@ -22,7 +22,7 @@ import type { Versioned } from "./Versioned.js"
  * @since 1.18.0
  * @category symbols
  */
-export const ModelTypeId = Symbol.for("./Model.js")
+export const ModelTypeId = Symbol.for("@typed/fx/Model")
 
 /**
  * @since 1.18.0

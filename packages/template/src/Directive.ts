@@ -9,7 +9,7 @@ import type { Placeholder } from "./Placeholder.js"
 /**
  * @since 1.0.0
  */
-export const DirectiveTypeId = Symbol.for(".Directive")
+export const DirectiveTypeId = Symbol.for("@typed/template/Directive")
 /**
  * @since 1.0.0
  */

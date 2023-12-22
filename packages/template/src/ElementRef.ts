@@ -15,7 +15,7 @@ import { ElementSource, getElements } from "./ElementSource.js"
 import { adjustTime } from "./internal/utils.js"
 import type { Placeholder } from "./Placeholder.js"
 
-export const ElementRefTypeId = Symbol.for("./ElementRef.js")
+export const ElementRefTypeId = Symbol.for("@typed/template/ElementRef")
 export type ElementRefTypeId = typeof ElementRefTypeId
 
 /**

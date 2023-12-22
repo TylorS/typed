@@ -15,7 +15,7 @@ import type { RenderEvent } from "./RenderEvent.js"
 /**
  * @since 1.0.0
  */
-export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance.js")
+export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstance")
 /**
  * @since 1.0.0
  */

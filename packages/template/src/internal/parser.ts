@@ -25,18 +25,38 @@ export function parse(templateStrings: ReadonlyArray<string>): Template.Template
 }
 
 const SPACE_REGEX = /\s/
-const isPartToken: TextPredicate = (input, pos) => input[pos] === "{" && input.slice(pos, pos + 8) === "{{__PART"
-const isPartEndToken: TextPredicate = (input, pos) => input[pos] === "_" && input.slice(pos, pos + 4) === "__}}"
-const isElementOpenToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] !== "/"
-const isElementCloseToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] === "/"
-const isEqualsToken: TextPredicate = (input, pos) => input[pos] === "="
-const isQuoteToken: TextPredicate = (input, pos) => input[pos] === `"`
-const isSingleQuoteToken: TextPredicate = (input, pos) => input[pos] === "'"
+const PART_START = "{{__PART"
+const PART_END = "__}}"
+const chars = {
+  openBracket: "{",
+  closeBracket: "}",
+  underscore: "_",
+  equals: "=",
+  quote: `"`,
+  singleQuote: "'",
+  slash: "/",
+  greaterThan: ">",
+  lessThan: "<",
+  hypen: "-"
+} as const
+
+const isPartToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.openBracket && input.slice(pos, pos + 8) === PART_START
+const isPartEndToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.underscore && input.slice(pos, pos + 4) === PART_END
+const isElementOpenToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.lessThan && input[pos + 1] !== chars.slash
+const isElementCloseToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.lessThan && input[pos + 1] === chars.slash
+const isEqualsToken: TextPredicate = (input, pos) => input[pos] === chars.equals
+const isQuoteToken: TextPredicate = (input, pos) => input[pos] === chars.quote
+const isSingleQuoteToken: TextPredicate = (input, pos) => input[pos] === chars.singleQuote
 const isWhitespaceToken: TextPredicate = (input, pos) => SPACE_REGEX.test(input[pos])
-const isOpenTagEndToken: TextPredicate = (input, pos) => input[pos] === ">"
-const isSelfClosingTagEndToken: TextPredicate = (input, pos) => input[pos] === "/" && input[pos + 1] === ">"
+const isOpenTagEndToken: TextPredicate = (input, pos) => input[pos] === chars.greaterThan
+const isSelfClosingTagEndToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.slash && input[pos + 1] === chars.greaterThan
 const isCommentEndToken: TextPredicate = (input, pos) =>
-  input[pos] === "-" && input[pos + 1] === "-" && input[pos + 2] === ">"
+  input[pos] === chars.hypen && input[pos + 1] === chars.hypen && input[pos + 2] === chars.greaterThan
 
 type Context = "unknown" | "element"
 
@@ -619,7 +639,7 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   return out
 }
 
-export const parser: Parser = globalValue(Symbol.for("../Parser2.js"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser2"), () => new ParserImpl())
 
 const digestSize = 2
 const multiplier = 33

@@ -15,7 +15,7 @@ import * as RefSubject from "./RefSubject.js"
 /**
  * @since 1.18.0
  */
-export const MatcherTypeId: unique symbol = Symbol.for("./Matcher.js")
+export const MatcherTypeId: unique symbol = Symbol.for("@typed/fx/Matcher")
 /**
  * @since 1.18.0
  */

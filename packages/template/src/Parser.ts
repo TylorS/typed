@@ -454,4 +454,4 @@ class ParserImpl {
 /**
  * @since 1.0.0
  */
-export const parser: Parser = globalValue(Symbol.for("./Parser.js"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser"), () => new ParserImpl())

@@ -12,7 +12,7 @@ import { Effect } from "effect"
 /**
  * @since 1.0.0
  */
-export const PlaceholderTypeId = Symbol.for("./Placholder.js")
+export const PlaceholderTypeId = Symbol.for("@typed/template/Placholder")
 /**
  * @since 1.0.0
  */
