@@ -1,6 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Subject from "@typed/fx/Subject"
-import { TypeId } from "@typed/fx/TypeId"
+import { TypeId } from "@typed/fx/TypeId.js"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect } from "effect"

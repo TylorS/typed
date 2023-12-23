@@ -1,6 +1,8 @@
+import { flow, ReadonlyArray } from "effect"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import { WithContext } from "../Sink.js"
+import * as Sink from "../Sink.js"
+import * as SyncProducer from "./sync-producer.js"
 
 // Sync operators are a subset of operators which can be safely fused together synchronously
 
@@ -41,13 +43,13 @@ type SyncOperatorFusionMap = {
 
 const SyncOperatorFusionMap: SyncOperatorFusionMap = {
   Map: {
-    Map: (op1, op2) => Map((a: any) => op2.f(op1.f(a))),
+    Map: (op1, op2) => Map(flow(op1.f, op2.f)),
     Filter: (op1, op2) =>
       FilterMap((a: any) => {
         const b = op1.f(a)
         return op2.f(b) ? Option.some(b) : Option.none()
       }),
-    FilterMap: (op1, op2) => FilterMap((a: any) => op2.f(op1.f(a)))
+    FilterMap: (op1, op2) => FilterMap(flow(op1.f, op2.f))
   },
   Filter: {
     Map: (op1, op2) => FilterMap((a: any) => op1.f(a) ? Option.some(op2.f(a)) : Option.none()),
@@ -71,41 +73,29 @@ export function matchSyncOperator<A>(operator: SyncOperator, matchers: {
   readonly Filter: (f: Filter<any>) => A
   readonly FilterMap: (f: FilterMap<any, any>) => A
 }): A {
-  switch (operator._tag) {
-    case "Map":
-      return matchers.Map(operator)
-    case "Filter":
-      return matchers.Filter(operator)
-    case "FilterMap":
-      return matchers.FilterMap(operator)
-  }
+  return matchers[operator._tag](operator as any)
 }
 
 export function compileSyncOperatorSink<R>(
   operator: SyncOperator,
-  sink: WithContext<R, any, any>
-): WithContext<R, any, any> {
+  sink: Sink.Sink<R, any, any>
+): Sink.Sink<R, any, any> {
   return matchSyncOperator(operator, {
-    Map: (op) => WithContext(sink.onFailure, (a) => sink.onSuccess(op.f(a))),
-    Filter: (op) => WithContext(sink.onFailure, (a) => op.f(a) ? sink.onSuccess(a) : Effect.unit),
-    FilterMap: (op) =>
-      WithContext(sink.onFailure, (a) =>
-        Option.match(op.f(a), {
-          onNone: () => Effect.unit,
-          onSome: sink.onSuccess
-        }))
+    Map: (op) => Sink.map(sink, op.f),
+    Filter: (op) => Sink.filter(sink, op.f),
+    FilterMap: (op) => Sink.filterMap(sink, op.f)
   })
 }
 
-export function compileSyncOperatorFailureSink<R>(
+export function compileCauseSyncOperatorSink<R>(
   operator: SyncOperator,
-  sink: WithContext<R, any, any>
-): WithContext<R, any, any> {
+  sink: Sink.Sink<R, any, any>
+): Sink.Sink<R, any, any> {
   return matchSyncOperator(operator, {
-    Map: (op) => WithContext((a) => sink.onFailure(op.f(a)), sink.onSuccess),
-    Filter: (op) => WithContext((a) => op.f(a) ? sink.onFailure(a) : Effect.unit, sink.onSuccess),
+    Map: (op) => Sink.make((a) => sink.onFailure(op.f(a)), sink.onSuccess),
+    Filter: (op) => Sink.make((a) => op.f(a) ? sink.onFailure(a) : Effect.unit, sink.onSuccess),
     FilterMap: (op) =>
-      WithContext((a) =>
+      Sink.make((a) =>
         Option.match(op.f(a), {
           onNone: () => Effect.unit,
           onSome: sink.onFailure
@@ -121,5 +111,54 @@ export function compileSyncReducer<A, B, C>(
     Map: (op) => (b, a) => Option.some(f(b, op.f(a))),
     Filter: (op) => (b, a) => op.f(a) ? Option.some(f(b, a)) : Option.none(),
     FilterMap: (op) => (b, i) => Option.map(op.f(i), (a) => f(b, a))
+  })
+}
+
+export function applyArray<A, B>(array: ReadonlyArray<A>, operator: SyncOperator): ReadonlyArray<B> {
+  return matchSyncOperator(operator, {
+    Map: (op) => ReadonlyArray.map(array, op.f),
+    Filter: (op) => ReadonlyArray.filter(array, op.f),
+    FilterMap: (op) => ReadonlyArray.filterMap(array, op.f)
+  })
+}
+
+export function applyArrayReducer<A, B>(
+  array: Iterable<any>,
+  operator: SyncOperator,
+  seed: B,
+  f: (acc: B, a: A) => B
+): B {
+  return matchSyncOperator(operator, {
+    Map: (op) => ReadonlyArray.reduce(array, seed, (b, a) => f(b, op.f(a))),
+    Filter: (op) => ReadonlyArray.reduce(array, seed, (b, a) => op.f(a) ? f(b, a) : b),
+    FilterMap: (op) =>
+      ReadonlyArray.reduce(array, seed, (b, a) => {
+        const o = op.f(a)
+        if (Option.isSome(o)) return f(b, o.value)
+        else return b
+      })
+  })
+}
+
+export function runSyncReduce<A, B>(
+  producer: SyncProducer.SyncProducer<A>,
+  op: SyncOperator,
+  seed: B,
+  f: (acc: B, a: any) => B
+): B {
+  return SyncProducer.matchSyncProducer(producer, {
+    Success: (a) =>
+      matchSyncOperator(op, {
+        Map: (op) => f(seed, op.f(a)),
+        Filter: (op) => op.f(a) ? f(seed, a) : seed,
+        FilterMap: (op) =>
+          Option.match(op.f(a), {
+            onNone: () => seed,
+            onSome: (a) => f(seed, a)
+          })
+      }),
+    FromSync: (g) => f(seed, g()),
+    FromArray: (array) => applyArrayReducer(array, op, seed, f),
+    FromIterable: (iterable) => applyArrayReducer(iterable, op, seed, f)
   })
 }

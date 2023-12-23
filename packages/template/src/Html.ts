@@ -4,7 +4,7 @@
 
 import * as Fx from "@typed/fx/Fx"
 import { Sink } from "@typed/fx/Sink"
-import { TypeId } from "@typed/fx/TypeId"
+import { TypeId } from "@typed/fx/TypeId.js"
 import type { Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
 import { join } from "effect/ReadonlyArray"

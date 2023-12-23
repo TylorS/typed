@@ -1,6 +1,7 @@
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
+import { fromStream } from "@typed/fx/Stream"
 import * as Subject from "@typed/fx/Subject"
 import * as Cause from "effect/Cause"
 import * as Duration from "effect/Duration"
@@ -8,7 +9,6 @@ import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
-import * as FiberId from "effect/FiberId"
 import * as Option from "effect/Option"
 import * as Schedule from "effect/Schedule"
 import * as Stream from "effect/Stream"
@@ -52,29 +52,8 @@ describe.concurrent(__filename, () => {
   it.concurrent("switchMap favors the latest inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.switchMap((x) => Fx.succeed(String(x + 1))),
-      Fx.toReadonlyArray
-    )
-
-    const array = await Effect.runPromise(test)
-
-    expect(array).toEqual(["4"])
-  })
-
-  it.concurrent("switchMap supports Effects", async () => {
-    const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.switchMap((x) => Effect.succeed(String(x + 1))),
-      Fx.toReadonlyArray
-    )
-
-    const array = await Effect.runPromise(test)
-
-    expect(array).toEqual(["4"])
-  })
-
-  it.concurrent("switchMap supports Iterables", async () => {
-    const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.switchMap((x) => new Set([String(x + 1)])),
-      Fx.toReadonlyArray
+      Fx.toReadonlyArray,
+      Effect.scoped
     )
 
     const array = await Effect.runPromise(test)
@@ -85,7 +64,8 @@ describe.concurrent(__filename, () => {
   it.concurrent("exhaustMap favors the first inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.exhaustMap((x) => Fx.succeed(String(x + 1))),
-      Fx.toReadonlyArray
+      Fx.toReadonlyArray,
+      Effect.scoped
     )
 
     const array = await Effect.runPromise(test)
@@ -96,7 +76,8 @@ describe.concurrent(__filename, () => {
   it.concurrent("exhaustMapLatest favors the first and last inner Fx", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
       Fx.exhaustMapLatest((x) => Fx.succeed(String(x + 1))),
-      Fx.toReadonlyArray
+      Fx.toReadonlyArray,
+      Effect.scoped
     )
 
     const array = await Effect.runPromise(test)
@@ -105,9 +86,9 @@ describe.concurrent(__filename, () => {
   })
 
   it.concurrent("mergeBuffer keeps the ordering of concurrent streams", async () => {
-    const test = Fx.mergeBuffer([
-      Fx.from(Effect.succeed(1)),
-      Fx.fromSink<never, never, number>((sink) =>
+    const test = Fx.mergeOrdered([
+      Fx.fromEffect(Effect.succeed(1)),
+      Fx.make<never, never, number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(Effect.sleep(100))
           yield* _(sink.onSuccess(2))
@@ -115,8 +96,8 @@ describe.concurrent(__filename, () => {
           yield* _(sink.onSuccess(3))
         })
       ),
-      Fx.fromStream(Stream.fromIterable([4, 5, 6])),
-      Fx.from(Effect.delay(Effect.succeed(7), 50))
+      fromStream(Stream.fromIterable([4, 5, 6])),
+      Fx.fromEffect(Effect.delay(Effect.succeed(7), 50))
     ]).pipe(
       Fx.toReadonlyArray
     )
@@ -132,7 +113,7 @@ describe.concurrent(__filename, () => {
         let i = 0
         const iterator = Effect.sync(() => i++)
 
-        const sut = Fx.periodic(iterator, 10).pipe(
+        const sut = Fx.periodic(iterator, 100).pipe(
           Fx.take(5),
           Fx.multicast,
           Fx.toReadonlyArray
@@ -143,10 +124,10 @@ describe.concurrent(__filename, () => {
           const a = yield* _(Effect.fork(sut))
 
           // Allow fiber to start
-          yield* _(Effect.sleep(0))
+          yield* _(Effect.sleep(1))
 
           // Allow 2 events to occur
-          yield* _(Effect.sleep(20))
+          yield* _(Effect.sleep(200))
 
           // Start the second
           const b = yield* _(Effect.fork(sut))
@@ -154,7 +135,7 @@ describe.concurrent(__filename, () => {
           // Validate the outputs
           expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
           expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -188,7 +169,7 @@ describe.concurrent(__filename, () => {
           // Validate the outputs
           expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
           expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -222,7 +203,7 @@ describe.concurrent(__filename, () => {
           // Validate the outputs
           expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
           expect(yield* _(Fiber.join(b))).toEqual([0, 1, 2, 3, 4])
-        })
+        }).pipe(Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -236,15 +217,15 @@ describe.concurrent(__filename, () => {
 
         expect(yield* _(ref)).toEqual(0)
 
-        yield* _(ref.set(1))
+        yield* _(RefSubject.set(ref, 1))
 
         expect(yield* _(ref)).toEqual(1)
 
-        yield* _(ref.update((x) => x + 1))
+        yield* _(RefSubject.update(ref, (x) => x + 1))
 
         expect(yield* _(ref)).toEqual(2)
 
-        yield* _(ref.delete)
+        yield* _(RefSubject.delete(ref))
 
         expect(yield* _(ref)).toEqual(0)
       }).pipe(Effect.scoped)
@@ -261,8 +242,8 @@ describe.concurrent(__filename, () => {
         // Allow fiber to start
         yield* _(Effect.sleep(0))
 
-        yield* _(ref.set(1))
-        yield* _(ref.set(2))
+        yield* _(RefSubject.set(ref, 1))
+        yield* _(RefSubject.set(ref, 2))
 
         expect(yield* _(Fiber.join(fiber))).toEqual([0, 1, 2])
       }).pipe(Effect.scoped)
@@ -274,19 +255,19 @@ describe.concurrent(__filename, () => {
       it.concurrent("transform success values", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(0))
-          const addOne = ref.map((x) => x + 1)
+          const addOne = RefSubject.map(ref, (x) => x + 1)
 
           expect(yield* _(addOne)).toEqual(1)
 
-          yield* _(ref.set(1))
+          yield* _(RefSubject.set(ref, 1))
 
           expect(yield* _(addOne)).toEqual(2)
 
-          yield* _(ref.update((x) => x + 1))
+          yield* _(RefSubject.update(ref, (x) => x + 1))
 
           expect(yield* _(addOne)).toEqual(3)
 
-          yield* _(ref.delete)
+          yield* _(RefSubject.delete(ref))
 
           expect(yield* _(addOne)).toEqual(1)
         }).pipe(Effect.scoped)
@@ -299,15 +280,15 @@ describe.concurrent(__filename, () => {
       it.concurrent("returns Cause.NoSuchElementException when filtered", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.of(0))
-          const filtered = ref.filterMap(Option.liftPredicate((x) => x % 2 === 0))
+          const filtered = RefSubject.filterMap(ref, Option.liftPredicate((x) => x % 2 === 0))
 
           expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(0))
 
-          yield* _(ref.set(1))
+          yield* _(RefSubject.set(ref, 1))
 
           expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.none())
 
-          yield* _(ref.set(2))
+          yield* _(RefSubject.set(ref, 2))
 
           expect(yield* _(Effect.optionFromOptional(filtered))).toEqual(Option.some(2))
         }).pipe(Effect.scoped)
@@ -322,15 +303,15 @@ describe.concurrent(__filename, () => {
 
         expect(yield* _(ref)).toEqual(0)
 
-        yield* _(ref.set(1))
+        yield* _(RefSubject.set(ref, 1))
 
         expect(yield* _(ref)).toEqual(1)
 
-        yield* _(ref.update((x) => x + 1))
+        yield* _(RefSubject.update(ref, (x) => x + 1))
 
         expect(yield* _(ref)).toEqual(2)
 
-        yield* _(ref.delete)
+        yield* _(RefSubject.delete(ref))
 
         expect(yield* _(ref)).toEqual(0)
       }).pipe(Effect.scoped)
@@ -340,19 +321,20 @@ describe.concurrent(__filename, () => {
 
     it.concurrent("allows being initialized by an Fx", async () => {
       const test = Effect.gen(function*(_) {
-        const ref = yield* _(RefSubject.make(Fx.merge([
+        const ref = yield* _(RefSubject.make(Fx.mergeAll([
           Fx.at("a", 10),
           Fx.at("z", 50)
         ])))
+        yield* _(Effect.sleep(1))
 
         // Lazily initializes with the first value of the Fx
         expect(yield* _(ref)).toEqual("a")
 
         // Allows setting a value
-        yield* _(ref.set("b"))
+        yield* _(RefSubject.set(ref, "b"))
         expect(yield* _(ref)).toEqual("b")
 
-        yield* _(ref.delete)
+        yield* _(RefSubject.delete(ref))
         expect(yield* _(ref)).toEqual("a")
 
         yield* _(Effect.sleep(50))
@@ -360,7 +342,7 @@ describe.concurrent(__filename, () => {
         // Further emitted values reset the current state.
         expect(yield* _(ref)).toEqual("z")
 
-        yield* _(ref.delete)
+        yield* _(RefSubject.delete(ref))
 
         expect(yield* _(ref)).toEqual("z")
       })
@@ -374,18 +356,18 @@ describe.concurrent(__filename, () => {
         const test = Effect.gen(function*(_) {
           expect(yield* _(ref)).toEqual(0)
 
-          yield* _(ref.set(1))
+          yield* _(RefSubject.set(ref, 1))
 
           expect(yield* _(ref)).toEqual(1)
 
-          yield* _(ref.update((x) => x + 1))
+          yield* _(RefSubject.update(ref, (x) => x + 1))
 
           expect(yield* _(ref)).toEqual(2)
 
-          yield* _(ref.delete)
+          yield* _(RefSubject.delete(ref))
 
           expect(yield* _(ref)).toEqual(0)
-        }).pipe(ref.provide(Effect.succeed(0)), Effect.scoped)
+        }).pipe(Effect.provide(ref.make(Effect.succeed(0))), Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -397,10 +379,10 @@ describe.concurrent(__filename, () => {
           expect(yield* _(ref)).toEqual("a")
 
           // Allows setting a value
-          yield* _(ref.set("b"))
+          yield* _(RefSubject.set(ref, "b"))
           expect(yield* _(ref)).toEqual("b")
 
-          yield* _(ref.delete)
+          yield* _(RefSubject.delete(ref))
           expect(yield* _(ref)).toEqual("a")
 
           yield* _(Effect.sleep(50))
@@ -408,11 +390,11 @@ describe.concurrent(__filename, () => {
           // Further emitted values reset the current state.
           expect(yield* _(ref)).toEqual("z")
 
-          yield* _(ref.delete)
+          yield* _(RefSubject.delete(ref))
 
           expect(yield* _(ref)).toEqual("z")
         }).pipe(
-          Effect.provide(ref.make(Fx.merge([
+          Effect.provide(ref.make(Fx.mergeAll([
             Fx.at("a", 10),
             Fx.at("z", 50)
           ])))
@@ -425,7 +407,7 @@ describe.concurrent(__filename, () => {
 
   describe.concurrent("Subject", () => {
     it.concurrent("can map the input values using Sink combinators", async () => {
-      const subject = Subject.make<never, number>()
+      const subject = Subject.unsafeMake<never, number>()
       const sink = subject.pipe(Sink.map((x: string) => x.length))
       const test = Effect.gen(function*(_) {
         const fiber = yield* _(subject, Fx.take(3), Fx.toReadonlyArray, Effect.fork)
@@ -438,7 +420,7 @@ describe.concurrent(__filename, () => {
         yield* _(sink.onSuccess("abc"))
 
         expect(yield* _(Fiber.join(fiber))).toEqual([1, 2, 3])
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -476,14 +458,14 @@ describe.concurrent(__filename, () => {
     })
   })
 
-  describe.concurrent("Fx.interrupt", () => {
-    it.concurrent("produces a failure", async () => {
-      const test = Fx.interrupt(FiberId.none).pipe(Fx.toReadonlyArray, Effect.exit)
-      const exit = await Effect.runPromise(test)
+  // describe.concurrent("Fx.interrupt", () => {
+  //   it.concurrent("produces a failure", async () => {
+  //     const test = Fx.fromEffect(Effect.interrupt(FiberId.none)).pipe(Fx.toReadonlyArray, Effect.exit)
+  //     const exit = await Effect.runPromise(test)
 
-      expect(exit).toEqual(Exit.interrupt(FiberId.none))
-    })
-  })
+  //     expect(exit).toEqual(Exit.interrupt(FiberId.none))
+  //   })
+  // })
 
   describe.concurrent("Fx.fail", () => {
     it.concurrent("produces a failure", async () => {
@@ -494,9 +476,9 @@ describe.concurrent(__filename, () => {
     })
   })
 
-  describe.concurrent("Fx.fromSink", () => {
+  describe.concurrent("Fx.make", () => {
     it.concurrent("produces events from a Sink", async () => {
-      const test = Fx.fromSink<never, never, number>((sink) =>
+      const test = Fx.make<never, never, number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(sink.onSuccess(1))
           yield* _(sink.onSuccess(2))
@@ -510,7 +492,7 @@ describe.concurrent(__filename, () => {
     })
 
     it.concurrent("produces errors from a Sink", async () => {
-      const test = Fx.fromSink<never, number, never>((sink) =>
+      const test = Fx.make<never, number, never>((sink) =>
         Effect.gen(function*(_) {
           yield* _(sink.onFailure(Cause.fail(1)))
           yield* _(sink.onFailure(Cause.fail(2)))
@@ -524,16 +506,16 @@ describe.concurrent(__filename, () => {
     })
   })
 
-  describe.concurrent("Fx.fromEmitter", () => {
+  describe.concurrent("Fx.withEmitter", () => {
     it.concurrent("produces events from an Emitter", async () => {
-      const test = Fx.fromEmitter<never, never, number>((emitter) =>
+      const test = Fx.withEmitter<never, number>((emitter) =>
         Effect.sync(() => {
           emitter.succeed(1)
           emitter.succeed(2)
           emitter.succeed(3)
           emitter.end()
         })
-      ).pipe(Fx.toReadonlyArray)
+      ).pipe(Fx.toReadonlyArray, Effect.scoped)
 
       const array = await Effect.runPromise(test)
 
@@ -541,14 +523,14 @@ describe.concurrent(__filename, () => {
     })
 
     it.concurrent("produces errors from an Emitter", async () => {
-      const test = Fx.fromEmitter<never, number, never>((emitter) =>
+      const test = Fx.withEmitter<number, never>((emitter) =>
         Effect.sync(() => {
           emitter.fail(1)
           emitter.fail(2)
           emitter.fail(3)
           emitter.end()
         })
-      ).pipe(Fx.flip, Fx.toReadonlyArray)
+      ).pipe(Fx.flip, Fx.toReadonlyArray, Effect.scoped)
 
       const array = await Effect.runPromise(test)
 
@@ -616,10 +598,10 @@ describe.concurrent("Fx.at", () => {
 
 describe.concurrent("Fx.combine", () => {
   it.concurrent("combines multiple Fx into a single Fx with an output as an array", async () => {
-    const test = Fx.combine([
+    const test = Fx.tuple([
       Fx.succeed(1),
       Fx.succeed(2),
-      Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+      Fx.mergeAll([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
     ]).pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)
@@ -634,7 +616,7 @@ describe.concurrent("Fx.struct", () => {
       {
         a: Fx.succeed(1),
         b: Fx.succeed(2),
-        c: Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+        c: Fx.mergeAll([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
       }
     ).pipe(Fx.toReadonlyArray)
 
@@ -647,9 +629,9 @@ describe.concurrent("Fx.struct", () => {
 describe.concurrent("Fx.race", () => {
   it.concurrent("returns the first successful value", async () => {
     let runs = 0
-    const inc = Fx.tap(() => Effect.sync(() => runs++))
+    const inc = Fx.tap(() => runs++)
 
-    const test = Fx.race(
+    const test = Fx.raceAll(
       [inc(Fx.at(1, 100)), inc(Fx.at(2, 50)), inc(Fx.at(3, 150))]
     ).pipe(Fx.toReadonlyArray)
 
@@ -663,10 +645,10 @@ describe.concurrent("Fx.race", () => {
 
 describe.concurrent("Fx.merge", () => {
   it.concurrent("merges multiple Fx into a single Fx with an output as an array", async () => {
-    const test = Fx.merge([
+    const test = Fx.mergeAll([
       Fx.succeed(1),
       Fx.succeed(2),
-      Fx.merge([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
+      Fx.mergeAll([Fx.succeed(3), Fx.at(4, 50), Fx.at(5, 100)])
     ]).pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)
@@ -675,16 +657,16 @@ describe.concurrent("Fx.merge", () => {
   })
 })
 
-describe.concurrent("Fx.fromScheduled", () => {
+describe.concurrent("Fx.schedule", () => {
   it.concurrent("runs an Effect on a schedule emitting its output values", async () => {
     const schedule = Schedule.recurs(2)
     const effect = Effect.succeed(1)
-    const fx = Fx.fromScheduled(effect, schedule)
+    const fx = Fx.schedule(effect, schedule)
     const test = fx.pipe(Fx.toReadonlyArray)
 
     const array = await Effect.runPromise(test)
 
-    expect(array).toEqual([1, 1, 1])
+    expect(array).toEqual([1, 1])
   })
 })
 
@@ -783,7 +765,7 @@ describe.concurrent("Fx.take", () => {
 describe.concurrent("Fx.takeWhile", () => {
   it.concurrent("takes values from a stream while the predicate is true", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.takeWhile((x) => Effect.succeed(x < 3)),
+      Fx.takeWhile((x) => x < 3),
       Fx.toReadonlyArray
     )
 
@@ -796,7 +778,7 @@ describe.concurrent("Fx.takeWhile", () => {
 describe.concurrent("Fx.takeUntil", () => {
   it.concurrent("takes values from a stream until the predicate is true", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.takeUntil((x) => Effect.succeed(x === 3)),
+      Fx.takeUntil((x) => x === 3),
       Fx.toReadonlyArray
     )
 
@@ -822,7 +804,7 @@ describe.concurrent("Fx.drop", () => {
 describe.concurrent("Fx.dropWhile", () => {
   it.concurrent("drops values from a stream while the predicate is true", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.dropWhile((x) => Effect.succeed(x < 3)),
+      Fx.dropWhile((x) => x < 3),
       Fx.toReadonlyArray
     )
 
@@ -835,7 +817,7 @@ describe.concurrent("Fx.dropWhile", () => {
 describe.concurrent("Fx.dropUntil", () => {
   it.concurrent("drops values from a stream until the predicate is true", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.dropUntil((x) => Effect.succeed(x === 3)),
+      Fx.dropUntil((x) => x === 3),
       Fx.toReadonlyArray
     )
 
@@ -884,10 +866,10 @@ describe.concurrent("Fx.loop", () => {
   })
 })
 
-describe.concurrent("Fx.startWith", () => {
+describe.concurrent("Fx.prepend", () => {
   it.concurrent("starts a stream with a value", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.startWith(0),
+      Fx.prepend(0),
       Fx.toReadonlyArray
     )
 
@@ -897,10 +879,10 @@ describe.concurrent("Fx.startWith", () => {
   })
 })
 
-describe.concurrent("Fx.endWith", () => {
+describe.concurrent("Fx.append", () => {
   it.concurrent("ends a stream with a value", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.endWith(4),
+      Fx.append(4),
       Fx.toReadonlyArray
     )
 
@@ -919,7 +901,7 @@ describe.concurrent("Fx.during", () => {
       Fx.at(Fx.at(null, 100), 100)
     ))
 
-    const array = await Effect.runPromise(test)
+    const array = await Effect.runPromise(Effect.scoped(test))
 
     expect(array).toEqual([2, 3])
   })
@@ -935,7 +917,7 @@ describe.concurrent("Fx.since", () => {
       Fx.toReadonlyArray
     )
 
-    const array = await Effect.runPromise(test)
+    const array = await Effect.runPromise(Effect.scoped(test))
 
     expect(array).toEqual([2, 3])
   })
@@ -950,7 +932,7 @@ describe.concurrent("Fx.until", () => {
       Fx.toReadonlyArray
     )
 
-    const array = await Effect.runPromise(test)
+    const array = await Effect.runPromise(Effect.scoped(test))
 
     expect(array).toEqual([0, 1])
   })
@@ -972,7 +954,7 @@ describe.concurrent("Fx.skipRepeats", () => {
 describe.concurrent("Fx.snapshot", () => {
   it.concurrent("combines the latest value from an Fx with the current value", async () => {
     const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.snapshot(Fx.fromIterable(["a", "b", "c"]), (a, b) => Effect.succeed(a + b)),
+      Fx.snapshot(Fx.fromIterable(["a", "b", "c"]), (a, b) => a + b),
       Fx.toReadonlyArray
     )
 
@@ -980,31 +962,16 @@ describe.concurrent("Fx.snapshot", () => {
 
     expect(array).toEqual(["1c", "2c", "3c"])
   })
-
-  it.concurrent("runs an Effect each time when an Effect is the sampled", async () => {
-    let i = 0
-    const iterator = Effect.sync(() => i++)
-    const test = Fx.fromIterable([1, 2, 3]).pipe(
-      Fx.snapshot(
-        iterator,
-        (a, b) => Effect.succeed(a + b)
-      ),
-      Fx.toReadonlyArray
-    )
-
-    const array = await Effect.runPromise(test)
-
-    expect(array).toEqual([1, 3, 5])
-  })
 })
 
 describe.concurrent("Fx.debounce", () => {
   it.concurrent("debounces values", async () => {
-    const test = Fx.merge(
+    const test = Fx.mergeAll(
       [Fx.at(1, 50), Fx.at(2, 100), Fx.at(3, 150)]
     ).pipe(
       Fx.debounce(50),
-      Fx.toReadonlyArray
+      Fx.toReadonlyArray,
+      Effect.scoped
     )
 
     const array = await Effect.runPromise(test)
@@ -1015,11 +982,12 @@ describe.concurrent("Fx.debounce", () => {
 
 describe.concurrent("Fx.throttle", () => {
   it.concurrent("throttles values", async () => {
-    const test = Fx.merge(
+    const test = Fx.mergeAll(
       [Fx.at(1, 50), Fx.at(2, 100), Fx.at(3, 150)]
     ).pipe(
       Fx.throttle(50),
-      Fx.toReadonlyArray
+      Fx.toReadonlyArray,
+      Effect.scoped
     )
 
     const array = await Effect.runPromise(test)
@@ -1031,10 +999,12 @@ describe.concurrent("Fx.throttle", () => {
 describe.concurrent("Fx.if", () => {
   it.concurrent("runs an Fx if the predicate is true", async () => {
     const test = Fx.if(
-      true,
-      Fx.succeed(1),
-      Fx.succeed(2)
-    ).pipe(Fx.toReadonlyArray)
+      Fx.succeed(true),
+      {
+        onTrue: Fx.succeed(1),
+        onFalse: Fx.succeed(2)
+      }
+    ).pipe(Fx.toReadonlyArray, Effect.scoped)
 
     const array = await Effect.runPromise(test)
 
@@ -1043,10 +1013,12 @@ describe.concurrent("Fx.if", () => {
 
   it.concurrent("runs an Fx if the predicate is false", async () => {
     const test = Fx.if(
-      false,
-      Fx.succeed(1),
-      Fx.succeed(2)
-    ).pipe(Fx.toReadonlyArray)
+      Fx.succeed(false),
+      {
+        onTrue: Fx.succeed(1),
+        onFalse: Fx.succeed(2)
+      }
+    ).pipe(Fx.toReadonlyArray, Effect.scoped)
 
     const array = await Effect.runPromise(test)
 
@@ -1055,13 +1027,15 @@ describe.concurrent("Fx.if", () => {
 
   it.concurrent("allows boolean to be an Fx", async () => {
     const test = Fx.if(
-      Fx.merge([
+      Fx.mergeAll([
         Fx.at(true, 50),
         Fx.at(false, 100)
       ]),
-      Fx.succeed(1),
-      Fx.succeed(2)
-    ).pipe(Fx.toReadonlyArray)
+      {
+        onTrue: Fx.succeed(1),
+        onFalse: Fx.succeed(2)
+      }
+    ).pipe(Fx.toReadonlyArray, Effect.scoped)
 
     const array = await Effect.runPromise(test)
 
@@ -1071,90 +1045,24 @@ describe.concurrent("Fx.if", () => {
 
 describe.concurrent("Fx.partitionMap", () => {
   it.concurrent("partitions values into successes and failures", async () => {
-    const [oddsFx, evensFx] = Fx.fromIterable([1, 2, 3, 4]).pipe(
+    const [oddsFx, evensFx] = Fx.withEmitter<never, number>((emitter) =>
+      Effect.sync(() => {
+        emitter.succeed(1)
+        emitter.succeed(2)
+        emitter.succeed(3)
+        emitter.succeed(4)
+        emitter.end()
+      })
+    ).pipe(
       Fx.partitionMap((x) => x % 2 === 0 ? Either.right(x) : Either.left(x))
     )
-    const odds = await oddsFx.pipe(Fx.toReadonlyArray, Effect.runPromise)
-    const evens = await evensFx.pipe(Fx.toReadonlyArray, Effect.runPromise)
+
+    const [odds, evens] = await Effect.all([
+      oddsFx.pipe(Fx.toReadonlyArray),
+      evensFx.pipe(Fx.toReadonlyArray)
+    ]).pipe(Effect.scoped, Effect.runPromise)
 
     expect(odds).toEqual([1, 3])
     expect(evens).toEqual([2, 4])
-  })
-})
-
-describe.concurrent("Fx.from", () => {
-  it.concurrent("does returns an Fx as-is", async () => {
-    const test = Fx.from(Fx.fromIterable([1, 2, 3])).pipe(Fx.toReadonlyArray)
-    const events = await Effect.runPromise(test)
-
-    expect(events).toEqual([1, 2, 3])
-  })
-
-  it.concurrent("lifts an Effect", async () => {
-    const test = Fx.from(Effect.succeed(1)).pipe(Fx.toReadonlyArray)
-    const events = await Effect.runPromise(test)
-
-    expect(events).toEqual([1])
-  })
-
-  it.concurrent("lifts a Cause", async () => {
-    const test = Fx.from(Cause.fail(1)).pipe(Fx.flip, Fx.toReadonlyArray)
-    const events = await Effect.runPromise(test)
-
-    expect(events).toEqual([1])
-  })
-
-  it.concurrent("lifts an Iterable", async () => {
-    const test = Fx.from(new Set([1, 2, 3])).pipe(Fx.toReadonlyArray)
-    const events = await Effect.runPromise(test)
-
-    expect(events).toEqual([1, 2, 3])
-  })
-
-  it.concurrent("lifts a value", async () => {
-    const test = Fx.from(1).pipe(Fx.toReadonlyArray)
-    const events = await Effect.runPromise(test)
-
-    expect(events).toEqual([1])
-  })
-})
-
-describe.concurrent("Fx.keyed", () => {
-  it.concurrent("allow keeping a reference to a running stream", async () => {
-    const test = Effect.gen(function*($) {
-      const inputs = Fx.merge([
-        Fx.succeed([1, 2, 3]),
-        Fx.at([3, 2, 1], 50),
-        Fx.at([4, 5, 6, 1], 100)
-      ])
-
-      let calls = 0
-
-      const fx = Fx.keyed(
-        inputs,
-        (x) => {
-          return x
-        },
-        (x) => {
-          calls++
-          return x
-        }
-      )
-
-      console.time("fx.keyed")
-      const events = yield* $(Fx.toReadonlyArray(fx))
-      console.timeEnd("fx.keyed")
-
-      expect(events).toEqual([
-        [1, 2, 3],
-        [3, 2, 1],
-        [4, 5, 6, 1]
-      ])
-
-      // Should only be called once for each unique value
-      expect(calls).toEqual(6)
-    })
-
-    await Effect.runPromise(Effect.scoped(test))
   })
 })

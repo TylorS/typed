@@ -2,7 +2,6 @@ import * as ArrayFormatter from "@effect/schema/ArrayFormatter"
 import * as Schema from "@effect/schema/Schema"
 import { RefSubject } from "@typed/fx"
 import * as Form from "@typed/fx/Form"
-import type { FormEntry } from "@typed/fx/FormEntry"
 import { deepEqual, deepStrictEqual, ok } from "assert"
 import { Either } from "effect"
 import * as Effect from "effect/Effect"
@@ -18,7 +17,7 @@ describe.concurrent("Form", () => {
         Schema.maxLength(20),
         Schema.message(() => "ID cannot be longer than 20 characters")
       ),
-      timestamp: Schema.compose(Schema.dateFromString(Schema.string), Schema.ValidDateFromSelf)
+      timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
     })
     type FooInput = Schema.Schema.From<typeof Foo>
     type FooOutput = Schema.Schema.To<typeof Foo>
@@ -29,23 +28,18 @@ describe.concurrent("Form", () => {
     }
     const initialFooInput: FooInput = Schema.encodeSync(Foo)(initialFooOutput)
 
-    const makeFooForm = Form.make(Foo)
+    const makeFooForm = Form.derive(Foo)
 
     it("allows deriving form state from a source", async () => {
       const test = Effect.gen(function*(_) {
-        const form: Form.Form<
-          {
-            readonly id: FormEntry<never, string, string>
-            readonly timestamp: FormEntry<never, string, Date>
-          }
-        > = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
-        const id: FormEntry<never, string, string> = form.get("id")
-        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
+        const form = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
+        const id = form.get("id")
+        const timestamp = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
 
-        yield* _(timestamp.set("asdf"))
+        yield* _(RefSubject.set(timestamp, "asdf"))
 
         deepStrictEqual(yield* _(form), { ...initialFooInput, timestamp: "asdf" })
 
@@ -62,7 +56,7 @@ describe.concurrent("Form", () => {
           }]
         )
 
-        yield* _(id.set(""))
+        yield* _(RefSubject.set(id, ""))
 
         parseError = yield* _(Effect.either(form.decoded))
 
@@ -107,7 +101,7 @@ describe.concurrent("Form", () => {
           }]
         )
 
-        yield* _(id.set("abcdefghijklmnopqrstuvwxyx"))
+        yield* _(RefSubject.set(id, "abcdefghijklmnopqrstuvwxyx"))
 
         idParseError = yield* _(Effect.either(id.decoded))
 
@@ -121,7 +115,7 @@ describe.concurrent("Form", () => {
             path: []
           }]
         )
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -130,15 +124,14 @@ describe.concurrent("Form", () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(initialFooOutput))
         const form = yield* _(makeFooForm(ref))
-
-        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
+        const timestamp = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
 
         const date = new Date()
 
-        yield* _(timestamp.set(date.toISOString()))
+        yield* _(RefSubject.set(timestamp, date.toISOString()))
 
         deepStrictEqual(yield* _(timestamp), date.toISOString())
         deepStrictEqual(yield* _(ref), initialFooOutput)
@@ -156,15 +149,14 @@ describe.concurrent("Form", () => {
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeFooForm(ref))
-
-        const timestamp: FormEntry<never, string, Date> = form.get("timestamp")
+        const timestamp = form.get("timestamp")
 
         deepStrictEqual(yield* _(form), initialFooInput)
         deepStrictEqual(yield* _(form.decoded), initialFooOutput)
 
         const date = new Date()
 
-        yield* _(timestamp.set(date.toISOString()))
+        yield* _(RefSubject.set(timestamp, date.toISOString()))
 
         deepStrictEqual(yield* _(timestamp), date.toISOString())
         deepStrictEqual(yield* _(ref), initialFooOutput)
@@ -172,7 +164,7 @@ describe.concurrent("Form", () => {
         yield* _(form.persist)
 
         deepStrictEqual(yield* _(ref), { ...initialFooOutput, timestamp: date })
-      }).pipe(ref.provide(Effect.succeed(initialFooOutput)), Effect.scoped)
+      }).pipe(Effect.provide(ref.make(Effect.succeed(initialFooOutput))), Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -181,7 +173,7 @@ describe.concurrent("Form", () => {
       const Bar = Schema.struct({
         baz: Schema.optional(Schema.string)
       })
-      const makeBarForm = Form.make(Bar)
+      const makeBarForm = Form.derive(Bar)
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeBarForm(Effect.succeed({})))
@@ -189,10 +181,10 @@ describe.concurrent("Form", () => {
 
         deepStrictEqual(yield* _(baz), undefined)
 
-        yield* _(baz.set("asdf"))
+        yield* _(RefSubject.set(baz, "asdf"))
 
         deepStrictEqual(yield* _(baz), "asdf")
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })
@@ -204,7 +196,7 @@ describe.concurrent("Form", () => {
           b: Schema.boolean
         })
       })
-      const makeBazForm = Form.make(Baz)
+      const makeBazForm = Form.derive(Baz)
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeBazForm(Effect.succeed({ quux: { a: 1, b: true } })))
@@ -215,11 +207,11 @@ describe.concurrent("Form", () => {
         const a = quux.get("a")
         const b = quux.get("b")
 
-        yield* _(a.set(42))
-        yield* _(b.set(false))
+        yield* _(RefSubject.set(a, 42))
+        yield* _(RefSubject.set(b, false))
 
         deepStrictEqual(yield* _(form), { quux: { a: 42, b: false } })
-      })
+      }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)
     })

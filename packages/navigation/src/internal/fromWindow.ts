@@ -3,7 +3,7 @@ import { Window } from "@typed/dom/Window"
 import type { Computed } from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
-import { Effect, Exit, Fiber, Option, Runtime, Scope } from "effect"
+import { Effect, ExecutionStrategy, Exit, Fiber, Option, Runtime, Scope } from "effect"
 import type { Context, Layer } from "effect"
 import type { Commit } from "../Layer.js"
 import type {
@@ -438,11 +438,16 @@ function scopedRuntime<R>(): Effect.Effect<
     const runFork = Runtime.runFork(runtime)
 
     const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
-      const fiber: Fiber.RuntimeFiber<E, A> = Scope.addFinalizer(
-        scope,
-        Effect.suspend(() => Fiber.interrupt(fiber))
-      ).pipe(
-        Effect.zipRight(effect),
+      const fiber: Fiber.RuntimeFiber<E, A> = Scope.fork(scope, ExecutionStrategy.sequential).pipe(
+        Effect.flatMap((childScope) =>
+          Effect.zipRight(
+            Scope.addFinalizer(
+              childScope,
+              Effect.suspend(() => fiber ? Fiber.interrupt(fiber) : Effect.unit)
+            ),
+            Effect.onExit(effect, (exit) => Scope.close(childScope, exit))
+          )
+        ),
         runFork
       )
 

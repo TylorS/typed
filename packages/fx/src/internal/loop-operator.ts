@@ -1,7 +1,7 @@
 import type { Either } from "effect"
 import { Option } from "effect"
-import type { Bounds } from "../../internal/bounds.js"
 import * as Sink from "../Sink.js"
+import type { Bounds } from "./bounds.js"
 import * as SyncOp from "./sync-operator.js"
 
 export type SyncLoopOperator<B = any, A = any, C = any> =

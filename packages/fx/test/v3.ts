@@ -1,12 +1,15 @@
+import * as ArrayFormatter from "@effect/schema/ArrayFormatter"
+import * as Schema from "@effect/schema/Schema"
 import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
-import * as Fx from "@typed/fx/v3/Fx"
-import * as core from "@typed/fx/v3/internal/core"
-import * as diff from "@typed/fx/v3/internal/diff"
-import * as RefSubject from "@typed/fx/v3/RefSubject"
-import * as Sink from "@typed/fx/v3/Sink"
-import * as Subject from "@typed/fx/v3/Subject"
-import { deepStrictEqual, ok } from "assert"
-import { Effect, Fiber, Option, TestClock, TestContext } from "effect"
+import * as Fx from "@typed/fx/Fx"
+import * as core from "@typed/fx/internal/core"
+import * as diff from "@typed/fx/internal/diff"
+import * as RefSubject from "@typed/fx/RefSubject"
+import * as Form from "@typed/fx/Form"
+import * as Sink from "@typed/fx/Sink"
+import * as Subject from "@typed/fx/Subject"
+import { deepEqual, deepStrictEqual, ok } from "assert"
+import { Effect, Either, Fiber, Option, TestClock, TestContext } from "effect"
 
 describe("V3", () => {
   describe("Fx", () => {
@@ -149,11 +152,8 @@ describe("V3", () => {
           // start first fiber
           const a = yield* _(Effect.fork(sut))
 
-          // Allow fiber to start
-          yield* _(TestClock.adjust(1))
-
-          // Allow 2 events to occur
-          yield* _(TestClock.adjust(delay * 2))
+          // Allow 1 event to occur
+          yield* _(TestClock.adjust(delay * 1.5))
 
           // Start the second
           const b = yield* _(Effect.fork(sut))
@@ -661,7 +661,7 @@ describe("V3", () => {
 
   describe("Subject", () => {
     it("can map the input values using Sink combinators", async () => {
-      const subject = Subject.make<never, number>()
+      const subject = Subject.unsafeMake<never, number>()
       const sink = subject.pipe(Sink.map((x: string) => x.length))
       const test = Effect.gen(function*(_) {
         const fiber = yield* _(core.toReadonlyArray(core.take(subject, 3)), Effect.fork)
@@ -714,6 +714,429 @@ describe("V3", () => {
       test([1, 2, 3], [3], [diff.remove(1, 0), diff.remove(2, 1), diff.moved(3, 2, 0)])
       test([1, 2, 3], [4, 1, 2], [diff.remove(3, 2), diff.add(4, 0), diff.moved(1, 0, 1), diff.moved(2, 1, 2)])
       test([1, 2, 3], [3, 2, 1], [diff.moved(1, 0, 2), diff.moved(3, 2, 0)])
+    })
+  })
+
+  describe.concurrent("Form", () => {
+    describe(Form.derive, () => {
+      const Foo = Schema.struct({
+        id: Schema.string.pipe(
+          Schema.minLength(1),
+          Schema.message(() => "Cannot be empty ID"),
+          Schema.maxLength(20),
+          Schema.message(() => "ID cannot be longer than 20 characters")
+        ),
+        timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
+      })
+      type FooInput = Schema.Schema.From<typeof Foo>
+      type FooOutput = Schema.Schema.To<typeof Foo>
+
+      const initialFooOutput: FooOutput = {
+        id: "asdf",
+        timestamp: new Date()
+      }
+      const initialFooInput: FooInput = Schema.encodeSync(Foo)(initialFooOutput)
+
+      const makeFooForm = Form.derive(Foo)
+
+      it("allows deriving form state from a source", async () => {
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeFooForm(Effect.succeed(initialFooOutput)))
+          const id = form.get("id")
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          yield* _(timestamp, RefSubject.set("asdf"))
+
+          deepStrictEqual(yield* _(form), { ...initialFooInput, timestamp: "asdf" })
+
+          let parseError = yield* _(Effect.either(form.decoded))
+
+          ok(Either.isLeft(parseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(parseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: ["timestamp"]
+            }]
+          )
+
+          yield* _(id, RefSubject.set(""))
+
+          parseError = yield* _(Effect.either(form.decoded))
+
+          ok(Either.isLeft(parseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(parseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Cannot be empty ID",
+              path: ["id"]
+            }, {
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: ["timestamp"]
+            }]
+          )
+
+          let idParseError = yield* _(Effect.either(id.decoded))
+
+          ok(Either.isLeft(idParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(idParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Cannot be empty ID",
+              path: []
+            }]
+          )
+
+          const timestampParseError = yield* _(Effect.either(timestamp.decoded))
+
+          ok(Either.isLeft(timestampParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(timestampParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: []
+            }]
+          )
+
+          yield* _(id, RefSubject.set("abcdefghijklmnopqrstuvwxyx"))
+
+          idParseError = yield* _(Effect.either(id.decoded))
+
+          ok(Either.isLeft(idParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(idParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "ID cannot be longer than 20 characters",
+              path: []
+            }]
+          )
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allows persisting form state to a RefSubject source", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefSubject.of(initialFooOutput))
+          const form = yield* _(makeFooForm(ref))
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          const date = new Date()
+
+          yield* _(timestamp, RefSubject.set(date.toISOString()))
+
+          deepStrictEqual(yield* _(timestamp), date.toISOString())
+          deepStrictEqual(yield* _(ref), initialFooOutput)
+
+          yield* _(form.persist)
+
+          deepStrictEqual(yield* _(ref), { ...initialFooOutput, timestamp: date })
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allows persisting form state to a RefSubject from the context", async () => {
+        const ref = RefSubject.tagged<never, FooOutput>()("TestRef")
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeFooForm(ref))
+
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          const date = new Date()
+
+          yield* _(timestamp, RefSubject.set(date.toISOString()))
+
+          deepStrictEqual(yield* _(timestamp), date.toISOString())
+          deepStrictEqual(yield* _(ref), initialFooOutput)
+
+          yield* _(form.persist)
+
+          deepStrictEqual(yield* _(ref), { ...initialFooOutput, timestamp: date })
+        }).pipe(Effect.provide(ref.make(Effect.succeed(initialFooOutput))), Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allow deriving optional form states", async () => {
+        const Bar = Schema.struct({
+          baz: Schema.optional(Schema.string)
+        })
+        const makeBarForm = Form.derive(Bar)
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeBarForm(Effect.succeed({})))
+          const baz = form.get("baz")
+
+          deepStrictEqual(yield* _(baz), undefined)
+
+          yield* _(RefSubject.set(baz, "asdf"))
+
+          deepStrictEqual(yield* _(baz), "asdf")
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allows nesting objects", async () => {
+        const Baz = Schema.struct({
+          quux: Schema.struct({
+            a: Schema.number,
+            b: Schema.boolean
+          })
+        })
+        const makeBazForm = Form.derive(Baz)
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeBazForm(Effect.succeed({ quux: { a: 1, b: true } })))
+          const quux = form.get("quux")
+
+          ok(Form.FormTypeId in quux)
+
+          const a = quux.get("a")
+          const b = quux.get("b")
+
+          yield* _(a, RefSubject.set(42))
+          yield* _(b, RefSubject.set(false))
+
+          deepStrictEqual(yield* _(form), { quux: { a: 42, b: false } })
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+    })
+
+    describe(Form.deriveInput, () => {
+      const Foo = Schema.struct({
+        id: Schema.string.pipe(
+          Schema.minLength(1),
+          Schema.message(() => "Cannot be empty ID"),
+          Schema.maxLength(20),
+          Schema.message(() => "ID cannot be longer than 20 characters")
+        ),
+        timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
+      })
+      type FooInput = Schema.Schema.From<typeof Foo>
+      type FooOutput = Schema.Schema.To<typeof Foo>
+
+      const initialFooOutput: FooOutput = {
+        id: "asdf",
+        timestamp: new Date()
+      }
+      const initialFooInput: FooInput = Schema.encodeSync(Foo)(initialFooOutput)
+
+      const makeFooForm = Form.deriveInput(Foo)
+
+      it("allows deriving form state from a source", async () => {
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeFooForm(Effect.succeed(initialFooInput)))
+          const id = form.get("id")
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          yield* _(timestamp, RefSubject.set("asdf"))
+
+          deepStrictEqual(yield* _(form), { ...initialFooInput, timestamp: "asdf" })
+
+          let parseError = yield* _(Effect.either(form.decoded))
+
+          ok(Either.isLeft(parseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(parseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: ["timestamp"]
+            }]
+          )
+
+          yield* _(id, RefSubject.set(""))
+
+          parseError = yield* _(Effect.either(form.decoded))
+
+          ok(Either.isLeft(parseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(parseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Cannot be empty ID",
+              path: ["id"]
+            }, {
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: ["timestamp"]
+            }]
+          )
+
+          let idParseError = yield* _(Effect.either(id.decoded))
+
+          ok(Either.isLeft(idParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(idParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Cannot be empty ID",
+              path: []
+            }]
+          )
+
+          const timestampParseError = yield* _(Effect.either(timestamp.decoded))
+
+          ok(Either.isLeft(timestampParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(timestampParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "Expected a valid Date, actual Invalid Date",
+              path: []
+            }]
+          )
+
+          yield* _(id, RefSubject.set("abcdefghijklmnopqrstuvwxyx"))
+
+          idParseError = yield* _(Effect.either(id.decoded))
+
+          ok(Either.isLeft(idParseError))
+
+          deepEqual(
+            ArrayFormatter.formatErrors(idParseError.left.errors),
+            [{
+              _tag: "Type",
+              message: "ID cannot be longer than 20 characters",
+              path: []
+            }]
+          )
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allows persisting form state to a RefSubject source", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefSubject.of(initialFooInput))
+          const form = yield* _(makeFooForm(ref))
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          const date = new Date()
+          const dateString = date.toISOString()
+
+          yield* _(timestamp, RefSubject.set(dateString))
+
+          deepStrictEqual(yield* _(timestamp), dateString)
+          deepStrictEqual(yield* _(ref), initialFooInput)
+
+          yield* _(form.persist)
+
+          deepStrictEqual(yield* _(ref), { ...initialFooInput, timestamp: dateString })
+        }).pipe(Effect.scoped, Effect.timed)
+
+        const [duration] = await Effect.runPromise(test)
+
+        console.log("RefSubject.persist", duration.toString())
+      })
+
+      it("allows persisting form state to a RefSubject from the context", async () => {
+        const ref = RefSubject.tagged<never, FooInput>()("TestRef")
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeFooForm(ref))
+
+          const timestamp = form.get("timestamp")
+
+          deepStrictEqual(yield* _(form), initialFooInput)
+          deepStrictEqual(yield* _(form.decoded), initialFooOutput)
+
+          const date = new Date()
+
+          yield* _(timestamp, RefSubject.set(date.toISOString()))
+
+          deepStrictEqual(yield* _(timestamp), date.toISOString())
+          deepStrictEqual(yield* _(ref), initialFooInput)
+
+          yield* _(form.persist)
+
+          deepStrictEqual(yield* _(ref), { ...initialFooInput, timestamp: date.toISOString() })
+        }).pipe(Effect.provide(ref.make(Effect.succeed(initialFooInput))), Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allow deriving optional form states", async () => {
+        const Bar = Schema.struct({
+          baz: Schema.optional(Schema.string)
+        })
+        const makeBarForm = Form.derive(Bar)
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeBarForm(Effect.succeed({})))
+          const baz = form.get("baz")
+
+          deepStrictEqual(yield* _(baz), undefined)
+
+          yield* _(RefSubject.set(baz, "asdf"))
+
+          deepStrictEqual(yield* _(baz), "asdf")
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it("allows nesting objects", async () => {
+        const Baz = Schema.struct({
+          quux: Schema.struct({
+            a: Schema.number,
+            b: Schema.boolean
+          })
+        })
+        const makeBazForm = Form.derive(Baz)
+
+        const test = Effect.gen(function*(_) {
+          const form = yield* _(makeBazForm(Effect.succeed({ quux: { a: 1, b: true } })))
+          const quux = form.get("quux")
+
+          ok(Form.FormTypeId in quux)
+
+          const a = quux.get("a")
+          const b = quux.get("b")
+
+          yield* _(a, RefSubject.set(42))
+          yield* _(b, RefSubject.set(false))
+
+          deepStrictEqual(yield* _(form), { quux: { a: 42, b: false } })
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
     })
   })
 })

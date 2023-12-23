@@ -1,3 +1,4 @@
+import { ExecutionStrategy } from "effect"
 import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
@@ -35,11 +36,16 @@ export function createScopedRuntime<R>(): Effect.Effect<
     const runFork = Runtime.runFork(runtime)
 
     const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => {
-      const fiber: Fiber.Fiber<E, A> = Scope.addFinalizer(
-        scope,
-        Effect.suspend(() => fiber ? Fiber.interrupt(fiber) : Effect.unit)
-      ).pipe(
-        Effect.zipRight(effect),
+      const fiber: Fiber.Fiber<E, A> = Scope.fork(scope, ExecutionStrategy.sequential).pipe(
+        Effect.flatMap((childScope) =>
+          Effect.zipRight(
+            Scope.addFinalizer(
+              childScope,
+              Effect.suspend(() => fiber ? Fiber.interrupt(fiber) : Effect.unit)
+            ),
+            Effect.onExit(effect, (exit) => Scope.close(childScope, exit))
+          )
+        ),
         runFork
       )
 

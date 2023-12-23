@@ -63,8 +63,8 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
     path,
     params,
     make: ptr.compile(path, params.make) as Route<P>["make"],
-    concat: (route, params) =>
-      fromPath(Path.pathJoin(path, route.path), params ?? mergeRouteOptions(params, route.params)),
+    concat: (route, overrides) =>
+      fromPath(Path.pathJoin(path, route.path), overrides ?? mergeRouteOptions(params, route.params)),
     asGuard() {
       return (path: string) => Effect.sync(() => match(path))
     },

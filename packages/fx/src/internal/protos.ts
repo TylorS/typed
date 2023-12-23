@@ -1,132 +1,56 @@
-import * as Effect from "effect/Effect"
-import * as Equal from "effect/Equal"
-import { identity } from "effect/Function"
-import * as Hash from "effect/Hash"
+import type { Effect } from "effect"
+import { Effectable, identity } from "effect"
 import { pipeArguments } from "effect/Pipeable"
-
-import { Effectable } from "effect"
-import * as Fiber from "effect/Fiber"
-import { NodeInspectSymbol } from "effect/Inspectable"
-import type { Inspectable } from "effect/Inspectable"
-import type { Fx, ToFx } from "../Fx.js"
 import { TypeId } from "../TypeId.js"
+import type { Fx } from "../Fx.js"
+import type { Sink } from "../Sink.js"
 
-export const Variance: Fx<any, any, any>[TypeId] = {
+const Variance: Fx.Variance<never, never, never> = {
   _R: identity,
   _E: identity,
   _A: identity
 }
 
-export abstract class BaseProto implements Equal.Equal, Hash.Hash, Inspectable {
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
+export abstract class FxBase<R, E, A> implements Fx<R, E, A> {
+  readonly [TypeId]: Fx.Variance<R, E, A> = Variance
 
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  pipe() {
-    return pipeArguments(this, arguments)
-  }
-
-  toJSON(): unknown {
-    return this
-  }
-
-  [NodeInspectSymbol]() {
-    return this.toJSON()
-  }
-
-  toString() {
-    return JSON.stringify(this.toJSON())
-  }
-}
-
-export abstract class FxProto<R, E, A> extends BaseProto implements Fx<R, E, A> {
-  abstract readonly _fxTag: string
-  readonly [TypeId]: Fx<R, E, A>[TypeId] = Variance
-
-  constructor(
-    readonly i0?: unknown,
-    readonly i1?: unknown,
-    readonly i2?: unknown
-  ) {
-    super()
-  }
-
-  [Equal.symbol](that: unknown) {
-    return this === that
-  }
-
-  [Hash.symbol]() {
-    return Hash.random(this)
-  }
-
-  toJSON(): unknown {
-    return this
-  }
+  abstract run<R2>(sink: Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown>
 
   pipe() {
     return pipeArguments(this, arguments)
   }
 }
 
-export class OnceEffect<R, E, A> extends Effectable.Class<R, E, A> {
-  #fiber: Fiber.Fiber<E, A> | undefined
+export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B>
+  implements Fx<R, E, A>, Effect.Effect<R2, E2, B>
+{
+  readonly [TypeId]: Fx.Variance<R, E, A> = Variance
 
-  constructor(
-    readonly effect: Effect.Effect<R, E, A>
-  ) {
-    super()
-  }
+  abstract run<R3>(sink: Sink<R3, E, A>): Effect.Effect<R | R3, never, unknown>
 
-  commit() {
-    if (this.#fiber) {
-      return Fiber.join(this.#fiber)
+  abstract toEffect(): Effect.Effect<R2, E2, B>
+
+  private _effect: Effect.Effect<R2, E2, B> | undefined
+  commit(): Effect.Effect<R2, E2, B> {
+    if (this._effect === undefined) {
+      return (this._effect = this.toEffect())
     } else {
-      return Effect.forkDaemon(this.effect).pipe(
-        Effect.tap((fiber) => Effect.sync(() => this.#fiber = fiber)),
-        Effect.flatMap(Fiber.join)
-      )
+      return this._effect
     }
   }
 }
 
-export const once = <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, E, A> => new OnceEffect(effect)
-
-// @ts-expect-error private properties don't quite work out
-export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.StructuralClass<R2, E2, B>
-  implements ToFx<R, E, A>
+export abstract class EffectBase<R, E, A> extends Effectable.StructuralClass<R, E, A>
+  implements Effect.Effect<R, E, A>
 {
-  _fxTag = "ToFx" as const
+  abstract toEffect(): Effect.Effect<R, E, A>
 
-  readonly [TypeId] = Variance as any
-
-  protected abstract toFx(): Fx<R, E, A>
-  protected abstract toEffect(): Effect.Effect<R2, E2, B>
-
-  private _fx: Fx<R, E, A> | undefined
-
-  get fx(): Fx<R, E, A> {
-    return this._fx ||= this.toFx()
-  }
-
-  private _effect: Effect.Effect<R2, E2, B> | undefined
-
-  commit(): Effect.Effect<R2, E2, B> {
-    return this._effect ||= this.toEffect()
-  }
-
-  toJSON(): unknown {
-    return this
-  }
-
-  [NodeInspectSymbol]() {
-    return this.toJSON()
-  }
-
-  toString() {
-    return JSON.stringify(this.toJSON())
+  private _effect: Effect.Effect<R, E, A> | undefined
+  commit(): Effect.Effect<R, E, A> {
+    if (this._effect === undefined) {
+      return (this._effect = this.toEffect())
+    } else {
+      return this._effect
+    }
   }
 }

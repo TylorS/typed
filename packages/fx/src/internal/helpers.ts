@@ -1,98 +1,196 @@
-import { getOption, unsafeGet } from "@typed/context"
-import { Effectable, Exit, TestClock } from "effect"
-import { type Cause, NoSuchElementException } from "effect/Cause"
-import type * as Duration from "effect/Duration"
-import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
-import * as Option from "effect/Option"
-import * as Ref from "effect/Ref"
-import * as Runtime from "effect/Runtime"
-import * as Scope from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
+import { getOption } from "@typed/context"
+import type { Duration, Exit } from "effect"
+import {
+  Cause,
+  Effect,
+  Effectable,
+  Equal,
+  Equivalence,
+  ExecutionStrategy,
+  Fiber,
+  Option,
+  Ref,
+  Scope,
+  SynchronizedRef,
+  TestClock
+} from "effect"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
-import type { InternalEffect } from "./effect-primitive.js"
-import { matchEffectPrimitive } from "./effect-primitive.js"
 
-export function withScopedFork<R, E, A>(
-  f: (fork: ScopedFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
-): Effect.Effect<R, E, A> {
-  return Effect.acquireUseRelease(
-    Scope.make(),
-    (scope) => {
-      const fork = makeScopedFork(scope)
+export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
+  const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
+  const finished = new Set<number>()
+  let currentIndex = 0
 
-      return f((effect) => fork(Effect.interruptible(effect)), scope)
-    },
-    Scope.close
-  )
+  const drainBuffer = (index: number): Effect.Effect<R, never, void> => {
+    const effect = Effect.forEach(buffers[index], sink.onSuccess)
+    buffers[index] = []
+
+    return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.unit)
+  }
+
+  const onSuccess = (index: number, value: A) => {
+    if (index === currentIndex) {
+      const buffer = buffers[index]
+
+      if (buffer.length === 0) {
+        return sink.onSuccess(value)
+      } else {
+        buffer.push(value)
+
+        return drainBuffer(index)
+      }
+    } else {
+      buffers[index].push(value)
+
+      return Effect.unit
+    }
+  }
+
+  const onEnd = (index: number) => {
+    finished.add(index)
+
+    if (index === currentIndex && ++currentIndex < size) {
+      return drainBuffer(currentIndex)
+    } else {
+      return Effect.unit
+    }
+  }
+
+  return {
+    onSuccess,
+    onEnd
+  } as const
 }
 
-function makeScopedFork(scope: Scope.Scope): ScopedFork {
-  const forkIn = Effect.forkIn(scope)
+export const withScope = <R, E, A>(
+  f: (scope: Scope.CloseableScope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
+): Effect.Effect<R | Scope.Scope, E, A> =>
+  Effect.acquireUseRelease(Effect.scopeWith((scope) => Scope.fork(scope, executionStrategy)), f, Scope.close)
 
-  return <R, E, A>(effect: Effect.Effect<R, E, A>): Effect.Effect<R, never, Fiber.Fiber<E, A>> => {
-    // Convert simple Effects directly into synthetic Fibers to avoid the overhead of constructing a fiber.
-    return matchEffectPrimitive(effect as Effect.Effect<R, E, A> & InternalEffect, {
-      Success: (e): Effect.Effect<R, never, Fiber.Fiber<E, A>> => Effect.succeed(Fiber.succeed(e.i0 as A)),
-      Failure: (e) => Effect.succeed(Fiber.failCause(e.i0 as Cause<E>)),
-      Sync: (e) => Effect.sync(() => Fiber.succeed(e.i0() as A)),
-      Left: (e) => Effect.succeed(Fiber.fail(e.left as E)),
-      Right: (e) => Effect.succeed(Fiber.succeed(e.right as A)),
-      None: () => Effect.succeed(Fiber.fail(new NoSuchElementException() as E)),
-      Some: (e) => Effect.succeed(Fiber.succeed(e.value)),
-      Otherwise: (e) => forkIn(e as Effect.Effect<R, E, A>)
+export const getExitEquivalence = <E, A>(A: Equivalence.Equivalence<A>) =>
+  Equivalence.make<Exit.Exit<E, A>>((a, b) => {
+    if (a._tag === "Failure") {
+      return b._tag === "Failure" && Equal.equals(a.cause, b.cause)
+    } else {
+      return b._tag === "Success" && A(a.value, b.value)
+    }
+  })
+
+export function withScopedFork<R, E, A>(
+  f: (fork: ScopedFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
+): Effect.Effect<R | Scope.Scope, E, A> {
+  return withScope((scope) => f(makeForkInScope(scope), scope), executionStrategy)
+}
+
+function makeForkInScope(scope: Scope.Scope) {
+  return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+    matchEffectPrimitive<R, E, A, Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<E, A>>>(effect, {
+      Success: (a) => Effect.succeed(Fiber.succeed(a)),
+      Failure: (cause) => Effect.succeed(Fiber.failCause(cause)),
+      Sync: (f) =>
+        Effect.sync(() => {
+          try {
+            return Fiber.succeed(f())
+          } catch (e) {
+            return Fiber.failCause(Cause.die(e))
+          }
+        }),
+      Left: (e) => Effect.succeed(Fiber.fail(e)),
+      Right: (a) => Effect.succeed(Fiber.succeed(a)),
+      Some: (a) => Effect.succeed(Fiber.succeed(a)),
+      None: (e) => Effect.succeed(Fiber.fail(e)),
+      Otherwise: (eff) => Effect.forkIn(Effect.provideService(eff, Scope.Scope, scope), scope)
     })
-  }
 }
 
 export function withSwitchFork<R, E, A>(
-  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
-  return withScopedFork((_, scope) =>
-    Effect.flatMap(
-      SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
-      (ref) => runSwitchFork(ref, scope, f)
-    )
+  return withScopedFork(
+    (fork, scope) =>
+      Effect.flatMap(
+        SynchronizedRef.make<Fiber.Fiber<never, unknown>>(Fiber.unit),
+        (ref) => runSwitchFork(ref, fork, scope, f)
+      ),
+    executionStrategy
   )
 }
 
 export function runSwitchFork<R, E, A>(
-  ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, void>>,
-  scope: Scope.Scope,
-  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+  ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<never, unknown>>,
+  fork: ScopedFork,
+  scope: Scope.CloseableScope,
+  f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>
 ) {
-  return Effect.flatMap(
-    f((effect) =>
-      SynchronizedRef.updateAndGetEffect(
-        ref,
-        (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => Effect.forkIn(effect, scope))
-      ), scope),
-    () => Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
+  const forkScope = Scope.fork(scope, ExecutionStrategy.sequential)
+
+  function run<R>(
+    effect: Effect.Effect<R, never, unknown>,
+    fiber: Fiber.Fiber<never, unknown>
+  ): Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<never, unknown>> {
+    return Effect.flatMap(
+      forkScope,
+      (childScope) =>
+        Effect.zipRight(
+          Fiber.interrupt(fiber),
+          fork(
+            Effect.onExit(
+              Effect.provideService(effect, Scope.Scope, childScope),
+              (exit) => Scope.close(childScope, exit)
+            )
+          )
+        )
+    )
+  }
+
+  return Effect.zipRight(
+    f(
+      (effect) =>
+        SynchronizedRef.updateEffect(
+          ref,
+          (fiber) => run(effect, fiber)
+        ),
+      scope
+    ),
+    Effect.flatMap(SynchronizedRef.get(ref), Fiber.join)
   )
 }
 
 export function withExhaustFork<R, E, A>(
-  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
-  return withScopedFork((fork, scope) =>
-    Effect.flatMap(
+  return withScopedFork((fork, scope) => {
+    return Effect.flatMap(
       SynchronizedRef.make<Fiber.Fiber<never, void> | null>(null),
       (ref) =>
         Effect.flatMap(
           f((effect) =>
             SynchronizedRef.updateEffect(
               ref,
-              (fiber) => fiber ? Effect.succeed(fiber) : fork(Effect.onExit(effect, () => Ref.set(ref, null)))
+              (fiber) =>
+                fiber
+                  ? Effect.succeed(fiber)
+                  : fork(
+                    Effect.onExit(
+                      effect,
+                      () => Ref.set(ref, null)
+                    )
+                  )
             ), scope),
           () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
         )
     )
-  )
+  }, executionStrategy)
 }
 
 export function withExhaustLatestFork<R, E, A>(
-  f: (exhaustLatestFork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+  f: (exhaustLatestFork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
   return withScopedFork((fork, scope) =>
     Effect.flatMap(
@@ -130,44 +228,53 @@ export function withExhaustLatestFork<R, E, A>(
           Effect.flatMap(Ref.get(ref), (currentFiber) =>
             currentFiber
               ? Ref.set(nextEffect, Option.some(eff))
-              : Effect.flatMap(fork(Effect.ensuring(eff, Effect.zip(reset, runNext))), (fiber) => Ref.set(ref, fiber)))
+              : Effect.flatMap(
+                fork(
+                  Effect.ensuring(
+                    eff,
+                    Effect.zip(reset, runNext)
+                  )
+                ),
+                (fiber) => Ref.set(ref, fiber)
+              ))
 
         return Effect.zip(f(exhaustLatestFork, scope), awaitNext)
       }
-    )
-  )
+    ), executionStrategy)
 }
 
 export function withUnboundedFork<R, E, A>(
-  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
   return withScopedFork((fork, scope) =>
     Effect.flatMap(
-      Ref.make<Set<Fiber.Fiber<never, void>>>(new Set()),
+      Ref.make<Map<symbol, Fiber.Fiber<never, void>>>(new Map()),
       (ref) =>
         Effect.flatMap(
-          f((effect) =>
-            fork(effect).pipe(
-              Effect.tap((fiber) => Ref.update(ref, (set) => set.add(fiber))),
-              Effect.tap((fiber) =>
-                Scope.addFinalizer(
-                  scope,
-                  Ref.update(ref, (set) => {
-                    set.delete(fiber)
-                    return set
-                  })
-                )
-              )
-            ), scope),
-          () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
+          f((effect) => {
+            const id = Symbol()
+
+            return Effect.tap(
+              fork(Effect.onExit(effect, () => Ref.update(ref, (map) => (map.delete(id), map)))),
+              (fiber) => {
+                if (Fiber.isRuntimeFiber(fiber)) {
+                  return Ref.update(ref, (map) => map.set(id, fiber))
+                } else {
+                  return Effect.unit
+                }
+              }
+            )
+          }, scope),
+          () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers.values()) : Effect.unit)
         )
-    )
-  )
+    ), executionStrategy)
 }
 
 export function withBoundedFork(capacity: number) {
   return <R, E, A>(
-    f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
+    f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+    executionStrategy: ExecutionStrategy.ExecutionStrategy
   ) => {
     return withScopedFork((fork, scope) =>
       Effect.flatMap(
@@ -189,14 +296,16 @@ export function withBoundedFork(capacity: number) {
               ), scope),
             () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
           )
-      )
-    )
+      ), executionStrategy)
   }
 }
 
 export function withFlattenStrategy(
   strategy: FlattenStrategy
-): <R, E, A>(f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>) => Effect.Effect<R, E, void> {
+): <R, E, A>(
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  executionStrategy: ExecutionStrategy.ExecutionStrategy
+) => Effect.Effect<R | Scope.Scope, E, void> {
   switch (strategy._tag) {
     case "Bounded":
       return withBoundedFork(strategy.capacity)
@@ -209,6 +318,88 @@ export function withFlattenStrategy(
     case "Unbounded":
       return withUnboundedFork
   }
+}
+
+export function matchEffectPrimitive<R, E, A, Z>(
+  effect: Effect.Effect<R, E, A>,
+  matchers: {
+    Success: (a: A) => Z
+    Failure: (e: Cause.Cause<E>) => Z
+    Sync: (f: () => A) => Z
+    Left: (e: E) => Z
+    Right: (a: A) => Z
+    Some: (a: A) => Z
+    None: (e: E) => Z
+    Otherwise: (effect: Effect.Effect<R, E, A>) => Z
+  }
+): Z {
+  const eff = effect as any
+
+  switch (eff._tag) {
+    case "Success":
+      return matchers.Success(eff.value)
+    case "Failure":
+      return matchers.Failure(eff.cause)
+    case "Sync":
+      return matchers.Sync(eff.i0)
+    case "Left":
+      return matchers.Left(eff.left)
+    case "Right":
+      return matchers.Right(eff.right)
+    case "Some":
+      return matchers.Some(eff.value)
+    case "None":
+      return matchers.None(new Cause.NoSuchElementException() as E)
+    default:
+      return matchers.Otherwise(effect)
+  }
+}
+
+export function adjustTime(input: Duration.DurationInput = 1) {
+  return Effect.flatMap(
+    Effect.context<never>(),
+    Effect.unifiedFn((ctx) => {
+      const testClock = getOption(ctx, TestClock.TestClock)
+
+      if (Option.isSome(testClock)) {
+        return testClock.value.adjust(input)
+      } else {
+        return Effect.sleep(input)
+      }
+    })
+  )
+}
+
+export function tupleSink<R, E, A extends ReadonlyArray<any>, R2, E2, B>(
+  sink: Sink.Sink<R, E, A>,
+  f: (sink: (index: number, value: A[number]) => Effect.Effect<R, never, unknown>) => Effect.Effect<R2, E2, B>,
+  expected: number
+) {
+  return Effect.suspend(() => {
+    const values = new Map<number, A[number]>()
+
+    const getValues = () => Array.from({ length: expected }, (_, i) => values.get(i)!) as any as A
+
+    return f((index: number, value: A[number]) => {
+      values.set(index, value)
+
+      if (values.size === expected) {
+        return sink.onSuccess(getValues())
+      } else {
+        return Effect.unit
+      }
+    })
+  })
+}
+
+export function withDebounceFork<R, E, A>(
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
+  duration: Duration.DurationInput
+): Effect.Effect<R | Scope.Scope, E, unknown> {
+  return withSwitchFork(
+    (fork, scope) => f((eff) => fork(Effect.delay(eff, duration)), scope),
+    ExecutionStrategy.sequential
+  )
 }
 
 export class RingBuffer<A> {
@@ -261,118 +452,6 @@ export class RingBuffer<A> {
   }
 }
 
-export function withEarlyExit<R, E, A, R2, B>(
-  sink: Sink.Sink<E, A>,
-  f: (sink: Sink.WithEarlyExit<E, A>) => Effect.Effect<R2, E, B>
-): Effect.Effect<R | R2, never, void> {
-  return Effect.asyncEffect<never, never, void, R | R2, never, void>((resume) => {
-    const earlyExit: Sink.WithEarlyExit<E, A> = {
-      ...sink,
-      earlyExit: Effect.sync(() => resume(Effect.unit))
-    }
-
-    return Effect.matchCauseEffect(f(earlyExit), {
-      onFailure: sink.onFailure,
-      onSuccess: () => earlyExit.earlyExit
-    })
-  })
-}
-
-export function withBuffers<R, E, A>(size: number, sink: Sink.WithContext<R, E, A>) {
-  return Effect.sync(() => {
-    const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
-    const finished = new Set<number>()
-    let currentIndex = 0
-
-    const drainBuffer = (index: number): Effect.Effect<R, never, void> => {
-      const effect = Effect.forEach(buffers[index], sink.onSuccess)
-      buffers[index] = []
-
-      return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.unit)
-    }
-
-    const onSuccess = (index: number, value: A) => {
-      if (index === currentIndex) {
-        const buffer = buffers[index]
-
-        if (buffer.length === 0) {
-          return sink.onSuccess(value)
-        } else {
-          buffer.push(value)
-
-          return drainBuffer(index)
-        }
-      } else {
-        buffers[index].push(value)
-
-        return Effect.unit
-      }
-    }
-
-    const onEnd = (index: number) => {
-      finished.add(index)
-
-      if (index === currentIndex && ++currentIndex < size) {
-        return drainBuffer(currentIndex)
-      } else {
-        return Effect.unit
-      }
-    }
-
-    return {
-      onSuccess,
-      onEnd
-    }
-  })
-}
-
-export type ScopedRuntime<R> = {
-  readonly runtime: Runtime.Runtime<R | Scope.Scope>
-  readonly scope: Scope.Scope
-  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.RuntimeFiber<E, A>
-  readonly runPromise: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Promise<A>
-}
-
-export function scopedRuntime<R>(): Effect.Effect<
-  R | Scope.Scope,
-  never,
-  ScopedRuntime<R>
-> {
-  return Effect.gen(function*(_) {
-    const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
-    const scope = unsafeGet(runtime.context, Scope.Scope)
-    const runFork = Runtime.runFork(runtime)
-
-    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
-      const fiber: Fiber.RuntimeFiber<E, A> = Scope.addFinalizer(
-        scope,
-        Effect.suspend(() => Fiber.interrupt(fiber))
-      ).pipe(
-        Effect.zipRight(effect),
-        runFork
-      )
-
-      return fiber
-    }
-
-    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
-      new Promise((resolve, reject) => {
-        const fiber = run(effect)
-        fiber.addObserver(Exit.match({
-          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
-          onSuccess: resolve
-        }))
-      })
-
-    return {
-      runtime,
-      scope,
-      run,
-      runPromise
-    } as const
-  })
-}
-
 export function awaitScopeClose(scope: Scope.Scope) {
   return Effect.asyncEffect<never, never, unknown, never, never, void>((cb) =>
     Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
@@ -412,17 +491,4 @@ export class MulticastEffect<R, E, A> extends Effectable.Class<R, E, A> {
       }
     })
   }
-}
-
-export function adjustTime(input?: Duration.DurationInput) {
-  return Effect.gen(function*(_) {
-    const ctx = yield* _(Effect.context<never>())
-    const testClock = getOption(ctx, TestClock.TestClock)
-
-    if (Option.isSome(testClock)) {
-      yield* _(testClock.value.adjust(input ?? 1))
-    } else if (input) {
-      yield* _(Effect.sleep(input))
-    }
-  })
 }

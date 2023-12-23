@@ -3,27 +3,23 @@
  */
 import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
-import * as schemaEquivalence from "@effect/schema/Equivalence"
 import { type ParseError } from "@effect/schema/ParseResult"
-import { Deferred, Effect, Exit, Ref } from "effect"
+import { Effect } from "effect"
 import type { Scope } from "effect"
-import * as Option from "effect/Option"
-import type { Computed } from "./Computed.js"
-import { type Fx, run } from "./Fx.js"
-import { RefSubjectImpl } from "./internal/core-ref-subject.js"
-import { makeHoldSubject } from "./internal/core-subject.js"
-import { DeferredRef } from "./internal/deferred-ref.js"
-import type { RefSubject } from "./RefSubject.js"
-import { Sink } from "./Sink.js"
-import { RefSubjectTypeId, TypeId } from "./TypeId.js"
+import type { Cause } from "effect/Cause"
+import { ComputedTypeId, RefSubjectTypeId } from "./TypeId.js"
+import * as Fx from "./Fx.js"
+import { FxEffectBase } from "./internal/protos.js"
+import * as RefSubject from "./RefSubject.js"
+import type * as Sink from "./Sink.js"
 
 /**
  * @since 1.18.0
  */
-export interface FormEntry<in out E, in out I, in out O> extends RefSubject<never, E | ParseError, I> {
+export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
-  readonly decoded: Computed<never, E | ParseError, O>
+  readonly decoded: RefSubject.Computed<R, E | ParseError, O>
 }
 
 /**
@@ -33,8 +29,8 @@ export namespace FormEntry {
   /**
    * @since 1.18.0
    */
-  export interface Derived<R, E, I, O> extends FormEntry<E, I, O> {
-    readonly persist: Effect.Effect<R, E | ParseError, O>
+  export interface Derived<R, R2, E, I, O> extends FormEntry<R, E, I, O> {
+    readonly persist: Effect.Effect<R2, E | ParseError, O>
   }
 }
 
@@ -55,25 +51,95 @@ export interface FormEntryOptions<I, O> {
  */
 export type MakeFormEntry<I, O> = {
   <R, E>(
-    ref: RefSubject<R, E, O>
-  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>>
-  <R, E>(fx: Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
-  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<E, I, O>>
+    ref: RefSubject.RefSubject<R, E, O>
+  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<never, R, E, I, O>>
+  <R, E>(fx: Fx.Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
+  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<never, E, I, O>>
+}
+
+/**
+ * MakeRefSubject is a RefSubject factory function dervied from a Schema.
+ * @since 1.20.0
+ */
+export type MakeInputFormEntry<I, O> = {
+  <R, E>(
+    ref: RefSubject.RefSubject<R, E, I>
+  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<never, R, E, I, O>>
+  <R, E>(fx: Fx.Fx<R, E, I>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
+  <R, E>(effect: Effect.Effect<R, E, I>): Effect.Effect<R, never, FormEntry<never, E, I, O>>
 }
 
 /**
  * @since 1.18.0
  */
-export function make<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O> {
-  return (<R, E>(input: RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<R, E, O>) => {
-    if (RefSubjectTypeId in input) {
-      return makeDerivedFormEntry(input, options)
-    } else if (TypeId in input) {
-      return makeFxFormEntry(input, options)
-    } else {
-      return makeEffectFormEntry(input, options)
-    }
-  }) as MakeFormEntry<I, O>
+export function derive<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O> {
+  const encode = Schema.encode(options.schema)
+  const decode = Schema.decode(options.schema)
+  const makeFormEntry = <R, E>(input: RefSubject.RefSubject<R, E, O> | Fx.Fx<R, E, O> | Effect.Effect<R, E, O>) => {
+    const initial = Fx.mapEffect(Effect.isEffect(input) ? Fx.fromEffect(input) : input, (o) => encode(o, parseOptions))
+
+    return Effect.map(
+      RefSubject.make(initial),
+      (inputRef): FormEntry<never, E, I, O> | FormEntry.Derived<never, R, E, I, O> => {
+        if (RefSubject.isRefSubject<R, E, O>(input)) {
+          const persist = Effect.flatMap(
+            Effect.flatMap(
+              inputRef,
+              (i) => decode(i, parseOptions)
+            ),
+            (o) => RefSubject.set(input, o)
+          )
+
+          return new DerivedFormEntryImpl(
+            inputRef,
+            options.name,
+            options.schema,
+            RefSubject.isDerived(input) ? Effect.tap(persist, () => input.persist) : persist
+          )
+        } else {
+          return new FromEntryImpl(inputRef, options.name, options.schema)
+        }
+      }
+    )
+  }
+
+  return makeFormEntry as MakeFormEntry<I, O>
+}
+
+/**
+ * @since 1.18.0
+ */
+export function deriveInput<I, O>(options: FormEntryOptions<I, O>): MakeInputFormEntry<I, O> {
+  const decode = Schema.decode(options.schema)
+  const makeFormEntry = <R, E>(input: RefSubject.RefSubject<R, E, I> | Fx.Fx<R, E, I> | Effect.Effect<R, E, I>) => {
+    const initial: Fx.Fx<R, E | ParseError, I> = Effect.isEffect(input) ? Fx.fromEffect(input) : input
+
+    return Effect.map(
+      RefSubject.make(initial),
+      (inputRef): FormEntry<never, E, I, O> | FormEntry.Derived<never, R, E, I, O> => {
+        if (RefSubject.isRefSubject<R, E, O>(input)) {
+          const persist = Effect.flatMap(
+            Effect.flatMap(
+              inputRef,
+              (i) => RefSubject.set(input as RefSubject.RefSubject<R, E, I>, i)
+            ),
+            (i) => decode(i, parseOptions)
+          )
+
+          return new DerivedFormEntryImpl(
+            inputRef,
+            options.name,
+            options.schema,
+            RefSubject.isDerived(input) ? Effect.tap(persist, () => input.persist) : persist
+          )
+        } else {
+          return new FromEntryImpl(inputRef, options.name, options.schema)
+        }
+      }
+    )
+  }
+
+  return makeFormEntry as MakeInputFormEntry<I, O>
 }
 
 const parseOptions: ParseOptions = {
@@ -81,94 +147,61 @@ const parseOptions: ParseOptions = {
   onExcessProperty: "ignore"
 }
 
-function makeEffectFormEntry<R, E, I, O>(
-  input: Effect.Effect<R, E, O>,
-  options: FormEntryOptions<I, O>
-): Effect.Effect<R, never, FormEntry<E, I, O>> {
-  return Effect.contextWith((ctx) =>
-    FormEntryImpl.formEntry(
-      Effect.provide(Effect.flatMap(input, (i) => Schema.encode(options.schema)(i, parseOptions)), ctx),
-      options.name,
-      options.schema
-    )
-  )
-}
+class FromEntryImpl<E, I, O> extends FxEffectBase<Scope.Scope, E | ParseError, I, never, ParseError | E, I>
+  implements FormEntry<never, E, I, O>
+{
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
 
-function makeFxFormEntry<R, E, I, O>(
-  input: Fx<R, E, O>,
-  options: FormEntryOptions<I, O>
-): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>> {
-  const encode_ = Schema.encode(options.schema)
+  readonly decoded: RefSubject.Computed<never, ParseError | E, O>
+  readonly version: Effect.Effect<never, ParseError | E, number>
+  readonly subscriberCount: Effect.Effect<never, never, number>
+  readonly interrupt: Effect.Effect<never, never, void>
 
-  return Effect.gen(function*(_) {
-    const deferred = new DeferredRef(yield* _(Deferred.make<E | ParseError, I>()))
-    const entry = FormEntryImpl.formEntry(
-      deferred,
-      options.name,
-      options.schema
-    )
-
-    const done = (exit: Exit.Exit<E, O>) =>
-      Effect.flatMap(
-        Effect.exit(Effect.flatMap(exit, encode_)),
-        (exit) =>
-          Effect.flatMap(deferred.done(exit), (closed) => {
-            if (closed) return Effect.unit
-
-            return Exit.match(exit, entry)
-          })
-      )
-
-    yield* _(Effect.forkScoped(run(
-      input,
-      Sink(
-        (e) => done(Exit.failCause(e)),
-        (a) => done(Exit.succeed(a))
-      )
-    )))
-
-    return entry
-  })
-}
-
-function makeDerivedFormEntry<R, E, I, O>(
-  input: RefSubject<R, E, O>,
-  options: FormEntryOptions<I, O>
-): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>> {
-  const decode_ = Schema.decode(options.schema)
-
-  return Effect.map(makeFxFormEntry(input, options), (entry) =>
-    Object.assign(
-      entry,
-      {
-        persist: input.updateEffect(() => Effect.flatMap(entry, decode_))
-      } as const
-    ) satisfies FormEntry.Derived<R, E, I, O>)
-}
-
-class FormEntryImpl<E, I, O> extends RefSubjectImpl<never, E | ParseError, I> implements FormEntry<E, I, O> {
   constructor(
-    initial: Effect.Effect<never, E, I>,
+    readonly ref: RefSubject.RefSubject<never, E | ParseError, I>,
     readonly name: PropertyKey,
-    readonly schema: Schema.Schema<I, O>,
-    readonly parseOptions?: ParseOptions
+    readonly schema: Schema.Schema<I, O>
   ) {
-    super(
-      initial,
-      schemaEquivalence.from(schema),
-      Ref.unsafeMake(Option.none()),
-      Effect.unsafeMakeSemaphore(1),
-      makeHoldSubject()
-    )
+    super()
+
+    const decode = Schema.decode(schema)
+    this.decoded = RefSubject.mapEffect(ref, (i) => decode(i, parseOptions))
+    this.version = ref.version
+    this.subscriberCount = ref.subscriberCount
+    this.interrupt = ref.interrupt
   }
 
-  decoded = this.mapEffect((i) => Schema.decode(this.schema)(i, this.parseOptions))
+  run<R3>(sink: Sink.Sink<R3, E | ParseError, I>): Effect.Effect<R3 | Scope.Scope, never, unknown> {
+    return this.ref.run(sink)
+  }
 
-  static formEntry<E, I, O>(
-    initial: Effect.Effect<never, E | ParseError, I>,
+  toEffect(): Effect.Effect<never, E | ParseError, I> {
+    return this.ref
+  }
+
+  runUpdates<R2, E2, B>(
+    f: (ref: RefSubject.GetSetDelete<never, E | ParseError, I>) => Effect.Effect<R2, E2, B>
+  ): Effect.Effect<R2, E2, B> {
+    return this.ref.runUpdates(f)
+  }
+
+  onFailure(cause: Cause<E | ParseError>): Effect.Effect<never, never, unknown> {
+    return this.ref.onFailure(cause)
+  }
+
+  onSuccess(value: I): Effect.Effect<never, never, unknown> {
+    return this.ref.onSuccess(value)
+  }
+}
+
+class DerivedFormEntryImpl<R, E, I, O> extends FromEntryImpl<E, I, O> implements FormEntry.Derived<never, R, E, I, O> {
+  constructor(
+    ref: RefSubject.RefSubject<never, E | ParseError, I>,
     name: PropertyKey,
-    schema: Schema.Schema<I, O>
-  ): FormEntry<E, I, O> {
-    return new FormEntryImpl(initial, name, schema, parseOptions) as any
+    schema: Schema.Schema<I, O>,
+    readonly persist: Effect.Effect<R, E | ParseError, O>
+  ) {
+    super(ref, name, schema)
   }
 }

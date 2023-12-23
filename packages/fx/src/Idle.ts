@@ -5,18 +5,20 @@
  */
 
 import type * as Context from "@typed/context"
-import { MutableHashMap, Option } from "effect"
+import { ExecutionStrategy, Exit } from "effect"
 import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
+import type * as Fiber from "effect/Fiber"
 import { constant, constVoid } from "effect/Function"
 import { globalValue } from "effect/GlobalValue"
-import type { Hash } from "effect/Hash"
 import * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
 import * as Scheduler from "effect/Scheduler"
 import * as Scope from "effect/Scope"
-import { dequeueIsActive } from "./internal/fx.js"
+import { dequeueIsActive } from "./Fx.js"
+import { withScope } from "./internal/helpers.js"
 import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback.js"
+
+// TODO: Why is this even in the Fx package?? Where should we put it?
 
 /**
  * The IdleScheduler is an implementation of Effect's Scheduler interface, which utilizes a priority queue
@@ -130,7 +132,7 @@ export const whenIdle = (options?: IdleRequestOptions): Effect.Effect<Scope.Scop
  * @since 1.18.0
  */
 export function shouldContinue(deadline: IdleDeadline): boolean {
-  return deadline.didTimeout === false && deadline.timeRemaining() > 0
+  return deadline.didTimeout || deadline.timeRemaining() > 0
 }
 
 /**
@@ -200,85 +202,89 @@ export function dequeueWhileIdle<I, A, R2, E2, B>(
 /**
  * @since 1.18.0
  */
-export interface IdleQueue<I extends Hash> {
+export interface IdleQueue<I> {
   readonly add: <R>(
     part: I,
     task: Effect.Effect<R, never, unknown>
   ) => Effect.Effect<R | Scope.Scope, never, void>
+
+  readonly interrupt: Effect.Effect<never, never, void>
 }
 
 /**
  * @since 1.18.0
  */
-export const makeIdleQueue = <I extends Hash>(
+export const makeIdleQueue = <I>(
   options?: IdleRequestOptions
 ): Effect.Effect<Scope.Scope, never, IdleQueue<I>> =>
-  Effect.scopeWith((scope) => Effect.sync(() => new IdleQueueImpl<I>(scope, options)))
+  withScope((scope) => Effect.sync(() => new IdleQueueImpl<I>(scope, options)), ExecutionStrategy.sequential)
 
-class IdleQueueImpl<I extends Hash> implements IdleQueue<I> {
-  queue = MutableHashMap.empty<I, Effect.Effect<never, never, unknown>>()
+class IdleQueueImpl<I> implements IdleQueue<I> {
+  queue = new Map<I, Effect.Effect<never, never, unknown>>()
   scheduled = false
 
-  constructor(readonly scope: Scope.Scope, readonly options?: IdleRequestOptions) {}
+  readonly interrupt: Effect.Effect<never, never, void>
+  readonly scheduleNextRun: Effect.Effect<never, never, void>
+
+  constructor(readonly scope: Scope.CloseableScope, readonly options?: IdleRequestOptions) {
+    this.interrupt = Effect.fiberIdWith((id) => Scope.close(scope, Exit.interrupt(id)))
+
+    const run: Effect.Effect<Scope.Scope, never, void> = Effect.flatMap(
+      whenIdle(this.options),
+      (deadline) =>
+        Effect.gen(this, function*(_) {
+          const iterator = this.queue[Symbol.iterator]()
+
+          while (shouldContinue(deadline)) {
+            const result = iterator.next()
+
+            if (result.done) break
+            else {
+              const [part, task] = result.value
+              this.queue.delete(part)
+              yield* _(task)
+            }
+          }
+
+          if (this.queue.size > 0) {
+            yield* _(run)
+          } else {
+            this.scheduled = false
+          }
+        })
+    )
+
+    this.scheduleNextRun = Effect.provideService(
+      Effect.suspend(() => {
+        if (this.queue.size === 0) return Effect.unit
+
+        this.scheduled = true
+
+        return withScope(
+          (childScope) => Effect.provideService(run, Scope.Scope, childScope),
+          ExecutionStrategy.sequential
+        )
+      }),
+      Scope.Scope,
+      scope
+    )
+  }
 
   add = <R>(part: I, task: Effect.Effect<R, never, unknown>) =>
     Effect.contextWithEffect((ctx: Context.Context<R>) => {
       const provided = Effect.provide(task, ctx)
-      MutableHashMap.set(this.queue, part, provided)
+      this.queue.set(part, provided)
 
       return Effect.zipRight(
         Effect.addFinalizer(() =>
           Effect.sync(() => {
-            const currentTask = MutableHashMap.get(this.queue, part)
-
             // If the current task is still the same we'll delete it from the queue
-            if (Option.isSome(currentTask) && currentTask.value === provided) {
-              MutableHashMap.remove(this.queue, part)
+            if (this.queue.get(part) === provided) {
+              this.queue.delete(part)
             }
           })
         ),
         this.scheduleNextRun
       )
     })
-
-  scheduleNextRun = Effect.suspend(() => {
-    if (MutableHashMap.size(this.queue) === 0) return Effect.unit
-
-    this.scheduled = true
-
-    return Scope.addFinalizer(this.scope, Fiber.interrupt(Effect.runFork(this.run)))
-  })
-
-  run: Effect.Effect<never, never, void> = Effect.suspend(() =>
-    Effect.provideService(
-      Effect.flatMap(
-        whenIdle(this.options),
-        (deadline) =>
-          Effect.gen(this, function*(_) {
-            const iterator = this.queue[Symbol.iterator]()
-
-            while (shouldContinue(deadline)) {
-              const result = iterator.next()
-
-              if (result.done) break
-              else {
-                const [part, task] = result.value
-                MutableHashMap.remove(this.queue, part)
-                yield* _(task)
-              }
-            }
-
-            if (MutableHashMap.size(this.queue) > 0) {
-              return this.run
-            }
-
-            this.scheduled = false
-
-            return Effect.unit
-          })
-      ),
-      Scope.Scope,
-      this.scope
-    )
-  )
 }
