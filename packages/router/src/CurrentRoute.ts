@@ -4,14 +4,13 @@
 
 import * as Context from "@typed/context"
 import * as Document from "@typed/dom/Document"
-import type { Filtered } from "@typed/fx/Filtered"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { Destination, Navigation } from "@typed/navigation"
 import { CurrentEntry, CurrentPath } from "@typed/navigation"
 import type { Layer } from "effect"
 import { Effect, Option, pipe } from "effect"
 import { dual } from "effect/Function"
 
-import type * as Computed from "@typed/fx/Computed"
 import type { ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"
 
@@ -44,8 +43,9 @@ export function make<P extends string>(
 /**
  * @since 1.0.0
  */
-export const CurrentParams: Filtered<Navigation | CurrentRoute, never, Readonly<Record<string, string>>> = CurrentPath
-  .filterMapEffect((path) => CurrentRoute.with(({ route }) => route.match(path)))
+export const CurrentParams: RefSubject.Filtered<Navigation | CurrentRoute, never, Readonly<Record<string, string>>> =
+  RefSubject
+    .filterMapEffect(CurrentPath, (path) => CurrentRoute.with(({ route }) => route.match(path)))
 
 /**
  * @since 1.0.0
@@ -95,11 +95,13 @@ const makeHref_ = <P extends string, P2 extends string>(
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): Filtered<Navigation | CurrentRoute, never, string> {
+): RefSubject.Filtered<Navigation | CurrentRoute, never, string> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
-  return CurrentPath.filterMapEffect((currentPath) =>
-    Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params))
+  return RefSubject.filterMapEffect(
+    CurrentPath,
+    (currentPath) =>
+      Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params))
   )
 }
 
@@ -125,11 +127,13 @@ const isActive_ = <P extends string, P2 extends string>(
 export function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): Computed.Computed<Navigation | CurrentRoute, never, boolean> {
+): RefSubject.Computed<Navigation | CurrentRoute, never, boolean> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
-  return CurrentPath.mapEffect((currentPath) =>
-    Effect.map(CurrentRoute, (currentRoute) => isActive_(currentPath, currentRoute.route, route, ...params))
+  return RefSubject.mapEffect(
+    CurrentPath,
+    (currentPath) =>
+      Effect.map(CurrentRoute, (currentRoute) => isActive_(currentPath, currentRoute.route, route, ...params))
   )
 }
 
@@ -161,10 +165,10 @@ const getSearchParams = (destination: Destination): Readonly<Record<string, stri
 /**
  * @since 1.0.0
  */
-export const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>> = CurrentEntry
-  .map(getSearchParams)
+export const CurrentSearchParams: RefSubject.Computed<Navigation, never, Readonly<Record<string, string>>> = RefSubject
+  .map(CurrentEntry, getSearchParams)
 
 /**
  * @since 1.0.0
  */
-export const CurrentState = CurrentEntry.map((d) => d.state)
+export const CurrentState = RefSubject.map(CurrentEntry, (d) => d.state)
