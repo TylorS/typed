@@ -2,10 +2,9 @@
  * @since 1.0.0
  */
 
-import type * as Computed from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
-import { Deferred, Effect, Option } from "effect"
+import { Data, Deferred, Effect, Option } from "effect"
 import type {
   BeforeNavigationEvent,
   CancelNavigation,
@@ -18,8 +17,8 @@ import { cancelNavigation, Navigation, redirectToPath } from "./Navigation.js"
 /**
  * @since 1.0.0
  */
-export interface BlockNavigation extends Computed.Computed<never, never, Option.Option<Blocking>> {
-  readonly isBlocking: Computed.Computed<never, never, boolean>
+export interface BlockNavigation extends RefSubject.Computed<never, never, Option.Option<Blocking>> {
+  readonly isBlocking: RefSubject.Computed<never, never, boolean>
 }
 
 /**
@@ -36,7 +35,7 @@ type InternalBlockState = Unblocked | Blocked
 type Unblocked = {
   readonly _tag: "Unblocked"
 }
-const Unblocked: Unblocked = { _tag: "Unblocked" }
+const Unblocked: Unblocked = Data.struct({ _tag: "Unblocked" })
 
 type Blocked = {
   readonly _tag: "Blocked"
@@ -47,7 +46,7 @@ type Blocked = {
 const Blocked = (event: BeforeNavigationEvent) =>
   Effect.map(
     Deferred.make<RedirectError | CancelNavigation, void>(),
-    (deferred): Blocked => ({ _tag: "Blocked", deferred, event })
+    (deferred): Blocked => Data.struct({ _tag: "Blocked", deferred, event })
   )
 
 /**
@@ -69,7 +68,7 @@ export const useBlockNavigation = <R = never>(
 
     yield* _(
       navigation.beforeNavigation<R, never>((event) =>
-        blockState.modifyEffect((state) =>
+        RefSubject.modifyEffect(blockState, (state) =>
           Effect.gen(function*(_) {
             // Can't block twice
             if (state._tag === "Blocked") return [Option.none(), state] as const
@@ -84,14 +83,17 @@ export const useBlockNavigation = <R = never>(
               Option.some(Deferred.await(updated.deferred)),
               updated
             ] as const
-          })
-        )
+          }))
       )
     )
 
     const blockNavigation: BlockNavigation = Object.assign(
-      blockState.map((s) => s._tag === "Blocked" ? Option.some(blockedToBlocking(navigation, s)) : Option.none()),
-      { isBlocking: blockState.map((s) => s._tag === "Blocked") }
+      RefSubject.map(blockState, (s) => {
+        return s._tag === "Blocked" ? Option.some(blockedToBlocking(navigation, s)) : Option.none()
+      }),
+      {
+        isBlocking: RefSubject.map(blockState, (s) => s._tag === "Blocked")
+      }
     )
 
     return blockNavigation

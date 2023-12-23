@@ -64,7 +64,7 @@ type EffectOperatorFusionMap = {
 const EffectOperatorFusionMap: EffectOperatorFusionMap = {
   MapEffect: {
     MapEffect: (op1, op2) => MapEffect((a: any) => Effect.flatMap(op1.f(a), op2.f)),
-    TapEffect: (op1, op2) => TapEffect((a: any) => Effect.tap(op1.f(a), op2.f)),
+    TapEffect: (op1, op2) => MapEffect((a: any) => Effect.tap(op1.f(a), op2.f)),
     FilterEffect: (op1, op2) =>
       FilterMapEffect((a: any) =>
         Effect.flatMap(
@@ -123,7 +123,7 @@ const EffectOperatorFusionMap: EffectOperatorFusionMap = {
           op1.f(a),
           Option.match({
             onNone: () => Effect.succeedNone,
-            onSome: (b) => op2.f(a).pipe(Effect.map(() => b))
+            onSome: (b) => Effect.as(op2.f(b), Option.some(b))
           })
         )
       ),

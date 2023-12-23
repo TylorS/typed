@@ -16,7 +16,6 @@ import {
 import * as Boolean from "effect/Boolean"
 import { dual } from "effect/Function"
 import { sum } from "effect/Number"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
@@ -27,6 +26,7 @@ import * as share from "./internal/share.js"
 import type { UnionToTuple } from "./internal/UnionToTuple.js"
 import * as Sink from "./Sink.js"
 import * as Subject from "./Subject.js"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
 import * as Versioned from "./Versioned.js"
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
@@ -112,8 +112,11 @@ export function fromFx<R, E, A>(
     Effect.tap(({ core, deferredRef }) =>
       Effect.forkIn(
         fx.run(Sink.make(
-          (cause) => Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.failCause(cause))), () => core.subject.onFailure(cause)),
-          (value) => Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.succeed(value))), () => setCore(core, value))
+          (cause) =>
+            Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.failCause(cause))), () =>
+              core.subject.onFailure(cause)),
+          (value) =>
+            Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.succeed(value))), () => setCore(core, value))
         )),
         core.scope
       )

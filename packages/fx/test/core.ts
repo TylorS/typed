@@ -1065,4 +1065,22 @@ describe.concurrent("Fx.partitionMap", () => {
     expect(odds).toEqual([1, 3])
     expect(evens).toEqual([2, 4])
   })
+
+  describe("fusion", () => {
+    describe("filterMap + tapEffect", () => {
+      it("works as expected", async () => {
+        const values: Array<number> = []
+        const test = Fx.fromIterable([1, 2, 3]).pipe(
+          Fx.filterMap(Option.liftPredicate((x) => x % 2 === 0)),
+          Fx.tapEffect((x) => Effect.sync(() => values.push(x))),
+          Fx.toReadonlyArray
+        )
+
+        const array = await Effect.runPromise(test)
+
+        expect(array).toEqual([2])
+        expect(values).toEqual([2])
+      })
+    })
+  })
 })

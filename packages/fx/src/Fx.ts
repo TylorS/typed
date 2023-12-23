@@ -21,16 +21,16 @@ import { Cause, Effect, Either, Layer, Option, Queue, Schedule } from "effect"
 import type { DurationInput } from "effect/Duration"
 import { dual, identity } from "effect/Function"
 import type * as Types from "effect/Types"
-import * as strategies from "./internal/strategies.js"
-import { TypeId } from "./TypeId.js"
 import * as Emitter from "./Emitter.js"
 import * as core from "./internal/core.js"
 import * as coreKeyed from "./internal/keyed.js"
 import * as coreShare from "./internal/share.js"
+import * as strategies from "./internal/strategies.js"
 import * as coreWithKey from "./internal/withKey.js"
 import { type RefSubject, transform } from "./RefSubject.js"
 import * as Sink from "./Sink.js"
 import type * as Subject from "./Subject.js"
+import { TypeId } from "./TypeId.js"
 
 export interface Fx<out R, out E, out A> extends Pipeable.Pipeable {
   readonly [TypeId]: Fx.Variance<R, E, A>
@@ -596,13 +596,13 @@ export const continueWith: {
 } = dual(2, core.continueWith)
 
 export const orElseCause: {
-  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2,  E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2,  E2, A | B>
+  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = dual(2, core.orElseCause)
 
 export const orElse: {
-  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2,  E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2,  E2, A | B>
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
 } = dual(2, core.orElse)
 
 export const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A> = core.suspend
@@ -927,8 +927,8 @@ export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A> 
 export const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A> = coreShare.hold
 
 export const replay: {
-  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope |R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<Scope.Scope |R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<Scope.Scope | R, E, A>
 } = dual(2, coreShare.replay)
 
 export const mapCause: {
@@ -1660,8 +1660,13 @@ export const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<never, nev
  * @since 1.20.0
  */
 export const partitionMap: {
-  <A, B, C>(f: (a: A) => Either.Either<B, C>): <R, E>(fx: Fx<R, E, A>) => readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
-  <R, E, A, B, C>(fx: Fx<R, E, A>, f: (a: A) => Either.Either<B, C>): readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
+  <A, B, C>(
+    f: (a: A) => Either.Either<B, C>
+  ): <R, E>(fx: Fx<R, E, A>) => readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
+  <R, E, A, B, C>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Either.Either<B, C>
+  ): readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
 } = dual(2, function partitionMap<R, E, A, B, C>(
   fx: Fx<R, E, A>,
   f: (a: A) => Either.Either<B, C>

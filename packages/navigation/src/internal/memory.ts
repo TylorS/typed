@@ -1,11 +1,19 @@
+import * as Equivalence from "@effect/schema/Equivalence"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, getRandomValues } from "@typed/id"
 import { Effect, Option } from "effect"
 import type { Layer, Scope } from "effect"
 import type { Commit, InitialMemoryOptions, MemoryOptions } from "../Layer.js"
 import { Navigation } from "../Navigation.js"
-import type { ModelAndIntent, NavigationState } from "./shared.js"
-import { getOriginFromUrl, getUrl, makeDestination, makeHandlersState, setupFromModelAndIntent } from "./shared.js"
+import type { ModelAndIntent } from "./shared.js"
+import {
+  getOriginFromUrl,
+  getUrl,
+  makeDestination,
+  makeHandlersState,
+  NavigationState,
+  setupFromModelAndIntent
+} from "./shared.js"
 
 export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
   Navigation.scoped(
@@ -59,11 +67,12 @@ function setupMemory(
             index: options.currentIndex ?? options.entries.length - 1,
             transition: Option.none()
           }
-        })
+        }),
+        { eq: Equivalence.to(NavigationState) }
       )
     )
-    const canGoBack = state.map((s) => s.index > 0)
-    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
+    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = options.commit ?? (() => Effect.unit)
 

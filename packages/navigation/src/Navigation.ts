@@ -5,7 +5,7 @@
 import { ParseResult } from "@effect/schema"
 import * as Schema from "@effect/schema/Schema"
 import { Tagged } from "@typed/context"
-import * as Computed from "@typed/fx/Computed"
+import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import * as IdSchema from "@typed/id/Schema"
 import type { Option, Scope } from "effect"
@@ -19,15 +19,15 @@ export interface Navigation {
 
   readonly base: string
 
-  readonly currentEntry: Computed.Computed<never, never, Destination>
+  readonly currentEntry: RefSubject.Computed<never, never, Destination>
 
-  readonly entries: Computed.Computed<never, never, ReadonlyArray<Destination>>
+  readonly entries: RefSubject.Computed<never, never, ReadonlyArray<Destination>>
 
-  readonly transition: Computed.Computed<never, never, Option.Option<Transition>>
+  readonly transition: RefSubject.Computed<never, never, Option.Option<Transition>>
 
-  readonly canGoBack: Computed.Computed<never, never, boolean>
+  readonly canGoBack: RefSubject.Computed<never, never, boolean>
 
-  readonly canGoForward: Computed.Computed<never, never, boolean>
+  readonly canGoForward: RefSubject.Computed<never, never, boolean>
 
   readonly navigate: (
     url: string | URL,
@@ -324,7 +324,7 @@ export const reload: (
 /**
  * @since 1.0.0
  */
-export const CurrentEntry: Computed.Computed<Navigation, never, Destination> = Computed.fromTag(
+export const CurrentEntry: RefSubject.Computed<Navigation, never, Destination> = RefSubject.computedFromTag(
   Navigation,
   (nav) => nav.currentEntry
 )
@@ -339,22 +339,24 @@ export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" 
 /**
  * @since 1.0.0
  */
-export const CurrentPath: Computed.Computed<Navigation, never, string> = CurrentEntry.map((d) =>
-  getCurrentPathFromUrl(d.url)
+export const CurrentPath: RefSubject.Computed<Navigation, never, string> = RefSubject.map(
+  CurrentEntry,
+  (d) => getCurrentPathFromUrl(d.url)
 )
 
 /**
  * @since 1.0.0
  */
-export const CurrentEntries: Computed.Computed<Navigation, never, ReadonlyArray<Destination>> = Computed.fromTag(
-  Navigation,
-  (n) => n.entries
-)
+export const CurrentEntries: RefSubject.Computed<Navigation, never, ReadonlyArray<Destination>> = RefSubject
+  .computedFromTag(
+    Navigation,
+    (n) => n.entries
+  )
 
 /**
  * @since 1.0.0
  */
-export const CanGoForward: Computed.Computed<Navigation, never, boolean> = Computed.fromTag(
+export const CanGoForward: RefSubject.Computed<Navigation, never, boolean> = RefSubject.computedFromTag(
   Navigation,
   (n) => n.canGoForward
 )
@@ -362,7 +364,7 @@ export const CanGoForward: Computed.Computed<Navigation, never, boolean> = Compu
 /**
  * @since 1.0.0
  */
-export const CanGoBack: Computed.Computed<Navigation, never, boolean> = Computed.fromTag(
+export const CanGoBack: RefSubject.Computed<Navigation, never, boolean> = RefSubject.computedFromTag(
   Navigation,
   (n) => n.canGoBack
 )

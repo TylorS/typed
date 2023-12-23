@@ -1,27 +1,21 @@
+import * as Equivalence from "@effect/schema/Equivalence"
 import { unsafeGet } from "@typed/context"
 import { Window } from "@typed/dom/Window"
-import type { Computed } from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
 import { Effect, ExecutionStrategy, Exit, Fiber, Option, Runtime, Scope } from "effect"
-import type { Context, Layer } from "effect"
+import type { Layer } from "effect"
 import type { Commit } from "../Layer.js"
-import type {
-  BeforeNavigationEvent,
-  BeforeNavigationHandler,
-  Destination,
-  NavigationEvent,
-  NavigationHandler,
-  Transition
-} from "../Navigation.js"
+import type { BeforeNavigationEvent, Destination, NavigationEvent, Transition } from "../Navigation.js"
 import { Navigation, NavigationError } from "../Navigation.js"
-import type { NavigationState } from "./shared.js"
+import type { ModelAndIntent } from "./shared.js"
 import {
   getOriginalState,
   getUrl,
   isPatchedState,
   makeDestination,
   makeHandlersState,
+  NavigationState,
   setupFromModelAndIntent
 } from "./shared.js"
 
@@ -94,31 +88,6 @@ function getBaseHref(window: Window) {
   return base ? base.href : "/"
 }
 
-type ModelAndIntent = {
-  readonly state: RefSubject.RefSubject<never, never, NavigationState>
-  readonly canGoBack: Computed<
-    never,
-    never,
-    boolean
-  >
-  readonly canGoForward: Computed<
-    never,
-    never,
-    boolean
-  >
-  readonly beforeHandlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>
-  >
-  readonly handlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>
-  >
-  readonly commit: Commit
-}
-
 const getNavigationState = (navigation: NativeNavigation): NavigationState => {
   const entries = navigation.entries().map(nativeEntryToDestination)
   const { index } = navigation.currentEntry
@@ -141,11 +110,12 @@ function setupWithNavigation(
   return Effect.gen(function*(_) {
     const state = yield* _(
       RefSubject.fromEffect(
-        Effect.sync((): NavigationState => getNavigationState(navigation))
+        Effect.sync((): NavigationState => getNavigationState(navigation)),
+        { eq: Equivalence.to(NavigationState) }
       )
     )
-    const canGoBack = state.map((s) => s.index > 0)
-    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
+    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
       Effect.gen(function*(_) {
@@ -264,11 +234,12 @@ function setupWithHistory(
             ),
             (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
           )
-        )
+        ),
+        { eq: Equivalence.to(NavigationState) }
       )
     )
-    const canGoBack = state.map((s) => s.index > 0)
-    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
+    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
       Effect.sync(() => {
@@ -292,7 +263,7 @@ function setupWithHistory(
       beforeHandlers,
       handlers,
       commit
-    } as const
+    } as ModelAndIntent
   })
 }
 
@@ -445,7 +416,10 @@ function scopedRuntime<R>(): Effect.Effect<
               childScope,
               Effect.suspend(() => fiber ? Fiber.interrupt(fiber) : Effect.unit)
             ),
-            Effect.onExit(effect, (exit) => Scope.close(childScope, exit))
+            Effect.onExit(
+              effect,
+              (exit) => Scope.close(childScope, exit)
+            )
           )
         ),
         runFork

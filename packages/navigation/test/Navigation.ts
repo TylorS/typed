@@ -43,8 +43,8 @@ describe(__filename, () => {
 
         const count = yield* _(RefSubject.of(0))
 
-        yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
-        yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+        yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
+        yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
 
         const second = yield* _(navigate("/foo/2"))
 
@@ -103,8 +103,8 @@ describe(__filename, () => {
 
           const count = yield* _(RefSubject.of(0))
 
-          yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
-          yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+          yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
+          yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
 
           const second = yield* _(navigate("/foo/2"))
 
@@ -437,8 +437,8 @@ describe(__filename, () => {
 
           const count = yield* _(RefSubject.of(0))
 
-          yield* _(beforeNavigation(() => Effect.succeedSome(count.update((x) => x + 10))))
-          yield* _(onNavigation(() => Effect.succeedSome(count.update((x) => x * 2))))
+          yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
+          yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
 
           const second = yield* _(navigate("/foo/2"))
 
@@ -489,19 +489,20 @@ describe(__filename, () => {
 
         yield* _(
           blockNavigation,
-          Fx.tap((option) => {
-            if (Option.isNone(option)) {
-              return Effect.unit
-            } else {
-              const blocking = option.value
-              didBlock = true
-              return blocking.confirm
-            }
+          Fx.compact,
+          Fx.tapEffect((blocking) => {
+            didBlock = true
+            return blocking.confirm
           }),
           Fx.forkScoped
         )
 
-        yield* _(Navigation.navigate(nextUrl))
+        // Let fiber start
+        yield* _(Effect.sleep(1))
+
+        const result = yield* _(Navigation.navigate(nextUrl), Effect.either)
+
+        console.log("result", result)
 
         deepStrictEqual(didBlock, true)
 
@@ -518,15 +519,13 @@ describe(__filename, () => {
 
         yield* _(
           blockNavigation,
-          Fx.tap((option) => {
-            if (Option.isNone(option)) {
-              return Effect.unit
-            } else {
-              const blocking = option.value
+          Fx.tapEffect(Option.match({
+            onNone: () => Effect.unit,
+            onSome: (blocking) => {
               didBlock = true
               return blocking.cancel
             }
-          }),
+          })),
           Fx.forkScoped
         )
 
