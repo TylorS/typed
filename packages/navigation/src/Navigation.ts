@@ -373,5 +373,8 @@ export const CanGoBack: RefSubject.Computed<Navigation, never, boolean> = RefSub
  * @since 1.0.0
  */
 export function handleRedirect(error: RedirectError) {
-  return navigate(error.path, error.options)
+  return navigate(error.path, {
+    history: "replace",
+    ...error.options
+  })
 }
