@@ -11,7 +11,9 @@ import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
 import * as Fx from "./Fx.js"
 import type { Guard } from "./Guard.js"
+import { FxBase } from "./internal/protos.js"
 import * as RefSubject from "./RefSubject.js"
+import type { Sink } from "./Sink.js"
 
 /**
  * @since 1.18.0
@@ -30,23 +32,25 @@ export interface TypeMatcher<R, E, I, O> {
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
 
-  readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
+  readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
-  readonly to: <R2, E2, A, B>(
+  readonly to: <R2 = never, E2 = never, A = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ) => TypeMatcher<R | R2, E | E2, I, O | B>
 
-  readonly run: <R2 = never, E2 = never>(input: Fx.Fx<R2, E2, I>) => Fx.Fx<R | R2, E | E2, Option.Option<O>>
+  readonly run: <R2 = never, E2 = never>(
+    input: Fx.Fx<R2, E2, I>
+  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>>
 }
 
 /**
  * @since 1.18.0
  */
-export interface ValueMatcher<R, E, I, O> {
+export interface ValueMatcher<R, E, I, O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
   readonly _tag: "ValueMatcher"
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
@@ -62,8 +66,6 @@ export interface ValueMatcher<R, E, I, O> {
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ) => ValueMatcher<R | R2, E | E2, I, O | B>
-
-  readonly run: Fx.Fx<R, E, Option.Option<O>>
 
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
     f: () => Fx.Fx<R2, E2, B>
@@ -143,7 +145,6 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
 
     return Fx.suspend(() => {
       const refSubjects = new WeakMap<When<any, any, I, any, any>, RefSubject.RefSubject<never, never, any>>()
-
       const getRefSubject = (_case: When<any, any, I, any, any>, value: any) =>
         Effect.gen(function*(_) {
           let refSubject = refSubjects.get(_case)
@@ -159,7 +160,7 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
 
       let previous: When<any, any, I, any, any>
 
-      return input.pipe(
+      return Fx.skipRepeats(input).pipe(
         Fx.switchMapEffect((input) =>
           Effect.gen(function*(_) {
             // Allow failures to be accumulated, such that errors do not break the overall match
@@ -228,14 +229,21 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
   }
 }
 
-class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
+class ValueMatcherImpl<R, E, I, O> extends FxBase<R | Scope.Scope, E, Option.Option<O>>
+  implements ValueMatcher<R, E, I, O>
+{
   readonly _tag = "ValueMatcher"
   readonly [MatcherTypeId]: ValueMatcher<R, E, I, O>[MatcherTypeId] = variance
 
   constructor(readonly value: Fx.Fx<R, E, I>, readonly matcher: TypeMatcher<R, E, I, O>) {
+    super()
     this.when = this.when.bind(this)
     this.to = this.to.bind(this)
     this.getOrElse = this.getOrElse.bind(this)
+  }
+
+  run<R2>(sink: Sink<R2, E, Option.Option<O>>) {
+    return this.matcher.run(this.value).run(sink)
   }
 
   when<R2, E2, A, R3 = never, E3 = never, B = never>(
@@ -254,8 +262,6 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
   ): ValueMatcher<R | R2, E | E2, I, O | B> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
-
-  run: ValueMatcher<R, E, I, O>["run"] = Fx.suspend(() => this.matcher.run(this.value))
 
   getOrElse: ValueMatcher<R, E, I, O>["getOrElse"] = (f) => Fx.getOrElse(this.matcher.run(this.value), f)
 }
