@@ -1,9 +1,9 @@
 import type { Effect } from "effect"
 import { Effectable, identity } from "effect"
 import { pipeArguments } from "effect/Pipeable"
-import { TypeId } from "../TypeId.js"
 import type { Fx } from "../Fx.js"
 import type { Sink } from "../Sink.js"
+import { TypeId } from "../TypeId.js"
 
 const Variance: Fx.Variance<never, never, never> = {
   _R: identity,

@@ -217,7 +217,7 @@ describe("Html", () => {
   })
 
   it.concurrent(`renders with ref directives`, async () => {
-    await testHtmlChunks(html`<input ref=${Directive.ref((part) => part.value)} />`, [
+    await testHtmlChunks(html`<input ref=${Directive.ref((part) => Effect.orDie(part.value))} />`, [
       `<input data-typed="..."/>`
     ])
   })

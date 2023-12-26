@@ -1,6 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Subject from "@typed/fx/Subject"
-import { TypeId } from "@typed/fx/TypeId.js"
+import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect } from "effect"
@@ -68,7 +68,7 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
     Effect.gen(function*(_) {
       const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
       const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = Subject.make<Placeholder.Error<Values[number]>, never>()
+      const errors = Subject.unsafeMake<Placeholder.Error<Values[number]>, never>()
       const entry = getBrowserEntry(document, ctx, templateStrings)
       const content = document.importNode(entry.content, true) // Clone our template
 
@@ -78,7 +78,7 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
 
       // If there are parts we need to render them before constructing our Wire
       if (parts.length > 0) {
-        const refCounter = yield* _(indexRefCounter(parts.length))
+        const refCounter = yield* _(indexRefCounter(parts.length, content))
 
         // Do the work
         yield* _(renderValues(values, parts, refCounter, errors.onFailure))
@@ -92,10 +92,10 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
 
       // Return the Template instance
       return TemplateInstance(
-        Fx.merge([
+        Fx.merge(
           events,
           errors
-        ]),
+        ),
         elementRef
       )
     })
@@ -164,7 +164,7 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   } else if (part._tag === "ref") {
     return refCounter.release(partIndex)
   } else if (part._tag === "event") {
-    return Effect.tap(
+    return Effect.uninterruptible(Effect.tap(
       part.update(
         getEventHandler(renderable, onCause) as EventHandler.EventHandler<
           Placeholder.Context<Values[number]>,
@@ -172,7 +172,7 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
         >
       ),
       () => refCounter.release(partIndex)
-    )
+    ))
   } else if (part._tag === "node" && hydrateCtx) {
     return handlePart(
       renderable,
@@ -235,7 +235,7 @@ function handlePart<R, E>(
       else if (Array.isArray(renderable)) {
         return renderable.length === 0
           ? update(null)
-          : Effect.forkScoped(Fx.observe(Fx.combine(renderable.map(unwrapRenderable)) as any, update))
+          : Effect.forkScoped(Fx.observe(Fx.tuple(renderable.map(unwrapRenderable)) as any, update))
       } else if (TypeId in renderable) {
         return Effect.forkScoped(Fx.observe(renderable as any, update))
       } else if (Effect.EffectTypeId in renderable) {
@@ -253,7 +253,7 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
     case "object": {
       if (renderable === null || renderable === undefined) return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return renderable.length === 0 ? Fx.succeed(null) : Fx.combine(renderable.map(unwrapRenderable)) as any
+        return renderable.length === 0 ? Fx.succeed(null) : Fx.tuple(renderable.map(unwrapRenderable)) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
@@ -269,7 +269,7 @@ function unwrapSparsePartRenderables(
   renderables: ReadonlyArray<Renderable<any, any>>,
   part: SparsePart
 ) {
-  return Fx.combine(
+  return Fx.tuple(
     // @ts-ignore type too deep
     renderables.map((renderable, i) => {
       const p = part.parts[i]

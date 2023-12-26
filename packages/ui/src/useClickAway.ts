@@ -8,8 +8,8 @@ import * as Fx from "@typed/fx/Fx"
 import type * as ElementRef from "@typed/template/ElementRef"
 import { getElements } from "@typed/template/ElementSource"
 import type { Rendered } from "@typed/wire"
-import type { Fiber, Scope } from "effect"
-import { Effect, Option } from "effect"
+import type { Effect, Fiber, Scope } from "effect"
+import { Option } from "effect"
 import { addEventListeners } from "./internal/addEventListener"
 
 /**
@@ -28,11 +28,11 @@ export function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<an
 export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
   refs: Refs,
   f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, E2, B>
-): Fx.Fx<Document | R2, E2, B> {
+): Fx.Fx<Document | R2 | Scope.Scope, E2, B> {
   return Fx.fromFxEffect(Document.with((document) => {
     const events = addEventListeners(document, "click", "touchend", "contextmenu")
     const elements = Fx.map(
-      Fx.combine(refs as ReadonlyArray<Fx.Fx<never, never, Rendered>>),
+      Fx.tuple(refs as ReadonlyArray<Fx.Fx<Scope.Scope, never, Rendered>>),
       (els) => els.flatMap(getElements)
     )
 
@@ -43,20 +43,22 @@ export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any
   }))
 }
 
-const containsRefs = (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>, refs: ReadonlyArray<Element>) =>
-  Effect.sync(() => {
-    const target = event.target
+const containsRefs = (
+  event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>,
+  refs: ReadonlyArray<Element>
+): Option.Option<EventWithCurrentTarget<Document, MouseEvent | TouchEvent>> => {
+  const target = event.target
 
-    if (
-      target === null ||
-      refs.some(
-        (c) =>
-          c === target ||
-          c.contains(target as Element)
-      )
-    ) {
-      return Option.none()
-    } else {
-      return Option.some(event)
-    }
-  })
+  if (
+    target === null ||
+    refs.some(
+      (c) =>
+        c === target ||
+        c.contains(target as Element)
+    )
+  ) {
+    return Option.none()
+  } else {
+    return Option.some(event)
+  }
+}

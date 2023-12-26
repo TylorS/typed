@@ -63,16 +63,22 @@ const UNBOUNDED = { concurrency: "unbounded" } as const
 // TODO: Double-check other optimiation opportunities
 // TODO: expose FxBase and FxEffectBase
 
-export function make<A>(run: Fx<never, never, A>["run"]): Fx<never, never, A>
-export function make<E, A>(run: Fx<never, E, A>["run"]): Fx<never, E, A>
-export function make<R, E, A>(run: Fx<R, E, A>["run"]): Fx<R, E, A>
-export function make<R, E, A>(run: Fx<R, E, A>["run"]): Fx<R, E, A> {
+export function make<A>(
+  run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>
+): Fx<never, never, A>
+export function make<E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
+export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A>
+export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A> {
   return new Make(run)
 }
 
 class Make<R, E, A> extends FxBase<R, E, A> {
-  constructor(readonly run: Fx<R, E, A>["run"]) {
+  constructor(readonly _run: Fx<R, E, A>["run"]) {
     super()
+  }
+
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+    return Effect.contextWithEffect((ctx) => this._run(Sink.provide(sink, ctx)))
   }
 }
 

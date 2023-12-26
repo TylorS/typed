@@ -89,6 +89,12 @@ export namespace RefSubject {
   }
 }
 
+export type Context<T> = Fx.Context<T>
+
+export type Error<T> = Fx.Error<T>
+
+export type Success<T> = Fx.Success<T>
+
 export interface RefSubjectOptions<A> {
   readonly eq?: Equivalence.Equivalence<A>
   readonly replay?: number
@@ -179,11 +185,11 @@ export const make: {
   else return fromEffect(fxOrEffect, options)
 }
 
-export function of<A>(
+export function of<A, E = never>(
   a: A,
   options?: RefSubjectOptions<A>
-): Effect.Effect<Scope.Scope, never, RefSubject<never, never, A>> {
-  return make(Effect.succeed(a), options)
+): Effect.Effect<Scope.Scope, never, RefSubject<never, E, A>> {
+  return make<never, E, A>(Effect.succeed(a), options)
 }
 
 class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Scope, E, A, Exclude<R, R2>, E, A>
@@ -595,8 +601,11 @@ export const mapEffect: {
 
 export const map: {
   <A, B>(f: (a: A) => B): {
-    <R, E>(ref: RefSubject<R, E, A> | Computed<R, E, A>): Computed<R, E, B>
+    <R, E>(ref: RefSubject<R, E, A>): Computed<R, E, B>
+    <R, E>(ref: Computed<R, E, A>): Computed<R, E, B>
+
     <R, E>(ref: Filtered<R, E, A>): Filtered<R, E, B>
+
     <R0, E0, R, E, R2, E2>(
       versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
       f: (a: A) => B
@@ -658,20 +667,37 @@ export const filterMap: {
     ): Filtered<R0 | R2, E0 | E | E2, B>
   }
 
-  <R, E, A, B>(
-    ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
-    f: (a: A) => Option.Option<B>
-  ): Filtered<R, E, B>
   <R0, E0, R, E, A, R2, E2, B>(
     versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
     f: (a: A) => Option.Option<B>
   ): Filtered<R0 | R2 | Exclude<R, Scope.Scope>, E0 | E | E2, B>
+
+  <R, E, A, B>(
+    ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
+    f: (a: A) => Option.Option<B>
+  ): Filtered<R, E, B>
 } = dual(2, function filterMap<R0, E0, R, E, A, R2, E2, B>(
   versioned: Versioned.Versioned<R0, E0, R, E, A, R2, E2, A>,
   f: (a: A) => Option.Option<B>
 ): Filtered<R0 | Exclude<R, Scope.Scope> | R2 | R2, E0 | E | E2, B> {
   return FilteredImpl.make(versioned, (a) => Effect.succeed(f(a)))
 })
+
+export const compact: {
+  <R, E, A>(ref: RefSubject<R, E, Option.Option<A>> | Computed<R, E, Option.Option<A>>): Filtered<R, E, A>
+  <R, E, A>(ref: Filtered<R, E, Option.Option<A>>): Filtered<R, E, A>
+
+  <R0, E0, R, E, A, R2, E2>(
+    versioned: Versioned.Versioned<R0, E0, R, E, Option.Option<A>, R2, E2, Option.Option<A>>
+  ): Filtered<
+    R0 | R2 | Exclude<R, Scope.Scope>,
+    E0 | E | Exclude<E, Cause.NoSuchElementException> | Exclude<E2, Cause.NoSuchElementException>,
+    A
+  >
+} = <R0, E0, R, E, A, R2, E2>(
+  versioned: Versioned.Versioned<R0, E0, R, E, Option.Option<A>, R2, E2, Option.Option<A>>
+): Filtered<R0 | R2 | Exclude<R, Scope.Scope>, E0 | E | Exclude<E | E2, Cause.NoSuchElementException>, A> =>
+  filterMap(versioned, identity) as any
 
 export const filterEffect: {
   <R, E, A, R2, E2>(

@@ -38,8 +38,9 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
   | RenderTemplate
   | Scope.Scope
   | Location
-  | Placeholder.Context<Props[keyof Props] | Children[number]>,
-  Placeholder.Error<Props[keyof Props] | Children[number]>,
+  | Placeholder.Context<Props[keyof Props] | Children[number]>
+  | Fx.Context<Props[keyof Props] | Children[number]>,
+  Placeholder.Error<Props[keyof Props] | Children[number]> | Fx.Error<Props[keyof Props] | Children[number]>,
   RenderEvent
 > {
   return Fx.gen(function*(_) {
@@ -72,7 +73,10 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       )
     )
 
-    const href = RefSubject.tuple(relativeRef, toRef).mapEffect(([rel, to]) => rel ? makeHref(to) : Effect.succeed(to))
+    const href = RefSubject.mapEffect(
+      RefSubject.tuple([relativeRef, toRef]),
+      ([rel, to]) => rel ? makeHref(to) : Effect.succeed(to)
+    )
 
     const navigate = Effect.gen(function*(_) {
       const current = yield* _(Effect.all({ replace: replaceRef, state: stateRef, reloadDocument }))
@@ -99,9 +103,11 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       onClickHandler?.options
     )
 
+    const allProps = { ...props, ref, href, state: stateRef, onClick: onClickEventHandler }
+
     return Anchor(
-      { ...props, ref, href, state: stateRef, onClick: onClickEventHandler },
+      allProps as any as AnchorProps,
       ...children
-    ) as any
+    )
   })
 }

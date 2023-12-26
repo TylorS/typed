@@ -9,7 +9,7 @@ import type * as Effect from "effect/Effect"
  * @since 1.0.0
  */
 export type Environment =
-  | "browser"
+  | "dom"
   | "server"
   | "serviceWorker"
   | "static"
@@ -20,7 +20,7 @@ export type Environment =
  * @since 1.0.0
  */
 export const Environment: { readonly [_ in Environment]: _ } = {
-  browser: "browser",
+  dom: "dom",
   server: "server",
   serviceWorker: "serviceWorker",
   static: "static",
@@ -43,9 +43,7 @@ export type CurrentEnvironment = Context.Tag.Identifier<typeof CurrentEnvironmen
 /**
  * @since 1.0.0
  */
-export const isBrowser: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
-  e === "browser"
-)
+export const isDom: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "dom")
 
 /**
  * @since 1.0.0

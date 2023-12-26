@@ -24,6 +24,7 @@ import type * as Types from "effect/Types"
 import * as Emitter from "./Emitter.js"
 import * as core from "./internal/core.js"
 import * as coreKeyed from "./internal/keyed.js"
+import * as protos from "./internal/protos.js"
 import * as coreShare from "./internal/share.js"
 import * as strategies from "./internal/strategies.js"
 import * as coreWithKey from "./internal/withKey.js"
@@ -225,9 +226,9 @@ export type FxFork = <R>(
 ) => Effect.Effect<R, never, void>
 
 export const make: {
-  <A>(run: <R2 = never>(sink: Sink.Sink<R2, never, A>) => Effect.Effect<R2, never, unknown>): Fx<never, never, A>
-  <E, A>(run: <R2 = never>(sink: Sink.Sink<R2, E, A>) => Effect.Effect<R2, never, unknown>): Fx<never, E, A>
-  <R, E, A>(run: <R2 = never>(sink: Sink.Sink<R2, E, A>) => Effect.Effect<R | R2, never, unknown>): Fx<R, E, A>
+  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>): Fx<never, never, A>
+  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
+  <R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A>
 } = core.make
 
 export const succeed: <A>(value: A) => Fx<never, never, A> = core.succeed
@@ -1122,16 +1123,16 @@ export const flatMapErrorWithStrategy: {
 } = dual(isDataFirstFx, core.flatMapErrorWithStrategy)
 
 export const switchMapCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
-    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
-
   <R, E, A, R2, E2, B>(
     fx: Fx<R, E, A>,
     f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
   ): Fx<R | R2 | Scope.Scope, E2, A | B>
+
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
 } = dual(isDataFirstFx, core.switchMapCause)
 
 export const switchMapError: {
@@ -1733,7 +1734,16 @@ export const sample: {
   <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>): Fx<R | R2, E | E2, B>
 } = dual(2, core.sample)
 
-export const snapshotEffect = dual(3, core.snapshotEffect)
+export const snapshotEffect: {
+  <R2, E2, B, A, R3, E3, C>(sampled: Fx<R2, E2, B>, g: (a: A, b: B) => Effect.Effect<R3, E3, C>): <R, E>(
+    fx: Fx<R, E, A>
+  ) => Fx<R | R2 | R3, E | E2 | E3, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    sampled: Fx<R2, E2, B>,
+    f: (a: A, b: B) => Effect.Effect<R3, E3, C>
+  ): Fx<R | R2 | R3, E | E2 | E3, C>
+} = dual(3, core.snapshotEffect)
 
 const if_: {
   <R2, E2, B, R3, E3, C>(options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }): <R, E>(
@@ -1835,4 +1845,16 @@ export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A> | PubSub.PubSub<A>): F
     (q) => fromDequeue(q),
     (d) => d.shutdown
   )
+}
+
+export abstract class FxEffectBase<R, E, A, R2, E2, B> extends protos.FxEffectBase<R, E, A, R2, E2, B> {
+  private _fx: Fx<R, E, A> | undefined
+
+  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<R | R3, never, void> {
+    return (this._fx ||= this.toFx()).run(sink)
+  }
+
+  abstract toFx(): Fx<R, E, A>
+
+  abstract toEffect(): Effect.Effect<R2, E2, B>
 }

@@ -115,7 +115,7 @@ export function addEventListeners<Props extends EventHandlerProps<any>, T extend
   ref: ElementSource<T>
 ): Effect.Effect<Scope.Scope | GetEventHandlersContext<Props>, never, void> {
   return Fx.forkScoped(
-    Fx.merge(
+    Fx.mergeAll(
       getEventHandlers(props).map(([type, handler]: any) => addEventListener(ref, type, handler))
     )
   ) as any

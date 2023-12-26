@@ -114,14 +114,14 @@ const buildWithCurrentEnvironment = (environment: Environment, skipRenderSchedul
 /**
  * @since 1.0.0
  */
-export const browser: (
+export const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
 ) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
   Layer.provideMerge(
     Layer.mergeAll(
       buildWithCurrentEnvironment(
-        "browser",
+        "dom",
         options?.skipRenderScheduling
       ),
       domServices(options)

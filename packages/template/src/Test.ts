@@ -6,11 +6,11 @@ import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServic
 import type { GlobalThis } from "@typed/dom/GlobalThis"
 import type { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
-import type { Computed } from "@typed/fx/Computed"
-import type { Filtered } from "@typed/fx/Filtered"
-import * as Fx from "@typed/fx/Fx"
+import type * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
+import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
+import { Deferred } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
@@ -39,8 +39,8 @@ export interface TestRender<E> {
   readonly window: Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
-  readonly errors: Computed<never, never, ReadonlyArray<E>>
-  readonly lastError: Filtered<never, never, E>
+  readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
+  readonly lastError: RefSubject.Filtered<never, never, E>
   readonly interrupt: Effect.Effect<never, never, void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
@@ -64,22 +64,27 @@ export function testRender<R, E>(
   return Effect.gen(function*(_) {
     const window = makeWindow(options)
     const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefArray.make<never, never, E>(Effect.succeed([])))
+    const deferred = yield* _(Deferred.make<never, void>())
+    const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
       fx,
       render,
-      Fx.run(Sink.Sink(
-        (cause) =>
-          Cause.failureOrCause(cause).pipe(
-            Either.match({
-              onLeft: (error) => RefArray.append(errors, error),
-              onRight: (cause) => errors.onFailure(cause)
-            })
-          ),
-        (rendered) => ElementRef.set(elementRef, rendered)
-      )),
+      (x) =>
+        x.run(Sink.make(
+          (cause) =>
+            Cause.failureOrCause(cause).pipe(
+              Either.match({
+                onLeft: (error) => RefArray.append(errors, error),
+                onRight: (cause) => errors.onFailure(cause)
+              })
+            ),
+          (rendered) => {
+            console.log("rendered", rendered)
+            return Effect.zipRight(ElementRef.set(elementRef, rendered), Deferred.succeed(deferred, undefined))
+          }
+        )),
       Effect.forkScoped,
-      Effect.provide(RenderContext.browser(window, { skipRenderScheduling: true }))
+      Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
     )
 
     const test: TestRender<E> = {
@@ -98,6 +103,9 @@ export function testRender<R, E>(
     // Allow our fibers to start
     yield* _(adjustTime(1))
     yield* _(adjustTime(1))
+
+    // Await the first render
+    yield* _(Deferred.await(deferred), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
 
     return test
   })

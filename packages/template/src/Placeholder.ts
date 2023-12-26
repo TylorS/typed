@@ -64,7 +64,7 @@ export namespace Placeholder {
     if (isFx<R, E, A>(placeholder) || Effect.isEffect(placeholder)) {
       return RefSubject.make(placeholder as Fx<R, E, A>)
     } else {
-      return RefSubject.of(placeholder as A)
+      return RefSubject.of<A, E>(placeholder as A)
     }
   }
 }

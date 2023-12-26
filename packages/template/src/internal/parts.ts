@@ -1,6 +1,6 @@
 import type { Context } from "@typed/context"
-import * as Fx from "@typed/fx/Fx"
-import { WithContext } from "@typed/fx/Sink"
+import type * as Fx from "@typed/fx/Fx"
+import * as Sink from "@typed/fx/Sink"
 import { isText, type Rendered } from "@typed/wire"
 import { Data } from "effect"
 import type { Cause } from "effect/Cause"
@@ -320,9 +320,8 @@ export class EventPartImpl extends base("event") implements EventPart {
           index,
           ({ value }) => {
             return value
-              ? Fx.run(
-                source.events(name as keyof HTMLElementEventMap | keyof SVGElementEventMap, value.options),
-                WithContext(onCause, value.handler)
+              ? source.events(name as keyof HTMLElementEventMap | keyof SVGElementEventMap, value.options).run(
+                Sink.make(onCause, value.handler)
               ).pipe(
                 Effect.provide(ctx),
                 fork

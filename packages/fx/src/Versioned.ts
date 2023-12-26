@@ -272,3 +272,7 @@ export const provide: {
     Effect.provide(versioned, context as Layer.Layer<R3, never, S>)
   )
 })
+
+export function of<A>(value: A): Versioned<never, never, never, never, A, never, never, A> {
+  return make(Effect.succeed(1), core.succeed(value), Effect.succeed(value))
+}

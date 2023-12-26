@@ -14,7 +14,7 @@ export const Todo = Schema.struct({
   id: TodoId,
   text: Schema.string,
   completed: Schema.boolean,
-  timestamp: Schema.dateFromString(Schema.string)
+  timestamp: Schema.DateFromString
 })
 export interface TodoJson extends Schema.Schema.From<typeof Todo> {}
 export interface Todo extends Schema.Schema.To<typeof Todo> {}

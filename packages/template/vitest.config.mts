@@ -1,7 +1,15 @@
 /// <reference types="vitest" />
 
 import { dirname } from "path"
-import { makeTestConfig } from "../../vitest.config.mjs"
 import { fileURLToPath } from "url"
+import { mergeConfig } from "vite"
+import { makeTestConfig } from "../../vitest.config.mjs"
 
-export default makeTestConfig(dirname(fileURLToPath(import.meta.url)))
+export default mergeConfig(makeTestConfig(dirname(fileURLToPath(import.meta.url))), {
+  test: {
+    browser: {
+      enabled: true,
+      headless: true
+    }
+  }
+})

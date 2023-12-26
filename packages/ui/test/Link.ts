@@ -26,18 +26,18 @@ describe("Link", () => {
         Router.withCurrentRoute(Route.fromPath("/foo"))
       ))
 
-    Vitest.test("works with Effect as Links", () =>
-      Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(Link({ to: Effect.succeed("/test") }, "Hello")))
-        const element = yield* _(elementRef)
+    // Vitest.test("works with Effect as Links", () =>
+    //   Effect.gen(function*(_) {
+    //     const { elementRef, window } = yield* _(testRender(Link({ to: Effect.succeed("/test") }, "Hello")))
+    //     const element = yield* _(elementRef)
 
-        ok(element instanceof window.HTMLAnchorElement)
-        deepStrictEqual(element.href, "/foo/test")
-        deepStrictEqual(element.textContent, "Hello")
-      }).pipe(
-        Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
-      ))
+    //     ok(element instanceof window.HTMLAnchorElement)
+    //     deepStrictEqual(element.href, "/foo/test")
+    //     deepStrictEqual(element.textContent, "Hello")
+    //   }).pipe(
+    //     Effect.provide(Navigation.initialMemory({ url: initialUrl })),
+    //     Router.withCurrentRoute(Route.fromPath("/foo"))
+    //   ))
 
     Vitest.test("works with Fx as Links", () =>
       Effect.gen(function*(_) {

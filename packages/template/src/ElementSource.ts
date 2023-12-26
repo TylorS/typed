@@ -4,7 +4,6 @@
 
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import { addEventListener } from "@typed/dom/EventTarget"
-import { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import { FxEffectBase } from "@typed/fx/Fx"
 import * as Versioned from "@typed/fx/Versioned"
@@ -14,10 +13,10 @@ import type { NoSuchElementException } from "effect/Cause"
 import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
-import * as Scope from "effect/Scope"
+import type * as Scope from "effect/Scope"
 import { adjustTime } from "./internal/utils.js"
-import { PlaceholderTypeId } from "./Placeholder.js"
 
+import * as RefSubject from "@typed/fx/RefSubject"
 import type * as TQS from "typed-query-selector/parser"
 
 /**
@@ -26,7 +25,18 @@ import type * as TQS from "typed-query-selector/parser"
 export interface ElementSource<
   T extends Rendered = Element,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends Versioned.Versioned<never, never, never, never, Rendered.Elements<T>, never, never, Rendered.Elements<T>> {
+> extends
+  Versioned.Versioned<
+    never,
+    never,
+    Scope.Scope,
+    never,
+    Rendered.Elements<T>,
+    never,
+    NoSuchElementException,
+    Rendered.Elements<T>
+  >
+{
   readonly selector: Selector
 
   readonly query: {
@@ -39,12 +49,12 @@ export interface ElementSource<
     ): ElementSource<Target, EventMap>
   }
 
-  readonly elements: Filtered<never, never, Rendered.Elements<T>>
+  readonly elements: RefSubject.Filtered<never, never, Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<never, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+  ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
 
   readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
 }
@@ -53,7 +63,7 @@ export interface ElementSource<
  * @since 1.0.0
  */
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: Filtered<never, never, T>
+  rootElement: RefSubject.Filtered<never, never, T>
 ): ElementSource<T, EventMap> {
   return new ElementSourceImpl<T, EventMap>(rootElement) as any
 }
@@ -152,21 +162,17 @@ function makeEventStream<Ev extends Event>(
     const lastTwoCssSelectors = cssSelectors.slice(-2).join("")
     const elements = getElements(element)
 
-    const event$ = Fx.merge(
+    const event$ = Fx.mergeAll(
       elements.map((element) =>
         Fx.filter(
-          Fx.withScopedFork<never, never, Ev>(({ scope, sink }) =>
-            Effect.zipRight(
-              Effect.provideService(
-                addEventListener(element, {
-                  eventName,
-                  handler: (ev) => sink.onSuccess(ev as any as Ev)
-                }),
-                Scope.Scope,
-                scope
-              ),
+          Fx.make<never, never, Ev>((sink) =>
+            Effect.scoped(Effect.zipRight(
+              addEventListener(element, {
+                eventName,
+                handler: (ev) => sink.onSuccess(ev as any as Ev)
+              }),
               Effect.never
-            )
+            ))
           ),
           (event: Ev) =>
             ensureMatches(cssSelector, element, event, capture) ||
@@ -192,21 +198,17 @@ function makeElementEventStream<Ev extends Event>(
     const { capture } = options
     const elements = getElements(rendered)
 
-    const event$ = Fx.merge(
+    const event$ = Fx.mergeAll(
       elements.map((element) =>
         Fx.filter(
-          Fx.withScopedFork<never, never, Ev>(({ scope, sink }) =>
-            Effect.zipRight(
-              Effect.provideService(
-                addEventListener(element, {
-                  eventName,
-                  handler: (ev) => sink.onSuccess(ev as any as Ev)
-                }),
-                Scope.Scope,
-                scope
-              ),
+          Fx.make<never, never, Ev>((sink) =>
+            Effect.scoped(Effect.zipRight(
+              addEventListener(element, {
+                eventName,
+                handler: (ev) => sink.onSuccess(ev as any as Ev)
+              }),
               Effect.never
-            )
+            ))
           ),
           (event: Ev) => event.target ? currentTarget.contains(event.target as Element) : false
         )
@@ -280,42 +282,46 @@ function isElement(element: RenderedWithoutArray): element is Element {
  * @internal
  * @since 1.0.0
  */
-// @ts-expect-error
+// @ts-expect-error Doesn't implement Placeholder
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends FxEffectBase<never, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
-  implements Omit<ElementSource<T, EventMap>, PlaceholderTypeId>
+> extends FxEffectBase<Scope.Scope, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+  implements ElementSource<T, EventMap>
 {
-  readonly [PlaceholderTypeId]!: any
-
-  private bubbleMap = new Map<any, Fx.Fx<never, never, any>>()
-  private captureMap = new Map<any, Fx.Fx<never, never, any>>()
+  private bubbleMap = new Map<any, Fx.Fx<Scope.Scope, never, any>>()
+  private captureMap = new Map<any, Fx.Fx<Scope.Scope, never, any>>()
 
   readonly elements: ElementSource<T, EventMap>["elements"]
   readonly version: ElementSource<T, EventMap>["version"]
 
-  constructor(readonly rootElement: Filtered<never, never, T>, readonly selector: Selector = CssSelectors([])) {
+  constructor(
+    readonly rootElement: RefSubject.Filtered<never, never, T>,
+    readonly selector: Selector = CssSelectors([])
+  ) {
     super()
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
 
     this.elements = this.selector._tag === "css" ?
-      this.rootElement.map(findMatchingElements<any>(this.selector.selectors)) :
-      Filtered(Versioned.of(this.selector.element), (x) => Effect.succeedSome([x])) as any
+      RefSubject.map(this.rootElement, findMatchingElements<any>(this.selector.selectors)) :
+      RefSubject.filterMapEffect(
+        Versioned.of(this.selector.element),
+        (x) => Effect.succeedSome([x] as any as Rendered.Elements<T>)
+      ) as any
 
     this.version = this.elements.version
   }
 
   static fromElement<T extends Rendered>(rootElement: T): ElementSource<T> {
-    return new ElementSourceImpl(Filtered(Versioned.of(rootElement), Effect.succeedSome)) as any
+    return new ElementSourceImpl<T>(RefSubject.filterMapEffect(Versioned.of(rootElement), Effect.succeedSome)) as any
   }
 
-  protected toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
+  toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
     return this.elements
   }
 
-  protected toFx() {
+  toFx(): Fx.Fx<Scope.Scope, never, Rendered.Elements<T>> {
     return this.elements
   }
 
@@ -338,7 +344,7 @@ export class ElementSourceImpl<
   events<Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) {
+  ): Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>> {
     const capture = options?.capture === true
     const map = capture ? this.captureMap : this.bubbleMap
 
@@ -346,7 +352,7 @@ export class ElementSourceImpl<
 
     if (current === undefined) {
       if (this.selector._tag === "css") {
-        current = this.rootElement.map(findMostSpecificElement(this.selector.selectors)).pipe(
+        current = RefSubject.map(this.rootElement, findMostSpecificElement(this.selector.selectors)).pipe(
           Fx.switchMap(makeEventStream(this.selector.selectors, type as any, options)),
           Fx.multicast
         )
@@ -357,7 +363,7 @@ export class ElementSourceImpl<
         )
       }
 
-      map.set(type, current)
+      map.set(type, current!)
     }
 
     return current

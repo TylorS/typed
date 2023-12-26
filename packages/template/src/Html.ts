@@ -3,8 +3,8 @@
  */
 
 import * as Fx from "@typed/fx/Fx"
-import { Sink } from "@typed/fx/Sink"
-import { TypeId } from "@typed/fx/TypeId.js"
+import * as Sink from "@typed/fx/Sink"
+import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { Effect, Option } from "effect"
 import { join } from "effect/ReadonlyArray"
@@ -27,6 +27,8 @@ import { TemplateInstance } from "./TemplateInstance.js"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
 
+const [padStart, padEnd] = [[TYPED_START], [TYPED_END]] as const
+
 /**
  * @since 1.0.0
  */
@@ -38,8 +40,7 @@ export function renderToHtml<R, E>(
       fx.pipe(
         Fx.provide(RenderTemplate.layer(renderHtml(ctx))),
         Fx.map(toHtml),
-        Fx.startWith(TYPED_START),
-        Fx.endWith(TYPED_END)
+        Fx.padWith(padStart, padEnd)
       )
     )
   )
@@ -76,7 +77,7 @@ function renderHtml(ctx: RenderContext) {
       } else {
         return TemplateInstance(
           Fx.filter(
-            Fx.mergeBuffer(
+            Fx.mergeOrdered(
               entry.chunks.map((chunk) =>
                 renderChunk<
                   Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
@@ -125,7 +126,7 @@ function renderObject<R, E>(renderable: object | null | undefined) {
   if (renderable === null || renderable === undefined) {
     return Fx.succeed(HtmlRenderEvent(TEXT_START))
   } else if (Array.isArray(renderable)) {
-    return Fx.mergeBuffer(renderable.map(renderNode)) as any
+    return Fx.mergeOrdered(renderable.map(renderNode)) as any
   } else if (Fx.isFx<R, E, Renderable>(renderable)) {
     return Fx.concatMap(takeOneIfNotRenderEvent(renderable), renderNode as any)
   } else if (Effect.isEffect(renderable)) {
@@ -146,7 +147,7 @@ function renderPart<R, E>(
 
   // Refs and events are not rendered into HTML
   if (isDirective<R, E>(renderable)) {
-    return Fx.fromSink((sink: Sink<E, RenderEvent>) => {
+    return Fx.make((sink: Sink.Sink<never, E, RenderEvent>) => {
       const part = partNodeToPart(
         node,
         (value) => sink.onSuccess(HtmlRenderEvent(render(value)))
@@ -155,7 +156,7 @@ function renderPart<R, E>(
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    return Fx.endWith(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
+    return Fx.append(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
   } else {
     const html = Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
@@ -164,7 +165,7 @@ function renderPart<R, E>(
     })
 
     if (node._tag === "text-part") {
-      return Fx.endWith(Fx.startWith(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
+      return Fx.append(Fx.prepend(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
     }
 
     return html
@@ -179,14 +180,14 @@ function renderSparsePart<R, E>(
 
   return Fx.map(
     Fx.take(
-      Fx.combine(
+      Fx.tuple(
         node.nodes.map((node) => {
           if (node._tag === "text") return Fx.succeed(node.value)
 
           const renderable: Renderable<any, any> = (values as any)[node.index]
 
           if (isDirective<R, E>(renderable)) {
-            return Fx.fromSink<R, E, unknown>((sink: Sink<E, unknown>) =>
+            return Fx.make<R, E, unknown>((sink: Sink.Sink<never, E, unknown>) =>
               Effect.catchAllCause(
                 renderable(partNodeToPart(node, (value) => sink.onSuccess(value))),
                 sink.onFailure
@@ -204,17 +205,15 @@ function renderSparsePart<R, E>(
 }
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.withEarlyExit(({ fork, sink }) =>
-    Fx.run(
-      fx,
-      Sink(
-        sink.onFailure,
-        (event) => isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
-      )
-    ).pipe(
-      fork,
-      Effect.fromFiberEffect
-    )
+  return Fx.make<R, E, A>((sink) =>
+    Sink.withEarlyExit(sink, (sink) =>
+      fx.run(
+        Sink.make(
+          sink.onFailure,
+          (event) =>
+            isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
+        )
+      ))
   )
 }
 
@@ -245,7 +244,7 @@ function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, a
     case "object": {
       if (renderable === null || renderable === undefined) return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return Fx.combine(renderable.map(unwrapRenderable)) as any
+        return Fx.tuple(renderable.map(unwrapRenderable)) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {

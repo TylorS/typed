@@ -30,7 +30,7 @@ export function htmlResponse<R, E>(
       {
         ...CAMEL_CASE_CONTENT_TYPE,
         ...options,
-        headers: { ...HYPHENATED_CONTENT_TYPE, ...options?.headers }
+        headers: Headers.unsafeFromRecord({ ...HYPHENATED_CONTENT_TYPE, ...options?.headers })
       }
     )
   )
@@ -48,7 +48,7 @@ export function htmlResponseString(
     {
       ...CAMEL_CASE_CONTENT_TYPE,
       ...options,
-      headers: { ...HYPHENATED_CONTENT_TYPE, ...options?.headers }
+      headers: Headers.unsafeFromRecord({ ...HYPHENATED_CONTENT_TYPE, ...options?.headers })
     }
   )
 }
