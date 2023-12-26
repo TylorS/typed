@@ -9,7 +9,7 @@ export type IndexRefCounter = {
 /**
  * @internal
  */
-export function indexRefCounter(expected: number, id: unknown): Effect.Effect<
+export function indexRefCounter(expected: number): Effect.Effect<
   never,
   never,
   IndexRefCounter
@@ -19,10 +19,7 @@ export function indexRefCounter(expected: number, id: unknown): Effect.Effect<
 
     function release(index: number) {
       return Effect.suspend(() => {
-        console.log("release", id, index)
         if (indexes.delete(index) && indexes.size === 0) {
-          console.log("released", id, "expected", expected)
-
           return Deferred.succeed(deferred, undefined)
         } else {
           return Effect.unit

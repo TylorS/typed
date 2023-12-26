@@ -78,7 +78,7 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
 
       // If there are parts we need to render them before constructing our Wire
       if (parts.length > 0) {
-        const refCounter = yield* _(indexRefCounter(parts.length, content))
+        const refCounter = yield* _(indexRefCounter(parts.length))
 
         // Do the work
         yield* _(renderValues(values, parts, refCounter, errors.onFailure))

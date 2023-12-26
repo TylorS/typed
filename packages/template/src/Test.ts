@@ -79,7 +79,6 @@ export function testRender<R, E>(
               })
             ),
           (rendered) => {
-            console.log("rendered", rendered)
             return Effect.zipRight(ElementRef.set(elementRef, rendered), Deferred.succeed(deferred, undefined))
           }
         )),

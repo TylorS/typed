@@ -430,8 +430,6 @@ export class PropertiesPartImpl extends base("properties") implements Properties
             if (diff) {
               const { added, removed } = diff
 
-              console.log(added, removed)
-
               removed.forEach((nv) => removeNameValue(element, nv))
               added.forEach((nv) => {
                 if (nv.name[0] === "o" && nv.name[1] === "n") return
