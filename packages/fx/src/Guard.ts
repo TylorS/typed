@@ -2,6 +2,7 @@
  * @since 1.18.0
  */
 
+import type { Predicate } from "effect"
 import { Effect, Option } from "effect"
 import { dual } from "effect/Function"
 
@@ -157,3 +158,9 @@ export type AnyOutput<GS extends Readonly<Record<string, Guard<any, any, any, an
     [K in keyof GS]: { readonly _tag: K; readonly value: Guard.Output<GS[K]> }
   }[keyof GS]
 ] extends [infer R] ? R : never
+
+export function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, never, never, B>
+export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A>
+export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A> {
+  return (a) => Effect.sync(() => (predicate(a) ? Option.some(a) : Option.none()))
+}
