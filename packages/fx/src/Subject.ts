@@ -1,15 +1,15 @@
 import * as C from "@typed/context"
-import { Cause, Context, Layer, Pipeable } from "effect"
-import { Effect, ExecutionStrategy, Exit, identity, MutableRef, Option, Scope } from "effect"
+import type { Cause, Layer, Pipeable } from "effect"
+import { Context, Effect, ExecutionStrategy, Exit, identity, MutableRef, Option, Scope } from "effect"
 import { dual } from "effect/Function"
-import { TypeId } from "./TypeId.js"
+import { hasProperty } from "effect/Predicate"
 import { type Fx } from "./Fx.js"
 import { provide } from "./internal/core.js"
-import { awaitScopeClose, RingBuffer } from "./internal/helpers.js"
+import { awaitScopeClose, RingBuffer, withScope } from "./internal/helpers.js"
 import { FxBase } from "./internal/protos.js"
 import type { Push } from "./Push.js"
 import type { Sink } from "./Sink.js"
-import { hasProperty } from "effect/Predicate"
+import { TypeId } from "./TypeId.js"
 
 export interface Subject<R, E, A>
   extends Push<R, E, A, R | Scope.Scope, E, A>, Fx<R | Scope.Scope, E, A>, Pipeable.Pipeable
@@ -77,33 +77,33 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
     return this.onEvent(a)
   }
 
-  readonly interrupt = Effect.suspend(() => Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.unit)))
+  readonly interrupt = Effect.fiberIdWith((id) =>
+    Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD)
+  )
 
   protected addSink<R, R2, B>(
     sink: Sink<R, E, A>,
     f: (scope: Scope.Scope) => Effect.Effect<R2, never, B>
   ): Effect.Effect<R2 | Scope.Scope, never, B> {
-    return Effect.scopeWith((outerScope) =>
-      Effect.flatMap(
-        Scope.fork(outerScope, ExecutionStrategy.sequential),
-        (innerScope) =>
-          Effect.contextWithEffect((ctx) => {
-            const entry = [sink, Context.add(ctx, Scope.Scope, innerScope)] as const
-            const add = Effect.sync(() => {
-              this.sinks.add(entry)
-              this.scopes.add(innerScope)
-            })
-            const remove = Effect.sync(() => {
-              this.sinks.delete(entry)
-              this.scopes.delete(innerScope)
-            })
-
-            return Effect.zipRight(
-              Scope.addFinalizer(innerScope, remove),
-              Effect.zipRight(add, f(innerScope))
-            )
+    return withScope(
+      (innerScope) =>
+        Effect.contextWithEffect((ctx) => {
+          const entry = [sink, Context.add(ctx, Scope.Scope, innerScope)] as const
+          const add = Effect.sync(() => {
+            this.sinks.add(entry)
+            this.scopes.add(innerScope)
           })
-      )
+          const remove = Effect.sync(() => {
+            this.sinks.delete(entry)
+            this.scopes.delete(innerScope)
+          })
+
+          return Effect.zipRight(
+            Scope.addFinalizer(innerScope, remove),
+            Effect.zipRight(add, f(innerScope))
+          )
+        }),
+      ExecutionStrategy.sequential
     )
   }
 
@@ -117,7 +117,11 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   }
 
   protected onCause(cause: Cause.Cause<E>) {
-    return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx), DISCARD)
+    return Effect.forEach(
+      Array.from(this.sinks),
+      ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx),
+      DISCARD
+    )
   }
 }
 
@@ -222,7 +226,8 @@ export function tagged<E, A>(): {
   return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Subject<never, E, A>>(identifier))
 }
 
-const isDataFirst = (args: IArguments): boolean => args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], TypeId)
+const isDataFirst = (args: IArguments): boolean =>
+  args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], TypeId)
 
 class TaggedImpl<I, E, A> extends FromTag<I, Subject<never, E, A>, never, E, A> implements Subject.Tagged<I, E, A> {
   readonly provide: Subject.Tagged<I, E, A>["provide"]

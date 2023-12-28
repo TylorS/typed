@@ -37,7 +37,7 @@ const arr1000 = arrayTo(1000)
 const arr10000 = arrayTo(10000)
 const arr100000 = arrayTo(100000)
 
-describe("Stream Benchmarks", () => {
+describe.skip("Stream Benchmarks", () => {
   filterMapReduce(arr1000)
   filterMapReduce(arr10000)
   filterMapReduce(arr100000)

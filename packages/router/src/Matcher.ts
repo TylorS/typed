@@ -146,13 +146,12 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   > {
-    const onNotFound = Fx.scoped(f(Navigation.CurrentEntry))
-
     return Fx.fromFxEffect(CurrentEnvironment.with((env) => {
+      const onNotFound = Fx.scoped(f(Navigation.CurrentEntry))
       let matcher: Match.ValueMatcher<R | R2 | Navigation.Navigation | Scope.Scope, E | E2, string, A | B> = Match
         .value(
           // Only if we're rendering in a DOM-based environment should we allow for routing to last indefinitely
-          env === "dom" ? Navigation.CurrentPath : Fx.take(Navigation.CurrentPath, 1)
+          env === "server" || env === "static" ? Fx.take(Navigation.CurrentPath, 1) : Navigation.CurrentPath
         )
 
       for (const { guard, match, route } of this.guards) {
@@ -161,7 +160,8 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
 
       return Fx.filterMapErrorEffect(matcher.getOrElse(() => onNotFound), (e) =>
         Navigation.isRedirectError(e)
-          ? Effect.as(Effect.orDie(Navigation.handleRedirect(e)), Option.none())
+          // Fork the redirect to ensure it does not occur within the same runUpdates as the initial navigation
+          ? Effect.as(Effect.forkScoped(Navigation.handleRedirect(e)), Option.none())
           : Effect.succeedSome(e as Exclude<E | E2, Navigation.RedirectError>))
     }))
   }

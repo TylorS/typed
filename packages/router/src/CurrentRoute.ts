@@ -30,14 +30,28 @@ export const CurrentRoute: Context.Tagged<CurrentRoute> = Context.Tagged<Current
 /**
  * @since 1.0.0
  */
-export function make<P extends string>(
-  route: Route.Route<P>,
+export function make<const P extends string>(
+  route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): CurrentRoute<P> {
   return {
-    route,
+    route: getRoute(route),
     parent
   }
+}
+
+/**
+ * @since 1.0.0
+ */
+export function layer<const P extends string>(
+  route: P | Route.Route<P>,
+  parent: Option.Option<CurrentRoute> = Option.none()
+): Layer.Layer<never, never, CurrentRoute> {
+  return CurrentRoute.layer(make(route as Route.Route<string>, parent))
+}
+
+function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
+  return typeof route === "string" ? Route.fromPath(route) : route
 }
 
 /**

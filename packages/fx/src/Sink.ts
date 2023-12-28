@@ -891,3 +891,10 @@ class FromTag<I, S, R2, E2, B> implements Sink<I | R2, E2, B> {
     return Effect.flatMap(this.get, (sink) => sink.onFailure(cause))
   }
 }
+
+export function ignoreInterrupt<R, E, A>(sink: Sink<R, E, A>): Sink<R, E, A> {
+  return make(
+    (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),
+    sink.onSuccess
+  )
+}

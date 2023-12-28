@@ -226,9 +226,9 @@ export type FxFork = <R>(
 ) => Effect.Effect<R, never, void>
 
 export const make: {
-  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>): Fx<never, never, A>
-  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
   <R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A>
+  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
+  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>): Fx<never, never, A>
 } = core.make
 
 export const succeed: <A>(value: A) => Fx<never, never, A> = core.succeed

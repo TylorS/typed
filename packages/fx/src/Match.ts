@@ -2,8 +2,7 @@
  * @since 1.18.0
  */
 
-import type { Scope } from "effect"
-import { Effect, Exit } from "effect"
+import { Effect, ExecutionStrategy, Exit, Fiber, MutableRef, Scope } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import { identity } from "effect/Function"
@@ -11,9 +10,11 @@ import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
 import * as Fx from "./Fx.js"
 import type { Guard } from "./Guard.js"
+import { withScopedFork } from "./internal/helpers.js"
 import { FxBase } from "./internal/protos.js"
 import * as RefSubject from "./RefSubject.js"
-import type { Sink } from "./Sink.js"
+import * as Sink from "./Sink.js"
+import * as Subject from "./Subject.js"
 
 /**
  * @since 1.18.0
@@ -115,6 +116,15 @@ class When<R, E, I, A, O> {
   ) {}
 }
 
+class Matched<R, E, I, A, O> {
+  constructor(
+    readonly when: When<R, E, I, A, O>,
+    readonly ref: RefSubject.RefSubject<never, never, A>,
+    readonly fiber: Fiber.Fiber<never, unknown>,
+    readonly interrupt: Effect.Effect<never, never, void>
+  ) {}
+}
+
 class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
   readonly _tag = "TypeMatcher"
   readonly [MatcherTypeId]: TypeMatcher<R, E, I, O>[MatcherTypeId] = variance as any
@@ -140,92 +150,127 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  run<R2, E2>(input: Fx.Fx<R2, E2, I>): Fx.Fx<R | R2, E | E2, Option.Option<O>> {
+  run<R2, E2>(input: Fx.Fx<R2, E2, I>): Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>> {
     const { cases } = this
 
-    return Fx.suspend(() => {
-      const refSubjects = new WeakMap<When<any, any, I, any, any>, RefSubject.RefSubject<never, never, any>>()
-      const getRefSubject = (_case: When<any, any, I, any, any>, value: any) =>
-        Effect.gen(function*(_) {
-          let refSubject = refSubjects.get(_case)
+    return Fx.make<R | R2 | Scope.Scope, E | E2, Option.Option<O>>((sink) =>
+      withScopedFork(
+        (fork, parentScope) => {
+          let previous: Matched<any, any, I, any, O>
 
-          if (refSubject) {
-            yield* _(RefSubject.set(refSubject, value))
-          } else {
-            refSubject = yield* _(RefSubject.of(value))
+          const onMatch = <A>(
+            when: When<R | R2 | Scope.Scope, E | E2, I, A, O>,
+            value: A
+          ) =>
+            Effect.gen(function*(_) {
+              if (previous?.when === when) {
+                yield* _(RefSubject.set(previous.ref, value))
+              } else {
+                // Interrupt any previous resources
+                if (previous !== undefined) {
+                  yield* _(previous.interrupt)
+                }
+
+                // RefSubject to pass along to our matching function
+                const refSubject = yield* _(RefSubject.of(value))
+
+                // Track if the case is ended
+                const hasEnded = MutableRef.make(false)
+                // Used to signal when the case has ended
+                const endSignal = Subject.unsafeMake<never, void>(0)
+
+                // Run the case
+                const fiber = yield* _(
+                  fork(
+                    Fx.mergeFirst(when.onMatch(refSubject), Fx.tap(endSignal, () => MutableRef.set(hasEnded, true)))
+                      .run(
+                        Sink.make(
+                          (cause) =>
+                            MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
+                              ? Effect.unit
+                              : sink.onFailure(cause),
+                          (value) => MutableRef.get(hasEnded) ? Effect.unit : sink.onSuccess(Option.some(value))
+                        )
+                      )
+                  )
+                )
+
+                previous = new Matched(
+                  when,
+                  refSubject,
+                  fiber,
+                  // Interrupt the case when the endSignal first to disallow emissions of values, but asynchonously
+                  // interrupt the fiber without blocking the next match to take over.
+                  Effect.all([endSignal.onSuccess(undefined), Fiber.interruptFork(fiber)], { discard: true })
+                )
+              }
+            }).pipe(Effect.provideService(Scope.Scope, parentScope))
+
+          function matchWhen<A>(input: I, when: When<R | R2 | Scope.Scope, E | E2, I, A, O>) {
+            return Effect.gen(function*(_) {
+              const matched = yield* _(when.guard(input))
+
+              if (Option.isSome(matched)) {
+                yield* _(onMatch(when, matched.value))
+
+                return true
+              } else {
+                return false
+              }
+            })
           }
 
-          return refSubject
-        })
+          function matchInput(input: I) {
+            return Effect.gen(function*(_) {
+              // Allow failures to be accumulated, such that errors do not break the overall match
+              // and additional matchers can be attempted against first
+              const causes: Array<Cause.Cause<E | E2>> = []
 
-      let previous: When<any, any, I, any, any>
+              // If there's a previous match, attempt it first to avoid re-testing all cases in order
+              if (previous !== undefined) {
+                const matchedExit = yield* _(matchWhen(input, previous.when), Effect.exit)
 
-      return Fx.skipRepeats(input).pipe(
-        Fx.switchMapEffect((input) =>
-          Effect.gen(function*(_) {
-            // Allow failures to be accumulated, such that errors do not break the overall match
-            // and additional matchers can be attempted against first
-            const causes: Array<Cause.Cause<E>> = []
-
-            // If there's a previous match, attempt it first
-            if (previous) {
-              const matchedExit = yield* _(previous.guard(input), Effect.exit)
-
-              if (Exit.isSuccess(matchedExit)) {
-                const matched = matchedExit.value
-
-                if (Option.isSome(matched)) {
-                  const refSubject = yield* _(getRefSubject(previous, matched.value))
-
-                  return Option.some([previous, refSubject] as const)
+                if (Exit.isFailure(matchedExit)) {
+                  causes.push(matchedExit.cause)
+                } else if (matchedExit.value) {
+                  return
                 }
-              } else {
-                causes.push(matchedExit.cause)
               }
-            }
 
-            for (const _case of cases) {
-              // Don't test this case twice
-              if (_case === previous) continue
+              for (const when of cases) {
+                // Don't test this case twice
+                if (when === previous?.when) continue
 
-              const matchedExit = yield* _(_case.guard(input), Effect.exit)
+                const matchedExit = yield* _(matchWhen(input, when), Effect.exit)
 
-              if (Exit.isSuccess(matchedExit)) {
-                const matched = matchedExit.value
-
-                if (Option.isSome(matched)) {
-                  const refSubject = yield* _(getRefSubject(_case, matched.value))
-                  previous = _case
-
-                  return Option.some([_case, refSubject] as const)
+                if (Exit.isFailure(matchedExit)) {
+                  causes.push(matchedExit.cause)
+                } else if (matchedExit.value) {
+                  return
                 }
-              } else {
-                causes.push(matchedExit.cause)
               }
-            }
 
-            if (isNonEmptyReadonlyArray(causes)) {
-              const [first, ...rest] = causes
+              if (isNonEmptyReadonlyArray(causes)) {
+                const [first, ...rest] = causes
+                yield* _(sink.onFailure(reduce(rest, first, Cause.sequential)))
+              } else {
+                if (previous !== undefined) {
+                  yield* _(previous.interrupt)
+                }
 
-              return yield* _(Effect.failCause(reduce(rest, first, Cause.sequential)))
-            } else {
-              return Option.none()
-            }
-          })
-        ),
-        // Avoid restarting based on the Case that was matched to keep a peristent
-        // workflow for matcher that has its input values change
-        Fx.skipRepeatsWith(Option.getEquivalence(([a], [b]) => a === b)),
-        Fx.switchMap(
-          Option.match({
-            onNone: () => Fx.succeed(Option.none()),
-            onSome: ([when, ref]) => {
-              return Fx.map(when.onMatch(ref), Option.some)
-            }
-          })
-        )
+                yield* _(sink.onSuccess(Option.none()))
+              }
+            })
+          }
+
+          return Fx.skipRepeats(input).run(Sink.make(
+            sink.onFailure,
+            matchInput
+          ))
+        },
+        ExecutionStrategy.sequential
       )
-    })
+    )
   }
 }
 
@@ -242,7 +287,7 @@ class ValueMatcherImpl<R, E, I, O> extends FxBase<R | Scope.Scope, E, Option.Opt
     this.getOrElse = this.getOrElse.bind(this)
   }
 
-  run<R2>(sink: Sink<R2, E, Option.Option<O>>) {
+  run<R2>(sink: Sink.Sink<R2, E, Option.Option<O>>) {
     return this.matcher.run(this.value).run(sink)
   }
 
