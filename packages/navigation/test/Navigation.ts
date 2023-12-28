@@ -500,9 +500,7 @@ describe(__filename, () => {
         // Let fiber start
         yield* _(Effect.sleep(1))
 
-        const result = yield* _(Navigation.navigate(nextUrl), Effect.either)
-
-        console.log("result", result)
+        yield* _(Navigation.navigate(nextUrl), Effect.either)
 
         deepStrictEqual(didBlock, true)
 
