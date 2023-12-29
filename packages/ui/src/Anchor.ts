@@ -13,7 +13,7 @@ import type { TemplateFx } from "@typed/template/RenderTemplate"
 import { html } from "@typed/template/RenderTemplate"
 import type { Rendered } from "@typed/wire"
 import type { ReadonlyRecord, Scope } from "effect"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { uncapitalize } from "effect/String"
 import type { HTMLAnchorElementProperties } from "./internal/dom-properties.js"
 
@@ -91,7 +91,7 @@ export function Anchor<
   )
   return html`<a 
     ref="${refDirective}"
-    .props=${rest}
+    .props="${rest}"
     .data="${data}"
     .scrollLeft="${scrollLeft}"
     .scrollTop="${scrollTop}"

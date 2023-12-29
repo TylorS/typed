@@ -6,10 +6,10 @@ import { type ParseOptions } from "@effect/schema/AST"
 import { from } from "@effect/schema/Equivalence"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
-import type { Scope } from "effect"
-import { Cause, Effect } from "effect"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
 import { hasProperty } from "effect/Predicate"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
+import type * as Scope from "effect/Scope"
 import * as FormEntry from "./FormEntry.js"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
@@ -17,6 +17,7 @@ import { FxEffectBase } from "./internal/protos.js"
 import { hold } from "./internal/share.js"
 import * as RefSubject from "./RefSubject.js"
 import type * as Sink from "./Sink.js"
+import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
 import type * as Versioned from "./Versioned.js"
 
 /**
@@ -97,7 +98,8 @@ export namespace Form {
    * @since 1.20.0
    */
   export type Context<T> = [T] extends [FormEntry.FormEntry<infer R, infer _E, infer _I, infer _>] ? R :
-    [T] extends [Base<infer _R, infer _E, infer _I, infer _O, infer _Entries>] ? _R | Context<_Entries[keyof _Entries]> :
+    [T] extends [Base<infer _R, infer _E, infer _I, infer _O, infer _Entries>] ?
+      _R | Context<_Entries[keyof _Entries]> :
     never
 
   /**
@@ -489,5 +491,3 @@ const propOf = <R, E, O>(
   } else if (TypeId in input) return core.map(input, (o) => o[key])
   else return Effect.map(input, (o) => o[key])
 }
-
-

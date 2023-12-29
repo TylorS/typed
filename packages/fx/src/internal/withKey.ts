@@ -1,4 +1,8 @@
-import { Effect, ExecutionStrategy, Option, type Scope } from "effect"
+import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
+
 import type { Fx, WithKeyOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"

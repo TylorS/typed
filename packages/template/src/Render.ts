@@ -7,6 +7,7 @@ import { Document } from "@typed/dom/Document"
 import { RootElement } from "@typed/dom/RootElement"
 import * as Fx from "@typed/fx/Fx"
 import { type Rendered } from "@typed/wire"
+import type { Layer, Scope } from "effect"
 import * as Effect from "effect/Effect"
 import { attachRoot, renderTemplate } from "./internal/render.js"
 import { RenderContext } from "./RenderContext.js"
@@ -40,6 +41,10 @@ export function render<R, E, T extends RenderEvent | null>(
  */
 export function renderLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
-) {
+): Layer.Layer<
+  Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>,
+  never,
+  never
+> {
   return Fx.drainLayer(Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(e))))
 }

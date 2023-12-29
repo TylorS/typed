@@ -60,7 +60,7 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
   </section>`
 
 function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
-  return Fx.genScoped(function*(_) {
+  return Fx.gen(function*(_) {
     // Track whether this todo is being edited
     const isEditing = yield* _(RefSubject.of(false))
 
@@ -116,7 +116,7 @@ function FilterLink(filterState: Domain.FilterState) {
       {
         className: Fx.when(RefSubject.map(App.FilterState, (state) => state === filterState), {
           onTrue: "selected",
-          onFalse: ""
+          onFalse: " "
         }),
         to: Infra.filterStateToPath(filterState)
       },

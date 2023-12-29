@@ -248,6 +248,31 @@ describe("Html", () => {
       `class="custom-input"/><label class="custom-input-label" for="name">Name</label></div>`
     ])
   })
+
+  it.concurrent("renders script tags with no content", async () => {
+    await testHtmlChunks(html`<script async defer type="module" src="./index.ts"></script>`, [
+      "<script data-typed=\"...\" async defer type=\"module\" src=\"./index.ts\"></script>"
+    ])
+  })
+
+  it.concurrent("renders full html template", async () => {
+    await testHtmlChunks(
+      html`<html>
+    <head>
+      <title>@typed TodoMVC</title>
+      <meta charset="utf-8" />
+      <meta name="description" content="@typed TodoMVC" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+      <h1>Hello, world!</h1>
+
+      <script async defer type="module" src="./index.ts"></script>
+    </body>
+  </html>`,
+      [`<html data-typed="..."><head><title>@typed TodoMVC</title></head><meta charset="utf-8"/><meta name="description" content="@typed TodoMVC"/><meta name="viewport" content="width=device-width, initial-scale=1"/></html><body data-typed="..."><h1>Hello, world!</h1><script async defer type="module" src="./index.ts"></script></body>`]
+    )
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {

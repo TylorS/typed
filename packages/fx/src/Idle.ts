@@ -5,8 +5,9 @@
  */
 
 import type * as Context from "@typed/context"
-import { ExecutionStrategy, Exit } from "effect"
 import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import { constant, constVoid } from "effect/Function"
 import { globalValue } from "effect/GlobalValue"

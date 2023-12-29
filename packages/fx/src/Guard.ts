@@ -3,8 +3,9 @@
  */
 
 import type { Predicate } from "effect"
-import { Effect, Option } from "effect"
+import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.18.0

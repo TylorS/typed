@@ -64,7 +64,13 @@ export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
  * @since 1.0.0
  */
 export function templateToHtmlChunks({ hash, nodes }: Template) {
-  return fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
+  const chunks = fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
+
+  console.log(hash)
+  chunks.forEach((chunk) => console.log(chunk))
+  console.log()
+
+  return chunks
 }
 
 function fuseTextChunks(chunks: Array<HtmlChunk>): ReadonlyArray<HtmlChunk> {
@@ -247,7 +253,7 @@ function datasetToString(dataset: Readonly<Record<string, string | undefined>>) 
 function openTag(tagName: string, hash?: string): string {
   if (hash === undefined) return `<${tagName}`
 
-  return `<${tagName} ${TYPED_HASH(hash)}`
+  return `<${tagName} ${TYPED_HASH(hash)} `
 }
 
 function closeTag(tagName: string): string {

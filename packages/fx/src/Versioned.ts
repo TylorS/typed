@@ -1,12 +1,14 @@
 import type * as Context from "@typed/context"
-import type { Layer, Runtime } from "effect"
-import { Effect, flow, Option } from "effect"
-import { dual } from "effect/Function"
+import type { Layer, Runtime, Scope } from "effect"
+import * as Effect from "effect/Effect"
+import { dual, flow } from "effect/Function"
 import { sum } from "effect/Number"
+import * as Option from "effect/Option"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import { MulticastEffect } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
+import * as coreShare from "./internal/share.js"
 import type { Sink } from "./Sink.js"
 
 // TODO: dualize
@@ -229,7 +231,10 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
   return map(
     tuple(
       Object.entries(versioneds).map(([k, v]) =>
-        map(v, { onFx: (x) => [k, x] as const, onEffect: (x) => [k, x] as const })
+        map(v, {
+          onFx: (x) => [k, x] as const,
+          onEffect: (x) => [k, x] as const
+        })
       )
     ),
     {
@@ -275,4 +280,35 @@ export const provide: {
 
 export function of<A>(value: A): Versioned<never, never, never, never, A, never, never, A> {
   return make(Effect.succeed(1), core.succeed(value), Effect.succeed(value))
+}
+
+export function hold<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+  return make(
+    versioned.version,
+    coreShare.hold(versioned),
+    versioned
+  )
+}
+
+export function multicast<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
+): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+  return make(
+    versioned.version,
+    coreShare.multicast(versioned),
+    versioned
+  )
+}
+
+export function replay<R0, E0, R, E, A, R2, E2, B>(
+  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  bufferSize: number
+): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+  return make(
+    versioned.version,
+    coreShare.replay(versioned, bufferSize),
+    versioned
+  )
 }

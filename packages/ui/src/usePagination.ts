@@ -4,7 +4,7 @@
 
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Scope } from "effect"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 
 /**
  * @since 1.0.0

@@ -1,5 +1,10 @@
-import { Cause, Effect, ExecutionStrategy, Fiber, Runtime, Scope } from "effect"
-import type { Exit } from "effect"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import type * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
+import * as Runtime from "effect/Runtime"
+import * as Scope from "effect/Scope"
 import { withScope } from "./internal/helpers.js"
 import * as Sink from "./Sink.js"
 

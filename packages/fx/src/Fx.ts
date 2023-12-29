@@ -17,9 +17,16 @@ import type {
   Scope,
   Tracer
 } from "effect"
-import { Cause, Effect, Either, Layer, Option, Queue, Schedule } from "effect"
+import * as Cause from "effect/Cause"
 import type { DurationInput } from "effect/Duration"
+import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
 import { dual, identity } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import { hasProperty } from "effect/Predicate"
+import * as Queue from "effect/Queue"
+import * as Schedule from "effect/Schedule"
 import type * as Types from "effect/Types"
 import * as Emitter from "./Emitter.js"
 import * as core from "./internal/core.js"
@@ -64,7 +71,7 @@ export type Success<T> = Fx.Success<T>
 export type Unify<T> = Fx.Unify<T>
 
 export function isFx<R, E, A>(u: unknown): u is Fx<R, E, A> {
-  return u === null ? false : typeof u === "object" && TypeId in u
+  return u === null ? false : hasProperty(u, TypeId)
 }
 
 /**

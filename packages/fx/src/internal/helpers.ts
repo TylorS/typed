@@ -1,19 +1,17 @@
 import { getOption } from "@typed/context"
+import { Equivalence } from "effect"
 import type { Duration, Exit } from "effect"
-import {
-  Cause,
-  Effect,
-  Effectable,
-  Equal,
-  Equivalence,
-  ExecutionStrategy,
-  Fiber,
-  Option,
-  Ref,
-  Scope,
-  SynchronizedRef,
-  TestClock
-} from "effect"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Effectable from "effect/Effectable"
+import * as Equal from "effect/Equal"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Fiber from "effect/Fiber"
+import * as Option from "effect/Option"
+import * as Ref from "effect/Ref"
+import * as Scope from "effect/Scope"
+import * as SynchronizedRef from "effect/SynchronizedRef"
+import * as TestClock from "effect/TestClock"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
@@ -396,8 +394,31 @@ export function withDebounceFork<R, E, A>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
   duration: Duration.DurationInput
 ): Effect.Effect<R | Scope.Scope, E, unknown> {
-  return withSwitchFork(
-    (fork, scope) => f((eff) => fork(Effect.delay(eff, duration)), scope),
+  return withScopedFork(
+    (fork, scope) =>
+      Effect.flatMap(
+        SynchronizedRef.make(Option.none<Fiber.Fiber<never, void>>()),
+        (ref) =>
+          Effect.flatMap(
+            f(
+              (effect) =>
+                SynchronizedRef.updateEffect(
+                  ref,
+                  Option.match({
+                    onNone: () => Effect.asSome(fork(Effect.delay(effect, duration))),
+                    onSome: (fiber) =>
+                      Fiber.interrupt(fiber).pipe(Effect.zipRight(fork(Effect.delay(effect, duration))), Effect.asSome)
+                  })
+                ),
+              scope
+            ),
+            () =>
+              SynchronizedRef.get(ref).pipe(Effect.flatMap(Option.match({
+                onNone: () => Effect.unit,
+                onSome: Fiber.join
+              })))
+          )
+      ),
     ExecutionStrategy.sequential
   )
 }

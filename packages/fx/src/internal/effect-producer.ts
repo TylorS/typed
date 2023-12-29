@@ -1,5 +1,6 @@
 import type { Cause } from "effect"
-import { Effect, Schedule } from "effect"
+import * as Effect from "effect/Effect"
+import * as Schedule from "effect/Schedule"
 import type * as Sink from "../Sink.js"
 
 export type EffectProducer<R = any, E = any, A = any> =

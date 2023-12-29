@@ -1,5 +1,6 @@
 import type { Effect } from "effect"
-import { Effectable, identity } from "effect"
+import * as Effectable from "effect/Effectable"
+import { identity } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
 import type { Fx } from "../Fx.js"
 import type { Sink } from "../Sink.js"

@@ -1,4 +1,5 @@
-import { Effect, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
 import * as EffectOp from "./effect-operator.js"
 import * as LoopOp from "./loop-operator.js"

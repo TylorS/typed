@@ -1,5 +1,5 @@
-import { ExecutionStrategy } from "effect"
 import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"

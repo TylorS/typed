@@ -1,5 +1,7 @@
-import { flow, ReadonlyArray } from "effect"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+
 import * as Effect from "effect/Effect"
+import { flow } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
 import * as SyncProducer from "./sync-producer.js"

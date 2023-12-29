@@ -8,8 +8,10 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import type { Destination, Navigation } from "@typed/navigation"
 import { CurrentEntry, CurrentPath } from "@typed/navigation"
 import type { Layer } from "effect"
-import { Effect, Option, pipe } from "effect"
-import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+
+import * as Effect from "effect/Effect"
+import { dual, pipe } from "effect/Function"
 
 import type { ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"

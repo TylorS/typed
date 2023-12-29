@@ -1,5 +1,6 @@
 import type { Equivalence } from "effect"
-import { Equal, identity } from "effect"
+import * as Equal from "effect/Equal"
+import { identity } from "effect/Function"
 
 export type DiffResult<A> = ReadonlyArray<Diff<A>>
 

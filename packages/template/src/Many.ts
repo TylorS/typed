@@ -23,19 +23,19 @@ export function many<R, E, A, B extends PropertyKey, R2, E2>(
   return Fx.fromFxEffect(
     RenderContext.with(
       (ctx): Fx.Fx<R | R2 | RenderContext | Scope.Scope, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> => {
-        if (ctx.environment === "dom") {
-          return Fx.keyed(values, {
-            getKey,
-            onValue: f
-          })
+        if (ctx.environment === "server" || ctx.environment === "static") {
+          return Fx.fromFxEffect(
+            Effect.map(Fx.first(values), (values) =>
+              Fx.mergeOrdered(
+                values.map((value) => Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => f(ref, getKey(value)))))
+              ))
+          )
         }
 
-        return Fx.fromFxEffect(
-          Effect.map(Fx.first(values), (values) =>
-            Fx.mergeOrdered(
-              values.map((value) => Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => f(ref, getKey(value)))))
-            ))
-        )
+        return Fx.keyed(values, {
+          getKey,
+          onValue: f
+        })
       }
     )
   )

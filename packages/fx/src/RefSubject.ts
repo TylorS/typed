@@ -1,21 +1,17 @@
 import * as C from "@typed/context"
 import type { Equivalence, Fiber, Runtime } from "effect"
-import {
-  Cause,
-  Context,
-  Effect,
-  Equal,
-  ExecutionStrategy,
-  Exit,
-  identity,
-  Layer,
-  Option,
-  ReadonlyArray,
-  Scope
-} from "effect"
 import * as Boolean from "effect/Boolean"
-import { dual } from "effect/Function"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Equal from "effect/Equal"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Exit from "effect/Exit"
+import { dual, identity } from "effect/Function"
+import * as Layer from "effect/Layer"
 import { sum } from "effect/Number"
+import * as Option from "effect/Option"
+import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as Scope from "effect/Scope"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
@@ -399,7 +395,7 @@ class RefSubjectCore<R, E, A, R2> {
   constructor(
     readonly initial: Effect.Effect<R, E, A>,
     readonly subject: Subject.Subject<R, E, A>,
-    readonly context: Context.Context<R2>,
+    readonly context: C.Context<R2>,
     readonly scope: Scope.CloseableScope,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
     readonly semaphore: Effect.Semaphore
@@ -417,7 +413,7 @@ function makeCore<R, E, A>(
     Effect.let("executionStrategy", () => options?.executionStrategy ?? ExecutionStrategy.parallel),
     Effect.bind(
       "scope",
-      ({ ctx, executionStrategy }) => Scope.fork(Context.get(ctx, Scope.Scope), executionStrategy)
+      ({ ctx, executionStrategy }) => Scope.fork(C.get(ctx, Scope.Scope), executionStrategy)
     ),
     Effect.bind(
       "deferredRef",
@@ -1455,7 +1451,6 @@ class RefSubjectTagged<I, E, A> extends FxEffectBase<
   readonly version: Effect.Effect<I, E, number>
   readonly interrupt: Effect.Effect<I, never, void>
   readonly subscriberCount: Effect.Effect<I, never, number>
-  private _fx: Fx<Scope.Scope | I, E, A>
 
   constructor(
     readonly tag: C.Tagged<I, RefSubject<never, E, A>>,
@@ -1470,14 +1465,12 @@ class RefSubjectTagged<I, E, A> extends FxEffectBase<
     this.runUpdates = this.runUpdates.bind(this)
     this.onFailure = this.onFailure.bind(this)
     this.onSuccess = this.onSuccess.bind(this)
-
-    this._fx = share.replay(core.fromFxEffect(tag.with((ref) => ref)), replay)
   }
 
   run<R2 = never>(
     sink: Sink.Sink<R2, E, A>
   ): Effect.Effect<I | R2 | Scope.Scope, never, unknown> {
-    return this._fx.run(sink)
+    return this.tag.withEffect((ref) => ref.run(sink))
   }
 
   toEffect(): Effect.Effect<I, E, A> {
@@ -1681,7 +1674,7 @@ class FilteredFromTag<I, S, R, E, A> extends FxEffectBase<
 }
 
 export const provide: {
-  <S>(context: Context.Context<S> | Runtime.Runtime<S>): {
+  <S>(context: C.Context<S> | Runtime.Runtime<S>): {
     <R, E, A>(filtered: Filtered<R, E, A>): Filtered<Exclude<R, S>, E, A>
     <R, E, A>(computed: Computed<R, E, A>): Computed<Exclude<R, S>, E, A>
     <R, E, A>(ref: RefSubject<R, E, A>): RefSubject<Exclude<R, S>, E, A>
@@ -1695,15 +1688,15 @@ export const provide: {
 
   <R, E, A, S>(
     filtered: Filtered<R, E, A>,
-    context: Context.Context<S> | Runtime.Runtime<S>
+    context: C.Context<S> | Runtime.Runtime<S>
   ): Filtered<Exclude<R, S>, E, A>
   <R, E, A, S>(
     computed: Computed<R, E, A>,
-    context: Context.Context<S> | Runtime.Runtime<S>
+    context: C.Context<S> | Runtime.Runtime<S>
   ): Computed<Exclude<R, S>, E, A>
   <R, E, A, S>(
     ref: RefSubject<R, E, A>,
-    context: Context.Context<S> | Runtime.Runtime<S>
+    context: C.Context<S> | Runtime.Runtime<S>
   ): RefSubject<Exclude<R, S>, E, A>
 
   <R, E, A, R2, S>(filtered: Filtered<R, E, A>, layer: Layer.Layer<R2, never, S>): Filtered<Exclude<R, S> | R2, E, A>
@@ -1711,11 +1704,11 @@ export const provide: {
   <R, E, A, R2, S>(ref: RefSubject<R, E, A>, layer: Layer.Layer<R2, never, S>): RefSubject<Exclude<R, S> | R2, E, A>
 } = dual(2, function provide<R, E, A, R2 = never, S = never>(
   ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
-  providing: Layer.Layer<R2, never, S> | Context.Context<S> | Runtime.Runtime<S>
+  providing: Layer.Layer<R2, never, S> | C.Context<S> | Runtime.Runtime<S>
 ) {
   const layer = Layer.isLayer(providing)
     ? providing as Layer.Layer<R2, never, S>
-    : Context.isContext(providing)
+    : C.isContext(providing)
     ? Layer.succeedContext(providing)
     : runtimeToLayer(providing as Runtime.Runtime<S>)
 

@@ -6,8 +6,8 @@ import "./internal/module-augmentation.js"
 import type { Fx } from "@typed/fx/Fx"
 import { isFx } from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Scope } from "effect"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 
 /**
  * @since 1.0.0

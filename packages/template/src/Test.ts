@@ -6,17 +6,15 @@ import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServic
 import type { GlobalThis } from "@typed/dom/GlobalThis"
 import type { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
-import type * as Fx from "@typed/fx/Fx"
+import * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
-import { Deferred } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
-import * as happyDOM from "happy-dom"
 import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
@@ -36,7 +34,7 @@ import type { RenderTemplate } from "./RenderTemplate.js"
  * @since 1.0.0
  */
 export interface TestRender<E> {
-  readonly window: Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
+  readonly window: Window & GlobalThis
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
   readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
@@ -62,9 +60,8 @@ export function testRender<R, E>(
   TestRender<E>
 > {
   return Effect.gen(function*(_) {
-    const window = makeWindow(options)
+    const window = yield* _(getOrMakeWindow(options))
     const elementRef = yield* _(ElementRef.make())
-    const deferred = yield* _(Deferred.make<never, void>())
     const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
       fx,
@@ -78,9 +75,7 @@ export function testRender<R, E>(
                 onRight: (cause) => errors.onFailure(cause)
               })
             ),
-          (rendered) => {
-            return Effect.zipRight(ElementRef.set(elementRef, rendered), Deferred.succeed(deferred, undefined))
-          }
+          (rendered) => ElementRef.set(elementRef, rendered)
         )),
       Effect.forkScoped,
       Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
@@ -104,7 +99,7 @@ export function testRender<R, E>(
     yield* _(adjustTime(1))
 
     // Await the first render
-    yield* _(Deferred.await(deferred), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
+    yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
 
     return test
   })
@@ -153,6 +148,23 @@ export function click<E>(
 
 // internals
 
-function makeWindow(options?: IHappyDOMOptions) {
-  return new happyDOM.Window(options) as any as Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
+function getOrMakeWindow(options?: IHappyDOMOptions) {
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+    return Effect.gen(function*(_) {
+      window.document.head.innerHTML = ""
+      window.document.body.innerHTML = ""
+      yield* _(Effect.addFinalizer(() =>
+        Effect.sync(() => {
+          window.document.head.innerHTML = ""
+          window.document.body.innerHTML = ""
+        })
+      ))
+
+      return window
+    })
+  }
+
+  return Effect.promise(() =>
+    import("happy-dom").then((happyDOM) => new happyDOM.Window(options) as any as Window & GlobalThis)
+  )
 }

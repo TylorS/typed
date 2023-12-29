@@ -6,7 +6,8 @@ import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
-import { Effect, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import { join } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
@@ -157,7 +158,20 @@ function renderPart<R, E>(
     })
   } else if (node._tag === "node") {
     return Fx.append(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
+  } else if (node._tag === "properties") {
+    if (renderable == null) return Fx.empty
+    return Fx.map(
+      Fx.take(
+        Fx.struct(
+          Object.fromEntries(Object.entries(renderable).map(([k, v]) => [k, unwrapRenderable(v)] as const))
+        ),
+        1
+      ),
+      render
+    ) as any
   } else {
+    if (renderable === null) return Fx.succeed(HtmlRenderEvent(render(renderable)))
+
     const html = Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
 
@@ -231,6 +245,8 @@ function getServerEntry(
       template,
       chunks: templateToHtmlChunks(template)
     }
+
+    templateCache.set(templateStrings, entry)
 
     return entry
   } else {

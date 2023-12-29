@@ -174,6 +174,7 @@ class ParserImpl implements Parser {
 
     while (this.pos < this.length) {
       const node = this.parseNodeFromContext(this.context)
+
       if (node === undefined) {
         return nodes
       } else {
@@ -283,6 +284,7 @@ class ParserImpl implements Parser {
 
   private parseTextOnlyElement(tagName: string): Template.TextOnlyElement {
     const attributes = this.parseAttributes()
+
     this.path.push()
     const children = this.parseTextChildren()
     this.path.pop()
@@ -324,6 +326,7 @@ class ParserImpl implements Parser {
       case null:
         return Skip
       case "whitespace":
+        this.skipWhitespace()
         return Continue([new Template.BooleanNode(name)])
       case "equals": {
         this.consumeAmount(1)

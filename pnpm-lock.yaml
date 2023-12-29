@@ -116,6 +116,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.10.5)(typescript@5.3.3)
+      tsx:
+        specifier: ^4.7.0
+        version: 4.7.0
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -220,6 +223,9 @@ importers:
       '@effect/platform-browser':
         specifier: ^0.25.0
         version: 0.25.0(@effect/platform@0.39.0)(effect@2.0.0-next.62)
+      '@effect/platform-node':
+        specifier: ^0.39.0
+        version: 0.39.0(@effect/platform@0.39.0)(effect@2.0.0-next.62)
       '@effect/schema':
         specifier: 0.56.1
         version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
@@ -257,12 +263,21 @@ importers:
         specifier: ^1.0.5
         version: 1.0.5
     devDependencies:
+      '@giacomorebonato/vavite':
+        specifier: ^0.0.4
+        version: 0.0.4(vite@5.0.10)
+      mock-storage:
+        specifier: ^1.1.0
+        version: 1.1.0
       rollup-plugin-visualizer:
         specifier: ^5.11.0
         version: 5.11.0
       terser:
         specifier: ^5.26.0
         version: 5.26.0
+      tsx:
+        specifier: ^4.7.0
+        version: 4.7.0
       vite:
         specifier: ^5.0.10
         version: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
@@ -2418,6 +2433,23 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
+  /@giacomorebonato/vavite@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-TllKdRdEmd4Jp9wrIAqV/RmOJNE0VSmG1x35RH4gwdEBAC0msMAW3DCSaOlUVgYNUZmZg8gLwjoqPnnL6ce12g==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      '@vavite-giacomorebonato/connect': 0.0.4(vite@5.0.10)
+      '@vavite-giacomorebonato/expose-vite-dev-server': 0.0.4(vite@5.0.10)
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.10)
+      '@vavite-giacomorebonato/multibuild-cli': 0.0.4(vite@5.0.10)
+      '@vavite-giacomorebonato/node-loader': 0.0.4(vite@5.0.10)
+      '@vavite-giacomorebonato/reloader': 0.0.4(vite@5.0.10)
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
   /@grpc/grpc-js@1.9.13:
     resolution: {integrity: sha512-OEZZu9v9AA+7/tghMDE8o5DAMD5THVnwSqDWuh7PPYO5287rTyqy0xEHT6/e4pbqSrhyLPdQFsam4TwFQVVIIw==}
     engines: {node: ^8.13.0 || >=10.10.0}
@@ -3609,6 +3641,64 @@ packages:
 
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+    dev: true
+
+  /@vavite-giacomorebonato/connect@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-JWdc6cCY6yqvDjraq4cnNEwWU24ggsDPAPHZKj3CfH/ETpIADLzvvrwUu43Z220PaGxDQt4rqZHrkkixKvKIqA==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      '@types/node': 20.10.5
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
+  /@vavite-giacomorebonato/expose-vite-dev-server@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-+rWLDkQWi7do2DNhhAo/0JSk4ZCoT7lBc8mEDX9xQT7n2TfoSO7oXcodgJmMk075tLhKF3h5vdJnS+EbpSHdug==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
+  /@vavite-giacomorebonato/multibuild-cli@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-j+WbdWk89dma0sx1BUqzBqRYXEtjawm+V9q7iK4ffVeQD7GazNj8BEWk20/FlTanHLiDZXQCijeDkGU+GgN1+Q==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      '@types/node': 20.10.5
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.10)
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
+  /@vavite-giacomorebonato/multibuild@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-103FSR+XdGcx6ouionZST8sGmHHQPA4i6vEzWLuHWdvOtkKag13mSX8OtUwMxZeLIYaEIGR6S2pZZaiWGRDS+g==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      '@types/node': 20.10.5
+      cac: 6.7.14
+      picocolors: 1.0.0
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
+  /@vavite-giacomorebonato/node-loader@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-qMT6YH+uZYJgpofj5eqrSdRBanKc3djdg0ft6vdx4PSAxxukMKtbmQuEpXKW/j+jZZd9FhEthE1IbfDnJnzhag==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
+    dev: true
+
+  /@vavite-giacomorebonato/reloader@0.0.4(vite@5.0.10):
+    resolution: {integrity: sha512-RajS2Y2x/7wVH8JHh+l+L5Pif2DvgehXoA128M1Ok07qONLdXqE25yAYaTGIDAMhuTR6TjbHKQG/4vLO2/qxQA==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+    dependencies:
+      vite: 5.0.10(@types/node@20.10.5)(terser@5.26.0)
     dev: true
 
   /@virtualstate/composite-key@1.0.0:
@@ -6662,6 +6752,10 @@ packages:
       pathe: 1.1.1
       pkg-types: 1.0.3
       ufo: 1.3.2
+    dev: true
+
+  /mock-storage@1.1.0:
+    resolution: {integrity: sha512-1usJehHN7M+7Eonho8Ff7Ph5i8XvuY5m5yCu3oJpF3mgnkE9lpVxRdeaEBErLY1d/dkMPdEZHhbO5sUdNyzqBw==}
     dev: true
 
   /module-definition@3.4.0:

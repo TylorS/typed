@@ -6,9 +6,16 @@
  */
 
 import type { Effect } from "effect"
-import { Cause, Data, Duration, Either, Equal, Equivalence, Exit, Option, Unify } from "effect"
-import type { DurationInput } from "effect/Duration"
+import * as Cause from "effect/Cause"
+import * as Data from "effect/Data"
+import * as Duration from "effect/Duration"
+import * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import * as Equivalence from "effect/Equivalence"
+import * as Exit from "effect/Exit"
 import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Unify from "effect/Unify"
 import * as internal from "./internal/async-data.js"
 import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag.js"
 import * as Progress from "./Progress.js"
@@ -471,11 +478,11 @@ export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A> {
 const isAsyncDataFirst = (args: IArguments) => args.length === 3 || isAsyncData(args[0])
 
 export const isExpired: {
-  (ttl: DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
-  <E, A>(data: AsyncData<E, A>, ttl: DurationInput, now?: number): boolean
+  (ttl: Duration.DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
+  <E, A>(data: AsyncData<E, A>, ttl: Duration.DurationInput, now?: number): boolean
 } = dual(isAsyncDataFirst, function isExpired<E, A>(
   data: AsyncData<E, A>,
-  ttl: DurationInput,
+  ttl: Duration.DurationInput,
   now: number = getCurrentTimestamp()
 ): boolean {
   return match(data, {
@@ -492,7 +499,7 @@ export const isExpired: {
   })
 })
 
-function isPastTTL(timestamp: number, ttl: DurationInput, now: number): boolean {
+function isPastTTL(timestamp: number, ttl: Duration.DurationInput, now: number): boolean {
   const millis = Duration.toMillis(ttl)
 
   return now - timestamp > millis

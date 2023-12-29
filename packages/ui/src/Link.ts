@@ -12,7 +12,8 @@ import { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import { Effect, type Scope } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import { Anchor, type AnchorProps, getEventHandler } from "./Anchor.js"
 
 /**
@@ -37,7 +38,6 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
   | CurrentRoute
   | RenderTemplate
   | Scope.Scope
-  | Location
   | Placeholder.Context<Props[keyof Props] | Children[number]>
   | Fx.Context<Props[keyof Props] | Children[number]>,
   Placeholder.Error<Props[keyof Props] | Children[number]> | Fx.Error<Props[keyof Props] | Children[number]>,

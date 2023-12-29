@@ -23,7 +23,7 @@ const getTodos = todos.get({ errors: "all", onExcessProperty: "error" }).pipe(
 )
 
 // Everytime there is a change to our TodoList, write its value back to storage
-const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
+const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
 
 /* #endregion */
 

@@ -1,5 +1,5 @@
 import type { Either } from "effect"
-import { Option } from "effect"
+import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
 import type { Bounds } from "./bounds.js"
 import * as SyncOp from "./sync-operator.js"

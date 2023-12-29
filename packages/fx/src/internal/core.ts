@@ -12,25 +12,23 @@ import type {
   Schedule,
   Scheduler
 } from "effect"
-import {
-  Boolean,
-  Cause,
-  Clock,
-  Deferred,
-  Effect,
-  Either,
-  Equal,
-  ExecutionStrategy,
-  Exit,
-  Fiber,
-  Layer,
-  Option,
-  Predicate,
-  Ref,
-  Scope,
-  Tracer
-} from "effect"
+import * as Boolean from "effect/Boolean"
+import * as Cause from "effect/Cause"
+import * as Clock from "effect/Clock"
+import * as Deferred from "effect/Deferred"
+import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
 import { constFalse, constTrue } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import * as Predicate from "effect/Predicate"
+import * as Ref from "effect/Ref"
+import * as Scope from "effect/Scope"
+import * as Tracer from "effect/Tracer"
 import type { FlattenStrategy, Fx, FxFork, MergeStrategy } from "../Fx.js"
 import * as Sink from "../Sink.js"
 import type { Bounds } from "./bounds.js"

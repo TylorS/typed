@@ -2,12 +2,17 @@
  * @since 1.18.0
  */
 
-import { Effect, ExecutionStrategy, Exit, Fiber, MutableRef, Scope } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
 import { identity } from "effect/Function"
+import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
+import * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import type { Guard } from "./Guard.js"
 import { withScopedFork } from "./internal/helpers.js"

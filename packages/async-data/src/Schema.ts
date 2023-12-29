@@ -8,7 +8,11 @@ import * as ParseResult from "@effect/schema/ParseResult"
 import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
 import * as AsyncData from "@typed/async-data/AsyncData"
-import { Cause, Chunk, Effect, FiberId, HashSet } from "effect"
+import * as Cause from "effect/Cause"
+import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import * as FiberId from "effect/FiberId"
+import * as HashSet from "effect/HashSet"
 import * as Option from "effect/Option"
 
 const fiberIdArbitrary: Arbitrary.Arbitrary<FiberId.FiberId> = (fc) =>

@@ -2,8 +2,9 @@
  * @since 1.0.0
  */
 
-import { Equivalence, Option } from "effect"
+import * as Equivalence from "effect/Equivalence"
 import { dual } from "effect/Function"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.0.0

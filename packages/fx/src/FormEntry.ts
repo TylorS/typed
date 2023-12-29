@@ -4,14 +4,14 @@
 import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import { type ParseError } from "@effect/schema/ParseResult"
-import { Effect } from "effect"
-import type { Scope } from "effect"
 import type { Cause } from "effect/Cause"
-import { ComputedTypeId, RefSubjectTypeId } from "./TypeId.js"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import { FxEffectBase } from "./internal/protos.js"
 import * as RefSubject from "./RefSubject.js"
 import type * as Sink from "./Sink.js"
+import { ComputedTypeId, RefSubjectTypeId } from "./TypeId.js"
 
 /**
  * @since 1.18.0

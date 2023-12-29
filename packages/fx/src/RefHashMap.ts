@@ -3,10 +3,11 @@
  */
 
 import type { IdentifierConstructor, IdentifierOf } from "@typed/context"
-import { HashSet, type Scope } from "effect"
+import type { Scope } from "effect"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashMap from "effect/HashMap"
+import * as HashSet from "effect/HashSet"
 import type { Option } from "effect/Option"
 import type * as Fx from "./Fx.js"
 import * as RefSubject from "./RefSubject.js"

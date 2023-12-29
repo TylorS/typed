@@ -1,7 +1,13 @@
 // Internal
 
-import { Cause, Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
-import { constant } from "effect/Function"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Effectable from "effect/Effectable"
+import * as Equal from "effect/Equal"
+import { constant, pipe } from "effect/Function"
+import * as Hash from "effect/Hash"
+import * as Option from "effect/Option"
+import * as Unify from "effect/Unify"
 import { type AsyncData, type Failure, type Loading, type Success } from "../AsyncData.js"
 import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag.js"
 

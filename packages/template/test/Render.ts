@@ -60,8 +60,8 @@ describe("Render", () => {
       deepStrictEqual(rendered.innerText, "Hello, world!")
     }))
 
-  describe.only("counter", () => {
-    test("renders a counter", () => {
+  describe("counter", () => {
+    it("renders a counter", () => {
       const decrement = (x: number) => Math.max(0, x - 1)
       const increment = (x: number) => x + 1
 
@@ -80,7 +80,7 @@ describe("Render", () => {
 
         yield* _(Effect.forEach(range(1, 3), () => inc))
         yield* _(Effect.forEach(range(1, 6), () => dec))
-        yield* _(Effect.forEach(range(1, 4), () => inc))
+        yield* _(Effect.forEach(range(1, 5), () => inc))
 
         expect(yield* _(count)).toEqual(4)
       }).pipe(Effect.scoped)

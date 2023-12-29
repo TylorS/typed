@@ -9,7 +9,7 @@ import type * as ElementRef from "@typed/template/ElementRef"
 import { getElements } from "@typed/template/ElementSource"
 import type { Rendered } from "@typed/wire"
 import type { Effect, Fiber, Scope } from "effect"
-import { Option } from "effect"
+import * as Option from "effect/Option"
 import { addEventListeners } from "./internal/addEventListener"
 
 /**

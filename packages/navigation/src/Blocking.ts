@@ -3,8 +3,13 @@
  */
 
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Scope } from "effect"
-import { Data, Deferred, Effect, Option } from "effect"
+
+import * as Data from "effect/Data"
+import * as Deferred from "effect/Deferred"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
+
+import type * as Scope from "effect/Scope"
 import type {
   BeforeNavigationEvent,
   CancelNavigation,

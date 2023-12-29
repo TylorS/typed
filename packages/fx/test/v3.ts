@@ -608,6 +608,28 @@ describe("V3", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("can be combined in struct", async () => {
+      const test = Effect.gen(function*(_) {
+        const source = yield* _(RefSubject.of(0))
+        const a = RefSubject.map(source, (x) => x + 1)
+        const b = RefSubject.map(source, (x) => x * 2)
+        const c = RefSubject.map(source, (x) => x - 1)
+        const computed = RefSubject.struct({ a, b, c })
+
+        expect(yield* _(computed)).toEqual({ a: 1, b: 0, c: -1 })
+
+        yield* _(RefSubject.set(source, 1))
+
+        expect(yield* _(computed)).toEqual({ a: 2, b: 2, c: 0 })
+
+        yield* _(RefSubject.set(source, 2))
+
+        expect(yield* _(computed)).toEqual({ a: 3, b: 4, c: 1 })
+      }).pipe(Effect.scoped)
+
+      await Effect.runPromise(test)
+    })
   })
 
   describe("Filtered,Effect.optionFromOptional", () => {

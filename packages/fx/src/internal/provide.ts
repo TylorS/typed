@@ -1,6 +1,10 @@
 import type * as Context from "@typed/context"
-import { Effect, FiberRefsPatch, Layer, Runtime, RuntimeFlags } from "effect"
-import type { Scope } from "effect"
+import * as Effect from "effect/Effect"
+import * as FiberRefsPatch from "effect/FiberRefsPatch"
+import * as Layer from "effect/Layer"
+import * as Runtime from "effect/Runtime"
+import * as RuntimeFlags from "effect/RuntimeFlags"
+import type * as Scope from "effect/Scope"
 
 export type Provide<R, E, A> =
   | ProvideContext<A>

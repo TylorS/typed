@@ -3,8 +3,10 @@ import type * as Context from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import { GetRandomValues, makeUuid } from "@typed/id"
-import type { Scope } from "effect"
-import { Effect, Either, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import type { Commit } from "../Layer.js"
 import type {
   BeforeNavigationEvent,

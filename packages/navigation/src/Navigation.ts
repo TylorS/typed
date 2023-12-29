@@ -9,8 +9,9 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import * as IdSchema from "@typed/id/Schema"
 import type { Option, Scope } from "effect"
-import { Data, Effect } from "effect"
 
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
 /**
  * @since 1.0.0
  */
