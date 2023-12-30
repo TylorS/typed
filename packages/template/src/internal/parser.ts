@@ -2,7 +2,6 @@ import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
 import * as Template from "../Template.js"
-import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token.js"
 import type { TextChunk } from "./chunks.js"
 import {
   getPart,
@@ -15,6 +14,40 @@ import {
 
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization
+
+/**
+ * @since 1.0.0
+ */
+export const TEXT_ONLY_NODES_REGEX = new Set([
+  "textarea",
+  "script",
+  "style",
+  "title",
+  "plaintext",
+  "xmp"
+])
+
+/**
+ * @since 1.0.0
+ */
+export const SELF_CLOSING_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "command",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr"
+])
 
 export interface Parser {
   parse(templateStrings: ReadonlyArray<string>): Template.Template

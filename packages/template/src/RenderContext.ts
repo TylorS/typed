@@ -223,21 +223,14 @@ class RenderQueueImpl implements RenderQueue {
       const id = requestAnimationFrame(() => cb(Effect.unit))
       return Option.some(Effect.sync(() => cancelAnimationFrame(id)))
     }),
-    Effect.suspend(() => {
+    Effect.sync(() => {
       const iterator = this.queue.entries()
 
       while (this.runTask(iterator)) {
         // Continue
       }
 
-      // If we have more work to do, schedule another run
-      if (this.queue.size > 0) {
-        return this.runIdle
-      }
-
       this.scheduled = false
-
-      return Effect.unit
     })
   )
 

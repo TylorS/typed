@@ -19,6 +19,18 @@
       "@typed/async-data/examples/*": [
         "packages/async-data/examples/*"
       ],
+      "@typed/compiler": [
+        "packages/compiler/src/index.ts"
+      ],
+      "@typed/compiler/*": [
+        "packages/compiler/src/*"
+      ],
+      "@typed/compiler/test/*": [
+        "packages/compiler/test/*"
+      ],
+      "@typed/compiler/examples/*": [
+        "packages/compiler/examples/*"
+      ],
       "@typed/context": [
         "packages/context/src/index.ts"
       ],

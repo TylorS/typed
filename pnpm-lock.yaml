@@ -307,6 +307,9 @@ importers:
         version: 3.15.0
     publishDirectory: dist
 
+  packages/compiler:
+    publishDirectory: dist
+
   packages/context:
     dependencies:
       effect:
