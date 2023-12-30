@@ -191,10 +191,7 @@ describe.concurrent(__filename, () => {
           // start first fiber
           const a = yield* _(Effect.fork(sut))
 
-          // Allow fiber to start
-          yield* _(Effect.sleep(0))
-
-          // Allow 2 events to occur
+          // Allow fiber to start + 2 events
           yield* _(Effect.sleep(delay * 2))
 
           // Start the second

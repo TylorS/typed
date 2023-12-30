@@ -208,9 +208,16 @@ class ParserImpl implements Parser {
     const nextChar = this.nextChar()
 
     if (nextChar === "!") { // Comment
-      this.consumeAmount(3)
+      this.consumeAmount(1)
 
-      return [this.parseComment()]
+      const nextChar = this.nextChar()
+
+      if (nextChar == "-") {
+        this.consumeAmount(2)
+        return [this.parseComment()]
+      } else {
+        return [this.parseDocType()]
+      }
     } else if (nextChar === "/") { // Self-closing tag
       return this.selfClosingTagEnd()
     } else { // Elements
@@ -309,6 +316,14 @@ class ParserImpl implements Parser {
     }
 
     return this.addPart(new Template.SparseCommentNode(textAndParts))
+  }
+
+  private parseDocType(): Template.DocType {
+    this.parseTextUntil((char) => char === chars.greaterThan)
+    this.consumeAmount(1)
+    this.skipWhitespace()
+
+    return new Template.DocType("html")
   }
 
   private parseTagName() {

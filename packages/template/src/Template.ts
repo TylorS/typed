@@ -32,6 +32,7 @@ export type Node =
   | TextNode
   | NodePart
   | Comment
+  | DocType
 
 /**
  * @since 1.0.0
@@ -94,6 +95,18 @@ export class TextOnlyElement {
     readonly tagName: string,
     readonly attributes: Array<Attribute>,
     readonly children: Array<Text>
+  ) {}
+}
+
+/**
+ * @since 1.0.0
+ */
+export class DocType {
+  readonly _tag = "doctype"
+  constructor(
+    readonly name: string,
+    readonly publicType?: string,
+    readonly systemId?: string
   ) {}
 }
 

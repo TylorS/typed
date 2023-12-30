@@ -517,6 +517,39 @@ function buildNode(document: Document, node: Template.Node, isSvgContext: boolea
     case "comment-part":
     case "node":
       return document.createComment(`hole${node.index}`)
+    case "doctype":
+      return document.implementation.createDocumentType(
+        node.name,
+        docTypeNameToPublicId(node.name),
+        docTypeNameToSystemId(node.name)
+      )
+  }
+}
+
+function docTypeNameToPublicId(name: string): string {
+  switch (name) {
+    case "html":
+      return "-//W3C//DTD HTML 4.01//EN"
+    case "svg":
+      return "-//W3C//DTD SVG 1.1//EN"
+    case "math":
+      return "-//W3C//DTD MathML 2.0//EN"
+    default:
+      return ""
+  }
+}
+
+function docTypeNameToSystemId(name: string): string {
+  switch (name) {
+    // HTML5
+    case "html":
+      return "http://www.w3.org/TR/html4/strict.dtd"
+    case "svg":
+      return "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+    case "math":
+      return "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd"
+    default:
+      return ""
   }
 }
 

@@ -85,12 +85,12 @@ describe("V3", () => {
               ]
             ),
             (x) =>
-              core.fromFxEffect(
+              core.scoped(core.fromFxEffect(
                 Effect.gen(function*(_) {
                   yield* _(Effect.addFinalizer(() => Effect.sync(() => finalized.push(x))))
                   return core.succeed(x)
                 })
-              )
+              ))
           )
 
           yield* _(core.toReadonlyArray(fx))

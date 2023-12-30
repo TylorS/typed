@@ -1,7 +1,6 @@
 import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
 import type { RenderContext } from "../RenderContext.js"
-import type { RenderEvent } from "../RenderEvent.js"
 import { isRenderEvent } from "../RenderEvent.js"
 import { NodePartImpl } from "./parts.js"
 import { findHoleComment, isCommentWithValue } from "./utils.js"
@@ -87,20 +86,10 @@ export function diffChildren(
     comment.parentNode!,
     // Document Fragments cannot be removed, so we filter them out
     currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
-    nextNodes.flatMap(flattenRenderEvent),
+    nextNodes,
     diffable(document),
     comment
   )
-}
-
-function flattenRenderEvent(x: Node | RenderEvent): Array<Node> {
-  if (isRenderEvent(x)) {
-    const value = x.valueOf()
-
-    return Array.isArray(value) ? value : [value]
-  } else {
-    return [x]
-  }
 }
 
 function matchValue<A, B>(value: unknown, onText: (text: string) => A, onNodes: (nodes: Array<Node>) => B): A | B {
@@ -121,16 +110,24 @@ function matchValue<A, B>(value: unknown, onText: (text: string) => A, onNodes: 
         if (value.length === 0) return onNodes([])
         // or diffed, if these contains nodes or "wires"
         else if (value.some((x) => typeof x === "object")) {
-          return onNodes(
-            value.flatMap((x) => (x === null ? [] : [isRenderEvent(x) ? x.valueOf() : x]))
-          )
+          return onNodes(value.flatMap(renderEventToArray))
         } // in all other cases the content is stringified as is
         else return onText(String(value))
       } else {
-        return onNodes([isRenderEvent(value) ? (value.valueOf() as Node) : (value as Node)])
+        return onNodes(renderEventToArray(value))
       }
     }
     case "function":
       return onNodes([])
   }
+}
+
+function renderEventToArray(x: unknown): Array<Node> {
+  if (x === null || x === undefined) return []
+  if (isRenderEvent(x)) {
+    const value = x.valueOf()
+    return Array.isArray(value) ? value : [value]
+  }
+
+  return [x as Node]
 }

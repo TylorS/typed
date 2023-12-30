@@ -478,7 +478,7 @@ function setCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>, a: A): Effect.E
   return Effect.suspend(() => {
     if (core.deferredRef.done(exit)) {
       // If the value changed, send an event
-      return Effect.as(Effect.forkIn(sendEvent(core, exit), core.scope), a)
+      return Effect.as(sendEvent(core, exit), a)
     } else {
       // Otherwise, just return the current value
       return Effect.succeed(a)

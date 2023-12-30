@@ -124,33 +124,16 @@ export function runSwitchFork<R, E, A>(
   scope: Scope.CloseableScope,
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<R, E, A>
 ) {
-  const forkScope = Scope.fork(scope, ExecutionStrategy.sequential)
-
-  function run<R>(
-    effect: Effect.Effect<R, never, unknown>,
-    fiber: Fiber.Fiber<never, unknown>
-  ): Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<never, unknown>> {
-    return Effect.flatMap(
-      forkScope,
-      (childScope) =>
-        Effect.zipRight(
-          Fiber.interrupt(fiber),
-          fork(
-            Effect.onExit(
-              Effect.provideService(effect, Scope.Scope, childScope),
-              (exit) => Scope.close(childScope, exit)
-            )
-          )
-        )
-    )
-  }
-
   return Effect.zipRight(
     f(
       (effect) =>
         SynchronizedRef.updateEffect(
           ref,
-          (fiber) => run(effect, fiber)
+          (fiber) =>
+            Effect.zipRight(
+              Fiber.interrupt(fiber),
+              fork(effect)
+            )
         ),
       scope
     ),

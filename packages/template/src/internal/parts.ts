@@ -65,7 +65,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
         return Effect.unit
       }
 
-      return Effect.tap(
+      return Effect.flatMap(
         this.commit.call(this, {
           previous,
           value,

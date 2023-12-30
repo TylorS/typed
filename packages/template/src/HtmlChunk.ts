@@ -100,6 +100,7 @@ type NodeMap = {
 }
 
 const nodeMap: NodeMap = {
+  doctype: (node) => [new TextChunk(`<!DOCTYPE ${node.name}>`)],
   element: elementToHtmlChunks,
   node: (node) => [new PartChunk(node, String)],
   "self-closing-element": selfClosingElementToHtmlChunks,
