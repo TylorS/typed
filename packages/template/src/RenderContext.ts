@@ -150,6 +150,7 @@ export {
 class RenderQueueImpl implements RenderQueue {
   queue = new Map<Part | SparsePart, () => void>()
   scheduled = false
+  run: Effect.Effect<Scope.Scope, never, void>
 
   constructor(
     readonly scope: Scope.Scope,
@@ -157,6 +158,8 @@ class RenderQueueImpl implements RenderQueue {
     readonly skipRenderScheduling: boolean = false
   ) {
     this.add.bind(this)
+
+    this.run = typeof requestAnimationFrame === "undefined" ? this.runIdle : this.runAnimationFrame
   }
 
   add(part: Part | SparsePart, task: () => void) {
@@ -192,26 +195,20 @@ class RenderQueueImpl implements RenderQueue {
     )
   })
 
-  run: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() =>
-    Effect.flatMap(
+  runIdle: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() => {
+    return Effect.flatMap(
       Idle.whenIdle(this.options),
       (deadline) =>
         Effect.suspend(() => {
           const iterator = this.queue.entries()
 
-          while (Idle.shouldContinue(deadline)) {
-            const result = iterator.next()
-
-            if (result.done) break
-            else {
-              const [part, task] = result.value
-              this.queue.delete(part)
-              task()
-            }
+          while (Idle.shouldContinue(deadline) && this.runTask(iterator)) {
+            // Continue
           }
 
+          // If we have more work to do, schedule another run
           if (this.queue.size > 0) {
-            return this.run
+            return this.runIdle
           }
 
           this.scheduled = false
@@ -219,5 +216,40 @@ class RenderQueueImpl implements RenderQueue {
           return Effect.unit
         })
     )
+  })
+
+  runAnimationFrame: Effect.Effect<Scope.Scope, never, void> = Effect.zipRight(
+    Effect.asyncOption<never, never, void>((cb) => {
+      const id = requestAnimationFrame(() => cb(Effect.unit))
+      return Option.some(Effect.sync(() => cancelAnimationFrame(id)))
+    }),
+    Effect.suspend(() => {
+      const iterator = this.queue.entries()
+
+      while (this.runTask(iterator)) {
+        // Continue
+      }
+
+      // If we have more work to do, schedule another run
+      if (this.queue.size > 0) {
+        return this.runIdle
+      }
+
+      this.scheduled = false
+
+      return Effect.unit
+    })
   )
+
+  private runTask = (iterator: Iterator<[Part | SparsePart, () => void]>) => {
+    const result = iterator.next()
+
+    if (result.done) return false
+    else {
+      const [part, task] = result.value
+      this.queue.delete(part)
+      task()
+      return true
+    }
+  }
 }

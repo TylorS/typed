@@ -72,8 +72,6 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
       const entry = getBrowserEntry(document, ctx, templateStrings)
       const content = document.importNode(entry.content, true) // Clone our template
 
-      yield* _(Effect.addFinalizer(() => errors.interrupt))
-
       const parts = yield* _(buildParts(document, ctx, entry.template, content, elementRef, errors.onFailure, false)) // Build runtime-variant of parts with our content.
 
       // If there are parts we need to render them before constructing our Wire
@@ -89,6 +87,8 @@ export const renderTemplate: (document: Document, ctx: RenderContext) => RenderT
 
       // Set the element when it is ready
       yield* _(ElementRef.set(elementRef, persistent(content) as T))
+
+      yield* _(Effect.addFinalizer(() => errors.interrupt))
 
       // Return the Template instance
       return TemplateInstance(

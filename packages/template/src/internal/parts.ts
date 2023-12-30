@@ -432,7 +432,7 @@ export class PropertiesPartImpl extends base("properties") implements Properties
 
               removed.forEach((nv) => removeNameValue(element, nv))
               added.forEach((nv) => {
-                if (nv.name[0] === "o" && nv.name[1] === "n") return
+                if ((nv.name[0] === "o" && nv.name[1] === "n") || nv.name[0] === "@") return
 
                 return addNameValue(element, nv)
               })
