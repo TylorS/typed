@@ -253,7 +253,7 @@ function datasetToString(dataset: Readonly<Record<string, string | undefined>>) 
 function openTag(tagName: string, hash?: string): string {
   if (hash === undefined) return `<${tagName}`
 
-  return `<${tagName} ${TYPED_HASH(hash)} `
+  return `<${tagName} ${TYPED_HASH(hash)}`
 }
 
 function closeTag(tagName: string): string {
