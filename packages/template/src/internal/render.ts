@@ -550,6 +550,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           values
         }
 
+        // Connect our interpolated values to our template parts
         const effects: Array<Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>> = []
         for (const [part, path] of entry.template.parts) {
           const eff = RenderPartMap[part._tag](part as never, findPath(content, path), ctx)
@@ -562,34 +563,16 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           }
         }
 
+        // Fork any effects necessary
         if (effects.length > 0) {
           yield* _(Effect.forkAll(effects))
         }
 
         // If there's anything to wait on and it's not already done, wait for an initial value
         // for all asynchronous sources.
-        if (ctx.expected > 0 && !(yield* _(refCounter.expect(ctx.expected)))) {
+        if (ctx.expected > 0 && (yield* _(refCounter.expect(ctx.expected)))) {
           yield* _(refCounter.wait)
         }
-
-        // Build runtime-variant of parts with our content.
-        // const parts = buildParts(
-        //   document,
-        //   ctx,
-        //   entry.template,
-        //   content,
-        //   eventSource,
-        //   sink.onFailure,
-        //   false
-        // )
-
-        // const refCounter = yield* _(indexRefCounter(parts.length))
-
-        // // Do the work
-        // yield* _(renderValues(values, parts, refCounter, context))
-
-        // // Wait for initial work to be completed
-        // yield* _(refCounter.wait)
 
         // Create a persistent wire from our content
         const wire = persistent(content) as T
@@ -630,7 +613,7 @@ export function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>
           makeHydrateContext ? () => makeHydrateContext(index) : undefined
         )
     }
-  })) as any
+  }))
 }
 
 export function renderSparsePart(
