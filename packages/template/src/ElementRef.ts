@@ -11,6 +11,7 @@ import type { NoSuchElementException } from "effect/Cause"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
+import { hasProperty } from "effect/Predicate"
 import type { DefaultEventMap } from "./ElementSource.js"
 import { ElementSource, getElements } from "./ElementSource.js"
 import { adjustTime } from "./internal/utils.js"
@@ -118,4 +119,8 @@ export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Eve
     // Allow additional fibers to start
     Effect.zipRight(adjustTime(1))
   )
+}
+
+export function isElementRef(value: unknown): value is ElementRef {
+  return hasProperty(value, ElementRefTypeId)
 }

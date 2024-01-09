@@ -76,11 +76,11 @@ export interface DataPart {
 export interface EventPart {
   readonly _tag: "event"
   readonly name: string
-  readonly value: EventHandler<unknown, never> | null | undefined
+  readonly source: ElementSource<any>
+  readonly value: null
   readonly index: number
   readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
-
-  readonly update: <R = never>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
+  readonly addEventListener: (handler: EventHandler<never, never, Event>) => void
 }
 
 /**

@@ -1,14 +1,16 @@
 import * as Fx from "@typed/fx/Fx"
-import * as Subject from "@typed/fx/Subject"
 import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect } from "effect"
 import type { Cause } from "effect/Cause"
+import * as Context from "effect/Context"
 import { replace } from "effect/ReadonlyArray"
-import type { Scope } from "effect/Scope"
+import { Scope } from "effect/Scope"
+import type { Directive } from "../Directive.js"
 import { isDirective } from "../Directive.js"
 import * as ElementRef from "../ElementRef.js"
+import * as ElementSource from "../ElementSource.js"
 import type { BrowserEntry } from "../Entry.js"
 import * as EventHandler from "../EventHandler.js"
 import type {
@@ -29,11 +31,11 @@ import type { RenderEvent } from "../RenderEvent.js"
 import { DomRenderEvent } from "../RenderEvent.js"
 import type { RenderTemplate } from "../RenderTemplate.js"
 import type * as Template from "../Template.js"
-import { TemplateInstance } from "../TemplateInstance.js"
 import { makeRenderNodePart } from "./browser.js"
+import { type EventSource, makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
-import type { IndexRefCounter } from "./indexRefCounter.js"
-import { indexRefCounter } from "./indexRefCounter.js"
+import type { IndexRefCounter, IndexRefCounter2 } from "./indexRefCounter.js"
+import { indexRefCounter2 } from "./indexRefCounter.js"
 import { parse } from "./parser.js"
 import {
   AttributePartImpl,
@@ -52,59 +54,564 @@ import {
   TextPartImpl
 } from "./parts.js"
 import type { ParentChildNodes } from "./utils.js"
-import { findPath } from "./utils.js"
+import { findHoleComment, findPath } from "./utils.js"
+
+// TODO: We need to add support for hydration of templates
+// TODO: We need to re-think hydration for dynamic lists, probably just markers should be fine
+// TODO: We need to make Parts synchronous
+
+/**
+ * @internal
+ */
+type RenderPartContext = {
+  readonly context: Context.Context<Scope>
+  readonly document: Document
+  readonly eventSource: EventSource
+  readonly refCounter: IndexRefCounter2
+  readonly renderContext: RenderContext
+  readonly values: ReadonlyArray<Renderable<any, any>>
+  readonly onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, void>
+
+  expected: number
+}
+
+type RenderPartMap = {
+  readonly [K in Template.PartNode["_tag"] | Template.SparsePartNode["_tag"]]: (
+    part: Extract<Template.PartNode | Template.SparsePartNode, { _tag: K }>,
+    node: Node,
+    ctx: RenderPartContext
+  ) => null | Effect.Effect<any, any, void> | Array<Effect.Effect<any, any, void>>
+}
+
+const RenderPartMap: RenderPartMap = {
+  "attr": (templatePart, node, ctx) => {
+    const { document, refCounter, renderContext, values } = ctx
+    const element = node as HTMLElement | SVGElement
+    const attr = createAttribute(document, element, templatePart.name)
+    const renderable = values[templatePart.index]
+    let isSet = true
+    const setValue = (value: string | null | undefined) => {
+      if (isNullOrUndefined(value)) {
+        element.removeAttribute(templatePart.name)
+        isSet = false
+      } else {
+        attr.value = String(value)
+        if (isSet === false) {
+          element.setAttributeNode(attr)
+          isSet = true
+        }
+      }
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => AttributePartImpl.browser(templatePart.index, element, templatePart.name, renderContext),
+      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "boolean-part": (templatePart, node, ctx) => {
+    const { refCounter, renderContext, values } = ctx
+    const element = node as HTMLElement | SVGElement
+    const renderable = values[templatePart.index]
+    const setValue = (value: boolean | null | undefined) => {
+      element.toggleAttribute(templatePart.name, isNullOrUndefined(value) ? false : Boolean(value))
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => BooleanPartImpl.browser(templatePart.index, element, templatePart.name, renderContext),
+      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "className-part": (templatePart, node, ctx) => {
+    const { refCounter, renderContext, values } = ctx
+    const element = node as HTMLElement | SVGElement
+    const renderable = values[templatePart.index]
+    let classNames: Set<string> = new Set()
+    const setValue = (value: string | Array<string> | null | undefined) => {
+      if (isNullOrUndefined(value)) {
+        element.classList.remove(...classNames)
+        classNames.clear()
+      } else {
+        const newClassNames = new Set(Array.isArray(value) ? value : [String(value)])
+        const { added, removed } = diffClassNames(classNames, newClassNames)
+
+        if (removed.length > 0) {
+          element.classList.remove(...removed)
+        }
+        if (added.length > 0) element.classList.add(...added)
+
+        classNames = newClassNames
+      }
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => ClassNamePartImpl.browser(templatePart.index, element, renderContext),
+      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "comment-part": (templatePart, node, ctx) => {
+    const { refCounter, renderContext, values } = ctx
+    const comment = findHoleComment(node as Element, templatePart.index)
+    const renderable = values[templatePart.index]
+    const setValue = (value: string | null | undefined) => {
+      comment.textContent = isNullOrUndefined(value) ? "" : String(value)
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => CommentPartImpl.browser(templatePart.index, comment, renderContext),
+      (f) => Effect.zipRight(renderContext.queue.add(comment, f), refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "data": (templatePart, node, ctx) => {
+    const element = node as HTMLElement | SVGElement
+    const renderable = ctx.values[templatePart.index]
+    const previousKeys = new Set<string>(Object.keys(element.dataset))
+    const setValue = (value: Record<string, string | undefined> | null | undefined) => {
+      if (isNullOrUndefined(value)) {
+        for (const key of previousKeys) {
+          delete element.dataset[key]
+        }
+        previousKeys.clear()
+      } else {
+        for (const key of previousKeys) {
+          if (!(key in value)) {
+            delete element.dataset[key]
+            previousKeys.delete(key)
+          }
+        }
+
+        for (const key of Object.keys(value)) {
+          if (!previousKeys.has(key)) {
+            previousKeys.add(key)
+          }
+          element.dataset[key] = value[key] || ""
+        }
+      }
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => DataPartImpl.browser(templatePart.index, element, ctx.renderContext),
+      (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "event": (templatePart, node, ctx) => {
+    const element = node as HTMLElement | SVGElement
+    const renderable = ctx.values[templatePart.index]
+    const handler = getEventHandler(renderable, ctx.context, ctx.onCause)
+    if (handler) {
+      ctx.eventSource.addEventListener(element, templatePart.name, handler)
+    }
+
+    return null
+  },
+  "node": (templatePart, node, ctx) => {
+    const part = makeRenderNodePart(
+      templatePart.index,
+      node as HTMLElement | SVGElement,
+      ctx.renderContext,
+      ctx.document,
+      false
+    )
+
+    ctx.expected++
+
+    return handlePart(
+      ctx.values[templatePart.index],
+      (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+    )
+  },
+  "property": (templatePart, node, ctx) => {
+    const element = node as HTMLElement | SVGElement
+    const renderable = ctx.values[templatePart.index]
+    const setValue = (value: string | null | undefined) => {
+      if (isNullOrUndefined(value)) {
+        delete (element as any)[templatePart.name]
+      } else {
+        ;(element as any)[templatePart.name] = value
+      }
+    }
+
+    return matchSettablePart(
+      renderable,
+      setValue,
+      () => PropertyPartImpl.browser(templatePart.index, element, templatePart.name, ctx.renderContext),
+      (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      () => ctx.expected++
+    )
+  },
+  "properties": (templatePart, node, ctx) => {
+    const renderable = ctx.values[templatePart.index] as any as Record<string, any>
+
+    if (isNullOrUndefined(renderable)) return null
+    else if (Fx.isFx(renderable) || Effect.isEffect(renderable)) {
+      throw new Error(`Properties Part must utilize an Record of renderable values.`)
+    } else if (typeof renderable === "object" && !Array.isArray(renderable)) {
+      const element = node as HTMLElement | SVGElement
+
+      const toggleBoolean = (key: string, value: unknown) => {
+        element.toggleAttribute(key, isNullOrUndefined(value) ? false : Boolean(value))
+      }
+      const setAttribute = (key: string, value: unknown) => {
+        if (isNullOrUndefined(value)) {
+          element.removeAttribute(key)
+        } else {
+          element.setAttribute(key, String(value))
+        }
+      }
+      const setProperty = (key: string, value: unknown) => {
+        if (isNullOrUndefined(value)) {
+          delete (element as any)[key]
+        } else {
+          ;(element as any)[key] = value
+        }
+      }
+
+      const effects: Array<Effect.Effect<any, any, void>> = []
+
+      // We need indexes to track async values that won't conflict
+      // with any other Parts, we can start end of the current values.length
+      // As there should only ever be exactly 1 properties part.
+      let i = ctx.values.length
+
+      loop:
+      for (const [key, value] of Object.entries(renderable)) {
+        const index = ++i
+
+        switch (key[0]) {
+          case "?": {
+            const name = key.slice(1)
+            const eff = matchSettablePart(
+              value,
+              (value) => toggleBoolean(name, value),
+              () => BooleanPartImpl.browser(index, element, name, ctx.renderContext),
+              (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+              () => ctx.expected++
+            )
+            if (eff !== null) {
+              effects.push(eff)
+            }
+            continue loop
+          }
+          case ".": {
+            const name = key.slice(1)
+            const eff = matchSettablePart(
+              value,
+              (value) => setProperty(name, value),
+              () => PropertyPartImpl.browser(index, element, name, ctx.renderContext),
+              (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+              () => ctx.expected++
+            )
+            if (eff !== null) {
+              effects.push(eff)
+            }
+            continue loop
+          }
+          case "@": {
+            const name = key.slice(1)
+            const handler = getEventHandler(value, ctx.context, ctx.onCause)
+            if (handler) {
+              ctx.eventSource.addEventListener(element, name, handler)
+            }
+            continue loop
+          }
+          case "o": {
+            if (key[1] === "n") {
+              const name = key.slice(2)
+              const handler = getEventHandler(value, ctx.context, ctx.onCause)
+              if (handler) {
+                ctx.eventSource.addEventListener(element, name, handler)
+              }
+            }
+            continue loop
+          }
+        }
+
+        const eff = matchSettablePart(
+          value,
+          (value) => setAttribute(key, value),
+          () => AttributePartImpl.browser(index, element, key, ctx.renderContext),
+          (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+          () => ctx.expected++
+        )
+        if (eff !== null) {
+          effects.push(eff)
+        }
+      }
+
+      return effects
+    } else {
+      return null
+    }
+  },
+  "ref": (templatePart, node, ctx) => {
+    const element = node as HTMLElement | SVGElement
+    const renderable = ctx.values[templatePart.index]
+
+    if (isDirective(renderable)) {
+      return renderable(new RefPartImpl(ElementSource.fromElement(element), templatePart.index))
+    } else if (ElementRef.isElementRef(renderable)) {
+      return ElementRef.set(renderable, element)
+    }
+
+    return null
+  },
+  "sparse-attr": (templatePart, node, ctx) => {
+    const values = Array.from({ length: templatePart.nodes.length }, (): string => "")
+    const element = node as HTMLElement | SVGElement
+    const attr = createAttribute(ctx.document, element, templatePart.name)
+
+    const setValue = (value: string | null | undefined, index: number) =>
+      Effect.suspend(() => {
+        values[index] = value || ""
+        return ctx.renderContext.queue.add(element, () => attr.value = values.join(""))
+      })
+
+    const effects: Array<Effect.Effect<any, any, void>> = []
+
+    for (let i = 0; i < templatePart.nodes.length; ++i) {
+      const node = templatePart.nodes[i]
+      if (node._tag === "text") {
+        values[i] = node.value
+      } else {
+        const renderable = ctx.values[node.index]
+        const index = i
+        const effect = matchSettablePart(
+          renderable,
+          (value) => setValue(value, index),
+          () =>
+            new AttributePartImpl(
+              templatePart.name,
+              node.index,
+              ({ value }) => setValue(value, index),
+              null
+            ),
+          (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(node.index)),
+          () => ctx.expected++
+        )
+
+        if (effect !== null) {
+          effects.push(effect)
+        }
+      }
+    }
+
+    return effects
+  },
+  "sparse-class-name": (templatePart, node, ctx) => {
+    const element = node as HTMLElement | SVGElement
+
+    const effects = templatePart.nodes.flatMap((node) => {
+      if (node._tag === "text") {
+        const split = splitClassNames(node.value)
+        if (split.length > 0) element.classList.add(...split)
+        return []
+      } else {
+        const eff = RenderPartMap[node._tag](node, element, ctx)
+        if (eff === null) return []
+        return Array.isArray(eff) ? eff : [eff]
+      }
+    })
+
+    return effects
+  },
+  "sparse-comment": (templatePart, node, ctx) => {
+    const values = Array.from({ length: templatePart.nodes.length }, (): string => "")
+    const comment = node as Comment
+
+    const setValue = (value: string | null | undefined, index: number) =>
+      Effect.suspend(() => {
+        values[index] = value || ""
+        return ctx.renderContext.queue.add(comment, () => comment.textContent = values.join(""))
+      })
+
+    const effects: Array<Effect.Effect<any, any, void>> = []
+
+    for (let i = 0; i < templatePart.nodes.length; ++i) {
+      const node = templatePart.nodes[i]
+      if (node._tag === "text") {
+        values[i] = node.value
+      } else {
+        const renderable = ctx.values[node.index]
+        const index = i
+        const effect = matchSettablePart(
+          renderable,
+          (value) => setValue(value, index),
+          () =>
+            new CommentPartImpl(
+              node.index,
+              ({ value }) => setValue(value, index),
+              null
+            ),
+          (f) => Effect.zipRight(ctx.renderContext.queue.add(comment, f), ctx.refCounter.release(node.index)),
+          () => ctx.expected++
+        )
+
+        if (effect !== null) {
+          effects.push(effect)
+        }
+      }
+    }
+
+    return effects
+  },
+  "text-part": (templatePart, node, ctx) => {
+    const part = TextPartImpl.browser(
+      ctx.document,
+      templatePart.index,
+      node as HTMLElement | SVGElement,
+      ctx.renderContext
+    )
+
+    ctx.expected++
+
+    return handlePart(
+      ctx.values[templatePart.index],
+      (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+    )
+  }
+}
+
+const SPACE_REGEXP = /\s+/g
+
+function splitClassNames(value: string) {
+  return value.split(SPACE_REGEXP).flatMap((a) => {
+    const trimmed = a.trim()
+    return trimmed.length > 0 ? [trimmed] : []
+  })
+}
+
+function isNullOrUndefined<T>(value: T | null | undefined): value is null | undefined {
+  return value === null || value === undefined
+}
+
+function diffClassNames(oldClassNames: Set<string>, newClassNames: Set<string>) {
+  const added: Array<string> = []
+  const removed: Array<string> = []
+
+  for (const className of oldClassNames) {
+    if (!newClassNames.has(className)) {
+      removed.push(className)
+    }
+  }
+
+  for (const className of newClassNames) {
+    if (!oldClassNames.has(className) && className.trim()) {
+      added.push(className)
+    }
+  }
+
+  return { added, removed }
+}
 
 /**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const renderTemplate: (document: Document, ctx: RenderContext) => RenderTemplate =
-  (document, ctx) =>
+export const renderTemplate: (document: Document, renderContext: RenderContext) => RenderTemplate =
+  (document, renderContext) =>
   <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
     templateStrings: TemplateStringsArray,
-    values: Values,
-    providedRef?: ElementRef.ElementRef<T>
-  ) =>
-    Effect.gen(function*(_) {
-      const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
-      const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = Subject.unsafeMake<Placeholder.Error<Values[number]>, never>()
-      const entry = getBrowserEntry(document, ctx, templateStrings)
-      const content = document.importNode(entry.content, true) // Clone our template
+    values: Values
+  ) => {
+    const entry = getBrowserEntry(document, renderContext, templateStrings)
+    if (values.length === 0) {
+      return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
+    }
 
-      const parts = yield* _(buildParts(document, ctx, entry.template, content, elementRef, errors.onFailure, false)) // Build runtime-variant of parts with our content.
+    return Fx.make<Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>((
+      sink
+    ) => {
+      return Effect.gen(function*(_) {
+        const content = document.importNode(entry.content, true)
+        const context = yield* _(Effect.context<Scope>())
+        const refCounter = yield* _(indexRefCounter2())
+        const ctx: RenderPartContext = {
+          context,
+          document,
+          eventSource: makeEventSource(),
+          expected: 0,
+          refCounter,
+          renderContext,
+          onCause: sink.onFailure as any,
+          values
+        }
 
-      // If there are parts we need to render them before constructing our Wire
-      if (parts.length > 0) {
-        const refCounter = yield* _(indexRefCounter(parts.length))
+        const effects: Array<Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>> = []
+        for (const [part, path] of entry.template.parts) {
+          const eff = RenderPartMap[part._tag](part as never, findPath(content, path), ctx)
+          if (eff !== null) {
+            effects.push(
+              ...(Array.isArray(eff) ? eff : [eff]) as Array<
+                Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>
+              >
+            )
+          }
+        }
 
-        // Do the work
-        yield* _(renderValues(values, parts, refCounter, errors.onFailure))
+        if (effects.length > 0) {
+          yield* _(Effect.forkAll(effects))
+        }
 
-        // Wait for initial work to be completed
-        yield* _(refCounter.wait)
-      }
+        // If there's anything to wait on and it's not already done, wait for an initial value
+        // for all asynchronous sources.
+        if (ctx.expected > 0 && !(yield* _(refCounter.expect(ctx.expected)))) {
+          yield* _(refCounter.wait)
+        }
 
-      // Set the element when it is ready
-      yield* _(ElementRef.set(elementRef, persistent(content) as T))
+        // Build runtime-variant of parts with our content.
+        // const parts = buildParts(
+        //   document,
+        //   ctx,
+        //   entry.template,
+        //   content,
+        //   eventSource,
+        //   sink.onFailure,
+        //   false
+        // )
 
-      yield* _(Effect.addFinalizer(() => errors.interrupt))
+        // const refCounter = yield* _(indexRefCounter(parts.length))
 
-      // Return the Template instance
-      return TemplateInstance(
-        Fx.merge(
-          events,
-          errors
-        ),
-        elementRef
-      )
+        // // Do the work
+        // yield* _(renderValues(values, parts, refCounter, context))
+
+        // // Wait for initial work to be completed
+        // yield* _(refCounter.wait)
+
+        // Create a persistent wire from our content
+        const wire = persistent(content) as T
+
+        // Set the element when it is ready
+        yield* _(ctx.eventSource.setup(wire, Context.get(context, Scope)))
+
+        // Emity our DomRenderEvent
+        yield* _(sink.onSuccess(DomRenderEvent(wire)))
+
+        // Ensure our templates last forever in the DOM environment
+        // so event listeners are kept attached to the current Scope.
+        yield* _(Effect.never)
+      })
     })
+  }
 
 export function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>(
   values: Values,
   parts: Parts,
   refCounter: IndexRefCounter,
-  onCause: (cause: Cause<Placeholder.Error<Values[number]>>) => Effect.Effect<never, never, unknown>,
+  ctx: Context.Context<any> | Context.Context<never>,
   makeHydrateContext?: (index: number) => HydrateContext
 ): Effect.Effect<Placeholder.Context<Values[number]> | Scope, never, void> {
   return Effect.all(parts.map((part, index) => {
@@ -119,7 +626,7 @@ export function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>
           values,
           part,
           refCounter,
-          onCause,
+          ctx,
           makeHydrateContext ? () => makeHydrateContext(index) : undefined
         )
     }
@@ -148,7 +655,7 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   values: Values,
   part: Part,
   refCounter: IndexRefCounter,
-  onCause: (cause: Cause<Placeholder.Error<Values[number]>>) => Effect.Effect<never, never, unknown>,
+  ctx: Context.Context<any> | Context.Context<never>,
   hydrateCtx?: () => HydrateContext
 ): Effect.Effect<any, never, void> {
   const partIndex = part.index
@@ -158,25 +665,22 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
 
   if (isDirective(renderable)) {
     return renderable(part).pipe(
-      Effect.tap(() => refCounter.release(partIndex)),
+      Effect.flatMap(() => refCounter.release(partIndex)),
       Effect.forkScoped
     )
   } else if (part._tag === "ref") {
     return refCounter.release(partIndex)
   } else if (part._tag === "event") {
-    return Effect.uninterruptible(Effect.tap(
-      part.update(
-        getEventHandler(renderable, onCause) as EventHandler.EventHandler<
-          Placeholder.Context<Values[number]>,
-          never
-        >
-      ),
-      () => refCounter.release(partIndex)
-    ))
+    const handler = getEventHandler(renderable, ctx, part.onCause)
+    if (handler) {
+      part.addEventListener(handler)
+    }
+
+    return refCounter.release(partIndex)
   } else if (part._tag === "node" && hydrateCtx) {
     return handlePart(
       renderable,
-      (value) => Effect.tap(part.update(value), () => refCounter.release(partIndex))
+      (value) => Effect.flatMap(part.update(value), () => refCounter.release(partIndex))
     ).pipe(
       HydrateContext.provide(hydrateCtx()),
       Effect.forkScoped
@@ -186,7 +690,7 @@ export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
   } else {
     return handlePart(
       renderable,
-      (value) => Effect.tap(part.update(value as any), () => refCounter.release(partIndex))
+      (value) => Effect.flatMap(part.update(value as any), () => refCounter.release(partIndex))
     )
   }
 }
@@ -208,16 +712,21 @@ function handlePropertiesPart<R, E>(
 
 function getEventHandler<R, E>(
   renderable: any,
+  ctx: Context.Context<any> | Context.Context<never>,
   onCause: (cause: Cause<E>) => Effect.Effect<never, never, unknown>
-): EventHandler.EventHandler<R, never> | null {
+): EventHandler.EventHandler<never, never> | null {
   if (renderable && typeof renderable === "object") {
     if (EventHandler.EventHandlerTypeId in renderable) {
       return EventHandler.make(
-        (ev) => Effect.catchAllCause((renderable as EventHandler.EventHandler<R, E>).handler(ev), onCause),
+        (ev) =>
+          Effect.provide(
+            Effect.catchAllCause((renderable as EventHandler.EventHandler<R, E>).handler(ev), onCause),
+            ctx as any
+          ),
         (renderable as EventHandler.EventHandler<R, E>).options
       )
     } else if (Effect.EffectTypeId in renderable) {
-      return EventHandler.make(() => Effect.catchAllCause(renderable, onCause))
+      return EventHandler.make(() => Effect.provide(Effect.catchAllCause(renderable, onCause), ctx))
     }
   }
 
@@ -352,54 +861,56 @@ export function getBrowserEntry(
   }
 }
 
-export function buildParts<T extends Rendered, E>(
+export function buildParts<E>(
   document: Document,
   ctx: RenderContext,
   template: Template.Template,
   content: ParentChildNodes,
-  ref: ElementRef.ElementRef<T>,
+  eventSource: EventSource,
   onCause: (cause: Cause<E>) => Effect.Effect<never, never, void>,
   isHydrating: boolean
-): Effect.Effect<Scope, never, Parts> {
-  return Effect.all(
-    template.parts.map(([part, path]) =>
-      buildPartWithNode(document, ctx, part, findPath(content, path), ref, onCause, isHydrating)
-    )
+): Parts {
+  return template.parts.map(([part, path]) =>
+    buildPartWithNode(document, ctx, part, findPath(content, path), eventSource, onCause, isHydrating)
   )
 }
 
-function buildPartWithNode<T extends Rendered, E>(
+function buildPartWithNode<E>(
   document: Document,
   ctx: RenderContext,
   part: Template.PartNode | Template.SparsePartNode,
   node: Node,
-  ref: ElementRef.ElementRef<T>,
+  eventSource: EventSource,
   onCause: (cause: Cause<E>) => Effect.Effect<never, never, void>,
   isHydrating: boolean
-): Effect.Effect<Scope, never, Part | SparsePart> {
+): Part | SparsePart {
   switch (part._tag) {
     case "attr":
-      return Effect.succeed(AttributePartImpl.browser(part.index, node as Element, part.name, ctx))
+      return AttributePartImpl.browser(part.index, node as Element, part.name, ctx)
     case "boolean-part":
-      return Effect.succeed(BooleanPartImpl.browser(part.index, node as Element, part.name, ctx))
+      return BooleanPartImpl.browser(part.index, node as Element, part.name, ctx)
     case "className-part":
-      return Effect.succeed(ClassNamePartImpl.browser(part.index, node as Element, ctx))
+      return ClassNamePartImpl.browser(part.index, node as Element, ctx)
     case "comment-part":
-      return Effect.succeed(CommentPartImpl.browser(part.index, node as Comment, ctx))
+      return CommentPartImpl.browser(part.index, node as Comment, ctx)
     case "data":
-      return Effect.succeed(DataPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
+      return DataPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx)
     case "event":
-      return EventPartImpl.browser(part.name, part.index, ref, node as HTMLElement | SVGElement, onCause) as any
-    case "node":
-      return Effect.succeed(
-        makeRenderNodePart(part.index, node as HTMLElement | SVGElement, ctx, document, isHydrating)
+      return new EventPartImpl(
+        part.name,
+        part.index,
+        ElementSource.fromElement(node as Element),
+        onCause as any,
+        (handler) => eventSource.addEventListener(node as Element, part.name, handler)
       )
+    case "node":
+      return makeRenderNodePart(part.index, node as HTMLElement | SVGElement, ctx, document, isHydrating)
     case "property":
-      return Effect.succeed(PropertyPartImpl.browser(part.index, node, part.name, ctx))
+      return PropertyPartImpl.browser(part.index, node, part.name, ctx)
     case "properties":
-      return Effect.succeed(PropertiesPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx))
+      return PropertiesPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx)
     case "ref":
-      return Effect.succeed(new RefPartImpl(ref.query(node as HTMLElement | SVGElement), part.index)) as any
+      return new RefPartImpl(ElementSource.fromElement(node as Element), part.index) as any
     case "sparse-attr": {
       const parts: Array<AttributePart | StaticText> = Array(part.nodes.length)
       const sparse = SparseAttributePartImpl.browser(
@@ -427,7 +938,7 @@ function buildPartWithNode<T extends Rendered, E>(
         }
       }
 
-      return Effect.succeed(sparse)
+      return sparse
     }
     case "sparse-class-name": {
       const parts: Array<ClassNamePart | StaticText> = []
@@ -457,7 +968,7 @@ function buildPartWithNode<T extends Rendered, E>(
         }
       }
 
-      return Effect.succeed(sparse)
+      return sparse
     }
     case "sparse-comment": {
       const parts: Array<CommentPart | StaticText> = Array(part.nodes.length)
@@ -484,10 +995,10 @@ function buildPartWithNode<T extends Rendered, E>(
         }
       }
 
-      return Effect.succeed(sparse)
+      return sparse
     }
     case "text-part":
-      return Effect.succeed(TextPartImpl.browser(document, part.index, node as Element, ctx))
+      return TextPartImpl.browser(document, part.index, node as Element, ctx)
   }
 }
 
@@ -592,4 +1103,56 @@ function buildTextChild(document: Document, node: Template.Text): globalThis.Nod
   }
 
   return document.createComment(`hole${node.index}`)
+}
+
+function createAttribute(
+  document: Document,
+  element: HTMLElement | SVGElement,
+  name: string
+): Attr {
+  return element.getAttributeNode(name) ?? document.createAttribute(name)
+}
+
+function matchSettablePart(
+  renderable: Renderable<any, any>,
+  setValue: (value: any) => void,
+  makePart: () => Part,
+  schedule: (f: () => void) => Effect.Effect<Scope, never, void>,
+  expect: () => void
+) {
+  return matchRenderable(renderable, {
+    Fx: (fx) => {
+      expect()
+      return Fx.observe(fx, (a) => schedule(() => setValue(a)))
+    },
+    Effect: (effect) => {
+      expect()
+      return Effect.flatMap(effect, (a) => schedule(() => setValue(a)))
+    },
+    Directive: (directive) => {
+      expect()
+      return directive(makePart())
+    },
+    Otherwise: (otherwise) => {
+      setValue(otherwise)
+      return null
+    }
+  })
+}
+
+function matchRenderable(renderable: Renderable<any, any>, matches: {
+  Fx: (fx: Fx.Fx<any, any, any>) => Effect.Effect<any, any, void> | null
+  Effect: (effect: Effect.Effect<any, any, any>) => Effect.Effect<any, any, void> | null
+  Directive: (directive: Directive<any, any>) => Effect.Effect<any, any, void> | null
+  Otherwise: (_: Renderable<any, any>) => Effect.Effect<any, any, void> | null
+}): Effect.Effect<any, any, void> | null {
+  if (Fx.isFx(renderable)) {
+    return matches.Fx(renderable)
+  } else if (Effect.isEffect(renderable)) {
+    return matches.Effect(renderable)
+  } else if (isDirective<any, any>(renderable)) {
+    return matches.Directive(renderable)
+  } else {
+    return matches.Otherwise(renderable)
+  }
 }

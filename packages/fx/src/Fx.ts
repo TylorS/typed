@@ -1626,7 +1626,7 @@ export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(...fx
   never,
   never
 > {
-  return Layer.scopedDiscard(Effect.forkScoped(core.drain(core.mergeAll(fxs))))
+  return Layer.scopedDiscard(Effect.forkWithErrorHandler(core.drain(core.mergeAll(fxs)), Effect.logError))
 }
 
 /**

@@ -31,7 +31,7 @@ export abstract class FxEffectBase<R, E, A, R2, E2, B> extends Effectable.Struct
 
   abstract toEffect(): Effect.Effect<R2, E2, B>
 
-  private _effect: Effect.Effect<R2, E2, B> | undefined
+  protected _effect: Effect.Effect<R2, E2, B> | undefined
   commit(): Effect.Effect<R2, E2, B> {
     if (this._effect === undefined) {
       return (this._effect = this.toEffect())

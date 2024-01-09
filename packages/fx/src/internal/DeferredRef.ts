@@ -50,3 +50,7 @@ export class DeferredRef<E, A> extends EffectBase<never, E, A> {
 export function make<E, A>(eq: Equivalence.Equivalence<Exit.Exit<E, A>>) {
   return Effect.map(Effect.fiberId, (id) => new DeferredRef(id, eq))
 }
+
+export function unsafeMake<E, A>(id: FiberId.FiberId, eq: Equivalence.Equivalence<Exit.Exit<E, A>>) {
+  return new DeferredRef(id, eq)
+}

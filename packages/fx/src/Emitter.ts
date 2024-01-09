@@ -4,7 +4,7 @@ import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import type * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
-import * as Scope from "effect/Scope"
+import type * as Scope from "effect/Scope"
 import { withScope } from "./internal/helpers.js"
 import * as Sink from "./Sink.js"
 
@@ -30,10 +30,7 @@ export function withEmitter<R, E, A, R2, B>(
             const run = (effect: Effect.Effect<R, never, unknown>) =>
               runPromiseExit(
                 Effect.flatMap(
-                  Effect.flatMap(
-                    Scope.fork(scope, ExecutionStrategy.sequential),
-                    (childScope) => Effect.forkIn(effect, childScope)
-                  ),
+                  Effect.forkIn(effect, scope),
                   Fiber.join
                 )
               )

@@ -118,13 +118,13 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   protected onEvent(a: A) {
     if (this.sinks.size === 0) return Effect.unit
     else {
-      return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
+      return Effect.forEach(this.sinks, ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
     }
   }
 
   protected onCause(cause: Cause.Cause<E>) {
     return Effect.forEach(
-      Array.from(this.sinks),
+      this.sinks,
       ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx),
       DISCARD
     )

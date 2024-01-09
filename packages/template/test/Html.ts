@@ -203,7 +203,7 @@ describe("Html", () => {
   it.concurrent(`renders with event directives`, async () => {
     await testHtmlChunks(
       html`<div
-        @click=${Directive.event((part) => part.update(null))}
+        @click=${Directive.event(() => Effect.unit)}
       ></div>`,
       [`<div data-typed="..."></div>`]
     )

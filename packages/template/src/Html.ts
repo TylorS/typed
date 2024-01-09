@@ -5,13 +5,11 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
-import type { Rendered } from "@typed/wire"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import { join } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
-import * as ElementRef from "./ElementRef.js"
 import type { ServerEntry } from "./Entry.js"
 import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
 import { templateToHtmlChunks } from "./HtmlChunk.js"
@@ -24,7 +22,6 @@ import { RenderContext } from "./RenderContext.js"
 import { HtmlRenderEvent, isRenderEvent } from "./RenderEvent.js"
 import type { RenderEvent } from "./RenderEvent.js"
 import { RenderTemplate } from "./RenderTemplate.js"
-import { TemplateInstance } from "./TemplateInstance.js"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
 
@@ -57,41 +54,30 @@ export function renderToHtmlString<R, E>(
 }
 
 function renderHtml(ctx: RenderContext) {
-  return <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
+  return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
-    values: Values,
-    providedRef?: ElementRef.ElementRef<T>
-  ): Effect.Effect<
+    values: Values
+  ): Fx.Fx<
     Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
-    never,
-    TemplateInstance<
-      Placeholder.Error<Values[number]>,
-      T
-    >
+    Placeholder.Error<Values[number]>,
+    RenderEvent
   > => {
-    return Effect.gen(function*(_) {
-      const ref = providedRef || (yield* _(ElementRef.make()))
-      const entry = getServerEntry(templateStrings, ctx.templateCache)
-
-      if (values.length === 0) {
-        return TemplateInstance(Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value)), ref as any)
-      } else {
-        return TemplateInstance(
-          Fx.filter(
-            Fx.mergeOrdered(
-              entry.chunks.map((chunk) =>
-                renderChunk<
-                  Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
-                  Placeholder.Error<Values[number]>
-                >(chunk, values)
-              )
-            ),
-            (x) => (x.valueOf() as string).length > 0
-          ) as any,
-          ref as any
-        )
-      }
-    })
+    const entry = getServerEntry(templateStrings, ctx.templateCache)
+    if (values.length === 0) {
+      return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value))
+    } else {
+      return Fx.filter(
+        Fx.mergeOrdered(
+          entry.chunks.map((chunk) =>
+            renderChunk<
+              Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
+              Placeholder.Error<Values[number]>
+            >(chunk, values)
+          )
+        ),
+        (x) => (x.valueOf() as string).length > 0
+      )
+    }
   }
 }
 

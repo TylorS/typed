@@ -23,15 +23,22 @@ export function many<R, E, A, B extends PropertyKey, R2, E2>(
   return Fx.fromFxEffect(
     RenderContext.with(
       (ctx): Fx.Fx<R | R2 | RenderContext | Scope.Scope, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> => {
+        // When rendering HTML, we want to ensure that we order our HTML events in the same order
+        // as the templates are defined which is why we use mergeOrdered. We also want to ensure that
+        // our templates end, so we take only the first of our source values and also ensure that a subscription
+        // to our RefSubjects only include its first event.
         if (ctx.environment === "server" || ctx.environment === "static") {
           return Fx.fromFxEffect(
             Effect.map(Fx.first(values), (values) =>
               Fx.mergeOrdered(
-                values.map((value) => Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => f(ref, getKey(value)))))
+                values.map((value) =>
+                  Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => f(RefSubject.take(ref, 1), getKey(value))))
+                )
               ))
           )
         }
 
+        // In other environments we just used Fx.keyed to allow indefinite subscriptions to RefSubjects
         return Fx.keyed(values, {
           getKey,
           onValue: f

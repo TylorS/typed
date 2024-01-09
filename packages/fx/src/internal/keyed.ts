@@ -1,17 +1,12 @@
-import { Context, Effect, ExecutionStrategy, Exit, Option, Scope } from "effect"
+import type { FiberId } from "effect"
+import { Context, Effect, ExecutionStrategy, Option, Scope } from "effect"
 import type { Fx, KeyedOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"
 import type { Add, Moved, Remove, Update } from "./diff.js"
 import { diffIterator } from "./diff.js"
-import { withDebounceFork, withExhaustLatestFork } from "./helpers.js"
+import { withDebounceFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
-
-const DISCARD = { discard: true } as const
-
-// TODO: We should probably create a special-case for this behavior in @typed/template
-//       which would allow connecting the diffing of arrays directly to the DOM instead of
-//       having to translate between Fx and the DOM/HTML.
 
 export function keyed<R, E, A, B extends PropertyKey, R2, E2, C>(
   fx: Fx<R, E, ReadonlyArray<A>>,
@@ -38,7 +33,7 @@ class Keyed<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | S
   }
 
   run<R3>(sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>) {
-    return runKeyed(this.fx, this.options, sink)
+    return Effect.fiberIdWith((id) => runKeyed(this.fx, this.options, sink, id))
   }
 }
 
@@ -59,46 +54,70 @@ function emptyKeyedState<A, B extends PropertyKey, C>(): KeyedState<A, B, C> {
 function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
   fx: Fx<R, E, ReadonlyArray<A>>,
   options: KeyedOptions<A, B, R2, E2, C>,
-  sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>
+  sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>,
+  id: FiberId.FiberId
 ) {
   return withDebounceFork(
-    (forkDebounce, parentScope) =>
-      withExhaustLatestFork(
-        (forkExhaustLatest) => {
-          const state = emptyKeyedState<A, B, C>()
-          // Uses debounce to avoid glitches
-          const scheduleNextEmit = forkDebounce(Effect.suspend(() => sink.onSuccess(getReadyIndices(state))))
+    (forkDebounce, parentScope) => {
+      const state = emptyKeyedState<A, B, C>()
+      // Uses debounce to avoid glitches
+      const scheduleNextEmit = forkDebounce(Effect.suspend(() => sink.onSuccess(getReadyIndices(state))))
 
-          function diffAndPatch(values: ReadonlyArray<A>) {
-            const previous = state.previousKeys
-            const keys = values.map(options.getKey)
-            state.previousKeys = keys
+      function diffAndPatch(values: ReadonlyArray<A>) {
+        return Effect.gen(function*(_) {
+          const previous = state.previousKeys
+          const keys = values.map(options.getKey)
+          state.previousKeys = keys
 
-            let added = false
+          let added = false
+          let done = false
+          let scheduled = false
 
-            return Effect.flatMap(
-              Effect.forEach(diffIterator(previous, keys), (patch) => {
-                if (patch._tag === "Remove") return removeValue(state, patch)
-                else if (patch._tag === "Add") {
-                  added = true
-                  return addValue(state, values, patch, parentScope, options, sink, scheduleNextEmit)
-                } else return updateValue(state, values, patch)
-              }, DISCARD),
-              () => added === false ? scheduleNextEmit : Effect.unit
-            )
+          for (const patch of diffIterator(previous, keys)) {
+            if (patch._tag === "Remove") {
+              yield* _(removeValue(state, patch))
+            } else if (patch._tag === "Add") {
+              added = true
+              yield* _(
+                addValue(
+                  state,
+                  values,
+                  patch,
+                  id,
+                  parentScope,
+                  options,
+                  sink,
+                  Effect.suspend(() => {
+                    if (done === false) {
+                      scheduled = true
+                      return Effect.unit
+                    }
+                    return scheduleNextEmit
+                  })
+                )
+              )
+            } else {
+              yield* _(updateValue(state, values, patch))
+            }
           }
 
-          return fx.run(
-            Sink.make(
-              (cause) => sink.onFailure(cause),
-              // Use exhaust to ensure only 1 diff is running at a time
-              // Skipping an intermediate changes that occur while diffing
-              (values) => forkExhaustLatest(Effect.suspend(() => diffAndPatch(values)))
-            )
-          )
-        },
-        ExecutionStrategy.sequential
-      ),
+          done = true
+
+          if (scheduled || added === false) {
+            yield* _(scheduleNextEmit)
+          }
+        })
+      }
+
+      return fx.run(
+        Sink.make(
+          (cause) => sink.onFailure(cause),
+          // Use exhaust to ensure only 1 diff is running at a time
+          // Skipping an intermediate changes that occur while diffing
+          (values) => Effect.withMaxOpsBeforeYield(diffAndPatch(values), Number.MAX_SAFE_INTEGER)
+        )
+      )
+    },
     options.debounce || 0
   )
 }
@@ -138,6 +157,7 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   { entries, indices }: KeyedState<A, B, C>,
   values: ReadonlyArray<A>,
   patch: Add<B>,
+  id: FiberId.FiberId,
   parentScope: Scope.Scope,
   options: KeyedOptions<A, B, R2, E2, C>,
   sink: Sink.Sink<R2 | R3, E | E2, ReadonlyArray<C>>,
@@ -146,19 +166,25 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   return Effect.gen(function*(_) {
     const value = values[patch.index]
     const childScope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
-    const ref: RefSubject.RefSubject<never, never, A> = yield* _(
-      RefSubject.make(Effect.sync(() => entry.value))
-    )
+    const ref: RefSubject.RefSubject<never, never, A> = yield* _(RefSubject.unsafeMake<never, A>({
+      initial: Effect.sync(() => entry.value),
+      initialValue: value,
+      scope: childScope,
+      id
+    }))
+
     const entry = new KeyedEntry<A, C>(
       value,
       patch.index,
       Option.none(),
       ref,
-      Scope.close(childScope, Exit.unit)
+      ref.interrupt
     )
 
     entries.set(patch.value, entry)
     indices.set(patch.index, patch.value)
+
+    yield* _(Scope.addFinalizer(childScope, ref.interrupt))
 
     yield* _(
       Effect.forkIn(
@@ -170,7 +196,7 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
             return scheduleNextEmit
           }
         )),
-        childScope
+        parentScope
       )
     )
   })

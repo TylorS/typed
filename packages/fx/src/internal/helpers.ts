@@ -83,7 +83,7 @@ export function withScopedFork<R, E, A>(
   return withScope((scope) => f(makeForkInScope(scope), scope), executionStrategy)
 }
 
-function makeForkInScope(scope: Scope.Scope) {
+export function makeForkInScope(scope: Scope.Scope) {
   return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
     matchEffectPrimitive<R, E, A, Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<E, A>>>(effect, {
       Success: (a) => Effect.succeed(Fiber.succeed(a)),

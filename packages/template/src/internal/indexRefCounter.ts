@@ -1,5 +1,6 @@
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 
 export type IndexRefCounter = {
   release: (index: number) => Effect.Effect<never, never, void>
@@ -15,12 +16,13 @@ export function indexRefCounter(expected: number): Effect.Effect<
   IndexRefCounter
 > {
   return Effect.map(Deferred.make<never, void>(), (deferred) => {
+    const done = Deferred.succeed(deferred, undefined)
     const indexes = new Set<number>(Array.from({ length: expected }, (_, i) => i))
 
     function release(index: number) {
       return Effect.suspend(() => {
         if (indexes.delete(index) && indexes.size === 0) {
-          return Deferred.succeed(deferred, undefined)
+          return done
         } else {
           return Effect.unit
         }
@@ -29,6 +31,63 @@ export function indexRefCounter(expected: number): Effect.Effect<
 
     return {
       release,
+      wait: Deferred.await(deferred)
+    }
+  })
+}
+
+export type IndexRefCounter2 = {
+  release: (index: number) => Effect.Effect<never, never, void>
+  expect: (count: number) => Effect.Effect<never, never, boolean>
+  wait: Effect.Effect<never, never, void>
+}
+
+/**
+ * @internal
+ */
+export function indexRefCounter2(): Effect.Effect<
+  never,
+  never,
+  IndexRefCounter2
+> {
+  return Effect.map(Deferred.make<never, void>(), (deferred) => {
+    let expected: Option.Option<number> = Option.none<number>()
+    const done = Deferred.succeed(deferred, undefined)
+    const indexes = new Set<number>()
+
+    function isDone() {
+      if (Option.isSome(expected)) {
+        return indexes.size === expected.value
+      } else {
+        return false
+      }
+    }
+
+    function release(index: number) {
+      return Effect.suspend(() => {
+        indexes.add(index)
+        if (isDone()) {
+          return done
+        } else {
+          return Effect.succeed(false)
+        }
+      })
+    }
+
+    function expect(count: number) {
+      return Effect.suspend(() => {
+        expected = Option.some(count)
+        if (isDone()) {
+          return Effect.as(done, false)
+        } else {
+          return Effect.succeed(true)
+        }
+      })
+    }
+
+    return {
+      release,
+      expect,
       wait: Deferred.await(deferred)
     }
   })

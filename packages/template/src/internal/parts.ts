@@ -1,18 +1,13 @@
-import type { Context } from "@typed/context"
-import type * as Fx from "@typed/fx/Fx"
-import * as Sink from "@typed/fx/Sink"
-import { isText, type Rendered } from "@typed/wire"
+import { isText } from "@typed/wire"
 import type { Cause } from "effect/Cause"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"
-import * as Fiber from "effect/Fiber"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
-import type { ElementRef } from "../ElementRef.js"
 import type { ElementSource } from "../ElementSource.js"
+import type { EventHandler } from "../EventHandler.js"
 import { unescape } from "../HtmlChunk.js"
 import type {
   AttributePart,
@@ -292,70 +287,18 @@ function diffDataSet(
   }
 }
 
-export class EventPartImpl extends base("event") implements EventPart {
+export class EventPartImpl implements EventPart {
+  readonly _tag = "event"
+  readonly value: EventPart["value"] = null
+
   constructor(
     readonly name: string,
+    readonly index: number,
+    readonly source: ElementSource<any>,
     readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>,
-    index: number,
-    commit: EventPartImpl["commit"],
-    value: EventPart["value"]
+    readonly addEventListener: <Ev extends Event>(handler: EventHandler<never, never, Ev>) => void
   ) {
-    super(index, commit, value, strictEq)
   }
-
-  static browser<T extends Rendered, E>(
-    name: string,
-    index: number,
-    ref: ElementRef<T>,
-    element: HTMLElement | SVGElement,
-    onCause: (cause: Cause<E>) => Effect.Effect<never, never, unknown>
-  ): Effect.Effect<unknown, never, void> {
-    return withSwitchFork((fork, ctx) => {
-      const source = ref.query(element)
-
-      return Effect.succeed(
-        new EventPartImpl(
-          name,
-          onCause as any,
-          index,
-          ({ value }) => {
-            return value
-              ? source.events(name as keyof HTMLElementEventMap | keyof SVGElementEventMap, value.options).run(
-                Sink.make(onCause, value.handler)
-              ).pipe(
-                Effect.provide(ctx),
-                fork
-              )
-              : fork(Effect.unit)
-          },
-          null
-        )
-      )
-    })
-  }
-}
-
-function withScopedFork<R, E, A>(f: (fork: Fx.ScopedFork) => Effect.Effect<R, E, A>): Effect.Effect<R | Scope, E, A> {
-  return Effect.scopeWith((scope) => f(Effect.forkIn(scope)))
-}
-
-// Ensures only a single fiber is executing
-function withSwitchFork<R, E, A>(
-  f: (fork: Fx.FxFork, ctx: Context<R | Scope>) => Effect.Effect<R, E, A>
-): Effect.Effect<R | Scope, E, A> {
-  return Effect.contextWithEffect((ctx) =>
-    withScopedFork((fork) =>
-      Effect.flatMap(
-        SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
-        (ref) =>
-          f((effect) =>
-            SynchronizedRef.updateAndGetEffect(
-              ref,
-              (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
-            ), ctx)
-      )
-    )
-  )
 }
 
 export class NodePartImpl extends base("node") implements NodePart {}
@@ -402,6 +345,23 @@ export class TextPartImpl extends base("text") implements TextPart {
       text.nodeValue,
       strictEq
     )
+  }
+
+  static fromText(text: Text, index: number, ctx: RenderContext) {
+    return new TextPartImpl(
+      index,
+      ({ part, value }) => ctx.queue.add(part, () => text.nodeValue = value ?? null),
+      text.nodeValue,
+      strictEq
+    )
+  }
+
+  static getOrCreateText(document: Document, index: number, element: Element) {
+    const comment = findHoleComment(element, index)
+
+    return comment.previousSibling && isText(comment.previousSibling)
+      ? comment.previousSibling.nodeValue
+      : document.createTextNode("")
   }
 }
 

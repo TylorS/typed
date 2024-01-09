@@ -1,18 +1,10 @@
 import { RefSubject } from "@typed/fx"
-import type { Renderable } from "@typed/template/Renderable"
-import { html, RenderTemplate } from "@typed/template/RenderTemplate"
+import { html } from "@typed/template/RenderTemplate"
 import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
 import { deepStrictEqual, ok } from "assert"
 import * as Effect from "effect/Effect"
 import { range } from "effect/ReadonlyArray"
-
-export function tmpl<const Values extends ReadonlyArray<Renderable<any, any>>>(
-  template: TemplateStringsArray,
-  ...values: Values
-) {
-  return RenderTemplate.withEffect((render) => render(template, values))
-}
 
 describe("Render", () => {
   test("renders a simple template", () => {

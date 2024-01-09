@@ -16,7 +16,8 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import type { Entry } from "./Entry.js"
-import type { Part, SparsePart } from "./Part.js"
+
+// TODO: We should probably have a more explicit environment type between DOM/HTML rendering
 
 /**
  * The context in which templates are rendered within
@@ -56,7 +57,7 @@ export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Conte
  * @since 1.0.0
  */
 export interface RenderQueue {
-  readonly add: (part: Part | SparsePart, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: unknown, task: () => void) => Effect.Effect<Scope.Scope, never, void>
 }
 
 /**
@@ -148,7 +149,7 @@ export {
 }
 
 class RenderQueueImpl implements RenderQueue {
-  queue = new Map<Part | SparsePart, () => void>()
+  queue = new Map<unknown, () => void>()
   scheduled = false
   run: Effect.Effect<Scope.Scope, never, void>
 
@@ -162,7 +163,7 @@ class RenderQueueImpl implements RenderQueue {
     this.run = typeof requestAnimationFrame === "undefined" ? this.runIdle : this.runAnimationFrame
   }
 
-  add(part: Part | SparsePart, task: () => void) {
+  add(part: unknown, task: () => void) {
     if (this.skipRenderScheduling) return Effect.sync(task)
 
     return Effect.suspend(() => {
@@ -234,7 +235,7 @@ class RenderQueueImpl implements RenderQueue {
     })
   )
 
-  private runTask = (iterator: Iterator<[Part | SparsePart, () => void]>) => {
+  private runTask = (iterator: Iterator<[unknown, () => void]>) => {
     const result = iterator.next()
 
     if (result.done) return false

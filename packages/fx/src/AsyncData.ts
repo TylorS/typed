@@ -99,7 +99,7 @@ export const matchAsyncData: {
       }
     ) => Fx.Fx<R4, E4, D>
     readonly Success: (
-      value: RefSubject.Computed<never, never, A>,
+      value: RefSubject.RefSubject<never, never, A>,
       options: {
         readonly timestamp: RefSubject.Computed<never, never, number>
         readonly progress: RefSubject.Filtered<never, never, Progress>
@@ -123,7 +123,7 @@ export const matchAsyncData: {
         }
       ),
     Success: (success) =>
-      matchers.Success(RefSubject.map(success, (s) => s.value), {
+      matchers.Success(RefSubject.transform(success, (s) => s.value, (value) => AsyncData.success(value)), {
         timestamp: RefSubject.map(success, (s) => s.timestamp),
         progress: RefSubject.filterMap(success, (f) => Option.flatMap(f.refreshing, (l) => l.progress))
       })

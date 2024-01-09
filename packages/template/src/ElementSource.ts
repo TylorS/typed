@@ -71,6 +71,15 @@ export function ElementSource<T extends Rendered, EventMap extends {} = DefaultE
 /**
  * @since 1.0.0
  */
+export function fromElement<T extends Element, EventMap extends {} = DefaultEventMap<T>>(
+  rootElement: T
+): ElementSource<T, EventMap> {
+  return ElementSourceImpl.fromElement(rootElement) as any
+}
+
+/**
+ * @since 1.0.0
+ */
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
   : Fallback extends globalThis.Element ? TQS.ParseSelector<T, Fallback>
   : Fallback

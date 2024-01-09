@@ -1,5 +1,5 @@
 import * as C from "@typed/context"
-import type { Equivalence, Fiber, Runtime } from "effect"
+import type { Equivalence, Fiber, FiberId, Runtime } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -15,7 +15,7 @@ import * as Scope from "effect/Scope"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
-import { getExitEquivalence } from "./internal/helpers.js"
+import { getExitEquivalence, makeForkInScope, withScope } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
 import { runtimeToLayer } from "./internal/provide.js"
 import * as share from "./internal/share.js"
@@ -185,7 +185,49 @@ export function of<A, E = never>(
   a: A,
   options?: RefSubjectOptions<A>
 ): Effect.Effect<Scope.Scope, never, RefSubject<never, E, A>> {
-  return make<never, E, A>(Effect.succeed(a), options)
+  return Effect.acquireRelease(
+    withScopeAndFiberId(
+      (scope, id) =>
+        unsafeMake<E, A>({
+          id,
+          initial: Effect.succeed(a),
+          initialValue: a,
+          options,
+          scope
+        }),
+      options?.executionStrategy ?? ExecutionStrategy.sequential
+    ),
+    (ref) => ref.interrupt
+  )
+}
+
+const withScopeAndFiberId = <R, E, A>(
+  f: (scope: Scope.CloseableScope, id: FiberId.FiberId) => Effect.Effect<R, E, A>,
+  strategy: ExecutionStrategy.ExecutionStrategy
+) => Effect.fiberIdWith((id) => withScope((scope) => f(scope, id), strategy))
+
+const emptyContext = C.empty()
+
+export function unsafeMake<E, A>(
+  params: {
+    readonly id: FiberId.FiberId
+    readonly initial: Effect.Effect<never, E, A>
+    readonly options?: RefSubjectOptions<A> | undefined
+    readonly scope: Scope.CloseableScope
+    readonly initialValue?: A
+  }
+): Effect.Effect<never, never, RefSubject<never, E, A>> {
+  const { id, initial, options, scope } = params
+  const core = unsafeMakeCore(initial, id, emptyContext, scope, options)
+
+  // Sometimes we might be instantiating directly from a known value
+  // Here we seed the value and ensure the subject has it as well for re-broadcasting
+  if ("initialValue" in params) {
+    core.deferredRef.done(Exit.succeed(params.initialValue))
+    return Effect.map(core.subject.onSuccess(params.initialValue), () => new RefSubjectImpl(core))
+  }
+
+  return Effect.succeed(new RefSubjectImpl(core))
 }
 
 class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Scope, E, A, Exclude<R, R2>, E, A>
@@ -434,6 +476,23 @@ function makeCore<R, E, A>(
   )
 }
 
+function unsafeMakeCore<R, E, A>(
+  initial: Effect.Effect<R, E, A>,
+  id: FiberId.FiberId,
+  ctx: C.Context<R>,
+  scope: Scope.CloseableScope,
+  options?: RefSubjectOptions<A>
+) {
+  return new RefSubjectCore(
+    initial,
+    Subject.unsafeMake<E, A>(Math.max(1, options?.replay ?? 1)),
+    ctx,
+    scope,
+    DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals)),
+    Effect.unsafeMakeSemaphore(1)
+  )
+}
+
 function getOrInitializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
   lockInitialize: boolean
@@ -460,11 +519,12 @@ function initializeCore<R, E, A, R2>(
       })
   )
 
+  const fork = makeForkInScope(core.scope)
+
   return Effect.zipRight(
     Effect.tap(
-      Effect.forkIn(
-        lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize,
-        core.scope
+      fork(
+        lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize
       ),
       (fiber) => Effect.sync(() => core._fiber = fiber)
     ),
@@ -1799,3 +1859,73 @@ const sub = (x: number): number => x - 1
 export const decrement: <R, E>(ref: RefSubject<R, E, number>) => Effect.Effect<R, E, number> = <R, E>(
   ref: RefSubject<R, E, number>
 ) => update(ref, sub)
+
+export const slice: {
+  (drop: number, take: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
+  <R, E, A>(ref: RefSubject<R, E, A>, drop: number, take: number): RefSubject<R, E, A>
+} = dual(
+  3,
+  function slice<R, E, A>(ref: RefSubject<R, E, A>, drop: number, take: number): RefSubject<R, E, A> {
+    return new RefSubjectSlice(ref, drop, take)
+  }
+)
+
+export const drop: {
+  (drop: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
+  <R, E, A>(ref: RefSubject<R, E, A>, drop: number): RefSubject<R, E, A>
+} = dual(2, function drop<R, E, A>(ref: RefSubject<R, E, A>, drop: number): RefSubject<R, E, A> {
+  return slice(ref, drop, Infinity)
+})
+
+export const take: {
+  (take: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
+  <R, E, A>(ref: RefSubject<R, E, A>, take: number): RefSubject<R, E, A>
+} = dual(2, function take<R, E, A>(ref: RefSubject<R, E, A>, take: number): RefSubject<R, E, A> {
+  return slice(ref, 0, take)
+})
+
+class RefSubjectSlice<R, E, A> extends FxEffectBase<R | Scope.Scope, E, A, R, E, A> implements RefSubject<R, E, A> {
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly version: Effect.Effect<R, E, number>
+  readonly interrupt: Effect.Effect<R, never, void>
+  readonly subscriberCount: Effect.Effect<R, never, number>
+  private _fx: Fx<Scope.Scope | R, E, A>
+
+  constructor(
+    readonly ref: RefSubject<R, E, A>,
+    readonly drop: number,
+    readonly take: number
+  ) {
+    super()
+
+    this.version = ref.version
+    this.interrupt = ref.interrupt
+    this.subscriberCount = ref.subscriberCount
+    this._fx = share.hold(core.slice(ref, drop, take))
+    this._effect = ref
+  }
+
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2 | Scope.Scope, never, unknown> {
+    return this._fx.run(sink)
+  }
+
+  toEffect(): Effect.Effect<R, E, A> {
+    return this.ref
+  }
+
+  runUpdates<R2, E2, C>(
+    run: (ref: GetSetDelete<R, E, A>) => Effect.Effect<R2, E2, C>
+  ): Effect.Effect<R | R2, E2, C> {
+    return this.ref.runUpdates(run)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown> {
+    return this.ref.onFailure(cause)
+  }
+
+  onSuccess(value: A): Effect.Effect<R, never, unknown> {
+    return this.ref.onSuccess(value)
+  }
+}

@@ -7,6 +7,9 @@ import { Effect, Layer } from "effect"
 import { Live } from "./infrastructure"
 import { TodoApp } from "./presentation"
 
+// We must eliminate the time it takes between diffing and patching the DOM
+// There is a lot of time spent spinning up templates
+
 const environment = Live.pipe(
   Layer.provideMerge(Storage.layer(localStorage)),
   Layer.provideMerge(Router.browser),
@@ -14,4 +17,10 @@ const environment = Live.pipe(
   Layer.provideMerge(RenderContext.dom(window))
 )
 
-TodoApp.pipe(renderLayer, Layer.provide(environment), Layer.launch, Effect.scoped, Effect.runFork)
+TodoApp.pipe(
+  renderLayer,
+  Layer.provide(environment),
+  Layer.launch,
+  Effect.scoped,
+  Effect.runFork
+)

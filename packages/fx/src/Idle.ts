@@ -45,7 +45,7 @@ class IdleSchedulerImpl implements IdleScheduler {
     this.#tasks.scheduleTask(task, priority)
 
     // If we're not running yet, schedule the next run
-    if (!this.#running) {
+    if (this.#running === false) {
       this.#running = true
       this.scheduleNextRun()
     }
@@ -65,23 +65,30 @@ class IdleSchedulerImpl implements IdleScheduler {
   }
 
   private scheduleNextRun() {
-    this.#id = requestIdleCallback((deadline) => this.runTasks(deadline), this.options)
+    this.#id = requestIdleCallback((deadline) => this.runTasks(deadline), { timeout: 1000, ...this.options })
   }
 
   private runTasks(deadline: IdleDeadline) {
-    const buckets = this.#tasks.buckets
+    const buckets = this.#tasks.buckets.slice(0)
+    this.#tasks.buckets = []
     const length = buckets.length
 
     let i = 0
     for (; shouldContinue(deadline) && i < length; ++i) {
-      buckets[i][1].forEach((f) => f())
+      const tasks = buckets[i][1].slice()
+      tasks.forEach((f) => f())
     }
 
     // Remove all the buckets we were able to complete
     buckets.splice(0, i)
 
-    // If there are more tasks to run, schedule the next run
+    // If there are leftover tasks, requeue them
     if (buckets.length > 0) {
+      buckets.forEach(([priority, tasks]) => tasks.forEach((f) => this.#tasks.scheduleTask(f, priority)))
+    }
+
+    // If there are more tasks to run, schedule the next run
+    if (this.#tasks.buckets.length > 0) {
       this.scheduleNextRun()
     } else {
       // Otherwise we're done for now
