@@ -18,10 +18,10 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.39.0",
-    "@effect/platform-browser": "^0.25.0",
-    "@effect/platform-node": "^0.39.0",
-    "@effect/schema": "0.56.1",
+    "@effect/platform": "^0.41.0",
+    "@effect/platform-browser": "^0.27.0",
+    "@effect/platform-node": "^0.41.0",
+    "@effect/schema": "0.59.1",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
@@ -30,20 +30,20 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "2.0.0-next.62",
+    "effect": "2.0.3",
     "todomvc-app-css": "^2.4.3",
     "todomvc-common": "^1.0.5"
   },
   "devDependencies": {
     "@giacomorebonato/vavite": "^0.0.4",
     "mock-storage": "^1.1.0",
-    "rollup-plugin-visualizer": "^5.11.0",
+    "rollup-plugin-visualizer": "^5.12.0",
     "terser": "^5.26.0",
     "tsx": "^4.7.0",
-    "vite": "^5.0.10",
+    "vite": "^5.0.11",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-html": "^3.2.1",
     "vite-plugin-top-level-await": "^1.4.1",
-    "vite-tsconfig-paths": "^4.2.2"
+    "vite-tsconfig-paths": "^4.2.3"
   }
 }
