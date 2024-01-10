@@ -203,7 +203,7 @@ describe("Html", () => {
   it.concurrent(`renders with event directives`, async () => {
     await testHtmlChunks(
       html`<div
-        @click=${Directive.event((part) => part.update(null))}
+        @click=${Directive.event(() => Effect.unit)}
       ></div>`,
       [`<div data-typed="..."></div>`]
     )
@@ -217,7 +217,7 @@ describe("Html", () => {
   })
 
   it.concurrent(`renders with ref directives`, async () => {
-    await testHtmlChunks(html`<input ref=${Directive.ref((part) => part.value)} />`, [
+    await testHtmlChunks(html`<input ref=${Directive.ref((part) => Effect.orDie(part.value))} />`, [
       `<input data-typed="..."/>`
     ])
   })
@@ -247,6 +247,31 @@ describe("Html", () => {
       `<div data-typed="..." class="formgroup"><input`,
       `class="custom-input"/><label class="custom-input-label" for="name">Name</label></div>`
     ])
+  })
+
+  it.concurrent("renders script tags with no content", async () => {
+    await testHtmlChunks(html`<script async defer type="module" src="./index.ts"></script>`, [
+      "<script data-typed=\"...\" async defer type=\"module\" src=\"./index.ts\"></script>"
+    ])
+  })
+
+  it.concurrent("renders full html template", async () => {
+    await testHtmlChunks(
+      html`<html>
+    <head>
+      <title>@typed TodoMVC</title>
+      <meta charset="utf-8" />
+      <meta name="description" content="@typed TodoMVC" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+      <h1>Hello, world!</h1>
+
+      <script async defer type="module" src="./index.ts"></script>
+    </body>
+  </html>`,
+      [`<html data-typed="..."><head><title>@typed TodoMVC</title></head><meta charset="utf-8"/><meta name="description" content="@typed TodoMVC"/><meta name="viewport" content="width=device-width, initial-scale=1"/></html><body data-typed="..."><h1>Hello, world!</h1><script async defer type="module" src="./index.ts"></script></body>`]
+    )
   })
 })
 

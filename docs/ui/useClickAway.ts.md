@@ -28,7 +28,7 @@ Added in v1.0.0
 export declare function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
   refs: Refs,
   f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, E2, B>
-): Fx.Fx<Document | R2, E2, B>
+): Fx.Fx<Document | R2 | Scope.Scope, E2, B>
 ```
 
 Added in v1.0.0

@@ -13,31 +13,29 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [Parser (interface)](#parser-interface)
-  - [parser](#parser)
+  - [parse](#parse)
+  - [templateHash](#templatehash)
 
 ---
 
 # utils
 
-## Parser (interface)
+## parse
 
 **Signature**
 
 ```ts
-export interface Parser {
-  parse(template: ReadonlyArray<string>, tokenStream?: Iterator<Token>): Template.Template
-}
+export declare const parse: typeof parse
 ```
 
 Added in v1.0.0
 
-## parser
+## templateHash
 
 **Signature**
 
 ```ts
-export declare const parser: Parser
+export declare const templateHash: typeof templateHash
 ```
 
 Added in v1.0.0

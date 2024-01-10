@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 9
+nav_order: 8
 parent: "@typed/fx"
 ---
 
@@ -21,21 +21,81 @@ Added in v1.18.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Computed.js"](#from-computedjs)
-  - [From "./Filtered.js"](#from-filteredjs)
+  - [From "./AsyncData.js"](#from-asyncdatajs)
+  - [From "./Emitter.js"](#from-emitterjs)
+  - [From "./Form.js"](#from-formjs)
+  - [From "./FormEntry.js"](#from-formentryjs)
   - [From "./Fx.js"](#from-fxjs)
+  - [From "./Guard.js"](#from-guardjs)
+  - [From "./Idle.js"](#from-idlejs)
+  - [From "./Match.js"](#from-matchjs)
+  - [From "./Pull.js"](#from-pulljs)
+  - [From "./Push.js"](#from-pushjs)
   - [From "./RefArray.js"](#from-refarrayjs)
+  - [From "./RefChunk.js"](#from-refchunkjs)
+  - [From "./RefHashMap.js"](#from-refhashmapjs)
+  - [From "./RefHashSet.js"](#from-refhashsetjs)
   - [From "./RefSubject.js"](#from-refsubjectjs)
   - [From "./Sink.js"](#from-sinkjs)
+  - [From "./Stream.js"](#from-streamjs)
   - [From "./Subject.js"](#from-subjectjs)
   - [From "./TypeId.js"](#from-typeidjs)
   - [From "./Typeclass.js"](#from-typeclassjs)
+  - [From "./Versioned.js"](#from-versionedjs)
 
 ---
 
 # exports
 
-## From "./Computed.js"
+## From "./AsyncData.js"
+
+[AsyncData documentation](https://tylors.github.io/typed/fx/AsyncData.ts.html)
+
+**Signature**
+
+```ts
+export * as AsyncData from "./AsyncData.js"
+```
+
+Added in v1.18.0
+
+## From "./Emitter.js"
+
+[Emitter documentation](https://tylors.github.io/typed/fx/Emitter.ts.html)
+
+**Signature**
+
+```ts
+export * as Emitter from "./Emitter.js"
+```
+
+Added in v1.18.0
+
+## From "./Form.js"
+
+[Form documentation](https://tylors.github.io/typed/fx/Form.ts.html)
+
+**Signature**
+
+```ts
+export * as Form from "./Form.js"
+```
+
+Added in v1.18.0
+
+## From "./FormEntry.js"
+
+[FormEntry documentation](https://tylors.github.io/typed/fx/FormEntry.ts.html)
+
+**Signature**
+
+```ts
+export * as FormEntry from "./FormEntry.js"
+```
+
+Added in v1.18.0
+
+## From "./Fx.js"
 
 Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
 the time dimension. It operates within a context `R`, can fail with an `E`,
@@ -48,31 +108,67 @@ produce exactly 1 error or event.
 **Signature**
 
 ```ts
-export * as Computed from "./Computed.js"
-```
-
-Added in v1.18.0
-
-## From "./Filtered.js"
-
-[Filtered documentation](https://tylors.github.io/typed/fx/Filtered.ts.html)
-
-**Signature**
-
-```ts
-export * as Filtered from "./Filtered.js"
-```
-
-Added in v1.18.0
-
-## From "./Fx.js"
-
-[Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)
-
-**Signature**
-
-```ts
 export * from "./Fx.js"
+```
+
+Added in v1.18.0
+
+## From "./Guard.js"
+
+[Guard documentation](https://tylors.github.io/typed/fx/Guard.ts.html)
+
+**Signature**
+
+```ts
+export * as Guard from "./Guard.js"
+```
+
+Added in v1.18.0
+
+## From "./Idle.js"
+
+[Idle documentation](https://tylors.github.io/typed/fx/Idle.ts.html)
+
+**Signature**
+
+```ts
+export * as Idle from "./Idle.js"
+```
+
+Added in v1.18.0
+
+## From "./Match.js"
+
+[Match documentation](https://tylors.github.io/typed/fx/Match.ts.html)
+
+**Signature**
+
+```ts
+export * as Match from "./Match.js"
+```
+
+Added in v1.18.0
+
+## From "./Pull.js"
+
+[Pull documentation](https://tylors.github.io/typed/fx/Pull.ts.html)
+
+**Signature**
+
+```ts
+export * as Pull from "./Pull.js"
+```
+
+Added in v1.18.0
+
+## From "./Push.js"
+
+[Push documentation](https://tylors.github.io/typed/fx/Push.ts.html)
+
+**Signature**
+
+```ts
+export * as Push from "./Push.js"
 ```
 
 Added in v1.18.0
@@ -85,6 +181,42 @@ Added in v1.18.0
 
 ```ts
 export * as RefArray from "./RefArray.js"
+```
+
+Added in v1.18.0
+
+## From "./RefChunk.js"
+
+[RefChunk documentation](https://tylors.github.io/typed/fx/RefChunk.ts.html)
+
+**Signature**
+
+```ts
+export * as RefChunk from "./RefChunk.js"
+```
+
+Added in v1.18.0
+
+## From "./RefHashMap.js"
+
+[RefHashMap documentation](https://tylors.github.io/typed/fx/RefHashMap.ts.html)
+
+**Signature**
+
+```ts
+export * as RefHashMap from "./RefHashMap.js"
+```
+
+Added in v1.18.0
+
+## From "./RefHashSet.js"
+
+[RefHashSet documentation](https://tylors.github.io/typed/fx/RefHashSet.ts.html)
+
+**Signature**
+
+```ts
+export * as RefHashSet from "./RefHashSet.js"
 ```
 
 Added in v1.18.0
@@ -109,6 +241,18 @@ Added in v1.18.0
 
 ```ts
 export * as Sink from "./Sink.js"
+```
+
+Added in v1.18.0
+
+## From "./Stream.js"
+
+[Stream documentation](https://tylors.github.io/typed/fx/Stream.ts.html)
+
+**Signature**
+
+```ts
+export * as Stream from "./Stream.js"
 ```
 
 Added in v1.18.0
@@ -145,6 +289,18 @@ Added in v1.18.0
 
 ```ts
 export * as Typeclass from "./Typeclass.js"
+```
+
+Added in v1.18.0
+
+## From "./Versioned.js"
+
+[Versioned documentation](https://tylors.github.io/typed/fx/Versioned.ts.html)
+
+**Signature**
+
+```ts
+export * as Versioned from "./Versioned.js"
 ```
 
 Added in v1.18.0

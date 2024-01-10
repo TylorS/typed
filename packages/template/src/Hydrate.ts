@@ -49,5 +49,5 @@ export function hydrate<R, E, T extends RenderEvent | null>(
 export function hydrateLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
 ) {
-  return Fx.drainLayer(Fx.switchMapCause(hydrate(rendered), Effect.logError))
+  return Fx.drainLayer(Fx.switchMapCause(hydrate(rendered), (cause) => Fx.fromEffect(Effect.logError(cause))))
 }

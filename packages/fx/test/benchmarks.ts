@@ -7,6 +7,7 @@ import * as rxjs from "rxjs"
 
 const isEven = (n: number) => n % 2 === 0
 const addOne = (n: number) => n + 1
+const add = (a: number, b: number) => a + b
 
 const mostFromArray = <A>(array: Array<A>): Stream<A> =>
   most.newStream((sink, scheduler) => {
@@ -21,10 +22,10 @@ const mostFromArray = <A>(array: Array<A>): Stream<A> =>
 
 const filterMapReduce = (array: Array<number>) => {
   comparison(`Filter -> Map -> Reduce (${array.length} items)`, {
-    rxjs: () => rxjs.from(array).pipe(rxjs.filter(isEven), rxjs.map(addOne), rxjs.reduce((a, b) => a + b, 0)),
-    most: () => pipe(mostFromArray(array), most.filter(isEven), most.map(addOne), most.scan((a, b) => a + b, 0)),
-    fx: () => Fx.fromIterable(array).pipe(Fx.filter(isEven), Fx.map(addOne), Fx.reduce(0, (a, b) => a + b)),
-    array: () => array.filter(isEven).map(addOne).reduce((a, b) => a + b, 0)
+    rxjs: () => rxjs.from(array).pipe(rxjs.filter(isEven), rxjs.map(addOne), rxjs.reduce(add, 0)),
+    most: () => pipe(mostFromArray(array), most.filter(isEven), most.map(addOne), most.scan(add, 0)),
+    fx: () => Fx.fromIterable(array).pipe(Fx.filter(isEven), Fx.map(addOne), Fx.reduce(0, add)),
+    array: () => array.filter(isEven).map(addOne).reduce(add, 0)
   }, {
     timeout: 10_000
   })
@@ -32,8 +33,12 @@ const filterMapReduce = (array: Array<number>) => {
 
 const arrayTo = (length: number) => Array.from({ length }, (_, i) => i)
 
-describe.skip("Benchmarks", () => {
-  filterMapReduce(arrayTo(1000))
-  filterMapReduce(arrayTo(10000))
-  filterMapReduce(arrayTo(100000))
+const arr1000 = arrayTo(1000)
+const arr10000 = arrayTo(10000)
+const arr100000 = arrayTo(100000)
+
+describe.skip("Stream Benchmarks", () => {
+  filterMapReduce(arr1000)
+  filterMapReduce(arr10000)
+  filterMapReduce(arr100000)
 })

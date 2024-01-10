@@ -44,7 +44,7 @@ describe("ElementRef", () => {
       const [ref] = yield* _(testRef`<p id="foo">asdf</p>`)
       const foo = ref.query("p#foo")
       const [p] = yield* _(foo)
-      const fiber = yield* _(foo.events("click"), Fx.first, Effect.flatten, Effect.fork)
+      const fiber = yield* _(foo.events("click"), Fx.first, Effect.fork)
 
       // Allow fiber to start
       yield* _(Effect.sleep(1))
@@ -65,7 +65,7 @@ describe("ElementRef", () => {
       const button = element.children[0] as HTMLButtonElement
       const foo = ref.query(button).query("p#foo")
       const [p] = yield* _(foo)
-      const fiber = yield* _(ref.query(button).query("p#foo").events("click"), Fx.first, Effect.flatten, Effect.fork)
+      const fiber = yield* _(ref.query(button).query("p#foo").events("click"), Fx.first, Effect.fork)
 
       // Allow fiber to start
       yield* _(Effect.sleep(1))

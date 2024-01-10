@@ -19,6 +19,18 @@
       "@typed/async-data/examples/*": [
         "packages/async-data/build/examples/*"
       ],
+      "@typed/compiler": [
+        "packages/compiler/build/esm/index.js"
+      ],
+      "@typed/compiler/*": [
+        "packages/compiler/build/esm/*"
+      ],
+      "@typed/compiler/test/*": [
+        "packages/compiler/build/test/*"
+      ],
+      "@typed/compiler/examples/*": [
+        "packages/compiler/build/examples/*"
+      ],
       "@typed/context": [
         "packages/context/build/esm/index.js"
       ],
@@ -169,6 +181,9 @@
     "packages/async-data/build/esm/**/*",
     "packages/async-data/build/test/**/*",
     "packages/async-data/build/examples/**/*",
+    "packages/compiler/build/esm/**/*",
+    "packages/compiler/build/test/**/*",
+    "packages/compiler/build/examples/**/*",
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",

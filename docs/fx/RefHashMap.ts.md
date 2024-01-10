@@ -1,6 +1,6 @@
 ---
 title: RefHashMap.ts
-nav_order: 18
+nav_order: 14
 parent: "@typed/fx"
 ---
 
@@ -180,7 +180,7 @@ Create a projection of available values
 ```ts
 export declare function compact<R, E, K, V>(
   refHashMap: RefHashMap<R, E, K, Option<V>>
-): Computed<R, E, HashMap.HashMap<K, V>>
+): RefSubject.Computed<R, E, HashMap.HashMap<K, V>>
 ```
 
 Added in v1.18.0
@@ -193,8 +193,8 @@ Check if a key is available withing a HashMap
 
 ```ts
 export declare const has: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Computed<R, E, boolean>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Computed<R, E, boolean>
 }
 ```
 
@@ -208,8 +208,8 @@ Check if a key is available withing a HashMap
 
 ```ts
 export declare const hasHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): Computed<R, E, boolean>
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Computed<R, E, boolean>
 }
 ```
 
@@ -222,7 +222,7 @@ Check if HashMap is empty
 **Signature**
 
 ```ts
-export declare function isEmpty<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, boolean>
+export declare function isEmpty<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, boolean>
 ```
 
 Added in v1.18.0
@@ -234,7 +234,9 @@ Get the keys as a HashSet
 **Signature**
 
 ```ts
-export declare function keySet<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, HashSet.HashSet<K>>
+export declare function keySet<R, E, K, V>(
+  refHashMap: RefHashMap<R, E, K, V>
+): RefSubject.Computed<R, E, HashSet.HashSet<K>>
 ```
 
 Added in v1.18.0
@@ -246,7 +248,7 @@ Get the keys as an Iterable
 **Signature**
 
 ```ts
-export declare function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, Iterable<K>>
+export declare function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<K>>
 ```
 
 Added in v1.18.0
@@ -259,8 +261,15 @@ Get the keys as an Iterable
 
 ```ts
 export declare const reduce: {
-  <K, V, B>(seed: B, f: (acc: B, a: V, k: K) => B): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Computed<R, E, B>
-  <R, E, K, V, B>(refHashMap: RefHashMap<R, E, K, V>, seed: B, f: (acc: B, a: V, k: K) => B): Computed<R, E, B>
+  <K, V, B>(
+    seed: B,
+    f: (acc: B, a: V, k: K) => B
+  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, B>
+  <R, E, K, V, B>(
+    refHashMap: RefHashMap<R, E, K, V>,
+    seed: B,
+    f: (acc: B, a: V, k: K) => B
+  ): RefSubject.Computed<R, E, B>
 }
 ```
 
@@ -273,7 +282,7 @@ Check the size of the HashMap
 **Signature**
 
 ```ts
-export declare function size<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, number>
+export declare function size<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, number>
 ```
 
 Added in v1.18.0
@@ -285,7 +294,7 @@ Get the values as an Iterable
 **Signature**
 
 ```ts
-export declare function values<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, Iterable<V>>
+export declare function values<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<V>>
 ```
 
 Added in v1.18.0
@@ -297,7 +306,9 @@ Get the values as an HashSet
 **Signature**
 
 ```ts
-export declare function valuesSet<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): Computed<R, E, HashSet.HashSet<V>>
+export declare function valuesSet<R, E, K, V>(
+  refHashMap: RefHashMap<R, E, K, V>
+): RefSubject.Computed<R, E, HashSet.HashSet<V>>
 ```
 
 Added in v1.18.0
@@ -360,8 +371,8 @@ Added in v1.18.0
 
 ```ts
 export declare const get: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Filtered<R, E, V>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Filtered<R, E, V>
 }
 ```
 
@@ -373,8 +384,8 @@ Added in v1.18.0
 
 ```ts
 export declare const getHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): Filtered<R, E, V>
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Filtered<R, E, V>
 }
 ```
 

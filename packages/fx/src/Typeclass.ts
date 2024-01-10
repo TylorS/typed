@@ -23,9 +23,8 @@ import type { Either } from "effect/Either"
 import { dual } from "effect/Function"
 import type * as HKT from "effect/HKT"
 import { getLeft, getRight } from "effect/Option"
-import type { Fx } from "./Fx.js"
+import * as Fx from "./Fx.js"
 
-import * as core from "./internal/core.js"
 import { multicast } from "./internal/share.js"
 
 /**
@@ -34,7 +33,7 @@ import { multicast } from "./internal/share.js"
  * @category TypeLambda
  */
 export interface FxTypeLambda extends HKT.TypeLambda {
-  readonly type: Fx<this["Out2"], this["Out1"], this["Target"]>
+  readonly type: Fx.Fx<this["Out2"], this["Out1"], this["Target"]>
 }
 
 /**
@@ -43,7 +42,7 @@ export interface FxTypeLambda extends HKT.TypeLambda {
  * @category Of
  */
 export const Of: O.Of<FxTypeLambda> = {
-  of: core.succeed
+  of: Fx.succeed
 }
 
 /**
@@ -52,7 +51,7 @@ export const Of: O.Of<FxTypeLambda> = {
  * @category Invariant
  */
 export const Invariant: I.Invariant<FxTypeLambda> = {
-  imap: COV.imap<FxTypeLambda>(core.map)
+  imap: COV.imap<FxTypeLambda>(Fx.map)
 }
 
 /**
@@ -62,7 +61,7 @@ export const Invariant: I.Invariant<FxTypeLambda> = {
  */
 export const Covariant: COV.Covariant<FxTypeLambda> = {
   imap: Invariant.imap,
-  map: core.map
+  map: Fx.map
 }
 
 /**
@@ -81,7 +80,7 @@ export const Pointed: Point.Pointed<FxTypeLambda> = {
  * @category Bicovariant
  */
 export const Bicovariant: BiCov.Bicovariant<FxTypeLambda> = {
-  bimap: dual(3, (self, f, g) => core.mapBoth(self, { onFailure: f, onSuccess: g }))
+  bimap: Fx.mapBoth
 }
 
 /**
@@ -91,8 +90,8 @@ export const Bicovariant: BiCov.Bicovariant<FxTypeLambda> = {
  */
 export const SemiCoproductConcat: SCP.SemiCoproduct<FxTypeLambda> = {
   imap: Invariant.imap,
-  coproduct: (self, that) => core.continueWith(self, () => that),
-  coproductMany: (self, collection) => core.mergeSwitch([self, ...collection])
+  coproduct: (self, that) => Fx.continueWith(self, () => that),
+  coproductMany: (self, collection) => Fx.mergeSwitch([self, ...collection])
 }
 
 /**
@@ -102,8 +101,8 @@ export const SemiCoproductConcat: SCP.SemiCoproduct<FxTypeLambda> = {
  */
 export const SemiCoproductMerge: SCP.SemiCoproduct<FxTypeLambda> = {
   imap: Invariant.imap,
-  coproduct: (self, that) => core.merge([self, that]),
-  coproductMany: (self, collection) => core.merge([self, ...collection])
+  coproduct: (self, that) => Fx.merge(self, that),
+  coproductMany: (self, collection) => Fx.mergeAll([self, ...collection])
 }
 
 /**
@@ -113,8 +112,8 @@ export const SemiCoproductMerge: SCP.SemiCoproduct<FxTypeLambda> = {
  */
 export const SemiCoproductRace: SCP.SemiCoproduct<FxTypeLambda> = {
   imap: Invariant.imap,
-  coproduct: (self, that) => core.race([self, that]),
-  coproductMany: (self, collection) => core.race([self, ...collection])
+  coproduct: (self, that) => Fx.race(self, that),
+  coproductMany: (self, collection) => Fx.raceAll([self, ...collection])
 }
 
 /**
@@ -184,8 +183,8 @@ export const SemiAlternative: {
  */
 export const CoproductConcat: CP.Coproduct<FxTypeLambda> = {
   ...SemiCoproductConcat,
-  zero: () => core.empty,
-  coproductAll: (collection) => core.mergeSwitch(Array.from(collection))
+  zero: () => Fx.empty,
+  coproductAll: (collection) => Fx.mergeSwitch(Array.from(collection))
 }
 
 /**
@@ -195,8 +194,8 @@ export const CoproductConcat: CP.Coproduct<FxTypeLambda> = {
  */
 export const CoproductMerge: CP.Coproduct<FxTypeLambda> = {
   ...SemiCoproductMerge,
-  zero: () => core.empty,
-  coproductAll: (collection) => core.merge(Array.from(collection))
+  zero: () => Fx.empty,
+  coproductAll: (collection) => Fx.mergeAll(Array.from(collection))
 }
 
 /**
@@ -206,8 +205,8 @@ export const CoproductMerge: CP.Coproduct<FxTypeLambda> = {
  */
 export const CoproductRace: CP.Coproduct<FxTypeLambda> = {
   ...SemiCoproductRace,
-  zero: () => core.never,
-  coproductAll: (collection) => core.race(Array.from(collection))
+  zero: () => Fx.never,
+  coproductAll: (collection) => Fx.raceAll(Array.from(collection))
 }
 
 /**
@@ -262,8 +261,8 @@ export const Alternative: {
  */
 export const Semiproduct: SP.SemiProduct<FxTypeLambda> = {
   imap: Invariant.imap,
-  product: (self, that) => core.combine([self, that]) as any,
-  productMany: (self, collection) => core.combine([self, ...collection]) as any
+  product: (self, that) => Fx.tuple([self, that]) as any,
+  productMany: (self, collection) => Fx.tuple([self, ...collection]) as any
 }
 
 /**
@@ -284,7 +283,7 @@ export const SemiApplicative: SApp.SemiApplicative<FxTypeLambda> = {
 export const Product: P.Product<FxTypeLambda> = {
   ...Of,
   ...Semiproduct,
-  productAll: (collection) => core.combine(Array.from(collection)) as any
+  productAll: (collection) => Fx.tuple(Array.from(collection)) as any
 }
 
 /**
@@ -303,15 +302,15 @@ export const Applicative: App.Applicative<FxTypeLambda> = {
  * @category Filterable
  */
 export const Filterable: Filter.Filterable<FxTypeLambda> = {
-  partitionMap: dual(2, <R, E, A, B, C>(self: Fx<R, E, A>, f: (a: A) => Either<B, C>) => {
-    const m = multicast(core.map(self, f))
+  partitionMap: dual(2, <R, E, A, B, C>(self: Fx.Fx<R, E, A>, f: (a: A) => Either<B, C>) => {
+    const m = multicast(Fx.map(self, f))
 
     return [
-      core.filterMap(m, getLeft),
-      core.filterMap(m, getRight)
+      Fx.filterMap(m, getLeft),
+      Fx.filterMap(m, getRight)
     ] as const
   }),
-  filterMap: core.filterMap
+  filterMap: Fx.filterMap
 }
 
 /**
@@ -320,7 +319,7 @@ export const Filterable: Filter.Filterable<FxTypeLambda> = {
  * @category FlatMap
  */
 export const FlatMap: F.FlatMap<FxTypeLambda> = {
-  flatMap: core.flatMap
+  flatMap: Fx.flatMap
 }
 
 /**
@@ -349,7 +348,7 @@ export const Monad: M.Monad<FxTypeLambda> = {
  * @category FlatMap
  */
 export const SwitchMap: F.FlatMap<FxTypeLambda> = {
-  flatMap: core.switchMap
+  flatMap: Fx.switchMap
 }
 
 /**
@@ -378,7 +377,7 @@ export const SwitchMapMonad: M.Monad<FxTypeLambda> = {
  * @category FlatMap
  */
 export const ExhaustMap: F.FlatMap<FxTypeLambda> = {
-  flatMap: core.exhaustMap
+  flatMap: Fx.exhaustMap
 }
 
 /**
@@ -407,7 +406,7 @@ export const ExhaustMapMonad: M.Monad<FxTypeLambda> = {
  * @category FlatMap
  */
 export const ExhaustMapLatest: F.FlatMap<FxTypeLambda> = {
-  flatMap: core.exhaustMapLatest
+  flatMap: Fx.exhaustMapLatest
 }
 
 /**
@@ -436,7 +435,7 @@ export const ExhaustMapLatestMonad: M.Monad<FxTypeLambda> = {
  * @category FlatMap
  */
 export const ConcatMap: F.FlatMap<FxTypeLambda> = {
-  flatMap: core.concatMap
+  flatMap: Fx.concatMap
 }
 
 /**

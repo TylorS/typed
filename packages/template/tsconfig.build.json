@@ -19,10 +19,10 @@
       "path": "../context"
     },
     {
-      "path": "../environment"
+      "path": "../dom"
     },
     {
-      "path": "../dom"
+      "path": "../environment"
     },
     {
       "path": "../fx"

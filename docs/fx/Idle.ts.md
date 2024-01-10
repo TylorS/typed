@@ -1,6 +1,6 @@
 ---
 title: Idle.ts
-nav_order: 8
+nav_order: 7
 parent: "@typed/fx"
 ---
 
@@ -135,8 +135,10 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface IdleQueue<I extends Hash> {
+export interface IdleQueue<I> {
   readonly add: <R>(part: I, task: Effect.Effect<R, never, unknown>) => Effect.Effect<R | Scope.Scope, never, void>
+
+  readonly interrupt: Effect.Effect<never, never, void>
 }
 ```
 
@@ -173,9 +175,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const makeIdleQueue: <I extends Hash>(
-  options?: IdleRequestOptions
-) => Effect.Effect<Scope.Scope, never, IdleQueue<I>>
+export declare const makeIdleQueue: <I>(options?: IdleRequestOptions) => Effect.Effect<Scope.Scope, never, IdleQueue<I>>
 ```
 
 Added in v1.18.0

@@ -20,6 +20,7 @@ import {
   CommentPartImpl,
   DataPartImpl,
   NodePartImpl,
+  PropertiesPartImpl,
   PropertyPartImpl,
   SparseAttributePartImpl,
   SparseClassNamePartImpl,
@@ -89,7 +90,7 @@ const renderChunkMap: RenderChunkMap = {
       index,
       chunk,
       sparsePartNodeToPart(chunk.node, (v) => onChunk(index, chunk.render(v))),
-      // @ts-expect-error
+      // @ts-ignore Type Instantiation is excessively deep and possibly infinite
       chunk.node.nodes.map((n) => (n._tag === "text" ? n.value : values[n.index]))
     )
 }
@@ -102,7 +103,7 @@ export function htmlChunksToRenderChunks<R, E>(
   const output: Array<RenderChunk<R, E>> = Array(chunks.length)
 
   for (let i = 0; i < chunks.length; i++) {
-    // @ts-expect-error
+    // @ts-ignore Type Instantiation is excessively deep and possibly infinite
     output[i] = renderChunkMap[chunks[i]._tag](chunks[i] as any, i, values, onChunk)
   }
 
@@ -130,7 +131,8 @@ const partNodeMap: PartNodeMap = {
   "ref": () => {
     throw new Error("Refs are not utilized on the server")
   },
-  "text-part": (node, onChunk) => new TextPartImpl(node.index, ({ value }) => onChunk(value), null)
+  "text-part": (node, onChunk) => new TextPartImpl(node.index, ({ value }) => onChunk(value), null),
+  "properties": (node, onChunk) => new PropertiesPartImpl(node.index, ({ value }) => onChunk(value), null)
 }
 
 export function partNodeToPart(

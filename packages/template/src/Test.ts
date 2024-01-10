@@ -6,17 +6,15 @@ import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServic
 import type { GlobalThis } from "@typed/dom/GlobalThis"
 import type { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
-import type { Computed } from "@typed/fx/Computed"
-import type { Filtered } from "@typed/fx/Filtered"
 import * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
+import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
-import * as happyDOM from "happy-dom"
 import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
@@ -36,11 +34,11 @@ import type { RenderTemplate } from "./RenderTemplate.js"
  * @since 1.0.0
  */
 export interface TestRender<E> {
-  readonly window: Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
+  readonly window: Window & GlobalThis
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
-  readonly errors: Computed<never, never, ReadonlyArray<E>>
-  readonly lastError: Filtered<never, never, E>
+  readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
+  readonly lastError: RefSubject.Filtered<never, never, E>
   readonly interrupt: Effect.Effect<never, never, void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
@@ -62,24 +60,25 @@ export function testRender<R, E>(
   TestRender<E>
 > {
   return Effect.gen(function*(_) {
-    const window = makeWindow(options)
+    const window = yield* _(getOrMakeWindow(options))
     const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefArray.make<never, never, E>(Effect.succeed([])))
+    const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
       fx,
       render,
-      Fx.run(Sink.Sink(
-        (cause) =>
-          Cause.failureOrCause(cause).pipe(
-            Either.match({
-              onLeft: (error) => RefArray.append(errors, error),
-              onRight: (cause) => errors.onFailure(cause)
-            })
-          ),
-        (rendered) => ElementRef.set(elementRef, rendered)
-      )),
+      (x) =>
+        x.run(Sink.make(
+          (cause) =>
+            Cause.failureOrCause(cause).pipe(
+              Either.match({
+                onLeft: (error) => RefArray.append(errors, error),
+                onRight: (cause) => errors.onFailure(cause)
+              })
+            ),
+          (rendered) => ElementRef.set(elementRef, rendered)
+        )),
       Effect.forkScoped,
-      Effect.provide(RenderContext.browser(window, { skipRenderScheduling: true }))
+      Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
     )
 
     const test: TestRender<E> = {
@@ -98,6 +97,9 @@ export function testRender<R, E>(
     // Allow our fibers to start
     yield* _(adjustTime(1))
     yield* _(adjustTime(1))
+
+    // Await the first render
+    yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
 
     return test
   })
@@ -146,6 +148,23 @@ export function click<E>(
 
 // internals
 
-function makeWindow(options?: IHappyDOMOptions) {
-  return new happyDOM.Window(options) as any as Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
+function getOrMakeWindow(options?: IHappyDOMOptions) {
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+    return Effect.gen(function*(_) {
+      window.document.head.innerHTML = ""
+      window.document.body.innerHTML = ""
+      yield* _(Effect.addFinalizer(() =>
+        Effect.sync(() => {
+          window.document.head.innerHTML = ""
+          window.document.body.innerHTML = ""
+        })
+      ))
+
+      return window
+    })
+  }
+
+  return Effect.promise(() =>
+    import("happy-dom").then((happyDOM) => new happyDOM.Window(options) as any as Window & GlobalThis)
+  )
 }

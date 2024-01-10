@@ -1,27 +1,29 @@
+import * as Equivalence from "@effect/schema/Equivalence"
 import { unsafeGet } from "@typed/context"
 import { Window } from "@typed/dom/Window"
-import type { Computed } from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
-import { Effect, Exit, Fiber, Option, Runtime, Scope } from "effect"
-import type { Context, Layer } from "effect"
+
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import type * as Fiber from "effect/Fiber"
+import * as Option from "effect/Option"
+import * as Runtime from "effect/Runtime"
+import * as Scope from "effect/Scope"
+
+import { Schema } from "@effect/schema"
+import type { Layer } from "effect"
 import type { Commit } from "../Layer.js"
-import type {
-  BeforeNavigationEvent,
-  BeforeNavigationHandler,
-  Destination,
-  NavigationEvent,
-  NavigationHandler,
-  Transition
-} from "../Navigation.js"
+import type { BeforeNavigationEvent, Destination, NavigationEvent, Transition } from "../Navigation.js"
 import { Navigation, NavigationError } from "../Navigation.js"
-import type { NavigationState } from "./shared.js"
+import type { ModelAndIntent } from "./shared.js"
 import {
   getOriginalState,
   getUrl,
   isPatchedState,
   makeDestination,
   makeHandlersState,
+  NavigationState,
   setupFromModelAndIntent
 } from "./shared.js"
 
@@ -94,31 +96,6 @@ function getBaseHref(window: Window) {
   return base ? base.href : "/"
 }
 
-type ModelAndIntent = {
-  readonly state: RefSubject.RefSubject<never, never, NavigationState>
-  readonly canGoBack: Computed<
-    never,
-    never,
-    boolean
-  >
-  readonly canGoForward: Computed<
-    never,
-    never,
-    boolean
-  >
-  readonly beforeHandlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>
-  >
-  readonly handlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>
-  >
-  readonly commit: Commit
-}
-
 const getNavigationState = (navigation: NativeNavigation): NavigationState => {
   const entries = navigation.entries().map(nativeEntryToDestination)
   const { index } = navigation.currentEntry
@@ -141,11 +118,12 @@ function setupWithNavigation(
   return Effect.gen(function*(_) {
     const state = yield* _(
       RefSubject.fromEffect(
-        Effect.sync((): NavigationState => getNavigationState(navigation))
+        Effect.sync((): NavigationState => getNavigationState(navigation)),
+        { eq: Equivalence.make(Schema.to(Schema.to(NavigationState))) }
       )
     )
-    const canGoBack = state.map((s) => s.index > 0)
-    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
+    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
       Effect.gen(function*(_) {
@@ -264,11 +242,12 @@ function setupWithHistory(
             ),
             (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
           )
-        )
+        ),
+        { eq: Equivalence.make(Schema.to(NavigationState)) }
       )
     )
-    const canGoBack = state.map((s) => s.index > 0)
-    const canGoForward = state.map((s) => s.index < s.entries.length - 1)
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
+    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
     const { beforeHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
       Effect.sync(() => {
@@ -292,7 +271,7 @@ function setupWithHistory(
       beforeHandlers,
       handlers,
       commit
-    } as const
+    } as ModelAndIntent
   })
 }
 
@@ -438,11 +417,8 @@ function scopedRuntime<R>(): Effect.Effect<
     const runFork = Runtime.runFork(runtime)
 
     const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
-      const fiber: Fiber.RuntimeFiber<E, A> = Scope.addFinalizer(
-        scope,
-        Effect.suspend(() => Fiber.interrupt(fiber))
-      ).pipe(
-        Effect.zipRight(effect),
+      const fiber: Fiber.RuntimeFiber<E, A> = effect.pipe(
+        Scope.extend(scope),
         runFork
       )
 

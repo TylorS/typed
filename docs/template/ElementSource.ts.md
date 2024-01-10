@@ -23,6 +23,7 @@ Added in v1.0.0
   - [ParseSelector (type alias)](#parseselector-type-alias)
   - [ROOT_CSS_SELECTOR](#root_css_selector)
   - [Selector (type alias)](#selector-type-alias)
+  - [fromElement](#fromelement)
   - [getElements](#getelements)
 
 ---
@@ -105,7 +106,7 @@ Added in v1.0.0
 
 ```ts
 export declare function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: Filtered<never, never, T>
+  rootElement: RefSubject.Filtered<never, never, T>
 ): ElementSource<T, EventMap>
 ```
 
@@ -119,7 +120,16 @@ Added in v1.0.0
 export interface ElementSource<
   T extends Rendered = Element,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends Versioned.Versioned<never, never, never, never, Rendered.Elements<T>, never, never, Rendered.Elements<T>> {
+> extends Versioned.Versioned<
+    never,
+    never,
+    Scope.Scope,
+    never,
+    Rendered.Elements<T>,
+    never,
+    NoSuchElementException,
+    Rendered.Elements<T>
+  > {
   readonly selector: Selector
 
   readonly query: {
@@ -132,12 +142,12 @@ export interface ElementSource<
     ): ElementSource<Target, EventMap>
   }
 
-  readonly elements: Filtered<never, never, Rendered.Elements<T>>
+  readonly elements: RefSubject.Filtered<never, never, Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<never, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+  ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
 
   readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
 }
@@ -175,6 +185,18 @@ Added in v1.0.0
 
 ```ts
 export type Selector = CssSelectors | ElementSelector
+```
+
+Added in v1.0.0
+
+## fromElement
+
+**Signature**
+
+```ts
+export declare function fromElement<T extends Element, EventMap extends {} = DefaultEventMap<T>>(
+  rootElement: T
+): ElementSource<T, EventMap>
 ```
 
 Added in v1.0.0

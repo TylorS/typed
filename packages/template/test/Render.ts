@@ -1,18 +1,10 @@
 import { RefSubject } from "@typed/fx"
-import type { Renderable } from "@typed/template/Renderable"
-import { html, RenderTemplate } from "@typed/template/RenderTemplate"
+import { html } from "@typed/template/RenderTemplate"
 import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
 import { deepStrictEqual, ok } from "assert"
 import * as Effect from "effect/Effect"
 import { range } from "effect/ReadonlyArray"
-
-export function tmpl<const Values extends ReadonlyArray<Renderable<any, any>>>(
-  template: TemplateStringsArray,
-  ...values: Values
-) {
-  return RenderTemplate.withEffect((render) => render(template, values))
-}
 
 describe("Render", () => {
   test("renders a simple template", () => {
@@ -60,28 +52,30 @@ describe("Render", () => {
       deepStrictEqual(rendered.innerText, "Hello, world!")
     }))
 
-  test("renders a counter", () => {
-    const decrement = (x: number) => Math.max(0, x - 1)
-    const increment = (x: number) => x + 1
+  describe("counter", () => {
+    it("renders a counter", () => {
+      const decrement = (x: number) => Math.max(0, x - 1)
+      const increment = (x: number) => x + 1
 
-    return Effect.gen(function*(_) {
-      const count = yield* _(RefSubject.of(0))
-      const rendered = yield* _(testRender(
-        html`
-          <button class="dec" onclick=${count.update(decrement)}>-</button>
+      return Effect.gen(function*(_) {
+        const count = yield* _(RefSubject.of(0))
+        const rendered = yield* _(testRender(
+          html`
+          <button class="dec" onclick=${RefSubject.update(count, decrement)}>-</button>
           <p>${count}</p>
-          <button class="inc" onclick=${count.update(increment)}>-</button>
+          <button class="inc" onclick=${RefSubject.update(count, increment)}>-</button>
         `
-      ))
+        ))
 
-      const dec = rendered.click({ selector: ".dec" })
-      const inc = rendered.click({ selector: ".inc" })
+        const dec = rendered.click({ selector: ".dec" })
+        const inc = rendered.click({ selector: ".inc" })
 
-      yield* _(Effect.forEach(range(1, 3), () => inc))
-      yield* _(Effect.forEach(range(1, 6), () => dec))
-      yield* _(Effect.forEach(range(1, 4), () => inc))
+        yield* _(Effect.forEach(range(1, 3), () => inc))
+        yield* _(Effect.forEach(range(1, 6), () => dec))
+        yield* _(Effect.forEach(range(1, 5), () => inc))
 
-      expect(yield* _(count)).toEqual(4)
+        expect(yield* _(count)).toEqual(4)
+      }).pipe(Effect.scoped)
     })
   })
 })

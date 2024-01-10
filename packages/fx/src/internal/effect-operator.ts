@@ -1,8 +1,9 @@
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-import { WithContext } from "../Sink.js"
-import type { SyncOperator } from "./sync-operator.js"
+import * as Sink from "../Sink.js"
+import * as SyncOp from "./sync-operator.js"
+import * as SyncProducer from "./sync-producer.js"
 
 // Effect operators are a subset of operators which can be safely fused together assynchronously
 
@@ -63,7 +64,7 @@ type EffectOperatorFusionMap = {
 const EffectOperatorFusionMap: EffectOperatorFusionMap = {
   MapEffect: {
     MapEffect: (op1, op2) => MapEffect((a: any) => Effect.flatMap(op1.f(a), op2.f)),
-    TapEffect: (op1, op2) => TapEffect((a: any) => Effect.tap(op1.f(a), op2.f)),
+    TapEffect: (op1, op2) => MapEffect((a: any) => Effect.tap(op1.f(a), op2.f)),
     FilterEffect: (op1, op2) =>
       FilterMapEffect((a: any) =>
         Effect.flatMap(
@@ -122,7 +123,7 @@ const EffectOperatorFusionMap: EffectOperatorFusionMap = {
           op1.f(a),
           Option.match({
             onNone: () => Effect.succeedNone,
-            onSome: (b) => op2.f(a).pipe(Effect.map(() => b))
+            onSome: (b) => Effect.as(op2.f(b), Option.some(b))
           })
         )
       ),
@@ -157,15 +158,13 @@ export function fuseEffectOperators(op1: EffectOperator, op2: EffectOperator): E
   return EffectOperatorFusionMap[op1._tag][op2._tag](op1 as any, op2 as any)
 }
 
-export function liftSyncOperator(op: SyncOperator): EffectOperator {
-  switch (op._tag) {
-    case "Filter":
-      return FilterEffect((a) => Effect.sync(() => op.f(a)))
-    case "FilterMap":
-      return FilterMapEffect((a) => Effect.sync(() => op.f(a)))
-    case "Map":
-      return MapEffect((a) => Effect.sync(() => op.f(a)))
-  }
+// TODO: We should probably do more specific fusions
+export function liftSyncOperator(op: SyncOp.SyncOperator): EffectOperator {
+  return SyncOp.matchSyncOperator(op, {
+    Filter: (op): EffectOperator => FilterEffect((a) => Effect.succeed(op.f(a))),
+    FilterMap: (op) => FilterMapEffect((a) => Effect.succeed(op.f(a))),
+    Map: (op) => MapEffect((a) => Effect.succeed(op.f(a)))
+  })
 }
 
 export function matchEffectOperator<A, B, C, D>(
@@ -191,70 +190,63 @@ export function matchEffectOperator<A, B, C, D>(
 
 export function compileEffectOperatorSink<R>(
   operator: EffectOperator,
-  sink: WithContext<R, any, any>
-): WithContext<R, any, any> {
+  sink: Sink.Sink<R, any, any>
+): Sink.Sink<R, any, any> {
   return matchEffectOperator(operator, {
-    MapEffect: (op) => WithContext(sink.onFailure, (a) => Effect.matchCauseEffect(op.f(a), sink)),
-    FilterEffect: (op) =>
-      WithContext(
-        sink.onFailure,
-        (a) =>
-          Effect.matchCauseEffect(op.f(a), {
-            onFailure: sink.onFailure,
-            onSuccess: (b) => b ? sink.onSuccess(a) : Effect.unit
-          })
-      ),
-    FilterMapEffect: (op) =>
-      WithContext(sink.onFailure, (a) =>
-        Effect.matchCauseEffect(op.f(a), {
-          onFailure: sink.onFailure,
-          onSuccess: Option.match({
-            onNone: () => Effect.unit,
-            onSome: sink.onSuccess
-          })
-        })),
-    TapEffect: (op) => WithContext(sink.onFailure, (a) => Effect.matchCauseEffect(Effect.as(op.f(a), a), sink))
+    MapEffect: (op) => Sink.mapEffect(sink, op.f),
+    FilterEffect: (op) => Sink.filterEffect(sink, op.f),
+    FilterMapEffect: (op) => Sink.filterMapEffect(sink, op.f),
+    TapEffect: (op) => Sink.tapEffect(sink, op.f)
   })
 }
 
 export function compileCauseEffectOperatorSink<R>(
   operator: EffectOperator,
-  sink: WithContext<R, any, any>
-): WithContext<R, any, any> {
+  sink: Sink.Sink<R, any, any>
+): Sink.Sink<R, any, any> {
   return matchEffectOperator(operator, {
     MapEffect: (op) =>
-      WithContext(
+      Sink.make(
         (a) =>
           Effect.matchCauseEffect(
             op.f(a),
-            WithContext((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
+            Sink.make((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
           ),
         sink.onSuccess
       ),
     FilterEffect: (op) =>
-      WithContext(
+      Sink.make(
         (a) =>
-          Effect.matchCauseEffect(op.f(a), {
-            onFailure: (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
-            onSuccess: (b) => b ? sink.onFailure(a) : Effect.unit
-          }),
+          Effect.matchCauseEffect(
+            op.f(a),
+            Sink.make(
+              (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
+              (b) => b ? sink.onFailure(a) : Effect.unit
+            )
+          ),
         sink.onSuccess
       ),
     FilterMapEffect: (op) =>
-      WithContext((a) =>
-        Effect.matchCauseEffect(op.f(a), {
-          onFailure: (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
-          onSuccess: Option.match({
-            onNone: () => Effect.unit,
-            onSome: sink.onFailure
-          })
-        }), sink.onSuccess),
+      Sink.make(
+        (a) =>
+          Effect.matchCauseEffect(
+            op.f(a),
+            Sink.make(
+              (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
+              Option.match({
+                onNone: () => Effect.unit,
+                onSome: sink.onFailure
+              })
+            )
+          ),
+        sink.onSuccess
+      ),
     TapEffect: (op) =>
-      WithContext(
+      Sink.make(
         (a) =>
           Effect.matchCauseEffect(
             Effect.as(op.f(a), a),
-            WithContext((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
+            Sink.make((cause2) => sink.onFailure(Cause.sequential(a, cause2)), sink.onFailure)
           ),
         sink.onSuccess
       )
@@ -278,5 +270,48 @@ export function compileEffectLoop<B, A, R2, E2, C>(
           onSome: (a) => Effect.map(loop(b, a), Option.some)
         })
       )
+  })
+}
+
+export function compileEffectReducer<B, A, R2, E2>(
+  operator: EffectOperator,
+  loop: (b: B, a: A) => Effect.Effect<R2, E2, B>
+): (b: B, i: any) => Effect.Effect<R2, E2, Option.Option<B>> {
+  return matchEffectOperator(operator, {
+    MapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), (a) => loop(b, a)), Option.some),
+    TapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), () => loop(b, i)), Option.some),
+    FilterEffect: (op) => (b, i) =>
+      Effect.flatMap(op.f(i), (a) => a ? Effect.map(loop(b, i), Option.some) : Effect.succeedNone),
+    FilterMapEffect: (op) => (b, i) =>
+      Effect.flatMap(
+        op.f(i),
+        Option.match({
+          onNone: () => Effect.succeedNone,
+          onSome: (a) => Effect.map(loop(b, a), Option.some)
+        })
+      )
+  })
+}
+
+export function runSyncReduce<A, B, R2, E2>(
+  producer: SyncProducer.SyncProducer<A>,
+  op: EffectOperator,
+  seed: B,
+  f: (acc: B, a: any) => B
+): Effect.Effect<R2, E2, B> {
+  return matchEffectOperator(op, {
+    MapEffect: (op) => SyncProducer.runReduceEffect(producer, seed, (acc, a) => Effect.map(op.f(a), (b) => f(acc, b))),
+    TapEffect: (op) => SyncProducer.runReduceEffect(producer, seed, (acc, a) => Effect.map(op.f(a), () => f(acc, a))),
+    FilterEffect: (op) =>
+      SyncProducer.runReduceEffect(producer, seed, (acc, a) => Effect.map(op.f(a), (b) => b ? acc : f(acc, a))),
+    FilterMapEffect: (op) =>
+      SyncProducer.runReduceEffect(producer, seed, (acc, a) =>
+        Effect.map(
+          op.f(a),
+          Option.match({
+            onNone: () => acc,
+            onSome: (b) => f(acc, b)
+          })
+        ))
   })
 }

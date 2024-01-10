@@ -64,7 +64,9 @@ export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
  * @since 1.0.0
  */
 export function templateToHtmlChunks({ hash, nodes }: Template) {
-  return fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
+  const chunks = fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
+
+  return chunks
 }
 
 function fuseTextChunks(chunks: Array<HtmlChunk>): ReadonlyArray<HtmlChunk> {
@@ -94,6 +96,7 @@ type NodeMap = {
 }
 
 const nodeMap: NodeMap = {
+  doctype: (node) => [new TextChunk(`<!DOCTYPE ${node.name}>`)],
   element: elementToHtmlChunks,
   node: (node) => [new PartChunk(node, String)],
   "self-closing-element": selfClosingElementToHtmlChunks,
@@ -201,6 +204,17 @@ const attrMap: AttrMap = {
     new PartChunk(attr, (value) => value == null ? `` : datasetToString(value as Readonly<Record<string, string>>)),
   event: () => new TextChunk(""),
   property: (attr) => new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${escape(value)}"`)),
+  properties: (attr) =>
+    new PartChunk(
+      attr,
+      (
+        value
+      ) => (value == null
+        ? ``
+        : " " + Object.entries(value).map(([key, value]) =>
+          value === true ? key : value === false ? "" : `${key}="${escape(value)}"`
+        ).join(" "))
+    ),
   ref: () => new TextChunk(""),
   "sparse-attr": (attr) =>
     new SparsePartChunk(attr, (values) => {

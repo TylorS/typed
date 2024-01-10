@@ -1,6 +1,6 @@
 ---
 title: FormEntry.ts
-nav_order: 5
+nav_order: 4
 parent: "@typed/fx"
 ---
 
@@ -18,7 +18,9 @@ Added in v1.18.0
     - [Derived (interface)](#derived-interface)
   - [FormEntryOptions (interface)](#formentryoptions-interface)
   - [MakeFormEntry (type alias)](#makeformentry-type-alias)
-  - [make](#make)
+  - [MakeInputFormEntry (type alias)](#makeinputformentry-type-alias)
+  - [derive](#derive)
+  - [deriveInput](#deriveinput)
 
 ---
 
@@ -29,10 +31,10 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface FormEntry<in out E, in out I, in out O> extends RefSubject<never, E | ParseError, I> {
+export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<I, O>
-  readonly decoded: Computed<never, E | ParseError, O>
+  readonly decoded: RefSubject.Computed<R, E | ParseError, O>
 }
 ```
 
@@ -47,8 +49,8 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Derived<R, E, I, O> extends FormEntry<E, I, O> {
-  readonly persist: Effect.Effect<R, E | ParseError, O>
+export interface Derived<R, R2, E, I, O> extends FormEntry<R, E, I, O> {
+  readonly persist: Effect.Effect<R2, E | ParseError, O>
 }
 ```
 
@@ -73,20 +75,50 @@ Added in v1.18.0
 
 ```ts
 export type MakeFormEntry<I, O> = {
-  <R, E>(ref: RefSubject<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R, E, I, O>>
-  <R, E>(fx: Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<E, I, O>>
-  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<E, I, O>>
+  <R, E>(
+    ref: RefSubject.RefSubject<R, E, O>
+  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<never, R, E, I, O>>
+  <R, E>(fx: Fx.Fx<R, E, O>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
+  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R, never, FormEntry<never, E, I, O>>
 }
 ```
 
 Added in v1.18.0
 
-## make
+## MakeInputFormEntry (type alias)
+
+MakeRefSubject is a RefSubject factory function dervied from a Schema.
 
 **Signature**
 
 ```ts
-export declare function make<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O>
+export type MakeInputFormEntry<I, O> = {
+  <R, E>(
+    ref: RefSubject.RefSubject<R, E, I>
+  ): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<never, R, E, I, O>>
+  <R, E>(fx: Fx.Fx<R, E, I>): Effect.Effect<R | Scope.Scope, never, FormEntry<never, E, I, O>>
+  <R, E>(effect: Effect.Effect<R, E, I>): Effect.Effect<R, never, FormEntry<never, E, I, O>>
+}
+```
+
+Added in v1.20.0
+
+## derive
+
+**Signature**
+
+```ts
+export declare function derive<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, O>
+```
+
+Added in v1.18.0
+
+## deriveInput
+
+**Signature**
+
+```ts
+export declare function deriveInput<I, O>(options: FormEntryOptions<I, O>): MakeInputFormEntry<I, O>
 ```
 
 Added in v1.18.0

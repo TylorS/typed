@@ -8,7 +8,6 @@ import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as HashSet from "effect/HashSet"
 import type * as Scope from "effect/Scope"
-import type * as Computed from "./Computed.js"
 import type * as Fx from "./Fx.js"
 import * as RefSubject from "./RefSubject.js"
 
@@ -20,19 +19,10 @@ import * as RefSubject from "./RefSubject.js"
 export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
 
 /**
- * Construct a new RefHashSet with the given initial value.
  * @since 1.18.0
- * @category constructors
  */
 export function make<R, E, A>(
-  initial: Effect.Effect<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
-export function make<R, E, A>(
-  initial: Fx.Fx<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
-
-export function make<R, E, A>(
-  initial: Fx.FxInput<R, E, HashSet.HashSet<A>>
+  initial: Effect.Effect<R, E, HashSet.HashSet<A>> | Fx.Fx<R, E, HashSet.HashSet<A>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>> {
   return RefSubject.make(
     initial
@@ -61,7 +51,7 @@ export const add: {
   <A>(value: A): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<R, E, HashSet.HashSet<A>>
   <R, E, A>(ref: RefHashSet<R, E, A>, value: A): Effect.Effect<R, E, HashSet.HashSet<A>>
 } = dual(2, function add<R, E, A>(ref: RefHashSet<R, E, A>, value: A) {
-  return ref.update(HashSet.add(value))
+  return RefSubject.update(ref, HashSet.add(value))
 })
 
 /**
@@ -75,13 +65,12 @@ export const appendAll: {
   ): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<R, E, HashSet.HashSet<A>>
   <R, E, A>(ref: RefHashSet<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, HashSet.HashSet<A>>
 } = dual(2, function appendAll<R, E, A>(ref: RefHashSet<R, E, A>, value: Iterable<A>) {
-  return ref.update((set) =>
+  return RefSubject.update(ref, (set) =>
     HashSet.mutate(set, (set) => {
       for (const a of value) {
         HashSet.add(set, a)
       }
-    })
-  )
+    }))
 })
 
 /**
@@ -92,13 +81,13 @@ export const appendAll: {
 export const filterValues: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, HashSet.HashSet<A>>
+  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
   <R, E, A>(
     ref: RefHashSet<R, E, A>,
     predicate: (a: A) => boolean
-  ): Computed.Computed<R, E, HashSet.HashSet<A>>
+  ): RefSubject.Computed<R, E, HashSet.HashSet<A>>
 } = dual(2, function filterValues<R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean) {
-  return ref.map(HashSet.filter(predicate))
+  return RefSubject.map(ref, HashSet.filter(predicate))
 })
 
 /**
@@ -106,7 +95,8 @@ export const filterValues: {
  * @since 1.18.0
  * @category computed
  */
-export const size = <R, E, A>(ref: RefHashSet<R, E, A>): Computed.Computed<R, E, number> => ref.map(HashSet.size)
+export const size = <R, E, A>(ref: RefHashSet<R, E, A>): RefSubject.Computed<R, E, number> =>
+  RefSubject.map(ref, HashSet.size)
 
 /**
  * Map (Endomorphic) the values of a RefHashSet.
@@ -116,13 +106,13 @@ export const size = <R, E, A>(ref: RefHashSet<R, E, A>): Computed.Computed<R, E,
 export const map: {
   <A>(
     f: (a: A) => A
-  ): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, HashSet.HashSet<A>>
+  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
   <R, E, A>(
     ref: RefHashSet<R, E, A>,
     f: (a: A) => A
-  ): Computed.Computed<R, E, HashSet.HashSet<A>>
+  ): RefSubject.Computed<R, E, HashSet.HashSet<A>>
 } = dual(2, function mapValues<R, E, A>(ref: RefHashSet<R, E, A>, f: (a: A) => A) {
-  return ref.update(HashSet.map(f))
+  return RefSubject.update(ref, HashSet.map(f))
 })
 
 /**
@@ -133,15 +123,15 @@ export const map: {
 export const mapValues: {
   <A, B>(
     f: (a: A) => B
-  ): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, ReadonlyArray<B>>
+  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, ReadonlyArray<B>>
   <R, E, A, B>(
     ref: RefHashSet<R, E, A>,
     f: (a: A) => B
-  ): Computed.Computed<R, E, ReadonlyArray<B>>
+  ): RefSubject.Computed<R, E, ReadonlyArray<B>>
 } = dual(
   2,
   function mapValues<R, E, A, B>(ref: RefHashSet<R, E, A>, f: (a: A) => B) {
-    return ref.map(HashSet.map(f))
+    return RefSubject.map(ref, HashSet.map(f))
   }
 )
 
@@ -155,14 +145,14 @@ export const partition: {
     predicate: (a: A) => a is B
   ): <R, E>(
     ref: RefHashSet<R, E, A>
-  ) => Computed.Computed<R, E, readonly [ReadonlyArray<B>, HashSet.HashSet<A>]>
-  <R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean): Computed.Computed<
+  ) => RefSubject.Computed<R, E, readonly [ReadonlyArray<B>, HashSet.HashSet<A>]>
+  <R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean): RefSubject.Computed<
     never,
     E,
     readonly [HashSet.HashSet<A>, HashSet.HashSet<A>]
   >
 } = dual(2, function partition<R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean) {
-  return ref.map(HashSet.partition(predicate))
+  return RefSubject.map(ref, HashSet.partition(predicate))
 })
 
 /**
@@ -174,15 +164,15 @@ export const reduce: {
   <A, B>(
     b: B,
     f: (b: B, a: A) => B
-  ): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, B>
+  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, B>
   <R, E, A, B>(
     ref: RefHashSet<R, E, A>,
     b: B,
     f: (b: B, a: A) => B
-  ): Computed.Computed<R, E, B>
+  ): RefSubject.Computed<R, E, B>
 } = dual(
   3,
   function reduce<R, E, A, B>(ref: RefHashSet<R, E, A>, b: B, f: (b: B, a: A) => B) {
-    return ref.map(HashSet.reduce(b, f))
+    return RefSubject.map(ref, HashSet.reduce(b, f))
   }
 )

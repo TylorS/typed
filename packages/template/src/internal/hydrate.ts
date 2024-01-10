@@ -1,21 +1,20 @@
 import * as Fx from "@typed/fx/Fx"
-import * as Subject from "@typed/fx/Subject"
-import type { Rendered } from "@typed/wire"
 import type { Cause } from "effect"
-import { Effect } from "effect"
-import * as ElementRef from "../ElementRef.js"
+import * as Effect from "effect/Effect"
 import type { Placeholder } from "../Placeholder.js"
 import type { Renderable } from "../Renderable.js"
 import type { RenderContext } from "../RenderContext.js"
+import type { RenderEvent } from "../RenderEvent.js"
 import { DomRenderEvent } from "../RenderEvent.js"
 import type { RenderTemplate } from "../RenderTemplate.js"
-import { TemplateInstance } from "../TemplateInstance.js"
 import { indexRefCounter } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
+import { Scope } from "effect/Scope"
 import type { Template } from "../Template.js"
 import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors.js"
+import { type EventSource, makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
 import { buildParts, getBrowserEntry, renderTemplate, renderValues } from "./render.js"
 import {
@@ -33,61 +32,69 @@ import {
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const hydrateTemplate: (document: Document, ctx: RenderContext) => RenderTemplate =
-  (document, renderContext) =>
-  <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
+export const hydrateTemplate: (document: Document, ctx: RenderContext) => RenderTemplate = (
+  document,
+  renderContext
+) => {
+  const render_ = renderTemplate(document, renderContext)
+
+  return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
-    values: Values,
-    providedRef?: ElementRef.ElementRef<T>
-  ) => {
-    return Effect.gen(function*(_) {
-      const context = yield* _(Effect.context<never>())
-      const hydrateCtx = unsafeGet(context, HydrateContext)
+    values: Values
+  ): Fx.Fx<
+    Scope | Placeholder.Context<Values[number]>,
+    Placeholder.Error<Values[number]>,
+    RenderEvent
+  > => {
+    return Fx.make((sink) =>
+      Effect.gen(function*(_) {
+        const eventSource = makeEventSource()
+        const context = yield* _(Effect.context<Scope>())
+        const hydrateCtx = unsafeGet(context, HydrateContext)
+        const scope = unsafeGet(context, Scope)
 
-      // If we're not longer hydrating, just render normally
-      if (!hydrateCtx.hydrate) {
-        return yield* _(renderTemplate(document, renderContext)(templateStrings, values, providedRef))
-      }
+        // If we're not longer hydrating, just render normally
+        if (hydrateCtx.hydrate === false) {
+          return render_(templateStrings, values)
+        }
 
-      const elementRef = providedRef || (yield* _(ElementRef.make<T>()))
-      const events = Fx.map(elementRef, DomRenderEvent)
-      const errors = Subject.make<Placeholder.Error<Values[number]>, never>()
+        const { parts, template, where, wire } = getHydrateEntry({
+          ...hydrateCtx,
+          document,
+          renderContext,
+          eventSource,
+          strings: templateStrings,
+          onCause: sink.onFailure
+        })
 
-      const { getParts, template, where, wire } = getHydrateEntry({
-        ...hydrateCtx,
-        document,
-        renderContext,
-        elementRef,
-        strings: templateStrings,
-        onCause: errors.onFailure
+        // If there are parts we need to render them before constructing our Wire
+        if (parts.length > 0) {
+          const refCounter = yield* _(indexRefCounter(parts.length))
+
+          // Do the work
+          yield* _(
+            renderValues(values, parts, refCounter, context, (index: number): HydrateContext => ({
+              where,
+              rootIndex: index,
+              parentTemplate: template,
+              hydrate: true
+            }))
+          )
+
+          // Wait for initial work to be completed
+          yield* _(refCounter.wait)
+        }
+
+        hydrateCtx.hydrate = false
+
+        yield* _(eventSource.setup(wire, scope))
+
+        yield* _(sink.onSuccess(DomRenderEvent(wire)))
+        yield* _(Effect.never)
       })
-      const parts = yield* _(getParts)
-
-      // If there are parts we need to render them before constructing our Wire
-      if (parts.length > 0) {
-        const refCounter = yield* _(indexRefCounter(parts.length))
-
-        // Do the work
-        yield* _(renderValues(values, parts, refCounter, errors.onFailure, (index: number): HydrateContext => ({
-          where,
-          rootIndex: index,
-          parentTemplate: template,
-          hydrate: true
-        })))
-
-        // Wait for initial work to be completed
-        yield* _(refCounter.wait)
-      }
-
-      hydrateCtx.hydrate = false
-
-      // Set the element when it is ready
-      yield* _(ElementRef.set(elementRef, wire as T))
-
-      // Return the Template instance
-      return TemplateInstance(Fx.merge([events, errors]), elementRef)
-    })
+    )
   }
+}
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
   const childNodes = findRootChildNodes(where)
@@ -205,7 +212,7 @@ export function findPartComment(childNodes: ArrayLike<Node>, partIndex: number) 
 export function getHydrateEntry({
   childIndex,
   document,
-  elementRef,
+  eventSource,
   onCause,
   parentTemplate,
   renderContext,
@@ -219,7 +226,7 @@ export function getHydrateEntry({
   rootIndex: number
   parentTemplate: Template | null
   strings: TemplateStringsArray
-  elementRef: ElementRef.ElementRef<any>
+  eventSource: EventSource
   onCause: (cause: Cause.Cause<any>) => Effect.Effect<never, never, void>
   childIndex?: number
 }) {
@@ -229,7 +236,7 @@ export function getHydrateEntry({
     where = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex, childIndex)
   }
 
-  const getParts = buildParts(document, renderContext, template, where, elementRef, onCause, true)
+  const parts = buildParts(document, renderContext, template, where, eventSource, onCause, true)
 
   const wire = (() => {
     if (!parentTemplate) {
@@ -256,7 +263,7 @@ export function getHydrateEntry({
   return {
     template,
     wire,
-    getParts,
+    parts,
     where
   } as const
 }

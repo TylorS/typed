@@ -27,7 +27,6 @@ Added in v1.0.0
   - [From "./RenderEvent.js"](#from-rendereventjs)
   - [From "./RenderTemplate.js"](#from-rendertemplatejs)
   - [From "./Renderable.js"](#from-renderablejs)
-  - [From "./TemplateInstance.js"](#from-templateinstancejs)
 
 ---
 
@@ -197,18 +196,6 @@ Re-exports all named exports from the "./Renderable.js" module.
 
 ```ts
 export * from "./Renderable.js"
-```
-
-Added in v1.0.0
-
-## From "./TemplateInstance.js"
-
-Re-exports all named exports from the "./TemplateInstance.js" module.
-
-**Signature**
-
-```ts
-export * from "./TemplateInstance.js"
 ```
 
 Added in v1.0.0

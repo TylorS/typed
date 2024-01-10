@@ -32,6 +32,7 @@ export type Node =
   | TextNode
   | NodePart
   | Comment
+  | DocType
 
 /**
  * @since 1.0.0
@@ -44,6 +45,7 @@ export type PartNode =
   | EventPartNode
   | NodePart
   | PropertyPartNode
+  | PropertiesPartNode
   | RefPartNode
   | TextPartNode
   | CommentPartNode
@@ -99,6 +101,18 @@ export class TextOnlyElement {
 /**
  * @since 1.0.0
  */
+export class DocType {
+  readonly _tag = "doctype"
+  constructor(
+    readonly name: string,
+    readonly publicType?: string,
+    readonly systemId?: string
+  ) {}
+}
+
+/**
+ * @since 1.0.0
+ */
 export type Attribute =
   | AttributeNode
   | AttrPartNode
@@ -110,6 +124,7 @@ export type Attribute =
   | DataPartNode
   | EventPartNode
   | PropertyPartNode
+  | PropertiesPartNode
   | RefPartNode
 
 /**
@@ -215,6 +230,17 @@ export class PropertyPartNode {
 
   constructor(
     readonly name: string,
+    readonly index: number
+  ) {}
+}
+
+/**
+ * @since 1.0.0
+ */
+export class PropertiesPartNode {
+  readonly _tag = "properties" as const
+
+  constructor(
     readonly index: number
   ) {}
 }

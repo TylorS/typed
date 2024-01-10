@@ -3,15 +3,16 @@
  */
 
 import { CurrentEnvironment } from "@typed/environment"
-import type * as Computed from "@typed/fx/Computed"
 import * as Fx from "@typed/fx/Fx"
 import * as Guard from "@typed/fx/Guard"
 import * as Match from "@typed/fx/Match"
-import type * as RefSubject from "@typed/fx/RefSubject"
+import * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
 import type * as Path from "@typed/path"
 import * as Route from "@typed/route"
-import { Effect, Option, type Scope } from "effect"
+import type { Scope } from "effect"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import type { CurrentRoute } from "./CurrentRoute.js"
 import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
 
@@ -54,7 +55,7 @@ export interface RouteMatcher<R, E, A> {
   readonly notFound: <R2, E2, B>(
     f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<R2, E2, B>
   ) => Fx.Fx<
-    Navigation.Navigation | CurrentEnvironment | R | Exclude<R2, Scope.Scope>,
+    Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope,
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   >
@@ -63,7 +64,7 @@ export interface RouteMatcher<R, E, A> {
     route: Route.Route<P> | P,
     ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
   ) => Fx.Fx<
-    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R,
+    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope,
     Exclude<E, Navigation.RedirectError>,
     A
   >
@@ -86,12 +87,12 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
   match<const P extends string, R2, E2, B>(
     route: Route.Route<P> | P,
     f: (ref: RefSubject.RefSubject<never, never, Path.ParamsOf<P>>) => Fx.Fx<R2, E2, B>
-  ): RouteMatcher<R | R2, E | E2, A | B>
+  ): RouteMatcher<R | Exclude<R2, Scope.Scope>, E | E2, A | B>
   match<const P extends string, R2, E2, B, R3, E3, C>(
     route: Route.Route<P> | P,
     guard: Guard.Guard<Path.ParamsOf<P>, R2, E2, B>,
     f: (ref: RefSubject.RefSubject<never, never, B>) => Fx.Fx<R3, E3, C>
-  ): RouteMatcher<R | R2 | R3, E | E2 | E3, A | C>
+  ): RouteMatcher<R | Exclude<R2 | R3, Scope.Scope>, E | E2 | E3, A | C>
 
   match<const P extends string, R2, E2, B, R3, E3, C>(
     pathOrRoute: Route.Route<P> | P,
@@ -106,13 +107,13 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
       return new RouteMatcherImpl<R | R2 | R3, E | E2 | E3, A | C>([...this.guards, {
         route,
         guard: getGuard(route),
-        match: guard as any
+        match: (ref) => Fx.scoped((guard as any)!(ref))
       }]) as any
     } else {
       return new RouteMatcherImpl<R | R2 | R3, E | E2 | E3, A | C>([...this.guards, {
         route,
         guard: getGuard(route, guard as any),
-        match: f as any
+        match: (ref) => Fx.scoped((f as any)!(ref))
       }]) as any
     }
   }
@@ -132,36 +133,37 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
     route: Route.Route<P> | P,
     guard: Guard.Guard<Path.ParamsOf<P>, R2, E2, B> | ((b: B) => C),
     f?: (b: B) => C
-  ): RouteMatcher<R | R2 | R3, E | E2 | E3, A | C> {
+  ): RouteMatcher<R | Exclude<R2 | R3, Scope.Scope>, E | E2 | E3, A | C> {
     if (arguments.length === 2) {
-      return this.match(route, (ref) => ref.map(guard as any))
+      return this.match(route, (ref) => RefSubject.map(ref, guard as any))
     } else {
-      return this.match(route, guard as any, (ref) => ref.map(f as any))
+      return this.match(route, guard as any, (ref) => RefSubject.map(ref, f as any))
     }
   }
 
   notFound<R2, E2, B>(
-    f: (destination: Computed.Computed<Navigation.Navigation, never, Navigation.Destination>) => Fx.Fx<R2, E2, B>
+    f: (destination: RefSubject.Computed<Navigation.Navigation, never, Navigation.Destination>) => Fx.Fx<R2, E2, B>
   ): Fx.Fx<
-    R | Exclude<R2, Scope.Scope> | CurrentEnvironment | Navigation.Navigation,
+    R | R2 | CurrentEnvironment | Navigation.Navigation | Scope.Scope,
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   > {
-    const onNotFound = Fx.scoped(Fx.from(f(Navigation.CurrentEntry)))
-
     return Fx.fromFxEffect(CurrentEnvironment.with((env) => {
-      let matcher: Match.ValueMatcher<R | Exclude<R2, Scope.Scope> | Navigation.Navigation, E | E2, string, A | B> =
-        Match.value(
-          env !== "browser" ? Fx.take(Navigation.CurrentPath, 1) : Navigation.CurrentPath
+      const onNotFound = Fx.scoped(f(Navigation.CurrentEntry))
+      let matcher: Match.ValueMatcher<R | R2 | Navigation.Navigation | Scope.Scope, E | E2, string, A | B> = Match
+        .value(
+          // Only if we're rendering in a DOM-based environment should we allow for routing to last indefinitely
+          env === "server" || env === "static" ? Fx.take(Navigation.CurrentPath, 1) : Navigation.CurrentPath
         )
 
       for (const { guard, match, route } of this.guards) {
-        matcher = matcher.when(guard, (ref) => Fx.scoped(Fx.middleware(Fx.from(match(ref)), withCurrentRoute(route))))
+        matcher = matcher.when(guard, (ref) => Fx.middleware(match(ref), withCurrentRoute(route)))
       }
 
       return Fx.filterMapErrorEffect(matcher.getOrElse(() => onNotFound), (e) =>
         Navigation.isRedirectError(e)
-          ? Effect.as(Effect.orDie(Navigation.handleRedirect(e)), Option.none())
+          // Fork the redirect to ensure it does not occur within the same runUpdates as the initial navigation
+          ? Effect.as(Effect.forkScoped(Navigation.handleRedirect(e)), Option.none())
           : Effect.succeedSome(e as Exclude<E | E2, Navigation.RedirectError>))
     }))
   }
@@ -169,8 +171,14 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
   redirect<const P extends string>(
     route: P | Route.Route<P>,
     ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
-  ): Fx.Fx<R | Navigation.Navigation | CurrentEnvironment | CurrentRoute, Exclude<E, Navigation.RedirectError>, A> {
-    return this.notFound(() => makeHref(route, ...params).mapEffect((s) => Effect.fail(Navigation.redirectToPath(s))))
+  ): Fx.Fx<
+    R | Navigation.Navigation | CurrentEnvironment | CurrentRoute | Scope.Scope,
+    Exclude<E, Navigation.RedirectError>,
+    A
+  > {
+    return this.notFound(() =>
+      RefSubject.mapEffect(makeHref(route, ...params), (s) => Effect.fail(Navigation.redirectToPath(s)))
+    )
   }
 }
 

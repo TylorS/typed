@@ -155,7 +155,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CanGoBack: Computed.Computed<Navigation, never, boolean>
+export declare const CanGoBack: RefSubject.Computed<Navigation, never, boolean>
 ```
 
 Added in v1.0.0
@@ -165,7 +165,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CanGoForward: Computed.Computed<Navigation, never, boolean>
+export declare const CanGoForward: RefSubject.Computed<Navigation, never, boolean>
 ```
 
 Added in v1.0.0
@@ -185,7 +185,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentEntries: Computed.Computed<Navigation, never, readonly Destination[]>
+export declare const CurrentEntries: RefSubject.Computed<Navigation, never, readonly Destination[]>
 ```
 
 Added in v1.0.0
@@ -195,7 +195,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentEntry: Computed.Computed<Navigation, never, Destination>
+export declare const CurrentEntry: RefSubject.Computed<Navigation, never, Destination>
 ```
 
 Added in v1.0.0
@@ -205,7 +205,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentPath: Computed.Computed<Navigation, never, string>
+export declare const CurrentPath: RefSubject.Computed<Navigation, never, string>
 ```
 
 Added in v1.0.0
@@ -283,15 +283,15 @@ export interface Navigation {
 
   readonly base: string
 
-  readonly currentEntry: Computed.Computed<never, never, Destination>
+  readonly currentEntry: RefSubject.Computed<never, never, Destination>
 
-  readonly entries: Computed.Computed<never, never, ReadonlyArray<Destination>>
+  readonly entries: RefSubject.Computed<never, never, ReadonlyArray<Destination>>
 
-  readonly transition: Computed.Computed<never, never, Option.Option<Transition>>
+  readonly transition: RefSubject.Computed<never, never, Option.Option<Transition>>
 
-  readonly canGoBack: Computed.Computed<never, never, boolean>
+  readonly canGoBack: RefSubject.Computed<never, never, boolean>
 
-  readonly canGoForward: Computed.Computed<never, never, boolean>
+  readonly canGoForward: RefSubject.Computed<never, never, boolean>
 
   readonly navigate: (
     url: string | URL,

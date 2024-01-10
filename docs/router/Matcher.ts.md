@@ -56,7 +56,7 @@ export interface RouteMatcher<R, E, A> {
   readonly notFound: <R2, E2, B>(
     f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<R2, E2, B>
   ) => Fx.Fx<
-    Navigation.Navigation | CurrentEnvironment | R | Exclude<R2, Scope.Scope>,
+    Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope,
     Exclude<E | E2, Navigation.RedirectError>,
     A | B
   >
@@ -64,7 +64,11 @@ export interface RouteMatcher<R, E, A> {
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
     ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
-  ) => Fx.Fx<Navigation.Navigation | CurrentRoute | CurrentEnvironment | R, Exclude<E, Navigation.RedirectError>, A>
+  ) => Fx.Fx<
+    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope,
+    Exclude<E, Navigation.RedirectError>,
+    A
+  >
 }
 ```
 

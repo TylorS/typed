@@ -28,7 +28,7 @@ Added in v1.0.0
 
 ```ts
 export declare function TemplateInstance<T extends Rendered = Rendered, E = never>(
-  events: Fx.Fx<never, E, RenderEvent>,
+  events: Fx.Fx<Scope, E, RenderEvent>,
   ref: ElementRef<T>
 ): TemplateInstance<E, T>
 ```
@@ -41,7 +41,7 @@ Added in v1.0.0
 
 ```ts
 export interface TemplateInstance<E, T extends Rendered = Rendered>
-  extends Versioned.Versioned<never, never, never, E, RenderEvent, never, E | NoSuchElementException, T> {
+  extends Versioned.Versioned<never, never, Scope, E, RenderEvent, never, E | NoSuchElementException, T> {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
   readonly query: ElementRef<T>["query"]

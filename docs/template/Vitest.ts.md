@@ -1,6 +1,6 @@
 ---
 title: Vitest.ts
-nav_order: 26
+nav_order: 24
 parent: "@typed/template"
 ---
 

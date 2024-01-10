@@ -8,16 +8,24 @@ import type * as Effect from "effect/Effect"
 /**
  * @since 1.0.0
  */
-export type Environment = "browser" | "server" | "static" | "test"
+export type Environment =
+  | "dom"
+  | "server"
+  | "serviceWorker"
+  | "static"
+  | "test"
+  | "webWorker"
 
 /**
  * @since 1.0.0
  */
 export const Environment: { readonly [_ in Environment]: _ } = {
+  dom: "dom",
   server: "server",
-  browser: "browser",
+  serviceWorker: "serviceWorker",
   static: "static",
-  test: "test"
+  test: "test",
+  webWorker: "webWorker"
 }
 
 /**
@@ -35,9 +43,7 @@ export type CurrentEnvironment = Context.Tag.Identifier<typeof CurrentEnvironmen
 /**
  * @since 1.0.0
  */
-export const isBrowser: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
-  e === "browser"
-)
+export const isDom: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "dom")
 
 /**
  * @since 1.0.0
@@ -57,3 +63,17 @@ export const isStatic: Effect.Effect<CurrentEnvironment, never, boolean> = Curre
  * @since 1.0.0
  */
 export const isTest: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "test")
+
+/**
+ * @since 1.0.0
+ */
+export const isServiceWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+  e === "serviceWorker"
+)
+
+/**
+ * @since 1.0.0
+ */
+export const isWebWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+  e === "webWorker"
+)

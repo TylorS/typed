@@ -1,11 +1,12 @@
 import { Schema } from "@effect/schema"
 import type * as Context from "@typed/context"
-import type { Computed } from "@typed/fx/Computed"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import { GetRandomValues, makeUuid } from "@typed/id"
-import type { Scope } from "effect"
-import { Effect, Either, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Either from "effect/Either"
+import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import type { Commit } from "../Layer.js"
 import type {
   BeforeNavigationEvent,
@@ -39,12 +40,12 @@ export const getUrl = (origin: string, urlOrPath: string | URL): URL => {
 
 export type ModelAndIntent = {
   readonly state: RefSubject.RefSubject<never, never, NavigationState>
-  readonly canGoBack: Computed<
+  readonly canGoBack: RefSubject.Computed<
     never,
     never,
     boolean
   >
-  readonly canGoForward: Computed<
+  readonly canGoForward: RefSubject.Computed<
     never,
     never,
     boolean
@@ -71,9 +72,9 @@ export function setupFromModelAndIntent(
 ) {
   const { beforeHandlers, canGoBack, canGoForward, commit, handlers, state } = modelAndIntent
 
-  const entries = state.map((s) => s.entries)
-  const currentEntry = state.map((s) => s.entries[s.index])
-  const transition = state.map((s) => s.transition)
+  const entries = RefSubject.map(state, (s) => s.entries)
+  const currentEntry = RefSubject.map(state, (s) => s.entries[s.index])
+  const transition = RefSubject.map(state, (s) => s.transition)
 
   const runBeforeHandlers = (event: BeforeNavigationEvent) =>
     Effect.gen(function*(_) {
@@ -117,7 +118,7 @@ export function setupFromModelAndIntent(
       }
 
       if (matches.length > 0) {
-        yield* _(Effect.all(matches))
+        yield* _(Effect.all(matches, { discard: true }))
       }
     })
 
@@ -210,7 +211,7 @@ export function setupFromModelAndIntent(
     })
 
   const navigate = (pathOrUrl: string | URL, options?: NavigateOptions, skipCommit: boolean = false) =>
-    state.runUpdate((get, set) =>
+    state.runUpdates(({ get, set }) =>
       Effect.gen(function*(_) {
         const state = yield* _(get)
         const from = state.entries[state.index]
@@ -233,7 +234,7 @@ export function setupFromModelAndIntent(
     )
 
   const traverseTo = (key: Destination["key"], options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
-    state.runUpdate((get, set) =>
+    state.runUpdates(({ get, set }) =>
       Effect.gen(function*(_) {
         const state = yield* _(get)
         const { entries, index } = state
@@ -276,7 +277,7 @@ export function setupFromModelAndIntent(
     })
 
   const reload = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
-    state.runUpdate((get, set) =>
+    state.runUpdates(({ get, set }) =>
       Effect.gen(function*(_) {
         const { entries, index } = yield* _(state)
         const current = entries[index]
@@ -300,9 +301,9 @@ export function setupFromModelAndIntent(
       const entry = [handler, ctx] as const
 
       return Effect.zipRight(
-        beforeHandlers.update((handlers) => new Set([...handlers, entry])),
+        RefSubject.update(beforeHandlers, (handlers) => new Set([...handlers, entry])),
         Effect.addFinalizer(() =>
-          beforeHandlers.update((handlers) => {
+          RefSubject.update(beforeHandlers, (handlers) => {
             const updated = new Set(handlers)
             updated.delete(entry)
             return updated
@@ -318,9 +319,9 @@ export function setupFromModelAndIntent(
       const entry = [handler, ctx] as const
 
       return Effect.zipRight(
-        handlers.update((handlers) => new Set([...handlers, entry])),
+        RefSubject.update(handlers, (handlers) => new Set([...handlers, entry])),
         Effect.addFinalizer(() =>
-          handlers.update((handlers) => {
+          RefSubject.update(handlers, (handlers) => {
             const updated = new Set(handlers)
             updated.delete(entry)
             return updated
@@ -330,7 +331,7 @@ export function setupFromModelAndIntent(
     })
 
   const updateCurrentEntry = (options: { readonly state: unknown }) =>
-    state.runUpdate((get, set) =>
+    state.runUpdates(({ get, set }) =>
       Effect.gen(function*(_) {
         const { entries, index } = yield* _(get)
         const current = entries[index]

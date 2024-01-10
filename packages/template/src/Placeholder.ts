@@ -6,13 +6,13 @@ import "./internal/module-augmentation.js"
 import type { Fx } from "@typed/fx/Fx"
 import { isFx } from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Scope } from "effect"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 
 /**
  * @since 1.0.0
  */
-export const PlaceholderTypeId = Symbol.for("./Placholder.js")
+export const PlaceholderTypeId = Symbol.for("@typed/template/Placholder")
 /**
  * @since 1.0.0
  */
@@ -64,7 +64,7 @@ export namespace Placeholder {
     if (isFx<R, E, A>(placeholder) || Effect.isEffect(placeholder)) {
       return RefSubject.make(placeholder as Fx<R, E, A>)
     } else {
-      return RefSubject.of(placeholder as A)
+      return RefSubject.of<A, E>(placeholder as A)
     }
   }
 }

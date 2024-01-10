@@ -12,7 +12,7 @@ import * as Queue from "effect/Queue"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as Fx from "./Fx.js"
-import { Sink } from "./Sink.js"
+import * as Sink from "./Sink.js"
 
 /**
  * Convert an Fx to a Stream
@@ -21,9 +21,8 @@ import { Sink } from "./Sink.js"
  */
 export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
   return Stream.asyncScoped<R | Scope.Scope, E, A>((emit) =>
-    Fx.run(
-      fx,
-      Sink(
+    fx.run(
+      Sink.make(
         (cause) => Effect.promise(() => emit(Effect.failCause(Cause.map(cause, Option.some)))),
         (a) => Effect.promise(() => emit(Effect.succeed(Chunk.of(a))))
       )
@@ -54,20 +53,20 @@ export const toStreamQueued: {
   fx: Fx.Fx<R, E, A>,
   make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
 ): Stream.Stream<R | R2, E | E2, A> {
-  return Stream.flattenExitOption(Stream.unwrapScoped(Effect.gen(function*(_) {
-    const queue = yield* _(make)
-
-    yield* _(
-      fx,
-      Fx.mapError(Option.some),
-      Fx.exit,
-      Fx.toEnqueue(queue),
-      Effect.ensuring(queue.offer(Exit.fail(Option.none()))),
-      Effect.forkScoped
-    )
-
-    return Stream.fromQueue(queue)
-  })))
+  return make.pipe(
+    Effect.tap((queue) =>
+      fx.pipe(
+        Fx.mapError(Option.some),
+        Fx.exit,
+        Fx.toEnqueue(queue),
+        Effect.ensuring(queue.offer(Exit.fail(Option.none()))),
+        Effect.forkScoped
+      )
+    ),
+    Effect.map((queue) => Stream.fromQueue(queue)),
+    Stream.unwrapScoped,
+    Stream.flattenExitOption
+  )
 })
 
 /**
@@ -119,10 +118,23 @@ export const toStreamBounded: {
 )
 
 /**
+ * Convert a Stream to an Fx
+ * @since 1.18.0
+ * @category conversions
+ */
+export function fromStream<R, E, A>(
+  stream: Stream.Stream<R, E, A>
+): Fx.Fx<R, E, A> {
+  return Fx.make<R, E, A>((sink) => Effect.catchAllCause(Stream.runForEach(stream, sink.onSuccess), sink.onFailure))
+}
+
+/**
  * Convert a Stream to an Fx of chunks
  * @since 1.18.0
  * @category conversions
  */
-export function chunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>> {
-  return Fx.fromSink((sink) => Effect.catchAllCause(Stream.runForEachChunk(stream, sink.onSuccess), sink.onFailure))
+export function fromStreamChunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>> {
+  return Fx.make<R, E, Chunk.Chunk<A>>((sink) =>
+    Effect.catchAllCause(Stream.runForEachChunk(stream, sink.onSuccess), sink.onFailure)
+  )
 }

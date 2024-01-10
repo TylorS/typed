@@ -2,20 +2,29 @@
  * @since 1.18.0
  */
 
-import { Effect, Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
 import { identity } from "effect/Function"
+import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
+import * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import type { Guard } from "./Guard.js"
+import { withScopedFork } from "./internal/helpers.js"
+import { FxBase } from "./internal/protos.js"
 import * as RefSubject from "./RefSubject.js"
+import * as Sink from "./Sink.js"
+import * as Subject from "./Subject.js"
 
 /**
  * @since 1.18.0
  */
-export const MatcherTypeId: unique symbol = Symbol.for("./Matcher.js")
+export const MatcherTypeId: unique symbol = Symbol.for("@typed/fx/Matcher")
 /**
  * @since 1.18.0
  */
@@ -29,23 +38,25 @@ export interface TypeMatcher<R, E, I, O> {
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
 
-  readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
+  readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
-  readonly to: <R2, E2, A, B>(
+  readonly to: <R2 = never, E2 = never, A = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ) => TypeMatcher<R | R2, E | E2, I, O | B>
 
-  readonly run: <R2 = never, E2 = never>(input: Fx.FxInput<R2, E2, I>) => Fx.Fx<R | R2, E | E2, Option.Option<O>>
+  readonly run: <R2 = never, E2 = never>(
+    input: Fx.Fx<R2, E2, I>
+  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>>
 }
 
 /**
  * @since 1.18.0
  */
-export interface ValueMatcher<R, E, I, O> {
+export interface ValueMatcher<R, E, I, O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
   readonly _tag: "ValueMatcher"
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
@@ -54,7 +65,7 @@ export interface ValueMatcher<R, E, I, O> {
 
   readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ) => ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
   readonly to: <R2, E2, A, B>(
@@ -62,11 +73,9 @@ export interface ValueMatcher<R, E, I, O> {
     onMatch: B
   ) => ValueMatcher<R | R2, E | E2, I, O | B>
 
-  readonly run: Fx.Fx<R, E, Option.Option<O>>
-
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
-    f: () => Fx.FxInput<R2, E2, B>
-  ) => Fx.Fx<R | R2, E | E2, O | B>
+    f: () => Fx.Fx<R2, E2, B>
+  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, O | B>
 }
 
 /**
@@ -93,8 +102,8 @@ export const type = <I>(): TypeMatcher<never, never, I, never> =>
 /**
  * @since 1.18.0
  */
-export const value = <R, E, I>(input: Fx.FxInput<R, E, I>): ValueMatcher<R, E, I, never> =>
-  new ValueMatcherImpl(Fx.from(input), type<I>())
+export const value = <R, E, I>(input: Fx.Fx<R, E, I>): ValueMatcher<R, E, I, never> =>
+  new ValueMatcherImpl(input, type<I>())
 
 // Internals
 
@@ -108,7 +117,16 @@ const variance: Matcher.Variance<any, any, any, any> = {
 class When<R, E, I, A, O> {
   constructor(
     readonly guard: (input: I) => Effect.Effect<R, E, Option.Option<A>>,
-    readonly onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R, E, O>
+    readonly onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R, E, O>
+  ) {}
+}
+
+class Matched<R, E, I, A, O> {
+  constructor(
+    readonly when: When<R, E, I, A, O>,
+    readonly ref: RefSubject.RefSubject<never, never, A>,
+    readonly fiber: Fiber.Fiber<never, unknown>,
+    readonly interrupt: Effect.Effect<never, never, void>
   ) {}
 }
 
@@ -123,7 +141,7 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
 
   when<R2, E2, A, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ): TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
     return new TypeMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
       Chunk.append(this.cases, new When<R2 | R3, E2 | E3, I, A, B>(getGuard(guard), onMatch))
@@ -134,112 +152,153 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ): TypeMatcher<R | R2, E | E2, I, O | B> {
-    return this.when(guard, () => Effect.succeed(onMatch))
+    return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  run<R2, E2>(input: Fx.FxInput<R2, E2, I>): Fx.Fx<R | R2, E | E2, Option.Option<O>> {
+  run<R2, E2>(input: Fx.Fx<R2, E2, I>): Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>> {
     const { cases } = this
 
-    return Fx.suspend(() => {
-      const refSubjects = new WeakMap<When<any, any, I, any, any>, RefSubject.RefSubject<never, never, any>>()
+    return Fx.make<R | R2 | Scope.Scope, E | E2, Option.Option<O>>((sink) =>
+      withScopedFork(
+        (fork, parentScope) => {
+          let previous: Matched<any, any, I, any, O>
 
-      const getRefSubject = (_case: When<any, any, I, any, any>, value: any) =>
-        Effect.gen(function*(_) {
-          let refSubject = refSubjects.get(_case)
+          const onMatch = <A>(
+            when: When<R | R2 | Scope.Scope, E | E2, I, A, O>,
+            value: A
+          ) =>
+            Effect.gen(function*(_) {
+              if (previous?.when === when) {
+                yield* _(RefSubject.set(previous.ref, value))
+              } else {
+                // Interrupt any previous resources
+                if (previous !== undefined) {
+                  yield* _(previous.interrupt)
+                }
 
-          if (refSubject) {
-            yield* _(refSubject.set(value))
-          } else {
-            refSubject = yield* _(RefSubject.of(value))
+                // RefSubject to pass along to our matching function
+                const refSubject = yield* _(RefSubject.of(value))
+
+                // Track if the case is ended
+                const hasEnded = MutableRef.make(false)
+                // Used to signal when the case has ended
+                const endSignal = Subject.unsafeMake<never, void>(0)
+
+                // Run the case
+                const fiber = yield* _(
+                  fork(
+                    Fx.mergeFirst(when.onMatch(refSubject), Fx.tap(endSignal, () => MutableRef.set(hasEnded, true)))
+                      .run(
+                        Sink.make(
+                          (cause) =>
+                            MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
+                              ? Effect.unit
+                              : sink.onFailure(cause),
+                          (value) => MutableRef.get(hasEnded) ? Effect.unit : sink.onSuccess(Option.some(value))
+                        )
+                      )
+                  )
+                )
+
+                previous = new Matched(
+                  when,
+                  refSubject,
+                  fiber,
+                  // Interrupt the case when the endSignal first to disallow emissions of values, but asynchonously
+                  // interrupt the fiber without blocking the next match to take over.
+                  Effect.all([endSignal.onSuccess(undefined), Fiber.interruptFork(fiber)], { discard: true })
+                )
+              }
+            }).pipe(Effect.provideService(Scope.Scope, parentScope))
+
+          function matchWhen<A>(input: I, when: When<R | R2 | Scope.Scope, E | E2, I, A, O>) {
+            return Effect.gen(function*(_) {
+              const matched = yield* _(when.guard(input))
+
+              if (Option.isSome(matched)) {
+                yield* _(onMatch(when, matched.value))
+
+                return true
+              } else {
+                return false
+              }
+            })
           }
 
-          return refSubject
-        })
+          function matchInput(input: I) {
+            return Effect.gen(function*(_) {
+              // Allow failures to be accumulated, such that errors do not break the overall match
+              // and additional matchers can be attempted against first
+              const causes: Array<Cause.Cause<E | E2>> = []
 
-      let previous: When<any, any, I, any, any>
+              // If there's a previous match, attempt it first to avoid re-testing all cases in order
+              if (previous !== undefined) {
+                const matchedExit = yield* _(matchWhen(input, previous.when), Effect.exit)
 
-      return Fx.from(input).pipe(
-        Fx.switchMap((input) =>
-          Effect.gen(function*(_) {
-            // Allow failures to be accumulated, such that errors do not break the overall match
-            // and additional matchers can be attempted against first
-            const causes: Array<Cause.Cause<E>> = []
-
-            // If there's a previous match, attempt it first
-            if (previous) {
-              const matchedExit = yield* _(previous.guard(input), Effect.exit)
-
-              if (Exit.isSuccess(matchedExit)) {
-                const matched = matchedExit.value
-
-                if (Option.isSome(matched)) {
-                  const refSubject = yield* _(getRefSubject(previous, matched.value))
-
-                  return Option.some([previous, refSubject] as const)
+                if (Exit.isFailure(matchedExit)) {
+                  causes.push(matchedExit.cause)
+                } else if (matchedExit.value) {
+                  return
                 }
-              } else {
-                causes.push(matchedExit.cause)
               }
-            }
 
-            for (const _case of cases) {
-              // Don't test this case twice
-              if (_case === previous) continue
+              for (const when of cases) {
+                // Don't test this case twice
+                if (when === previous?.when) continue
 
-              const matchedExit = yield* _(_case.guard(input), Effect.exit)
+                const matchedExit = yield* _(matchWhen(input, when), Effect.exit)
 
-              if (Exit.isSuccess(matchedExit)) {
-                const matched = matchedExit.value
-
-                if (Option.isSome(matched)) {
-                  const refSubject = yield* _(getRefSubject(_case, matched.value))
-                  previous = _case
-
-                  return Option.some([_case, refSubject] as const)
+                if (Exit.isFailure(matchedExit)) {
+                  causes.push(matchedExit.cause)
+                } else if (matchedExit.value) {
+                  return
                 }
-              } else {
-                causes.push(matchedExit.cause)
               }
-            }
 
-            if (isNonEmptyReadonlyArray(causes)) {
-              const [first, ...rest] = causes
+              if (isNonEmptyReadonlyArray(causes)) {
+                const [first, ...rest] = causes
+                yield* _(sink.onFailure(reduce(rest, first, Cause.sequential)))
+              } else {
+                if (previous !== undefined) {
+                  yield* _(previous.interrupt)
+                }
 
-              return yield* _(Effect.failCause(reduce(rest, first, Cause.sequential)))
-            } else {
-              return Option.none()
-            }
-          })
-        ),
-        // Avoid restarting based on the Case that was matched to keep a peristent
-        // workflow for matcher that has its input values change
-        Fx.skipRepeatsWith(Option.getEquivalence(([a], [b]) => a === b)),
-        Fx.switchMap(
-          Option.match({
-            onNone: () => Effect.succeedNone,
-            onSome: ([when, ref]) => {
-              return Fx.map(Fx.from(when.onMatch(ref)), Option.some)
-            }
-          })
-        )
+                yield* _(sink.onSuccess(Option.none()))
+              }
+            })
+          }
+
+          return Fx.skipRepeats(input).run(Sink.make(
+            sink.onFailure,
+            matchInput
+          ))
+        },
+        ExecutionStrategy.sequential
       )
-    })
+    )
   }
 }
 
-class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
+class ValueMatcherImpl<R, E, I, O> extends FxBase<R | Scope.Scope, E, Option.Option<O>>
+  implements ValueMatcher<R, E, I, O>
+{
   readonly _tag = "ValueMatcher"
   readonly [MatcherTypeId]: ValueMatcher<R, E, I, O>[MatcherTypeId] = variance
 
   constructor(readonly value: Fx.Fx<R, E, I>, readonly matcher: TypeMatcher<R, E, I, O>) {
+    super()
     this.when = this.when.bind(this)
     this.to = this.to.bind(this)
     this.getOrElse = this.getOrElse.bind(this)
   }
 
+  run<R2>(sink: Sink.Sink<R2, E, Option.Option<O>>) {
+    return this.matcher.run(this.value).run(sink)
+  }
+
   when<R2, E2, A, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ): ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
     return new ValueMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
       this.value,
@@ -251,13 +310,10 @@ class ValueMatcherImpl<R, E, I, O> implements ValueMatcher<R, E, I, O> {
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ): ValueMatcher<R | R2, E | E2, I, O | B> {
-    return this.when(guard, () => Effect.succeed(onMatch))
+    return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  run: ValueMatcher<R, E, I, O>["run"] = Fx.suspend(() => this.matcher.run(this.value))
-
-  getOrElse: ValueMatcher<R, E, I, O>["getOrElse"] = (f) =>
-    Fx.suspend(() => Fx.getOrElse(this.matcher.run(this.value), f))
+  getOrElse: ValueMatcher<R, E, I, O>["getOrElse"] = (f) => Fx.getOrElse(this.matcher.run(this.value), f)
 }
 
 /**

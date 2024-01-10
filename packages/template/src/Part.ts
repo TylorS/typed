@@ -22,6 +22,7 @@ export type Part =
   | PropertyPart
   | RefPart
   | TextPart
+  | PropertiesPart
 
 /**
  * @since 1.0.0
@@ -75,11 +76,11 @@ export interface DataPart {
 export interface EventPart {
   readonly _tag: "event"
   readonly name: string
-  readonly value: EventHandler<unknown, never> | null | undefined
+  readonly source: ElementSource<any>
+  readonly value: null
   readonly index: number
   readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
-
-  readonly update: <R = never>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
+  readonly addEventListener: (handler: EventHandler<never, never, Event>) => void
 }
 
 /**
@@ -131,6 +132,17 @@ export interface TextPart {
 export interface NodePart {
   readonly _tag: "node"
   readonly value: unknown
+  readonly index: number
+
+  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+}
+
+/**
+ * @since 1.0.0
+ */
+export interface PropertiesPart {
+  readonly _tag: "properties"
+  readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
 
   readonly update: (value: this["value"]) => Effect<Scope, never, void>

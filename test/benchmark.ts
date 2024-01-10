@@ -215,6 +215,19 @@ const tabularDataKeys = [
 ]
 
 function createTabularData(name: string, iterations: number, total: number, runs: Array<number>) {
+  if (runs.length === 0) {
+    return {
+      [name]: {
+        iterations: "N/A",
+        total: "N/A",
+        low: "N/A",
+        high: "N/A",
+        median: "N/A",
+        average: "N/A"
+      }
+    }
+  }
+
   runs.sort((a, b) => a - b)
 
   const low = runs[0]

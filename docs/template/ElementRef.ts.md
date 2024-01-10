@@ -17,6 +17,7 @@ Added in v1.0.0
   - [ElementRefTypeId](#elementreftypeid)
   - [ElementRefTypeId (type alias)](#elementreftypeid-type-alias)
   - [dispatchEvent](#dispatchevent)
+  - [isElementRef](#iselementref)
   - [make](#make)
   - [of](#of)
   - [set](#set)
@@ -33,7 +34,7 @@ A reference to a rendered element.
 
 ```ts
 export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, never, never, T, never, NoSuchElementException, T> {
+  extends Versioned<never, never, Scope.Scope, never, T, never, NoSuchElementException, T> {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
   readonly query: ElementSource<T>["query"]
@@ -70,6 +71,14 @@ export declare function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, ev
 ```
 
 Added in v1.0.0
+
+## isElementRef
+
+**Signature**
+
+```ts
+export declare function isElementRef(value: unknown): value is ElementRef
+```
 
 ## make
 

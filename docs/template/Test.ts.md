@@ -43,11 +43,11 @@ Added in v1.0.0
 
 ```ts
 export interface TestRender<E> {
-  readonly window: Window & GlobalThis & Pick<happyDOM.Window, "happyDOM">
+  readonly window: Window & GlobalThis
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
-  readonly errors: Computed<never, never, ReadonlyArray<E>>
-  readonly lastError: Filtered<never, never, E>
+  readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
+  readonly lastError: RefSubject.Filtered<never, never, E>
   readonly interrupt: Effect.Effect<never, never, void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>

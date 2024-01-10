@@ -13,6 +13,7 @@ import {
   CommentNode,
   CommentPartNode,
   DataPartNode,
+  DocType,
   ElementNode,
   EventPartNode,
   NodePart,
@@ -501,6 +502,39 @@ describe("Parser2", () => {
     )
 
     expect(Parser2.parser.parse(template)).toEqual(expected)
+  })
+
+  it("parses templates with doctypes", () => {
+    const template = h`<!DOCTYPE html>
+    <html>
+      <head>
+        <title>Test</title>
+      </head>
+      <body>
+        <div id="root"></div>
+      </body>
+    </html>`
+    const expected = new Template(
+      [
+        new DocType("html"),
+        new ElementNode(
+          "html",
+          [],
+          [
+            new ElementNode(
+              "head",
+              [],
+              [new ElementNode("title", [], [new TextNode("Test")])]
+            ),
+            new ElementNode("body", [], [new ElementNode("div", [new AttrPartNode("id", 0)], [])])
+          ]
+        )
+      ],
+      Parser2.templateHash(template),
+      []
+    )
+
+    deepStrictEqual(Parser2.parser.parse(template), expected)
   })
 })
 

@@ -1,5 +1,10 @@
 import type * as Context from "@typed/context"
-import { Effect, FiberRefsPatch, Layer, Runtime, RuntimeFlags } from "effect"
+import * as Effect from "effect/Effect"
+import * as FiberRefsPatch from "effect/FiberRefsPatch"
+import * as Layer from "effect/Layer"
+import * as Runtime from "effect/Runtime"
+import * as RuntimeFlags from "effect/RuntimeFlags"
+import type * as Scope from "effect/Scope"
 
 export type Provide<R, E, A> =
   | ProvideContext<A>
@@ -82,62 +87,65 @@ export function merge<R = never, E = never, A = never, R2 = never, E2 = never, B
   self: Provide<R, E, A>,
   that: Provide<R2, E2, B>
 ): Provide<Exclude<R, B> | R2, E | E2, A | B> {
-  return matchProvide(self, {
-    ProvideContext: (a) => mergeLayer(Layer.succeedContext(a), that),
-    ProvideLayer: (a) => mergeLayer(a, that),
-    ProvideRuntime: (a) => mergeLayer(runtimeToLayer(a), that),
-    ProvideService: (tag, service) => mergeLayer(Layer.succeed(tag, service), that),
-    ProvideServiceEffect: (tag, service) => mergeLayer(Layer.effect(tag, service), that)
-  })
+  return ProvideLayer(Layer.provideMerge(toLayer(self), toLayer(that)))
 }
 
-function mergeLayer<R, E, A, R2, E2, B>(
-  layer: Layer.Layer<R, E, A>,
-  provide: Provide<R2, E2, B>
-): Provide<Exclude<R, B> | R2, E | E2, A | B> {
-  return matchProvide(provide, {
-    ProvideContext: (ctx) => ProvideLayer(Layer.provideMerge(layer, Layer.succeedContext(ctx))),
-    ProvideLayer: (layerB) => ProvideLayer(Layer.provideMerge(layer, layerB)),
-    ProvideRuntime: (runtime) => ProvideLayer(Layer.provideMerge(layer, runtimeToLayer(runtime))),
-    ProvideService: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.succeed(tag, service))),
-    ProvideServiceEffect: (tag, service) => ProvideLayer(Layer.provideMerge(layer, Layer.effect(tag, service)))
-  })
+export function buildWithScope<R, E, A>(
+  provide: Provide<R, E, A>,
+  scope: Scope.Scope
+) {
+  return Layer.buildWithScope(toLayer(provide), scope)
+}
+
+export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<R, E, A> {
+  switch (provide._tag) {
+    case "ProvideContext":
+      return Layer.succeedContext(provide.i0)
+    case "ProvideLayer":
+      return provide.i0
+    case "ProvideRuntime":
+      return runtimeToLayer(provide.i0)
+    case "ProvideService":
+      return Layer.succeed(provide.i0, provide.i1)
+    case "ProvideServiceEffect":
+      return Layer.effect(provide.i0, provide.i1)
+  }
 }
 
 export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
   effect: Effect.Effect<R, E, A>,
   provide: Provide<R2, E2, S>
 ): Effect.Effect<Exclude<R, S> | R2, E | E2, A> {
-  switch (provide._tag) {
-    case "ProvideContext":
-    case "ProvideLayer":
-    case "ProvideRuntime":
-      return Effect.provide(effect, provide.i0 as Layer.Layer<R2, E2, S>)
-    case "ProvideService":
-      return Effect.provideService(effect, provide.i0, provide.i1)
-    case "ProvideServiceEffect":
-      return Effect.provideServiceEffect(effect, provide.i0, provide.i1)
-  }
+  return Effect.provide(effect, toLayer(provide))
 }
 
-function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
-  const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)
-  const inversePatchFlags = RuntimeFlags.diff(runtime.runtimeFlags, Runtime.defaultRuntime.runtimeFlags)
+export function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
+  // Calculate patch
   const patchRefs = FiberRefsPatch.diff(Runtime.defaultRuntime.fiberRefs, runtime.fiberRefs)
-  const inversePatchRefs = FiberRefsPatch.diff(runtime.fiberRefs, Runtime.defaultRuntime.fiberRefs)
+  const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)
 
   return Layer.scopedContext(
-    Effect.acquireUseRelease(
-      Effect.flatMap(
-        Effect.patchRuntimeFlags(patchFlags),
-        () => Effect.patchFiberRefs(patchRefs)
-      ),
-      () => Effect.succeed(runtime.context),
-      () =>
-        Effect.flatMap(
-          Effect.patchRuntimeFlags(inversePatchFlags),
-          () => Effect.patchFiberRefs(inversePatchRefs)
+    Effect.Do.pipe(
+      // Get Current Refs + Flags
+      Effect.bind("oldRefs", () => Effect.getFiberRefs),
+      Effect.bind("oldFlags", () => Effect.getRuntimeFlags),
+      // Patch Refs + Flags
+      Effect.tap(() => Effect.patchFiberRefs(patchRefs)),
+      Effect.tap(() => Effect.patchRuntimeFlags(patchFlags)),
+      // Get the new Refs + Flags
+      Effect.bind("newRefs", () => Effect.getFiberRefs),
+      Effect.bind("newFlags", () => Effect.getRuntimeFlags),
+      // Calculate rollback patch
+      Effect.let("rollbackRefs", ({ newRefs, oldRefs }) => FiberRefsPatch.diff(newRefs, oldRefs)),
+      Effect.let("rollbackFlags", ({ newFlags, oldFlags }) => RuntimeFlags.diff(newFlags, oldFlags)),
+      // Apply the rollbacks when the current scope is closed
+      Effect.tap(({ rollbackFlags, rollbackRefs }) =>
+        Effect.addFinalizer(() =>
+          Effect.zipRight(Effect.patchFiberRefs(rollbackRefs), Effect.patchRuntimeFlags(rollbackFlags))
         )
+      ),
+      // Provide the runtime's context
+      Effect.map(() => runtime.context)
     )
   )
 }

@@ -1,18 +1,13 @@
-import type { Context } from "@typed/context"
-import * as Fx from "@typed/fx/Fx"
-import { WithContext } from "@typed/fx/Sink"
-import { isText, type Rendered } from "@typed/wire"
+import { isText } from "@typed/wire"
 import type { Cause } from "effect/Cause"
+import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
-import { strict } from "effect/Equivalence"
-import type { Equivalence } from "effect/Equivalence"
-import * as Fiber from "effect/Fiber"
+import * as Equivalence from "effect/Equivalence"
 import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Scope } from "effect/Scope"
-import * as SynchronizedRef from "effect/SynchronizedRef"
-import type { ElementRef } from "../ElementRef.js"
 import type { ElementSource } from "../ElementSource.js"
+import type { EventHandler } from "../EventHandler.js"
 import { unescape } from "../HtmlChunk.js"
 import type {
   AttributePart,
@@ -23,6 +18,7 @@ import type {
   EventPart,
   NodePart,
   Part,
+  PropertiesPart,
   PropertyPart,
   RefPart,
   SparseAttributePart,
@@ -35,7 +31,7 @@ import type {
 import type { RenderContext } from "../RenderContext.js"
 import { findHoleComment } from "./utils.js"
 
-const strictEq = strict<any>()
+const strictEq = Equivalence.strict<any>()
 
 const base = <T extends Part["_tag"]>(tag: T) =>
   class Base {
@@ -51,7 +47,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
         }
       ) => Effect.Effect<Scope, never, void>,
       public value: Extract<Part, { readonly _tag: T }>["value"],
-      readonly eq: Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
+      readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
     ) {
       this.update = this.update.bind(this)
     }
@@ -64,7 +60,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
         return Effect.unit
       }
 
-      return Effect.tap(
+      return Effect.flatMap(
         this.commit.call(this, {
           previous,
           value,
@@ -291,71 +287,18 @@ function diffDataSet(
   }
 }
 
-export class EventPartImpl extends base("event") implements EventPart {
+export class EventPartImpl implements EventPart {
+  readonly _tag = "event"
+  readonly value: EventPart["value"] = null
+
   constructor(
     readonly name: string,
+    readonly index: number,
+    readonly source: ElementSource<any>,
     readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>,
-    index: number,
-    commit: EventPartImpl["commit"],
-    value: EventPart["value"]
+    readonly addEventListener: <Ev extends Event>(handler: EventHandler<never, never, Ev>) => void
   ) {
-    super(index, commit, value, strictEq)
   }
-
-  static browser<T extends Rendered, E>(
-    name: string,
-    index: number,
-    ref: ElementRef<T>,
-    element: HTMLElement | SVGElement,
-    onCause: (cause: Cause<E>) => Effect.Effect<never, never, unknown>
-  ): Effect.Effect<unknown, never, void> {
-    return withSwitchFork((fork, ctx) => {
-      const source = ref.query(element)
-
-      return Effect.succeed(
-        new EventPartImpl(
-          name,
-          onCause as any,
-          index,
-          ({ value }) => {
-            return value
-              ? Fx.run(
-                source.events(name as keyof HTMLElementEventMap | keyof SVGElementEventMap, value.options),
-                WithContext(onCause, value.handler)
-              ).pipe(
-                Effect.provide(ctx),
-                fork
-              )
-              : fork(Effect.unit)
-          },
-          null
-        )
-      )
-    })
-  }
-}
-
-function withScopedFork<R, E, A>(f: (fork: Fx.ScopedFork) => Effect.Effect<R, E, A>): Effect.Effect<R | Scope, E, A> {
-  return Effect.scopeWith((scope) => f(Effect.forkIn(scope)))
-}
-
-// Ensures only a single fiber is executing
-function withSwitchFork<R, E, A>(
-  f: (fork: Fx.FxFork, ctx: Context<R | Scope>) => Effect.Effect<R, E, A>
-): Effect.Effect<R | Scope, E, A> {
-  return Effect.contextWithEffect((ctx) =>
-    withScopedFork((fork) =>
-      Effect.flatMap(
-        SynchronizedRef.make<Fiber.Fiber<never, void>>(Fiber.unit),
-        (ref) =>
-          f((effect) =>
-            SynchronizedRef.updateAndGetEffect(
-              ref,
-              (fiber) => Effect.flatMap(Fiber.interrupt(fiber), () => fork(effect))
-            ), ctx)
-      )
-    )
-  )
 }
 
 export class NodePartImpl extends base("node") implements NodePart {}
@@ -403,6 +346,147 @@ export class TextPartImpl extends base("text") implements TextPart {
       strictEq
     )
   }
+
+  static fromText(text: Text, index: number, ctx: RenderContext) {
+    return new TextPartImpl(
+      index,
+      ({ part, value }) => ctx.queue.add(part, () => text.nodeValue = value ?? null),
+      text.nodeValue,
+      strictEq
+    )
+  }
+
+  static getOrCreateText(document: Document, index: number, element: Element) {
+    const comment = findHoleComment(element, index)
+
+    return comment.previousSibling && isText(comment.previousSibling)
+      ? comment.previousSibling.nodeValue
+      : document.createTextNode("")
+  }
+}
+
+export class PropertiesPartImpl extends base("properties") implements PropertiesPart {
+  constructor(
+    index: number,
+    commit: PropertiesPartImpl["commit"],
+    value: PropertiesPartImpl["value"]
+  ) {
+    super(index, commit, value, equals)
+  }
+
+  getValue(value: unknown): unknown {
+    if (value == null) return null
+    return Data.struct(value)
+  }
+
+  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
+    return new PropertiesPartImpl(
+      index,
+      ({ part, previous, value }) =>
+        ctx.queue.add(
+          part,
+          () => {
+            const diff = diffProperties(previous, value)
+            if (diff) {
+              const { added, removed } = diff
+
+              removed.forEach((nv) => removeNameValue(element, nv))
+              added.forEach((nv) => {
+                if ((nv.name[0] === "o" && nv.name[1] === "n") || nv.name[0] === "@") return
+
+                return addNameValue(element, nv)
+              })
+            }
+          }
+        ),
+      {}
+    )
+  }
+}
+
+function removeNameValue(element: HTMLElement | SVGElement, { name, type }: NameValue) {
+  switch (type) {
+    case "attr":
+    case "bool":
+      return element.removeAttribute(name)
+    case "prop":
+      return delete (element as any)[name]
+  }
+}
+
+function addNameValue(element: HTMLElement | SVGElement, { name, type, value }: NameValue) {
+  switch (type) {
+    case "attr":
+      return value == null ? element.removeAttribute(name) : element.setAttribute(name, value)
+    case "bool":
+      return value == null ? element.removeAttribute(name) : element.toggleAttribute(name, value)
+    case "prop":
+      return value == null ? (delete (element as any)[name]) : (element as any)[name] = value
+  }
+}
+
+type AttrNameValue = {
+  readonly type: "attr"
+  readonly name: string
+  readonly value: string
+}
+
+type BoolAttrNameValue = {
+  readonly type: "bool"
+  readonly name: string
+  readonly value: boolean
+}
+
+type PropNameValue = {
+  readonly type: "prop"
+  readonly name: string
+  readonly value: unknown
+}
+
+type NameValue = AttrNameValue | BoolAttrNameValue | PropNameValue
+
+function diffProperties(
+  a: Record<string, unknown> | null | undefined,
+  b: Record<string, unknown> | null | undefined
+): { added: Array<NameValue>; removed: ReadonlyArray<NameValue> } | null {
+  if (!a) {
+    if (b) {
+      return { added: Object.entries(b).flatMap(([k, v]) => fromKeyValue(k, v)), removed: [] }
+    } else return null
+  } else if (!b) {
+    return { added: [], removed: Object.entries(a).flatMap(([k, v]) => fromKeyValue(k, v)) }
+  } else {
+    const { added, removed, unchanged } = diffStrings(Object.keys(a), Object.keys(b))
+
+    return {
+      added: added.concat(unchanged).flatMap((k) => fromKeyValue(k, b[k])),
+      removed: removed.flatMap((k) => fromKeyValue(k, a[k]))
+    }
+  }
+}
+
+function fromKeyValue(name: string, value: unknown): Array<NameValue> {
+  if (name[0] === ".") {
+    return value == null ? [] : [{
+      type: "prop",
+      name: name.slice(1),
+      value
+    }]
+  } else if (typeof value === "boolean") {
+    return [{
+      type: "bool",
+      name,
+      value
+    }]
+  } else {
+    if (name[0] === "o" || name[1] === "n") return []
+
+    return value == null ? [] : [{
+      type: "attr",
+      name,
+      value: String(value)
+    }]
+  }
 }
 
 const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
@@ -418,7 +502,8 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
         }
       ) => Effect.Effect<Scope, never, void>,
       public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
-      readonly eq: Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> = equals
+      readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
+        equals
     ) {}
 
     update = (value: this["value"]) => {

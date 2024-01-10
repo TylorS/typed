@@ -7,15 +7,16 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import type { Versioned } from "@typed/fx/Versioned"
 import { type Rendered } from "@typed/wire"
 import type { Scope } from "effect"
-import { Effect, Option } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
+import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import { hasProperty } from "effect/Predicate"
 import type { DefaultEventMap } from "./ElementSource.js"
 import { ElementSource, getElements } from "./ElementSource.js"
 import { adjustTime } from "./internal/utils.js"
-import type { Placeholder } from "./Placeholder.js"
 
-export const ElementRefTypeId = Symbol.for("./ElementRef.js")
+export const ElementRefTypeId = Symbol.for("@typed/template/ElementRef")
 export type ElementRefTypeId = typeof ElementRefTypeId
 
 /**
@@ -23,7 +24,7 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, never, never, T, never, NoSuchElementException, T>
+  extends Versioned<never, never, Scope.Scope, never, T, never, NoSuchElementException, T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
@@ -40,7 +41,7 @@ const strictEqual = Option.getEquivalence((a, b) => a === b)
  */
 export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
-    RefSubject.of(Option.none<T>(), strictEqual),
+    RefSubject.of(Option.none<T>(), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
   )
 }
@@ -50,15 +51,14 @@ export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope
  */
 export function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
   return Effect.map(
-    RefSubject.of(Option.some<T>(rendered), strictEqual),
+    RefSubject.of(Option.some<T>(rendered), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
   )
 }
 
-// @ts-expect-error placeholder issues
-class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, never, NoSuchElementException, T>
-  implements
-    Omit<ElementRef<T>, keyof Placeholder<never, never, T> | keyof Placeholder<never, NoSuchElementException, T>>
+// @ts-expect-error does not implement Placeholder
+class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never, T, never, NoSuchElementException, T>
+  implements ElementRef<T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
 
@@ -84,12 +84,12 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<never, never, T, n
     this.version = ref.version
   }
 
-  protected toFx(): Fx<never, never, T> {
+  toFx(): Fx<Scope.Scope, never, T> {
     return compact(this.ref)
   }
 
-  protected toEffect(): Effect.Effect<never, NoSuchElementException, T> {
-    return Effect.flatten(this.ref.get)
+  toEffect(): Effect.Effect<never, NoSuchElementException, T> {
+    return Effect.flatten(this.ref)
   }
 }
 
@@ -100,7 +100,7 @@ export const set: {
   <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
   <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
 } = dual(2, function set<A extends Rendered>(elementRef: ElementRef<A>, value: A) {
-  return Effect.as(elementRef[ElementRefTypeId].set(Option.some(value)), value)
+  return Effect.as(RefSubject.set(elementRef[ElementRefTypeId], Option.some(value)), value)
 })
 
 /**
@@ -119,4 +119,8 @@ export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Eve
     // Allow additional fibers to start
     Effect.zipRight(adjustTime(1))
   )
+}
+
+export function isElementRef(value: unknown): value is ElementRef {
+  return hasProperty(value, ElementRefTypeId)
 }

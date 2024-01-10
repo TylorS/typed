@@ -29,16 +29,16 @@ export declare function Link<
   Props extends LinkProps,
   Children extends ReadonlyArray<Renderable<any, any>> = readonly []
 >(
-  props: Props,
+  { onClick, ref, relative, replace, state, to, ...props }: Props,
   ...children: Children
 ): Fx.Fx<
   | Navigation.Navigation
   | CurrentRoute
   | RenderTemplate
   | Scope.Scope
-  | Location
-  | Placeholder.Context<Props[keyof Props] | Children[number]>,
-  Placeholder.Error<Props[keyof Props] | Children[number]>,
+  | Placeholder.Context<Props[keyof Props] | Children[number]>
+  | Fx.Context<Props[keyof Props] | Children[number]>,
+  Placeholder.Error<Props[keyof Props] | Children[number]> | Fx.Error<Props[keyof Props] | Children[number]>,
   RenderEvent
 >
 ```

@@ -8,8 +8,8 @@ import type * as Scope from "effect/Scope"
 export const counter: Fx.Fx<Scope.Scope | RenderTemplate, never, RenderEvent> = Fx.gen(
   function*($) {
     const count = yield* $(RefSubject.make(Effect.succeed(0)))
-    const increment = count.update((n) => n + 1)
-    const decrement = count.update((n) => n - 1)
+    const increment = RefSubject.update(count, (n) => n + 1)
+    const decrement = RefSubject.update(count, (n) => n - 1)
 
     return html`
       <button id="decrement" onclick=${decrement}>-</button>

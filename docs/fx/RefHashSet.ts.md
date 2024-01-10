@@ -1,6 +1,6 @@
 ---
 title: RefHashSet.ts
-nav_order: 19
+nav_order: 15
 parent: "@typed/fx"
 ---
 
@@ -25,10 +25,11 @@ Added in v1.18.0
   - [reduce](#reduce)
   - [size](#size)
 - [constructors](#constructors)
-  - [make](#make)
   - [tagged](#tagged)
 - [models](#models)
   - [RefHashSet (interface)](#refhashset-interface)
+- [utils](#utils)
+  - [make](#make)
 
 ---
 
@@ -72,8 +73,8 @@ Map (Endomorphic) the values of a RefHashSet.
 
 ```ts
 export declare const map: {
-  <A>(f: (a: A) => A): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, f: (a: A) => A): Computed.Computed<R, E, HashSet.HashSet<A>>
+  <A>(f: (a: A) => A): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
+  <R, E, A>(ref: RefHashSet<R, E, A>, f: (a: A) => A): RefSubject.Computed<R, E, HashSet.HashSet<A>>
 }
 ```
 
@@ -89,8 +90,8 @@ Filter the values of a RefHashSet using a predicate creating a Computed value.
 
 ```ts
 export declare const filterValues: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean): Computed.Computed<R, E, HashSet.HashSet<A>>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
+  <R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean): RefSubject.Computed<R, E, HashSet.HashSet<A>>
 }
 ```
 
@@ -104,8 +105,8 @@ Map the values with their indexes of a RefHashSet.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, readonly B[]>
-  <R, E, A, B>(ref: RefHashSet<R, E, A>, f: (a: A) => B): Computed.Computed<R, E, readonly B[]>
+  <A, B>(f: (a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, readonly B[]>
+  <R, E, A, B>(ref: RefHashSet<R, E, A>, f: (a: A) => B): RefSubject.Computed<R, E, readonly B[]>
 }
 ```
 
@@ -121,11 +122,11 @@ Partition the values of a RefHashSet using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, readonly [readonly B[], HashSet.HashSet<A>]>
+  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, readonly [readonly B[], HashSet.HashSet<A>]>
   <R, E, A>(
     ref: RefHashSet<R, E, A>,
     predicate: (a: A) => boolean
-  ): Computed.Computed<never, E, readonly [HashSet.HashSet<A>, HashSet.HashSet<A>]>
+  ): RefSubject.Computed<never, E, readonly [HashSet.HashSet<A>, HashSet.HashSet<A>]>
 }
 ```
 
@@ -139,8 +140,8 @@ Reduce the values of a RefHashSet to a single value.
 
 ```ts
 export declare const reduce: {
-  <A, B>(b: B, f: (b: B, a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, B>
-  <R, E, A, B>(ref: RefHashSet<R, E, A>, b: B, f: (b: B, a: A) => B): Computed.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, B>
+  <R, E, A, B>(ref: RefHashSet<R, E, A>, b: B, f: (b: B, a: A) => B): RefSubject.Computed<R, E, B>
 }
 ```
 
@@ -153,29 +154,12 @@ Get the current length of a RefHashSet.
 **Signature**
 
 ```ts
-export declare const size: <R, E, A>(ref: RefHashSet<R, E, A>) => Computed.Computed<R, E, number>
+export declare const size: <R, E, A>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, number>
 ```
 
 Added in v1.18.0
 
 # constructors
-
-## make
-
-Construct a new RefHashSet with the given initial value.
-
-**Signature**
-
-```ts
-export declare function make<R, E, A>(
-  initial: Effect.Effect<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
-export declare function make<R, E, A>(
-  initial: Fx.Fx<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
-```
-
-Added in v1.18.0
 
 ## tagged
 
@@ -204,6 +188,20 @@ A RefHashSet is a RefSubject that is specialized over an HashSet of values.
 
 ```ts
 export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
+```
+
+Added in v1.18.0
+
+# utils
+
+## make
+
+**Signature**
+
+```ts
+export declare function make<R, E, A>(
+  initial: Effect.Effect<R, E, HashSet.HashSet<A>> | Fx.Fx<R, E, HashSet.HashSet<A>>
+): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
 ```
 
 Added in v1.18.0

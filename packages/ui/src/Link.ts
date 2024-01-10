@@ -12,7 +12,8 @@ import { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
-import { Effect, type Scope } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import { Anchor, type AnchorProps, getEventHandler } from "./Anchor.js"
 
 /**
@@ -30,36 +31,36 @@ export type LinkProps = Omit<AnchorProps, keyof URL> & {
  * @since 1.0.0
  */
 export function Link<Props extends LinkProps, Children extends ReadonlyArray<Renderable<any, any>> = readonly []>(
-  props: Props,
+  { onClick, ref, relative, replace, state, to, ...props }: Props,
   ...children: Children
 ): Fx.Fx<
   | Navigation.Navigation
   | CurrentRoute
   | RenderTemplate
   | Scope.Scope
-  | Location
-  | Placeholder.Context<Props[keyof Props] | Children[number]>,
-  Placeholder.Error<Props[keyof Props] | Children[number]>,
+  | Placeholder.Context<Props[keyof Props] | Children[number]>
+  | Fx.Context<Props[keyof Props] | Children[number]>,
+  Placeholder.Error<Props[keyof Props] | Children[number]> | Fx.Error<Props[keyof Props] | Children[number]>,
   RenderEvent
 > {
   return Fx.gen(function*(_) {
-    const onClickHandler = getEventHandler(props.onClick)
-    const to = yield* _(
-      Placeholder.asRef<Placeholder.Context<Props["to"]>, Placeholder.Error<Props["to"]>, string>(props.to)
+    const onClickHandler = getEventHandler(onClick)
+    const toRef = yield* _(
+      Placeholder.asRef<Placeholder.Context<Props["to"]>, Placeholder.Error<Props["to"]>, string>(to)
     )
-    const relative = yield* _(
+    const relativeRef = yield* _(
       Placeholder.asRef<Placeholder.Context<Props["relative"]>, Placeholder.Error<Props["relative"]>, boolean>(
-        props.relative ?? true
+        relative ?? true
       )
     )
-    const replace = yield* _(
+    const replaceRef = yield* _(
       Placeholder.asRef<Placeholder.Context<Props["replace"]>, Placeholder.Error<Props["replace"]>, boolean>(
-        props.replace ?? false
+        replace ?? false
       )
     )
-    const state = yield* _(
+    const stateRef = yield* _(
       Placeholder.asRef<Placeholder.Context<Props["state"]>, Placeholder.Error<Props["state"]>, unknown>(
-        props.state as Placeholder.Any<unknown>
+        state as Placeholder.Any<unknown>
       )
     )
     const reloadDocument = yield* _(
@@ -72,10 +73,13 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       )
     )
 
-    const href = RefSubject.tuple(relative, to).mapEffect(([rel, to]) => rel ? makeHref(to) : Effect.succeed(to))
+    const href = RefSubject.mapEffect(
+      RefSubject.tuple([relativeRef, toRef]),
+      ([rel, to]) => rel ? makeHref(to) : Effect.succeed(to)
+    )
 
     const navigate = Effect.gen(function*(_) {
-      const current = yield* _(Effect.all({ replace, state, reloadDocument }))
+      const current = yield* _(Effect.all({ replace: replaceRef, state: stateRef, reloadDocument }))
       const url = yield* _(href)
 
       yield* _(Navigation.navigate(url, {
@@ -88,7 +92,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       }
     })
 
-    const onClick = EventHandler.preventDefault(
+    const onClickEventHandler = EventHandler.preventDefault(
       (ev: EventWithCurrentTarget<HTMLAnchorElement, MouseEvent>) =>
         Effect.gen(function*(_) {
           if (onClickHandler) {
@@ -99,6 +103,11 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       onClickHandler?.options
     )
 
-    return Anchor({ ...props, href, state, onClick }, ...children)
+    const allProps = { ...props, ref, href, state: stateRef, onClick: onClickEventHandler }
+
+    return Anchor(
+      allProps as any as AnchorProps,
+      ...children
+    )
   })
 }

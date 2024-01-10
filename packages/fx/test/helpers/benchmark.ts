@@ -11,6 +11,7 @@ export function comparison(name: string, tests: {
   rxjs?: () => rxjs.Observable<any>
   most?: () => mostTypes.Stream<any>
   fx?: () => Effect.Effect<never, any, any>
+  v3?: () => Effect.Effect<never, any, any>
   array?: () => any
 }, options?: BenchmarkOptions) {
   const comparisions: any = []
@@ -29,6 +30,10 @@ export function comparison(name: string, tests: {
 
   if (tests.array) {
     comparisions.push({ name: "array", effect: Effect.sync(() => tests.array!()) })
+  }
+
+  if (tests.v3) {
+    comparisions.push({ name: "fx (v3)", effect: tests.v3() })
   }
 
   return benchmark(name).comparison<any, any>("", comparisions).run(options)

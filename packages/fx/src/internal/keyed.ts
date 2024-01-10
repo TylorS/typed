@@ -1,281 +1,232 @@
-import type * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
-import { equals } from "effect/Equal"
-import * as Fiber from "effect/Fiber"
-import * as MutableHashMap from "effect/MutableHashMap"
-import * as Option from "effect/Option"
-import * as ReadonlyArray from "effect/ReadonlyArray"
-import * as Scope from "effect/Scope"
-import type * as Fx from "../Fx.js"
-import { fromEffect, type RefSubject } from "../RefSubject.js"
-import { WithContext } from "../Sink.js"
-import type { Subject } from "../Subject.js"
-import { makeHoldSubject } from "./core-subject.js"
-import { from, skipRepeatsWith, withScopedFork } from "./core.js"
-import { adjustTime } from "./helpers.js"
-import { run } from "./run.js"
+import type { FiberId } from "effect"
+import { Context, Effect, ExecutionStrategy, Option, Scope } from "effect"
+import type { Fx, KeyedOptions } from "../Fx.js"
+import * as RefSubject from "../RefSubject.js"
+import * as Sink from "../Sink.js"
+import type { Add, Moved, Remove, Update } from "./diff.js"
+import { diffIterator } from "./diff.js"
+import { withDebounceFork } from "./helpers.js"
+import { FxBase } from "./protos.js"
 
-export function keyed<R, E, A, B, R2, E2, C>(
-  fx: Fx.Fx<R, E, ReadonlyArray<A>>,
-  getKey: (a: A) => B,
-  f: (fx: RefSubject<never, never, A>, key: B) => Fx.FxInput<R2, E2, C>
-): Fx.Fx<R | R2, E | E2, ReadonlyArray<C>> {
-  return withScopedFork(({ fork, scope, sink }) =>
-    Effect.gen(function*($) {
-      const state = createKeyedState<A, B, C>()
-      const emit = emitWhenReady(state, getKey)
-
-      // Let output emit to the sink, it is closes by the surrounding scope
-      yield* $(fork(run(skipRepeatsWith(state.output, ReadonlyArray.getEquivalence(equals)), sink)))
-
-      yield* $(adjustTime(1))
-
-      // Listen to the input and update the state
-      yield* $(
-        run(
-          fx,
-          WithContext(
-            sink.onFailure,
-            (as) =>
-              updateState({
-                state,
-                updated: as,
-                getKey,
-                f: (ref, key) => from(f(ref, key)),
-                fork,
-                scope,
-                emit,
-                error: sink.onFailure
-              })
-          )
-        )
-      )
-
-      yield* $(endAll(state))
-
-      // When the source stream ends we wait for the remaining fibers to end
-      yield* $(Fiber.joinAll(Array.from(state.fibers).map((x) => x[1])))
-    })
-  )
+export function keyed<R, E, A, B extends PropertyKey, R2, E2, C>(
+  fx: Fx<R, E, ReadonlyArray<A>>,
+  options: KeyedOptions<A, B, R2, E2, C>
+): Fx<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>> {
+  return new Keyed(fx, options)
 }
 
-type KeyedState<A, B, C> = {
-  previous: ReadonlyArray<A>
-  previousKeys: ReadonlySet<B>
-
-  readonly subjects: MutableHashMap.MutableHashMap<B, RefSubject<never, never, A>>
-  readonly initialValues: MutableHashMap.MutableHashMap<B, A>
-  readonly fibers: MutableHashMap.MutableHashMap<B, Fiber.RuntimeFiber<never, void>>
-  readonly values: MutableHashMap.MutableHashMap<B, C>
-  readonly output: Subject<never, never, ReadonlyArray<C>>
+type StateContext<A, C> = {
+  entry: KeyedEntry<A, C>
+  output: C
 }
 
-function createKeyedState<A, B, C>(): KeyedState<A, B, C> {
-  return {
-    previous: [],
-    previousKeys: new Set(),
-    subjects: MutableHashMap.empty(),
-    initialValues: MutableHashMap.empty(),
-    fibers: MutableHashMap.empty(),
-    values: MutableHashMap.empty(),
-    output: makeHoldSubject<never, ReadonlyArray<C>>()
+const StateContext = Context.Tag<StateContext<any, any>>()
+
+class Keyed<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
+  implements Fx<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
+{
+  constructor(
+    readonly fx: Fx<R, E, ReadonlyArray<A>>,
+    readonly options: KeyedOptions<A, B, R2, E2, C>
+  ) {
+    super()
+  }
+
+  run<R3>(sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>) {
+    return Effect.fiberIdWith((id) => runKeyed(this.fx, this.options, sink, id))
   }
 }
 
-function updateState<A, B, C, R2, E2, R3>({
-  emit,
-  error,
-  f,
-  fork,
-  getKey,
-  scope,
-  state,
-  updated
-}: {
-  state: KeyedState<A, B, C>
-  updated: ReadonlyArray<A>
-  f: (fx: RefSubject<never, never, A>, key: B) => Fx.Fx<R2, E2, C>
-  fork: Fx.ScopedFork
-  scope: Scope.Scope
-  emit: Effect.Effect<never, never, void>
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => B
-}): Effect.Effect<Exclude<R2 | R3, Scope.Scope>, never, void> {
-  return Effect.provideService(
-    Effect.gen(function*($) {
-      const { added, removed, unchanged } = diffValues(state, updated, getKey)
-
-      // Remove values that are no longer in the stream
-      yield* $(Effect.forEach(removed, (key) => removeValue(state, key), { discard: true }))
-
-      // Update values that are still in the stream
-      yield* $(
-        Effect.forEach(unchanged, (value) => updateValue(state, value, getKey), {
-          concurrency: "unbounded",
-          discard: true
-        })
-      )
-
-      // Add values that are new to the stream
-      yield* $(
-        Effect.forEach(added, (value) => addValue({ state, value, f, fork, emit, error, getKey }), {
-          concurrency: "unbounded",
-          discard: true
-        })
-      )
-
-      // If nothing was added, emit the current values
-      if (added.length === 0) {
-        yield* $(emit)
-      }
-    }),
-    Scope.Scope,
-    scope
-  )
+interface KeyedState<A, B extends PropertyKey, C> {
+  readonly entries: Map<B, KeyedEntry<A, C>>
+  readonly indices: Map<number, B>
+  previousKeys: ReadonlyArray<B>
 }
 
-function diffValues<A, B, C>(
-  state: KeyedState<A, B, C>,
-  updated: ReadonlyArray<A>,
-  getKey: (a: A) => B
+function emptyKeyedState<A, B extends PropertyKey, C>(): KeyedState<A, B, C> {
+  return {
+    entries: new Map(),
+    indices: new Map(),
+    previousKeys: []
+  }
+}
+
+function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
+  fx: Fx<R, E, ReadonlyArray<A>>,
+  options: KeyedOptions<A, B, R2, E2, C>,
+  sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>,
+  id: FiberId.FiberId
 ) {
-  const added: Array<A> = []
-  const unchanged: Array<A> = []
-  const removed: Array<B> = []
-  const previousKeys = state.previousKeys
-  const keys = new Set<B>(updated.map(getKey))
+  return withDebounceFork(
+    (forkDebounce, parentScope) => {
+      const state = emptyKeyedState<A, B, C>()
+      // Uses debounce to avoid glitches
+      const scheduleNextEmit = forkDebounce(Effect.suspend(() => sink.onSuccess(getReadyIndices(state))))
 
-  for (let i = 0; i < updated.length; ++i) {
-    const value = updated[i]
-    const key = getKey(value)
+      function diffAndPatch(values: ReadonlyArray<A>) {
+        return Effect.gen(function*(_) {
+          const previous = state.previousKeys
+          const keys = values.map(options.getKey)
+          state.previousKeys = keys
 
-    if (previousKeys.has(key)) {
-      unchanged.push(value)
+          let added = false
+          let done = false
+          let scheduled = false
+
+          for (const patch of diffIterator(previous, keys)) {
+            if (patch._tag === "Remove") {
+              yield* _(removeValue(state, patch))
+            } else if (patch._tag === "Add") {
+              added = true
+              yield* _(
+                addValue(
+                  state,
+                  values,
+                  patch,
+                  id,
+                  parentScope,
+                  options,
+                  sink,
+                  Effect.suspend(() => {
+                    if (done === false) {
+                      scheduled = true
+                      return Effect.unit
+                    }
+                    return scheduleNextEmit
+                  })
+                )
+              )
+            } else {
+              yield* _(updateValue(state, values, patch))
+            }
+          }
+
+          done = true
+
+          if (scheduled || added === false) {
+            yield* _(scheduleNextEmit)
+          }
+        })
+      }
+
+      return fx.run(
+        Sink.make(
+          (cause) => sink.onFailure(cause),
+          // Use exhaust to ensure only 1 diff is running at a time
+          // Skipping an intermediate changes that occur while diffing
+          (values) => Effect.withMaxOpsBeforeYield(diffAndPatch(values), Number.MAX_SAFE_INTEGER)
+        )
+      )
+    },
+    options.debounce || 0
+  )
+}
+
+class KeyedEntry<A, C> {
+  constructor(
+    public value: A,
+    public index: number,
+    public output: Option.Option<C>,
+    public readonly ref: RefSubject.RefSubject<never, never, A>,
+    public readonly interrupt: Effect.Effect<never, never, void>
+  ) {}
+}
+
+function getReadyIndices<A, B extends PropertyKey, C>(
+  { entries, indices, previousKeys }: KeyedState<A, B, C>
+): ReadonlyArray<C> {
+  const output: Array<C> = []
+
+  for (let i = 0; i < previousKeys.length; ++i) {
+    const key = indices.get(i)
+
+    if (key === undefined) break
+
+    const entry = entries.get(key)!
+    if (Option.isSome(entry.output)) {
+      output.push(entry.output.value)
     } else {
-      added.push(value)
+      break
     }
   }
 
-  previousKeys.forEach((k) => {
-    if (!keys.has(k)) {
-      removed.push(k)
-    }
-  })
-
-  state.previous = updated
-  state.previousKeys = keys
-
-  return {
-    added,
-    unchanged,
-    removed
-  } as const
+  return output
 }
 
-function removeValue<A, B, C>(state: KeyedState<A, B, C>, key: B) {
-  return Effect.gen(function*($) {
-    const subject = MutableHashMap.get(state.subjects, key)
+function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
+  { entries, indices }: KeyedState<A, B, C>,
+  values: ReadonlyArray<A>,
+  patch: Add<B>,
+  id: FiberId.FiberId,
+  parentScope: Scope.Scope,
+  options: KeyedOptions<A, B, R2, E2, C>,
+  sink: Sink.Sink<R2 | R3, E | E2, ReadonlyArray<C>>,
+  scheduleNextEmit: Effect.Effect<R3, never, D>
+) {
+  return Effect.gen(function*(_) {
+    const value = values[patch.index]
+    const childScope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+    const ref: RefSubject.RefSubject<never, never, A> = yield* _(RefSubject.unsafeMake<never, A>({
+      initial: Effect.sync(() => entry.value),
+      initialValue: value,
+      scope: childScope,
+      id
+    }))
 
-    if (Option.isSome(subject)) yield* $(Effect.fork(subject.value.interrupt))
+    const entry = new KeyedEntry<A, C>(
+      value,
+      patch.index,
+      Option.none(),
+      ref,
+      ref.interrupt
+    )
 
-    const fiber = MutableHashMap.get(state.fibers, key)
+    entries.set(patch.value, entry)
+    indices.set(patch.index, patch.value)
 
-    if (Option.isSome(fiber)) yield* $(Fiber.interruptFork(fiber.value))
+    yield* _(Scope.addFinalizer(childScope, ref.interrupt))
 
-    MutableHashMap.remove(state.values, key)
-    MutableHashMap.remove(state.subjects, key)
-    MutableHashMap.remove(state.fibers, key)
-  })
-}
+    yield* _(
+      Effect.forkIn(
+        options.onValue(ref, patch.value).run(Sink.make(
+          (cause) => sink.onFailure(cause),
+          (output) => {
+            entry.output = Option.some(output)
 
-function addValue<A, B, C, R2, E2, R3>({
-  emit,
-  error,
-  f,
-  fork,
-  getKey,
-  state,
-  value
-}: {
-  state: KeyedState<A, B, C>
-  value: A
-  f: (fx: RefSubject<never, never, A>, key: B) => Fx.Fx<R2, E2, C>
-  fork: Fx.ScopedFork
-  emit: Effect.Effect<never, never, void>
-  error: (e: Cause.Cause<E2>) => Effect.Effect<R3, never, void>
-  getKey: (a: A) => B
-}) {
-  return Effect.uninterruptible(Effect.suspend(() => {
-    const key = getKey(value)
-
-    // Set the initial value
-    MutableHashMap.set(state.initialValues, key, value)
-
-    return fromEffect<never, never, A>(
-      Effect.sync(() =>
-        // Default to the initial value
-        MutableHashMap.get(state.initialValues, key).pipe(Option.getOrElse(() => value))
-      )
-    ).pipe(
-      Effect.flatMap((subject) =>
-        fork(
-          run(
-            f(subject, key),
-            WithContext(
-              error,
-              (c: C) =>
-                Effect.suspend(() => {
-                  MutableHashMap.set(state.values, key, c)
-                  return emit
-                })
-            )
-          )
-        ).pipe(
-          Effect.tap((fiber) =>
-            Effect.sync(() => {
-              MutableHashMap.set(state.subjects, key, subject)
-              MutableHashMap.set(state.fibers, key, fiber)
-            })
-          )
-        )
+            return scheduleNextEmit
+          }
+        )),
+        parentScope
       )
     )
-  }))
-}
-
-function updateValue<A, B, C>(state: KeyedState<A, B, C>, value: A, getKey: (a: A) => B) {
-  return Effect.gen(function*($) {
-    const key = getKey(value)
-    const subject = MutableHashMap.get(state.subjects, key)
-
-    // External updates reset the initial value
-    MutableHashMap.set(state.initialValues, key, value)
-
-    // Send the current value
-    if (Option.isSome(subject)) {
-      yield* $(subject.value.set(value))
-    }
   })
 }
 
-function emitWhenReady<A, B, C>(state: KeyedState<A, B, C>, getKey: (a: A) => B) {
-  return Effect.suspend(() => {
-    // Fast path: if we don't have enough values, don't emit
-    if (MutableHashMap.size(state.values) !== state.previous.length) {
-      return Effect.unit
-    }
-
-    const values = ReadonlyArray.filterMap(state.previous, (value) => MutableHashMap.get(state.values, getKey(value)))
-
-    // When all of the values have resolved at least once, emit the output
-    if (values.length === state.previous.length) {
-      return state.output.onSuccess(values)
-    }
-
-    return Effect.unit
-  })
+function removeValue<A, B extends PropertyKey, C>({ entries, indices }: KeyedState<A, B, C>, patch: Remove<B>) {
+  const interrupt = entries.get(patch.value)!.interrupt
+  entries.delete(patch.value)
+  indices.delete(patch.index)
+  return interrupt
 }
 
-function endAll<A, B, C>(state: KeyedState<A, B, C>) {
-  return Effect.forEach(state.subjects, ([, subject]) => subject.interrupt, { concurrency: "unbounded" })
+function updateValue<A, B extends PropertyKey, C>(
+  { entries, indices }: KeyedState<A, B, C>,
+  values: ReadonlyArray<A>,
+  patch: Update<B> | Moved<B>
+) {
+  const key = patch.value
+  const entry = entries.get(key)!
+
+  if (patch._tag === "Moved") {
+    const currentKey = indices.get(patch.index)
+    if (currentKey === key) {
+      indices.delete(patch.index)
+    }
+    indices.set(patch.to, key)
+    entry.value = values[entry.index = patch.to]
+  } else {
+    entry.value = values[entry.index = patch.index]
+  }
+
+  return RefSubject.set(entry.ref, entry.value)
 }

@@ -29,7 +29,8 @@ Added in v1.0.0
 ```ts
 export type Renderable<R = never, E = never> =
   | Renderable.Value
-  | { readonly [key: string]: Renderable.Value } // TODO: Should we manage data attributes this way?
+  | Placeholder<R, E, any>
+  | { readonly [key: string]: Renderable<R, E> | Placeholder<R, E, any> | unknown } // TODO: Should we manage data attributes this way?
   | Placeholder<R, E, any>
   | Effect<R, E, any>
   | Fx<R, E, any>

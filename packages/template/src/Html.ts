@@ -3,14 +3,13 @@
  */
 
 import * as Fx from "@typed/fx/Fx"
-import { Sink } from "@typed/fx/Sink"
+import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
-import type { Rendered } from "@typed/wire"
-import { Effect, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
 import { join } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
-import * as ElementRef from "./ElementRef.js"
 import type { ServerEntry } from "./Entry.js"
 import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
 import { templateToHtmlChunks } from "./HtmlChunk.js"
@@ -23,9 +22,10 @@ import { RenderContext } from "./RenderContext.js"
 import { HtmlRenderEvent, isRenderEvent } from "./RenderEvent.js"
 import type { RenderEvent } from "./RenderEvent.js"
 import { RenderTemplate } from "./RenderTemplate.js"
-import { TemplateInstance } from "./TemplateInstance.js"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
+
+const [padStart, padEnd] = [[TYPED_START], [TYPED_END]] as const
 
 /**
  * @since 1.0.0
@@ -38,8 +38,7 @@ export function renderToHtml<R, E>(
       fx.pipe(
         Fx.provide(RenderTemplate.layer(renderHtml(ctx))),
         Fx.map(toHtml),
-        Fx.startWith(TYPED_START),
-        Fx.endWith(TYPED_END)
+        Fx.padWith(padStart, padEnd)
       )
     )
   )
@@ -55,41 +54,30 @@ export function renderToHtmlString<R, E>(
 }
 
 function renderHtml(ctx: RenderContext) {
-  return <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
+  return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
-    values: Values,
-    providedRef?: ElementRef.ElementRef<T>
-  ): Effect.Effect<
+    values: Values
+  ): Fx.Fx<
     Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
-    never,
-    TemplateInstance<
-      Placeholder.Error<Values[number]>,
-      T
-    >
+    Placeholder.Error<Values[number]>,
+    RenderEvent
   > => {
-    return Effect.gen(function*(_) {
-      const ref = providedRef || (yield* _(ElementRef.make()))
-      const entry = getServerEntry(templateStrings, ctx.templateCache)
-
-      if (values.length === 0) {
-        return TemplateInstance(Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value)), ref as any)
-      } else {
-        return TemplateInstance(
-          Fx.filter(
-            Fx.mergeBuffer(
-              entry.chunks.map((chunk) =>
-                renderChunk<
-                  Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
-                  Placeholder.Error<Values[number]>
-                >(chunk, values)
-              )
-            ),
-            (x) => (x.valueOf() as string).length > 0
-          ) as any,
-          ref as any
-        )
-      }
-    })
+    const entry = getServerEntry(templateStrings, ctx.templateCache)
+    if (values.length === 0) {
+      return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value))
+    } else {
+      return Fx.filter(
+        Fx.mergeOrdered(
+          entry.chunks.map((chunk) =>
+            renderChunk<
+              Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
+              Placeholder.Error<Values[number]>
+            >(chunk, values)
+          )
+        ),
+        (x) => (x.valueOf() as string).length > 0
+      )
+    }
   }
 }
 
@@ -125,7 +113,7 @@ function renderObject<R, E>(renderable: object | null | undefined) {
   if (renderable === null || renderable === undefined) {
     return Fx.succeed(HtmlRenderEvent(TEXT_START))
   } else if (Array.isArray(renderable)) {
-    return Fx.mergeBuffer(renderable.map(renderNode)) as any
+    return Fx.mergeOrdered(renderable.map(renderNode)) as any
   } else if (Fx.isFx<R, E, Renderable>(renderable)) {
     return Fx.concatMap(takeOneIfNotRenderEvent(renderable), renderNode as any)
   } else if (Effect.isEffect(renderable)) {
@@ -146,7 +134,7 @@ function renderPart<R, E>(
 
   // Refs and events are not rendered into HTML
   if (isDirective<R, E>(renderable)) {
-    return Fx.fromSink((sink: Sink<E, RenderEvent>) => {
+    return Fx.make((sink: Sink.Sink<never, E, RenderEvent>) => {
       const part = partNodeToPart(
         node,
         (value) => sink.onSuccess(HtmlRenderEvent(render(value)))
@@ -155,8 +143,21 @@ function renderPart<R, E>(
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    return Fx.endWith(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
+    return Fx.append(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
+  } else if (node._tag === "properties") {
+    if (renderable == null) return Fx.empty
+    return Fx.map(
+      Fx.take(
+        Fx.struct(
+          Object.fromEntries(Object.entries(renderable).map(([k, v]) => [k, unwrapRenderable(v)] as const))
+        ),
+        1
+      ),
+      render
+    ) as any
   } else {
+    if (renderable === null) return Fx.succeed(HtmlRenderEvent(render(renderable)))
+
     const html = Fx.filterMap(Fx.take(unwrapRenderable<R, E>(renderable), 1), (value) => {
       const s = render(value)
 
@@ -164,7 +165,7 @@ function renderPart<R, E>(
     })
 
     if (node._tag === "text-part") {
-      return Fx.endWith(Fx.startWith(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
+      return Fx.append(Fx.prepend(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
     }
 
     return html
@@ -179,14 +180,14 @@ function renderSparsePart<R, E>(
 
   return Fx.map(
     Fx.take(
-      Fx.combine(
+      Fx.tuple(
         node.nodes.map((node) => {
           if (node._tag === "text") return Fx.succeed(node.value)
 
           const renderable: Renderable<any, any> = (values as any)[node.index]
 
           if (isDirective<R, E>(renderable)) {
-            return Fx.fromSink<R, E, unknown>((sink: Sink<E, unknown>) =>
+            return Fx.make<R, E, unknown>((sink: Sink.Sink<never, E, unknown>) =>
               Effect.catchAllCause(
                 renderable(partNodeToPart(node, (value) => sink.onSuccess(value))),
                 sink.onFailure
@@ -204,17 +205,15 @@ function renderSparsePart<R, E>(
 }
 
 function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.withEarlyExit(({ fork, sink }) =>
-    Fx.run(
-      fx,
-      Sink(
-        sink.onFailure,
-        (event) => isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
-      )
-    ).pipe(
-      fork,
-      Effect.fromFiberEffect
-    )
+  return Fx.make<R, E, A>((sink) =>
+    Sink.withEarlyExit(sink, (sink) =>
+      fx.run(
+        Sink.make(
+          sink.onFailure,
+          (event) =>
+            isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
+        )
+      ))
   )
 }
 
@@ -233,6 +232,8 @@ function getServerEntry(
       chunks: templateToHtmlChunks(template)
     }
 
+    templateCache.set(templateStrings, entry)
+
     return entry
   } else {
     return cached
@@ -245,7 +246,7 @@ function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, a
     case "object": {
       if (renderable === null || renderable === undefined) return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return Fx.combine(renderable.map(unwrapRenderable)) as any
+        return Fx.tuple(renderable.map(unwrapRenderable)) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {

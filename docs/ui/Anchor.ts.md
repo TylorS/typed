@@ -52,13 +52,13 @@ Added in v1.0.0
 
 ```ts
 export type AnchorProps = {
-  readonly [K in keyof HTMLAnchorElementProperties]:
+  readonly [K in keyof HTMLAnchorElementProperties]?:
     | HTMLAnchorElementProperties[K]
     | Placeholder.Any<HTMLAnchorElementProperties[K]>
-    | Directive.Directive<any, any>
+    | undefined
 } & {
-  readonly ref?: (ref: ElementSource<HTMLAnchorElement>) => Effect.Effect<any, any, any>
-  readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>>
+  readonly ref?: ((ref: ElementSource<HTMLAnchorElement>) => Effect.Effect<any, any, any>) | undefined
+  readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
 } & EventHandlerProps<HTMLAnchorElement>
 ```
 

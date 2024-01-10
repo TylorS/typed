@@ -2,7 +2,7 @@
 title: "@typed/router"
 has_children: true
 permalink: /docs/router
-nav_order: 11
+nav_order: 12
 ---
 
 # @typed/router

@@ -2,7 +2,6 @@ import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
 import * as Template from "../Template.js"
-import { SELF_CLOSING_TAGS, TEXT_ONLY_NODES_REGEX } from "../Token.js"
 import type { TextChunk } from "./chunks.js"
 import {
   getPart,
@@ -16,6 +15,40 @@ import {
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization
 
+/**
+ * @since 1.0.0
+ */
+export const TEXT_ONLY_NODES_REGEX = new Set([
+  "textarea",
+  "script",
+  "style",
+  "title",
+  "plaintext",
+  "xmp"
+])
+
+/**
+ * @since 1.0.0
+ */
+export const SELF_CLOSING_TAGS = new Set([
+  "area",
+  "base",
+  "br",
+  "col",
+  "command",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr"
+])
+
 export interface Parser {
   parse(templateStrings: ReadonlyArray<string>): Template.Template
 }
@@ -25,18 +58,38 @@ export function parse(templateStrings: ReadonlyArray<string>): Template.Template
 }
 
 const SPACE_REGEX = /\s/
-const isPartToken: TextPredicate = (input, pos) => input[pos] === "{" && input.slice(pos, pos + 8) === "{{__PART"
-const isPartEndToken: TextPredicate = (input, pos) => input[pos] === "_" && input.slice(pos, pos + 4) === "__}}"
-const isElementOpenToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] !== "/"
-const isElementCloseToken: TextPredicate = (input, pos) => input[pos] === "<" && input[pos + 1] === "/"
-const isEqualsToken: TextPredicate = (input, pos) => input[pos] === "="
-const isQuoteToken: TextPredicate = (input, pos) => input[pos] === `"`
-const isSingleQuoteToken: TextPredicate = (input, pos) => input[pos] === "'"
+const PART_START = "{{__PART"
+const PART_END = "__}}"
+const chars = {
+  openBracket: "{",
+  closeBracket: "}",
+  underscore: "_",
+  equals: "=",
+  quote: `"`,
+  singleQuote: "'",
+  slash: "/",
+  greaterThan: ">",
+  lessThan: "<",
+  hypen: "-"
+} as const
+
+const isPartToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.openBracket && input.slice(pos, pos + 8) === PART_START
+const isPartEndToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.underscore && input.slice(pos, pos + 4) === PART_END
+const isElementOpenToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.lessThan && input[pos + 1] !== chars.slash
+const isElementCloseToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.lessThan && input[pos + 1] === chars.slash
+const isEqualsToken: TextPredicate = (input, pos) => input[pos] === chars.equals
+const isQuoteToken: TextPredicate = (input, pos) => input[pos] === chars.quote
+const isSingleQuoteToken: TextPredicate = (input, pos) => input[pos] === chars.singleQuote
 const isWhitespaceToken: TextPredicate = (input, pos) => SPACE_REGEX.test(input[pos])
-const isOpenTagEndToken: TextPredicate = (input, pos) => input[pos] === ">"
-const isSelfClosingTagEndToken: TextPredicate = (input, pos) => input[pos] === "/" && input[pos + 1] === ">"
+const isOpenTagEndToken: TextPredicate = (input, pos) => input[pos] === chars.greaterThan
+const isSelfClosingTagEndToken: TextPredicate = (input, pos) =>
+  input[pos] === chars.slash && input[pos + 1] === chars.greaterThan
 const isCommentEndToken: TextPredicate = (input, pos) =>
-  input[pos] === "-" && input[pos + 1] === "-" && input[pos + 2] === ">"
+  input[pos] === chars.hypen && input[pos + 1] === chars.hypen && input[pos + 2] === chars.greaterThan
 
 type Context = "unknown" | "element"
 
@@ -154,6 +207,7 @@ class ParserImpl implements Parser {
 
     while (this.pos < this.length) {
       const node = this.parseNodeFromContext(this.context)
+
       if (node === undefined) {
         return nodes
       } else {
@@ -187,9 +241,16 @@ class ParserImpl implements Parser {
     const nextChar = this.nextChar()
 
     if (nextChar === "!") { // Comment
-      this.consumeAmount(3)
+      this.consumeAmount(1)
 
-      return [this.parseComment()]
+      const nextChar = this.nextChar()
+
+      if (nextChar == "-") {
+        this.consumeAmount(2)
+        return [this.parseComment()]
+      } else {
+        return [this.parseDocType()]
+      }
     } else if (nextChar === "/") { // Self-closing tag
       return this.selfClosingTagEnd()
     } else { // Elements
@@ -263,6 +324,7 @@ class ParserImpl implements Parser {
 
   private parseTextOnlyElement(tagName: string): Template.TextOnlyElement {
     const attributes = this.parseAttributes()
+
     this.path.push()
     const children = this.parseTextChildren()
     this.path.pop()
@@ -289,6 +351,14 @@ class ParserImpl implements Parser {
     return this.addPart(new Template.SparseCommentNode(textAndParts))
   }
 
+  private parseDocType(): Template.DocType {
+    this.parseTextUntil((char) => char === chars.greaterThan)
+    this.consumeAmount(1)
+    this.skipWhitespace()
+
+    return new Template.DocType("html")
+  }
+
   private parseTagName() {
     return this.parseTextUntilMany(tagNameMatches)
   }
@@ -304,6 +374,7 @@ class ParserImpl implements Parser {
       case null:
         return Skip
       case "whitespace":
+        this.skipWhitespace()
         return Continue([new Template.BooleanNode(name)])
       case "equals": {
         this.consumeAmount(1)
@@ -366,11 +437,13 @@ class ParserImpl implements Parser {
       case ".": {
         const property = name.slice(1)
 
-        return this.addPart(
-          property === "data"
-            ? new Template.DataPartNode(unsafeParsePartIndex(text))
-            : new Template.PropertyPartNode(property, unsafeParsePartIndex(text))
-        )
+        if (property === "data") {
+          return this.addPart(new Template.DataPartNode(unsafeParsePartIndex(text)))
+        } else if (property === "props" || property === "properties") {
+          return this.addPart(new Template.PropertiesPartNode(unsafeParsePartIndex(text)))
+        } else {
+          return this.addPart(new Template.PropertyPartNode(property, unsafeParsePartIndex(text)))
+        }
       }
       case "@":
         return this.addPart(new Template.EventPartNode(name.slice(1), unsafeParsePartIndex(text)))
@@ -617,7 +690,7 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   return out
 }
 
-export const parser: Parser = globalValue(Symbol.for("../Parser2.js"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser2"), () => new ParserImpl())
 
 const digestSize = 2
 const multiplier = 33

@@ -3,8 +3,9 @@
  */
 
 import * as Context from "@typed/context"
-import type { Layer } from "effect"
-import { Effect, Random } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
+import * as Random from "effect/Random"
 
 /**
  * @since 1.0.0

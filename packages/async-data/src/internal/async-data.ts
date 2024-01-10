@@ -1,7 +1,13 @@
 // Internal
 
-import { Cause, Effect, Effectable, Equal, Hash, Option, pipe, Unify } from "effect"
-import { constant } from "effect/Function"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as Effectable from "effect/Effectable"
+import * as Equal from "effect/Equal"
+import { constant, pipe } from "effect/Function"
+import * as Hash from "effect/Hash"
+import * as Option from "effect/Option"
+import * as Unify from "effect/Unify"
 import { type AsyncData, type Failure, type Loading, type Success } from "../AsyncData.js"
 import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag.js"
 
@@ -14,7 +20,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
   [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
-  constructor(readonly cause: Cause.Cause<E>, readonly refreshing: Option.Option<Loading>) {
+  constructor(readonly cause: Cause.Cause<E>, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
 
     this.commit = constant(Effect.failCause(cause))
@@ -23,6 +29,7 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
   [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Failure"
       && Equal.equals(this.cause, that.cause)
+      && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
   };
 
@@ -44,7 +51,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
   [Unify.unifySymbol]!: AsyncData.Unify<this>;
   [Unify.ignoreSymbol]!: AsyncData.IgnoreList
 
-  constructor(readonly value: A, readonly refreshing: Option.Option<Loading>) {
+  constructor(readonly value: A, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
 
     this.commit = constant(Effect.succeed(value))
@@ -53,6 +60,7 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
   [Equal.symbol] = (that: unknown) => {
     return isAsyncData(that) && that._tag === "Success"
       && Equal.equals(this.value, that.value)
+      && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
   };
 

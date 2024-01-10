@@ -20,6 +20,7 @@ Added in v1.0.0
   - [CurrentState](#currentstate)
   - [browser](#browser)
   - [isActive](#isactive)
+  - [layer](#layer)
   - [make](#make)
   - [makeHref](#makehref)
   - [server](#server)
@@ -34,7 +35,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentParams: Filtered<CurrentRoute<string> | Navigation, never, Readonly<Record<string, string>>>
+export declare const CurrentParams: RefSubject.Filtered<
+  CurrentRoute<string> | Navigation,
+  never,
+  Readonly<Record<string, string>>
+>
 ```
 
 Added in v1.0.0
@@ -67,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentSearchParams: Computed.Computed<Navigation, never, Readonly<Record<string, string>>>
+export declare const CurrentSearchParams: RefSubject.Computed<Navigation, never, Readonly<Record<string, string>>>
 ```
 
 Added in v1.0.0
@@ -77,7 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentState: Computed.Computed<Navigation, never, unknown>
+export declare const CurrentState: RefSubject.Computed<Navigation, never, unknown>
 ```
 
 Added in v1.0.0
@@ -100,7 +105,20 @@ Added in v1.0.0
 export declare function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): Computed.Computed<Navigation | CurrentRoute, never, boolean>
+): RefSubject.Computed<Navigation | CurrentRoute, never, boolean>
+```
+
+Added in v1.0.0
+
+## layer
+
+**Signature**
+
+```ts
+export declare function layer<const P extends string>(
+  route: P | Route.Route<P>,
+  parent: Option.Option<CurrentRoute> = Option.none()
+): Layer.Layer<never, never, CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -110,8 +128,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make<P extends string>(
-  route: Route.Route<P>,
+export declare function make<const P extends string>(
+  route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): CurrentRoute<P>
 ```
@@ -126,7 +144,7 @@ Added in v1.0.0
 export declare function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): Filtered<Navigation | CurrentRoute, never, string>
+): RefSubject.Filtered<Navigation | CurrentRoute, never, string>
 ```
 
 Added in v1.0.0

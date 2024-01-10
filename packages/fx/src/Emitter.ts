@@ -1,54 +1,63 @@
 /**
- * An Emitter is a a Sink-like type which is can be utilized to adapt external
- * APIs into an Fx.
- * @since 1.18.0
+ * Emitter is a helper for creating Fx from external libraries which are not Effect-native.
+ * @since 1.20.0
  */
 
-import type * as Cause from "effect/Cause"
+import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
-import type * as Fiber from "effect/Fiber"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
+import type * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
+import * as Runtime from "effect/Runtime"
 import type * as Scope from "effect/Scope"
-import type { ScopedRuntime } from "./internal/helpers.js"
-import { scopedRuntime } from "./internal/helpers.js"
-import type * as Sink from "./Sink.js"
+import { withScope } from "./internal/helpers.js"
+import * as Sink from "./Sink.js"
 
 /**
- * An Emitter is a a Sink-like type which is can be utilized to adapt external
- * APIs into an Fx.
- * @since 1.18.0
+ * @since 1.20.0
  */
 export interface Emitter<E, A> {
-  (exit: Exit.Exit<E, A>): Fiber.Fiber<never, unknown>
-
-  readonly succeed: (a: A) => Fiber.Fiber<never, unknown>
-  readonly failCause: (e: Cause.Cause<E>) => Fiber.Fiber<never, unknown>
-  readonly fail: (e: E) => Fiber.Fiber<never, unknown>
-  readonly die: (e: unknown) => Fiber.Fiber<never, unknown>
-  readonly end: () => Fiber.Fiber<never, unknown>
+  readonly succeed: (value: A) => Promise<Exit.Exit<never, unknown>>
+  readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<never, unknown>>
+  readonly fail: (error: E) => Promise<Exit.Exit<never, unknown>>
+  readonly die: (error: unknown) => Promise<Exit.Exit<never, unknown>>
+  readonly end: () => Promise<Exit.Exit<never, unknown>>
 }
 
 /**
- * Create an Emitter from a Sink
- * @since 1.18.0
- * @category constructors
+ * @since 1.20.0
  */
-export function make<E, A>(sink: Sink.WithEarlyExit<E, A>): Effect.Effect<Scope.Scope, never, Emitter<E, A>> {
-  return Effect.map(scopedRuntime<never>(), (runtime) => makeWithRuntime(runtime, sink))
-}
-function makeWithRuntime<E, A>(
-  runtime: ScopedRuntime<never>,
-  sink: Sink.WithEarlyExit<E, A>
-): Emitter<E, A> {
-  function emit(exit: Exit.Exit<E, A>): Fiber.Fiber<never, unknown> {
-    return runtime.run(Exit.match(exit, sink))
-  }
+export function withEmitter<R, E, A, R2, B>(
+  sink: Sink.Sink<R, E, A>,
+  f: (emitter: Emitter<E, A>) => Effect.Effect<R2, E, B>
+): Effect.Effect<R | R2 | Scope.Scope, never, void> {
+  return withScope(
+    (scope) =>
+      Sink.withEarlyExit(
+        sink,
+        (sink): Effect.Effect<R | R2, E, B> => {
+          return Effect.flatMap(Effect.runtime<R>(), (runtime): Effect.Effect<R2, E, B> => {
+            const runPromiseExit = Runtime.runPromiseExit(runtime)
+            const run = (effect: Effect.Effect<R, never, unknown>) =>
+              runPromiseExit(
+                Effect.flatMap(
+                  Effect.forkIn(effect, scope),
+                  Fiber.join
+                )
+              )
 
-  emit.succeed = (a: A) => emit(Exit.succeed(a))
-  emit.failCause = (e: Cause.Cause<E>) => emit(Exit.failCause(e))
-  emit.fail = (e: E) => emit(Exit.fail(e))
-  emit.die = (e: unknown) => emit(Exit.die(e))
-  emit.end = () => runtime.run(sink.earlyExit)
+            const emitter: Emitter<E, A> = {
+              succeed: (value) => run(sink.onSuccess(value)),
+              failCause: (cause) => run(sink.onFailure(cause)),
+              fail: (error) => run(sink.onFailure(Cause.fail(error))),
+              die: (error) => run(sink.onFailure(Cause.die(error))),
+              end: () => run(sink.earlyExit)
+            }
 
-  return emit
+            return f(emitter)
+          })
+        }
+      ),
+    ExecutionStrategy.sequential
+  )
 }

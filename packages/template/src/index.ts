@@ -60,7 +60,3 @@ export * from "./RenderEvent.js"
  * @since 1.0.0
  */
 export * from "./RenderTemplate.js"
-/**
- * @since 1.0.0
- */
-export * from "./TemplateInstance.js"

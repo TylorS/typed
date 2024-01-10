@@ -1,39 +1,19 @@
 ---
 title: Fx.ts
-nav_order: 6
+nav_order: 5
 parent: "@typed/fx"
 ---
 
 ## Fx overview
 
-Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
-the time dimension. It operates within a context `R`, can fail with an `E`,
-and succeed with an `A`.
+Fx is a push-based reactive primitive built atop of Effect.
 
-Any `Fx`, shorthand for "Effects", can emit 0 or more errors or events over an
-indefinite period of time. This is in contrast to `Effect` which can only
-produce exactly 1 error or event.
-
-It is defined as a super-type of `Effect`, `Stream`, and `Cause`. This
-allows for all operators that accept an `Fx` to also capable of
-accepting an `Effect`, `Stream`, or `Cause`. An Effect or Cause represents a single
-event or error, while a Stream represents a series of events or errors that will
-be pulled from the producer as soon as possible.
-
-Added in v1.18.0
+Added in v1.20.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Do](#do)
-  - [Do](#do-1)
-  - [bind](#bind)
-  - [bindTo](#bindto)
-  - [let](#let)
-- [FiberRef](#fiberref)
-  - [locally](#locally)
-  - [locallyWith](#locallywith)
 - [FlattenStrategy](#flattenstrategy)
   - [Bounded](#bounded)
   - [Bounded (interface)](#bounded-interface)
@@ -52,325 +32,233 @@ Added in v1.18.0
   - [Ordered (interface)](#ordered-interface)
   - [Unordered](#unordered)
   - [Unordered (interface)](#unordered-interface)
-- [Subtyping](#subtyping)
-  - [ToFx (class)](#tofx-class)
-    - [toFx (method)](#tofx-method)
-- [batching](#batching)
-  - [withRequestBatching](#withrequestbatching)
-  - [withRequestCache](#withrequestcache)
-  - [withRequestCaching](#withrequestcaching)
 - [combinators](#combinators)
+  - [matchTags](#matchtags)
+- [models](#models)
+  - [FxFork (type alias)](#fxfork-type-alias)
+  - [ScopedFork (type alias)](#scopedfork-type-alias)
+- [utils](#utils)
+  - [Context (type alias)](#context-type-alias)
+  - [DefaultMatchersFrom (type alias)](#defaultmatchersfrom-type-alias)
+  - [Error (type alias)](#error-type-alias)
+  - [Fx (interface)](#fx-interface)
+  - [Fx (namespace)](#fx-namespace)
+    - [Variance (interface)](#variance-interface)
+    - [Context (type alias)](#context-type-alias-1)
+    - [Error (type alias)](#error-type-alias-1)
+    - [Success (type alias)](#success-type-alias)
+    - [Unify (type alias)](#unify-type-alias)
+  - [FxEffectBase (class)](#fxeffectbase-class)
+    - [run (method)](#run-method)
+    - [toFx (method)](#tofx-method)
+    - [toEffect (method)](#toeffect-method)
+  - [KeyedOptions (interface)](#keyedoptions-interface)
+  - [MatchCauseOptions (type alias)](#matchcauseoptions-type-alias)
+  - [MatchErrorOptions (type alias)](#matcherroroptions-type-alias)
+  - [Success (type alias)](#success-type-alias-1)
+  - [Unify (type alias)](#unify-type-alias-1)
+  - [WithKeyOptions (interface)](#withkeyoptions-interface)
+  - [acquireUseRelease](#acquireuserelease)
+  - [all](#all)
   - [annotateLogs](#annotatelogs)
   - [annotateSpans](#annotatespans)
-  - [compact](#compact)
-  - [continueWith](#continuewith)
-  - [delay](#delay)
-  - [either](#either)
-  - [endWith](#endwith)
-  - [ensuring](#ensuring)
-  - [exit](#exit)
-  - [filter](#filter)
-  - [filterEffect](#filtereffect)
-  - [filterMap](#filtermap)
-  - [filterMapEffect](#filtermapeffect)
-  - [flip](#flip)
-  - [if](#if)
-  - [interruptible](#interruptible)
-  - [keyed](#keyed)
-  - [loop](#loop)
-  - [loopEffect](#loopeffect)
-  - [map](#map)
-  - [mapBoth](#mapboth)
-  - [mapEffect](#mapeffect)
-  - [matchTags](#matchtags)
-  - [middleware](#middleware)
-  - [orElse](#orelse)
-  - [partitionMap](#partitionmap)
-  - [scan](#scan)
-  - [scanEffect](#scaneffect)
-  - [snapshot](#snapshot)
-  - [startWith](#startwith)
-  - [tap](#tap)
-  - [uninterruptible](#uninterruptible)
-  - [when](#when)
-  - [withKey](#withkey)
-  - [withPrevious](#withprevious)
-- [concurrency](#concurrency)
-  - [withConcurrency](#withconcurrency)
-  - [withMaxOpsBeforeYield](#withmaxopsbeforeyield)
-  - [withScheduler](#withscheduler)
-- [constructors](#constructors)
-  - [acquireUseRelease](#acquireuserelease)
+  - [append](#append)
+  - [appendAll](#appendall)
   - [at](#at)
-  - [combine](#combine)
-  - [die](#die)
-  - [empty](#empty)
-  - [fail](#fail)
-  - [failCause](#failcause)
-  - [from](#from)
-  - [fromDequeue](#fromdequeue)
-  - [fromEffect](#fromeffect)
-  - [fromEmitter](#fromemitter)
-  - [fromFxEffect](#fromfxeffect)
-  - [fromIterable](#fromiterable)
-  - [fromNullable](#fromnullable)
-  - [fromPubSub](#frompubsub)
-  - [fromScheduled](#fromscheduled)
-  - [fromSink](#fromsink)
-  - [fromStream](#fromstream)
-  - [gen](#gen)
-  - [genScoped](#genscoped)
-  - [interrupt](#interrupt)
-  - [merge](#merge)
-  - [mergeBuffer](#mergebuffer)
-  - [mergeBufferConcurrently](#mergebufferconcurrently)
-  - [mergeConcurrently](#mergeconcurrently)
-  - [mergeSwitch](#mergeswitch)
-  - [never](#never)
-  - [periodic](#periodic)
-  - [race](#race)
-  - [struct](#struct)
-  - [succeed](#succeed)
-  - [succeedNone](#succeednone)
-  - [succeedSome](#succeedsome)
-  - [suspend](#suspend)
-  - [sync](#sync)
-  - [withEarlyExit](#withearlyexit)
-  - [withFlattenStrategy](#withflattenstrategy)
-  - [withScopedFork](#withscopedfork)
-- [context](#context)
-  - [provide](#provide)
-  - [provideService](#provideservice)
-  - [provideServiceEffect](#provideserviceeffect)
-  - [scoped](#scoped)
-- [errors](#errors)
-  - [filterError](#filtererror)
-  - [filterErrorCause](#filtererrorcause)
-  - [filterMapCause](#filtermapcause)
-  - [filterMapError](#filtermaperror)
-  - [filterMapErrorEffect](#filtermaperroreffect)
-  - [mapError](#maperror)
-  - [mapErrorCause](#maperrorcause)
-- [flattening](#flattening)
+  - [compact](#compact)
   - [concatMap](#concatmap)
-  - [exhaust](#exhaust-1)
-  - [exhaustLatest](#exhaustlatest-1)
-  - [exhaustLatestMatch](#exhaustlatestmatch)
-  - [exhaustLatestMatchCause](#exhaustlatestmatchcause)
+  - [continueWith](#continuewith)
+  - [debounce](#debounce)
+  - [delay](#delay)
+  - [die](#die)
+  - [drain](#drain)
+  - [drainLayer](#drainlayer)
+  - [drop](#drop)
+  - [dropAfter](#dropafter)
+  - [dropAfterEffect](#dropaftereffect)
+  - [dropUntil](#dropuntil)
+  - [dropUntilEffect](#dropuntileffect)
+  - [dropWhile](#dropwhile)
+  - [dropWhileEffect](#dropwhileeffect)
+  - [during](#during)
+  - [either](#either)
+  - [empty](#empty)
+  - [ensuring](#ensuring)
   - [exhaustMap](#exhaustmap)
   - [exhaustMapCause](#exhaustmapcause)
+  - [exhaustMapEffect](#exhaustmapeffect)
   - [exhaustMapError](#exhaustmaperror)
   - [exhaustMapLatest](#exhaustmaplatest)
   - [exhaustMapLatestCause](#exhaustmaplatestcause)
+  - [exhaustMapLatestEffect](#exhaustmaplatesteffect)
   - [exhaustMapLatestError](#exhaustmaplatesterror)
-  - [exhaustMatch](#exhaustmatch)
   - [exhaustMatchCause](#exhaustmatchcause)
+  - [exhaustMatchError](#exhaustmatcherror)
+  - [exhaustMatchLatestCause](#exhaustmatchlatestcause)
+  - [exhaustMatchLatestError](#exhaustmatchlatesterror)
+  - [exit](#exit)
+  - [fail](#fail)
+  - [failCause](#failcause)
+  - [filter](#filter)
+  - [filterCause](#filtercause)
+  - [filterCauseEffect](#filtercauseeffect)
+  - [filterEffect](#filtereffect)
+  - [filterError](#filtererror)
+  - [filterErrorEffect](#filtererroreffect)
+  - [filterMap](#filtermap)
+  - [filterMapCause](#filtermapcause)
+  - [filterMapCauseEffect](#filtermapcauseeffect)
+  - [filterMapEffect](#filtermapeffect)
+  - [filterMapError](#filtermaperror)
+  - [filterMapErrorEffect](#filtermaperroreffect)
+  - [filterMapLoop](#filtermaploop)
+  - [filterMapLoopCause](#filtermaploopcause)
+  - [filterMapLoopCauseEffect](#filtermaploopcauseeffect)
+  - [filterMapLoopEffect](#filtermaploopeffect)
+  - [filterMapLoopError](#filtermaplooperror)
+  - [filterMapLoopErrorEffect](#filtermaplooperroreffect)
+  - [findFirst](#findfirst)
+  - [first](#first)
   - [flatMap](#flatmap)
   - [flatMapCause](#flatmapcause)
   - [flatMapCauseConcurrently](#flatmapcauseconcurrently)
   - [flatMapCauseWithStrategy](#flatmapcausewithstrategy)
   - [flatMapConcurrently](#flatmapconcurrently)
+  - [flatMapConcurrentlyEffect](#flatmapconcurrentlyeffect)
+  - [flatMapEffect](#flatmapeffect)
   - [flatMapError](#flatmaperror)
   - [flatMapErrorConcurrently](#flatmaperrorconcurrently)
   - [flatMapErrorWithStrategy](#flatmaperrorwithstrategy)
   - [flatMapWithStrategy](#flatmapwithstrategy)
-  - [flatten](#flatten)
-  - [match](#match)
-  - [matchCause](#matchcause)
-  - [matchCauseConcurrently](#matchcauseconcurrently)
-  - [matchCauseWithStrategy](#matchcausewithstrategy)
-  - [matchErrorConcurrently](#matcherrorconcurrently)
-  - [matchErrorWithStrategy](#matcherrorwithstrategy)
-  - [switchLatest](#switchlatest)
-  - [switchMap](#switchmap)
-  - [switchMapCause](#switchmapcause)
-  - [switchMapError](#switchmaperror)
-  - [switchMatch](#switchmatch)
-  - [switchMatchCause](#switchmatchcause)
-- [lifecycles](#lifecycles)
-  - [onError](#onerror)
-  - [onExit](#onexit)
-  - [onInterrupt](#oninterrupt)
-- [logging](#logging)
-  - [withLogSpan](#withlogspan)
-- [models](#models)
-  - [Fx (interface)](#fx-interface)
-  - [FxFork (type alias)](#fxfork-type-alias)
-  - [FxInput (type alias)](#fxinput-type-alias)
-  - [ScopedFork (type alias)](#scopedfork-type-alias)
-- [params](#params)
-  - [WithEarlyExitParams (type alias)](#withearlyexitparams-type-alias)
-  - [WithFlattenStrategyParams (type alias)](#withflattenstrategyparams-type-alias)
-  - [WithScopedForkParams (type alias)](#withscopedforkparams-type-alias)
-- [running](#running)
-  - [drain](#drain)
-  - [findFirst](#findfirst)
-  - [first](#first)
-  - [observe](#observe)
-  - [reduce](#reduce)
-  - [run](#run)
-  - [toArray](#toarray)
-  - [toChunk](#tochunk)
-  - [toEnqueue](#toenqueue)
-  - [toReadonlyArray](#toreadonlyarray)
-- [sharing](#sharing)
-  - [hold](#hold)
-  - [multicast](#multicast)
-  - [replay](#replay)
-  - [share](#share)
-- [slicing](#slicing)
-  - [drop](#drop)
-  - [dropAfter](#dropafter)
-  - [dropUntil](#dropuntil)
-  - [dropWhile](#dropwhile)
-  - [skipRepeats](#skiprepeats)
-  - [skipRepeatsWith](#skiprepeatswith)
-  - [slice](#slice)
-  - [take](#take)
-  - [takeUntil](#takeuntil)
-  - [takeWhile](#takewhile)
-- [time slicing](#time-slicing)
-  - [debounce](#debounce)
-  - [during](#during)
-  - [since](#since)
-  - [throttle](#throttle)
-  - [until](#until)
-- [tracing](#tracing)
-  - [withParentSpan](#withparentspan)
-  - [withSpan](#withspan)
-  - [withTracer](#withtracer)
-  - [withTracerTiming](#withtracertiming)
-- [utils](#utils)
-  - [DefaultMatchersFrom (type alias)](#defaultmatchersfrom-type-alias)
-  - [EffectGenContext (type alias)](#effectgencontext-type-alias)
-  - [EffectGenError (type alias)](#effectgenerror-type-alias)
-  - [EffectGenSuccess (type alias)](#effectgensuccess-type-alias)
-  - [Fx (namespace)](#fx-namespace)
-    - [Variance (interface)](#variance-interface)
-    - [Context (type alias)](#context-type-alias)
-    - [Error (type alias)](#error-type-alias)
-    - [FromInput (type alias)](#frominput-type-alias)
-    - [Success (type alias)](#success-type-alias)
-  - [FxEffectBase (class)](#fxeffectbase-class)
-    - [toFx (method)](#tofx-method-1)
-    - [toEffect (method)](#toeffect-method)
-  - [drainLayer](#drainlayer)
+  - [flip](#flip)
   - [fork](#fork)
   - [forkDaemon](#forkdaemon)
   - [forkIn](#forkin)
   - [forkScoped](#forkscoped)
+  - [fromArray](#fromarray)
+  - [fromAsyncIterable](#fromasynciterable)
+  - [fromDequeue](#fromdequeue)
+  - [fromEffect](#fromeffect)
+  - [fromFxEffect](#fromfxeffect)
+  - [fromIterable](#fromiterable)
+  - [fromNullable](#fromnullable)
+  - [fromPubSub](#frompubsub)
+  - [fromScheduled](#fromscheduled)
+  - [gen](#gen)
+  - [genScoped](#genscoped)
   - [getOrElse](#getorelse)
+  - [hold](#hold)
+  - [if](#if)
+  - [interruptible](#interruptible)
   - [isFx](#isfx)
+  - [keyed](#keyed)
+  - [locally](#locally)
+  - [locallyWith](#locallywith)
+  - [loop](#loop)
+  - [loopCause](#loopcause)
+  - [loopCauseEffect](#loopcauseeffect)
+  - [loopEffect](#loopeffect)
+  - [loopError](#looperror)
+  - [loopErrorEffect](#looperroreffect)
+  - [make](#make)
+  - [map](#map)
+  - [mapBoth](#mapboth)
+  - [mapCause](#mapcause)
+  - [mapCauseEffect](#mapcauseeffect)
+  - [mapEffect](#mapeffect)
+  - [mapError](#maperror)
+  - [mapErrorEffect](#maperroreffect)
+  - [matchCause](#matchcause)
+  - [matchCauseConcurrently](#matchcauseconcurrently)
+  - [matchCauseWithStrategy](#matchcausewithstrategy)
   - [matchEither](#matcheither)
+  - [matchError](#matcherror)
+  - [matchErrorConcurrently](#matcherrorconcurrently)
+  - [matchErrorWithStrategy](#matcherrorwithstrategy)
   - [matchOption](#matchoption)
+  - [merge](#merge)
+  - [mergeAll](#mergeall)
+  - [mergeFirst](#mergefirst)
+  - [mergeOrdered](#mergeordered)
+  - [mergeOrderedConcurrently](#mergeorderedconcurrently)
   - [mergeRace](#mergerace)
+  - [mergeSwitch](#mergeswitch)
+  - [mergeWithStrategy](#mergewithstrategy)
+  - [middleware](#middleware)
+  - [multicast](#multicast)
+  - [never](#never)
+  - [observe](#observe)
+  - [onError](#onerror)
+  - [onExit](#onexit)
+  - [onInterrupt](#oninterrupt)
+  - [orElse](#orelse)
+  - [orElseCause](#orelsecause)
+  - [padWith](#padwith)
+  - [partitionMap](#partitionmap)
+  - [periodic](#periodic)
+  - [prepend](#prepend)
+  - [prependAll](#prependall)
+  - [provide](#provide)
+  - [provideContext](#providecontext)
+  - [provideLayer](#providelayer)
+  - [provideRuntime](#provideruntime)
+  - [provideService](#provideservice)
+  - [provideServiceEffect](#provideserviceeffect)
+  - [race](#race)
+  - [raceAll](#raceall)
+  - [reduce](#reduce)
+  - [replay](#replay)
+  - [sample](#sample)
+  - [scan](#scan)
+  - [schedule](#schedule)
+  - [scoped](#scoped)
+  - [share](#share)
+  - [since](#since)
+  - [skipRepeats](#skiprepeats)
+  - [skipRepeatsWith](#skiprepeatswith)
+  - [slice](#slice)
+  - [snapshot](#snapshot)
+  - [snapshotEffect](#snapshoteffect)
+  - [struct](#struct)
+  - [succeed](#succeed)
+  - [suspend](#suspend)
+  - [switchMap](#switchmap)
+  - [switchMapCause](#switchmapcause)
+  - [switchMapEffect](#switchmapeffect)
+  - [switchMapError](#switchmaperror)
+  - [switchMatchCause](#switchmatchcause)
+  - [switchMatchError](#switchmatcherror)
+  - [sync](#sync)
+  - [take](#take)
+  - [takeUntiEffect](#takeuntieffect)
+  - [takeUntil](#takeuntil)
+  - [takeWhile](#takewhile)
+  - [takeWhileEffect](#takewhileeffect)
+  - [tap](#tap)
+  - [tapEffect](#tapeffect)
+  - [throttle](#throttle)
+  - [throttleLatest](#throttlelatest)
+  - [toEnqueue](#toenqueue)
+  - [toReadonlyArray](#toreadonlyarray)
+  - [tuple](#tuple)
+  - [uninterruptible](#uninterruptible)
+  - [until](#until)
+  - [when](#when)
+  - [withConcurrency](#withconcurrency)
+  - [withConfigProvider](#withconfigprovider)
+  - [withEmitter](#withemitter)
+  - [withKey](#withkey)
+  - [withLogSpan](#withlogspan)
+  - [withMaxOpsBeforeYield](#withmaxopsbeforeyield)
+  - [withParentSpan](#withparentspan)
+  - [withRequestBatching](#withrequestbatching)
+  - [withRequestCache](#withrequestcache)
+  - [withRequestCaching](#withrequestcaching)
+  - [withSpan](#withspan)
+  - [withTracer](#withtracer)
+  - [withTracerTiming](#withtracertiming)
 
 ---
-
-# Do
-
-## Do
-
-Do simulation
-
-**Signature**
-
-```ts
-export declare const Do: Fx<never, never, {}>
-```
-
-Added in v1.18.0
-
-## bind
-
-Do simulation
-
-**Signature**
-
-```ts
-export declare const bind: {
-  <N extends string, A extends object, R2, E2, B>(
-    name: Exclude<N, keyof A>,
-    f: (a: A) => Fx<R2, E2, B>
-  ): <R1, E1>(self: Fx<R1, E1, A>) => Fx<R2 | R1, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
-  <R1, E1, A1 extends object, N extends string, R2, E2, B>(
-    self: Fx<R1, E1, A1>,
-    name: Exclude<N, keyof A1>,
-    f: (a: A1) => Fx<R2, E2, B>
-  ): Fx<R1 | R2, E1 | E2, { [K in N | keyof A1]: K extends keyof A1 ? A1[K] : B }>
-}
-```
-
-Added in v1.18.0
-
-## bindTo
-
-Do simulation
-
-**Signature**
-
-```ts
-export declare const bindTo: {
-  <N extends string>(name: N): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, { [K in N]: A }>
-  <R, E, A, N extends string>(self: Fx<R, E, A>, name: N): Fx<R, E, { [K_1 in N]: A }>
-}
-```
-
-Added in v1.18.0
-
-## let
-
-Do simulation
-
-**Signature**
-
-```ts
-export declare const let: {
-  <N extends string, A extends object, B>(
-    name: Exclude<N, keyof A>,
-    f: (a: A) => B
-  ): <R1, E1>(self: Fx<R1, E1, A>) => Fx<R1, E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
-  <R1, E1, A1 extends object, N extends string, B>(
-    self: Fx<R1, E1, A1>,
-    name: Exclude<N, keyof A1>,
-    f: (a: A1) => B
-  ): Fx<R1, E1, { [K in N | keyof A1]: K extends keyof A1 ? A1[K] : B }>
-}
-```
-
-Added in v1.18.0
-
-# FiberRef
-
-## locally
-
-Locally set the value of a FiberRef
-
-**Signature**
-
-```ts
-export declare const locally: {
-  <A>(self: FiberRef<A>, value: A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, value: A): Fx<R, E, B>
-}
-```
-
-Added in v1.18.0
-
-## locallyWith
-
-Locally set the value of a FiberRef by updating the current value
-
-**Signature**
-
-```ts
-export declare const locallyWith: {
-  <A>(self: FiberRef<A>, f: (a: A) => A): <R, E, B>(use: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
-}
-```
-
-Added in v1.18.0
 
 # FlattenStrategy
 
@@ -384,7 +272,7 @@ Construct a Bounded strategy
 export declare const Bounded: (capacity: number) => Bounded
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Bounded (interface)
 
@@ -399,7 +287,7 @@ export interface Bounded {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Exhaust
 
@@ -411,7 +299,7 @@ Singleton instance of Exhaust
 export declare const Exhaust: Exhaust
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Exhaust (interface)
 
@@ -427,7 +315,7 @@ export interface Exhaust {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## ExhaustLatest
 
@@ -439,7 +327,7 @@ Singleton instance of ExhaustLatest
 export declare const ExhaustLatest: ExhaustLatest
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## ExhaustLatest (interface)
 
@@ -455,7 +343,7 @@ export interface ExhaustLatest {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## FlattenStrategy (type alias)
 
@@ -468,7 +356,7 @@ nested Fx.
 export type FlattenStrategy = Unbounded | Bounded | Switch | Exhaust | ExhaustLatest
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Switch
 
@@ -480,7 +368,7 @@ Singleton instance of Switch
 export declare const Switch: Switch
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Switch (interface)
 
@@ -494,7 +382,7 @@ export interface Switch {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Unbounded
 
@@ -506,7 +394,7 @@ Singleton instance of Unbounded
 export declare const Unbounded: Unbounded
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Unbounded (interface)
 
@@ -520,7 +408,7 @@ export interface Unbounded {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 # MergeStrategy
 
@@ -534,7 +422,7 @@ MergeStrategy is a representation of how multiple Fx should be merged together.
 export type MergeStrategy = Unordered | Ordered | Switch
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Ordered
 
@@ -546,7 +434,7 @@ Construct an Ordered strategy
 export declare const Ordered: (concurrency: number) => Ordered
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Ordered (interface)
 
@@ -562,7 +450,7 @@ export interface Ordered {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Unordered
 
@@ -574,7 +462,7 @@ Construct an Unordered strategy
 export declare const Unordered: (concurrency: number) => Unordered
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## Unordered (interface)
 
@@ -589,423 +477,9 @@ export interface Unordered {
 }
 ```
 
-Added in v1.18.0
-
-# Subtyping
-
-## ToFx (class)
-
-Helper for constructing your own custom subtypes of an Fx
-
-**Signature**
-
-```ts
-export declare class ToFx<R, E, A>
-```
-
-Added in v1.18.0
-
-### toFx (method)
-
-Your implementation of an Fx is returned by this function.
-
-**Signature**
-
-```ts
-abstract toFx(): Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-# batching
-
-## withRequestBatching
-
-Enable/disable request batching within an Fx
-
-**Signature**
-
-```ts
-export declare const withRequestBatching: {
-  (requestBatching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestBatching: boolean): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## withRequestCache
-
-Set the request cache Effects running within an Fx
-
-**Signature**
-
-```ts
-export declare const withRequestCache: {
-  (cache: Request.Cache): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, cache: Request.Cache): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## withRequestCaching
-
-Enable/disable request caching within an Fx
-
-**Signature**
-
-```ts
-export declare const withRequestCaching: {
-  (requestCaching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestCaching: boolean): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
+Added in v1.20.0
 
 # combinators
-
-## annotateLogs
-
-Annotate the logs of an Fx
-
-**Signature**
-
-```ts
-export declare const annotateLogs: {
-  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## annotateSpans
-
-Annotate the spans of an Fx
-
-**Signature**
-
-```ts
-export declare const annotateSpans: {
-  (key: string, value: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  (values: Record<string, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string, value: unknown): Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, values: Record<string, unknown>): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## compact
-
-Unwrap Options by filtering any None values.
-
-**Signature**
-
-```ts
-export declare const compact: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## continueWith
-
-Concatenate an Fx after the successful completion of another Fx
-
-**Signature**
-
-```ts
-export declare const continueWith: {
-  <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## delay
-
-Create an Fx which will wait a specified duration of time where no
-events have occurred before emitting a value.
-
-**Signature**
-
-```ts
-export declare const delay: {
-  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## either
-
-Capture the errors and success values as Either
-
-**Signature**
-
-```ts
-export declare const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>>
-```
-
-Added in v1.18.0
-
-## endWith
-
-Appends a value to the end of an Fx.
-
-**Signature**
-
-```ts
-export declare const endWith: {
-  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
-  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
-}
-```
-
-Added in v1.18.0
-
-## ensuring
-
-Ensure a finalizer runs on Fx ext.
-
-**Signature**
-
-```ts
-export declare const ensuring: {
-  <R2>(finalizer: Effect.Effect<R2, never, unknown>): <R, E, A>(self: Fx<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(self: Fx<R, E, A>, finalizer: Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-## exit
-
-Capture the errors and success values as Exit
-
-**Signature**
-
-```ts
-export declare const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<E, A>>
-```
-
-Added in v1.18.0
-
-## filter
-
-Filter the success value of an Fx.
-
-**Signature**
-
-```ts
-export declare const filter: {
-  <A, B extends A>(f: (a: A) => a is B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <A>(f: (a: A) => boolean): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: (a: A) => a is B): Fx<R, E, B>
-  <R, E, A>(fx: Fx<R, E, A>, f: (a: A) => boolean): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## filterEffect
-
-Filter the success value of an Fx with an Effect.
-
-**Signature**
-
-```ts
-export declare const filterEffect: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
-}
-```
-
-Added in v1.18.0
-
-## filterMap
-
-Filter and map the success value of an Fx.
-
-**Signature**
-
-```ts
-export declare const filterMap: {
-  <A, B>(f: (a: A) => Option.Option<B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>
-}
-```
-
-Added in v1.18.0
-
-## filterMapEffect
-
-Filter and map the success value of an Fx with an Effect.
-
-**Signature**
-
-```ts
-export declare const filterMapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## flip
-
-Transform success values into failures and failures into successes.
-
-**Signature**
-
-```ts
-export declare const flip: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, A, E>
-```
-
-Added in v1.18.0
-
-## if
-
-Logical if/else using Fx.
-
-**Signature**
-
-```ts
-export declare const if: { <R2, E2, B, R3, E3, C>(onTrue: Fx<R2, E2, B>, onFalse: Fx<R3, E3, C>): { <R, E>(bool: Fx<R, E, boolean>): Fx<R2 | R3 | R, E2 | E3 | E, B | C>; (bool: boolean): Fx<R2 | R3, E2 | E3, B | C>; }; <R, E, R2, E2, B, R3, E3, C>(bool: Fx<R, E, boolean>, onTrue: Fx<R2, E2, B>, onFalse: Fx<R3, E3, C>): Fx<R | R2 | R3, E | E2 | E3, B | C>; <R2, E2, B, R3, E3, C>(bool: boolean, onTrue: Fx<R2, E2, B>, onFalse: Fx<R3, E3, C>): Fx<R2 | R3, E2 | E3, B | C>; }
-```
-
-Added in v1.18.0
-
-## interruptible
-
-Mark an Fx as interruptible
-
-**Signature**
-
-```ts
-export declare const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## keyed
-
-Convert a list of keyed values into persistent workflows for given each key of the list
-even when the list has been re-ordered.
-
-**Signature**
-
-```ts
-export declare const keyed: {
-  <A, B, R2, E2, C>(
-    getKey: (a: A) => B,
-    f: (ref: RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, readonly A[]>) => Fx<R2 | R, E2 | E, readonly C[]>
-  <R, E, A, B, R2, E2, C>(
-    fx: Fx<R, E, readonly A[]>,
-    getKey: (a: A) => B,
-    f: (ref: RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
-  ): Fx<R | R2, E | E2, readonly C[]>
-}
-```
-
-Added in v1.18.0
-
-## loop
-
-Accumulate a value over the success values of an Fx and atomically produce derived value.
-
-**Signature**
-
-```ts
-export declare const loop: {
-  <A, B, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C>
-}
-```
-
-Added in v1.18.0
-
-## loopEffect
-
-Accumulate a value over the success values of an Fx and atomically produce derived value
-useing an Effect. A SynchronizedRef is utilized to ensure ordering of events.
-
-**Signature**
-
-```ts
-export declare const loopEffect: {
-  <B, A, R2, E2, C>(
-    seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
-  <R, E, A, B, R2, E2, C>(
-    fx: Fx<R, E, A>,
-    seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
-  ): Fx<R | R2, E | E2, C>
-}
-```
-
-Added in v1.18.0
-
-## map
-
-Map over the success value of an Fx.
-
-**Signature**
-
-```ts
-export declare const map: {
-  <A, B>(f: (a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B>
-}
-```
-
-Added in v1.18.0
-
-## mapBoth
-
-Map over both failure and success values of an Fx.
-
-**Signature**
-
-```ts
-export declare const mapBoth: {
-  <E, E2, A, B>(options: {
-    readonly onFailure: (e: E) => E2
-    readonly onSuccess: (a: A) => B
-  }): <R>(fx: Fx<R, E, A>) => Fx<R, E2, B>
-  <R, E, A, E2, B>(
-    fx: Fx<R, E, A>,
-    options: { readonly onFailure: (e: E) => E2; readonly onSuccess: (a: A) => B }
-  ): Fx<R, E2, B>
-}
-```
-
-Added in v1.18.0
-
-## mapEffect
-
-Map the success value of an Fx to an Effect, doesn't fork any fibers like flatMap\* etc.
-
-**Signature**
-
-```ts
-export declare const mapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
 
 ## matchTags
 
@@ -1022,1838 +496,24 @@ export declare const matchTags: {
   ): <R, E>(
     fx: Fx<R, E, A>
   ) => Fx<
-    R | Fx.Context<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
-    E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
-    Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
   >
   <R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
     fx: Fx<R, E, A>,
     matchers: Matchers
   ): Fx<
-    R | Fx.Context<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
-    E | Fx.Error<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>,
-    Fx.Success<Fx.FromInput<ReturnType<Matchers[keyof Matchers]>>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
   >
 }
 ```
 
-Added in v1.18.0
-
-## middleware
-
-Apply a function to the constructed Effect that represents the running Fx.
-
-**Signature**
-
-```ts
-export declare const middleware: {
-  <R, E, A, R2>(
-    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
-    g?: ((sink: Sink.Sink<E, A>) => Sink.Sink<E, A>) | undefined
-  ): (fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
-    f: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
-    g?: ((sink: Sink.Sink<E, A>) => Sink.Sink<E, A>) | undefined
-  ): Fx<R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-## orElse
-
-Concatenate an Fx after the failure of another Fx
-
-**Signature**
-
-```ts
-export declare const orElse: {
-  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, A>): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## partitionMap
-
-Partition an Fx into two Fx's based on a either-returning function.
-
-**Signature**
-
-```ts
-export declare const partitionMap: {
-  <A, B, C>(f: (a: A) => Either.Either<B, C>): <R, E>(self: Fx<R, E, A>) => readonly [Fx<R, E, B>, Fx<R, E, C>]
-  <R, E, A, B, C>(self: Fx<R, E, A>, f: (a: A) => Either.Either<B, C>): readonly [Fx<R, E, B>, Fx<R, E, C>]
-}
-```
-
-Added in v1.18.0
-
-## scan
-
-Run a reducer over the success values of an Fx.
-
-**Signature**
-
-```ts
-export declare const scan: {
-  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Fx<R, E, B>
-}
-```
-
-Added in v1.18.0
-
-## scanEffect
-
-Run an Effect-ful reducer over the success values of an Fx.
-
-**Signature**
-
-```ts
-export declare const scanEffect: {
-  <A, B, R2, E2>(
-    seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, B, R2, E2>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## snapshot
-
-Sample the values of an Fx, or Effect, during the events of another Fx.
-
-**Signature**
-
-```ts
-export declare const snapshot: {
-  <R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(
-    sampled: FxInput<R2, E2, B>,
-    f: (a: A, b: B) => Effect.Effect<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    sampled: FxInput<R2, E2, B>,
-    f: (a: A, b: B) => Effect.Effect<R3, E3, C>
-  ): Fx<R | R2 | R3, E | E2 | E3, C>
-}
-```
-
-Added in v1.18.0
-
-## startWith
-
-Prepends a value to the beginning of an Fx.
-
-**Signature**
-
-```ts
-export declare const startWith: {
-  <B>(value: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
-  <R, E, A, B>(fx: Fx<R, E, A>, value: B): Fx<R, E, A | B>
-}
-```
-
-Added in v1.18.0
-
-## tap
-
-Perform an Effect for each value emitted by an Fx, not affecting the output of the Fx.
-
-**Signature**
-
-```ts
-export declare const tap: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, A>
-}
-```
-
-Added in v1.18.0
-
-## uninterruptible
-
-Mark an Fx as uninterruptible
-
-**Signature**
-
-```ts
-export declare const uninterruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## when
-
-Logical if/else using static values.
-
-**Signature**
-
-```ts
-export declare const when: {
-  <B, C>(
-    onTrue: B,
-    onFalse: C
-  ): { <R, E>(bool: Fx<R, E, boolean>): Fx<R, E, B | C>; (bool: boolean): Fx<never, never, B | C> }
-  <R, E, B, C>(bool: Fx<R, E, boolean>, onTrue: B, onFalse: C): Fx<R, E, B | C>
-  <B, C>(bool: boolean, onTrue: B, onFalse: C): Fx<never, never, B | C>
-}
-```
-
-Added in v1.18.0
-
-## withKey
-
-Map an Fx of values into workflows similar to Fx.switchMap, but
-instead of providing the value directly, it is exposed as a RefSubject to
-allow creating a persistent workflows similar to Fx.keyed but for a single value.
-
-**Signature**
-
-```ts
-export declare const withKey: {
-  <A, B, R2, E2, C>(
-    getKey: (a: A) => B,
-    f: (ref: RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
-  <R, E, A, B, R2, E2, C>(
-    fx: Fx<R, E, A>,
-    getKey: (a: A) => B,
-    f: (ref: RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
-  ): Fx<R | R2, E | E2, C>
-}
-```
-
-Added in v1.18.0
-
-## withPrevious
-
-Emit values with their previously emitted values when possible.
-
-**Signature**
-
-```ts
-export declare const withPrevious: <R, E, A>(
-  fx: Fx<R, E, A>
-) => Fx<R, E, readonly [previous: Option.Option<A>, current: A]>
-```
-
-Added in v1.18.0
-
-# concurrency
-
-## withConcurrency
-
-Configure the concurreny limit of Fibers running within an Fx
-
-**Signature**
-
-```ts
-export declare const withConcurrency: {
-  (concurrency: number | "unbounded"): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, concurrency: number | "unbounded"): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## withMaxOpsBeforeYield
-
-Configure the maximum number of operations to run before yielding to the runtime
-
-**Signature**
-
-```ts
-export declare const withMaxOpsBeforeYield: {
-  (maxOps: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, maxOps: number): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## withScheduler
-
-Configure the scheduler to use within an Fx
-
-**Signature**
-
-```ts
-export declare const withScheduler: {
-  (scheduler: Scheduler): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, scheduler: Scheduler): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-# constructors
-
-## acquireUseRelease
-
-Acquire a resource, use it to construct an Fx, and then release the resource
-after the Fx has exited.
-
-**Signature**
-
-```ts
-export declare const acquireUseRelease: {
-  <A, R2, E2, B, R3, E3>(
-    use: (a: A) => FxInput<R2, E2, B>,
-    release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, unknown>
-  ): <R, E>(acquire: Effect.Effect<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, B>
-  <R, E, A, R2, E2, B, R3, E3>(
-    acquire: Effect.Effect<R, E, A>,
-    use: (a: A) => FxInput<R2, E2, B>,
-    release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, unknown>
-  ): Fx<R | R2 | R3, E | E2 | E3, B>
-}
-```
-
-Added in v1.18.0
-
-## at
-
-Create an Fx which will emit a value after waiting for a specified duration.
-
-**Signature**
-
-```ts
-export declare const at: {
-  (delay: DurationInput): <A>(value: A) => Fx<never, never, A>
-  <A>(value: A, delay: DurationInput): Fx<never, never, A>
-}
-```
-
-Added in v1.18.0
-
-## combine
-
-Combine multiple Fx into a single Fx that will emit the results of all Fx
-as a tuple of values.
-
-**Signature**
-
-```ts
-export declare const combine: <const FX extends readonly Fx<any, any, any>[]>(
-  fxs: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
-```
-
-Added in v1.18.0
-
-## die
-
-Construct an Fx<never, never, never> from a defect
-
-**Signature**
-
-```ts
-export declare const die: (defect: unknown) => Fx<never, never, never>
-```
-
-Added in v1.18.0
-
-## empty
-
-An Fx which will immediately end producing 0 events and 0 errors.
-
-**Signature**
-
-```ts
-export declare const empty: Fx<never, never, never>
-```
-
-Added in v1.18.0
-
-## fail
-
-Construct an Fx which will fail with the specified error.
-
-**Signature**
-
-```ts
-export declare const fail: <E>(error: E) => Fx<never, E, never>
-```
-
-Added in v1.18.0
-
-## failCause
-
-Construct an Fx<never, E, A> from a Cause<E>
-
-**Signature**
-
-```ts
-export declare const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E, never>
-```
-
-Added in v1.18.0
-
-## from
-
-Construct an Fx<R, E, A> from an Effect<R, E, A>
-
-**Signature**
-
-```ts
-export declare const from: {
-  <A extends readonly any[]>(array: A): Fx<never, never, A[number]>
-  <A>(iterable: Iterable<A>): Fx<never, never, A>
-  <E>(cause: Cause.Cause<E>): Fx<never, E, never>
-  <R, E, A>(fx: FxInput<R, E, A>): Fx<R, E, A>
-  <A>(value: A): Fx<never, never, A>
-}
-```
-
-Added in v1.18.0
-
-## fromDequeue
-
-Consume a Dequeue as soon as values become available and emit them as a Fx.
-
-**Signature**
-
-```ts
-export declare const fromDequeue: {
-  <A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
-  <I, A>(dequeue: Context.Dequeue<I, A>): Fx<I, never, A>
-}
-```
-
-Added in v1.18.0
-
-## fromEffect
-
-Construct an Fx<R, E, A> from an Effect<R, E, A>
-
-**Signature**
-
-```ts
-export declare const fromEffect: <R, E, A>(effect: Effect.Effect<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## fromEmitter
-
-Construct an Fx by describing an Scoped Effect that has access to an Emitter
-to emit events and errors.
-
-**Signature**
-
-```ts
-export declare const fromEmitter: <R, E, A>(
-  f: (emitter: Emitter<E, A>) => Effect.Effect<Scope.Scope | R, never, unknown>
-) => Fx<Exclude<R, Scope.Scope>, E, A>
-```
-
-Added in v1.18.0
-
-## fromFxEffect
-
-Run an Effect to produce an Fx to run.
-
-**Signature**
-
-```ts
-export declare const fromFxEffect: <R, E, R2, E2, B>(
-  fxEffect: Effect.Effect<R, E, Fx<R2, E2, B>>
-) => Fx<R | R2, E | E2, B>
-```
-
-Added in v1.18.0
-
-## fromIterable
-
-Construct an Fx from an Iterable
-
-**Signature**
-
-```ts
-export declare const fromIterable: {
-  <A extends readonly any[]>(array: A): Fx<never, never, A[number]>
-  <A>(iterable: Iterable<A>): Fx<never, never, A>
-}
-```
-
-Added in v1.18.0
-
-## fromNullable
-
-Lift a nullable value into an Fx
-
-**Signature**
-
-```ts
-export declare const fromNullable: <A>(value: void | A | null | undefined) => Fx<never, never, NonNullable<A>>
-```
-
-Added in v1.18.0
-
-## fromPubSub
-
-Consume a PubSub as soon as values become available and emit them as a Fx.
-
-**Signature**
-
-```ts
-export declare const fromPubSub: {
-  <A>(PubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
-  <I, A>(PubSub: Context.PubSub<I, A>): Fx<Scope.Scope | I, never, A>
-}
-```
-
-Added in v1.18.0
-
-## fromScheduled
-
-Schedule an Effect to run using the provided Schedule, emitting its success of failure
-at the intervals specified by the Schedule.
-
-**Signature**
-
-```ts
-export declare const fromScheduled: {
-  <R2>(scheduled: Schedule.Schedule<R2, unknown, unknown>): <R, E, A>(fx: Effect.Effect<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(fx: Effect.Effect<R, E, A>, scheduled: Schedule.Schedule<R2, unknown, unknown>): Fx<R | R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-## fromSink
-
-Construct an Fx by describing an Effectful workflow that has access to a Sink
-to emit events and errors.
-
-**Signature**
-
-```ts
-export declare const fromSink: <R, E, A>(f: (sink: Sink.Sink<E, A>) => Effect.Effect<R, E, unknown>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## fromStream
-
-Construct an Fx<R, E, A> from an Effect<R, E, A>
-
-**Signature**
-
-```ts
-export declare const fromStream: <R, E, A>(effect: Stream.Stream<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## gen
-
-Utilize Effect.gen to construct an Fx
-
-**Signature**
-
-```ts
-export declare function gen<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
-  f: (_: Effect.Adapter) => Generator<Yield, Fx<R, E, A>, any>
-): Fx<R | EffectGenContext<Yield>, E | EffectGenError<Yield>, A>
-```
-
-Added in v1.18.0
-
-## genScoped
-
-Utilize Effect.gen to construct an Fx
-
-**Signature**
-
-```ts
-export declare function genScoped<Yield extends Effect.EffectGen<any, any, any>, R, E, A>(
-  f: (_: Effect.Adapter) => Generator<Yield, Fx<R, E, A>, any>
-): Fx<Exclude<R | EffectGenContext<Yield>, Scope.Scope>, E | EffectGenError<Yield>, A>
-```
-
-Added in v1.18.0
-
-## interrupt
-
-Interrupt the current Fx with the specified FiberId
-
-**Signature**
-
-```ts
-export declare const interrupt: (id: FiberId.FiberId) => Fx<never, never, never>
-```
-
-Added in v1.18.0
-
-## merge
-
-Combine multiple Fx into a single Fx that will emit the results of all Fx
-as they occur.
-
-**Signature**
-
-```ts
-export declare const merge: <const FX extends readonly Fx<any, any, any>[]>(
-  fxs: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-```
-
-Added in v1.18.0
-
-## mergeBuffer
-
-Combine multiple Fx into a single Fx that will emit the results of all Fx
-in the order the Fx were provided. All Fx will be executed concurrently,
-and the results will be buffered if necessary to preserve ordering.
-
-**Signature**
-
-```ts
-export declare const mergeBuffer: <const FX extends readonly Fx<any, any, any>[]>(
-  fxs: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-```
-
-Added in v1.18.0
-
-## mergeBufferConcurrently
-
-Combine multiple Fx into a single Fx that will emit the results of all Fx
-in the order the Fx were provided. All Fx will be executed concurrently, limited
-by the provided concurrency, and the results will be buffered if necessary to preserve ordering.
-
-**Signature**
-
-```ts
-export declare const mergeBufferConcurrently: {
-  (
-    concurrency: number
-  ): <const FX extends readonly Fx<any, any, any>[]>(
-    fxs: FX
-  ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  <const FX extends readonly Fx<any, any, any>[]>(
-    fxs: FX,
-    concurrency: number
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-}
-```
-
-Added in v1.18.0
-
-## mergeConcurrently
-
-Combine multiple Fx into a single Fx that will emit the results of all Fx
-as they occur, but only allowing `n` concurrent Fx to run at a time.
-
-**Signature**
-
-```ts
-export declare const mergeConcurrently: {
-  (
-    concurrency: number
-  ): <const FX extends readonly Fx<any, any, any>[]>(
-    fxs: FX
-  ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  <const FX extends readonly Fx<any, any, any>[]>(
-    fxs: FX,
-    concurrency: number
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-}
-```
-
-Added in v1.18.0
-
-## mergeSwitch
-
-Merge together multiple Fx into a single Fx that will emit the results of all Fx
-allowing only 1 Fx to run at a time.
-
-**Signature**
-
-```ts
-export declare const mergeSwitch: <const FX extends readonly Fx<any, any, any>[]>(
-  fxs: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-```
-
-Added in v1.18.0
-
-## never
-
-An Fx which will never emit any errors or events, and will never end
-
-**Signature**
-
-```ts
-export declare const never: Fx<never, never, never>
-```
-
-Added in v1.18.0
-
-## periodic
-
-Schedule an Effect to run at the specified duration.
-
-**Signature**
-
-```ts
-export declare const periodic: {
-  (duration: DurationInput): <R, E, A>(fx: Effect.Effect<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Effect.Effect<R, E, A>, duration: DurationInput): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## race
-
-Merge together multiple Fx into a single Fx that will emit the results of the
-first Fx to emit a value.
-
-**Signature**
-
-```ts
-export declare const race: <const FX extends readonly Fx<any, any, any>[]>(
-  fxs: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-```
-
-Added in v1.18.0
-
-## struct
-
-Combine a record of Fx into a single Fx that will emit the results of all Fx
-as a record of values.
-
-**Signature**
-
-```ts
-export declare const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
-  fxs: FX
-) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
-```
-
-Added in v1.18.0
-
-## succeed
-
-Construct an Fx which will emit the specified value and then end.
-
-**Signature**
-
-```ts
-export declare const succeed: <A>(value: A) => Fx<never, never, A>
-```
-
-Added in v1.18.0
-
-## succeedNone
-
-Create an Fx which will succeed with Option.None
-
-**Signature**
-
-```ts
-export declare const succeedNone: <A = never>() => Fx<never, never, Option.Option<A>>
-```
-
-Added in v1.18.0
-
-## succeedSome
-
-Create an Fx which will succeed with Option.Some
-
-**Signature**
-
-```ts
-export declare const succeedSome: <A>(value: A) => Fx<never, never, Option.Option<A>>
-```
-
-Added in v1.18.0
-
-## suspend
-
-Lazily construct an Fx.
-
-**Signature**
-
-```ts
-export declare const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## sync
-
-Construct an Fx which will emit the return of a synchronous function and then end.
-
-**Signature**
-
-```ts
-export declare const sync: <A>(f: () => A) => Fx<never, never, A>
-```
-
-Added in v1.18.0
-
-## withEarlyExit
-
-Construct an Fx which can exit early from a Scope.
-
-**Signature**
-
-```ts
-export declare const withEarlyExit: <R, E, A>(
-  f: (params: WithEarlyExitParams<E, A>) => Effect.Effect<R, never, unknown>
-) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## withFlattenStrategy
-
-Construct an Fx which can flatten nested Fx.
-
-**Signature**
-
-```ts
-export declare const withFlattenStrategy: <R, E, A>(
-  f: (params: WithFlattenStrategyParams<E, A>) => Effect.Effect<R, never, unknown>,
-  strategy: FlattenStrategy
-) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## withScopedFork
-
-Construct an Fx which can fork effects into a Scope.
-
-**Signature**
-
-```ts
-export declare const withScopedFork: <R, E, A>(
-  f: (params: WithScopedForkParams<E, A>) => Effect.Effect<R, never, unknown>
-) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-# context
-
-## provide
-
-Provide the environment to an Fx.
-
-**Signature**
-
-```ts
-export declare const provide: {
-  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
-  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R2>(context: Context.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Context.Context<R2>): Fx<Exclude<R, R2>, E, A>
-}
-```
-
-Added in v1.18.0
-
-## provideService
-
-Provide a service to an Fx using a Tag.
-
-**Signature**
-
-```ts
-export declare const provideService: {
-  <I, S>(tag: Context.Tag<I, S>, service: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, tag: Context.Tag<I, S>, service: S): Fx<Exclude<R, I>, E, A>
-}
-```
-
-Added in v1.18.0
-
-## provideServiceEffect
-
-Provide a service using an Effect to an Fx using a Tag.
-
-**Signature**
-
-```ts
-export declare const provideServiceEffect: {
-  <I, S, R2, E2>(
-    tag: Context.Tag<I, S>,
-    service: Effect.Effect<R2, E2, S>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E, A>
-  <R, E, A, I, S, R2, E2>(
-    fx: Fx<R, E, A>,
-    tag: Context.Tag<I, S>,
-    service: Effect.Effect<R2, E2, S>
-  ): Fx<R2 | Exclude<R, I>, E, A>
-}
-```
-
-Added in v1.18.0
-
-## scoped
-
-Provide a Scope to an Fx
-
-**Signature**
-
-```ts
-export declare const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A>
-```
-
-Added in v1.18.0
-
-# errors
-
-## filterError
-
-Filter the Error of an Fx.
-
-**Signature**
-
-```ts
-export declare const filterError: {
-  <E, E2 extends E>(f: (a: E) => a is E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <E>(f: (a: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: E) => a is E2): Fx<R, E2, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (a: E) => boolean): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## filterErrorCause
-
-Filter the Cause of an Fx.
-
-**Signature**
-
-```ts
-export declare const filterErrorCause: {
-  <E, E2 extends E>(f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <E>(f: (a: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, E2 extends E, A>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => a is Cause.Cause<E2>): Fx<R, E2, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => boolean): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## filterMapCause
-
-Filter and map the Cause of an Fx.
-
-**Signature**
-
-```ts
-export declare const filterMapCause: {
-  <E, E2>(f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
-}
-```
-
-Added in v1.18.0
-
-## filterMapError
-
-Filter and map the error of an Fx.
-
-**Signature**
-
-```ts
-export declare const filterMapError: {
-  <E, E2>(f: (a: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => Option.Option<E2>): Fx<R, E2, A>
-}
-```
-
-Added in v1.18.0
-
-## filterMapErrorEffect
-
-Filter and map the error of an Fx using an Effect.
-
-**Signature**
-
-```ts
-export declare const filterMapErrorEffect: {
-  <E, R2, E2, B>(f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | B, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E2 | B, A>
-}
-```
-
-Added in v1.18.0
-
-## mapError
-
-Map over the Error of an Fx.
-
-**Signature**
-
-```ts
-export declare const mapError: {
-  <E, E2>(f: (a: E) => E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: E) => E2): Fx<R, E2, A>
-}
-```
-
-Added in v1.18.0
-
-## mapErrorCause
-
-Map over the Cause of an Fx.
-
-**Signature**
-
-```ts
-export declare const mapErrorCause: {
-  <E, E2>(f: (a: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (a: Cause.Cause<E>) => Cause.Cause<E2>): Fx<R, E2, A>
-}
-```
-
-Added in v1.18.0
-
-# flattening
-
-## concatMap
-
-Map the success value of an Fx to another Fx one at a time.
-
-**Signature**
-
-```ts
-export declare const concatMap: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(fx: Fx<R, E, A>, f: (a: A) => FxInput<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## exhaust
-
-Flatten a nested Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaust: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A>
-```
-
-Added in v1.18.0
-
-## exhaustLatest
-
-Flatten a nested Fx, prefering the first until completion, and then running the last emitted Fx if they are not
-the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustLatest: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A>
-```
-
-Added in v1.18.0
-
-## exhaustLatestMatch
-
-Map over the failures and successes of an Fx, prefering the first
-Fx emitted and starting the latest Fx when the first completes
-if they are not the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustLatestMatch: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: { readonly onFailure: (error: E) => FxInput<R2, E2, B>; readonly onSuccess: (a: A) => FxInput<R3, E3, C> }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## exhaustLatestMatchCause
-
-Map over the failures and successes of an Fx, prefering the first
-Fx emitted and starting the latest Fx when the first completes
-if they are not the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustLatestMatchCause: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMap
-
-Map the success value of an Fx to another Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaustMap: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(fx: Fx<R, E, A>, f: (a: A) => FxInput<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMapCause
-
-Map the failures of an Fx to another Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaustMapCause: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMapError
-
-Map the failures of an Fx to another Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaustMapError: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMapLatest
-
-Map the success value of an Fx to another Fx, prefering the first
-until completion, and then running the last emitted Fx if they are not
-the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustMapLatest: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(fx: Fx<R, E, A>, f: (a: A) => FxInput<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMapLatestCause
-
-Map the failures of an Fx to another Fx, prefering the first
-until completion, and then running the last emitted Fx if they are not
-the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustMapLatestCause: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMapLatestError
-
-Map the failures of an Fx to another Fx, prefering the first
-until completion, and then running the last emitted Fx if they are not
-the same Fx.
-
-**Signature**
-
-```ts
-export declare const exhaustMapLatestError: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMatch
-
-Map over the failures and successes of an Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaustMatch: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: { readonly onFailure: (error: E) => FxInput<R2, E2, B>; readonly onSuccess: (a: A) => FxInput<R3, E3, C> }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## exhaustMatchCause
-
-Map over the failures and successes of an Fx, prefering the first
-Fx emitted and dropping any subsequent Fx until it has completed.
-
-**Signature**
-
-```ts
-export declare const exhaustMatchCause: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## flatMap
-
-Map the success value of an Fx to another Fx with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMap: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(fx: Fx<R, E, A>, f: (a: A) => FxInput<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapCause
-
-Map the failures of an Fx to another Fx, flattening the result with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMapCause: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapCauseConcurrently
-
-Map the failures of an Fx to another Fx with the specified concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMapCauseConcurrently: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapCauseWithStrategy
-
-Map the failures of an Fx to another Fx, flattening the result
-with the provided FlattenStrategy.
-
-**Signature**
-
-```ts
-export declare const flatMapCauseWithStrategy: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapConcurrently
-
-Map the success value of an Fx to another Fx with the specified concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMapConcurrently: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapError
-
-Map the failures of an Fx to another Fx, flattening the result with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMapError: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapErrorConcurrently
-
-Map the failures of an Fx to another Fx with the specified concurrency.
-
-**Signature**
-
-```ts
-export declare const flatMapErrorConcurrently: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>,
-    concurrency: number
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapErrorWithStrategy
-
-Map the failures of an Fx to another Fx, flattening the result
-with the provided FlattenStrategy.
-
-**Signature**
-
-```ts
-export declare const flatMapErrorWithStrategy: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## flatMapWithStrategy
-
-Map the success value of an Fx to another Fx, flattening the result
-with the provided FlattenStrategy.
-
-**Signature**
-
-```ts
-export declare const flatMapWithStrategy: {
-  <A, R2, E2, B>(
-    f: (a: A) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => FxInput<R2, E2, B>,
-    strategy: FlattenStrategy
-  ): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## flatten
-
-Map the success value of an Fx to another Fx with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const flatten: <R, E, R2, E2, A>(fx: Fx<R, E, Fx<R2, E2, A>>) => Fx<R | R2, E | E2, A>
-```
-
-Added in v1.18.0
-
-## match
-
-Map over the failures and successes of an Fx, flattening both with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const match: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: { readonly onFailure: (error: E) => FxInput<R2, E2, B>; readonly onSuccess: (a: A) => FxInput<R3, E3, C> }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## matchCause
-
-Map over the failures and successes of an Fx, flattening both with unbounded concurrency.
-
-**Signature**
-
-```ts
-export declare const matchCause: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## matchCauseConcurrently
-
-Map over the failures and successes of an Fx, flattening both with the specified concurrency.
-
-**Signature**
-
-```ts
-export declare const matchCauseConcurrently: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    readonly concurrency: number
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-      readonly concurrency: number
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## matchCauseWithStrategy
-
-Map over the failures and successes of an Fx, flattening both using the same strategy.
-
-**Signature**
-
-```ts
-export declare const matchCauseWithStrategy: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    readonly strategy: FlattenStrategy
-  }): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-      readonly strategy: FlattenStrategy
-    }
-  ): Fx<R | R2, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## matchErrorConcurrently
-
-Map over the failures and successes of an Fx, flattening both with the specified concurrency.
-
-**Signature**
-
-```ts
-export declare const matchErrorConcurrently: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    readonly concurrency: number
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (error: E) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-      readonly concurrency: number
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## matchErrorWithStrategy
-
-Map over the failures and successes of an Fx, flattening both using the same strategy.
-
-**Signature**
-
-```ts
-export declare const matchErrorWithStrategy: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    readonly strategy: FlattenStrategy
-  }): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (error: E) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-      readonly strategy: FlattenStrategy
-    }
-  ): Fx<R | R2, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## switchLatest
-
-Map the success value of an Fx to another Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchLatest: <R, E, R2, E2, B>(fx: Fx<R, E, FxInput<R2, E2, B>>) => Fx<R | R2, E | E2, B>
-```
-
-Added in v1.18.0
-
-## switchMap
-
-Map the success value of an Fx to another Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchMap: {
-  <A, R2 = never, E2 = never, B = never>(
-    f: (a: A) => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2 = never, E2 = never, B = never>(fx: Fx<R, E, A>, f: (a: A) => FxInput<R2, E2, B>): Fx<R | R2, E | E2, B>
-}
-```
-
-Added in v1.18.0
-
-## switchMapCause
-
-Map the failures of an Fx to another Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchMapCause: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## switchMapError
-
-Map the failures of an Fx to another Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchMapError: {
-  <E, R2 = never, E2 = never, B = never>(
-    f: (error: E) => FxInput<R2, E2, B>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, A>,
-    f: (error: E) => FxInput<R2, E2, B>
-  ): Fx<R | R2, E2, A | B>
-}
-```
-
-Added in v1.18.0
-
-## switchMatch
-
-Map over the failures and successes of an Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchMatch: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (error: E) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: { readonly onFailure: (error: E) => FxInput<R2, E2, B>; readonly onSuccess: (a: A) => FxInput<R3, E3, C> }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-## switchMatchCause
-
-Map over the failures and successes of an Fx, switching to the latest
-Fx emitted and interrupting the previous.
-
-**Signature**
-
-```ts
-export declare const switchMatchCause: {
-  <E, R2 = never, E2 = never, B = never, A = never, R3 = never, E3 = never, C = never>(options: {
-    readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-    readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-  }): <R>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, A>,
-    options: {
-      readonly onFailure: (cause: Cause.Cause<E>) => FxInput<R2, E2, B>
-      readonly onSuccess: (a: A) => FxInput<R3, E3, C>
-    }
-  ): Fx<R | R2 | R3, E2 | E3, B | C>
-}
-```
-
-Added in v1.18.0
-
-# lifecycles
-
-## onError
-
-Run an Effect when an Fx ends with an error
-
-**Signature**
-
-```ts
-export declare const onError: {
-  <R2>(
-    f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-## onExit
-
-Run an Effect when an Fx exits
-
-**Signature**
-
-```ts
-export declare const onExit: {
-  <R2>(
-    f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
-    f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>
-  ): Fx<R | R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-## onInterrupt
-
-Run an Effect when an Fx is interrupted
-
-**Signature**
-
-```ts
-export declare const onInterrupt: {
-  <R2>(
-    f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
-    f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
-  ): Fx<R | R2, E, A>
-}
-```
-
-Added in v1.18.0
-
-# logging
-
-## withLogSpan
-
-Add a span to your log messages
-
-**Signature**
-
-```ts
-export declare const withLogSpan: {
-  (span: string): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
+Added in v1.20.0
 
 # models
-
-## Fx (interface)
-
-Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
-the time dimension. It operates within a context `R`, can fail with an `E`,
-and succeed with an `A`.
-
-**Signature**
-
-```ts
-export interface Fx<R, E, A> extends Fx.Variance<R, E, A>, Pipeable, Inspectable {}
-```
-
-Added in v1.18.0
 
 ## FxFork (type alias)
 
@@ -2866,19 +526,7 @@ of an Fx in a Scope. Used in for higher-order operators.
 export type FxFork = <R>(effect: Effect.Effect<R, never, void>) => Effect.Effect<R, never, void>
 ```
 
-Added in v1.18.0
-
-## FxInput (type alias)
-
-FxInput<R, E, A> are all the types that can be transformed into an Fx
-
-**Signature**
-
-```ts
-export type FxInput<R, E, A> = Fx<R, E, A> | Effect.Effect<R, E, A> | Cause.Cause<E> | Iterable<A>
-```
-
-Added in v1.18.0
+Added in v1.20.0
 
 ## ScopedFork (type alias)
 
@@ -2890,63 +538,421 @@ Type-alias for a Effect.forkIn(scope) that returns a Fiber
 export type ScopedFork = <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, never, Fiber.Fiber<E, A>>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-# params
+# utils
 
-## WithEarlyExitParams (type alias)
-
-Params for withEarlyExit
+## Context (type alias)
 
 **Signature**
 
 ```ts
-export type WithEarlyExitParams<E, A> = {
-  readonly sink: Sink.WithEarlyExit<E, A>
-  readonly fork: ScopedFork
-  readonly scope: Scope.Scope
+export type Context<T> = Fx.Context<T>
+```
+
+Added in v1.20.0
+
+## DefaultMatchersFrom (type alias)
+
+**Signature**
+
+```ts
+export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
+  readonly [Tag in A["_tag"]]: (
+    value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
+  ) => Fx<any, any, any>
+}
+```
+
+Added in v1.20.0
+
+## Error (type alias)
+
+**Signature**
+
+```ts
+export type Error<T> = Fx.Error<T>
+```
+
+Added in v1.20.0
+
+## Fx (interface)
+
+Fx is a push-based reactive primitive built atop of Effect.
+
+**Signature**
+
+```ts
+export interface Fx<out R, out E, out A> extends Pipeable.Pipeable {
+  readonly [TypeId]: Fx.Variance<R, E, A>
+
+  /**
+   * @since 1.20.0
+   */
+  run<R2 = never>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown>
+}
+```
+
+Added in v1.20.0
+
+## Fx (namespace)
+
+Added in v1.20.0
+
+### Variance (interface)
+
+**Signature**
+
+```ts
+export interface Variance<R, E, A> {
+  readonly _R: Types.Covariant<R>
+  readonly _E: Types.Covariant<E>
+  readonly _A: Types.Covariant<A>
+}
+```
+
+Added in v1.20.0
+
+### Context (type alias)
+
+**Signature**
+
+```ts
+export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
+```
+
+Added in v1.20.0
+
+### Error (type alias)
+
+**Signature**
+
+```ts
+export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
+```
+
+Added in v1.20.0
+
+### Success (type alias)
+
+**Signature**
+
+```ts
+export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+```
+
+Added in v1.20.0
+
+### Unify (type alias)
+
+**Signature**
+
+```ts
+export type Unify<T> = T extends Fx<infer R, infer E, infer A> | infer _ ? Fx<R, E, A> : never
+```
+
+Added in v1.20.0
+
+## FxEffectBase (class)
+
+**Signature**
+
+```ts
+export declare class FxEffectBase<R, E, A, R2, E2, B>
+```
+
+Added in v1.20.0
+
+### run (method)
+
+**Signature**
+
+```ts
+run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<R | R3, never, void>
+```
+
+Added in v1.20.0
+
+### toFx (method)
+
+**Signature**
+
+```ts
+abstract toFx(): Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+### toEffect (method)
+
+**Signature**
+
+```ts
+abstract toEffect(): Effect.Effect<R2, E2, B>
+```
+
+Added in v1.20.0
+
+## KeyedOptions (interface)
+
+**Signature**
+
+```ts
+export interface KeyedOptions<A, B, R2, E2, C> {
+  readonly getKey: (a: A) => B
+  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly debounce?: Duration.DurationInput
+}
+```
+
+Added in v1.20.0
+
+## MatchCauseOptions (type alias)
+
+**Signature**
+
+```ts
+export type MatchCauseOptions<E, A, R2, E2, B, R3, E3, C> = {
+  readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
+  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+```
+
+Added in v1.20.0
+
+## MatchErrorOptions (type alias)
+
+**Signature**
+
+```ts
+export type MatchErrorOptions<E, A, R2, E2, B, R3, E3, C> = {
+  readonly onFailure: (e: E) => Fx<R2, E2, B>
+  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+```
+
+Added in v1.20.0
+
+## Success (type alias)
+
+**Signature**
+
+```ts
+export type Success<T> = Fx.Success<T>
+```
+
+Added in v1.20.0
+
+## Unify (type alias)
+
+**Signature**
+
+```ts
+export type Unify<T> = Fx.Unify<T>
+```
+
+Added in v1.20.0
+
+## WithKeyOptions (interface)
+
+**Signature**
+
+```ts
+export interface WithKeyOptions<A, B, R2, E2, C> {
+  readonly getKey: (a: A) => B
+  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+}
+```
+
+Added in v1.20.0
+
+## acquireUseRelease
+
+**Signature**
+
+```ts
+export declare const acquireUseRelease: {
+  <A, R2, E2, B, R3, E3, C>(
+    use: (a: A) => Fx<R2, E2, B>,
+    release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, C>
+  ): <R, E>(acquire: Effect.Effect<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, B>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    acquire: Effect.Effect<R, E, A>,
+    use: (a: A) => Fx<R2, E2, B>,
+    release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, C>
+  ): Fx<R | R2 | R3, E | E2 | E3, B>
+}
+```
+
+Added in v1.20.0
+
+## all
+
+**Signature**
+
+```ts
+export declare const all: {
+  <const FX extends readonly Fx<any, any, any>[]>(
+    fx: FX
+  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+    fx: FX
+  ): Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+}
+```
+
+Added in v1.20.0
+
+## annotateLogs
+
+**Signature**
+
+```ts
+export declare const annotateLogs: {
+  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## annotateSpans
+
+**Signature**
+
+```ts
+export declare const annotateSpans: {
+  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## append
+
+**Signature**
+
+```ts
+export declare const append: {
+  <C>(end: C): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, C | A>
+  <R, E, A, C>(fx: Fx<R, E, A>, end: C): Fx<R, E, A | C>
+}
+```
+
+Added in v1.20.0
+
+## appendAll
+
+**Signature**
+
+```ts
+export declare const appendAll: {
+  <C>(end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, C | A>
+  <R, E, A, C>(fx: Fx<R, E, A>, end: Iterable<C>): Fx<R, E, A | C>
+}
+```
+
+Added in v1.20.0
+
+## at
+
+**Signature**
+
+```ts
+export declare const at: {
+  (duration: Duration.DurationInput): <A>(value: A) => Fx<never, never, A>
+  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A>
+}
+```
+
+Added in v1.20.0
+
+## compact
+
+**Signature**
+
+```ts
+export declare const compact: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+## concatMap
+
+**Signature**
+
+```ts
+export declare const concatMap: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## continueWith
+
+**Signature**
+
+```ts
+export declare const continueWith: {
+  <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## debounce
+
+**Signature**
+
+```ts
+export declare const debounce: {
+  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## delay
+
+Create an Fx which will wait a specified duration of time where no
+events have occurred before emitting a value.
+
+**Signature**
+
+```ts
+export declare const delay: {
+  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<Scope.Scope | R, E, A>
 }
 ```
 
 Added in v1.18.0
 
-## WithFlattenStrategyParams (type alias)
-
-Params for withFlattenStrategy
+## die
 
 **Signature**
 
 ```ts
-export type WithFlattenStrategyParams<E, A> = {
-  readonly sink: Sink.Sink<E, A>
-  readonly fork: FxFork
-  readonly scope: Scope.Scope
-}
+export declare const die: (error: unknown) => Fx<never, never, never>
 ```
 
-Added in v1.18.0
-
-## WithScopedForkParams (type alias)
-
-Params for withScopedFork
-
-**Signature**
-
-```ts
-export type WithScopedForkParams<E, A> = {
-  readonly sink: Sink.Sink<E, A>
-  readonly fork: ScopedFork
-  readonly scope: Scope.Scope
-}
-```
-
-Added in v1.18.0
-
-# running
+Added in v1.20.0
 
 ## drain
-
-Run an Fx to completion. The Effect will resolve with the first Error of the Fx.
 
 **Signature**
 
@@ -2954,206 +960,21 @@ Run an Fx to completion. The Effect will resolve with the first Error of the Fx.
 export declare const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## findFirst
-
-Run an Fx until finding a value which satisfies the predicate.
+## drainLayer
 
 **Signature**
 
 ```ts
-export declare const findFirst: {
-  <A, R2, E2>(
-    f: (a: A) => Effect.Effect<R2, E2, boolean>
-  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R2 | R, E2 | E, Option.Option<A>>
-  <R, E, A, R2, E2>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Effect.Effect<R2, E2, boolean>
-  ): Effect.Effect<R | R2, E | E2, Option.Option<A>>
-}
+export declare function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(
+  ...fxs: FXS
+): Layer.Layer<Exclude<Fx.Context<FXS[number]>, Scope.Scope>, never, never>
 ```
 
-Added in v1.18.0
-
-## first
-
-Grab the first value emitted by an Fx
-
-**Signature**
-
-```ts
-export declare const first: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, Option.Option<A>>
-```
-
-Added in v1.18.0
-
-## observe
-
-Observe an Fx with the provided success value handler. The
-Effect will resolve with the first Error of the Fx.
-
-**Signature**
-
-```ts
-export declare const observe: {
-  <A, R2, E2>(
-    onSuccees: (a: A) => Effect.Effect<R2, E2, unknown>
-  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R2 | R, E2 | E, void>
-  <R, E, A, R2, E2>(
-    fx: Fx<R, E, A>,
-    onSuccees: (a: A) => Effect.Effect<R2, E2, unknown>
-  ): Effect.Effect<R | R2, E | E2, void>
-}
-```
-
-Added in v1.18.0
-
-## reduce
-
-Reduce an Fx to a single value.
-
-**Signature**
-
-```ts
-export declare const reduce: {
-  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B>
-}
-```
-
-Added in v1.18.0
-
-## run
-
-Run an Fx to completion with the provided Sink. The
-Effect will resolve with the first Error of the Fx.
-
-**Signature**
-
-```ts
-export declare const run: {
-  <E, A, R2>(sink: Sink.WithContext<R2, E, A>): <R>(fx: Fx<R, E, A>) => Effect.Effect<R2 | R, never, unknown>
-  <R, E, A, R2>(fx: Fx<R, E, A>, sink: Sink.WithContext<R2, E, A>): Effect.Effect<R | R2, never, unknown>
-}
-```
-
-Added in v1.18.0
-
-## toArray
-
-Run an Fx to completion, collecting all emitted values into an Array.
-
-**Signature**
-
-```ts
-export declare const toArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, A[]>
-```
-
-Added in v1.18.0
-
-## toChunk
-
-Run an Fx to completion, collecting all emitted values into a Chunk.
-
-**Signature**
-
-```ts
-export declare const toChunk: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-```
-
-Added in v1.18.0
-
-## toEnqueue
-
-Consume an Fx and place its values into an Enqueue.
-
-**Signature**
-
-```ts
-export declare const toEnqueue: {
-  <A, B>(enqueue: Queue.Enqueue<A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, void>
-  <I, A, B>(enqueue: Context.Enqueue<I, A | B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<I | R, E, void>
-  <R, E, A, B>(fx: Fx<R, E, A>, enqueue: Queue.Enqueue<A | B>): Effect.Effect<R, E, void>
-  <R, E, I, A, B>(fx: Fx<R, E, A>, enqueue: Context.Enqueue<I, A | B>): Effect.Effect<R, E, void>
-}
-```
-
-Added in v1.18.0
-
-## toReadonlyArray
-
-Run an Fx to completion, collecting all emitted values into a ReadonlyArray.
-
-**Signature**
-
-```ts
-export declare const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-```
-
-Added in v1.18.0
-
-# sharing
-
-## hold
-
-Effeciently share an underlying stream with multiple subscribers, saving the most
-recent event and emitting it to new subscribers.
-
-**Signature**
-
-```ts
-export declare const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## multicast
-
-Effeciently share an underlying stream with multiple subscribers.
-
-**Signature**
-
-```ts
-export declare const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## replay
-
-Effeciently share an underlying stream with multiple subscribers,
-saving up to the most recent `n` events and emitting them to new subscribers.
-
-**Signature**
-
-```ts
-export declare const replay: {
-  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## share
-
-Share the output of an Fx, or Effect, with other Fx's using the behavior of the
-provided Subject.
-
-**Signature**
-
-```ts
-export declare const share: <R, E, A, R2>(fx: Fx<R, E, A>, subject: Subject<R2, E, A>) => Fx<R | R2, E, A>
-```
-
-Added in v1.18.0
-
-# slicing
+Added in v1.20.0
 
 ## drop
-
-Drop a number of values from an Fx.
 
 **Signature**
 
@@ -3164,487 +985,949 @@ export declare const drop: {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## dropAfter
-
-Drop values from an Fx after the predicate returns true.
 
 **Signature**
 
 ```ts
 export declare const dropAfter: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## dropAfterEffect
+
+**Signature**
+
+```ts
+export declare const dropAfterEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
 
 ## dropUntil
-
-Drop values from an Fx until the predicate returns true.
 
 **Signature**
 
 ```ts
 export declare const dropUntil: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, A | B>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## dropUntilEffect
+
+**Signature**
+
+```ts
+export declare const dropUntilEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
 
 ## dropWhile
-
-Drop values from an Fx while the predicate returns true.
 
 **Signature**
 
 ```ts
 export declare const dropWhile: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## skipRepeats
-
-Skip repeated values, using @effect/data/Equal for value comparison.
+## dropWhileEffect
 
 **Signature**
 
 ```ts
-export declare const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-```
-
-Added in v1.18.0
-
-## skipRepeatsWith
-
-Skip repeated values, using the provided Equivalence to compare values.
-
-**Signature**
-
-```ts
-export declare const skipRepeatsWith: {
-  <A>(eq: Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, eq: Equivalence<A>): Fx<R, E, A>
+export declare const dropWhileEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
 }
 ```
 
-Added in v1.18.0
-
-## slice
-
-Skip and take a number of values from an Fx.
-
-**Signature**
-
-```ts
-export declare const slice: {
-  (skip: number, take: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, skip: number, take: number): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## take
-
-Take a number of values from an Fx.
-
-**Signature**
-
-```ts
-export declare const take: {
-  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
-
-## takeUntil
-
-Take values from an Fx until the predicate returns true.
-
-**Signature**
-
-```ts
-export declare const takeUntil: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
-}
-```
-
-Added in v1.18.0
-
-## takeWhile
-
-Take values from an Fx while the predicate returns true.
-
-**Signature**
-
-```ts
-export declare const takeWhile: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, predicate: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
-}
-```
-
-Added in v1.18.0
-
-# time slicing
-
-## debounce
-
-Create an Fx which will wait a specified duration of time where no
-events have occurred before emitting a value.
-
-**Signature**
-
-```ts
-export declare const debounce: {
-  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
-}
-```
-
-Added in v1.18.0
+Added in v1.20.0
 
 ## during
-
-Listen to the events of an Fx within the provided window. When the window Fx
-emits the inner stream, the fx will begin allowing events to pass through,
-and when the inner stream emits, the fx will be interrupted.
 
 **Signature**
 
 ```ts
 export declare const during: {
-  <R2, E2, R3, E3>(
-    window: Fx<R2, E2, Fx<R3, E3, unknown>>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, A>
-  <R, E, A, R2, E2, R3, E3>(fx: Fx<R, E, A>, window: Fx<R2, E2, Fx<R3, E3, unknown>>): Fx<R | R2 | R3, E | E2 | E3, A>
+  <R2, E2, A, R3, E3, B>(
+    window: Fx<R2, E2, Fx<R3, E3, B>>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, A>
+  <R, E, A, R2, E2, R3, E3, B>(
+    fx: Fx<R, E, A>,
+    window: Fx<R2, E2, Fx<R3, E3, B>>
+  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, A>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## since
-
-Listen to the events of an Fx after the provided window emits.
+## either
 
 **Signature**
 
 ```ts
-export declare const since: {
-  <R2, E2>(window: Fx<R2, E2, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, window: Fx<R2, E2, unknown>): Fx<R | R2, E | E2, A>
+export declare const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>>
+```
+
+Added in v1.20.0
+
+## empty
+
+**Signature**
+
+```ts
+export declare const empty: Fx<never, never, never>
+```
+
+Added in v1.20.0
+
+## ensuring
+
+**Signature**
+
+```ts
+export declare const ensuring: {
+  <R2>(finalizer: Effect.Effect<R2, never, unknown>): <R, E, A>(self: Fx<R, E, A>) => Fx<R2 | R, E, A>
+  <R, E, A, R2>(self: Fx<R, E, A>, finalizer: Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## throttle
-
-Create an Fx which will wait a specified duration of time before emitting
-an event after the last event.
+## exhaustMap
 
 **Signature**
 
 ```ts
-export declare const throttle: {
-  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R, E, A>
+export declare const exhaustMap: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## until
-
-Listen to the events of an Fx until the provided window emits.
+## exhaustMapCause
 
 **Signature**
 
 ```ts
-export declare const until: {
-  <R2, E2>(window: Fx<R2, E2, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, window: Fx<R2, E2, unknown>): Fx<R | R2, E | E2, A>
+export declare const exhaustMapCause: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-# tracing
-
-## withParentSpan
-
-Set the parent Span of an Fx
+## exhaustMapEffect
 
 **Signature**
 
 ```ts
-export declare const withParentSpan: {
-  (parentSpan: Tracer.ParentSpan): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, parentSpan: Tracer.ParentSpan): Fx<R, E, A>
+export declare const exhaustMapEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## withSpan
-
-Set the span of an Fx
+## exhaustMapError
 
 **Signature**
 
 ```ts
-export declare const withSpan: {
-  (
-    name: string,
-    options?: {
-      readonly attributes?: Record<string, unknown>
-      readonly links?: ReadonlyArray<Tracer.SpanLink>
-      readonly parent?: Tracer.ParentSpan
-      readonly root?: boolean
-      readonly context?: Context.Context<never>
-    }
-  ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(
-    self: Fx<R, E, A>,
-    name: string,
-    options?: {
-      readonly attributes?: Record<string, unknown>
-      readonly links?: ReadonlyArray<Tracer.SpanLink>
-      readonly parent?: Tracer.ParentSpan
-      readonly root?: boolean
-      readonly context?: Context.Context<never>
-    }
-  ): Fx<R, E, A>
+export declare const exhaustMapError: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## withTracer
-
-Set the tracer used within an Fx
+## exhaustMapLatest
 
 **Signature**
 
 ```ts
-export declare const withTracer: {
-  (tracer: Tracer.Tracer): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, tracer: Tracer.Tracer): Fx<R, E, A>
+export declare const exhaustMapLatest: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## withTracerTiming
-
-Enable/disable tracer timing for an Fx
+## exhaustMapLatestCause
 
 **Signature**
 
 ```ts
-export declare const withTracerTiming: {
-  (enabled: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, enabled: boolean): Fx<R, E, A>
+export declare const exhaustMapLatestCause: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-# utils
-
-## DefaultMatchersFrom (type alias)
+## exhaustMapLatestEffect
 
 **Signature**
 
 ```ts
-export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
-  readonly [Tag in A["_tag"]]: (
-    value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
-  ) => FxInput<any, any, any>
+export declare const exhaustMapLatestEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## EffectGenContext (type alias)
-
-Extract the context from an EffectGen
+## exhaustMapLatestError
 
 **Signature**
 
 ```ts
-export type EffectGenContext<T> = [T] extends [never]
-  ? never
-  : [T] extends [Effect.EffectGen<infer R, any, any>]
-    ? R
-    : never
-```
-
-Added in v1.18.0
-
-## EffectGenError (type alias)
-
-Extract the error from an EffectGen
-
-**Signature**
-
-```ts
-export type EffectGenError<T> = [T] extends [never]
-  ? never
-  : [T] extends [Effect.EffectGen<any, infer E, any>]
-    ? E
-    : never
-```
-
-Added in v1.18.0
-
-## EffectGenSuccess (type alias)
-
-Extract the success value from an EffectGen
-
-**Signature**
-
-```ts
-export type EffectGenSuccess<T> = [T] extends [never]
-  ? never
-  : [T] extends [Effect.EffectGen<any, any, infer A>]
-    ? A
-    : never
-```
-
-Added in v1.18.0
-
-## Fx (namespace)
-
-Added in v1.18.0
-
-### Variance (interface)
-
-Configures the variance of an Fx
-
-**Signature**
-
-```ts
-export interface Variance<R, E, A> {
-  readonly [TypeId]: {
-    readonly _R: (_: never) => R
-    readonly _E: (_: never) => E
-    readonly _A: (_: never) => A
-  }
+export declare const exhaustMapLatestError: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### Context (type alias)
-
-Extract the Context, Error, or Success type from an Fx
+## exhaustMatchCause
 
 **Signature**
 
 ```ts
-export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
+export declare const exhaustMatchCause: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### Error (type alias)
-
-Extract the Error type from an Fx
+## exhaustMatchError
 
 **Signature**
 
 ```ts
-export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
+export declare const exhaustMatchError: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### FromInput (type alias)
+## exhaustMatchLatestCause
 
 **Signature**
 
 ```ts
-export type FromInput<T extends FxInput<any, any, any>> = [T] extends [ReadonlyArray<infer A>]
-  ? Fx<never, never, A>
-  : [T] extends [Iterable<infer A>]
-    ? Fx<never, never, A>
-    : [T] extends [Cause.Cause<infer E>]
-      ? Fx<never, E, never>
-      : [T] extends [Fx<infer R, infer E, infer A>]
-        ? Fx<R, E, A>
-        : [T] extends [Effect.Effect<infer R, infer E, infer A>]
-          ? Fx<R, E, A>
-          : never
+export declare const exhaustMatchLatestCause: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### Success (type alias)
-
-Extract the Success type from an Fx
+## exhaustMatchLatestError
 
 **Signature**
 
 ```ts
-export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+export declare const exhaustMatchLatestError: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## FxEffectBase (class)
+## exit
 
 **Signature**
 
 ```ts
-export declare class FxEffectBase<R, E, A, R2, E2, B>
+export declare const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<E, A>>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### toFx (method)
+## fail
 
 **Signature**
 
 ```ts
-protected abstract toFx(): Fx<R, E, A>
+export declare const fail: <E>(error: E) => Fx<never, E, never>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-### toEffect (method)
+## failCause
 
 **Signature**
 
 ```ts
-protected abstract toEffect(): Effect.Effect<R2, E2, B>
+export declare const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E, never>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-## drainLayer
+## filter
 
 **Signature**
 
 ```ts
-export declare const drainLayer: <FXS extends readonly Fx<any, never, any>[]>(
-  ...fxs: FXS
-) => Layer.Layer<Exclude<Fx.Context<FXS[number]>, Scope.Scope>, never, never>
+export declare const filter: {
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+}
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## filterCause
+
+**Signature**
+
+```ts
+export declare const filterCause: {
+  <E>(f: (cause: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## filterCauseEffect
+
+**Signature**
+
+```ts
+export declare const filterCauseEffect: {
+  <E, R2, E2>(
+    f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, boolean>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## filterEffect
+
+**Signature**
+
+```ts
+export declare const filterEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## filterError
+
+**Signature**
+
+```ts
+export declare const filterError: {
+  <E>(f: (e: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (e: E) => boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## filterErrorEffect
+
+**Signature**
+
+```ts
+export declare const filterErrorEffect: {
+  <E, R2, E2>(f: (e: E) => Effect.Effect<R2, E2, boolean>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMap
+
+**Signature**
+
+```ts
+export declare const filterMap: {
+  <A, B>(f: (a: A) => Option.Option<B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## filterMapCause
+
+**Signature**
+
+```ts
+export declare const filterMapCause: {
+  <E, E2>(f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapCauseEffect
+
+**Signature**
+
+```ts
+export declare const filterMapCauseEffect: {
+  <R2, E2, E3>(
+    f: (cause: Cause.Cause<E2>) => Effect.Effect<R2, E2, Option.Option<Cause.Cause<E3>>>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
+  <R, E, A, R2, E2, E3>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Option.Option<Cause.Cause<E3>>>
+  ): Fx<R | R2, E2 | E3, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapEffect
+
+**Signature**
+
+```ts
+export declare const filterMapEffect: {
+  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>): Fx<R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## filterMapError
+
+**Signature**
+
+```ts
+export declare const filterMapError: {
+  <E, E2>(f: (e: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => Option.Option<E2>): Fx<R, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapErrorEffect
+
+**Signature**
+
+```ts
+export declare const filterMapErrorEffect: {
+  <E, R2, E2, E3>(
+    f: (e: E) => Effect.Effect<R2, E2, Option.Option<E3>>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
+  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, Option.Option<E3>>): Fx<R | R2, E2 | E3, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoop
+
+**Signature**
+
+```ts
+export declare const filterMapLoop: {
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Fx<R, E, C>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoopCause
+
+**Signature**
+
+```ts
+export declare const filterMapLoopCause: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Option.Option<Cause.Cause<C>>, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
+  ): Fx<R, C, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoopCauseEffect
+
+**Signature**
+
+```ts
+export declare const filterMapLoopCauseEffect: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Option.Option<Cause.Cause<C>>, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Option.Option<Cause.Cause<C>>, B]>
+  ): Fx<R | R2, E2 | C, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoopEffect
+
+**Signature**
+
+```ts
+export declare const filterMapLoopEffect: {
+  <R2, E2, B, A, C>(
+    seed: B,
+    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  ): Fx<R | R2, E | E2, C>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoopError
+
+**Signature**
+
+```ts
+export declare const filterMapLoopError: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [Option.Option<C>, B]): Fx<R, C, A>
+}
+```
+
+Added in v1.20.0
+
+## filterMapLoopErrorEffect
+
+**Signature**
+
+```ts
+export declare const filterMapLoopErrorEffect: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  ): Fx<R | R2, E2 | C, A>
+}
+```
+
+Added in v1.20.0
+
+## findFirst
+
+**Signature**
+
+```ts
+export declare const findFirst: {
+  <A, B extends A>(refinement: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, B>
+  <A>(predicate: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, refinement: Predicate.Refinement<A, B>): Effect.Effect<R, E, B>
+  <R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## first
+
+**Signature**
+
+```ts
+export declare const first: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, A>
+```
+
+Added in v1.20.0
+
+## flatMap
+
+**Signature**
+
+```ts
+export declare const flatMap: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapCause
+
+**Signature**
+
+```ts
+export declare const flatMapCause: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapCauseConcurrently
+
+**Signature**
+
+```ts
+export declare const flatMapCauseConcurrently: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    concurrency: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    concurrency: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapCauseWithStrategy
+
+**Signature**
+
+```ts
+export declare const flatMapCauseWithStrategy: {
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    flattenStrategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    flattenStrategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapConcurrently
+
+**Signature**
+
+```ts
+export declare const flatMapConcurrently: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    capacity: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    capacity: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapConcurrentlyEffect
+
+**Signature**
+
+```ts
+export declare const flatMapConcurrentlyEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    capacity: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    capacity: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapEffect
+
+**Signature**
+
+```ts
+export declare const flatMapEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapError
+
+**Signature**
+
+```ts
+export declare const flatMapError: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapErrorConcurrently
+
+**Signature**
+
+```ts
+export declare const flatMapErrorConcurrently: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    concurrency: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    concurrency: number,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapErrorWithStrategy
+
+**Signature**
+
+```ts
+export declare const flatMapErrorWithStrategy: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    flattenStrategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    flattenStrategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## flatMapWithStrategy
+
+**Signature**
+
+```ts
+export declare const flatMapWithStrategy: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    strategy: FlattenStrategy,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## flip
+
+**Signature**
+
+```ts
+export declare const flip: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, A, E>
+```
+
+Added in v1.20.0
 
 ## fork
 
@@ -3654,7 +1937,7 @@ Added in v1.18.0
 export declare const fork: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## forkDaemon
 
@@ -3664,7 +1947,7 @@ Added in v1.18.0
 export declare const forkDaemon: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, never, Fiber.RuntimeFiber<E, void>>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## forkIn
 
@@ -3677,7 +1960,7 @@ export declare const forkIn: {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
 ## forkScoped
 
@@ -3689,7 +1972,136 @@ export declare const forkScoped: <R, E, A>(
 ) => Effect.Effect<Scope.Scope | R, never, Fiber.RuntimeFiber<E, void>>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## fromArray
+
+**Signature**
+
+```ts
+export declare const fromArray: <const A extends readonly any[]>(array: A) => Fx<never, never, A[number]>
+```
+
+Added in v1.20.0
+
+## fromAsyncIterable
+
+**Signature**
+
+```ts
+export declare const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<never, never, A>
+```
+
+Added in v1.20.0
+
+## fromDequeue
+
+**Signature**
+
+```ts
+export declare function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
+export declare function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<I, never, A>
+```
+
+Added in v1.20.0
+
+## fromEffect
+
+**Signature**
+
+```ts
+export declare const fromEffect: <R, E, A>(effect: Effect.Effect<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+## fromFxEffect
+
+**Signature**
+
+```ts
+export declare const fromFxEffect: <R, E, R2, E2, B>(
+  effect: Effect.Effect<R, E, Fx<R2, E2, B>>
+) => Fx<R | R2, E | E2, B>
+```
+
+Added in v1.20.0
+
+## fromIterable
+
+**Signature**
+
+```ts
+export declare const fromIterable: <A>(iterable: Iterable<A>) => Fx<never, never, A>
+```
+
+Added in v1.20.0
+
+## fromNullable
+
+**Signature**
+
+```ts
+export declare const fromNullable: <A>(value: void | A | null | undefined) => Fx<never, never, NonNullable<A>>
+```
+
+Added in v1.20.0
+
+## fromPubSub
+
+**Signature**
+
+```ts
+export declare function fromPubSub<A>(pubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
+export declare function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A>): Fx<I | Scope.Scope, never, A>
+```
+
+Added in v1.20.0
+
+## fromScheduled
+
+**Signature**
+
+```ts
+export declare const fromScheduled: {
+  <R2, I, O>(schedule: Schedule.Schedule<R2, I, O>): <R, E>(input: Effect.Effect<R, E, I>) => Fx<R2 | R, E, O>
+  <R, E, I, R2, O>(input: Effect.Effect<R, E, I>, schedule: Schedule.Schedule<R2, I, O>): Fx<R | R2, E, O>
+}
+```
+
+Added in v1.20.0
+
+## gen
+
+**Signature**
+
+```ts
+export declare const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+  f: (_: Effect.Adapter) => Generator<Y, FX, any>
+) => Fx<
+  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>,
+  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
+  Fx.Success<FX>
+>
+```
+
+Added in v1.20.0
+
+## genScoped
+
+**Signature**
+
+```ts
+export declare const genScoped: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+  f: (_: Effect.Adapter) => Generator<Y, FX, any>
+) => Fx<
+  Exclude<Effect.Effect.Context<Y["value"]>, Scope.Scope> | Exclude<Fx.Context<FX>, Scope.Scope>,
+  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
+  Fx.Success<FX>
+>
+```
+
+Added in v1.20.0
 
 ## getOrElse
 
@@ -3698,26 +2110,373 @@ Added in v1.18.0
 ```ts
 export declare const getOrElse: {
   <A, R2 = never, E2 = never, B = never>(
-    orElse: () => FxInput<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R2 | R, E2 | E, A | B>
+    orElse: () => Fx<R2, E2, B>
+  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<Scope.Scope | R2 | R, E2 | E, A | B>
   <R, E, A, R2 = never, E2 = never, B = never>(
     fx: Fx<R, E, Option.Option<A>>,
-    orElse: () => FxInput<R2, E2, B>
-  ): Fx<R | R2, E | E2, A | B>
+    orElse: () => Fx<R2, E2, B>
+  ): Fx<Scope.Scope | R | R2, E | E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## hold
+
+**Signature**
+
+```ts
+export declare const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+```
+
+Added in v1.20.0
+
+## if
+
+**Signature**
+
+```ts
+export declare const if: { <R2, E2, B, R3, E3, C>(options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): <R, E>(bool: Fx<R, E, boolean>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>; <R, E, R2, E2, B, R3, E3, C>(bool: Fx<R, E, boolean>, options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>; }
+```
+
+Added in v1.20.0
+
+## interruptible
+
+**Signature**
+
+```ts
+export declare const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
 
 ## isFx
 
 **Signature**
 
 ```ts
-export declare function isFx<R = unknown, E = unknown, A = unknown>(u: unknown): u is Fx<R, E, A>
+export declare function isFx<R, E, A>(u: unknown): u is Fx<R, E, A>
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## keyed
+
+**Signature**
+
+```ts
+export declare const keyed: {
+  <A, B extends PropertyKey, R2, E2, C>(
+    options: KeyedOptions<A, B, R2, E2, C>
+  ): <R, E>(fx: Fx<R, E, readonly A[]>) => Fx<R2 | R, E2 | E, readonly C[]>
+  <R, E, A, B extends PropertyKey, R2, E2, C>(
+    fx: Fx<R, E, readonly A[]>,
+    options: KeyedOptions<A, B, R2, E2, C>
+  ): Fx<R | R2, E | E2, readonly C[]>
+}
+```
+
+Added in v1.20.0
+
+## locally
+
+**Signature**
+
+```ts
+export declare const locally: {
+  <A>(self: FiberRef.FiberRef<A>, value: A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, value: A): Fx<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## locallyWith
+
+**Signature**
+
+```ts
+export declare const locallyWith: {
+  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
+  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## loop
+
+**Signature**
+
+```ts
+export declare const loop: {
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C>
+}
+```
+
+Added in v1.20.0
+
+## loopCause
+
+**Signature**
+
+```ts
+export declare const loopCause: {
+  <B, E, C>(
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
+  <R, E, A, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
+  ): Fx<R, C, A>
+}
+```
+
+Added in v1.20.0
+
+## loopCauseEffect
+
+**Signature**
+
+```ts
+export declare const loopCauseEffect: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Cause.Cause<C>, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Cause.Cause<C>, B]>
+  ): Fx<R | R2, E2 | C, A>
+}
+```
+
+Added in v1.20.0
+
+## loopEffect
+
+**Signature**
+
+```ts
+export declare const loopEffect: {
+  <R2, E2, B, A, C>(
+    seed: B,
+    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
+  ): Fx<R | R2, E | E2, C>
+}
+```
+
+Added in v1.20.0
+
+## loopError
+
+**Signature**
+
+```ts
+export declare const loopError: {
+  <B, E, C>(seed: B, f: (b: B, e: E) => readonly [C, B]): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [C, B]): Fx<R, C, A>
+}
+```
+
+Added in v1.20.0
+
+## loopErrorEffect
+
+**Signature**
+
+```ts
+export declare const loopErrorEffect: {
+  <B, E, R2, E2, C>(
+    seed: B,
+    f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [C, B]>
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
+  <R, E, A, R2, E2, B, C>(
+    fx: Fx<R, E, A>,
+    seed: B,
+    f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [C, B]>
+  ): Fx<R | R2, E2 | C, A>
+}
+```
+
+Added in v1.20.0
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: {
+  <R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A>
+  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
+  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>): Fx<never, never, A>
+}
+```
+
+Added in v1.20.0
+
+## map
+
+**Signature**
+
+```ts
+export declare const map: {
+  <A, B>(f: (a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## mapBoth
+
+**Signature**
+
+```ts
+export declare const mapBoth: {
+  <E, E2, A, B>(f: (e: E) => E2, g: (a: A) => B): <R>(fx: Fx<R, E, A>) => Fx<R, E2, B>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, f: (e: E) => B, g: (a: A) => C): Fx<R, B, C>
+}
+```
+
+Added in v1.20.0
+
+## mapCause
+
+**Signature**
+
+```ts
+export declare const mapCause: {
+  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Fx<R, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## mapCauseEffect
+
+**Signature**
+
+```ts
+export declare const mapCauseEffect: {
+  <R2, E2, E3>(
+    f: (cause: Cause.Cause<E2>) => Effect.Effect<R2, E3, Cause.Cause<E3>>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
+  <R, E, A, R2, E2, E3>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Cause.Cause<E3>>
+  ): Fx<R | R2, E2 | E3, A>
+}
+```
+
+Added in v1.20.0
+
+## mapEffect
+
+**Signature**
+
+```ts
+export declare const mapEffect: {
+  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Fx<R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## mapError
+
+**Signature**
+
+```ts
+export declare const mapError: {
+  <E, E2>(f: (e: E) => E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
+  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => E2): Fx<R, E2, A>
+}
+```
+
+Added in v1.20.0
+
+## mapErrorEffect
+
+**Signature**
+
+```ts
+export declare const mapErrorEffect: {
+  <R2, E2, E3>(f: (e: E2) => Effect.Effect<R2, E3, E3>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
+  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<R2, E2, E3>): Fx<R | R2, E2 | E3, A>
+}
+```
+
+Added in v1.20.0
+
+## matchCause
+
+**Signature**
+
+```ts
+export declare const matchCause: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## matchCauseConcurrently
+
+**Signature**
+
+```ts
+export declare const matchCauseConcurrently: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    concurrency: number,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    concurrency: number,
+    opts: core.MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## matchCauseWithStrategy
+
+**Signature**
+
+```ts
+export declare const matchCauseWithStrategy: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    flattenStrategy: FlattenStrategy,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
 
 ## matchEither
 
@@ -3726,18 +2485,79 @@ Added in v1.18.0
 ```ts
 export declare const matchEither: {
   <E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Either.Either<E1, A>>) => Fx<R2 | R, E2 | E, B | C>
+    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
+    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
+  ): <R, E>(fx: Fx<R, E, Either.Either<E1, A>>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>
   <R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
     fx: Fx<R, E, Either.Either<E1, A>>,
-    onLeft: (e: RefSubject<never, never, E1>) => FxInput<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
-  ): Fx<R | R2, E | E2, B | C>
+    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
+    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## matchError
+
+**Signature**
+
+```ts
+export declare const matchError: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## matchErrorConcurrently
+
+**Signature**
+
+```ts
+export declare const matchErrorConcurrently: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    concurrency: number,
+    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    concurrency: number,
+    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## matchErrorWithStrategy
+
+**Signature**
+
+```ts
+export declare const matchErrorWithStrategy: {
+  <E, A, R2, E2, B, R3, E3, C>({
+    executionStrategy,
+    onFailure,
+    onSuccess
+  }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>): <R>(
+    fx: Fx<R, E, A>
+  ) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    flattenStrategy: FlattenStrategy,
+    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
 
 ## matchOption
 
@@ -3746,18 +2566,81 @@ Added in v1.18.0
 ```ts
 export declare const matchOption: {
   <A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onNone: () => FxInput<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R2 | R, E2 | E, B | C>
+    onNone: () => Fx<R2, E2, B>,
+    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
+  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>
   <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
     fx: Fx<R, E, Option.Option<A>>,
-    onNone: () => FxInput<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => FxInput<R3, E3, C>
-  ): Fx<R | R2, E | E2, B | C>
+    onNone: () => Fx<R2, E2, B>,
+    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## merge
+
+**Signature**
+
+```ts
+export declare const merge: {
+  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## mergeAll
+
+**Signature**
+
+```ts
+export declare const mergeAll: <FX extends readonly Fx<any, any, any>[]>(
+  fx: FX
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.20.0
+
+## mergeFirst
+
+**Signature**
+
+```ts
+export declare const mergeFirst: {
+  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## mergeOrdered
+
+**Signature**
+
+```ts
+export declare const mergeOrdered: <FX extends readonly Fx<any, any, any>[]>(
+  fx: FX
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.20.0
+
+## mergeOrderedConcurrently
+
+**Signature**
+
+```ts
+export declare const mergeOrderedConcurrently: <FX extends readonly Fx<any, any, any>[]>(
+  fx: FX,
+  concurrency: number
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.20.0
 
 ## mergeRace
 
@@ -3765,9 +2648,1080 @@ Added in v1.18.0
 
 ```ts
 export declare const mergeRace: {
-  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
+
+## mergeSwitch
+
+**Signature**
+
+```ts
+export declare const mergeSwitch: <FX extends readonly Fx<any, any, any>[]>(
+  fx: FX
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.20.0
+
+## mergeWithStrategy
+
+**Signature**
+
+```ts
+export declare const mergeWithStrategy: {
+  (
+    strategy: MergeStrategy
+  ): <FX extends readonly Fx<any, any, any>[]>(
+    fx: FX
+  ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  <const FX extends readonly Fx<any, any, any>[]>(
+    fx: FX,
+    stategy: MergeStrategy
+  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+}
+```
+
+Added in v1.20.0
+
+## middleware
+
+**Signature**
+
+```ts
+export declare const middleware: {
+  <R, R3, E, A>(
+    effect: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R3, never, unknown>,
+    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
+  ): <E, A>(fx: Fx<R, E, A>) => Fx<R3, E, A>
+  <R, E, A, R3>(
+    fx: Fx<R, E, A>,
+    effect: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R3, never, unknown>,
+    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
+  ): Fx<R3, E, A>
+}
+```
+
+Added in v1.20.0
+
+## multicast
+
+**Signature**
+
+```ts
+export declare const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+```
+
+Added in v1.20.0
+
+## never
+
+**Signature**
+
+```ts
+export declare const never: Fx<never, never, never>
+```
+
+Added in v1.20.0
+
+## observe
+
+**Signature**
+
+```ts
+export declare const observe: {
+  <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R2 | R, E2 | E, void>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, B>): Effect.Effect<R | R2, E | E2, void>
+}
+```
+
+Added in v1.20.0
+
+## onError
+
+**Signature**
+
+```ts
+export declare const onError: {
+  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.20.0
+
+## onExit
+
+**Signature**
+
+```ts
+export declare const onExit: {
+  <R2>(
+    f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
+  <R, E, A, R2>(
+    fx: Fx<R, E, A>,
+    f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>
+  ): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.20.0
+
+## onInterrupt
+
+**Signature**
+
+```ts
+export declare const onInterrupt: {
+  <R2>(
+    f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
+  <R, E, A, R2>(
+    fx: Fx<R, E, A>,
+    f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
+  ): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.20.0
+
+## orElse
+
+**Signature**
+
+```ts
+export declare const orElse: {
+  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## orElseCause
+
+**Signature**
+
+```ts
+export declare const orElseCause: {
+  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## padWith
+
+**Signature**
+
+```ts
+export declare const padWith: {
+  <B, C>(start: Iterable<B>, end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | C | A>
+  <R, E, A, B, C>(fx: Fx<R, E, A>, start: Iterable<B>, end: Iterable<C>): Fx<R, E, A | B | C>
+}
+```
+
+Added in v1.20.0
+
+## partitionMap
+
+**Signature**
+
+```ts
+export declare const partitionMap: {
+  <A, B, C>(
+    f: (a: A) => Either.Either<B, C>
+  ): <R, E>(fx: Fx<R, E, A>) => readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
+  <R, E, A, B, C>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Either.Either<B, C>
+  ): readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
+}
+```
+
+Added in v1.20.0
+
+## periodic
+
+**Signature**
+
+```ts
+export declare const periodic: {
+  (period: Duration.DurationInput): <R, E, A>(iterator: Effect.Effect<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(iterator: Effect.Effect<R, E, A>, period: Duration.DurationInput): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## prepend
+
+**Signature**
+
+```ts
+export declare const prepend: {
+  <B>(start: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
+  <R, E, A, B>(fx: Fx<R, E, A>, start: B): Fx<R, E, A | B>
+}
+```
+
+Added in v1.20.0
+
+## prependAll
+
+**Signature**
+
+```ts
+export declare const prependAll: {
+  <B>(start: Iterable<B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
+  <R, E, A, B>(fx: Fx<R, E, A>, start: Iterable<B>): Fx<R, E, A | B>
+}
+```
+
+Added in v1.20.0
+
+## provide
+
+**Signature**
+
+```ts
+export declare const provide: {
+  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
+  <R2 = never, E2 = never, S = never>(
+    provide: Layer.Layer<R2, E2, S> | Ctx.Context<S> | Runtime.Runtime<S>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
+  <R, E, A, R2 = never, E2 = never, S = never>(
+    fx: Fx<R, E, A>,
+    provide: Layer.Layer<R2, E2, S> | Ctx.Context<S> | Runtime.Runtime<S>
+  ): Fx<R2 | Exclude<R, S>, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## provideContext
+
+**Signature**
+
+```ts
+export declare const provideContext: {
+  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
+}
+```
+
+Added in v1.20.0
+
+## provideLayer
+
+**Signature**
+
+```ts
+export declare const provideLayer: {
+  <R2, E2, S>(layer: Layer.Layer<R2, E2, S>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
+  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<R2, E2, S>): Fx<R2 | Exclude<R, S>, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## provideRuntime
+
+**Signature**
+
+```ts
+export declare const provideRuntime: {
+  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+}
+```
+
+Added in v1.20.0
+
+## provideService
+
+**Signature**
+
+```ts
+export declare const provideService: {
+  <I, S>(service: Ctx.Tag<I, S>, instance: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
+  <R, E, A, I, S>(fx: Fx<R, E, A>, service: Ctx.Tag<I, S>, instance: S): Fx<Exclude<R, I>, E, A>
+}
+```
+
+Added in v1.20.0
+
+## provideServiceEffect
+
+**Signature**
+
+```ts
+export declare const provideServiceEffect: {
+  <I, S, R2, E2>(
+    service: Ctx.Tag<I, S>,
+    instance: Effect.Effect<R2, E2, S>
+  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E2 | E, A>
+  <R, E, A, I, S, R2, E2>(
+    fx: Fx<R, E, A>,
+    service: Ctx.Tag<I, S>,
+    instance: Effect.Effect<R2, E2, S>
+  ): Fx<R2 | Exclude<R, I>, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## race
+
+**Signature**
+
+```ts
+export declare const race: {
+  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## raceAll
+
+**Signature**
+
+```ts
+export declare const raceAll: <const FX extends readonly Fx<any, any, any>[]>(
+  fx: FX
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+```
+
+Added in v1.20.0
+
+## reduce
+
+**Signature**
+
+```ts
+export declare const reduce: {
+  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## replay
+
+**Signature**
+
+```ts
+export declare const replay: {
+  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<Scope.Scope | R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## sample
+
+**Signature**
+
+```ts
+export declare const sample: {
+  <R, E, B>(sampled: Fx<R, E, B>): <R2, E2, A>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, B>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>): Fx<R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## scan
+
+**Signature**
+
+```ts
+export declare const scan: {
+  <B, A>(seed: B, f: (b: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Fx<R, E, B>
+}
+```
+
+Added in v1.20.0
+
+## schedule
+
+**Signature**
+
+```ts
+export declare const schedule: {
+  <R2, O>(schedule: Schedule.Schedule<R2, unknown, O>): <R, E, A>(input: Effect.Effect<R, E, A>) => Fx<R2 | R, E, A>
+  <R, E, A, R2, O>(input: Effect.Effect<R, E, A>, schedule: Schedule.Schedule<R2, unknown, O>): Fx<R | R2, E, A>
+}
+```
+
+Added in v1.20.0
+
+## scoped
+
+**Signature**
+
+```ts
+export declare const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A>
+```
+
+Added in v1.20.0
+
+## share
+
+**Signature**
+
+```ts
+export declare const share: {
+  <R2, E2, A>(subject: Subject.Subject<R2, E2, A>): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E, A>
+  <R, E, A, R2>(fx: Fx<R, E, A>, subject: Subject.Subject<R2, E, A>): Fx<Scope.Scope | R | R2, E, A>
+}
+```
+
+Added in v1.20.0
+
+## since
+
+**Signature**
+
+```ts
+export declare const since: {
+  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<Scope.Scope | R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## skipRepeats
+
+**Signature**
+
+```ts
+export declare const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+## skipRepeatsWith
+
+**Signature**
+
+```ts
+export declare const skipRepeatsWith: {
+  <A>(eq: Equivalence.Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, eq: Equivalence.Equivalence<A>): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## slice
+
+**Signature**
+
+```ts
+export declare const slice: {
+  (drop: number, take: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, drop: number, take: number): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## snapshot
+
+**Signature**
+
+```ts
+export declare const snapshot: {
+  <R, E, B, A, C>(sampled: Fx<R, E, B>, g: (a: A, b: B) => C): <R2, E2>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, C>
+  <R, E, A, R2, E2, B, C>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>, f: (a: A, b: B) => C): Fx<R | R2, E | E2, C>
+}
+```
+
+Added in v1.20.0
+
+## snapshotEffect
+
+**Signature**
+
+```ts
+export declare const snapshotEffect: {
+  <R2, E2, B, A, R3, E3, C>(
+    sampled: Fx<R2, E2, B>,
+    g: (a: A, b: B) => Effect.Effect<R3, E3, C>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    sampled: Fx<R2, E2, B>,
+    f: (a: A, b: B) => Effect.Effect<R3, E3, C>
+  ): Fx<R | R2 | R3, E | E2 | E3, C>
+}
+```
+
+Added in v1.20.0
+
+## struct
+
+**Signature**
+
+```ts
+export declare const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
+  fx: FX
+) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+```
+
+Added in v1.20.0
+
+## succeed
+
+**Signature**
+
+```ts
+export declare const succeed: <A>(value: A) => Fx<never, never, A>
+```
+
+Added in v1.20.0
+
+## suspend
+
+**Signature**
+
+```ts
+export declare const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+## switchMap
+
+**Signature**
+
+```ts
+export declare const switchMap: {
+  <A, R2, E2, B>(
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## switchMapCause
+
+**Signature**
+
+```ts
+export declare const switchMapCause: {
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  <E, R2, E2, B>(
+    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+}
+```
+
+Added in v1.20.0
+
+## switchMapEffect
+
+**Signature**
+
+```ts
+export declare const switchMapEffect: {
+  <A, R2, E2, B>(
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (a: A) => Effect.Effect<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E | E2, B>
+}
+```
+
+Added in v1.20.0
+
+## switchMapError
+
+**Signature**
+
+```ts
+export declare const switchMapError: {
+  <E, R2, E2, B>(
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  <R, E, A, R2, E2, B>(
+    fx: Fx<R, E, A>,
+    f: (e: E) => Fx<R2, E2, B>,
+    executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+  ): Fx<Scope.Scope | R | R2, E2, A | B>
+}
+```
+
+Added in v1.20.0
+
+## switchMatchCause
+
+**Signature**
+
+```ts
+export declare const switchMatchCause: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## switchMatchError
+
+**Signature**
+
+```ts
+export declare const switchMatchError: {
+  <E, A, R2, E2, B, R3, E3, C>(
+    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
+  <R, E, A, R2, E2, B, R3, E3, C>(
+    fx: Fx<R, E, A>,
+    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
+  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+}
+```
+
+Added in v1.20.0
+
+## sync
+
+**Signature**
+
+```ts
+export declare const sync: <A>(f: () => A) => Fx<never, never, A>
+```
+
+Added in v1.20.0
+
+## take
+
+**Signature**
+
+```ts
+export declare const take: {
+  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## takeUntiEffect
+
+**Signature**
+
+```ts
+export declare const takeUntiEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## takeUntil
+
+**Signature**
+
+```ts
+export declare const takeUntil: {
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## takeWhile
+
+**Signature**
+
+```ts
+export declare const takeWhile: {
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
+  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
+  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## takeWhileEffect
+
+**Signature**
+
+```ts
+export declare const takeWhileEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, boolean>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## tap
+
+**Signature**
+
+```ts
+export declare const tap: {
+  <A>(f: (a: A) => unknown): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, f: (a: A) => unknown): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## tapEffect
+
+**Signature**
+
+```ts
+export declare const tapEffect: {
+  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, unknown>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<R2, E2, unknown>): Fx<R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## throttle
+
+**Signature**
+
+```ts
+export declare const throttle: {
+  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## throttleLatest
+
+**Signature**
+
+```ts
+export declare const throttleLatest: {
+  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## toEnqueue
+
+**Signature**
+
+```ts
+export declare const toEnqueue: {
+  <R2 = never, A = never>(
+    queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>
+  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<R2 | R, E, void>
+  <R, E, A, R2 = never>(fx: Fx<R, E, A>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<R | R2, E, void>
+}
+```
+
+Added in v1.20.0
+
+## toReadonlyArray
+
+**Signature**
+
+```ts
+export declare const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<R, E, readonly A[]>
+```
+
+Added in v1.20.0
+
+## tuple
+
+**Signature**
+
+```ts
+export declare const tuple: <const FX extends readonly Fx<any, any, any>[]>(
+  fx: FX
+) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+```
+
+Added in v1.20.0
+
+## uninterruptible
+
+**Signature**
+
+```ts
+export declare const uninterruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+```
+
+Added in v1.20.0
+
+## until
+
+**Signature**
+
+```ts
+export declare const until: {
+  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, A>
+  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<Scope.Scope | R | R2, E | E2, A>
+}
+```
+
+Added in v1.20.0
+
+## when
+
+**Signature**
+
+```ts
+export declare const when: {
+  <B, C>(options: {
+    readonly onTrue: B
+    readonly onFalse: C
+  }): <R, E>(bool: Fx<R, E, boolean>) => Fx<Scope.Scope | R, E, B | C>
+  <R, E, B, C>(
+    bool: Fx<R, E, boolean>,
+    options: { readonly onTrue: B; readonly onFalse: C }
+  ): Fx<Scope.Scope | R, E, B | C>
+}
+```
+
+Added in v1.20.0
+
+## withConcurrency
+
+**Signature**
+
+```ts
+export declare const withConcurrency: {
+  (concurrency: number | "unbounded"): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, concurrency: number | "unbounded"): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withConfigProvider
+
+**Signature**
+
+```ts
+export declare const withConfigProvider: {
+  (configProvider: ConfigProvider.ConfigProvider): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, configProvider: ConfigProvider.ConfigProvider): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withEmitter
+
+**Signature**
+
+```ts
+export declare const withEmitter: <E, A, R = never>(
+  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<R, E, unknown>
+) => Fx<Scope.Scope | R, E, A>
+```
+
+Added in v1.20.0
+
+## withKey
+
+**Signature**
+
+```ts
+export declare const withKey: {
+  <A, B extends PropertyKey, R2, E2, C>(
+    options: WithKeyOptions<A, B, R2, E2, C>
+  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
+  <R, E, A, B extends PropertyKey, R2, E2, C>(
+    fx: Fx<R, E, A>,
+    options: WithKeyOptions<A, B, R2, E2, C>
+  ): Fx<R | R2, E | E2, C>
+}
+```
+
+Added in v1.20.0
+
+## withLogSpan
+
+**Signature**
+
+```ts
+export declare const withLogSpan: {
+  (span: string): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withMaxOpsBeforeYield
+
+**Signature**
+
+```ts
+export declare const withMaxOpsBeforeYield: {
+  (maxOps: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, maxOps: number): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withParentSpan
+
+**Signature**
+
+```ts
+export declare const withParentSpan: {
+  (parentSpan: Tracer.ParentSpan): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, parentSpan: Tracer.ParentSpan): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withRequestBatching
+
+**Signature**
+
+```ts
+export declare const withRequestBatching: {
+  (requestBatching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, requestBatching: boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withRequestCache
+
+**Signature**
+
+```ts
+export declare const withRequestCache: {
+  (cache: Request.Cache): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, cache: Request.Cache): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withRequestCaching
+
+**Signature**
+
+```ts
+export declare const withRequestCaching: {
+  (requestCaching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, requestCaching: boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withSpan
+
+**Signature**
+
+```ts
+export declare const withSpan: {
+  (
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, unknown>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: Ctx.Context<never>
+    }
+  ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(
+    self: Fx<R, E, A>,
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, unknown>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: Ctx.Context<never>
+    }
+  ): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withTracer
+
+**Signature**
+
+```ts
+export declare const withTracer: {
+  (tracer: Tracer.Tracer): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, tracer: Tracer.Tracer): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0
+
+## withTracerTiming
+
+**Signature**
+
+```ts
+export declare const withTracerTiming: {
+  (enabled: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+  <R, E, A>(fx: Fx<R, E, A>, enabled: boolean): Fx<R, E, A>
+}
+```
+
+Added in v1.20.0

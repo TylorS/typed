@@ -2,15 +2,11 @@ import "./styles.css"
 
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Navigation } from "@typed/navigation"
-import type { CurrentRoute } from "@typed/router"
-import type { RenderContext, RenderEvent, RenderTemplate } from "@typed/template"
 import * as EventHandler from "@typed/template/EventHandler"
 import { many } from "@typed/template/Many"
 import { html } from "@typed/template/RenderTemplate"
 import { Link } from "@typed/ui/Link"
-import type { Scope } from "effect"
-import { Effect, flow } from "effect"
+import { Effect } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 import * as Infra from "./infrastructure"
@@ -20,19 +16,7 @@ const onEnterOrEscape = EventHandler.keys(
   "Escape"
 )
 
-type TodoAppContext =
-  | App.CreateTodo
-  | App.FilterState
-  | App.TodoList
-  | App.TodoText
-  | CurrentRoute
-  | Location
-  | Navigation
-  | RenderContext.RenderContext
-  | RenderTemplate
-  | Scope.Scope
-
-export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section class="todoapp ${App.FilterState}">
+export const TodoApp = html`<section class="todoapp ${App.FilterState}">
     <header class="header">
       <h1>todos</h1>
       <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => App.createTodo)}>
@@ -40,7 +24,7 @@ export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section 
           class="new-todo"
           placeholder="What needs to be done?"
           .value="${App.TodoText}"
-          oninput="${EventHandler.target<HTMLInputElement>()((ev) => App.TodoText.set(ev.target.value))}"
+          oninput="${EventHandler.target<HTMLInputElement>()((ev) => RefSubject.set(App.TodoText, ev.target.value))}"
         />
       </form>
     </header>
@@ -55,7 +39,7 @@ export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section 
 
       <footer class="footer">
         <span class="todo-count">
-          ${App.ActiveCount} item${App.ActiveCount.map((c) => (c === 1 ? "" : "s"))} left
+          ${App.ActiveCount} item${RefSubject.map(App.ActiveCount, (c) => (c === 1 ? "" : "s"))} left
         </span>
 
         <ul class="filters">
@@ -65,8 +49,10 @@ export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section 
         ${
   Fx.if(
     App.SomeAreCompleted,
-    html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
-    Fx.succeed(null)
+    {
+      onTrue: html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
+      onFalse: Fx.succeed(null)
+    }
   )
 }
       </footer>
@@ -74,29 +60,31 @@ export const TodoApp: Fx.Fx<TodoAppContext, never, RenderEvent> = html`<section 
   </section>`
 
 function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
-  return Fx.genScoped(function*(_) {
+  return Fx.gen(function*(_) {
     // Track whether this todo is being edited
     const isEditing = yield* _(RefSubject.of(false))
 
     // Track whether the todo is marked as completed
-    const isCompleted = todo.map(Domain.isCompleted)
+    const isCompleted = RefSubject.map(todo, Domain.isCompleted)
 
     // the current text
-    const text = todo.map((t) => t.text)
+    const text = RefSubject.map(todo, (t) => t.text)
 
     // Update the todo's text
-    const updateText = flow(Domain.updateText, todo.update)
+    const updateText = (text: string) => RefSubject.update(todo, Domain.updateText(text))
+
+    // Reset the todo's text to the text value before editing it
+    const reset = RefSubject.delete(todo).pipe(Effect.zipLeft(RefSubject.set(isEditing, false)))
 
     // Submit the todo when the user is done editing
     const submit = text.pipe(
       Effect.flatMap((t) => App.editTodo(id, t)),
-      Effect.flatMap(() => isEditing.set(false))
+      Effect.zipRight(reset)
     )
 
-    // Reset the todo's text to the text value before editing it
-    const reset = todo.delete.pipe(Effect.zipLeft(isEditing.set(false)))
-
-    return html`<li class="${Fx.when(isCompleted, "completed", "")} ${Fx.when(isEditing, "editing", "")}">
+    return html`<li class="${Fx.when(isCompleted, { onTrue: "completed", onFalse: "" })} ${
+      Fx.when(isEditing, { onTrue: "editing", onFalse: "" })
+    }">
       <div class="view">
         <input
           type="checkbox"
@@ -105,7 +93,7 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
           onclick="${App.toggleTodoCompleted(id)}"
         />
 
-        <label ondblclick="${isEditing.set(true)}">${text}</label>
+        <label ondblclick="${RefSubject.set(isEditing, true)}">${text}</label>
 
         <button class="destroy" onclick="${App.deleteTodo(id)}"></button>
       </div>
@@ -126,7 +114,10 @@ function FilterLink(filterState: Domain.FilterState) {
     ${
     Link(
       {
-        className: Fx.when(App.FilterState.map((state) => state === filterState), "selected", ""),
+        className: Fx.when(RefSubject.map(App.FilterState, (state) => state === filterState), {
+          onTrue: "selected",
+          onFalse: " "
+        }),
         to: Infra.filterStateToPath(filterState)
       },
       filterState

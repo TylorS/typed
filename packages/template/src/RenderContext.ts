@@ -11,10 +11,13 @@ import type { Environment } from "@typed/environment"
 import { CurrentEnvironment } from "@typed/environment"
 import * as Idle from "@typed/fx/Idle"
 import type { Rendered } from "@typed/wire"
-import { Effect, Layer, Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 import * as Scope from "effect/Scope"
 import type { Entry } from "./Entry.js"
-import type { Part, SparsePart } from "./Part.js"
+
+// TODO: We should probably have a more explicit environment type between DOM/HTML rendering
 
 /**
  * The context in which templates are rendered within
@@ -54,7 +57,7 @@ export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Conte
  * @since 1.0.0
  */
 export interface RenderQueue {
-  readonly add: (part: Part | SparsePart, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: unknown, task: () => void) => Effect.Effect<Scope.Scope, never, void>
 }
 
 /**
@@ -114,14 +117,14 @@ const buildWithCurrentEnvironment = (environment: Environment, skipRenderSchedul
 /**
  * @since 1.0.0
  */
-export const browser: (
+export const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
 ) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
   Layer.provideMerge(
     Layer.mergeAll(
       buildWithCurrentEnvironment(
-        "browser",
+        "dom",
         options?.skipRenderScheduling
       ),
       domServices(options)
@@ -146,8 +149,9 @@ export {
 }
 
 class RenderQueueImpl implements RenderQueue {
-  queue = new Map<Part | SparsePart, () => void>()
+  queue = new Map<unknown, () => void>()
   scheduled = false
+  run: Effect.Effect<Scope.Scope, never, void>
 
   constructor(
     readonly scope: Scope.Scope,
@@ -155,9 +159,11 @@ class RenderQueueImpl implements RenderQueue {
     readonly skipRenderScheduling: boolean = false
   ) {
     this.add.bind(this)
+
+    this.run = typeof requestAnimationFrame === "undefined" ? this.runIdle : this.runAnimationFrame
   }
 
-  add(part: Part | SparsePart, task: () => void) {
+  add(part: unknown, task: () => void) {
     if (this.skipRenderScheduling) return Effect.sync(task)
 
     return Effect.suspend(() => {
@@ -190,26 +196,20 @@ class RenderQueueImpl implements RenderQueue {
     )
   })
 
-  run: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() =>
-    Effect.flatMap(
+  runIdle: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() => {
+    return Effect.flatMap(
       Idle.whenIdle(this.options),
       (deadline) =>
         Effect.suspend(() => {
           const iterator = this.queue.entries()
 
-          while (Idle.shouldContinue(deadline)) {
-            const result = iterator.next()
-
-            if (result.done) break
-            else {
-              const [part, task] = result.value
-              this.queue.delete(part)
-              task()
-            }
+          while (Idle.shouldContinue(deadline) && this.runTask(iterator)) {
+            // Continue
           }
 
+          // If we have more work to do, schedule another run
           if (this.queue.size > 0) {
-            return this.run
+            return this.runIdle
           }
 
           this.scheduled = false
@@ -217,5 +217,33 @@ class RenderQueueImpl implements RenderQueue {
           return Effect.unit
         })
     )
+  })
+
+  runAnimationFrame: Effect.Effect<Scope.Scope, never, void> = Effect.zipRight(
+    Effect.asyncOption<never, never, void>((cb) => {
+      const id = requestAnimationFrame(() => cb(Effect.unit))
+      return Option.some(Effect.sync(() => cancelAnimationFrame(id)))
+    }),
+    Effect.sync(() => {
+      const iterator = this.queue.entries()
+
+      while (this.runTask(iterator)) {
+        // Continue
+      }
+
+      this.scheduled = false
+    })
   )
+
+  private runTask = (iterator: Iterator<[unknown, () => void]>) => {
+    const result = iterator.next()
+
+    if (result.done) return false
+    else {
+      const [part, task] = result.value
+      this.queue.delete(part)
+      task()
+      return true
+    }
+  }
 }

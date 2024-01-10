@@ -12,7 +12,7 @@ import * as Domain from "./domain"
 const TODOS_STORAGE_KEY = `@typed/todomvc/todos`
 
 const storage = SchemaStorage({
-  [TODOS_STORAGE_KEY]: S.fromJson(Domain.TodoList)
+  [TODOS_STORAGE_KEY]: S.parseJson(Domain.TodoList)
 })
 
 const todos = storage.key(TODOS_STORAGE_KEY)
@@ -23,7 +23,7 @@ const getTodos = todos.get({ errors: "all", onExcessProperty: "error" }).pipe(
 )
 
 // Everytime there is a change to our TodoList, write its value back to storage
-const writeTodos = Fx.tap(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
+const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
 
 /* #endregion */
 
@@ -60,7 +60,7 @@ const ModelLive = Layer.mergeAll(
   // Update our FilterState everytime the current path changes
   App.FilterState.make(currentFilterState),
   // Initialize our TodoText
-  App.TodoText.of("")
+  App.TodoText.make(Effect.succeed(""))
 )
 
 const CreateTodoLive = App.CreateTodo.implement((text) =>

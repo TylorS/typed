@@ -1,6 +1,6 @@
 ---
 title: Form.ts
-nav_order: 4
+nav_order: 3
 parent: "@typed/fx"
 ---
 
@@ -21,6 +21,7 @@ Added in v1.18.0
     - [Derived (interface)](#derived-interface)
     - [AnyEntries (type alias)](#anyentries-type-alias)
     - [AnyEntry (type alias)](#anyentry-type-alias)
+    - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [Input (type alias)](#input-type-alias)
     - [Output (type alias)](#output-type-alias)
@@ -29,7 +30,9 @@ Added in v1.18.0
   - [FormTypeId](#formtypeid)
   - [FormTypeId (type alias)](#formtypeid-type-alias)
   - [MakeForm (type alias)](#makeform-type-alias)
-  - [make](#make)
+  - [MakeInputForm (type alias)](#makeinputform-type-alias)
+  - [derive](#derive)
+  - [deriveInput](#deriveinput)
 
 ---
 
@@ -42,13 +45,15 @@ Added in v1.18.0
 ```ts
 export type DerivedFromIO<
   R,
+  R2,
   E,
   I extends Readonly<Record<PropertyKey, any>>,
   O extends Readonly<Record<keyof I, any>>
 > = Form.Derived<
   R,
+  R2,
   {
-    readonly [K in keyof I]-?: FormEntry.FormEntry<E, I[K], O[K]>
+    readonly [K in keyof I]-?: FormEntry.FormEntry<never, E, I[K], O[K]>
   }
 >
 ```
@@ -60,7 +65,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare function Form<Entries extends Form.AnyEntries>(entries: Entries): Form<Entries>
+export declare function Form<Entries extends Form.AnyEntries>(entries: Entries): Form<Form.Context<Entries>, Entries>
 ```
 
 Added in v1.18.0
@@ -70,8 +75,14 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Form<Entries extends Form.AnyEntries>
-  extends Form.Base<Form.Error<Entries[keyof Entries]>, Form.Input<Entries>, Form.Output<Entries>, Entries> {}
+export interface Form<R, Entries extends Form.AnyEntries>
+  extends Form.Base<
+    R | Form.Context<Entries>,
+    Form.Error<Entries>,
+    Form.Input<Entries>,
+    Form.Output<Entries>,
+    Entries
+  > {}
 ```
 
 Added in v1.18.0
@@ -85,8 +96,8 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Base<E, I, O, Entries extends Form.AnyEntries>
-  extends Versioned.Versioned<never, never, never, E | ParseError, I, never, E | ParseError, I> {
+export interface Base<R, E, I, O, Entries extends Form.AnyEntries>
+  extends Versioned.Versioned<R, never, R | Scope.Scope, E | ParseError, I, R, E | ParseError, I> {
   readonly [FormTypeId]: FormTypeId
 
   readonly entries: Entries
@@ -95,7 +106,7 @@ export interface Base<E, I, O, Entries extends Form.AnyEntries>
 
   readonly get: <K extends keyof Entries>(key: K) => Entries[K]
 
-  readonly decoded: Computed<never, E | ParseError, O>
+  readonly decoded: RefSubject.Computed<R, E | ParseError, O>
 }
 ```
 
@@ -106,8 +117,8 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Derived<R, Entries extends AnyEntries> extends Form<Entries> {
-  readonly persist: Effect.Effect<R, Error<Entries>, Output<Entries>>
+export interface Derived<R, R2, Entries extends AnyEntries> extends Form<R, Entries> {
+  readonly persist: Effect.Effect<R2, Error<Entries>, Output<Entries>>
 }
 ```
 
@@ -129,23 +140,40 @@ Added in v1.18.0
 
 ```ts
 export type AnyEntry =
-  | FormEntry.FormEntry<any, any, any>
-  | FormEntry.FormEntry<never, any, any>
-  | FormEntry.FormEntry<any, never, any>
-  | FormEntry.FormEntry<never, never, any>
-  | Base<any, any, any, any>
+  | FormEntry.FormEntry<any, any, any, any>
+  | FormEntry.FormEntry<any, never, any, any>
+  | FormEntry.FormEntry<any, any, never, any>
+  | FormEntry.FormEntry<any, never, never, any>
+  | Base<any, any, any, any, any>
+  | Base<any, never, any, any, any>
+  | Base<any, any, never, any, any>
+  | Base<any, never, never, any, any>
 ```
 
 Added in v1.18.0
+
+### Context (type alias)
+
+**Signature**
+
+```ts
+export type Context<T> = [T] extends [FormEntry.FormEntry<infer R, infer _E, infer _I, infer _>]
+  ? R
+  : [T] extends [Base<infer _R, infer _E, infer _I, infer _O, infer _Entries>]
+    ? _R | Context<_Entries[keyof _Entries]>
+    : never
+```
+
+Added in v1.20.0
 
 ### Error (type alias)
 
 **Signature**
 
 ```ts
-export type Error<T> = [T] extends [FormEntry.FormEntry<infer E, infer _I, infer _>]
+export type Error<T> = [T] extends [FormEntry.FormEntry<infer _R, infer E, infer _I, infer _>]
   ? E
-  : [T] extends [Base<infer _E, infer _I, infer _O, infer _Entries>]
+  : [T] extends [Base<infer _R, infer _E, infer _I, infer _O, infer _Entries>]
     ? _E
     : never
 ```
@@ -157,9 +185,9 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Input<T> = [T] extends [FormEntry.FormEntry<infer _E, infer I, infer _>]
+export type Input<T> = [T] extends [FormEntry.FormEntry<infer _R, infer _E, infer I, infer _>]
   ? I
-  : T extends Form<infer Entries>
+  : T extends Form<infer _R, infer Entries>
     ? {
         readonly [K in keyof Entries]: Input<Entries[K]>
       }
@@ -177,9 +205,9 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Output<T> = [T] extends [FormEntry.FormEntry<infer _E, infer _I, infer O>]
+export type Output<T> = [T] extends [FormEntry.FormEntry<infer _R, infer _E, infer _I, infer O>]
   ? O
-  : T extends Form<infer Entries>
+  : T extends Form<infer _R, infer Entries>
     ? {
         readonly [K in keyof Entries]: Output<Entries[K]>
       }
@@ -199,8 +227,8 @@ Added in v1.18.0
 ```ts
 export type FormEntriesFromIO<E, I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = {
   readonly [K in keyof I]-?: [I[K], O[K]] extends [AnyObject, AnyObjectWithKeys<keyof I[K]>]
-    ? Form<[FormEntriesFromIO<E, I[K], O[K]>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never>
-    : FormEntry.FormEntry<E, I[K], O[K]>
+    ? Form<never, [FormEntriesFromIO<E, I[K], O[K]>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never>
+    : FormEntry.FormEntry<never, E, I[K], O[K]>
 }
 ```
 
@@ -212,6 +240,7 @@ Added in v1.18.0
 
 ```ts
 export type FormFromIO<E, I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = Form<
+  never,
   [FormEntriesFromIO<E, I, O>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 >
 ```
@@ -245,34 +274,77 @@ Added in v1.18.0
 ```ts
 export type MakeForm<I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = {
   <R, E>(
-    fx: RefSubject<R, E, O>
+    fx: RefSubject.RefSubject<R, E, O>
   ): Effect.Effect<
     R | Scope.Scope,
     never,
-    [DerivedFromIO<R, E, I, O>] extends [Form.Derived<infer R, infer R2>] ? Form.Derived<R, R2> : never
+    [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>]
+      ? Form.Derived<R, never, R2>
+      : never
   >
 
   <R, E>(
-    fx: Fx<R, E, O>
-  ): Effect.Effect<R | Scope.Scope, never, [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never>
-
-  <R, E>(
-    effect: Effect.Effect<R, E, O>
-  ): Effect.Effect<R, never, [FormFromIO<E, I, O>] extends [Form<infer R>] ? Form<R> : never>
+    fx: Fx<R, E, O> | Effect.Effect<R, E, O>
+  ): Effect.Effect<
+    R | Scope.Scope,
+    never,
+    [FormFromIO<E, I, O>] extends [Form<never, infer R>] ? Form<never, R> : never
+  >
 }
 ```
 
 Added in v1.18.0
 
-## make
+## MakeInputForm (type alias)
 
 **Signature**
 
 ```ts
-export declare function make<
+export type MakeInputForm<I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = {
+  <R, E>(
+    fx: RefSubject.RefSubject<R, E, I>
+  ): Effect.Effect<
+    R | Scope.Scope,
+    never,
+    [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>]
+      ? Form.Derived<R, never, R2>
+      : never
+  >
+
+  <R, E>(
+    fx: Fx<R, E, I> | Effect.Effect<R, E, I>
+  ): Effect.Effect<
+    R | Scope.Scope,
+    never,
+    [FormFromIO<E, I, O>] extends [Form<never, infer R>] ? Form<never, R> : never
+  >
+}
+```
+
+Added in v1.20.0
+
+## derive
+
+**Signature**
+
+```ts
+export declare function derive<
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>
 >(schema: S.Schema<I, O>): MakeForm<I, O>
+```
+
+Added in v1.20.0
+
+## deriveInput
+
+**Signature**
+
+```ts
+export declare function deriveInput<
+  I extends Partial<Readonly<Record<PropertyKey, any>>>,
+  O extends Partial<AnyObjectWithKeys<keyof I>>
+>(schema: S.Schema<I, O>): MakeInputForm<I, O>
 ```
 
 Added in v1.18.0

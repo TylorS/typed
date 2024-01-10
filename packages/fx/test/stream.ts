@@ -21,7 +21,7 @@ describe.concurrent(__filename, () => {
     it.concurrent("allows skipping values from the Fx", async () => {
       const inputs = Array.from({ length: 20 }, (_, i) => Fx.at(i, (i + 1) * 100))
 
-      const stream = FxStream.toStreamSliding(Fx.merge(inputs), 1)
+      const stream = FxStream.toStreamSliding(Fx.mergeAll(inputs), 1)
 
       const test = Effect.gen(function*(_) {
         const pull = yield* _(Stream.toPull(stream))
@@ -31,7 +31,7 @@ describe.concurrent(__filename, () => {
           Pull.schedule(
             pull,
             Schedule.spaced(250),
-            Sink.Sink(Effect.failCause, (a) => Effect.sync(() => values.push(a)))
+            Sink.make(Effect.failCause, (a) => Effect.sync(() => values.push(a)))
           ),
           Effect.fork
         )
@@ -49,9 +49,9 @@ describe.concurrent(__filename, () => {
     })
   })
 
-  describe.concurrent(FxStream.chunked, () => {
+  describe.concurrent(FxStream.fromStreamChunked, () => {
     it.concurrent("converts a Stream into an Fx of chunks", async () => {
-      const stream = FxStream.chunked(Stream.fromIterable([1, 2, 3]))
+      const stream = FxStream.fromStreamChunked(Stream.fromIterable([1, 2, 3]))
 
       const actual = await Effect.runPromise(Fx.toReadonlyArray(stream))
 

@@ -8,7 +8,7 @@ import type { Placeholder } from "./Placeholder.js"
 /**
  * @since 1.0.0
  */
-export const EventHandlerTypeId = Symbol.for("./EventHandler.js")
+export const EventHandlerTypeId = Symbol.for("@typed/template/EventHandler")
 /**
  * @since 1.0.0
  */

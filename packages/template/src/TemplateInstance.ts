@@ -8,14 +8,14 @@ import type * as Versioned from "@typed/fx/Versioned"
 import type { Rendered } from "@typed/wire"
 import type { NoSuchElementException } from "effect/Cause"
 import type * as Effect from "effect/Effect"
+import type { Scope } from "effect/Scope"
 import { type ElementRef, ElementRefTypeId } from "./ElementRef.js"
-import type { Placeholder } from "./Placeholder.js"
 import type { RenderEvent } from "./RenderEvent.js"
 
 /**
  * @since 1.0.0
  */
-export const TemplateInstanceTypeId = Symbol.for("./TemplateInstance.js")
+export const TemplateInstanceTypeId = Symbol.for("@typed/template/TemplateInstance")
 /**
  * @since 1.0.0
  */
@@ -25,7 +25,7 @@ export type TemplateInstanceTypeId = typeof TemplateInstanceTypeId
  * @since 1.0.0
  */
 export interface TemplateInstance<E, T extends Rendered = Rendered>
-  extends Versioned.Versioned<never, never, never, E, RenderEvent, never, E | NoSuchElementException, T>
+  extends Versioned.Versioned<never, never, Scope, E, RenderEvent, never, E | NoSuchElementException, T>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId
 
@@ -42,16 +42,16 @@ export interface TemplateInstance<E, T extends Rendered = Rendered>
  * @since 1.0.0
  */
 export function TemplateInstance<T extends Rendered = Rendered, E = never>(
-  events: Fx.Fx<never, E, RenderEvent>,
+  events: Fx.Fx<Scope, E, RenderEvent>,
   ref: ElementRef<T>
 ): TemplateInstance<E, T> {
   return new TemplateInstanceImpl(events, ref) as any
 }
 
-// @ts-expect-error placeholder issues
+// @ts-expect-error does not implement Placeholder
 class TemplateInstanceImpl<E, T extends Rendered>
-  extends FxEffectBase<never, E, RenderEvent, never, E | NoSuchElementException, T>
-  implements Omit<TemplateInstance<E, T>, keyof Placeholder<never, E, RenderEvent>>
+  extends FxEffectBase<Scope, E, RenderEvent, never, E | NoSuchElementException, T>
+  implements TemplateInstance<E, T>
 {
   readonly [TemplateInstanceTypeId]: TemplateInstanceTypeId = TemplateInstanceTypeId
   query: TemplateInstance<E, T>["query"]
@@ -61,7 +61,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
   version: Effect.Effect<never, never, number>
 
   constructor(
-    readonly i0: Fx.Fx<never, E, RenderEvent>,
+    readonly i0: Fx.Fx<Scope, E, RenderEvent>,
     readonly i1: ElementRef<T>
   ) {
     super()
@@ -73,7 +73,7 @@ class TemplateInstanceImpl<E, T extends Rendered>
     this.version = this.i1[ElementRefTypeId].version
   }
 
-  toFx(): Fx.Fx<never, E, RenderEvent> {
+  toFx(): Fx.Fx<Scope, E, RenderEvent> {
     return this.i0
   }
 

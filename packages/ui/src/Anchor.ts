@@ -9,11 +9,11 @@ import type { DefaultEventMap, ElementSource } from "@typed/template/ElementSour
 import * as EventHandler from "@typed/template/EventHandler"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
-import type { TemplateFx } from "@typed/template/RenderTemplate"
-import { html } from "@typed/template/RenderTemplate"
+import type { RenderEvent } from "@typed/template/RenderEvent"
+import { html, type RenderTemplate } from "@typed/template/RenderTemplate"
 import type { Rendered } from "@typed/wire"
 import type { ReadonlyRecord, Scope } from "effect"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { uncapitalize } from "effect/String"
 import type { HTMLAnchorElementProperties } from "./internal/dom-properties.js"
 
@@ -22,14 +22,14 @@ import type { HTMLAnchorElementProperties } from "./internal/dom-properties.js"
  */
 export type AnchorProps =
   & {
-    readonly [K in keyof HTMLAnchorElementProperties]:
+    readonly [K in keyof HTMLAnchorElementProperties]?:
       | HTMLAnchorElementProperties[K]
       | Placeholder.Any<HTMLAnchorElementProperties[K]>
-      | Directive.Directive<any, any>
+      | undefined
   }
   & {
-    readonly ref?: (ref: ElementSource<HTMLAnchorElement>) => Effect.Effect<any, any, any>
-    readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>>
+    readonly ref?: ((ref: ElementSource<HTMLAnchorElement>) => Effect.Effect<any, any, any>) | undefined
+    readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
   }
   & EventHandlerProps<HTMLAnchorElement>
 
@@ -58,60 +58,52 @@ export function Anchor<
 >(
   props: Props,
   ...children: Children
-): TemplateFx<
-  Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
+): Fx.Fx<
+  RenderTemplate | Scope.Scope | Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
   Placeholder.Error<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
-  HTMLAnchorElement
+  RenderEvent
 > {
-  const ref = Directive.ref(({ value: ref }) =>
-    Effect.gen(function*(_) {
-      yield* _(addEventListeners(props, ref))
+  const {
+    data,
+    hash,
+    host,
+    hostname,
+    href,
+    hreflang,
+    pathname,
+    port,
+    protocol,
+    ref,
+    scrollLeft,
+    scrollTop,
+    search,
+    ...rest
+  } = props
 
-      if (props.ref) {
-        yield* _(props.ref(ref as any))
+  const refDirective = Directive.ref(({ value }) =>
+    Effect.gen(function*(_) {
+      yield* _(addEventListeners(props, value))
+
+      if (ref) {
+        yield* _(ref(value as any))
       }
     })
   )
   return html`<a 
-    ref="${ref}"
-    .data="${props.data}"
-    ?hidden="${props.hidden}"
-    ?hidefocus="${props.hideFocus}"
-    ?spellcheck="${props.spellcheck}"
-    .scrollLeft="${props.scrollLeft}"
-    .scrollTop="${props.scrollTop}"
-    accesskey="${props.accessKey}"
-    charset="${props.charset}"
-    class="${props.className}"
-    contenteditable="${props.contentEditable}"
-    coords="${props.coords}"
-    dir="${props.dir}"
-    download="${props.download}"
-    draggable="${props.draggable}"
-    .hash="${props.hash}"
-    .host="${props.host}"
-    .hostname="${props.hostname}"
-    .href="${props.href}"
-    hreflang="${props.hreflang}"
-    id="${props.id}"
-    id="${props.id}" 
-    lang="${props.lang}"
-    Methods="${props.Methods}"
-    name="${props.name}"
-    .pathname="${props.pathname}"
-    .port="${props.port}"
-    .protocol="${props.protocol}"
-    rel="${props.rel}"
-    rev="${props.rev}"
-    .search="${props.search}"
-    shape="${props.shape}"
-    slot="${props.slot}"
-    tabindex="${props.tabIndex}"
-    target="${props.target}"
-    text="${props.text}"
-    title="${props.title}"
-    type="${props.type}"
-    urn="${props.urn}"
+    ref="${refDirective}"
+    .props="${rest}"
+    .data="${data}"
+    .scrollLeft="${scrollLeft}"
+    .scrollTop="${scrollTop}"
+    .hash="${hash}"
+    .host="${host}"
+    .hostname="${hostname}"
+    .href="${href}"
+    .hreflang="${hreflang}"
+    .pathname="${pathname}"
+    .port="${port}"
+    .protocol="${protocol}"
+    .search="${search}"
   >${children}</a>` as any
 }
 
@@ -123,7 +115,7 @@ export function addEventListeners<Props extends EventHandlerProps<any>, T extend
   ref: ElementSource<T>
 ): Effect.Effect<Scope.Scope | GetEventHandlersContext<Props>, never, void> {
   return Fx.forkScoped(
-    Fx.merge(
+    Fx.mergeAll(
       getEventHandlers(props).map(([type, handler]: any) => addEventListener(ref, type, handler))
     )
   ) as any

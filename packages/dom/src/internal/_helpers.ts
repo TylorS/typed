@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
+import type * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
-import * as Scope from "effect/Scope"
+import type * as Scope from "effect/Scope"
 import type * as TQS from "typed-query-selector/parser"
 
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
@@ -33,15 +33,8 @@ export function createScopedRuntime<R>(): Effect.Effect<
     const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
     const scope = yield* _(Effect.scope)
     const runFork = Runtime.runFork(runtime)
-
     const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => {
-      const fiber: Fiber.Fiber<E, A> = Scope.addFinalizer(
-        scope,
-        Effect.suspend(() => fiber ? Fiber.interrupt(fiber) : Effect.unit)
-      ).pipe(
-        Effect.zipRight(effect),
-        runFork
-      )
+      const fiber: Fiber.Fiber<E, A> = runFork(Effect.fromFiberEffect(Effect.forkIn(effect, scope)))
 
       return fiber
     }

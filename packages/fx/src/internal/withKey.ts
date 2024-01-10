@@ -1,92 +1,82 @@
 import * as Effect from "effect/Effect"
-import { equals } from "effect/Equal"
-import * as Fiber from "effect/Fiber"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Option from "effect/Option"
-import * as Scope from "effect/Scope"
-import type { Fx, FxInput } from "../Fx.js"
+import type * as Scope from "effect/Scope"
+
+import type { Fx, WithKeyOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"
-import * as core from "./core.js"
-import { adjustTime } from "./helpers.js"
-import { run } from "./run.js"
+import { withSwitchFork } from "./helpers.js"
+import { FxBase } from "./protos.js"
 
-export function withKey<R, E, A, B, R2, E2, C>(
+export function withKey<R, E, A, B extends PropertyKey, R2, E2, C>(
   fx: Fx<R, E, A>,
-  getKey: (a: A) => B,
-  onValue: (ref: RefSubject.RefSubject<never, never, A>, key: B) => FxInput<R2, E2, C>
-): Fx<R | R2, E | E2, C> {
-  return core.withScopedFork(({ fork, scope, sink }) =>
-    Effect.gen(function*(_) {
-      let current: Option.Option<
-        [B, { value: A }, RefSubject.RefSubject<never, never, A>, Fiber.Fiber<never, unknown>]
-      > = Option.none()
+  options: WithKeyOptions<A, B, R2, E2, C>
+): Fx<R | R2 | Scope.Scope, E | E2, C> {
+  return new WithKey(fx, options)
+}
 
-      const lock = (yield* _(Effect.makeSemaphore(1))).withPermits(1)
+class WithKey<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | Scope.Scope, E | E2, C> {
+  constructor(readonly fx: Fx<R, E, A>, readonly options: WithKeyOptions<A, B, R2, E2, C>) {
+    super()
+  }
 
-      const make = (a: A) =>
-        Effect.uninterruptibleMask((restore) =>
-          Effect.gen(function*(_) {
-            const key = getKey(a)
-            // We use a simple mutable object to track the current value
-            // of the state coming from the "outside", such that any internal
-            // usage of RefSubject.delete will reset to the latest value emitted
-            // from here.
-            const currentValue = { value: a }
-            const ref = yield* _(
-              RefSubject.fromEffect(Effect.sync(() => currentValue.value)),
-              Effect.provideService(Scope.Scope, scope)
-            )
-            const fiber = yield* _(
-              run(core.from(onValue(ref, key)), sink),
-              restore,
-              fork
-            )
+  run<R3>(sink: Sink.Sink<R3, E | E2, C>) {
+    return runWithKey(this.fx, this.options, sink)
+  }
+}
 
-            // Save our state
-            current = Option.some([key, currentValue, ref, fiber])
+function runWithKey<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
+  fx: Fx<R, E, A>,
+  options: WithKeyOptions<A, B, R2, E2, C>,
+  sink: Sink.Sink<R3, E | E2, C>
+) {
+  return withSwitchFork((fork) => {
+    let previous: Option.Option<WithKeyState<A, B>> = Option.none()
 
-            // Allow our Fibers to start
-            yield* _(adjustTime(1))
-          })
-        )
+    const run = fx.run(Sink.make(
+      (cause) => sink.onFailure(cause),
+      (value) =>
+        Effect.gen(function*(_) {
+          const key = options.getKey(value)
 
-      yield* _(run(
-        fx,
-        Sink.WithContext(
-          sink.onFailure,
-          (a) =>
-            lock(Effect.gen(function*(_) {
-              if (Option.isNone(current)) {
-                yield _(make(a))
-              } else {
-                const [key, currentValue, ref, fiber] = current.value
+          // We don't need to do anything if the key is the same as the previous one
+          if (Option.isSome(previous)) {
+            const prev = previous.value
 
-                if (equals(key, getKey(a))) {
-                  // Key didn't change, so we just set an updated value.
+            // If the key is the same, we just need to update the value
+            if (prev.key === key) {
+              prev.value = value
+              yield* _(RefSubject.set(prev.ref, value))
+              return
+            } else {
+              // Otherwise, we need to remove the previous value
+              yield* _(prev.ref.interrupt)
+            }
+          }
 
-                  currentValue.value = a
-                  yield* _(ref.set(a))
-                } else {
-                  // Cleanup previous resources
-                  yield* _(Fiber.interrupt(fiber))
+          const ref = yield* _(RefSubject.fromEffect(Effect.sync(() => state.value)))
 
-                  // Create a new RefSubject
-                  yield* _(make(a))
-                }
-              }
-            }))
-        )
-      ))
+          // Create a new state
+          const state: WithKeyState<A, B> = {
+            value,
+            key,
+            ref
+          }
 
-      if (Option.isSome(current)) {
-        const [, , ref, fiber] = current.value
+          previous = Option.some(state)
 
-        // Signal there will be no more input events
-        yield* _(fork(ref.interrupt))
+          // Create a new listener
+          yield* _(fork(options.onValue(state.ref, state.key).run(sink)))
+        })
+    ))
 
-        // Wait for the last Fiber to complete
-        yield* _(Effect.fromFiber(fiber))
-      }
-    })
-  )
+    return Effect.flatMap(run, () => Option.isSome(previous) ? previous.value.ref.interrupt : Effect.unit)
+  }, ExecutionStrategy.sequential)
+}
+
+type WithKeyState<A, B> = {
+  value: A
+  key: B
+  ref: RefSubject.RefSubject<never, never, A>
 }

@@ -19,10 +19,12 @@ Added in v1.0.0
   - [CurrentEnvironment (type alias)](#currentenvironment-type-alias)
   - [Environment](#environment)
   - [Environment (type alias)](#environment-type-alias)
-  - [isBrowser](#isbrowser)
+  - [isDom](#isdom)
   - [isServer](#isserver)
+  - [isServiceWorker](#isserviceworker)
   - [isStatic](#isstatic)
   - [isTest](#istest)
+  - [isWebWorker](#iswebworker)
 
 ---
 
@@ -54,10 +56,12 @@ Added in v1.0.0
 
 ```ts
 export declare const Environment: {
-  readonly browser: "browser"
+  readonly dom: "dom"
   readonly server: "server"
+  readonly serviceWorker: "serviceWorker"
   readonly static: "static"
   readonly test: "test"
+  readonly webWorker: "webWorker"
 }
 ```
 
@@ -68,17 +72,17 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Environment = "browser" | "server" | "static" | "test"
+export type Environment = "dom" | "server" | "serviceWorker" | "static" | "test" | "webWorker"
 ```
 
 Added in v1.0.0
 
-## isBrowser
+## isDom
 
 **Signature**
 
 ```ts
-export declare const isBrowser: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isDom: Effect.Effect<CurrentEnvironment, never, boolean>
 ```
 
 Added in v1.0.0
@@ -89,6 +93,16 @@ Added in v1.0.0
 
 ```ts
 export declare const isServer: Effect.Effect<CurrentEnvironment, never, boolean>
+```
+
+Added in v1.0.0
+
+## isServiceWorker
+
+**Signature**
+
+```ts
+export declare const isServiceWorker: Effect.Effect<CurrentEnvironment, never, boolean>
 ```
 
 Added in v1.0.0
@@ -109,6 +123,16 @@ Added in v1.0.0
 
 ```ts
 export declare const isTest: Effect.Effect<CurrentEnvironment, never, boolean>
+```
+
+Added in v1.0.0
+
+## isWebWorker
+
+**Signature**
+
+```ts
+export declare const isWebWorker: Effect.Effect<CurrentEnvironment, never, boolean>
 ```
 
 Added in v1.0.0

@@ -6,11 +6,21 @@
  */
 
 import type { Effect } from "effect"
-import { Cause, Data, Equal, Equivalence, Exit, Option, Unify } from "effect"
+import * as Cause from "effect/Cause"
+import * as Data from "effect/Data"
+import * as Duration from "effect/Duration"
+import * as Either from "effect/Either"
+import * as Equal from "effect/Equal"
+import * as Equivalence from "effect/Equivalence"
+import * as Exit from "effect/Exit"
 import { dual } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Unify from "effect/Unify"
 import * as internal from "./internal/async-data.js"
 import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag.js"
 import * as Progress from "./Progress.js"
+
+const getCurrentTimestamp = () => Date.now()
 
 /**
  * AsyncData represents a piece of data which is acquired asynchronously with loading, failure, and progress states
@@ -107,6 +117,7 @@ export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
  * @since 1.0.0
  */
 export type LoadingOptions = {
+  readonly timestamp: number // Date.now()
   readonly progress: Option.Option<Progress.Progress>
 }
 
@@ -125,6 +136,7 @@ export const loading: {
   <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
 } = (options?: OptionalPartial<LoadingOptions>): Loading =>
   new Loading({
+    timestamp: options?.timestamp ?? getCurrentTimestamp(),
     progress: Option.fromNullable(options?.progress)
   })
 
@@ -141,6 +153,11 @@ export interface Failure<E> extends Effect.Effect<never, E, never> {
    * @since 1.18.0
    */
   readonly cause: Cause.Cause<E>
+
+  /**
+   * @since 1.20.0
+   */
+  readonly timestamp: number // Date.now()
 
   /**
    * @since 1.18.0
@@ -167,6 +184,7 @@ export interface Failure<E> extends Effect.Effect<never, E, never> {
  * @since 1.0.0
  */
 export type FailureOptions = {
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 }
 
@@ -179,6 +197,7 @@ export const failCause: {
 } = <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E> =>
   new internal.FailureImpl(
     cause,
+    options?.timestamp ?? getCurrentTimestamp(),
     Option.fromNullable(options?.refreshing)
   )
 
@@ -196,6 +215,10 @@ export const fail: {
 export interface Success<A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
+  /**
+   * @since 1.20.0
+   */
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 
   readonly [Unify.typeSymbol]: unknown
@@ -207,6 +230,7 @@ export interface Success<A> extends Effect.Effect<never, never, A> {
  * @since 1.0.0
  */
 export type SuccessOptions = {
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 }
 
@@ -219,6 +243,7 @@ export const success: {
 } = <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A> =>
   new internal.SuccessImpl(
     value,
+    options?.timestamp ?? getCurrentTimestamp(),
     Option.fromNullable(options?.refreshing)
   )
 
@@ -400,6 +425,7 @@ const optionProgressEq = Option.getEquivalence(Progress.equals)
 
 const loadingEquivalence: Equivalence.Equivalence<Loading> = Equivalence.struct({
   _tag: Equivalence.string,
+  timestamp: Equivalence.number,
   progress: optionProgressEq
 })
 
@@ -408,6 +434,7 @@ const optionLoadingEq = Option.getEquivalence(loadingEquivalence)
 const failureEquivalence: Equivalence.Equivalence<Failure<any>> = Equivalence.struct({
   _tag: Equivalence.string,
   cause: Equal.equals,
+  timestamp: Equivalence.number,
   refreshing: optionLoadingEq
 })
 
@@ -415,6 +442,7 @@ const successEquivalence = <A>(valueEq: Equivalence.Equivalence<A>): Equivalence
   Equivalence.struct({
     _tag: Equivalence.string,
     value: valueEq,
+    timestamp: Equivalence.number,
     refreshing: optionLoadingEq
   })
 
@@ -432,3 +460,73 @@ export const getEquivalence =
       Success: (_, s1) => isSuccess(b) ? successEquivalence(valueEq)(s1, b) : false
     })
   }
+
+/**
+ * @since 1.0.0
+ */
+export function fromExit<E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> {
+  return Exit.match(exit, {
+    onFailure: (cause) => failCause(cause),
+    onSuccess: (value) => success(value)
+  })
+}
+
+/**
+ * @since 1.0.0
+ */
+export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A> {
+  return Either.match(either, {
+    onLeft: (e) => fail(e),
+    onRight: (a) => success(a)
+  })
+}
+
+const isAsyncDataFirst = (args: IArguments) => args.length === 3 || isAsyncData(args[0])
+
+/**
+ * @since 1.0.0
+ */
+export const isExpired: {
+  (ttl: Duration.DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
+  <E, A>(data: AsyncData<E, A>, ttl: Duration.DurationInput, now?: number): boolean
+} = dual(isAsyncDataFirst, function isExpired<E, A>(
+  data: AsyncData<E, A>,
+  ttl: Duration.DurationInput,
+  now: number = getCurrentTimestamp()
+): boolean {
+  return match(data, {
+    NoData: () => true,
+    Loading: () => false,
+    Failure: (_, f) =>
+      Option.isNone(f.refreshing)
+        ? isPastTTL(f.timestamp, ttl, now)
+        : isPastTTL(f.refreshing.value.timestamp, ttl, now),
+    Success: (_, s) =>
+      Option.isNone(s.refreshing)
+        ? isPastTTL(s.timestamp, ttl, now) :
+        isPastTTL(s.refreshing.value.timestamp, ttl, now)
+  })
+})
+
+function isPastTTL(timestamp: number, ttl: Duration.DurationInput, now: number): boolean {
+  const millis = Duration.toMillis(ttl)
+
+  return now - timestamp > millis
+}
+
+/**
+ * Checks if two AsyncData are equal, disregarding the timestamps associated with them. Useful for testing
+ * without needing to manage timestamps.
+ *
+ * @since 1.0.0
+ */
+export function dataEqual<E, A>(first: AsyncData<E, A>, second: AsyncData<E, A>): boolean {
+  return match(first, {
+    NoData: () => isNoData(second),
+    Loading: (l) => isLoading(second) && Equal.equals(l.progress, second.progress),
+    Failure: (_, f1) =>
+      isFailure(second) && Equal.equals(f1.cause, second.cause) && Equal.equals(f1.refreshing, second.refreshing),
+    Success: (_, s1) =>
+      isSuccess(second) && Equal.equals(s1.value, second.value) && Equal.equals(s1.refreshing, second.refreshing)
+  })
+}

@@ -5,6 +5,9 @@
       "path": "packages/async-data"
     },
     {
+      "path": "packages/compiler"
+    },
+    {
       "path": "packages/context"
     },
     {
