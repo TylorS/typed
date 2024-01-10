@@ -78,7 +78,7 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2
       effect:
-        specifier: 2.0.3
+        specifier: ^2.0.3
         version: 2.0.3
       eslint:
         specifier: ^8.56.0
@@ -133,7 +133,7 @@ importers:
         version: 1.4.1(typescript@5.3.3)(vite@5.0.11)
       vitest:
         specifier: 1.1.3
-        version: 1.1.3(@types/node@20.10.8)
+        version: 1.1.3(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
 
   examples/counter:
     dependencies:
@@ -297,11 +297,11 @@ importers:
   packages/async-data:
     dependencies:
       '@effect/schema':
-        specifier: 0.57.1
-        version: 0.57.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
       fast-check:
         specifier: ^3.15.0
         version: 3.15.0
@@ -313,21 +313,21 @@ importers:
   packages/context:
     dependencies:
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/dom:
     dependencies:
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@typed/context':
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
@@ -339,18 +339,18 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/fx:
     dependencies:
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@effect/typeclass':
-        specifier: 0.21.0
-        version: 0.21.0(effect@2.0.0-next.62)
+        specifier: 0.22.3
+        version: 0.22.3(effect@2.0.3)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../async-data/dist
@@ -358,8 +358,8 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -381,21 +381,21 @@ importers:
   packages/id:
     dependencies:
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/navigation:
     dependencies:
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -409,14 +409,14 @@ importers:
         specifier: workspace:*
         version: link:../id/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     devDependencies:
       '@virtualstate/navigation':
         specifier: 1.0.1-alpha.199
         version: 1.0.1-alpha.199
       happy-dom:
-        specifier: 12.10.3
+        specifier: ^12.10.3
         version: 12.10.3
     publishDirectory: dist
 
@@ -436,8 +436,8 @@ importers:
         specifier: workspace:*
         version: link:../path/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
@@ -467,18 +467,18 @@ importers:
         specifier: workspace:*
         version: link:../route/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/template:
     dependencies:
       '@effect/platform':
-        specifier: 0.40.1
-        version: 0.40.1(@effect/schema@0.56.1)(effect@2.0.0-next.62)
+        specifier: ^0.41.0
+        version: 0.41.0(@effect/schema@0.59.1)(effect@2.0.3)
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -495,8 +495,8 @@ importers:
         specifier: workspace:*
         version: link:../wire/dist
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
@@ -506,13 +506,13 @@ importers:
     devDependencies:
       '@vitest/browser':
         specifier: ^1.1.0
-        version: 1.1.0(vitest@1.1.0)
+        version: 1.1.0(vitest@1.1.3)
       happy-dom:
         specifier: ^12.10.3
         version: 12.10.3
       vitest:
-        specifier: 1.1.0
-        version: 1.1.0(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
+        specifier: 1.1.3
+        version: 1.1.3(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -520,11 +520,11 @@ importers:
   packages/ui:
     dependencies:
       '@effect/platform':
-        specifier: ^0.39.0
-        version: 0.39.0(@effect/schema@0.56.1)(effect@2.0.0-next.62)
+        specifier: ^0.41.0
+        version: 0.41.0(@effect/schema@0.59.1)(effect@2.0.3)
       '@effect/schema':
-        specifier: 0.56.1
-        version: 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
+        specifier: 0.59.1
+        version: 0.59.1(effect@2.0.3)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -553,8 +553,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       effect:
-        specifier: 2.0.0-next.62
-        version: 2.0.0-next.62
+        specifier: ^2.0.3
+        version: 2.0.3
     publishDirectory: dist
 
   packages/wire:
@@ -2122,14 +2122,14 @@ packages:
       path-browserify: 1.0.1
     dev: false
 
-  /@effect/platform@0.40.1(@effect/schema@0.56.1)(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-2foUmR0kn59S82ETFEDFaXTaOsb0KoQaGMYpfByErZzrMXF8yzf4j/mFHV0zO/sSxWKmMWb249wn0PclcgU3zw==}
+  /@effect/platform@0.41.0(@effect/schema@0.59.1)(effect@2.0.3):
+    resolution: {integrity: sha512-iR5sFcFubZRLTsvZiL6gOlIvD/FPFq47t2D+ju8bxfO7I5ZwapoogHWSGOU1PrhvRZNplPxJiUK18miNVi0ZFg==}
     peerDependencies:
-      '@effect/schema': ^0.57.1
-      effect: ^2.0.1
+      '@effect/schema': ^0.59.1
+      effect: ^2.0.3
     dependencies:
-      '@effect/schema': 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
-      effect: 2.0.0-next.62
+      '@effect/schema': 0.59.1(effect@2.0.3)(fast-check@3.15.0)
+      effect: 2.0.3
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
@@ -2144,22 +2144,14 @@ packages:
       effect: 2.0.0-next.62
       fast-check: 3.15.0
 
-  /@effect/schema@0.57.1(effect@2.0.0-next.62)(fast-check@3.15.0):
-    resolution: {integrity: sha512-lVhMcLhl6L3oXD3uv5xiy0fSsdzAPijX1WzebHpITwrerh3+7IJU5WOogrBEGOJmT2BzvM0KInzFAkLm/p50Og==}
+  /@effect/schema@0.59.1(effect@2.0.3)(fast-check@3.15.0):
+    resolution: {integrity: sha512-dighL1fSjOLNupETYaN4hvUo9zxvdi4w+lgJ9lHKYFZapaFxR2f8ZKB2WunsSGnF5mCyWLDS3GMtfLeqz2I2ug==}
     peerDependencies:
-      effect: ^2.0.1
+      effect: ^2.0.3
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.62
+      effect: 2.0.3
       fast-check: 3.15.0
-    dev: false
-
-  /@effect/typeclass@0.21.0(effect@2.0.0-next.62):
-    resolution: {integrity: sha512-J0UU0lZqILcjt/6x1a7ykf608NlO45Mg3rajgjifMRONTc4ANDPBTLE6/e2eknwS/unIVX6LJFEZEPotfQIe6Q==}
-    peerDependencies:
-      effect: 2.0.0-next.62
-    dependencies:
-      effect: 2.0.0-next.62
     dev: false
 
   /@effect/typeclass@0.22.3(effect@2.0.3):
@@ -2168,7 +2160,6 @@ packages:
       effect: ^2.0.3
     dependencies:
       effect: 2.0.3
-    dev: true
 
   /@esbuild/aix-ppc64@0.19.11:
     resolution: {integrity: sha512-FnzU0LyE3ySQk7UntJO4+qIiQgI7KoODnZg5xzXIrFJlKd2P2gwHsHY4927xj9y5PJmJSzULiUCWmv7iWnNa7g==}
@@ -3762,7 +3753,7 @@ packages:
       - supports-color
     dev: true
 
-  /@vitest/browser@1.1.0(vitest@1.1.0):
+  /@vitest/browser@1.1.0(vitest@1.1.3):
     resolution: {integrity: sha512-59Uwoiw/zAQPmqgIKrzev8HNfeNlD8Q/nDyP9Xqg1D3kaM0tcOT/wk5RnZFW5f0JdguK0c1+vSeOPUSrOja1hQ==}
     peerDependencies:
       playwright: '*'
@@ -3780,7 +3771,7 @@ packages:
       estree-walker: 3.0.3
       magic-string: 0.30.5
       sirv: 2.0.4
-      vitest: 1.1.0(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
+      vitest: 1.1.3(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
     dev: true
 
   /@vitest/coverage-v8@1.1.3(vitest@1.1.3):
@@ -3801,17 +3792,9 @@ packages:
       std-env: 3.7.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.1.3(@types/node@20.10.8)
+      vitest: 1.1.3(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3)
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /@vitest/expect@1.1.0:
-    resolution: {integrity: sha512-9IE2WWkcJo2BR9eqtY5MIo3TPmS50Pnwpm66A6neb2hvk/QSLfPXBz2qdiwUOQkwyFuuXEUj5380CbwfzW4+/w==}
-    dependencies:
-      '@vitest/spy': 1.1.0
-      '@vitest/utils': 1.1.0
-      chai: 4.3.10
     dev: true
 
   /@vitest/expect@1.1.3:
@@ -3822,28 +3805,12 @@ packages:
       chai: 4.4.0
     dev: true
 
-  /@vitest/runner@1.1.0:
-    resolution: {integrity: sha512-zdNLJ00pm5z/uhbWF6aeIJCGMSyTyWImy3Fcp9piRGvueERFlQFbUwCpzVce79OLm2UHk9iwaMSOaU9jVHgNVw==}
-    dependencies:
-      '@vitest/utils': 1.1.0
-      p-limit: 5.0.0
-      pathe: 1.1.1
-    dev: true
-
   /@vitest/runner@1.1.3:
     resolution: {integrity: sha512-Va2XbWMnhSdDEh/OFxyUltgQuuDRxnarK1hW5QNN4URpQrqq6jtt8cfww/pQQ4i0LjoYxh/3bYWvDFlR9tU73g==}
     dependencies:
       '@vitest/utils': 1.1.3
       p-limit: 5.0.0
       pathe: 1.1.1
-    dev: true
-
-  /@vitest/snapshot@1.1.0:
-    resolution: {integrity: sha512-5O/wyZg09V5qmNmAlUgCBqflvn2ylgsWJRRuPrnHEfDNT6tQpQ8O1isNGgo+VxofISHqz961SG3iVvt3SPK/QQ==}
-    dependencies:
-      magic-string: 0.30.5
-      pathe: 1.1.1
-      pretty-format: 29.7.0
     dev: true
 
   /@vitest/snapshot@1.1.3:
@@ -3854,24 +3821,10 @@ packages:
       pretty-format: 29.7.0
     dev: true
 
-  /@vitest/spy@1.1.0:
-    resolution: {integrity: sha512-sNOVSU/GE+7+P76qYo+VXdXhXffzWZcYIPQfmkiRxaNCSPiLANvQx5Mx6ZURJ/ndtEkUJEpvKLXqAYTKEY+lTg==}
-    dependencies:
-      tinyspy: 2.2.0
-    dev: true
-
   /@vitest/spy@1.1.3:
     resolution: {integrity: sha512-Ec0qWyGS5LhATFQtldvChPTAHv08yHIOZfiNcjwRQbFPHpkih0md9KAbs7TfeIfL7OFKoe7B/6ukBTqByubXkQ==}
     dependencies:
       tinyspy: 2.2.0
-    dev: true
-
-  /@vitest/utils@1.1.0:
-    resolution: {integrity: sha512-z+s510fKmYz4Y41XhNs3vcuFTFhcij2YF7F8VQfMEYAAUfqQh0Zfg7+w9xdgFGhPf3tX3TicAe+8BDITk6ampQ==}
-    dependencies:
-      diff-sequences: 29.6.3
-      loupe: 2.3.7
-      pretty-format: 29.7.0
     dev: true
 
   /@vitest/utils@1.1.3:
@@ -3904,11 +3857,6 @@ packages:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
       acorn: 8.11.3
-    dev: true
-
-  /acorn-walk@8.3.0:
-    resolution: {integrity: sha512-FS7hV565M5l1R08MXqo8odwMTB02C2UqzB17RVgu9EyuYFBqJZ3/ZY97sQD5FewVu1UyDFc1yztUDrAwT0EypA==}
-    engines: {node: '>=0.4.0'}
     dev: true
 
   /acorn-walk@8.3.1:
@@ -4294,19 +4242,6 @@ packages:
 
   /caniuse-lite@1.0.30001576:
     resolution: {integrity: sha512-ff5BdakGe2P3SQsMsiqmt1Lc8221NR1VzHj5jXN5vBny9A6fpze94HiVV/n7XRosOlsShJcvMv5mdnpjOGCEgg==}
-    dev: true
-
-  /chai@4.3.10:
-    resolution: {integrity: sha512-0UXG04VuVbruMUYbJ6JctvH0YnC/4q3/AkT18q4NaITo91CUm0liMS9VqzT9vZhVQ/1eqPanMWjBM+Juhfb/9g==}
-    engines: {node: '>=4'}
-    dependencies:
-      assertion-error: 1.1.0
-      check-error: 1.0.3
-      deep-eql: 4.1.3
-      get-func-name: 2.0.2
-      loupe: 2.3.7
-      pathval: 1.1.1
-      type-detect: 4.0.8
     dev: true
 
   /chai@4.4.0:
@@ -5004,7 +4939,6 @@ packages:
 
   /effect@2.0.3:
     resolution: {integrity: sha512-I/XvcbHypegNFWCr/arbfIR6pA+8JpSqv9wS4xOrgXypQMRj8H3wRorTcUiPmcQ0e6Ko67CdI2XZpjx7z0Ev/A==}
-    dev: true
 
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
@@ -8295,10 +8229,6 @@ packages:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
     dev: true
 
-  /std-env@3.6.0:
-    resolution: {integrity: sha512-aFZ19IgVmhdB2uX599ve2kE6BIE3YMnQ6Gp6BURhW/oIzpXGKr878TQfAQZn1+i0Flcc/UKUy1gOlcfaUBCryg==}
-    dev: true
-
   /std-env@3.7.0:
     resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
     dev: true
@@ -9021,27 +8951,6 @@ packages:
       builtins: 5.0.1
     dev: true
 
-  /vite-node@1.1.0(@types/node@20.10.8):
-    resolution: {integrity: sha512-jV48DDUxGLEBdHCQvxL1mEh7+naVy+nhUUUaPAZLd3FJgXuxQiewHcfeZebbJ6onDqNGkP4r3MhQ342PRlG81Q==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    dependencies:
-      cac: 6.7.14
-      debug: 4.3.4
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      vite: 5.0.11(@types/node@20.10.8)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - lightningcss
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
-
   /vite-node@1.1.3(@types/node@20.10.8):
     resolution: {integrity: sha512-BLSO72YAkIUuNrOx+8uznYICJfTEbvBAmWClY3hpath5+h1mbPS5OMn42lrTxXuyCazVyZoDkSRnju78GiVCqA==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -9211,66 +9120,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.1.0(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3):
-    resolution: {integrity: sha512-oDFiCrw7dd3Jf06HoMtSRARivvyjHJaTxikFxuqJjO76U436PqlVw1uLn7a8OSPrhSfMGVaRakKpA2lePdw79A==}
-    engines: {node: ^18.0.0 || >=20.0.0}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@types/node': ^18.0.0 || >=20.0.0
-      '@vitest/browser': ^1.0.0
-      '@vitest/ui': ^1.0.0
-      happy-dom: '*'
-      jsdom: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@types/node':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-    dependencies:
-      '@types/node': 20.10.8
-      '@vitest/browser': 1.1.0(vitest@1.1.0)
-      '@vitest/expect': 1.1.0
-      '@vitest/runner': 1.1.0
-      '@vitest/snapshot': 1.1.0
-      '@vitest/spy': 1.1.0
-      '@vitest/utils': 1.1.0
-      acorn-walk: 8.3.0
-      cac: 6.7.14
-      chai: 4.3.10
-      debug: 4.3.4
-      execa: 8.0.1
-      happy-dom: 12.10.3
-      local-pkg: 0.5.0
-      magic-string: 0.30.5
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      std-env: 3.6.0
-      strip-literal: 1.3.0
-      tinybench: 2.5.1
-      tinypool: 0.8.1
-      vite: 5.0.11(@types/node@20.10.8)
-      vite-node: 1.1.0(@types/node@20.10.8)
-      why-is-node-running: 2.2.2
-    transitivePeerDependencies:
-      - less
-      - lightningcss
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
-
-  /vitest@1.1.3(@types/node@20.10.8):
+  /vitest@1.1.3(@types/node@20.10.8)(@vitest/browser@1.1.0)(happy-dom@12.10.3):
     resolution: {integrity: sha512-2l8om1NOkiA90/Y207PsEvJLYygddsOyr81wLQ20Ra8IlLKbyQncWsGZjnbkyG2KwwuTXLQjEPOJuxGMG8qJBQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -9296,6 +9146,7 @@ packages:
         optional: true
     dependencies:
       '@types/node': 20.10.8
+      '@vitest/browser': 1.1.0(vitest@1.1.3)
       '@vitest/expect': 1.1.3
       '@vitest/runner': 1.1.3
       '@vitest/snapshot': 1.1.3
@@ -9306,6 +9157,7 @@ packages:
       chai: 4.4.0
       debug: 4.3.4
       execa: 8.0.1
+      happy-dom: 12.10.3
       local-pkg: 0.5.0
       magic-string: 0.30.5
       pathe: 1.1.1

@@ -38,8 +38,5 @@
   "keywords": [],
   "author": "Typed contributors",
   "license": "MIT",
-  "sideEffects": [],
-  "dependencies": {},
-  "peerDependencies": {},
-  "devDependencies": {}
+  "sideEffects": []
 }
