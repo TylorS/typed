@@ -1,5 +1,12 @@
 # @typed/ui
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`567d1fe`](https://github.com/TylorS/typed/commit/567d1fe5d51b0018335e242e980a386e681c57eb)]:
+  - @typed/template@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes
