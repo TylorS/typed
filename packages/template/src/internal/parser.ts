@@ -4,6 +4,7 @@ import * as Option from "effect/Option"
 import * as Template from "../Template.js"
 import type { TextChunk } from "./chunks.js"
 import {
+  getClosingTag,
   getPart,
   getStrictPart,
   getTextUntilCloseBrace,
@@ -90,6 +91,7 @@ const isSelfClosingTagEndToken: TextPredicate = (input, pos) =>
   input[pos] === chars.slash && input[pos + 1] === chars.greaterThan
 const isCommentEndToken: TextPredicate = (input, pos) =>
   input[pos] === chars.hypen && input[pos + 1] === chars.hypen && input[pos + 2] === chars.greaterThan
+const isGreaterThanToken: TextPredicate = (input, pos) => input[pos] === chars.greaterThan
 
 type Context = "unknown" | "element"
 
@@ -248,8 +250,10 @@ class ParserImpl implements Parser {
       if (nextChar == "-") {
         this.consumeAmount(2)
         return [this.parseComment()]
-      } else {
+      } else if (nextChar.toLowerCase() === "d") {
         return [this.parseDocType()]
+      } else {
+        throw new SyntaxError(`Unknown comment type ${nextChar}`)
       }
     } else if (nextChar === "/") { // Self-closing tag
       return this.selfClosingTagEnd()
@@ -312,8 +316,15 @@ class ParserImpl implements Parser {
       this.path.pop()
       const element = new Template.ElementNode(tagName, attributes, children)
 
+      this.skipWhitespace()
+      this.consumeClosingTag()
+
       return element
     }
+  }
+
+  private consumeClosingTag() {
+    this.chunk(getClosingTag)
   }
 
   private parseSelfClosingElement(tagName: string): Template.SelfClosingElementNode {
@@ -352,7 +363,7 @@ class ParserImpl implements Parser {
   }
 
   private parseDocType(): Template.DocType {
-    this.parseTextUntil((char) => char === chars.greaterThan)
+    this.parseTextUntil(isGreaterThanToken)
     this.consumeAmount(1)
     this.skipWhitespace()
 
@@ -523,20 +534,18 @@ class ParserImpl implements Parser {
   }
 
   private parseTextUntil(predicate: (char: string, pos: number) => boolean) {
-    let text = ""
-
+    const start = this.pos
+    let i = 0
     while (this.pos < this.length) {
-      const char = this.nextChar()
-
       if (predicate(this.input, this.pos)) {
         break
       }
 
-      text += char
+      i++
       this.consumeAmount(1)
     }
 
-    return text
+    return this.input.slice(start, start + i)
   }
 
   private parseTextUntilMany<const T extends Predicates>(

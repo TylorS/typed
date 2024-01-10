@@ -4,6 +4,7 @@ import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect } from "effect"
 import type { Cause } from "effect/Cause"
+import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
 import { replace } from "effect/ReadonlyArray"
 import { Scope } from "effect/Scope"
@@ -63,14 +64,14 @@ import { findHoleComment, findPath } from "./utils.js"
 /**
  * @internal
  */
-type RenderPartContext = {
+export type RenderPartContext = {
   readonly context: Context.Context<Scope>
   readonly document: Document
   readonly eventSource: EventSource
   readonly refCounter: IndexRefCounter2
   readonly renderContext: RenderContext
   readonly values: ReadonlyArray<Renderable<any, any>>
-  readonly onCause: (cause: Cause<unknown>) => Effect.Effect<never, never, void>
+  readonly onCause: (cause: Cause<any>) => Effect.Effect<never, never, void>
 
   expected: number
 }
@@ -518,6 +519,18 @@ function diffClassNames(oldClassNames: Set<string>, newClassNames: Set<string>) 
 }
 
 /**
+ * @internal
+ */
+export function renderPart2(
+  part: Template.PartNode | Template.SparsePartNode,
+  content: ParentChildNodes,
+  path: Chunk<number>,
+  ctx: RenderPartContext
+): Effect.Effect<any, any, void> | Array<Effect.Effect<any, any, void>> | null {
+  return RenderPartMap[part._tag](part as any, findPath(content, path), ctx)
+}
+
+/**
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
@@ -553,7 +566,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         // Connect our interpolated values to our template parts
         const effects: Array<Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>> = []
         for (const [part, path] of entry.template.parts) {
-          const eff = RenderPartMap[part._tag](part as never, findPath(content, path), ctx)
+          const eff = renderPart2(part, content, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
@@ -580,7 +593,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         // Set the element when it is ready
         yield* _(ctx.eventSource.setup(wire, Context.get(context, Scope)))
 
-        // Emity our DomRenderEvent
+        // Emit our DomRenderEvent
         yield* _(sink.onSuccess(DomRenderEvent(wire)))
 
         // Ensure our templates last forever in the DOM environment

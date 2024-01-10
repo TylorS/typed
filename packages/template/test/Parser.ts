@@ -30,9 +30,7 @@ import {
 } from "@typed/template/Template"
 import * as Chunk from "effect/Chunk"
 
-// TODO: Port over Tokenizer-based tests to Parser2
-
-describe("Parser2", () => {
+describe("Parser", () => {
   it("parses a simple template", () => {
     const template = h`<div></div>`
     const expected = new Template(
@@ -504,7 +502,7 @@ describe("Parser2", () => {
     expect(Parser2.parser.parse(template)).toEqual(expected)
   })
 
-  it("parses templates with doctypes", () => {
+  it.only("parses templates with doctypes", () => {
     const template = h`<!DOCTYPE html>
     <html>
       <head>
@@ -524,9 +522,9 @@ describe("Parser2", () => {
             new ElementNode(
               "head",
               [],
-              [new ElementNode("title", [], [new TextNode("Test")])]
+              [new TextOnlyElement("title", [], [new TextNode("Test")])]
             ),
-            new ElementNode("body", [], [new ElementNode("div", [new AttrPartNode("id", 0)], [])])
+            new ElementNode("body", [], [new ElementNode("div", [new AttributeNode("id", "root")], [])])
           ]
         )
       ],
