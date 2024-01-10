@@ -1,5 +1,6 @@
 import * as C from "@typed/context"
-import type { Equivalence, Fiber, FiberId, Runtime } from "effect"
+import type { Equivalence, FiberId, Runtime } from "effect"
+import { Fiber } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -15,7 +16,7 @@ import * as Scope from "effect/Scope"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
-import { getExitEquivalence, makeForkInScope, withScope } from "./internal/helpers.js"
+import { getExitEquivalence, matchEffectPrimitive, withScope } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
 import { runtimeToLayer } from "./internal/provide.js"
 import * as share from "./internal/share.js"
@@ -218,16 +219,18 @@ export function unsafeMake<E, A>(
   }
 ): Effect.Effect<never, never, RefSubject<never, E, A>> {
   const { id, initial, options, scope } = params
-  const core = unsafeMakeCore(initial, id, emptyContext, scope, options)
+  return Effect.suspend(() => {
+    const core = unsafeMakeCore(initial, id, emptyContext, scope, options)
 
-  // Sometimes we might be instantiating directly from a known value
-  // Here we seed the value and ensure the subject has it as well for re-broadcasting
-  if ("initialValue" in params) {
-    core.deferredRef.done(Exit.succeed(params.initialValue))
-    return Effect.map(core.subject.onSuccess(params.initialValue), () => new RefSubjectImpl(core))
-  }
+    // Sometimes we might be instantiating directly from a known value
+    // Here we seed the value and ensure the subject has it as well for re-broadcasting
+    if ("initialValue" in params) {
+      core.deferredRef.done(Exit.succeed(params.initialValue))
+      return Effect.map(core.subject.onSuccess(params.initialValue), () => new RefSubjectImpl(core))
+    }
 
-  return Effect.succeed(new RefSubjectImpl(core))
+    return Effect.succeed(new RefSubjectImpl(core))
+  })
 }
 
 class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Scope, E, A, Exclude<R, R2>, E, A>
@@ -316,7 +319,7 @@ function getSetDelete<R, E, A, R2>(ref: RefSubjectCore<R, E, A, R2>): GetSetDele
   return {
     get: getOrInitializeCore(ref, false),
     set: (a) => setCore(ref, a),
-    delete: deleteCore(ref, false)
+    delete: deleteCore(ref)
   }
 }
 
@@ -499,35 +502,71 @@ function getOrInitializeCore<R, E, A, R2>(
 ): Effect.Effect<Exclude<R, R2>, E, A> {
   return Effect.suspend(() => {
     if (core._fiber === undefined && Option.isNone(core.deferredRef.current)) {
-      return initializeCore(core, lockInitialize)
+      return initializeCoreAndTap(core, lockInitialize)
     } else {
       return core.deferredRef
     }
   })
 }
 
+function initializeCoreEffect<R, E, A, R2>(
+  core: RefSubjectCore<R, E, A, R2>,
+  lock: boolean
+): Effect.Effect<Exclude<R, R2>, never, Fiber.Fiber<E, A>> {
+  const initialize = Effect.onExit(
+    Effect.provide(core.initial, core.context),
+    (exit) => {
+      core._fiber = undefined
+      core.deferredRef.done(exit)
+      return Effect.unit
+    }
+  )
+
+  return Effect.flatMap(
+    Effect.forkIn(
+      lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize,
+      core.scope
+    ),
+    (fiber) => Effect.sync(() => core._fiber = fiber)
+  )
+}
+
 function initializeCore<R, E, A, R2>(
   core: RefSubjectCore<R, E, A, R2>,
   lock: boolean
+): Effect.Effect<Exclude<R, R2>, never, Fiber.Fiber<E, A>> {
+  type Z = Effect.Effect<Exclude<R, R2>, never, Fiber.Fiber<E, A>>
+
+  const onSuccess = (a: A): Z => {
+    core.deferredRef.done(Exit.succeed(a))
+    return Effect.succeed(Fiber.succeed(a))
+  }
+
+  const onCause = (cause: Cause.Cause<E>): Z => {
+    core.deferredRef.done(Exit.failCause(cause))
+    return Effect.succeed(Fiber.failCause(cause))
+  }
+
+  const onError = (e: E): Z => onCause(Cause.fail(e))
+
+  return matchEffectPrimitive(core.initial, {
+    Success: onSuccess,
+    Failure: onCause,
+    Some: onSuccess,
+    None: onError,
+    Left: onError,
+    Right: onSuccess,
+    Sync: (f) => onSuccess(f()),
+    Otherwise: () => initializeCoreEffect(core, lock)
+  })
+}
+
+function initializeCoreAndTap<R, E, A, R2>(
+  core: RefSubjectCore<R, E, A, R2>,
+  lock: boolean
 ): Effect.Effect<Exclude<R, R2>, E, A> {
-  const initialize = Effect.onExit(
-    Effect.provide(core.initial, core.context),
-    (exit) =>
-      Effect.sync(() => {
-        core._fiber = undefined
-        core.deferredRef.done(exit)
-      })
-  )
-
-  const fork = makeForkInScope(core.scope)
-
   return Effect.zipRight(
-    Effect.tap(
-      fork(
-        lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize
-      ),
-      (fiber) => Effect.sync(() => core._fiber = fiber)
-    ),
+    initializeCore(core, lock),
     tapEventCore(core, core.deferredRef)
   )
 }
@@ -567,11 +606,11 @@ function interruptCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>): Effect.E
 }
 
 function deleteCore<R, E, A, R2>(
-  core: RefSubjectCore<R, E, A, R2>,
-  lockInitialize: boolean
+  core: RefSubjectCore<R, E, A, R2>
 ): Effect.Effect<Exclude<R, R2>, E, Option.Option<A>> {
   return Effect.suspend(() => {
     const current = core.deferredRef.current
+    core.deferredRef.reset()
 
     if (Option.isNone(current)) {
       return Effect.succeed(Option.none())
@@ -579,11 +618,9 @@ function deleteCore<R, E, A, R2>(
 
     return core.subject.subscriberCount.pipe(
       Effect.provide(core.context),
-      Effect.tap(
-        (count: number) =>
-          count > 0 && !core._fiber ? Effect.forkIn(initializeCore(core, lockInitialize), core.scope) : Effect.unit
+      Effect.flatMap(
+        (count: number) => count > 0 && !core._fiber ? initializeCore(core, false) : Effect.unit
       ),
-      Effect.tap(() => Effect.sync(() => core.deferredRef.reset())),
       Effect.zipRight(Effect.asSome(current.value))
     )
   })
@@ -591,17 +628,11 @@ function deleteCore<R, E, A, R2>(
 
 function tapEventCore<R, E, A, R2, R3>(
   core: RefSubjectCore<R, E, A, R2>,
-  effect: Effect.Effect<R3, E, A>,
-  onDone?: () => void
+  effect: Effect.Effect<R3, E, A>
 ) {
   return effect.pipe(
     Effect.exit,
-    Effect.tap((exit) =>
-      Effect.suspend(() => {
-        onDone?.()
-        return sendEvent(core, exit)
-      })
-    ),
+    Effect.tap((exit) => sendEvent(core, exit)),
     Effect.flatten
   )
 }

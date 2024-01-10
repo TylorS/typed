@@ -17,7 +17,13 @@ export class DeferredRef<E, A> extends EffectBase<never, E, A> {
   }
 
   toEffect() {
-    return Effect.suspend(() => Option.getOrElse(this.current, () => Deferred.await(this.deferred)))
+    return Effect.suspend(() => {
+      if (Option.isNone(this.current)) {
+        return Deferred.await(this.deferred)
+      } else {
+        return this.current.value
+      }
+    })
   }
 
   done(exit: Exit.Exit<E, A>) {

@@ -208,7 +208,7 @@ describe.concurrent(__filename, () => {
   })
 
   describe.concurrent("RefSubject", () => {
-    it.concurrent("allows keeping state", async () => {
+    it("allows keeping state", async () => {
       const test = Effect.gen(function*(_) {
         const ref = yield* _(RefSubject.of(0))
 
@@ -225,6 +225,8 @@ describe.concurrent(__filename, () => {
         yield* _(RefSubject.delete(ref))
 
         expect(yield* _(ref)).toEqual(0)
+
+        console.log("ref 4")
       }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)

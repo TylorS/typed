@@ -7,8 +7,8 @@ import { Effect, Option } from "effect"
 describe(import.meta.url, () => {
   const values = Fx.mergeAll([
     Fx.succeed("bar"),
-    Fx.delay(Fx.succeed("foo"), 5),
-    Fx.delay(Fx.succeed("baz"), 10)
+    Fx.delay(Fx.succeed("foo"), 50),
+    Fx.delay(Fx.succeed("baz"), 100)
   ])
 
   const fooGuard = Guard.liftPredicate((s): s is "foo" => s === "foo")
