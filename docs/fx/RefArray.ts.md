@@ -1,6 +1,6 @@
 ---
 title: RefArray.ts
-nav_order: 13
+nav_order: 12
 parent: "@typed/fx"
 ---
 
@@ -169,8 +169,8 @@ Map (Endomorphic) the values of a RefArray.
 
 ```ts
 export declare const map: {
-  <A>(f: (a: A, index: number) => A): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A, index: number) => A): Computed.Computed<R, E, readonly A[]>
+  <A>(f: (a: A, index: number) => A): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly A[]>
+  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A, index: number) => A): RefSubject.Computed<R, E, readonly A[]>
 }
 ```
 
@@ -321,8 +321,8 @@ Filter the values of a RefArray using a predicate creating a Computed value.
 
 ```ts
 export declare const filterValues: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: A) => boolean): Computed.Computed<R, E, readonly A[]>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly A[]>
+  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: A) => boolean): RefSubject.Computed<R, E, readonly A[]>
 }
 ```
 
@@ -336,8 +336,8 @@ Group the values of a RefArray by a key.
 
 ```ts
 export declare const groupBy: {
-  <A>(f: (a: A) => string): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, Record<string, readonly A[]>>
-  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A) => string): Computed.Computed<R, E, Record<string, readonly A[]>>
+  <A>(f: (a: A) => string): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, Record<string, readonly A[]>>
+  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A) => string): RefSubject.Computed<R, E, Record<string, readonly A[]>>
 }
 ```
 
@@ -350,7 +350,7 @@ Check to see if a RefArray is empty.
 **Signature**
 
 ```ts
-export declare const isEmpty: <R, E, A>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, boolean>
+export declare const isEmpty: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, boolean>
 ```
 
 Added in v1.18.0
@@ -362,7 +362,7 @@ Check to see if a RefArray is non-empty.
 **Signature**
 
 ```ts
-export declare const isNonEmpty: <R, E, A>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, boolean>
+export declare const isNonEmpty: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, boolean>
 ```
 
 Added in v1.18.0
@@ -374,7 +374,7 @@ Get the current length of a RefArray.
 **Signature**
 
 ```ts
-export declare const length: <R, E, A>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, number>
+export declare const length: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, number>
 ```
 
 Added in v1.18.0
@@ -387,8 +387,8 @@ Map the values with their indexes of a RefArray.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, readonly B[]>
-  <R, E, A, B>(ref: RefArray<R, E, A>, f: (a: A, index: number) => B): Computed.Computed<R, E, readonly B[]>
+  <A, B>(f: (a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly B[]>
+  <R, E, A, B>(ref: RefArray<R, E, A>, f: (a: A, index: number) => B): RefSubject.Computed<R, E, readonly B[]>
 }
 ```
 
@@ -404,11 +404,11 @@ Partition the values of a RefArray using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, readonly [readonly B[], readonly A[]]>
+  ): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly [readonly B[], readonly A[]]>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     predicate: (a: A) => boolean
-  ): Computed.Computed<never, E, readonly [readonly A[], readonly A[]]>
+  ): RefSubject.Computed<never, E, readonly [readonly A[], readonly A[]]>
 }
 ```
 
@@ -422,8 +422,8 @@ Reduce the values of a RefArray to a single value.
 
 ```ts
 export declare const reduce: {
-  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, B>
-  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): Computed.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, B>
+  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<R, E, B>
 }
 ```
 
@@ -437,8 +437,8 @@ Reduce the values of a RefArray to a single value in reverse order.
 
 ```ts
 export declare const reduceRight: {
-  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => Computed.Computed<R, E, B>
-  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): Computed.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, B>
+  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<R, E, B>
 }
 ```
 
@@ -500,8 +500,8 @@ Get a value contained a particular index of a RefArray.
 
 ```ts
 export declare const getIndex: {
-  (index: number): <R, E, A>(ref: RefArray<R, E, A>) => Filtered.Filtered<R, E, A>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number): Filtered.Filtered<R, E, A>
+  (index: number): <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
+  <R, E, A>(ref: RefArray<R, E, A>, index: number): RefSubject.Filtered<R, E, A>
 }
 ```
 
@@ -528,7 +528,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const head: <R, E, A>(ref: RefArray<R, E, A>) => Filtered.Filtered<R, E, A>
+export declare const head: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
 ```
 
 Added in v1.18.0
@@ -538,7 +538,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const last: <R, E, A>(ref: RefArray<R, E, A>) => Filtered.Filtered<R, E, A>
+export declare const last: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
 ```
 
 Added in v1.18.0

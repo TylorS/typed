@@ -2,4 +2,13 @@
  * @since 1.0.0
  */
 
-export { parse, templateHash } from "./internal/parser.js"
+export {
+  /**
+   * @since 1.0.0
+   */
+  parse,
+  /**
+   * @since 1.0.0
+   */
+  templateHash
+} from "./internal/parser.js"

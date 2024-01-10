@@ -461,6 +461,9 @@ export const getEquivalence =
     })
   }
 
+/**
+ * @since 1.0.0
+ */
 export function fromExit<E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> {
   return Exit.match(exit, {
     onFailure: (cause) => failCause(cause),
@@ -468,6 +471,9 @@ export function fromExit<E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A> {
   })
 }
 
+/**
+ * @since 1.0.0
+ */
 export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A> {
   return Either.match(either, {
     onLeft: (e) => fail(e),
@@ -477,6 +483,9 @@ export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A> {
 
 const isAsyncDataFirst = (args: IArguments) => args.length === 3 || isAsyncData(args[0])
 
+/**
+ * @since 1.0.0
+ */
 export const isExpired: {
   (ttl: Duration.DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
   <E, A>(data: AsyncData<E, A>, ttl: Duration.DurationInput, now?: number): boolean
@@ -508,6 +517,8 @@ function isPastTTL(timestamp: number, ttl: Duration.DurationInput, now: number):
 /**
  * Checks if two AsyncData are equal, disregarding the timestamps associated with them. Useful for testing
  * without needing to manage timestamps.
+ *
+ * @since 1.0.0
  */
 export function dataEqual<E, A>(first: AsyncData<E, A>, second: AsyncData<E, A>): boolean {
   return match(first, {

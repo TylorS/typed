@@ -22,6 +22,7 @@ Added in v1.0.0
   - [NodePart (interface)](#nodepart-interface)
   - [Part (type alias)](#part-type-alias)
   - [Parts (type alias)](#parts-type-alias)
+  - [PropertiesPart (interface)](#propertiespart-interface)
   - [PropertyPart (interface)](#propertypart-interface)
   - [RefPart (interface)](#refpart-interface)
   - [SparseAttributePart (interface)](#sparseattributepart-interface)
@@ -125,11 +126,11 @@ Added in v1.0.0
 export interface EventPart {
   readonly _tag: "event"
   readonly name: string
-  readonly value: EventHandler<unknown, never> | null | undefined
+  readonly source: ElementSource<any>
+  readonly value: null
   readonly index: number
   readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
-
-  readonly update: <R = never>(value: EventHandler<R, never> | null | undefined) => Effect<R | Scope, never, void>
+  readonly addEventListener: (handler: EventHandler<never, never, Event>) => void
 }
 ```
 
@@ -167,6 +168,7 @@ export type Part =
   | PropertyPart
   | RefPart
   | TextPart
+  | PropertiesPart
 ```
 
 Added in v1.0.0
@@ -177,6 +179,22 @@ Added in v1.0.0
 
 ```ts
 export type Parts = ReadonlyArray<Part | SparsePart>
+```
+
+Added in v1.0.0
+
+## PropertiesPart (interface)
+
+**Signature**
+
+```ts
+export interface PropertiesPart {
+  readonly _tag: "properties"
+  readonly value: Readonly<Record<string, any>> | null | undefined
+  readonly index: number
+
+  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+}
 ```
 
 Added in v1.0.0

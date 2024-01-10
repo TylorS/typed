@@ -28,12 +28,12 @@ Added in v1.0.0
 
 ```ts
 export interface Pagination<E, A> {
-  readonly page: Computed.Computed<never, never, number>
-  readonly pageSize: Computed.Computed<never, never, number>
-  readonly canGoBack: Computed.Computed<never, never, boolean>
-  readonly canGoForward: Computed.Computed<never, E, boolean>
-  readonly paginated: Computed.Computed<never, E, ReadonlyArray<A>>
-  readonly viewing: Computed.Computed<never, E, Viewing>
+  readonly page: RefSubject.Computed<never, never, number>
+  readonly pageSize: RefSubject.Computed<never, never, number>
+  readonly canGoBack: RefSubject.Computed<never, never, boolean>
+  readonly canGoForward: RefSubject.Computed<never, E, boolean>
+  readonly paginated: RefSubject.Computed<never, E, ReadonlyArray<A>>
+  readonly viewing: RefSubject.Computed<never, E, Viewing>
 
   readonly goBack: Effect.Effect<never, never, number>
   readonly goForward: Effect.Effect<never, E, number>
@@ -77,7 +77,7 @@ Added in v1.0.0
 
 ```ts
 export declare function usePagination<R, E, A>(
-  items: Computed.Computed<R, E, ReadonlyArray<A>>,
+  items: RefSubject.Computed<R, E, ReadonlyArray<A>>,
   options: PaginationOptions = {}
 ): Effect.Effect<R | Scope.Scope, never, Pagination<E, A>>
 ```

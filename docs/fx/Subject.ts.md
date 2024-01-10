@@ -1,78 +1,117 @@
 ---
 title: Subject.ts
-nav_order: 24
+nav_order: 19
 parent: "@typed/fx"
 ---
 
 ## Subject overview
 
-Subjects are the basis for sharing events between multiple consumers in an effecient manner
-and for event-bus-like functionality.
+Subject is an Fx type which can also be imperatively pushed into.
 
-Added in v1.18.0
+Added in v1.20.0
 
 ---
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [constructors](#constructors)
-  - [make](#make)
-  - [makeHold](#makehold)
-  - [makeReplay](#makereplay)
-  - [tagged](#tagged)
-- [models](#models)
-  - [Subject (interface)](#subject-interface)
 - [utils](#utils)
+  - [Subject (interface)](#subject-interface)
   - [Subject (namespace)](#subject-namespace)
     - [Tagged (interface)](#tagged-interface)
+    - [Provide (type alias)](#provide-type-alias)
+  - [fromTag](#fromtag)
+  - [make](#make)
+  - [tagged](#tagged)
+  - [unsafeMake](#unsafemake)
 
 ---
 
-# constructors
+# utils
+
+## Subject (interface)
+
+Subject is an Fx type which can also be imperatively pushed into.
+
+**Signature**
+
+```ts
+export interface Subject<R, E, A>
+  extends Push<R, E, A, R | Scope.Scope, E, A>,
+    Fx<R | Scope.Scope, E, A>,
+    Pipeable.Pipeable {
+  readonly subscriberCount: Effect.Effect<R, never, number>
+  readonly interrupt: Effect.Effect<R, never, void>
+}
+```
+
+Added in v1.20.0
+
+## Subject (namespace)
+
+Added in v1.20.0
+
+### Tagged (interface)
+
+**Signature**
+
+```ts
+export interface Tagged<I, E, A> extends Subject<I, E, A> {
+  readonly tag: C.Tagged<I, Subject<never, E, A>>
+
+  readonly make: (replay?: number) => Layer.Layer<never, never, I>
+  readonly provide: Provide<I>
+}
+```
+
+Added in v1.20.0
+
+### Provide (type alias)
+
+**Signature**
+
+```ts
+export type Provide<I> = <
+  const Args extends readonly [Fx<any, any, any> | Effect.Effect<any, any, any>, number?] | readonly [number]
+>(
+  ...args: Args
+) => Args extends readonly [infer _ extends number]
+  ? <T extends Fx<any, any, any> | Effect.Effect<any, any, any>>(
+      fxOrEffect: T
+    ) => [T] extends [Fx<infer R2, infer E2, infer B>]
+      ? Fx<Exclude<R2, I>, E2, B>
+      : [T] extends [Effect.Effect<infer R2, infer E2, infer B>]
+        ? Effect.Effect<Exclude<R2, I>, E2, B>
+        : never
+  : Args extends readonly [Fx<infer R2, infer E2, infer B>]
+    ? Fx<Exclude<R2, I>, E2, B>
+    : Args extends readonly [Effect.Effect<infer R2, infer E2, infer B>]
+      ? Effect.Effect<Exclude<R2, I>, E2, B>
+      : never
+```
+
+Added in v1.20.0
+
+## fromTag
+
+**Signature**
+
+```ts
+export declare function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<R, E, A>): Subject<I | R, E, A>
+```
+
+Added in v1.20.0
 
 ## make
 
-Constructs a Subject that can be used to broadcast events to many consumers.
-
 **Signature**
 
 ```ts
-export declare const make: <E, A>() => Subject<never, E, A>
+export declare function make<E, A>(replay?: number): Effect.Effect<Scope.Scope, never, Subject<never, E, A>>
 ```
 
-Added in v1.18.0
-
-## makeHold
-
-Constructs a Subject that can be used to broadcast events to many consumers.
-If a previous event has been consumed previously, any "late" subscribers will
-receive that previous event.
-
-**Signature**
-
-```ts
-export declare const makeHold: <E, A>() => Subject<never, E, A>
-```
-
-Added in v1.18.0
-
-## makeReplay
-
-Constructs a Subject that can be used to broadcast events to many consumers.
-If a previous event has been consumed previously, any "late" subscribers will
-receive _up to_ `capacity` previous events.
-
-**Signature**
-
-```ts
-export declare const makeReplay: <E, A>(capacity: number) => Subject<never, E, A>
-```
-
-Added in v1.18.0
+Added in v1.20.0
 
 ## tagged
-
-Construct a contextual Subject
 
 **Signature**
 
@@ -83,52 +122,14 @@ export declare function tagged<E, A>(): {
 }
 ```
 
-Added in v1.18.0
+Added in v1.20.0
 
-# models
-
-## Subject (interface)
-
-A Subject is an Fx which is also a Sink, and can be used to
-broadcast events to many consumers.
+## unsafeMake
 
 **Signature**
 
 ```ts
-export interface Subject<R, E, A> extends Fx<R, E, A>, WithContext<R, E, A> {
-  readonly subscriberCount: Effect.Effect<R, never, number>
-  readonly interrupt: Effect.Effect<R, never, void>
-}
+export declare function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A>
 ```
 
-Added in v1.18.0
-
-# utils
-
-## Subject (namespace)
-
-Added in v1.18.0
-
-### Tagged (interface)
-
-A Contextual wrapper around a Subject
-
-**Signature**
-
-```ts
-export interface Tagged<I, E, A> extends Subject<I, E, A> {
-  readonly tag: C.Tagged<I, Subject<never, E, A>>
-
-  readonly interrupt: Effect.Effect<I, never, void>
-
-  readonly provide: (
-    replay?: number
-  ) => <R2, E2, B>(effect: Effect.Effect<R2, E2, B>) => Effect.Effect<Exclude<R2, I>, E2, B>
-
-  readonly provideFx: (replay?: number) => <R2, E2, B>(fx: Fx<R2, E2, B>) => Fx<Exclude<R2, I>, E2, B>
-
-  readonly make: (replay?: number) => Layer.Layer<never, never, I>
-}
-```
-
-Added in v1.18.0
+Added in v1.20.0

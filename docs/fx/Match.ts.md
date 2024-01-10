@@ -1,6 +1,6 @@
 ---
 title: Match.ts
-nav_order: 10
+nav_order: 9
 parent: "@typed/fx"
 ---
 
@@ -88,17 +88,19 @@ export interface TypeMatcher<R, E, I, O> {
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
 
-  readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
+  readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
-  readonly to: <R2, E2, A, B>(
+  readonly to: <R2 = never, E2 = never, A = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
     onMatch: B
   ) => TypeMatcher<R | R2, E | E2, I, O | B>
 
-  readonly run: <R2 = never, E2 = never>(input: Fx.FxInput<R2, E2, I>) => Fx.Fx<R | R2, E | E2, Option.Option<O>>
+  readonly run: <R2 = never, E2 = never>(
+    input: Fx.Fx<R2, E2, I>
+  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>>
 }
 ```
 
@@ -109,7 +111,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface ValueMatcher<R, E, I, O> {
+export interface ValueMatcher<R, E, I, O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
   readonly _tag: "ValueMatcher"
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
@@ -118,7 +120,7 @@ export interface ValueMatcher<R, E, I, O> {
 
   readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
     guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.FxInput<R3, E3, B>
+    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
   ) => ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
 
   readonly to: <R2, E2, A, B>(
@@ -126,11 +128,9 @@ export interface ValueMatcher<R, E, I, O> {
     onMatch: B
   ) => ValueMatcher<R | R2, E | E2, I, O | B>
 
-  readonly run: Fx.Fx<R, E, Option.Option<O>>
-
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
-    f: () => Fx.FxInput<R2, E2, B>
-  ) => Fx.Fx<R | R2, E | E2, O | B>
+    f: () => Fx.Fx<R2, E2, B>
+  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, O | B>
 }
 ```
 
@@ -151,7 +151,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const value: <R, E, I>(input: Fx.FxInput<R, E, I>) => ValueMatcher<R, E, I, never>
+export declare const value: <R, E, I>(input: Fx.Fx<R, E, I>) => ValueMatcher<R, E, I, never>
 ```
 
 Added in v1.18.0

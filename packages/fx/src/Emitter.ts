@@ -1,3 +1,8 @@
+/**
+ * Emitter is a helper for creating Fx from external libraries which are not Effect-native.
+ * @since 1.20.0
+ */
+
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
@@ -8,6 +13,9 @@ import type * as Scope from "effect/Scope"
 import { withScope } from "./internal/helpers.js"
 import * as Sink from "./Sink.js"
 
+/**
+ * @since 1.20.0
+ */
 export interface Emitter<E, A> {
   readonly succeed: (value: A) => Promise<Exit.Exit<never, unknown>>
   readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<never, unknown>>
@@ -16,6 +24,9 @@ export interface Emitter<E, A> {
   readonly end: () => Promise<Exit.Exit<never, unknown>>
 }
 
+/**
+ * @since 1.20.0
+ */
 export function withEmitter<R, E, A, R2, B>(
   sink: Sink.Sink<R, E, A>,
   f: (emitter: Emitter<E, A>) => Effect.Effect<R2, E, B>

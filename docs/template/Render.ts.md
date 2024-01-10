@@ -48,7 +48,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderLayer<R, E, T extends RenderEvent | null>(rendered: Fx.Fx<R, E, T>)
+export declare function renderLayer<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<R, E, T>
+): Layer.Layer<Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>, never, never>
 ```
 
 Added in v1.0.0

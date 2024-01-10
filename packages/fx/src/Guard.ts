@@ -160,6 +160,9 @@ export type AnyOutput<GS extends Readonly<Record<string, Guard<any, any, any, an
   }[keyof GS]
 ] extends [infer R] ? R : never
 
+/**
+ * @since 1.20.0
+ */
 export function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, never, never, B>
 export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A>
 export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A> {

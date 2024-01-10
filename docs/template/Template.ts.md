@@ -32,37 +32,41 @@ Added in v1.0.0
     - [\_tag (property)](#_tag-property-6)
   - [DataPartNode (class)](#datapartnode-class)
     - [\_tag (property)](#_tag-property-7)
-  - [ElementNode (class)](#elementnode-class)
+  - [DocType (class)](#doctype-class)
     - [\_tag (property)](#_tag-property-8)
-  - [EventPartNode (class)](#eventpartnode-class)
+  - [ElementNode (class)](#elementnode-class)
     - [\_tag (property)](#_tag-property-9)
+  - [EventPartNode (class)](#eventpartnode-class)
+    - [\_tag (property)](#_tag-property-10)
   - [Node (type alias)](#node-type-alias)
   - [NodePart (class)](#nodepart-class)
-    - [\_tag (property)](#_tag-property-10)
+    - [\_tag (property)](#_tag-property-11)
   - [ParentNode (type alias)](#parentnode-type-alias)
   - [PartNode (type alias)](#partnode-type-alias)
-  - [PropertyPartNode (class)](#propertypartnode-class)
-    - [\_tag (property)](#_tag-property-11)
-  - [RefPartNode (class)](#refpartnode-class)
+  - [PropertiesPartNode (class)](#propertiespartnode-class)
     - [\_tag (property)](#_tag-property-12)
-  - [SelfClosingElementNode (class)](#selfclosingelementnode-class)
+  - [PropertyPartNode (class)](#propertypartnode-class)
     - [\_tag (property)](#_tag-property-13)
-  - [SparseAttrNode (class)](#sparseattrnode-class)
+  - [RefPartNode (class)](#refpartnode-class)
     - [\_tag (property)](#_tag-property-14)
-  - [SparseClassNameNode (class)](#sparseclassnamenode-class)
+  - [SelfClosingElementNode (class)](#selfclosingelementnode-class)
     - [\_tag (property)](#_tag-property-15)
-  - [SparseCommentNode (class)](#sparsecommentnode-class)
+  - [SparseAttrNode (class)](#sparseattrnode-class)
     - [\_tag (property)](#_tag-property-16)
+  - [SparseClassNameNode (class)](#sparseclassnamenode-class)
+    - [\_tag (property)](#_tag-property-17)
+  - [SparseCommentNode (class)](#sparsecommentnode-class)
+    - [\_tag (property)](#_tag-property-18)
   - [SparsePartNode (type alias)](#sparsepartnode-type-alias)
   - [Template (class)](#template-class)
-    - [\_tag (property)](#_tag-property-17)
+    - [\_tag (property)](#_tag-property-19)
   - [Text (type alias)](#text-type-alias)
   - [TextNode (class)](#textnode-class)
-    - [\_tag (property)](#_tag-property-18)
-  - [TextOnlyElement (class)](#textonlyelement-class)
-    - [\_tag (property)](#_tag-property-19)
-  - [TextPartNode (class)](#textpartnode-class)
     - [\_tag (property)](#_tag-property-20)
+  - [TextOnlyElement (class)](#textonlyelement-class)
+    - [\_tag (property)](#_tag-property-21)
+  - [TextPartNode (class)](#textpartnode-class)
+    - [\_tag (property)](#_tag-property-22)
 
 ---
 
@@ -105,6 +109,7 @@ export type Attribute =
   | DataPartNode
   | EventPartNode
   | PropertyPartNode
+  | PropertiesPartNode
   | RefPartNode
 ```
 
@@ -262,6 +267,28 @@ Added in v1.0.0
 readonly _tag: "data"
 ```
 
+## DocType (class)
+
+**Signature**
+
+```ts
+export declare class DocType { constructor(
+    readonly name: string,
+    readonly publicType?: string,
+    readonly systemId?: string
+  ) }
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "doctype"
+```
+
 ## ElementNode (class)
 
 **Signature**
@@ -310,7 +337,7 @@ readonly _tag: "event"
 **Signature**
 
 ```ts
-export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart | Comment
+export type Node = ElementNode | SelfClosingElementNode | TextOnlyElement | TextNode | NodePart | Comment | DocType
 ```
 
 Added in v1.0.0
@@ -356,12 +383,33 @@ export type PartNode =
   | EventPartNode
   | NodePart
   | PropertyPartNode
+  | PropertiesPartNode
   | RefPartNode
   | TextPartNode
   | CommentPartNode
 ```
 
 Added in v1.0.0
+
+## PropertiesPartNode (class)
+
+**Signature**
+
+```ts
+export declare class PropertiesPartNode { constructor(
+    readonly index: number
+  ) }
+```
+
+Added in v1.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "properties"
+```
 
 ## PropertyPartNode (class)
 

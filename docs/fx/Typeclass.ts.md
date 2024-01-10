@@ -1,6 +1,6 @@
 ---
 title: Typeclass.ts
-nav_order: 25
+nav_order: 20
 parent: "@typed/fx"
 ---
 
@@ -610,7 +610,7 @@ TypeLambda for an Fx
 
 ```ts
 export interface FxTypeLambda extends HKT.TypeLambda {
-  readonly type: Fx<this["Out2"], this["Out1"], this["Target"]>
+  readonly type: Fx.Fx<this["Out2"], this["Out1"], this["Target"]>
 }
 ```
 

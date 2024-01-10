@@ -1,3 +1,8 @@
+/**
+ * Subject is an Fx type which can also be imperatively pushed into.
+ * @since 1.20.0
+ */
+
 import * as C from "@typed/context"
 import type { Cause, Layer, Pipeable } from "effect"
 import * as Context from "effect/Context"
@@ -17,6 +22,10 @@ import type { Push } from "./Push.js"
 import type { Sink } from "./Sink.js"
 import { TypeId } from "./TypeId.js"
 
+/**
+ * Subject is an Fx type which can also be imperatively pushed into.
+ * @since 1.20.0
+ */
 export interface Subject<R, E, A>
   extends Push<R, E, A, R | Scope.Scope, E, A>, Fx<R | Scope.Scope, E, A>, Pipeable.Pipeable
 {
@@ -24,7 +33,13 @@ export interface Subject<R, E, A>
   readonly interrupt: Effect.Effect<R, never, void>
 }
 
+/**
+ * @since 1.20.0
+ */
 export namespace Subject {
+  /**
+   * @since 1.20.0
+   */
   export interface Tagged<I, E, A> extends Subject<I, E, A> {
     readonly tag: C.Tagged<I, Subject<never, E, A>>
 
@@ -32,6 +47,9 @@ export namespace Subject {
     readonly provide: Provide<I>
   }
 
+  /**
+   * @since 1.20.0
+   */
   export type Provide<I> = <
     const Args extends
       | readonly [
@@ -178,6 +196,9 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A> {
   replay = Math.max(0, replay)
 
@@ -190,10 +211,16 @@ export function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function make<E, A>(replay?: number): Effect.Effect<Scope.Scope, never, Subject<never, E, A>> {
   return Effect.acquireRelease(Effect.sync(() => unsafeMake(replay)), (subject) => subject.interrupt)
 }
 
+/**
+ * @since 1.20.0
+ */
 export function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<R, E, A>): Subject<I | R, E, A> {
   return new FromTag(tag, f)
 }
@@ -225,6 +252,9 @@ class FromTag<I, S, R, E, A> extends FxBase<I | R | Scope.Scope, E, A> implement
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function tagged<E, A>(): {
   <const I extends C.IdentifierFactory<any>>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>
   <const I>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>

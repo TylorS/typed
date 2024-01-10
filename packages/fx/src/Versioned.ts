@@ -1,3 +1,10 @@
+/**
+ * Versioned is a special Fx which is also an Effect, and keeps track of a version number of the
+ * current value it holds. The Fx portion is used to subscribe to changes, the Effect portion to
+ * sample the current value. The version can be utilized to avoid computing work related to this value.
+ * @since 1.0.0
+ */
+
 import type * as Context from "@typed/context"
 import type { Layer, Runtime, Scope } from "effect"
 import * as Effect from "effect/Effect"
@@ -15,10 +22,16 @@ import type { Sink } from "./Sink.js"
 // TODO: context abstraction
 // TODO: More operators
 
+/**
+ * @since 1.0.0
+ */
 export interface Versioned<R1, E1, R2, E2, A2, R3, E3, A3> extends Fx<R2, E2, A2>, Effect.Effect<R3, E3, A3> {
   readonly version: Effect.Effect<R1, E1, number>
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Versioned {
   /**
    * @category models
@@ -29,11 +42,20 @@ export namespace Versioned {
     ? Versioned<R1, E1, R2, E2, A2, R3, E3, A3>
     : never
 
+  /**
+   * @since 1.0.0
+   */
   export type VersionContext<T> = T extends Versioned<infer R, any, any, any, any, any, any, any> ? R : never
 
+  /**
+   * @since 1.0.0
+   */
   export type VersionError<T> = T extends Versioned<any, infer E, any, any, any, any, any, any> ? E : never
 }
 
+/**
+ * @since 1.0.0
+ */
 export function make<R1, E1, R2, E2, A2, R3, E3, A3>(
   version: Effect.Effect<R1, E1, number>,
   fx: Fx<R2, E2, A2>,
@@ -62,6 +84,9 @@ class VersionedImpl<R1, E1, R2, E2, A2, R3, E3, A3> extends FxEffectBase<R2, E2,
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export function transform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
   input: Versioned<R0, E0, R, E, A, R2, E2, B>,
   transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
@@ -244,6 +269,9 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export const provide: {
   <S>(ctx: Context.Context<S> | Runtime.Runtime<S>): <R0, E0, R, E, A, R2, E2, B>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
@@ -278,10 +306,16 @@ export const provide: {
   )
 })
 
+/**
+ * @since 1.0.0
+ */
 export function of<A>(value: A): Versioned<never, never, never, never, A, never, never, A> {
   return make(Effect.succeed(1), core.succeed(value), Effect.succeed(value))
 }
 
+/**
+ * @since 1.0.0
+ */
 export function hold<R0, E0, R, E, A, R2, E2, B>(
   versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
 ): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
@@ -292,6 +326,9 @@ export function hold<R0, E0, R, E, A, R2, E2, B>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function multicast<R0, E0, R, E, A, R2, E2, B>(
   versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
 ): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
@@ -302,6 +339,9 @@ export function multicast<R0, E0, R, E, A, R2, E2, B>(
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function replay<R0, E0, R, E, A, R2, E2, B>(
   versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
   bufferSize: number

@@ -2,7 +2,7 @@
 title: "@typed/fx"
 has_children: true
 permalink: /docs/fx
-nav_order: 6
+nav_order: 7
 ---
 
 # @typed/fx

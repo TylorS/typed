@@ -1,6 +1,6 @@
 ---
 title: Stream.ts
-nav_order: 23
+nav_order: 18
 parent: "@typed/fx"
 ---
 
@@ -15,7 +15,8 @@ Added in v1.18.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [conversions](#conversions)
-  - [chunked](#chunked)
+  - [fromStream](#fromstream)
+  - [fromStreamChunked](#fromstreamchunked)
   - [toStream](#tostream)
   - [toStreamBounded](#tostreambounded)
   - [toStreamDropping](#tostreamdropping)
@@ -26,14 +27,26 @@ Added in v1.18.0
 
 # conversions
 
-## chunked
+## fromStream
+
+Convert a Stream to an Fx
+
+**Signature**
+
+```ts
+export declare function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, A>
+```
+
+Added in v1.18.0
+
+## fromStreamChunked
 
 Convert a Stream to an Fx of chunks
 
 **Signature**
 
 ```ts
-export declare function chunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>>
+export declare function fromStreamChunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>>
 ```
 
 Added in v1.18.0

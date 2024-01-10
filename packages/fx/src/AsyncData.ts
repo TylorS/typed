@@ -1,3 +1,8 @@
+/**
+ * AsyncData integrations with Fx.
+ * @since 1.20.0
+ */
+
 import * as AsyncData from "@typed/async-data/AsyncData"
 import type { Progress } from "@typed/async-data/Progress"
 import * as Cause from "effect/Cause"
@@ -14,6 +19,9 @@ import * as RefSubject from "./RefSubject.js"
 import * as Sink from "./Sink.js"
 import { RefSubjectTypeId } from "./TypeId.js"
 
+/**
+ * @since 1.20.0
+ */
 export function asyncDataRequest<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.Fx<R, never, AsyncData.AsyncData<E, A>> {
   return Fx.make((sink) =>
     Effect.flatMap(
@@ -23,8 +31,14 @@ export function asyncDataRequest<R, E, A>(effect: Effect.Effect<R, E, A>): Fx.Fx
   )
 }
 
+/**
+ * @since 1.20.0
+ */
 export interface RefAsyncData<R, E, A> extends RefSubject.RefSubject<R, never, AsyncData.AsyncData<E, A>> {}
 
+/**
+ * @since 1.20.0
+ */
 export const runAsyncData: {
   <R2, E, A>(
     effect: Effect.Effect<R2, E, A>
@@ -50,6 +64,9 @@ export const runAsyncData: {
   )
 })
 
+/**
+ * @since 1.20.0
+ */
 export const matchAsyncData: {
   <E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
     matchers: {
@@ -130,6 +147,9 @@ export const matchAsyncData: {
   })
 })
 
+/**
+ * @since 1.20.0
+ */
 export const matchAsyncDataArray: {
   <E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
     getKey: (a: A) => K,
@@ -204,6 +224,9 @@ export const matchAsyncDataArray: {
   }
 )
 
+/**
+ * @since 1.20.0
+ */
 export const runIfNoData: {
   <R2, E, A>(
     effect: Effect.Effect<R2, E, A>
@@ -222,6 +245,9 @@ export const runIfNoData: {
   )
 })
 
+/**
+ * @since 1.20.0
+ */
 export const runIfExpired: {
   <R2, E, A>(
     effect: Effect.Effect<R2, E, A>,
@@ -246,7 +272,7 @@ export const runIfExpired: {
 
 /**
  * Await for the AsyncData to stop loading.
- * @since 1.18.0
+ * @since 1.20.0
  * @category updates
  */
 export const awaitLoading = <R, E, A>(
@@ -276,7 +302,7 @@ export const awaitLoadingOrRefreshing = <R, E, A>(
 
 /**
  * Change the current value of a RefAsyncData to a loading or refreshing state.
- * @since 1.18.0
+ * @since 1.20.0
  * @category updates
  */
 export const startLoading: <R, E, A>(
@@ -286,7 +312,7 @@ export const startLoading: <R, E, A>(
 
 /**
  * Change the current value of a RefAsyncData to a non-loading/non-refreshing state.
- * @since 1.18.0
+ * @since 1.20.0
  * @category updates
  */
 export const stopLoading: <R, E, A>(
@@ -296,7 +322,7 @@ export const stopLoading: <R, E, A>(
 
 /**
  * Convert RefAsyncData into a Sink.
- * @since 1.18.0
+ * @since 1.20.0
  * @category conversions
  */
 export const asSink = <R, E, A>(ref: RefAsyncData<R, E, A>): Sink.Sink<R, E, A> =>
@@ -307,7 +333,7 @@ export const asSink = <R, E, A>(ref: RefAsyncData<R, E, A>): Sink.Sink<R, E, A> 
 
 /**
  * Map the input value using an Effect
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const mapInputEffect = <R, E, A, R2, B>(
   ref: RefAsyncData<R, E, A>,
@@ -316,7 +342,7 @@ export const mapInputEffect = <R, E, A, R2, B>(
 
 /**
  * Map the input value
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const mapInput = <R, E, A, B>(
   ref: RefAsyncData<R, E, A>,
@@ -327,7 +353,7 @@ const isRefFirst = (args: IArguments) => args.length === 3 || RefSubjectTypeId i
 
 /**
  * Fail with a given cause
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const failCause: {
   <E>(
@@ -348,7 +374,7 @@ export const failCause: {
 
 /**
  * Fail with a given error
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const fail: {
   <E>(
@@ -369,7 +395,7 @@ export const fail: {
 
 /**
  * Succeed with a value
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const succeed: {
   <A>(
@@ -393,7 +419,7 @@ export const succeed: {
 
 /**
  * Set Exit value of RefAsyncData
- * @since 1.18.0
+ * @since 1.20.0
  */
 export const done: {
   <E, A>(exit: Exit.Exit<E, A>): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
@@ -407,14 +433,14 @@ export const done: {
 )
 
 /**
- * @since 1.18.0
+ * @since 1.20.0
  * @category Filtered
  */
 export const getFailure = <R, E, A>(ref: RefAsyncData<R, E, A>): RefSubject.Filtered<R, never, E> =>
   RefSubject.filterMap(ref, AsyncData.getFailure)
 
 /**
- * @since 1.18.0
+ * @since 1.20.0
  * @category Filtered
  */
 export const getSuccess = <R, E, A>(ref: RefAsyncData<R, E, A>): RefSubject.Filtered<R, never, A> =>

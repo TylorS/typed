@@ -1,6 +1,6 @@
 ---
 title: Guard.ts
-nav_order: 7
+nav_order: 6
 parent: "@typed/fx"
 ---
 
@@ -25,6 +25,7 @@ Added in v1.18.0
   - [compose](#compose)
   - [filter](#filter)
   - [filterMap](#filtermap)
+  - [liftPredicate](#liftpredicate)
   - [map](#map)
   - [mapEffect](#mapeffect)
   - [tap](#tap)
@@ -167,6 +168,17 @@ export declare const filterMap: {
 ```
 
 Added in v1.18.0
+
+## liftPredicate
+
+**Signature**
+
+```ts
+export declare function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, never, never, B>
+export declare function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A>
+```
+
+Added in v1.20.0
 
 ## map
 

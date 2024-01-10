@@ -18,6 +18,9 @@ import * as RefSubject from "./RefSubject.js"
  */
 export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
 
+/**
+ * @since 1.18.0
+ */
 export function make<R, E, A>(
   initial: Effect.Effect<R, E, HashSet.HashSet<A>> | Fx.Fx<R, E, HashSet.HashSet<A>>
 ): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>> {

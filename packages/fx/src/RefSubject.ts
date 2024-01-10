@@ -1,3 +1,8 @@
+/**
+ * A RefSubject is a Subject that can be used to read and write a value.
+ * @since 1.20.0
+ */
+
 import * as C from "@typed/context"
 import type { Equivalence, FiberId, Runtime } from "effect"
 import { Fiber } from "effect"
@@ -28,11 +33,21 @@ import * as Versioned from "./Versioned.js"
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
 
+/**
+ * A Computed is essentially a readonly RefSubject.
+ * @since 1.20.0
+ */
 export interface Computed<out R, out E, out A> extends Versioned.Versioned<R, E, R | Scope.Scope, E, A, R, E, A> {
   readonly [ComputedTypeId]: ComputedTypeId
 }
 
+/**
+ * @since 1.20.0
+ */
 export namespace Computed {
+  /**
+   * @since 1.20.0
+   */
   export type Any =
     | Computed<any, any, any>
     | Computed<never, any, any>
@@ -40,15 +55,28 @@ export namespace Computed {
     | Computed<never, never, any>
 }
 
+/**
+ * A Filtered is essentially a readonly RefSubject that may have its values filtered out.
+ * @since 1.20.0
+ */
 export interface Filtered<out R, out E, out A>
   extends Versioned.Versioned<R, E, R | Scope.Scope, E, A, R, E | Cause.NoSuchElementException, A>
 {
   readonly [FilteredTypeId]: FilteredTypeId
 
+  /**
+   * @since 1.20.0
+   */
   asComputed(): Computed<R, E, Option.Option<A>>
 }
 
+/**
+ * @since 1.20.0
+ */
 export namespace Filtered {
+  /**
+   * @since 1.20.0
+   */
   export type Any =
     | Filtered<any, any, any>
     | Filtered<never, any, any>
@@ -56,23 +84,45 @@ export namespace Filtered {
     | Filtered<never, never, any>
 }
 
+/**
+ * A RefSubject is a Subject that can be used to read and write a value.
+ * @since 1.20.0
+ */
 export interface RefSubject<out R, in out E, in out A> extends Computed<R, E, A>, Subject.Subject<R, E, A> {
   readonly [RefSubjectTypeId]: RefSubjectTypeId
 
+  /**
+   * @since 1.20.0
+   */
   readonly runUpdates: <R2, E2, B>(
     f: (ref: GetSetDelete<R, E, A>) => Effect.Effect<R2, E2, B>
   ) => Effect.Effect<R | R2, E2, B>
 }
 
+/**
+ * @since 1.20.0
+ */
 export namespace RefSubject {
+  /**
+   * @since 1.20.0
+   */
   export type Any =
     | RefSubject<any, any, any>
     | RefSubject<never, any, any>
     | RefSubject<any, never, any>
     | RefSubject<never, never, any>
 
+  /**
+   * @since 1.20.0
+   */
   export interface Tagged<I, E, A> extends RefSubject<I, E, A> {
+    /**
+     * @since 1.20.0
+     */
     readonly tag: C.Tagged<I, RefSubject<never, E, A>>
+    /**
+     * @since 1.20.0
+     */
     readonly make: <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
   }
 
@@ -86,18 +136,33 @@ export namespace RefSubject {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export type Context<T> = Fx.Context<T>
 
+/**
+ * @since 1.20.0
+ */
 export type Error<T> = Fx.Error<T>
 
+/**
+ * @since 1.20.0
+ */
 export type Success<T> = Fx.Success<T>
 
+/**
+ * @since 1.20.0
+ */
 export interface RefSubjectOptions<A> {
   readonly eq?: Equivalence.Equivalence<A>
   readonly replay?: number
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy
 }
 
+/**
+ * @since 1.20.0
+ */
 export function fromEffect<R, E, A>(
   effect: Effect.Effect<R, E, A>,
   options?: RefSubjectOptions<A>
@@ -105,6 +170,9 @@ export function fromEffect<R, E, A>(
   return Effect.map(makeCore(effect, options), (core) => new RefSubjectImpl(core))
 }
 
+/**
+ * @since 1.20.0
+ */
 export function fromFx<R, E, A>(
   fx: Fx<R, E, A>,
   options?: RefSubjectOptions<A>
@@ -128,6 +196,9 @@ export function fromFx<R, E, A>(
   )
 }
 
+/**
+ * @since 1.20.0
+ */
 export function fromRefSubject<R, E, A>(
   ref: RefSubject<R, E, A>,
   options?: RefSubjectOptions<A>
@@ -158,6 +229,9 @@ function persistCore<R, E, A, R2>(ref: RefSubject<R, E, A>, core: RefSubjectCore
   return Effect.ignoreLogged(Effect.provide(Effect.flatMap(core.deferredRef, (value) => set(ref, value)), core.context))
 }
 
+/**
+ * @since 1.20.0
+ */
 export const make: {
   <R, E, A>(
     ref: RefSubject<R, E, A>,
@@ -182,6 +256,9 @@ export const make: {
   else return fromEffect(fxOrEffect, options)
 }
 
+/**
+ * @since 1.20.0
+ */
 export function of<A, E = never>(
   a: A,
   options?: RefSubjectOptions<A>
@@ -209,6 +286,9 @@ const withScopeAndFiberId = <R, E, A>(
 
 const emptyContext = C.empty()
 
+/**
+ * @since 1.20.0
+ */
 export function unsafeMake<E, A>(
   params: {
     readonly id: FiberId.FiberId
@@ -296,6 +376,9 @@ class DerivedImpl<R, E, A, R2> extends RefSubjectImpl<R, E, A, R2> implements Re
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const set: {
   <A>(value: A): <R, E>(ref: RefSubject<R, E, A>) => Effect.Effect<R, E, A>
   <R, E, A>(ref: RefSubject<R, E, A>, a: A): Effect.Effect<R, E, A>
@@ -303,15 +386,38 @@ export const set: {
   return ref.runUpdates((ref) => ref.set(a))
 })
 
+/**
+ * @since 1.20.0
+ */
 export function reset<R, E, A>(ref: RefSubject<R, E, A>): Effect.Effect<R, E, Option.Option<A>> {
   return ref.runUpdates((ref) => ref.delete)
 }
 
-export { reset as delete }
+/**
+ * @since 1.20.0
+ */
+export {
+  /**
+   * @since 1.20.0
+   */
+  reset as delete
+}
 
+/**
+ * @since 1.20.0
+ */
 export interface GetSetDelete<R, E, A> {
+  /**
+   * @since 1.20.0
+   */
   readonly get: Effect.Effect<R, E, A>
+  /**
+   * @since 1.20.0
+   */
   readonly set: (a: A) => Effect.Effect<R, never, A>
+  /**
+   * @since 1.20.0
+   */
   readonly delete: Effect.Effect<R, E, Option.Option<A>>
 }
 
@@ -323,6 +429,9 @@ function getSetDelete<R, E, A, R2>(ref: RefSubjectCore<R, E, A, R2>): GetSetDele
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const updateEffect: {
   <A, R2, E2>(
     f: (value: A) => Effect.Effect<R2, E2, A>
@@ -338,6 +447,9 @@ export const updateEffect: {
   return ref.runUpdates((ref) => Effect.flatMap(Effect.flatMap(ref.get, f), ref.set))
 })
 
+/**
+ * @since 1.20.0
+ */
 export const update: {
   <A>(f: (value: A) => A): <R, E>(ref: RefSubject<R, E, A>) => Effect.Effect<R, E, A>
   <R, E, A>(ref: RefSubject<R, E, A>, f: (value: A) => A): Effect.Effect<R, E, A>
@@ -345,6 +457,9 @@ export const update: {
   return updateEffect(ref, (value) => Effect.succeed(f(value)))
 })
 
+/**
+ * @since 1.20.0
+ */
 export const modifyEffect: {
   <A, R2, E2, B>(
     f: (value: A) => Effect.Effect<R2, E2, readonly [B, A]>
@@ -366,6 +481,9 @@ export const modifyEffect: {
   )
 })
 
+/**
+ * @since 1.20.0
+ */
 export const modify: {
   <A, B>(f: (value: A) => readonly [B, A]): <R, E>(ref: RefSubject<R, E, A>) => Effect.Effect<R, E, B>
   <R, E, A, B>(ref: RefSubject<R, E, A>, f: (value: A) => readonly [B, A]): Effect.Effect<R, E, B>
@@ -375,6 +493,9 @@ export const modify: {
 
 const isRefSubjectDataFirst = (args: IArguments) => isRefSubject(args[0])
 
+/**
+ * @since 1.20.0
+ */
 export const runUpdates: {
   <R, E, A, R2, E2, B, R3 = never, E3 = never, C = never>(
     f: (ref: GetSetDelete<R, E, A>) => Effect.Effect<R2, E2, B>,
@@ -648,6 +769,9 @@ function sendEvent<R, E, A, R2>(
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const mapEffect: {
   <A, R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, B>
@@ -686,6 +810,9 @@ export const mapEffect: {
     : ComputedImpl.make(versioned, f)
 })
 
+/**
+ * @since 1.20.0
+ */
 export const map: {
   <A, B>(f: (a: A) => B): {
     <R, E>(ref: RefSubject<R, E, A>): Computed<R, E, B>
@@ -718,6 +845,9 @@ export const map: {
   return mapEffect(versioned, (a) => Effect.succeed(f(a)))
 })
 
+/**
+ * @since 1.20.0
+ */
 export const filterMapEffect: {
   <A, R2, E2, B>(
     f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
@@ -745,6 +875,9 @@ export const filterMapEffect: {
   return FilteredImpl.make(versioned, f)
 })
 
+/**
+ * @since 1.20.0
+ */
 export const filterMap: {
   <A, B>(f: (a: A) => Option.Option<B>): {
     <R, E>(ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>): Filtered<R, E, B>
@@ -770,6 +903,9 @@ export const filterMap: {
   return FilteredImpl.make(versioned, (a) => Effect.succeed(f(a)))
 })
 
+/**
+ * @since 1.20.0
+ */
 export const compact: {
   <R, E, A>(ref: RefSubject<R, E, Option.Option<A>> | Computed<R, E, Option.Option<A>>): Filtered<R, E, A>
   <R, E, A>(ref: Filtered<R, E, Option.Option<A>>): Filtered<R, E, A>
@@ -786,6 +922,9 @@ export const compact: {
 ): Filtered<R0 | R2 | Exclude<R, Scope.Scope>, E0 | E | Exclude<E | E2, Cause.NoSuchElementException>, A> =>
   filterMap(versioned, identity) as any
 
+/**
+ * @since 1.20.0
+ */
 export const filterEffect: {
   <R, E, A, R2, E2>(
     ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>,
@@ -802,6 +941,9 @@ export const filterEffect: {
   return FilteredImpl.make(versioned, (a) => Effect.map(f(a), (b) => b ? Option.some(a) : Option.none()))
 })
 
+/**
+ * @since 1.20.0
+ */
 export const filter: {
   <A>(f: (a: A) => boolean): {
     <R, E>(ref: RefSubject<R, E, A> | Computed<R, E, A> | Filtered<R, E, A>): Filtered<R, E, A>
@@ -910,6 +1052,9 @@ class FilteredImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.Version
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const skipRepeatsWith: {
   <A>(eq: Equivalence.Equivalence<A>): {
     <R, E>(ref: RefSubject<R, E, A> | Computed<R, E, A>): Computed<R, E, A>
@@ -942,6 +1087,9 @@ export const skipRepeatsWith: {
   }
 })
 
+/**
+ * @since 1.20.0
+ */
 export function skipRepeats<R, E, A>(
   ref: RefSubject<R, E, A> | Computed<R, E, A>
 ): Computed<R, E, A>
@@ -960,6 +1108,9 @@ export function skipRepeats<R, E, A>(
   return skipRepeatsWith(ref, Equal.equals)
 }
 
+/**
+ * @since 1.20.0
+ */
 export function transform<R, E, A, B>(
   ref: RefSubject<R, E, A>,
   from: (a: A) => B,
@@ -968,6 +1119,9 @@ export function transform<R, E, A, B>(
   return new RefSubjectTransform(ref, from, to)
 }
 
+/**
+ * @since 1.20.0
+ */
 export function transformOrFail<R, E, R2, E2, A, R3, E3, B>(
   ref: RefSubject<R, E, A>,
   from: (a: A) => Effect.Effect<R2, E2, B>,
@@ -1094,6 +1248,9 @@ class RefSubjectTransformEffect<R, E, A, R2, E2, B, R3, E3>
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function tuple<
   const Refs extends ReadonlyArray<RefSubject<any, any, any> | Computed<any, any, any> | Filtered<any, any, any>>
 >(refs: Refs): TupleFrom<Refs> {
@@ -1135,6 +1292,9 @@ function getRefKind<
   return kind
 }
 
+/**
+ * @since 1.20.0
+ */
 export type TupleFrom<
   Refs extends ReadonlyArray<RefSubject<any, any, any> | Computed<any, any, any> | Filtered<any, any, any>>
 > = {
@@ -1145,11 +1305,17 @@ export type TupleFrom<
 
 type Ref = RefSubject.Any | Computed.Any | Filtered.Any
 
+/**
+ * @since 1.20.0
+ */
 export type GetTupleKind<Refs extends ReadonlyArray<Ref>, Kind extends RefKind = "r"> = Refs extends
   readonly [infer Head extends Ref, ...infer Tail extends ReadonlyArray<Ref>] ?
   GetTupleKind<Tail, MergeKind<Kind, MatchKind<Head>>>
   : Kind
 
+/**
+ * @since 1.20.0
+ */
 export type MatchKind<T extends Ref> = [T] extends [Filtered.Any] ? "f"
   : [T] extends [RefSubject.Any] ? "r"
   : "c"
@@ -1317,6 +1483,9 @@ function makeTupleFiltered<
   return new FilteredImpl(Versioned.tuple(refs) as any, Effect.succeedSome) as any
 }
 
+/**
+ * @since 1.20.0
+ */
 export function struct<
   const Refs extends Readonly<Record<string, RefSubject.Any | Computed.Any | Filtered.Any>>
 >(refs: Refs): StructFrom<Refs> {
@@ -1476,6 +1645,9 @@ type StructFrom<
   "r": [RefSubjectStructFrom<Refs>] extends [RefSubject<infer R, infer E, infer A>] ? RefSubject<R, E, A> : never
 }[GetStructKind<Refs>]
 
+/**
+ * @since 1.20.0
+ */
 export type GetStructKind<
   Refs extends Readonly<Record<string, RefSubject.Any | Computed.Any | Filtered.Any>>
 > = MergeKinds<
@@ -1521,6 +1693,9 @@ type RefSubjectStructFrom<
   }
 >
 
+/**
+ * @since 1.20.0
+ */
 export function tagged<E, A>(replay?: number): {
   <const I extends C.IdentifierFactory<any>>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
   <const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
@@ -1586,6 +1761,9 @@ class RefSubjectTagged<I, E, A> extends FxEffectBase<
     this.tag.scoped(make(fxOrEffect))
 }
 
+/**
+ * @since 1.20.0
+ */
 export function fromTag<I, S, R, E, A>(
   tag: C.Tag<I, S>,
   f: (s: S) => RefSubject<R, E, A>
@@ -1648,24 +1826,36 @@ class RefSubjectFromTag<I, S, R, E, A> extends FxEffectBase<
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function isRefSubject<R, E, A>(u: unknown): u is RefSubject<R, E, A>
 export function isRefSubject(u: unknown): u is RefSubject.Any
 export function isRefSubject(u: unknown): u is RefSubject.Any {
   return isObjectLike(u) && RefSubjectTypeId in u
 }
 
+/**
+ * @since 1.20.0
+ */
 export function isComputed<R, E, A>(u: unknown): u is Computed<R, E, A>
 export function isComputed(u: unknown): u is Computed.Any
 export function isComputed(u: unknown): u is Computed.Any {
   return isObjectLike(u) && ComputedTypeId in u
 }
 
+/**
+ * @since 1.20.0
+ */
 export function isFiltered<R, E, A>(u: unknown): u is Filtered<R, E, A>
 export function isFiltered(u: unknown): u is Filtered.Any
 export function isFiltered(u: unknown): u is Filtered.Any {
   return isObjectLike(u) && FilteredTypeId in u
 }
 
+/**
+ * @since 1.20.0
+ */
 export function isDerived<R, E, A>(u: unknown): u is RefSubject.Derived<R, E, A>
 export function isDerived(u: unknown): u is RefSubject.Derived<unknown, unknown, unknown>
 export function isDerived(u: unknown): u is RefSubject.Derived<unknown, unknown, unknown> {
@@ -1680,6 +1870,9 @@ function isObjectLike(u: unknown): u is object {
   return (type === "object" && !Array.isArray(u)) || type === "function"
 }
 
+/**
+ * @since 1.20.0
+ */
 export function computedFromTag<I, S, R, E, A>(
   tag: C.Tag<I, S>,
   f: (s: S) => Computed<R, E, A>
@@ -1720,6 +1913,9 @@ class ComputedFromTag<I, S, R, E, A> extends FxEffectBase<
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function filteredFromTag<I, S, R, E, A>(
   tag: C.Tag<I, S>,
   f: (s: S) => Filtered<R, E, A>
@@ -1764,6 +1960,9 @@ class FilteredFromTag<I, S, R, E, A> extends FxEffectBase<
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const provide: {
   <S>(context: C.Context<S> | Runtime.Runtime<S>): {
     <R, E, A>(filtered: Filtered<R, E, A>): Filtered<Exclude<R, S>, E, A>
@@ -1891,6 +2090,9 @@ export const decrement: <R, E>(ref: RefSubject<R, E, number>) => Effect.Effect<R
   ref: RefSubject<R, E, number>
 ) => update(ref, sub)
 
+/**
+ * @since 1.20.0
+ */
 export const slice: {
   (drop: number, take: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
   <R, E, A>(ref: RefSubject<R, E, A>, drop: number, take: number): RefSubject<R, E, A>
@@ -1901,6 +2103,9 @@ export const slice: {
   }
 )
 
+/**
+ * @since 1.20.0
+ */
 export const drop: {
   (drop: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
   <R, E, A>(ref: RefSubject<R, E, A>, drop: number): RefSubject<R, E, A>
@@ -1908,6 +2113,9 @@ export const drop: {
   return slice(ref, drop, Infinity)
 })
 
+/**
+ * @since 1.20.0
+ */
 export const take: {
   (take: number): <R, E, A>(ref: RefSubject<R, E, A>) => RefSubject<R, E, A>
   <R, E, A>(ref: RefSubject<R, E, A>, take: number): RefSubject<R, E, A>

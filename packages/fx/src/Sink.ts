@@ -1,3 +1,8 @@
+/**
+ * Sink is a data structure which can be used to consume values from a stream.
+ * @since 1.20.0
+ */
+
 import * as C from "@typed/context"
 import type { Predicate, Tracer } from "effect"
 import * as Cause from "effect/Cause"
@@ -8,26 +13,61 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import { type Bounds } from "./internal/bounds.js"
 
+/**
+ * Sink is a data structure which can be used to consume values from a stream.
+ * @since 1.20.0
+ */
 export interface Sink<out R, in E, in A> {
   onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown>
   onSuccess(value: A): Effect.Effect<R, never, unknown>
 }
 
+/**
+ * @since 1.20.0
+ */
 export namespace Sink {
+  /**
+   * @since 1.20.0
+   */
   export type Context<T> = T extends Sink<infer R, infer _E, infer _A> ? R : never
+
+  /**
+   * @since 1.20.0
+   */
   export type Error<T> = T extends Sink<infer _R, infer E, infer _A> ? E : never
+
+  /**
+   * @since 1.20.0
+   */
   export type Success<T> = T extends Sink<infer _R, infer _E, infer A> ? A : never
 
+  /**
+   * @since 1.20.0
+   */
   export interface Tagged<I, E, A> extends Sink<I, E, A> {
     readonly tag: C.Tagged<I, Sink<never, E, A>>
     readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<R, never, I>
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export type Context<T> = Sink.Context<T>
+
+/**
+ * @since 1.20.0
+ */
 export type Error<T> = Sink.Error<T>
+
+/**
+ * @since 1.20.0
+ */
 export type Success<T> = Sink.Success<T>
 
+/**
+ * @since 1.20.0
+ */
 export function make<E, R, A, R2>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
   onSuccess: (value: A) => Effect.Effect<R2, never, unknown>
@@ -48,6 +88,9 @@ export interface WithEarlyExit<R, E, A> extends Sink<R, E, A> {
   readonly earlyExit: Effect.Effect<never, never, void>
 }
 
+/**
+ * @since 1.20.0
+ */
 export function withEarlyExit<R, E, A, R2, B>(
   sink: Sink<R, E, A>,
   f: (sink: WithEarlyExit<R, E, A>) => Effect.Effect<R2, E, B>
@@ -98,6 +141,9 @@ class MapSink<R, E, A, B> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function filter<R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A> {
   return new FilterSink(sink, predicate)
 }
@@ -121,6 +167,9 @@ class FilterSink<R, E, A> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function filterMap<R, E, A, B>(sink: Sink<R, E, B>, f: (a: A) => Option.Option<B>): Sink<R, E, A> {
   return new FilterMapSink(sink, f)
 }
@@ -145,6 +194,9 @@ class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const mapEffect: {
   <B, R2, E2, A>(f: (b: B) => Effect.Effect<R2, E2, A>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -175,6 +227,9 @@ class MapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const filterMapEffect: {
   <B, R2, E2, A>(f: (b: B) => Effect.Effect<R2, E2, Option.Option<A>>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -215,6 +270,9 @@ class FilterMapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const filterEffect: {
   <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -251,6 +309,9 @@ class FilterEffectSink<R, E, A> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const tapEffect: {
   <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, unknown>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -284,6 +345,9 @@ class TapEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const loop: {
   <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(
     sink: Sink<R, E, C>
@@ -318,6 +382,9 @@ class LoopSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const loopCause: {
   <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Cause.Cause<C>, B]): <R, E>(
     sink: Sink<R, C, A>
@@ -356,6 +423,9 @@ class LoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const filterMapLoop: {
   <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(
     sink: Sink<R, E, C>
@@ -391,6 +461,9 @@ class FilterMapLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const filterMapLoopCause: {
   <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Option.Option<Cause.Cause<C>>, B]): <R, E>(
     sink: Sink<R, C, A>
@@ -430,6 +503,9 @@ class FilterMapLoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const loopEffect: {
   <B, A, R2, E2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>): <R, E>(
     sink: Sink<R, E, C>
@@ -472,6 +548,9 @@ class LoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const filterMapLoopEffect: {
   <B, A, R2, E2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>): <R, E>(
     sink: Sink<R, E, C>
@@ -515,6 +594,9 @@ class FilterMapLoopEffectSink<R, E, A, B, R2, C> implements Sink<R | R2, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const loopCauseEffect: {
   <B, A, R2, E2, C>(
     seed: B,
@@ -560,6 +642,9 @@ class LoopCauseEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function filterMapLoopCauseEffect<R, E, A, B, R2, E2, C>(
   sink: Sink<R, E2 | C, A>,
   seed: B,
@@ -594,6 +679,9 @@ class FilterMapLoopCauseEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const slice: {
   <R, E, A, R2>(bounds: Bounds, f: (sink: Sink<R, E, A>) => Effect.Effect<R2, never, unknown>): (
     sink: Sink<R, E, A>
@@ -642,6 +730,9 @@ class SliceSink<R, E, A> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const takeWhile: {
   <R, E, A, R2, B>(predicate: Predicate.Predicate<A>, f: (sink: Sink<R, E, A>) => Effect.Effect<R2, E, B>): (
     sink: Sink<R, E, A>
@@ -684,6 +775,9 @@ class TakeWhileSink<R, E, A> implements Sink<R, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const dropWhile: {
   <A>(predicate: Predicate.Predicate<A>): <R, E>(
     sink: Sink<R, E, A>
@@ -699,6 +793,9 @@ export const dropWhile: {
   })
 })
 
+/**
+ * @since 1.20.0
+ */
 export const dropAfter: {
   <A>(predicate: Predicate.Predicate<A>): <R, E>(
     sink: Sink<R, E, A>
@@ -716,6 +813,9 @@ export const dropAfter: {
   })
 })
 
+/**
+ * @since 1.20.0
+ */
 export const takeWhileEffect: {
   <R, E, A, R2, E2, R3, E3, B>(
     predicate: (a: A) => Effect.Effect<R2, E2, boolean>,
@@ -765,6 +865,9 @@ class TakeWhileEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export const dropWhileEffect: {
   <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -784,6 +887,9 @@ export const dropWhileEffect: {
   })
 })
 
+/**
+ * @since 1.20.0
+ */
 export const dropAfterEffect: {
   <A, R2, E2>(predicate: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(
     sink: Sink<R, E | E2, A>
@@ -803,6 +909,9 @@ export const dropAfterEffect: {
   })
 })
 
+/**
+ * @since 1.20.0
+ */
 export const provide: {
   <R2>(ctx: C.Context<R2>): <R, E, A>(sink: Sink<R, E, A>) => Sink<Exclude<R, R2>, E, A>
   <R, E, A, R2>(sink: Sink<R, E, A>, ctx: C.Context<R2>): Sink<Exclude<R, R2>, E, A>
@@ -816,6 +925,9 @@ export const provide: {
   )
 })
 
+/**
+ * @since 1.20.0
+ */
 export const setSpan: {
   (span: Tracer.Span): <R, E, A>(sink: Sink<R, E, A>) => Sink<R, E, A>
   <R, E, A>(self: Sink<R, E, A>, span: Tracer.Span): Sink<R, E, A>
@@ -848,6 +960,9 @@ const addEvent = <R, E, A>(
       return effect
     }))
 
+/**
+ * @since 1.20.0
+ */
 export function tagged<E, A>(): {
   <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
   <const I>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
@@ -870,6 +985,9 @@ class TaggedImpl<I, E, A> implements Sink.Tagged<I, E, A> {
     Layer.flatMap(Layer.context<R>(), (ctx) => this.tag.layer(provide(sink, ctx)))
 }
 
+/**
+ * @since 1.20.0
+ */
 export const fromTag: {
   <S, R2, E2, B>(f: (s: S) => Sink<R2, E2, B>): <I>(tag: C.Tag<I, S>) => Sink<I | R2, E2, B>
   <I, S, R2, E2, B>(tag: C.Tag<I, S>, f: (s: S) => Sink<R2, E2, B>): Sink<I | R2, E2, B>
@@ -896,6 +1014,9 @@ class FromTag<I, S, R2, E2, B> implements Sink<I | R2, E2, B> {
   }
 }
 
+/**
+ * @since 1.20.0
+ */
 export function ignoreInterrupt<R, E, A>(sink: Sink<R, E, A>): Sink<R, E, A> {
   return make(
     (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),

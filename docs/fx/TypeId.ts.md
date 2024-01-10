@@ -1,6 +1,6 @@
 ---
 title: TypeId.ts
-nav_order: 26
+nav_order: 21
 parent: "@typed/fx"
 ---
 
@@ -17,6 +17,8 @@ Added in v1.18.0
   - [ComputedTypeId (type alias)](#computedtypeid-type-alias)
   - [FilteredTypeId](#filteredtypeid)
   - [FilteredTypeId (type alias)](#filteredtypeid-type-alias)
+  - [PushTypeId](#pushtypeid)
+  - [PushTypeId (type alias)](#pushtypeid-type-alias)
   - [RefSubjectTypeId](#refsubjecttypeid)
   - [RefSubjectTypeId (type alias)](#refsubjecttypeid-type-alias)
   - [TypeId](#typeid)
@@ -62,6 +64,26 @@ Added in v1.18.0
 
 ```ts
 export type FilteredTypeId = typeof FilteredTypeId
+```
+
+Added in v1.18.0
+
+## PushTypeId
+
+**Signature**
+
+```ts
+export declare const PushTypeId: typeof PushTypeId
+```
+
+Added in v1.18.0
+
+## PushTypeId (type alias)
+
+**Signature**
+
+```ts
+export type PushTypeId = typeof PushTypeId
 ```
 
 Added in v1.18.0

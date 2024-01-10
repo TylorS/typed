@@ -19,7 +19,7 @@ Added in v1.0.0
   - [RenderContext (interface)](#rendercontext-interface)
   - [RenderContextOptions (type alias)](#rendercontextoptions-type-alias)
   - [RenderQueue (interface)](#renderqueue-interface)
-  - [browser](#browser)
+  - [dom](#dom)
   - [getRenderCache](#getrendercache)
   - [getTemplateCache](#gettemplatecache)
   - [make](#make)
@@ -94,18 +94,18 @@ Added in v1.0.0
 
 ```ts
 export interface RenderQueue {
-  readonly add: (part: Part | SparsePart, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: unknown, task: () => void) => Effect.Effect<Scope.Scope, never, void>
 }
 ```
 
 Added in v1.0.0
 
-## browser
+## dom
 
 **Signature**
 
 ```ts
-export declare const browser: (
+export declare const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
 ) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices>

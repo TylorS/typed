@@ -39,14 +39,18 @@ Added in v1.0.0
   - [RefreshingSuccess (interface)](#refreshingsuccess-interface)
   - [Success (interface)](#success-interface)
   - [SuccessOptions (type alias)](#successoptions-type-alias)
+  - [dataEqual](#dataequal)
   - [done](#done)
   - [fail](#fail)
   - [failCause](#failcause)
   - [flatMap](#flatmap)
+  - [fromEither](#fromeither)
+  - [fromExit](#fromexit)
   - [getEquivalence](#getequivalence)
   - [getFailure](#getfailure)
   - [getSuccess](#getsuccess)
   - [isAsyncData](#isasyncdata)
+  - [isExpired](#isexpired)
   - [isFailure](#isfailure)
   - [isLoading](#isloading)
   - [isLoadingOrRefreshing](#isloadingorrefreshing)
@@ -146,6 +150,11 @@ export interface Failure<E> extends Effect.Effect<never, E, never> {
   readonly cause: Cause.Cause<E>
 
   /**
+   * @since 1.20.0
+   */
+  readonly timestamp: number // Date.now()
+
+  /**
    * @since 1.18.0
    */
   readonly refreshing: Option.Option<Loading>
@@ -175,6 +184,7 @@ Added in v1.0.0
 
 ```ts
 export type FailureOptions = {
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 }
 ```
@@ -227,6 +237,7 @@ Added in v1.0.0
 
 ```ts
 export type LoadingOptions = {
+  readonly timestamp: number // Date.now()
   readonly progress: Option.Option<Progress.Progress>
 }
 ```
@@ -327,6 +338,10 @@ Added in v1.0.0
 export interface Success<A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
+  /**
+   * @since 1.20.0
+   */
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 
   readonly [Unify.typeSymbol]: unknown
@@ -343,8 +358,22 @@ Added in v1.0.0
 
 ```ts
 export type SuccessOptions = {
+  readonly timestamp: number // Date.now()
   readonly refreshing: Option.Option<Loading>
 }
+```
+
+Added in v1.0.0
+
+## dataEqual
+
+Checks if two AsyncData are equal, disregarding the timestamps associated with them. Useful for testing
+without needing to manage timestamps.
+
+**Signature**
+
+```ts
+export declare function dataEqual<E, A>(first: AsyncData<E, A>, second: AsyncData<E, A>): boolean
 ```
 
 Added in v1.0.0
@@ -398,6 +427,26 @@ export declare const flatMap: {
 
 Added in v1.0.0
 
+## fromEither
+
+**Signature**
+
+```ts
+export declare function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A>
+```
+
+Added in v1.0.0
+
+## fromExit
+
+**Signature**
+
+```ts
+export declare function fromExit<E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A>
+```
+
+Added in v1.0.0
+
 ## getEquivalence
 
 **Signature**
@@ -436,6 +485,19 @@ Added in v1.0.0
 
 ```ts
 export declare const isAsyncData: <E, A>(u: unknown) => u is AsyncData<E, A>
+```
+
+Added in v1.0.0
+
+## isExpired
+
+**Signature**
+
+```ts
+export declare const isExpired: {
+  (ttl: Duration.DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
+  <E, A>(data: AsyncData<E, A>, ttl: Duration.DurationInput, now?: number): boolean
+}
 ```
 
 Added in v1.0.0
