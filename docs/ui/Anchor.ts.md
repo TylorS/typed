@@ -37,10 +37,10 @@ export declare function Anchor<
 >(
   props: Props,
   ...children: Children
-): TemplateFx<
-  Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
+): Fx.Fx<
+  RenderTemplate | Scope.Scope | Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
   Placeholder.Error<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
-  HTMLAnchorElement
+  RenderEvent
 >
 ```
 

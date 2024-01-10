@@ -14,7 +14,6 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [asyncData](#asyncdata)
-  - [cause](#cause)
 
 ---
 
@@ -29,16 +28,6 @@ export declare const asyncData: <EI, E, AI, A>(
   error: Schema.Schema<EI, E>,
   value: Schema.Schema<AI, A>
 ) => Schema.Schema<AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>>
-```
-
-Added in v1.0.0
-
-## cause
-
-**Signature**
-
-```ts
-export declare const cause: <EI, E>(error: Schema.Schema<EI, E>) => Schema.Schema<Cause.Cause<EI>, Cause.Cause<E>>
 ```
 
 Added in v1.0.0
