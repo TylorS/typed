@@ -1,5 +1,20 @@
 # @typed/template
 
+## 0.3.0
+
+### Minor Changes
+
+- [`708e9f5`](https://github.com/TylorS/typed/commit/708e9f58860702a7b8290ea261b1dad8b4b1c1c8) Thanks [@TylorS](https://github.com/TylorS)! - Fx + Template rewrite
+
+### Patch Changes
+
+- Updated dependencies [[`708e9f5`](https://github.com/TylorS/typed/commit/708e9f58860702a7b8290ea261b1dad8b4b1c1c8)]:
+  - @typed/context@0.21.0
+  - @typed/dom@9.0.0
+  - @typed/environment@0.3.0
+  - @typed/fx@1.20.0
+  - @typed/wire@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
