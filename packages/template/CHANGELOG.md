@@ -1,5 +1,11 @@
 # @typed/template
 
+## 0.3.1
+
+### Patch Changes
+
+- [`567d1fe`](https://github.com/TylorS/typed/commit/567d1fe5d51b0018335e242e980a386e681c57eb) Thanks [@TylorS](https://github.com/TylorS)! - Update Hydrate to new part constructions
+
 ## 0.3.0
 
 ### Minor Changes
