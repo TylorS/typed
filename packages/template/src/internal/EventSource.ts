@@ -29,28 +29,39 @@ const disposable = (f: () => void): Disposable => ({
 export function makeEventSource(): EventSource {
   const bubbleListeners = new Map<
     EventName,
-    Set<Entry>
+    readonly [normal: Set<Entry>, once: Set<Entry>]
   >()
   const captureListeners = new Map<
     EventName,
-    Set<Entry>
+    readonly [normal: Set<Entry>, once: Set<Entry>]
   >()
 
   function addListener(
     listeners: Map<
       EventName,
-      Set<Entry>
+      readonly [normal: Set<Entry>, once: Set<Entry>]
     >,
     event: EventName,
     entry: Entry
   ): void {
-    const set = listeners.get(event)
-    if (set === undefined) {
-      const set = new Set<Entry>()
-      set.add(entry)
-      listeners.set(event, set)
+    const sets = listeners.get(event)
+    const isOnce = entry[1].options?.once === true
+    if (sets === undefined) {
+      const normal = new Set<Entry>()
+      const once = new Set<Entry>()
+      if (isOnce) {
+        once.add(entry)
+      } else {
+        normal.add(entry)
+      }
+      listeners.set(event, [normal, once])
     } else {
-      set.add(entry)
+      const [normal, once] = sets
+      if (isOnce) {
+        once.add(entry)
+      } else {
+        normal.add(entry)
+      }
     }
   }
 
@@ -69,14 +80,16 @@ export function makeEventSource(): EventSource {
   function setupBubbleListeners(element: Element, run: Run) {
     const disposables: Array<Disposable> = []
 
-    for (const [event, handlers] of bubbleListeners) {
-      const listener = (ev: Event) =>
-        run(
-          Effect.forEach(handlers, ([el, handler]) =>
-            ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.unit)
-        )
-      element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
-      disposables.push(disposable(() => element.removeEventListener(event, listener)))
+    for (const [event, sets] of bubbleListeners) {
+      for (const handlers of sets) {
+        const listener = (ev: Event) =>
+          run(
+            Effect.forEach(handlers, ([el, handler]) =>
+              ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.unit)
+          )
+        element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
+        disposables.push(disposable(() => element.removeEventListener(event, listener)))
+      }
     }
 
     return disposables
@@ -85,16 +98,18 @@ export function makeEventSource(): EventSource {
   function setupCaptureListeners(element: Element, run: Run) {
     const disposables: Array<Disposable> = []
 
-    for (const [event, handlers] of captureListeners) {
-      const listener = (ev: Event) =>
-        run(
-          Effect.forEach(handlers, ([el, handler]) =>
-            ev.target === el || el.contains(ev.target as Node)
-              ? handler.handler(proxyCurrentTargetForCaptureEvents(ev, el))
-              : Effect.unit)
-        )
-      element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
-      disposables.push(disposable(() => element.removeEventListener(event, listener)))
+    for (const [event, sets] of captureListeners) {
+      for (const handlers of sets) {
+        const listener = (ev: Event) =>
+          run(
+            Effect.forEach(handlers, ([el, handler]) =>
+              ev.target === el || el.contains(ev.target as Node)
+                ? handler.handler(proxyCurrentTargetForCaptureEvents(ev, el))
+                : Effect.unit)
+          )
+        element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
+        disposables.push(disposable(() => element.removeEventListener(event, listener)))
+      }
     }
 
     return disposables
@@ -147,7 +162,7 @@ function proxyCurrentTargetForCaptureEvents<E extends Event>(event: E, currentTa
 function getDerivedAddEventListenerOptions(entries: Set<Entry>): AddEventListenerOptions {
   const hs = Array.from(entries)
   return {
-    once: hs.some((h) => h[1].options?.once === true),
+    once: hs.every((h) => h[1].options?.once === true),
     passive: hs.every((h) => h[1].options?.passive === true)
   }
 }
