@@ -72,6 +72,13 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
         if (values.length === 0) return yield* _(sink.onSuccess(DomRenderEvent(wire)), Effect.zipRight(Effect.never))
 
+        const makeHydrateContext = (index: number): HydrateContext => ({
+          where,
+          rootIndex: index,
+          parentTemplate: template,
+          hydrate: true
+        })
+
         const refCounter = yield* _(indexRefCounter2())
         const ctx: RenderPartContext = {
           context,
@@ -81,7 +88,8 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           refCounter,
           renderContext,
           onCause: sink.onFailure,
-          values
+          values,
+          makeHydrateContext
         }
 
         // Connect our interpolated values to our template parts

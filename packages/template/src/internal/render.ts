@@ -6,7 +6,6 @@ import { Effect } from "effect"
 import type { Cause } from "effect/Cause"
 import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
-import { replace } from "effect/ReadonlyArray"
 import { Scope } from "effect/Scope"
 import type { Directive } from "../Directive.js"
 import { isDirective } from "../Directive.js"
@@ -14,16 +13,7 @@ import * as ElementRef from "../ElementRef.js"
 import * as ElementSource from "../ElementSource.js"
 import type { BrowserEntry } from "../Entry.js"
 import * as EventHandler from "../EventHandler.js"
-import type {
-  AttributePart,
-  ClassNamePart,
-  CommentPart,
-  Part,
-  Parts,
-  PropertiesPart,
-  SparsePart,
-  StaticText
-} from "../Part.js"
+import type { Part } from "../Part.js"
 import type { Placeholder } from "../Placeholder.js"
 import type { ToRendered } from "../Render.js"
 import type { Renderable } from "../Renderable.js"
@@ -35,7 +25,7 @@ import type * as Template from "../Template.js"
 import { makeRenderNodePart } from "./browser.js"
 import { type EventSource, makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
-import type { IndexRefCounter, IndexRefCounter2 } from "./indexRefCounter.js"
+import type { IndexRefCounter2 } from "./indexRefCounter.js"
 import { indexRefCounter2 } from "./indexRefCounter.js"
 import { parse } from "./parser.js"
 import {
@@ -44,14 +34,8 @@ import {
   ClassNamePartImpl,
   CommentPartImpl,
   DataPartImpl,
-  EventPartImpl,
-  PropertiesPartImpl,
   PropertyPartImpl,
   RefPartImpl,
-  SparseAttributePartImpl,
-  SparseClassNamePartImpl,
-  SparseCommentPartImpl,
-  StaticTextImpl,
   TextPartImpl
 } from "./parts.js"
 import type { ParentChildNodes } from "./utils.js"
@@ -72,6 +56,8 @@ export type RenderPartContext = {
   readonly renderContext: RenderContext
   readonly values: ReadonlyArray<Renderable<any, any>>
   readonly onCause: (cause: Cause<any>) => Effect.Effect<never, never, void>
+
+  readonly makeHydrateContext?: (index: number) => HydrateContext
 
   expected: number
 }
@@ -220,20 +206,27 @@ const RenderPartMap: RenderPartMap = {
     return null
   },
   "node": (templatePart, node, ctx) => {
+    const makeHydrateContext = ctx.makeHydrateContext
     const part = makeRenderNodePart(
       templatePart.index,
       node as HTMLElement | SVGElement,
       ctx.renderContext,
       ctx.document,
-      false
+      !!makeHydrateContext
     )
 
     ctx.expected++
 
-    return handlePart(
+    const handle = handlePart(
       ctx.values[templatePart.index],
       (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
     )
+
+    if (makeHydrateContext) {
+      return Effect.provideService(handle, HydrateContext, makeHydrateContext(templatePart.index))
+    } else {
+      return handle
+    }
   },
   "property": (templatePart, node, ctx) => {
     const element = node as HTMLElement | SVGElement
@@ -603,109 +596,6 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
     })
   }
 
-export function renderValues<Values extends ReadonlyArray<Renderable<any, any>>>(
-  values: Values,
-  parts: Parts,
-  refCounter: IndexRefCounter,
-  ctx: Context.Context<any> | Context.Context<never>,
-  makeHydrateContext?: (index: number) => HydrateContext
-): Effect.Effect<Placeholder.Context<Values[number]> | Scope, never, void> {
-  return Effect.all(parts.map((part, index) => {
-    switch (part._tag) {
-      case "sparse/attribute":
-      case "sparse/className":
-      case "sparse/comment": {
-        return renderSparsePart(values, part, refCounter)
-      }
-      default:
-        return renderPart(
-          values,
-          part,
-          refCounter,
-          ctx,
-          makeHydrateContext ? () => makeHydrateContext(index) : undefined
-        )
-    }
-  }))
-}
-
-export function renderSparsePart(
-  values: ReadonlyArray<Renderable<any, any>>,
-  part: SparsePart,
-  refCounter: IndexRefCounter
-) {
-  const indexes = part.parts.flatMap((p) => p._tag === "static/text" ? [] : [p.index])
-
-  return Effect.forkScoped(
-    Fx.observe(
-      unwrapSparsePartRenderables(
-        part.parts.map((p) => p._tag === "static/text" ? Fx.succeed(p.value) : values[p.index]),
-        part
-      ),
-      (value) => Effect.tap(part.update(value as any), () => Effect.forEach(indexes, (a) => refCounter.release(a)))
-    )
-  )
-}
-
-export function renderPart<Values extends ReadonlyArray<Renderable<any, any>>>(
-  values: Values,
-  part: Part,
-  refCounter: IndexRefCounter,
-  ctx: Context.Context<any> | Context.Context<never>,
-  hydrateCtx?: () => HydrateContext
-): Effect.Effect<any, never, void> {
-  const partIndex = part.index
-  const renderable = values[partIndex]
-
-  if (renderable === null || renderable === undefined) return refCounter.release(partIndex)
-
-  if (isDirective(renderable)) {
-    return renderable(part).pipe(
-      Effect.flatMap(() => refCounter.release(partIndex)),
-      Effect.forkScoped
-    )
-  } else if (part._tag === "ref") {
-    return refCounter.release(partIndex)
-  } else if (part._tag === "event") {
-    const handler = getEventHandler(renderable, ctx, part.onCause)
-    if (handler) {
-      part.addEventListener(handler)
-    }
-
-    return refCounter.release(partIndex)
-  } else if (part._tag === "node" && hydrateCtx) {
-    return handlePart(
-      renderable,
-      (value) => Effect.flatMap(part.update(value), () => refCounter.release(partIndex))
-    ).pipe(
-      HydrateContext.provide(hydrateCtx()),
-      Effect.forkScoped
-    )
-  } else if (part._tag === "properties") {
-    return handlePropertiesPart(renderable, part, refCounter)
-  } else {
-    return handlePart(
-      renderable,
-      (value) => Effect.flatMap(part.update(value as any), () => refCounter.release(partIndex))
-    )
-  }
-}
-
-function handlePropertiesPart<R, E>(
-  renderable: unknown,
-  part: PropertiesPart,
-  refCounter: IndexRefCounter
-): Effect.Effect<R | Scope, E, void> {
-  if (renderable && typeof renderable === "object") {
-    return handlePart(
-      Fx.struct(Object.fromEntries(Object.entries(renderable).map(([k, v]) => [k, unwrapRenderable(v)] as const))),
-      (value) => Effect.tap(part.update(value as any), () => refCounter.release(part.index))
-    )
-  }
-
-  return Effect.succeed(void 0)
-}
-
 function getEventHandler<R, E>(
   renderable: any,
   ctx: Context.Context<any> | Context.Context<never>,
@@ -770,31 +660,6 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
   }
 }
 
-function unwrapSparsePartRenderables(
-  renderables: ReadonlyArray<Renderable<any, any>>,
-  part: SparsePart
-) {
-  return Fx.tuple(
-    // @ts-ignore type too deep
-    renderables.map((renderable, i) => {
-      const p = part.parts[i]
-
-      if (p._tag === "static/text") {
-        return Fx.succeed(p.value)
-      }
-
-      if (isDirective(renderable)) {
-        return Fx.fromEffect(Effect.map(renderable(p), () => p.value))
-      }
-
-      return Fx.mapEffect(
-        unwrapRenderable(renderable),
-        (u) => Effect.map(p.update(u), () => p.value)
-      )
-    })
-  ) as any
-}
-
 export function attachRoot<T extends RenderEvent | null>(
   cache: RenderContext["renderCache"],
   where: HTMLElement,
@@ -854,147 +719,6 @@ export function getBrowserEntry(
     return entry
   } else {
     return cached
-  }
-}
-
-export function buildParts<E>(
-  document: Document,
-  ctx: RenderContext,
-  template: Template.Template,
-  content: ParentChildNodes,
-  eventSource: EventSource,
-  onCause: (cause: Cause<E>) => Effect.Effect<never, never, void>,
-  isHydrating: boolean
-): Parts {
-  return template.parts.map(([part, path]) =>
-    buildPartWithNode(document, ctx, part, findPath(content, path), eventSource, onCause, isHydrating)
-  )
-}
-
-function buildPartWithNode<E>(
-  document: Document,
-  ctx: RenderContext,
-  part: Template.PartNode | Template.SparsePartNode,
-  node: Node,
-  eventSource: EventSource,
-  onCause: (cause: Cause<E>) => Effect.Effect<never, never, void>,
-  isHydrating: boolean
-): Part | SparsePart {
-  switch (part._tag) {
-    case "attr":
-      return AttributePartImpl.browser(part.index, node as Element, part.name, ctx)
-    case "boolean-part":
-      return BooleanPartImpl.browser(part.index, node as Element, part.name, ctx)
-    case "className-part":
-      return ClassNamePartImpl.browser(part.index, node as Element, ctx)
-    case "comment-part":
-      return CommentPartImpl.browser(part.index, node as Comment, ctx)
-    case "data":
-      return DataPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx)
-    case "event":
-      return new EventPartImpl(
-        part.name,
-        part.index,
-        ElementSource.fromElement(node as Element),
-        onCause as any,
-        (handler) => eventSource.addEventListener(node as Element, part.name, handler)
-      )
-    case "node":
-      return makeRenderNodePart(part.index, node as HTMLElement | SVGElement, ctx, document, isHydrating)
-    case "property":
-      return PropertyPartImpl.browser(part.index, node, part.name, ctx)
-    case "properties":
-      return PropertiesPartImpl.browser(part.index, node as HTMLElement | SVGElement, ctx)
-    case "ref":
-      return new RefPartImpl(ElementSource.fromElement(node as Element), part.index) as any
-    case "sparse-attr": {
-      const parts: Array<AttributePart | StaticText> = Array(part.nodes.length)
-      const sparse = SparseAttributePartImpl.browser(
-        part.name,
-        parts,
-        node as HTMLElement | SVGElement,
-        ctx
-      )
-
-      for (let i = 0; i < part.nodes.length; ++i) {
-        const node = part.nodes[i]
-
-        if (node._tag === "text") {
-          parts.push(new StaticTextImpl(node.value))
-          ;(sparse as any).value[i] = node.value
-        } else {
-          parts.push(
-            new AttributePartImpl(
-              node.name,
-              node.index,
-              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
-              sparse.value[i]
-            )
-          )
-        }
-      }
-
-      return sparse
-    }
-    case "sparse-class-name": {
-      const parts: Array<ClassNamePart | StaticText> = []
-      const values: Array<string | Array<string>> = [] // TODO: Do this for all other sparse attrs
-      const sparse = SparseClassNamePartImpl.browser(
-        parts,
-        node as HTMLElement | SVGElement,
-        ctx,
-        values
-      )
-
-      for (let i = 0; i < part.nodes.length; ++i) {
-        const node = part.nodes[i]
-
-        if (node._tag === "text") {
-          parts.push(new StaticTextImpl(node.value))
-          values.push(node.value)
-        } else {
-          values.push([])
-          parts.push(
-            new ClassNamePartImpl(
-              node.index,
-              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
-              []
-            )
-          )
-        }
-      }
-
-      return sparse
-    }
-    case "sparse-comment": {
-      const parts: Array<CommentPart | StaticText> = Array(part.nodes.length)
-      const sparse = SparseCommentPartImpl.browser(
-        node as Comment,
-        parts,
-        ctx
-      )
-
-      for (let i = 0; i < part.nodes.length; ++i) {
-        const node = part.nodes[i]
-
-        if (node._tag === "text") {
-          parts.push(new StaticTextImpl(node.value))
-          ;(sparse as any).value[i] = node.value
-        } else {
-          parts.push(
-            new CommentPartImpl(
-              node.index,
-              ({ value }) => sparse.update(replace(sparse.value, i, value || "")),
-              sparse.value[i]
-            )
-          )
-        }
-      }
-
-      return sparse
-    }
-    case "text-part":
-      return TextPartImpl.browser(document, part.index, node as Element, ctx)
   }
 }
 

@@ -55,6 +55,10 @@ export const getAllTextUntilElementClose = (tagName: string) => {
 
 export const getWhitespace = chunker(/(\s+)/g)
 
+const tagNameRegex = (tagName: string) => `(<\\/\\s*${tagName}\\s*>)`
+
+export const getClosingTagName = (tagName: string) => chunker(new RegExp(tagNameRegex(tagName), "gi"))
+
 function chunker(regex: RegExp) {
   return (str: string, pos: number): TextChunk | undefined => {
     regex.lastIndex = pos

@@ -225,8 +225,6 @@ describe.concurrent(__filename, () => {
         yield* _(RefSubject.delete(ref))
 
         expect(yield* _(ref)).toEqual(0)
-
-        console.log("ref 4")
       }).pipe(Effect.scoped)
 
       await Effect.runPromise(test)

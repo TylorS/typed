@@ -4,7 +4,7 @@ import * as Option from "effect/Option"
 import * as Template from "../Template.js"
 import type { TextChunk } from "./chunks.js"
 import {
-  getClosingTag,
+  getClosingTagName,
   getPart,
   getStrictPart,
   getTextUntilCloseBrace,
@@ -317,14 +317,14 @@ class ParserImpl implements Parser {
       const element = new Template.ElementNode(tagName, attributes, children)
 
       this.skipWhitespace()
-      this.consumeClosingTag()
+      this.consumeClosingTag(tagName)
 
       return element
     }
   }
 
-  private consumeClosingTag() {
-    this.chunk(getClosingTag)
+  private consumeClosingTag(tagName: string) {
+    this.chunk(getClosingTagName(tagName))
   }
 
   private parseSelfClosingElement(tagName: string): Template.SelfClosingElementNode {
