@@ -9,8 +9,8 @@ import type { DefaultEventMap, ElementSource } from "@typed/template/ElementSour
 import * as EventHandler from "@typed/template/EventHandler"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
-import type { TemplateFx } from "@typed/template/RenderTemplate"
-import { html } from "@typed/template/RenderTemplate"
+import type { RenderEvent } from "@typed/template/RenderEvent"
+import { html, type RenderTemplate } from "@typed/template/RenderTemplate"
 import type { Rendered } from "@typed/wire"
 import type { ReadonlyRecord, Scope } from "effect"
 import * as Effect from "effect/Effect"
@@ -58,10 +58,10 @@ export function Anchor<
 >(
   props: Props,
   ...children: Children
-): TemplateFx<
-  Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
+): Fx.Fx<
+  RenderTemplate | Scope.Scope | Placeholder.Context<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
   Placeholder.Error<Props[keyof Props] | ReturnOf<Props["ref"]> | Children[number]>,
-  HTMLAnchorElement
+  RenderEvent
 > {
   const {
     data,
