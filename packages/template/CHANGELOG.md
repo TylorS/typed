@@ -1,5 +1,13 @@
 # @typed/template
 
+## 0.3.2
+
+### Patch Changes
+
+- [`d04c08d`](https://github.com/TylorS/typed/commit/d04c08dab7fd427f4196b8f5f0414d761ebd0617) Thanks [@TylorS](https://github.com/TylorS)! - Cache tagName Regexp matchers
+
+- [`8b22aa6`](https://github.com/TylorS/typed/commit/8b22aa68ac556ba2fdbf1b0c22b3fd058b37ba7b) Thanks [@TylorS](https://github.com/TylorS)! - Improve Fiber management for event handlers
+
 ## 0.3.1
 
 ### Patch Changes
