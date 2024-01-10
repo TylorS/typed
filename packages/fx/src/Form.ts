@@ -3,7 +3,7 @@
  */
 import { AST } from "@effect/schema"
 import { type ParseOptions } from "@effect/schema/AST"
-import { from } from "@effect/schema/Equivalence"
+import { make } from "@effect/schema/Equivalence"
 import type { ParseError } from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import * as Cause from "effect/Cause"
@@ -323,7 +323,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
     this._fx = hold(
       core.skipRepeatsWith(
         core.struct(this.entries as any) as Fx<never, Form.Error<Entries> | ParseError, Form.Input<Entries>>,
-        from(this.schema)
+        make(S.from(this.schema))
       )
     )
   }

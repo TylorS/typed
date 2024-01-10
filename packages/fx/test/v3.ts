@@ -779,10 +779,10 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(parseError.left.errors),
+            ArrayFormatter.formatIssue(parseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -794,14 +794,14 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(parseError.left.errors),
+            ArrayFormatter.formatIssue(parseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "Cannot be empty ID",
               path: ["id"]
             }, {
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -811,9 +811,9 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(idParseError.left.errors),
+            ArrayFormatter.formatIssue(idParseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "Cannot be empty ID",
               path: []
             }]
@@ -824,10 +824,10 @@ describe("V3", () => {
           ok(Either.isLeft(timestampParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(timestampParseError.left.errors),
+            ArrayFormatter.formatIssue(timestampParseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: []
             }]
           )
@@ -839,9 +839,9 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(idParseError.left.errors),
+            ArrayFormatter.formatIssue(idParseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "ID cannot be longer than 20 characters",
               path: []
             }]
@@ -988,10 +988,10 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(parseError.left.errors),
+            ArrayFormatter.formatIssue(parseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -1003,14 +1003,14 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(parseError.left.errors),
+            ArrayFormatter.formatIssue(parseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "Cannot be empty ID",
               path: ["id"]
             }, {
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -1020,9 +1020,9 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(idParseError.left.errors),
+            ArrayFormatter.formatIssue(idParseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "Cannot be empty ID",
               path: []
             }]
@@ -1033,10 +1033,10 @@ describe("V3", () => {
           ok(Either.isLeft(timestampParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(timestampParseError.left.errors),
+            ArrayFormatter.formatIssue(timestampParseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected a valid Date, actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
               path: []
             }]
           )
@@ -1048,9 +1048,9 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatErrors(idParseError.left.errors),
+            ArrayFormatter.formatIssue(idParseError.left.error),
             [{
-              _tag: "Type",
+              _tag: "Refinement",
               message: "ID cannot be longer than 20 characters",
               path: []
             }]
