@@ -1,6 +1,6 @@
 import type { Rendered } from "@typed/wire"
 import { Effect, Scope } from "effect"
-import type * as Fiber from "effect/Fiber"
+import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
 import { getElements } from "../ElementSource"
 import type { EventHandler } from "../EventHandler"
@@ -25,6 +25,8 @@ type Run = <E, A>(effect: Effect.Effect<never, E, A>) => Fiber.RuntimeFiber<E, A
 const disposable = (f: () => void): Disposable => ({
   [Symbol.dispose]: f
 })
+
+const dispose = (d: Disposable): void => d[Symbol.dispose]()
 
 export function makeEventSource(): EventSource {
   const bubbleListeners = new Map<
@@ -118,17 +120,22 @@ export function makeEventSource(): EventSource {
   function setup(rendered: Rendered, scope: Scope.Scope) {
     const hasBubbleListeners = bubbleListeners.size > 0
     const hasCaptureListeners = captureListeners.size > 0
+    const elements = getElements(rendered)
 
-    if (!hasBubbleListeners && !hasCaptureListeners) {
+    if (elements.length === 0 || (!hasBubbleListeners && !hasCaptureListeners)) {
       return Effect.unit
     }
 
     return Effect.flatMap(Effect.runtime<never>(), (runtime) => {
-      const elements = getElements(rendered)
       const disposables: Array<Disposable> = []
+      const fibers = new Map<symbol, Fiber.RuntimeFiber<any, any>>()
       const runFork = Runtime.runFork(runtime)
-      const run: Run = <E, A>(effect: Effect.Effect<never, E, A>) =>
-        runFork(Effect.fromFiberEffect(Effect.forkIn(effect, scope)))
+      const run: Run = <E, A>(effect: Effect.Effect<never, E, A>) => {
+        const id = Symbol()
+        const fiber = runFork(Effect.onExit(effect, () => Effect.sync(() => fibers.delete(id))))
+        fibers.set(id, fiber)
+        return fiber
+      }
 
       for (const element of elements) {
         if (hasBubbleListeners) {
@@ -139,7 +146,14 @@ export function makeEventSource(): EventSource {
         }
       }
 
-      return Scope.addFinalizer(scope, Effect.sync(() => disposables.forEach((d) => d[Symbol.dispose]())))
+      return Scope.addFinalizer(
+        scope,
+        Effect.suspend(() => {
+          disposables.forEach(dispose)
+          if (fibers.size === 0) return Effect.unit
+          return Fiber.interruptAll(fibers.values())
+        })
+      )
     })
   }
 
