@@ -11,6 +11,7 @@ import * as Option from "effect/Option"
 import * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"
 
+import { Schema } from "@effect/schema"
 import type { Layer } from "effect"
 import type { Commit } from "../Layer.js"
 import type { BeforeNavigationEvent, Destination, NavigationEvent, Transition } from "../Navigation.js"
@@ -118,7 +119,7 @@ function setupWithNavigation(
     const state = yield* _(
       RefSubject.fromEffect(
         Effect.sync((): NavigationState => getNavigationState(navigation)),
-        { eq: Equivalence.to(NavigationState) }
+        { eq: Equivalence.make(Schema.to(Schema.to(NavigationState))) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
@@ -242,7 +243,7 @@ function setupWithHistory(
             (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
           )
         ),
-        { eq: Equivalence.to(NavigationState) }
+        { eq: Equivalence.make(Schema.to(NavigationState)) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)

@@ -76,7 +76,7 @@ const urlSchema = Schema.string.pipe(
         try {
           return Effect.succeed(new URL(s))
         } catch {
-          return Effect.fail(ParseResult.parseError([ParseResult.type(urlSchema_.ast, s, `Expected a URL`)]))
+          return Effect.fail(ParseResult.parseError(ParseResult.type(urlSchema_.ast, s, `Expected a URL`)))
         }
       }),
     (url) => Effect.succeed(url.toString())

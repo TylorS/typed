@@ -1,3 +1,4 @@
+import { Schema } from "@effect/schema"
 import * as Equivalence from "@effect/schema/Equivalence"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, getRandomValues } from "@typed/id"
@@ -70,7 +71,7 @@ function setupMemory(
             transition: Option.none()
           }
         }),
-        { eq: Equivalence.to(NavigationState) }
+        { eq: Equivalence.make(Schema.to(NavigationState)) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
