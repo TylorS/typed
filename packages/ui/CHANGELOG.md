@@ -1,5 +1,16 @@
 # @typed/ui
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [[`3b28d4a`](https://github.com/TylorS/typed/commit/3b28d4a6e427020571993c263a5b94d3dfdfd34d)]:
+  - @typed/fx@1.20.1
+  - @typed/navigation@0.8.1
+  - @typed/route@2.0.1
+  - @typed/router@0.21.1
+  - @typed/template@0.3.3
+
 ## 0.3.2
 
 ### Patch Changes

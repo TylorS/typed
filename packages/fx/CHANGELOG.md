@@ -1,5 +1,11 @@
 # @typed/fx
 
+## 1.20.1
+
+### Patch Changes
+
+- [`3b28d4a`](https://github.com/TylorS/typed/commit/3b28d4a6e427020571993c263a5b94d3dfdfd34d) Thanks [@TylorS](https://github.com/TylorS)! - fix: ensure (Ref)Subject close resources correctly
+
 ## 1.20.0
 
 ### Minor Changes
