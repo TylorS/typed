@@ -134,22 +134,48 @@ export namespace RefSubject {
   export interface Derived<R, E, A> extends RefSubject<R, E, A> {
     readonly persist: Effect.Effect<R, never, void>
   }
+
+  /**
+   * @since 1.20.0
+   */
+  export type Context<T> = T extends RefSubject<infer R, infer _E, infer _A> ? R : never
+
+  /**
+   * @since 1.20.0
+   */
+
+  export type Error<T> = T extends RefSubject<infer _R, infer E, infer _A> ? E : never
+
+  /**
+   * @since 1.20.0
+   */
+  export type Success<T> = T extends RefSubject<infer _R, infer _E, infer A> ? A : never
+
+  /**
+   * @since 1.20.0
+   */
+  export type Identifier<T> = T extends RefSubject.Tagged<infer R, infer _E, infer _A> ? R : never
 }
 
 /**
  * @since 1.20.0
  */
-export type Context<T> = Fx.Context<T>
+export type Context<T> = RefSubject.Context<T>
 
 /**
  * @since 1.20.0
  */
-export type Error<T> = Fx.Error<T>
+export type Error<T> = RefSubject.Error<T>
 
 /**
  * @since 1.20.0
  */
-export type Success<T> = Fx.Success<T>
+export type Success<T> = RefSubject.Success<T>
+
+/**
+ * @since 1.20.0
+ */
+export type Identifier<T> = RefSubject.Identifier<T>
 
 /**
  * @since 1.20.0
@@ -331,7 +357,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
     super()
 
     this.version = Effect.sync(() => core.deferredRef.version)
-    this.interrupt = interruptCore(core)
+    this.interrupt = Effect.provide(interruptCore(core), core.context)
     this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.context)
     this.getSetDelete = getSetDelete(core)
 
@@ -718,11 +744,15 @@ function onFailureCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>, cause: Ca
   })
 }
 
-function interruptCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>): Effect.Effect<never, never, void> {
+function interruptCore<R, E, A, R2>(core: RefSubjectCore<R, E, A, R2>): Effect.Effect<R, never, void> {
   return Effect.fiberIdWith((id) => {
     core.deferredRef.reset()
 
-    return Scope.close(core.scope, Exit.interrupt(id))
+    const closeScope = Scope.close(core.scope, Exit.interrupt(id))
+    const interruptFiber = core._fiber ? Fiber.interrupt(core._fiber) : Effect.unit
+    const interruptSubject = core.subject.interrupt
+
+    return Effect.all([closeScope, interruptFiber, interruptSubject], { discard: true })
   })
 }
 

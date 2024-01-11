@@ -102,7 +102,13 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   }
 
   readonly interrupt = Effect.fiberIdWith((id) =>
-    Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD)
+    Effect.tap(
+      Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD),
+      () => {
+        this.sinks.clear()
+        this.scopes.clear()
+      }
+    )
   )
 
   protected addSink<R, R2, B>(

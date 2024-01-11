@@ -630,6 +630,51 @@ describe("V3", () => {
 
       await Effect.runPromise(test)
     })
+
+    it("late subscribers to derived Computed values will receive the latest value", async () => {
+      const test = Effect.gen(function*(_) {
+        const source = yield* _(RefSubject.of(0))
+        const a = RefSubject.map(source, (x) => x + 1)
+        const b = RefSubject.map(a, (x) => x * 2)
+        const c = RefSubject.map(b, (x) => x - 1)
+
+        // Create a subscriber
+        const fiber1 = yield* _(Fx.toReadonlyArray(c), Effect.fork)
+        // Let the fiber start
+        yield* _(Effect.sleep(0))
+
+        // Update the source
+        yield* _(RefSubject.set(source, 1))
+
+        // Create a second subscriber
+        const fiber2 = yield* _(Fx.toReadonlyArray(c), Effect.fork)
+        // Let the fiber start
+        yield* _(Effect.sleep(0))
+
+        // Update the source
+        yield* _(RefSubject.set(source, 2))
+
+        // Create a third subscriber
+        const fiber3 = yield* _(Fx.toReadonlyArray(c), Effect.fork)
+        // Let the fiber start
+        yield* _(Effect.sleep(0))
+
+        // Update the source
+        yield* _(RefSubject.set(source, 3))
+
+        // Interrupt source RefSubject
+        yield* _(source.interrupt)
+
+        // Validate the outputs
+        const [one, two, three] = yield* _(Effect.all([Fiber.join(fiber1), Fiber.join(fiber2), Fiber.join(fiber3)]))
+
+        expect(one).toEqual([1, 3, 5, 7])
+        expect(two).toEqual([3, 5, 7])
+        expect(three).toEqual([5, 7])
+      }).pipe(Effect.scoped)
+
+      await Effect.runPromise(test)
+    })
   })
 
   describe("Filtered,Effect.optionFromOptional", () => {
