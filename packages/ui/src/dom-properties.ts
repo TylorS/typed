@@ -1,50 +1,50 @@
 export type ElementProperties = {
-  className?: string | undefined
-  id?: string | undefined
-  scrollLeft?: number | undefined
-  scrollTop?: number | undefined
-  slot?: string | undefined
+  className?: string | null | undefined
+  id?: string | null | undefined
+  scrollLeft?: number | null | undefined
+  scrollTop?: number | null | undefined
+  slot?: string | null | undefined
 }
 
 export type HTMLElementProperties =
   & ElementProperties
   & {
-    accessKey?: string | undefined
-    contentEditable?: string | undefined
-    dir?: string | undefined
-    draggable?: boolean | undefined
-    hidden?: boolean | undefined
-    hideFocus?: boolean | undefined
-    lang?: string | undefined
-    spellcheck?: boolean | undefined
-    tabIndex?: boolean | undefined
-    title?: string | undefined
+    accessKey?: string | null | undefined
+    contentEditable?: string | null | undefined
+    dir?: string | null | undefined
+    draggable?: boolean | null | undefined
+    hidden?: boolean | null | undefined
+    hideFocus?: boolean | null | undefined
+    lang?: string | null | undefined
+    spellcheck?: boolean | null | undefined
+    tabIndex?: boolean | null | undefined
+    title?: string | null | undefined
   }
 
 export type HTMLAnchorElementProperties =
   & HTMLElementProperties
   & {
-    Methods?: string | undefined
-    charset?: string | undefined
-    coords?: string | undefined
-    download?: string | undefined
-    hash?: string | undefined
-    host?: string | undefined
-    hostname?: string | undefined
-    href?: string | undefined
-    hreflang?: string | undefined
-    name?: string | undefined
-    pathname?: string | undefined
-    port?: string | undefined
-    protocol?: string | undefined
-    rel?: string | undefined
-    rev?: string | undefined
-    search?: string | undefined
-    shape?: string | undefined
-    target?: string | undefined
-    text?: string | undefined
-    type?: string | undefined
-    urn?: string | undefined
+    Methods?: string | null | undefined
+    charset?: string | null | undefined
+    coords?: string | null | undefined
+    download?: string | null | undefined
+    hash?: string | null | undefined
+    host?: string | null | undefined
+    hostname?: string | null | undefined
+    href?: string | null | undefined
+    hreflang?: string | null | undefined
+    name?: string | null | undefined
+    pathname?: string | null | undefined
+    port?: string | null | undefined
+    protocol?: string | null | undefined
+    rel?: string | null | undefined
+    rev?: string | null | undefined
+    search?: string | null | undefined
+    shape?: string | null | undefined
+    target?: string | null | undefined
+    text?: string | null | undefined
+    type?: string | null | undefined
+    urn?: string | null | undefined
   }
 
 export type HTMLAppletElementProperties =

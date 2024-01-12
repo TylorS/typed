@@ -54,7 +54,7 @@ const containsRefs = (
     refs.some(
       (c) =>
         c === target ||
-        c.contains(target as Element)
+        c.contains(target as Node)
     )
   ) {
     return Option.none()

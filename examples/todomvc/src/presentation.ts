@@ -82,18 +82,18 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
       Effect.zipRight(reset)
     )
 
-    return html`<li class="${Fx.when(isCompleted, { onTrue: "completed", onFalse: "" })} ${
+    return html`<li class="${Fx.when(Fx.tap(isCompleted, console.log), { onTrue: "completed", onFalse: "" })} ${
       Fx.when(isEditing, { onTrue: "editing", onFalse: "" })
     }">
       <div class="view">
         <input
           type="checkbox"
           class="toggle"
-          .checked="${isCompleted}"
+          ?checked="${isCompleted}"
           onclick="${App.toggleTodoCompleted(id)}"
         />
 
-        <label ondblclick="${RefSubject.set(isEditing, true)}">${text}</label>
+        <label ondblclick="${RefSubject.update(isEditing, (x) => !x)}">${text}</label>
 
         <button class="destroy" onclick="${App.deleteTodo(id)}"></button>
       </div>

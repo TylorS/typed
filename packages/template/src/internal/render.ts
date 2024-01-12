@@ -7,6 +7,7 @@ import type { Cause } from "effect/Cause"
 import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
 import { Scope } from "effect/Scope"
+import { uncapitalize } from "effect/String"
 import type { Directive } from "../Directive.js"
 import { isDirective } from "../Directive.js"
 import * as ElementRef from "../ElementRef.js"
@@ -101,15 +102,16 @@ const RenderPartMap: RenderPartMap = {
   "boolean-part": (templatePart, node, ctx) => {
     const { refCounter, renderContext, values } = ctx
     const element = node as HTMLElement | SVGElement
+    const name = templatePart.name
     const renderable = values[templatePart.index]
     const setValue = (value: boolean | null | undefined) => {
-      element.toggleAttribute(templatePart.name, isNullOrUndefined(value) ? false : Boolean(value))
+      element.toggleAttribute(name, isNullOrUndefined(value) ? false : Boolean(value))
     }
 
     return matchSettablePart(
       renderable,
       setValue,
-      () => BooleanPartImpl.browser(templatePart.index, element, templatePart.name, renderContext),
+      () => BooleanPartImpl.browser(templatePart.index, element, name, renderContext),
       (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
@@ -273,6 +275,14 @@ const RenderPartMap: RenderPartMap = {
           ;(element as any)[key] = value
         }
       }
+      const setClassNames = (previous: Set<string>, updated: Set<string>) => {
+        const { added, removed } = diffClassNames(previous, updated)
+
+        element.classList.remove(...removed)
+        element.classList.add(...added)
+        removed.forEach((r) => previous.delete(r))
+        added.forEach((a) => previous.add(a))
+      }
 
       const effects: Array<Effect.Effect<any, any, void>> = []
 
@@ -284,7 +294,6 @@ const RenderPartMap: RenderPartMap = {
       loop:
       for (const [key, value] of Object.entries(renderable)) {
         const index = ++i
-
         switch (key[0]) {
           case "?": {
             const name = key.slice(1)
@@ -315,7 +324,7 @@ const RenderPartMap: RenderPartMap = {
             continue loop
           }
           case "@": {
-            const name = key.slice(1)
+            const name = uncapitalize(key.slice(1))
             const handler = getEventHandler(value, ctx.context, ctx.onCause)
             if (handler) {
               ctx.eventSource.addEventListener(element, name, handler)
@@ -324,7 +333,7 @@ const RenderPartMap: RenderPartMap = {
           }
           case "o": {
             if (key[1] === "n") {
-              const name = key.slice(2)
+              const name = uncapitalize(key.slice(2))
               const handler = getEventHandler(value, ctx.context, ctx.onCause)
               if (handler) {
                 ctx.eventSource.addEventListener(element, name, handler)
@@ -334,15 +343,40 @@ const RenderPartMap: RenderPartMap = {
           }
         }
 
-        const eff = matchSettablePart(
-          value,
-          (value) => setAttribute(key, value),
-          () => AttributePartImpl.browser(index, element, key, ctx.renderContext),
-          (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
-          () => ctx.expected++
-        )
-        if (eff !== null) {
-          effects.push(eff)
+        const lowerCaseName = key.toLowerCase()
+
+        const isClass = lowerCaseName === "class" || lowerCaseName === "classname"
+
+        if (isClass) {
+          const classNames: Set<string> = new Set()
+          const eff = matchSettablePart(
+            value,
+            (value) => {
+              if (isNullOrUndefined(value)) {
+                element.classList.remove(...classNames)
+                classNames.clear()
+              } else {
+                setClassNames(classNames, new Set(splitClassNames(String(value))))
+              }
+            },
+            () => ClassNamePartImpl.browser(index, element, ctx.renderContext),
+            (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+            () => ctx.expected++
+          )
+          if (eff !== null) {
+            effects.push(eff)
+          }
+        } else {
+          const eff = matchSettablePart(
+            value,
+            (value) => setAttribute(key, value),
+            () => AttributePartImpl.browser(index, element, key, ctx.renderContext),
+            (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+            () => ctx.expected++
+          )
+          if (eff !== null) {
+            effects.push(eff)
+          }
         }
       }
 
