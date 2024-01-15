@@ -82,7 +82,7 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
       Effect.zipRight(reset)
     )
 
-    return html`<li class="${Fx.tap(Fx.when(isCompleted, { onTrue: "completed", onFalse: "" }), console.log)} ${
+    return html`<li class="${Fx.when(isCompleted, { onTrue: "completed", onFalse: "" })} ${
       Fx.when(isEditing, { onTrue: "editing", onFalse: "" })
     }">
       <div class="view">
@@ -116,7 +116,7 @@ function FilterLink(filterState: Domain.FilterState) {
       {
         className: Fx.when(RefSubject.map(App.FilterState, (state) => state === filterState), {
           onTrue: "selected",
-          onFalse: " "
+          onFalse: ""
         }),
         to: Infra.filterStateToPath(filterState)
       },
