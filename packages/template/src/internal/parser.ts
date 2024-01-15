@@ -50,6 +50,13 @@ export const SELF_CLOSING_TAGS = new Set([
   "wbr"
 ])
 
+const VALID_PROPS_NAMES = new Set([
+  "props",
+  "properties",
+  // First "." will already be matched
+  ".."
+])
+
 export interface Parser {
   parse(templateStrings: ReadonlyArray<string>): Template.Template
 }
@@ -71,7 +78,8 @@ const chars = {
   slash: "/",
   greaterThan: ">",
   lessThan: "<",
-  hypen: "-"
+  hypen: "-",
+  dot: "."
 } as const
 
 const isPartToken: TextPredicate = (input, pos) =>
@@ -126,7 +134,7 @@ const attributeMatches = {
   closingTag: isElementCloseToken,
   openTagEnd: isOpenTagEndToken,
   selfClosingTagEnd: isSelfClosingTagEndToken
-}
+} satisfies Predicates
 
 const attributeValueMatches = {
   base: isWhitespaceToken,
@@ -386,7 +394,7 @@ class ParserImpl implements Parser {
         return Skip
       case "whitespace":
         this.skipWhitespace()
-        return Continue([new Template.BooleanNode(name)])
+        return Continue([parseBooleanNode(name)])
       case "equals": {
         this.consumeAmount(1)
         return Continue([this.parseAttributeValue(name)])
@@ -394,7 +402,7 @@ class ParserImpl implements Parser {
       case "openTagEnd": {
         this.consumeAmount(1)
         this.context = "unknown"
-        return Break<Array<Template.Attribute>>(name ? [new Template.BooleanNode(name)] : undefined)
+        return Break<Array<Template.Attribute>>(name ? [parseBooleanNode(name)] : undefined)
       }
       case "selfClosingTagEnd": {
         this.consumeAmount(2)
@@ -439,7 +447,7 @@ class ParserImpl implements Parser {
     this.skipWhitespace()
 
     if (text === "") {
-      return new Template.BooleanNode(name)
+      return parseBooleanNode(name)
     }
 
     switch (name[0]) {
@@ -450,7 +458,7 @@ class ParserImpl implements Parser {
 
         if (property === "data") {
           return this.addPart(new Template.DataPartNode(unsafeParsePartIndex(text)))
-        } else if (property === "props" || property === "properties") {
+        } else if (VALID_PROPS_NAMES.has(property)) {
           return this.addPart(new Template.PropertiesPartNode(unsafeParsePartIndex(text)))
         } else {
           return this.addPart(new Template.PropertyPartNode(property, unsafeParsePartIndex(text)))
@@ -723,4 +731,16 @@ export function templateHash(strings: ReadonlyArray<string>) {
   }
 
   return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)))
+}
+
+function parseBooleanNode(name: string) {
+  if (isSpread(name)) {
+    return new Template.PropertiesPartNode(unsafeParsePartIndex(name.slice(3)))
+  } else {
+    return new Template.BooleanNode(name)
+  }
+}
+
+function isSpread(str: string) {
+  return str[0] === chars.dot && str[1] === chars.dot && str[2] === chars.dot
 }

@@ -10,8 +10,8 @@ import { indexRefCounter2 } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
-import { Either } from "effect"
-import { Scope } from "effect/Scope"
+import { Either, ExecutionStrategy, Exit } from "effect"
+import * as Scope from "effect/Scope"
 import type { Template } from "../Template.js"
 import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors.js"
 import { makeEventSource } from "./EventSource.js"
@@ -41,15 +41,16 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
     templateStrings: TemplateStringsArray,
     values: Values
   ): Fx.Fx<
-    Scope | Placeholder.Context<Values[number]>,
+    Scope.Scope | Placeholder.Context<Values[number]>,
     Placeholder.Error<Values[number]>,
     RenderEvent
   > => {
     return Fx.make((sink) =>
       Effect.gen(function*(_) {
-        const context = yield* _(Effect.context<Scope>())
+        const context = yield* _(Effect.context<Scope.Scope>())
         const hydrateCtx = unsafeGet(context, HydrateContext)
-        const scope = unsafeGet(context, Scope)
+        const parentScope = unsafeGet(context, Scope.Scope)
+        const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
 
         // If we're not longer hydrating, just render normally
         if (hydrateCtx.hydrate === false) {
@@ -89,17 +90,18 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           renderContext,
           onCause: sink.onFailure,
           values,
-          makeHydrateContext
+          makeHydrateContext,
+          spreadIndex: values.length
         }
 
         // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>> = []
+        const effects: Array<Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>> = []
         for (const [part, path] of template.parts) {
           const eff = renderPart2(part, where, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>
+                Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>
               >
             )
           }
@@ -119,9 +121,13 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         // Stop hydrating
         hydrateCtx.hydrate = false
 
-        // Ensure our templates last forever in the DOM environment
-        // so event listeners are kept attached to the current Scope.
-        yield* _(Effect.never)
+        yield* _(
+          // Ensure our templates last forever in the DOM environment
+          // so event listeners are kept attached to the current Scope.
+          Effect.never,
+          // Close our scope whenever the current Fiber is interrupted
+          Effect.ensuring(Scope.close(scope, Exit.unit))
+        )
       })
     )
   }

@@ -16,7 +16,6 @@ import * as Option from "effect/Option"
 import type { CurrentRoute } from "./CurrentRoute.js"
 import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
 
-// TODO: Link component
 // TODO: Form component
 // TODO: view transitions - opt-in via link/form component
 // TODO: scroll restoration

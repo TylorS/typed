@@ -62,6 +62,7 @@ export type RenderPartContext = {
   readonly makeHydrateContext?: (index: number) => HydrateContext
 
   expected: number
+  spreadIndex: number
 }
 
 type RenderPartMap = {
@@ -285,15 +286,11 @@ const RenderPartMap: RenderPartMap = {
       }
 
       const effects: Array<Effect.Effect<any, any, void>> = []
-
-      // We need indexes to track async values that won't conflict
-      // with any other Parts, we can start end of the current values.length
-      // As there should only ever be exactly 1 properties part.
-      let i = ctx.values.length
+      const entries = Object.entries(renderable)
 
       loop:
-      for (const [key, value] of Object.entries(renderable)) {
-        const index = ++i
+      for (const [key, value] of entries) {
+        const index = ++ctx.spreadIndex
         switch (key[0]) {
           case "?": {
             const name = key.slice(1)
@@ -592,6 +589,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           refCounter,
           renderContext,
           onCause: sink.onFailure as any,
+          spreadIndex: values.length,
           values
         }
 
