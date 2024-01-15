@@ -227,7 +227,7 @@ const RenderPartMap: RenderPartMap = {
     if (makeHydrateContext) {
       return Effect.provideService(handle, HydrateContext, makeHydrateContext(templatePart.index))
     } else {
-      return Effect.ensuring(handle, Effect.log("Done with node listeners"))
+      return handle
     }
   },
   "property": (templatePart, node, ctx) => {
