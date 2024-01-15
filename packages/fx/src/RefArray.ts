@@ -20,7 +20,7 @@ import * as RefSubject from "./RefSubject.js"
  * @since 1.18.0
  * @category models
  */
-export interface RefArray<R, E, A> extends RefSubject.RefSubject<R, E, ReadonlyArray<A>> {}
+export interface RefArray<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, ReadonlyArray<A>> {}
 
 /**
  * Construct a new RefArray with the given initial value.

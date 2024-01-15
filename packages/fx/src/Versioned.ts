@@ -25,7 +25,9 @@ import type { Sink } from "./Sink.js"
 /**
  * @since 1.0.0
  */
-export interface Versioned<R1, E1, R2, E2, A2, R3, E3, A3> extends Fx<R2, E2, A2>, Effect.Effect<R3, E3, A3> {
+export interface Versioned<out R1, out E1, out R2, out E2, out A2, out R3, out E3, out A3>
+  extends Fx<R2, E2, A2>, Effect.Effect<R3, E3, A3>
+{
   readonly version: Effect.Effect<R1, E1, number>
 }
 
@@ -112,7 +114,7 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
 {
   protected _version = -1
   protected _currentValue: Option.Option<D> = Option.none()
-  private _fx: Fx<R3, E3, C>
+  protected _fx: Fx<R3, E3, C>
 
   constructor(
     readonly input: Versioned<R0, E0, R, E, A, R2, E2, B>,

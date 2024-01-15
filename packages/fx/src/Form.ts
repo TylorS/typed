@@ -35,7 +35,7 @@ type AnyObjectWithKeys<K extends PropertyKey> = Readonly<Record<K, any>>
 /**
  * @since 1.18.0
  */
-export interface Form<R, Entries extends Form.AnyEntries> extends
+export interface Form<out R, in out Entries extends Form.AnyEntries> extends
   Form.Base<
     R | Form.Context<Entries>,
     Form.Error<Entries>,
@@ -55,7 +55,7 @@ export namespace Form {
   /**
    * @since 1.18.0
    */
-  export interface Base<R, E, I, O, Entries extends Form.AnyEntries>
+  export interface Base<out R, out E, in out I, in out O, in out Entries extends Form.AnyEntries>
     extends Versioned.Versioned<R, never, R | Scope.Scope, E | ParseError, I, R, E | ParseError, I>
   {
     readonly [FormTypeId]: FormTypeId

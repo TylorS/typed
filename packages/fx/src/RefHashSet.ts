@@ -16,7 +16,7 @@ import * as RefSubject from "./RefSubject.js"
  * @since 1.18.0
  * @category models
  */
-export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
+export interface RefHashSet<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
 
 /**
  * @since 1.18.0

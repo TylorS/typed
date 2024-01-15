@@ -10,7 +10,7 @@ import * as Option from "effect/Option"
 /**
  * @since 1.18.0
  */
-export type Guard<I, R, E, O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
+export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
 
 /**
  * @since 1.18.0

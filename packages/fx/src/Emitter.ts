@@ -16,7 +16,7 @@ import * as Sink from "./Sink.js"
 /**
  * @since 1.20.0
  */
-export interface Emitter<E, A> {
+export interface Emitter<in E, in A> {
   readonly succeed: (value: A) => Promise<Exit.Exit<never, unknown>>
   readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<never, unknown>>
   readonly fail: (error: E) => Promise<Exit.Exit<never, unknown>>

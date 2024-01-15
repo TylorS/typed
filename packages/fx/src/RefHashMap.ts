@@ -17,7 +17,9 @@ import * as RefSubject from "./RefSubject.js"
  * @since 1.18.0
  * @category models
  */
-export interface RefHashMap<R, E, K, V> extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>> {}
+export interface RefHashMap<out R, in out E, in out K, in out V>
+  extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>>
+{}
 
 /**
  * Construct a new RefHashMap with the given initial value.

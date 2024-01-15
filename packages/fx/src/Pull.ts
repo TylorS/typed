@@ -19,7 +19,7 @@ import type { Sink } from "./Sink.js"
  * An Effect which can be used to pull values of a Stream.
  * @since 1.18.0
  */
-export interface Pull<R, E, A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
+export interface Pull<out R, out E, out A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
 
 function schedulePull<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,

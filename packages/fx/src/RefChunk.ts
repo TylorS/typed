@@ -18,7 +18,7 @@ import * as RefSubject from "./RefSubject.js"
  * @since 1.18.0
  * @category models
  */
-export interface RefChunk<R, E, A> extends RefSubject.RefSubject<R, E, Chunk.Chunk<A>> {}
+export interface RefChunk<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, Chunk.Chunk<A>> {}
 
 /**
  * Construct a new RefChunk with the given initial value.

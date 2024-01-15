@@ -26,9 +26,7 @@ import { TypeId } from "./TypeId.js"
  * Subject is an Fx type which can also be imperatively pushed into.
  * @since 1.20.0
  */
-export interface Subject<R, E, A>
-  extends Push<R, E, A, R | Scope.Scope, E, A>, Fx<R | Scope.Scope, E, A>, Pipeable.Pipeable
-{
+export interface Subject<out R, in out E, in out A> extends Push<R, E, A, R | Scope.Scope, E, A>, Pipeable.Pipeable {
   readonly subscriberCount: Effect.Effect<R, never, number>
   readonly interrupt: Effect.Effect<R, never, void>
 }
@@ -142,13 +140,13 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   protected onEvent(a: A) {
     if (this.sinks.size === 0) return Effect.unit
     else {
-      return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
+      return Effect.forEach(this.sinks, ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
     }
   }
 
   protected onCause(cause: Cause.Cause<E>) {
     return Effect.forEach(
-      Array.from(this.sinks),
+      this.sinks,
       ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx),
       DISCARD
     )
@@ -180,11 +178,7 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
   readonly interrupt = Effect.fiberIdWith((id) =>
     Effect.tap(
       Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD),
-      () => {
-        this.sinks.clear()
-        this.scopes.clear()
-        MutableRef.set(this.lastValue, Option.none())
-      }
+      () => MutableRef.set(this.lastValue, Option.none())
     )
   )
 }
@@ -215,11 +209,7 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
   readonly interrupt = Effect.fiberIdWith((id) =>
     Effect.tap(
       Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD),
-      () => {
-        this.sinks.clear()
-        this.scopes.clear()
-        this.buffer.clear()
-      }
+      () => this.buffer.clear()
     )
   )
 }

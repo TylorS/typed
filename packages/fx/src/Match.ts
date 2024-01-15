@@ -33,7 +33,7 @@ export type MatcherTypeId = typeof MatcherTypeId
 /**
  * @since 1.18.0
  */
-export interface TypeMatcher<R, E, I, O> {
+export interface TypeMatcher<out R, out E, in out I, out O> {
   readonly _tag: "TypeMatcher"
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
@@ -56,7 +56,7 @@ export interface TypeMatcher<R, E, I, O> {
 /**
  * @since 1.18.0
  */
-export interface ValueMatcher<R, E, I, O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
+export interface ValueMatcher<out R, out E, in out I, out O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
   readonly _tag: "ValueMatcher"
 
   readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>

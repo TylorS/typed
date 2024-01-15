@@ -123,7 +123,10 @@ export namespace RefSubject {
     /**
      * @since 1.20.0
      */
-    readonly make: <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
+    readonly make: <R>(
+      fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>,
+      options?: RefSubjectOptions<A>
+    ) => Layer.Layer<R, never, I>
   }
 
   /**
@@ -374,10 +377,9 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
   }
 
   runUpdates<R3, E3, B>(
-    run: (ref: GetSetDelete<Exclude<R, R2>, E, A>) => Effect.Effect<R3, E3, B>,
-    lock: boolean = true
+    run: (ref: GetSetDelete<Exclude<R, R2>, E, A>) => Effect.Effect<R3, E3, B>
   ) {
-    return lock ? this.core.semaphore.withPermits(1)(run(this.getSetDelete)) : run(this.getSetDelete)
+    return this.core.semaphore.withPermits(1)(run(this.getSetDelete))
   }
 
   onSuccess(value: A): Effect.Effect<Exclude<R, R2>, never, unknown> {
@@ -1019,12 +1021,7 @@ class ComputedImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) =>
-        share.hold(core.mapEffect(fx, f)) as Fx<
-          R0 | Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope,
-          E0 | E | E2 | E3,
-          C
-        >,
+      (fx) => share.hold(core.mapEffect(fx, f)) as any,
       Effect.flatMap(f)
     )
   }
@@ -1787,8 +1784,10 @@ class RefSubjectTagged<I, E, A> extends FxEffectBase<
     return this.tag.withEffect((ref) => ref.onSuccess(value))
   }
 
-  make = <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>): Layer.Layer<R, never, I> =>
-    this.tag.scoped(make(fxOrEffect))
+  make = <R>(
+    fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>,
+    options?: RefSubjectOptions<A>
+  ): Layer.Layer<R, never, I> => this.tag.scoped(make(fxOrEffect, options))
 }
 
 /**
