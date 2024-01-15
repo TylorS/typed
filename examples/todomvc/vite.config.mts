@@ -4,7 +4,7 @@ import compression from "vite-plugin-compression"
 import { createHtmlPlugin } from "vite-plugin-html"
 import topLevelAwait from "vite-plugin-top-level-await"
 
-const exclusions = ["fx", "router", "template"].flatMap((pkg) => [
+const exclusions = ["fx", "router", "template", "ui"].flatMap((pkg) => [
   `@typed/${pkg}`,
   `@typed/${pkg}/*`
 ])
