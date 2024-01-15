@@ -85,7 +85,7 @@ export function withScopedFork<R, E, A>(
 
 export function makeForkInScope(scope: Scope.Scope) {
   return <R, E, A>(effect: Effect.Effect<R, E, A>) =>
-    matchEffectPrimitive<R, E, A, Effect.Effect<Exclude<R, Scope.Scope>, never, Fiber.Fiber<E, A>>>(effect, {
+    matchEffectPrimitive<R, E, A, Effect.Effect<R, never, Fiber.Fiber<E, A>>>(effect, {
       Success: (a) => Effect.succeed(Fiber.succeed(a)),
       Failure: (cause) => Effect.succeed(Fiber.failCause(cause)),
       Sync: (f) =>
@@ -100,7 +100,7 @@ export function makeForkInScope(scope: Scope.Scope) {
       Right: (a) => Effect.succeed(Fiber.succeed(a)),
       Some: (a) => Effect.succeed(Fiber.succeed(a)),
       None: (e) => Effect.succeed(Fiber.fail(e)),
-      Otherwise: (eff) => Effect.forkIn(Effect.provideService(eff, Scope.Scope, scope), scope)
+      Otherwise: (eff) => Effect.forkIn(eff, scope)
     })
 }
 
@@ -453,6 +453,11 @@ export class RingBuffer<A> {
           }
         )
     }
+  }
+
+  clear() {
+    this._buffer = Array(this.capacity)
+    this._size = 0
   }
 }
 

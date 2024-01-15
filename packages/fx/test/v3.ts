@@ -752,7 +752,7 @@ describe("V3", () => {
       return <A extends PropertyKey>(
         old: ReadonlyArray<A>,
         newValue: ReadonlyArray<A>,
-        expected: ReadonlyArray<diff.Diff<A>>
+        expected: ReadonlyArray<diff.Diff<A, A>>
       ) => {
         const actual = diff.diff(old, newValue)
 
@@ -773,14 +773,19 @@ describe("V3", () => {
       const test = makeSimpleDiffer()
 
       test([1, 2, 3], [1, 2, 3], [])
-      test([1, 2, 3], [1, 2, 3, 4], [diff.add(4, 3)])
-      test([1, 2, 3], [1, 2, 4], [diff.remove(3, 2), diff.add(4, 2)])
-      test([1, 2, 3], [1, 2, 4, 5], [diff.remove(3, 2), diff.add(4, 2), diff.add(5, 3)])
-      test([1, 2, 3], [1, 2, 3, 4, 5], [diff.add(4, 3), diff.add(5, 4)])
-      test([1, 2, 3], [1, 2, 3, 4, 5, 6], [diff.add(4, 3), diff.add(5, 4), diff.add(6, 5)])
-      test([1, 2, 3], [3], [diff.remove(1, 0), diff.remove(2, 1), diff.moved(3, 2, 0)])
-      test([1, 2, 3], [4, 1, 2], [diff.remove(3, 2), diff.add(4, 0), diff.moved(1, 0, 1), diff.moved(2, 1, 2)])
-      test([1, 2, 3], [3, 2, 1], [diff.moved(1, 0, 2), diff.moved(3, 2, 0)])
+      test([1, 2, 3], [1, 2, 3, 4], [diff.add(4, 3, 4)])
+      test([1, 2, 3], [1, 2, 4], [diff.remove(3, 2, 3), diff.add(4, 2, 4)])
+      test([1, 2, 3], [1, 2, 4, 5], [diff.remove(3, 2, 3), diff.add(4, 2, 4), diff.add(5, 3, 5)])
+      test([1, 2, 3], [1, 2, 3, 4, 5], [diff.add(4, 3, 4), diff.add(5, 4, 5)])
+      test([1, 2, 3], [1, 2, 3, 4, 5, 6], [diff.add(4, 3, 4), diff.add(5, 4, 5), diff.add(6, 5, 6)])
+      test([1, 2, 3], [3], [diff.remove(1, 0, 1), diff.remove(2, 1, 2), diff.moved(3, 2, 0, 3)])
+      test([1, 2, 3], [4, 1, 2], [
+        diff.remove(3, 2, 3),
+        diff.add(4, 0, 4),
+        diff.moved(1, 0, 1, 1),
+        diff.moved(2, 1, 2, 2)
+      ])
+      test([1, 2, 3], [3, 2, 1], [diff.moved(1, 0, 2, 1), diff.moved(3, 2, 0, 3)])
     })
   })
 

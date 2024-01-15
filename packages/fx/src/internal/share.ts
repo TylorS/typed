@@ -57,7 +57,12 @@ export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
     return Effect.suspend(() => {
       if (this._RefCount.increment() === 1) {
         return this.i0.run(this.i1).pipe(
-          Effect.onExit(() => Effect.sync(() => MutableRef.set(this._FxFiber, Option.none()))),
+          Effect.onExit(() =>
+            Effect.suspend(() => {
+              MutableRef.set(this._FxFiber, Option.none())
+              return this.i1.interrupt
+            })
+          ),
           Effect.interruptible,
           Effect.forkDaemon,
           Effect.tap((fiber) => Effect.sync(() => MutableRef.set(this._FxFiber, Option.some(fiber)))),

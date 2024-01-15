@@ -1,12 +1,13 @@
 import * as Fx from "@typed/fx/Fx"
+import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
-import { Effect } from "effect"
+import { Effect, ExecutionStrategy, Exit } from "effect"
 import type { Cause } from "effect/Cause"
 import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
-import { Scope } from "effect/Scope"
+import * as Scope from "effect/Scope"
 import { uncapitalize } from "effect/String"
 import type { Directive } from "../Directive.js"
 import { isDirective } from "../Directive.js"
@@ -50,7 +51,7 @@ import { findHoleComment, findPath } from "./utils.js"
  * @internal
  */
 export type RenderPartContext = {
-  readonly context: Context.Context<Scope>
+  readonly context: Context.Context<Scope.Scope>
   readonly document: Document
   readonly eventSource: EventSource
   readonly refCounter: IndexRefCounter2
@@ -126,14 +127,13 @@ const RenderPartMap: RenderPartMap = {
         element.classList.remove(...classNames)
         classNames.clear()
       } else {
-        const newClassNames = new Set(Array.isArray(value) ? value : [String(value)])
+        const newClassNames = new Set(
+          Array.isArray(value) ? value.flatMap((x) => splitClassNames(String(x))) : splitClassNames(String(value))
+        )
         const { added, removed } = diffClassNames(classNames, newClassNames)
 
-        if (removed.length > 0) {
-          element.classList.remove(...removed)
-        }
-        if (added.length > 0) element.classList.add(...added)
-
+        element.classList.remove(...removed)
+        element.classList.add(...added)
         classNames = newClassNames
       }
     }
@@ -221,13 +221,13 @@ const RenderPartMap: RenderPartMap = {
 
     const handle = handlePart(
       ctx.values[templatePart.index],
-      (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+      Sink.make(ctx.onCause, (value) => Effect.zipRight(part.update(value), ctx.refCounter.release(templatePart.index)))
     )
 
     if (makeHydrateContext) {
       return Effect.provideService(handle, HydrateContext, makeHydrateContext(templatePart.index))
     } else {
-      return handle
+      return Effect.ensuring(handle, Effect.log("Done with node listeners"))
     }
   },
   "property": (templatePart, node, ctx) => {
@@ -508,7 +508,10 @@ const RenderPartMap: RenderPartMap = {
 
     return handlePart(
       ctx.values[templatePart.index],
-      (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+      Sink.make(
+        ctx.onCause,
+        (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+      )
     )
   }
 }
@@ -572,13 +575,15 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
       return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
     }
 
-    return Fx.make<Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>((
+    return Fx.make<Scope.Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>((
       sink
     ) => {
       return Effect.gen(function*(_) {
-        const content = document.importNode(entry.content, true)
-        const context = yield* _(Effect.context<Scope>())
+        const context = yield* _(Effect.context<Scope.Scope | Placeholder.Context<Values[number]>>())
+        const parentScope = Context.get(context, Scope.Scope)
+        const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
         const refCounter = yield* _(indexRefCounter2())
+        const content = document.importNode(entry.content, true)
         const ctx: RenderPartContext = {
           context,
           document,
@@ -591,13 +596,13 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         }
 
         // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>> = []
+        const effects: Array<Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>> = []
         for (const [part, path] of entry.template.parts) {
           const eff = renderPart2(part, content, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<Scope | Placeholder.Context<Values[number]>, never, void>
+                Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>
               >
             )
           }
@@ -605,7 +610,11 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
 
         // Fork any effects necessary
         if (effects.length > 0) {
-          yield* _(Effect.forkAll(effects))
+          for (const eff of effects) {
+            yield* _(
+              Effect.forkIn(Effect.catchAllCause(eff, ctx.onCause), scope)
+            )
+          }
         }
 
         // If there's anything to wait on and it's not already done, wait for an initial value
@@ -618,14 +627,17 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         const wire = persistent(content) as T
 
         // Set the element when it is ready
-        yield* _(ctx.eventSource.setup(wire, Context.get(context, Scope)))
+        yield* _(ctx.eventSource.setup(wire, scope))
 
         // Emit our DomRenderEvent
-        yield* _(sink.onSuccess(DomRenderEvent(wire)))
-
-        // Ensure our templates last forever in the DOM environment
-        // so event listeners are kept attached to the current Scope.
-        yield* _(Effect.never)
+        yield* _(
+          sink.onSuccess(DomRenderEvent(wire)),
+          // Ensure our templates last forever in the DOM environment
+          // so event listeners are kept attached to the current Scope.
+          Effect.zipRight(Effect.never),
+          // Close our scope whenever the current Fiber is interrupted
+          Effect.ensuring(Scope.close(scope, Exit.unit))
+        )
       })
     })
   }
@@ -653,26 +665,26 @@ function getEventHandler<R, E>(
   return null
 }
 
-function handlePart<R, E>(
+function handlePart<R, E, R2>(
   renderable: unknown,
-  update: (u: unknown) => Effect.Effect<Scope, never, unknown>
-): Effect.Effect<R | Scope, E, any> {
+  sink: Sink.Sink<R2, any, any>
+): Effect.Effect<R | R2 | Scope.Scope, never, any> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {
-      if (renderable === null || renderable === undefined) return update(null)
+      if (renderable === null || renderable === undefined) return sink.onSuccess(null)
       else if (Array.isArray(renderable)) {
         return renderable.length === 0
-          ? update(null)
-          : Effect.forkScoped(Fx.observe(Fx.tuple(renderable.map(unwrapRenderable)) as any, update))
+          ? sink.onSuccess(null)
+          : Fx.tuple(renderable.map(unwrapRenderable)).run(sink) as any
       } else if (TypeId in renderable) {
-        return Effect.forkScoped(Fx.observe(renderable as any, update))
+        return (renderable as Fx.Fx<R | R2, any, any>).run(sink)
       } else if (Effect.EffectTypeId in renderable) {
-        return Effect.flatMap(renderable as Effect.Effect<R, E, any>, update)
-      } else return update(renderable)
+        return Effect.matchCauseEffect(renderable as Effect.Effect<R, E, any>, sink)
+      } else return sink.onSuccess(renderable)
     }
     default:
-      return update(renderable)
+      return sink.onSuccess(renderable)
   }
 }
 
@@ -871,7 +883,7 @@ function matchSettablePart(
   renderable: Renderable<any, any>,
   setValue: (value: any) => void,
   makePart: () => Part,
-  schedule: (f: () => void) => Effect.Effect<Scope, never, void>,
+  schedule: (f: () => void) => Effect.Effect<Scope.Scope, never, void>,
   expect: () => void
 ) {
   return matchRenderable(renderable, {

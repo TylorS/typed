@@ -60,7 +60,7 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
   </section>`
 
 function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
-  return Fx.gen(function*(_) {
+  return Fx.genScoped(function*(_) {
     // Track whether this todo is being edited
     const isEditing = yield* _(RefSubject.of(false))
 
@@ -82,7 +82,7 @@ function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Do
       Effect.zipRight(reset)
     )
 
-    return html`<li class="${Fx.when(Fx.tap(isCompleted, console.log), { onTrue: "completed", onFalse: "" })} ${
+    return html`<li class="${Fx.tap(Fx.when(isCompleted, { onTrue: "completed", onFalse: "" }), console.log)} ${
       Fx.when(isEditing, { onTrue: "editing", onFalse: "" })
     }">
       <div class="view">

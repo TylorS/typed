@@ -2,45 +2,55 @@ import type { Equivalence } from "effect"
 import * as Equal from "effect/Equal"
 import { identity } from "effect/Function"
 
-export type DiffResult<A> = ReadonlyArray<Diff<A>>
+export type DiffResult<A, B> = ReadonlyArray<Diff<A, B>>
 
-export type Diff<A> = Add<A> | Remove<A> | Update<A> | Moved<A>
+export type Diff<A, B> = Add<A, B> | Remove<A, B> | Update<A, B> | Moved<A, B>
 
-export interface Add<A> {
+export interface Add<A, B> {
   readonly _tag: "Add"
   readonly index: number
   readonly value: A
+  readonly key: B
 }
 
-export const add = <A>(value: A, index: number): Add<A> => ({ _tag: "Add", index, value })
+export const add = <A, B>(value: A, index: number, key: B): Add<A, B> => ({ _tag: "Add", index, value, key })
 
-export interface Remove<A> {
+export interface Remove<A, B> {
   readonly _tag: "Remove"
   readonly index: number
   readonly value: A
+  readonly key: B
 }
 
-export const remove = <A>(value: A, index: number): Remove<A> => ({ _tag: "Remove", index, value })
+export const remove = <A, B>(value: A, index: number, key: B): Remove<A, B> => ({ _tag: "Remove", index, value, key })
 
-export interface Update<A> {
+export interface Update<A, B> {
   readonly _tag: "Update"
   readonly index: number
   readonly value: A
+  readonly key: B
 }
 
-export const update = <A>(value: A, index: number): Update<A> => ({ _tag: "Update", index, value })
+export const update = <A, B>(value: A, index: number, key: B): Update<A, B> => ({ _tag: "Update", index, value, key })
 
-export interface Moved<A> {
+export interface Moved<A, B> {
   readonly _tag: "Moved"
   readonly index: number
   readonly to: number
   readonly value: A
+  readonly key: B
 }
 
-export const moved = <A>(value: A, from: number, to: number): Moved<A> => ({ _tag: "Moved", index: from, to, value })
+export const moved = <A, B>(value: A, from: number, to: number, key: B): Moved<A, B> => ({
+  _tag: "Moved",
+  index: from,
+  to,
+  value,
+  key
+})
 
-export type DiffOptions<A> = {
-  readonly getKey: (a: A) => PropertyKey
+export type DiffOptions<A, B extends PropertyKey> = {
+  readonly getKey: (a: A) => B
   readonly eq?: Equivalence.Equivalence<A>
   readonly keyMap?: Map<PropertyKey, number>
 }
@@ -48,43 +58,45 @@ export type DiffOptions<A> = {
 export function diff<A extends PropertyKey>(
   oldValue: ReadonlyArray<A>,
   newValue: ReadonlyArray<A>,
-  options?: Omit<DiffOptions<A>, "getKey">
-): DiffResult<A>
+  options?: Omit<DiffOptions<A, A>, "getKey">
+): DiffResult<A, A>
 
-export function diff<A>(
+export function diff<A, B extends PropertyKey>(
   oldValue: ReadonlyArray<A>,
   newValue: ReadonlyArray<A>,
-  options: DiffOptions<A>
-): DiffResult<A>
+  options: DiffOptions<A, B>
+): DiffResult<A, B>
 
-export function diff<A>(
+export function diff<A, B extends PropertyKey>(
   a: ReadonlyArray<A>,
   b: ReadonlyArray<A>,
-  options: Partial<DiffOptions<A>> = {}
-): DiffResult<A> {
+  options: Partial<DiffOptions<A, B>> = {}
+): DiffResult<A, B> {
   const { eq = Equal.equals, getKey = identity as any } = options
-  const diff: Array<Diff<A>> = []
+  const diff: Array<Diff<A, B>> = []
   const oldKeyMap = options.keyMap ?? getKeyMap(a, getKey)
   const keyMap = getKeyMap(b, getKey)
 
   for (let i = 0; i < a.length; ++i) {
     const aValue = a[i]
-    const bIndex = keyMap.get(getKey(aValue))
+    const key = getKey(aValue)
+    const bIndex = keyMap.get(key)
     if (bIndex === undefined) {
-      diff.push(remove(aValue, i))
+      diff.push(remove(aValue, i, key))
     }
   }
 
   for (let i = 0; i < b.length; ++i) {
     const bValue = b[i]
-    const aIndex = oldKeyMap.get(getKey(bValue))
+    const key = getKey(bValue)
+    const aIndex = oldKeyMap.get(key)
     if (aIndex === undefined) {
-      diff.push(add(bValue, i))
+      diff.push(add(bValue, i, key))
     } else {
       if (aIndex !== i) {
-        diff.push(moved(bValue, aIndex, i))
+        diff.push(moved(bValue, aIndex, i, key))
       } else if (!eq(a[aIndex], bValue)) {
-        diff.push(update(bValue, i))
+        diff.push(update(bValue, i, key))
       }
     }
   }
@@ -95,48 +107,50 @@ export function diff<A>(
 export function diffIterator<A extends PropertyKey>(
   oldValue: ReadonlyArray<A>,
   newValue: ReadonlyArray<A>,
-  options?: Omit<DiffOptions<A>, "getKey">
-): Generator<Diff<A>>
+  options?: Omit<DiffOptions<A, A>, "getKey">
+): Generator<Diff<A, A>>
 
-export function diffIterator<A>(
+export function diffIterator<A, B extends PropertyKey>(
   oldValue: ReadonlyArray<A>,
   newValue: ReadonlyArray<A>,
-  options: DiffOptions<A>
-): Generator<Diff<A>>
+  options: DiffOptions<A, B>
+): Generator<Diff<A, B>>
 
-export function* diffIterator<A>(
+export function* diffIterator<A, B extends PropertyKey>(
   a: ReadonlyArray<A>,
   b: ReadonlyArray<A>,
-  options: Partial<DiffOptions<A>> = {}
-): Generator<Diff<A>> {
+  options: Partial<DiffOptions<A, B>> = {}
+): Generator<Diff<A, B>> {
   const { eq = Equal.equals, getKey = identity as any } = options
   const oldKeyMap = options.keyMap ?? getKeyMap(a, getKey)
   const keyMap = getKeyMap(b, getKey)
 
   for (let i = 0; i < a.length; ++i) {
     const aValue = a[i]
-    const bIndex = keyMap.get(getKey(aValue))
+    const key = getKey(aValue)
+    const bIndex = keyMap.get(key)
     if (bIndex === undefined) {
-      yield remove(aValue, i)
+      yield remove(aValue, i, key)
     }
   }
 
   for (let i = 0; i < b.length; ++i) {
     const bValue = b[i]
-    const aIndex = oldKeyMap.get(getKey(bValue))
+    const key = getKey(bValue)
+    const aIndex = oldKeyMap.get(key)
     if (aIndex === undefined) {
-      yield add(bValue, i)
+      yield add(bValue, i, key)
     } else {
       if (aIndex !== i) {
-        yield moved(bValue, aIndex, i)
+        yield moved(bValue, aIndex, i, key)
       } else if (!eq(a[aIndex], bValue)) {
-        yield update(bValue, i)
+        yield update(bValue, i, key)
       }
     }
   }
 }
 
-function sortDiff<A>(a: Diff<A>, b: Diff<A>): number {
+function sortDiff<A, B>(a: Diff<A, B>, b: Diff<A, B>): number {
   if (a._tag === "Remove" && b._tag !== "Remove") return -1
   if (b._tag === "Remove") return 1
   return a.index - b.index

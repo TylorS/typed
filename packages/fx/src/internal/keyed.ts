@@ -1,5 +1,5 @@
 import type { FiberId } from "effect"
-import { Context, Effect, ExecutionStrategy, Option, Scope } from "effect"
+import { Context, Effect, ExecutionStrategy, Exit, Option, Scope } from "effect"
 import type { Fx, KeyedOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"
@@ -40,14 +40,14 @@ class Keyed<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | S
 interface KeyedState<A, B extends PropertyKey, C> {
   readonly entries: Map<B, KeyedEntry<A, C>>
   readonly indices: Map<number, B>
-  previousKeys: ReadonlyArray<B>
+  previousValues: ReadonlyArray<A>
 }
 
 function emptyKeyedState<A, B extends PropertyKey, C>(): KeyedState<A, B, C> {
   return {
     entries: new Map(),
     indices: new Map(),
-    previousKeys: []
+    previousValues: []
   }
 }
 
@@ -65,15 +65,14 @@ function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
 
       function diffAndPatch(values: ReadonlyArray<A>) {
         return Effect.gen(function*(_) {
-          const previous = state.previousKeys
-          const keys = values.map(options.getKey)
-          state.previousKeys = keys
+          const previous = state.previousValues
+          state.previousValues = values
 
           let added = false
           let done = false
           let scheduled = false
 
-          for (const patch of diffIterator(previous, keys)) {
+          for (const patch of diffIterator(previous, values, options)) {
             if (patch._tag === "Remove") {
               yield* _(removeValue(state, patch))
             } else if (patch._tag === "Add") {
@@ -133,11 +132,11 @@ class KeyedEntry<A, C> {
 }
 
 function getReadyIndices<A, B extends PropertyKey, C>(
-  { entries, indices, previousKeys }: KeyedState<A, B, C>
+  { entries, indices, previousValues }: KeyedState<A, B, C>
 ): ReadonlyArray<C> {
   const output: Array<C> = []
 
-  for (let i = 0; i < previousKeys.length; ++i) {
+  for (let i = 0; i < previousValues.length; ++i) {
     const key = indices.get(i)
 
     if (key === undefined) break
@@ -156,7 +155,7 @@ function getReadyIndices<A, B extends PropertyKey, C>(
 function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   { entries, indices }: KeyedState<A, B, C>,
   values: ReadonlyArray<A>,
-  patch: Add<B>,
+  patch: Add<A, B>,
   id: FiberId.FiberId,
   parentScope: Scope.Scope,
   options: KeyedOptions<A, B, R2, E2, C>,
@@ -172,23 +171,22 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
       scope: childScope,
       id
     }))
+    yield* _(Scope.addFinalizer(childScope, ref.interrupt))
 
     const entry = new KeyedEntry<A, C>(
       value,
       patch.index,
       Option.none(),
       ref,
-      ref.interrupt
+      Scope.close(childScope, Exit.interrupt(id))
     )
 
-    entries.set(patch.value, entry)
-    indices.set(patch.index, patch.value)
-
-    yield* _(Scope.addFinalizer(childScope, ref.interrupt))
+    entries.set(patch.key, entry)
+    indices.set(patch.index, patch.key)
 
     yield* _(
       Effect.forkIn(
-        options.onValue(ref, patch.value).run(Sink.make(
+        options.onValue(ref, patch.key).run(Sink.make(
           (cause) => sink.onFailure(cause),
           (output) => {
             entry.output = Option.some(output)
@@ -202,9 +200,9 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   })
 }
 
-function removeValue<A, B extends PropertyKey, C>({ entries, indices }: KeyedState<A, B, C>, patch: Remove<B>) {
-  const interrupt = entries.get(patch.value)!.interrupt
-  entries.delete(patch.value)
+function removeValue<A, B extends PropertyKey, C>({ entries, indices }: KeyedState<A, B, C>, patch: Remove<A, B>) {
+  const interrupt = entries.get(patch.key)!.interrupt
+  entries.delete(patch.key)
   indices.delete(patch.index)
   return interrupt
 }
@@ -212,9 +210,9 @@ function removeValue<A, B extends PropertyKey, C>({ entries, indices }: KeyedSta
 function updateValue<A, B extends PropertyKey, C>(
   { entries, indices }: KeyedState<A, B, C>,
   values: ReadonlyArray<A>,
-  patch: Update<B> | Moved<B>
+  patch: Update<A, B> | Moved<A, B>
 ) {
-  const key = patch.value
+  const key = patch.key
   const entry = entries.get(key)!
 
   if (patch._tag === "Moved") {

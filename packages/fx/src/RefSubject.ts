@@ -367,7 +367,7 @@ class RefSubjectImpl<R, E, A, R2> extends FxEffectBase<Exclude<R, R2> | Scope.Sc
   }
 
   run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<Exclude<R, R2> | R3 | Scope.Scope, never, unknown> {
-    return Effect.matchCauseEffect(this.toEffect(), {
+    return Effect.matchCauseEffect(getOrInitializeCore(this.core, true), {
       onFailure: (cause) => sink.onFailure(cause),
       onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.context)
     })
@@ -662,11 +662,11 @@ function initializeCoreEffect<R, E, A, R2>(
 ): Effect.Effect<Exclude<R, R2>, never, Fiber.Fiber<E, A>> {
   const initialize = Effect.onExit(
     Effect.provide(core.initial, core.context),
-    (exit) => {
-      core._fiber = undefined
-      core.deferredRef.done(exit)
-      return Effect.unit
-    }
+    (exit) =>
+      Effect.sync(() => {
+        core._fiber = undefined
+        core.deferredRef.done(exit)
+      })
   )
 
   return Effect.flatMap(
@@ -1061,7 +1061,7 @@ class FilteredImpl<R0, E0, R, E, A, R2, E2, R3, E3, C> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => share.hold(core.filterMapEffect(fx, f) as any),
+      (fx) => share.hold(core.filterMapEffect(fx, f)) as any,
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }

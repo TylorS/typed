@@ -43,7 +43,7 @@ export class DeferredRef<E, A> extends EffectBase<never, E, A> {
 
   reset() {
     this.current = Option.none()
-    this.version = 0
+    this.version = -1
 
     if (this.deferred) {
       Deferred.unsafeDone(this.deferred, Exit.interrupt(this.id))

@@ -5,7 +5,7 @@
 
 import * as C from "@typed/context"
 import type { Cause, Layer, Pipeable } from "effect"
-import * as Context from "effect/Context"
+import type * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
@@ -118,7 +118,7 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
     return withScope(
       (innerScope) =>
         Effect.contextWithEffect((ctx) => {
-          const entry = [sink, Context.add(ctx, Scope.Scope, innerScope)] as const
+          const entry = [sink, ctx] as const
           const add = Effect.sync(() => {
             this.sinks.add(entry)
             this.scopes.add(innerScope)
@@ -142,13 +142,13 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   protected onEvent(a: A) {
     if (this.sinks.size === 0) return Effect.unit
     else {
-      return Effect.forEach(this.sinks, ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
+      return Effect.forEach(Array.from(this.sinks), ([sink, ctx]) => Effect.provide(sink.onSuccess(a), ctx), DISCARD)
     }
   }
 
   protected onCause(cause: Cause.Cause<E>) {
     return Effect.forEach(
-      this.sinks,
+      Array.from(this.sinks),
       ([sink, ctx]) => Effect.provide(sink.onFailure(cause), ctx),
       DISCARD
     )
@@ -176,6 +176,17 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
         onSome: (a) => Effect.zipRight(sink.onSuccess(a), awaitScopeClose(scope))
       }))
   }
+
+  readonly interrupt = Effect.fiberIdWith((id) =>
+    Effect.tap(
+      Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD),
+      () => {
+        this.sinks.clear()
+        this.scopes.clear()
+        MutableRef.set(this.lastValue, Option.none())
+      }
+    )
+  )
 }
 
 /**
@@ -200,6 +211,17 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
       (scope) => Effect.zipRight(this.buffer.forEach((a) => sink.onSuccess(a)), awaitScopeClose(scope))
     )
   }
+
+  readonly interrupt = Effect.fiberIdWith((id) =>
+    Effect.tap(
+      Effect.forEach(this.scopes, (scope) => Scope.close(scope, Exit.interrupt(id)), DISCARD),
+      () => {
+        this.sinks.clear()
+        this.scopes.clear()
+        this.buffer.clear()
+      }
+    )
+  )
 }
 
 /**

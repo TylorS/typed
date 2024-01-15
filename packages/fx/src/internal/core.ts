@@ -19,6 +19,7 @@ import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Equal from "effect/Equal"
+import { boolean } from "effect/Equivalence"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
@@ -2712,7 +2713,10 @@ function if_<R, E, R2, E2, B, R3, E3, C>(
     readonly onFalse: Fx<R3, E3, C>
   }
 ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C> {
-  return switchMap(bool, (b): Fx<R2 | R3, E2 | E3, B | C> => b ? options.onTrue : options.onFalse)
+  return switchMap(
+    skipRepeatsWith(bool, boolean),
+    (b): Fx<R2 | R3, E2 | E3, B | C> => b ? options.onTrue : options.onFalse
+  )
 }
 
 export { if_ as if }
