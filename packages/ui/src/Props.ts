@@ -7,22 +7,43 @@ import type { Rendered } from "@typed/wire"
 import { Effect } from "effect"
 import type { ReadonlyRecord } from "effect"
 
+/**
+ * @since 1.0.0
+ */
 export type TypedProps<Input extends Record<string, any>, Element extends Rendered> = [
   & AttrsOf<Input>
+  & BooleanAttrsOf<Input>
   & PropsOf<Input>
   & EventsOf<Element>
   & RefOf<Element>
   & DataProps
 ] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 
+/**
+ * @since 1.0.0
+ */
 export type AttrsOf<Props extends Record<string, any>> = {
   readonly [K in keyof Props]?:
     | Props[K]
     | Placeholder.Any<Props[K]>
 }
 
+/**
+ * @since 1.0.0
+ */
+export type BooleanAttrsOf<Attrs extends Record<string, any>> = {
+  readonly [
+    K in keyof Attrs as K extends string ? boolean extends Attrs[K] ? `?${K}` : never : never
+  ]?:
+    | Attrs[K]
+    | Placeholder.Any<Attrs[K]>
+}
+
+/**
+ * @since 1.0.0
+ */
 export type PropsOf<Attrs extends Record<string, any>> = {
-  readonly [K in keyof Attrs as K extends string ? `.${K}` : never]: Attrs[K]
+  readonly [K in keyof Attrs as K extends string ? `.${K}` : never]?: Attrs[K] | Placeholder.Any<Attrs[K]>
 }
 
 /**
