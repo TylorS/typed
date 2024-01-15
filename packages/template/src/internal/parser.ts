@@ -394,7 +394,7 @@ class ParserImpl implements Parser {
         return Skip
       case "whitespace":
         this.skipWhitespace()
-        return Continue([parseBooleanNode(name)])
+        return Continue([this.parseBooleanNode(name)])
       case "equals": {
         this.consumeAmount(1)
         return Continue([this.parseAttributeValue(name)])
@@ -402,7 +402,7 @@ class ParserImpl implements Parser {
       case "openTagEnd": {
         this.consumeAmount(1)
         this.context = "unknown"
-        return Break<Array<Template.Attribute>>(name ? [parseBooleanNode(name)] : undefined)
+        return Break<Array<Template.Attribute>>(name ? [this.parseBooleanNode(name)] : undefined)
       }
       case "selfClosingTagEnd": {
         this.consumeAmount(2)
@@ -447,7 +447,7 @@ class ParserImpl implements Parser {
     this.skipWhitespace()
 
     if (text === "") {
-      return parseBooleanNode(name)
+      return this.parseBooleanNode(name)
     }
 
     switch (name[0]) {
@@ -505,6 +505,14 @@ class ParserImpl implements Parser {
         )
         : new Template.SparseAttrNode(name, textAndParts as any)
     )
+  }
+
+  private parseBooleanNode(name: string) {
+    if (isSpread(name)) {
+      return this.addPart(new Template.PropertiesPartNode(unsafeParsePartIndex(name.slice(3))))
+    } else {
+      return new Template.BooleanNode(name)
+    }
   }
 
   private parseTextChildren(): Array<Template.Text> | null {
@@ -731,14 +739,6 @@ export function templateHash(strings: ReadonlyArray<string>) {
   }
 
   return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)))
-}
-
-function parseBooleanNode(name: string) {
-  if (isSpread(name)) {
-    return new Template.PropertiesPartNode(unsafeParsePartIndex(name.slice(3)))
-  } else {
-    return new Template.BooleanNode(name)
-  }
 }
 
 function isSpread(str: string) {
