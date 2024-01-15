@@ -124,9 +124,11 @@ export type LoadingOptions = {
 /**
  * @since 1.0.0
  */
-export type OptionalPartial<A> = {
-  [K in keyof A]+?: [A[K]] extends [Option.Option<infer R>] ? R | undefined : A[K]
-}
+export type OptionalPartial<A> = [
+  {
+    [K in keyof A]+?: [A[K]] extends [Option.Option<infer R>] ? R | undefined : A[K]
+  }
+] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 
 /**
  * @since 1.0.0
@@ -143,7 +145,7 @@ export const loading: {
 /**
  * @since 1.0.0
  */
-export interface Failure<E> extends Effect.Effect<never, E, never> {
+export interface Failure<out E> extends Effect.Effect<never, E, never> {
   /**
    * @since 1.18.0
    */
@@ -212,7 +214,7 @@ export const fail: {
 /**
  * @since 1.0.0
  */
-export interface Success<A> extends Effect.Effect<never, never, A> {
+export interface Success<out A> extends Effect.Effect<never, never, A> {
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
   /**

@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 
+import { Data } from "effect"
 import * as Equivalence from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
@@ -9,19 +10,22 @@ import * as Option from "effect/Option"
 /**
  * @since 1.0.0
  */
-export interface Progress {
-  readonly loaded: bigint
-  readonly total: Option.Option<bigint>
+export interface Progress extends
+  Data.Data<{
+    readonly loaded: bigint
+    readonly total: Option.Option<bigint>
+  }>
+{
 }
 
 /**
  * @since 1.0.0
  */
 export function Progress(loaded: bigint, total: Option.Option<bigint> = Option.none()): Progress {
-  return {
+  return Data.struct({
     loaded,
     total
-  }
+  })
 }
 
 /**
@@ -59,8 +63,23 @@ export const setTotal: {
  * @since 1.0.0
  */
 export const equals: Equivalence.Equivalence<Progress> = Equivalence.struct<
-  { readonly [K in keyof Progress]: Equivalence.Equivalence<Progress[K]> }
+  { readonly [K in Exclude<keyof Progress, keyof Data.Data<any>>]: Equivalence.Equivalence<Progress[K]> }
 >({
   loaded: Equivalence.bigint,
   total: Option.getEquivalence(Equivalence.bigint)
 })
+
+/**
+ * @since 1.0.0
+ */
+export function pretty(progress: Progress): string {
+  return `${progress.loaded}${
+    Option.match(
+      progress.total,
+      {
+        onNone: () => "",
+        onSome: (total) => `/${total}`
+      }
+    )
+  }`
+}
