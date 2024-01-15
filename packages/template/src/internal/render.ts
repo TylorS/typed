@@ -692,7 +692,9 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
     case "object": {
       if (renderable === null || renderable === undefined) return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return renderable.length === 0 ? Fx.succeed(null) : Fx.tuple(renderable.map(unwrapRenderable)) as any
+        return renderable.length === 0
+          ? Fx.succeed(null)
+          : Fx.map(Fx.tuple(renderable.map(unwrapRenderable)), (xs) => xs.flat()) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
