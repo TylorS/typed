@@ -832,7 +832,7 @@ describe("V3", () => {
             ArrayFormatter.formatIssue(parseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -851,7 +851,7 @@ describe("V3", () => {
               path: ["id"]
             }, {
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -877,7 +877,7 @@ describe("V3", () => {
             ArrayFormatter.formatIssue(timestampParseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: []
             }]
           )
@@ -1041,7 +1041,7 @@ describe("V3", () => {
             ArrayFormatter.formatIssue(parseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -1060,7 +1060,7 @@ describe("V3", () => {
               path: ["id"]
             }, {
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: ["timestamp"]
             }]
           )
@@ -1086,7 +1086,7 @@ describe("V3", () => {
             ArrayFormatter.formatIssue(timestampParseError.left.error),
             [{
               _tag: "Type",
-              message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+              message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
               path: []
             }]
           )

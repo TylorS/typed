@@ -51,7 +51,7 @@ describe.concurrent("Form", () => {
           ArrayFormatter.formatIssue(parseError.left.error),
           [{
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
             path: ["timestamp"]
           }]
         )
@@ -70,7 +70,7 @@ describe.concurrent("Form", () => {
             path: ["id"]
           }, {
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
             path: ["timestamp"]
           }]
         )
@@ -96,7 +96,7 @@ describe.concurrent("Form", () => {
           ArrayFormatter.formatIssue(timestampParseError.left.error),
           [{
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date), actual Invalid Date",
+            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
             path: []
           }]
         )
