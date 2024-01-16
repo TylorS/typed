@@ -19,6 +19,7 @@ Added in v1.0.0
   - [EventsOf (type alias)](#eventsof-type-alias)
   - [PropsOf (type alias)](#propsof-type-alias)
   - [RefOf (type alias)](#refof-type-alias)
+  - [TypedPropertiesMap (type alias)](#typedpropertiesmap-type-alias)
   - [TypedProps (type alias)](#typedprops-type-alias)
   - [getEventHandler](#geteventhandler)
 
@@ -99,6 +100,20 @@ Added in v1.0.0
 ```ts
 export type RefOf<T extends Rendered> = {
   readonly ref?: ElementRef<T> | undefined
+}
+```
+
+Added in v1.0.0
+
+## TypedPropertiesMap (type alias)
+
+**Signature**
+
+```ts
+export type TypedPropertiesMap = {
+  readonly [K in keyof HTMLPropertiesMap]: K extends keyof HTMLElementTagNameMap
+    ? TypedProps<HTMLPropertiesMap[K], HTMLElementTagNameMap[K]>
+    : TypedProps<HTMLPropertiesMap[K], HTMLElement>
 }
 ```
 

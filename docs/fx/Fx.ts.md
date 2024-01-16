@@ -3565,9 +3565,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const withEmitter: <E, A, R = never>(
-  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<R, E, unknown>
-) => Fx<Scope.Scope | R, E, A>
+export declare const withEmitter: <E, A, R = never, E2 = never>(
+  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<R, E2, unknown>
+) => Fx<R, E | E2, A>
 ```
 
 Added in v1.20.0

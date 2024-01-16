@@ -13,7 +13,6 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Anchor.js"](#from-anchorjs)
   - [From "./Link.js"](#from-linkjs)
   - [From "./useClickAway.js"](#from-useclickawayjs)
   - [From "./usePagination.js"](#from-usepaginationjs)
@@ -21,18 +20,6 @@ Added in v1.0.0
 ---
 
 # exports
-
-## From "./Anchor.js"
-
-Re-exports all named exports from the "./Anchor.js" module.
-
-**Signature**
-
-```ts
-export * from "./Anchor.js"
-```
-
-Added in v1.0.0
 
 ## From "./Link.js"
 

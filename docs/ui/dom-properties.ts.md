@@ -1,6 +1,6 @@
 ---
 title: dom-properties.ts
-nav_order: 3
+nav_order: 2
 parent: "@typed/ui"
 ---
 
@@ -63,6 +63,7 @@ Added in v1.0.0
   - [HTMLParamElementProperties (type alias)](#htmlparamelementproperties-type-alias)
   - [HTMLPreElementProperties (type alias)](#htmlpreelementproperties-type-alias)
   - [HTMLProgressElementProperties (type alias)](#htmlprogresselementproperties-type-alias)
+  - [HTMLPropertiesMap (interface)](#htmlpropertiesmap-interface)
   - [HTMLQuoteElementProperties (type alias)](#htmlquoteelementproperties-type-alias)
   - [HTMLScriptElementProperties (type alias)](#htmlscriptelementproperties-type-alias)
   - [HTMLSelectElementProperties (type alias)](#htmlselectelementproperties-type-alias)
@@ -972,6 +973,141 @@ Added in v1.0.0
 export type HTMLProgressElementProperties = HTMLElementProperties & {
   max?: number
   value?: number
+}
+```
+
+Added in v1.0.0
+
+## HTMLPropertiesMap (interface)
+
+**Signature**
+
+```ts
+export interface HTMLPropertiesMap {
+  a: HTMLAnchorElementProperties
+  abbr: HTMLElementProperties
+  address: HTMLElementProperties
+  applet: HTMLAppletElementProperties
+  area: HTMLAreaElementProperties
+  article: HTMLElementProperties
+  aside: HTMLElementProperties
+  audio: HTMLAudioElementProperties
+  b: HTMLElementProperties
+  base: HTMLBaseElementProperties
+  basefont: HTMLBaseFontElementProperties
+  bdi: HTMLElementProperties
+  bdo: HTMLElementProperties
+  big: HTMLElementProperties
+  blockquote: HTMLElementProperties
+  body: HTMLBodyElementProperties
+  br: HTMLBRElementProperties
+  button: HTMLButtonElementProperties
+  canvas: HTMLCanvasElementProperties
+  caption: HTMLElementProperties
+  center: HTMLElementProperties
+  cite: HTMLElementProperties
+  code: HTMLElementProperties
+  col: HTMLTableColElementProperties
+  colgroup: HTMLTableColElementProperties
+  data: HTMLDataElementProperties
+  datalist: HTMLDataListElementProperties
+  dd: HTMLElementProperties
+  del: HTMLModElementProperties
+  details: HTMLElementProperties
+  dfn: HTMLElementProperties
+  dialog: HTMLElementProperties
+  dir: HTMLDirectoryElementProperties
+  div: HTMLDivElementProperties
+  dl: HTMLDListElementProperties
+  dt: HTMLElementProperties
+  em: HTMLElementProperties
+  embed: HTMLEmbedElementProperties
+  fieldset: HTMLFieldSetElementProperties
+  figcaption: HTMLElementProperties
+  figure: HTMLElementProperties
+  font: HTMLFontElementProperties
+  footer: HTMLElementProperties
+  form: HTMLFormElementProperties
+  frame: HTMLFrameElementProperties
+  frameset: HTMLFrameSetElementProperties
+  h1: HTMLHeadingElementProperties
+  h2: HTMLHeadingElementProperties
+  h3: HTMLHeadingElementProperties
+  h4: HTMLHeadingElementProperties
+  h5: HTMLHeadingElementProperties
+  h6: HTMLHeadingElementProperties
+  head: HTMLHeadElementProperties
+  header: HTMLElementProperties
+  hgroup: HTMLElementProperties
+  hr: HTMLHRElementProperties
+  html: HTMLHtmlElementProperies
+  i: HTMLElementProperties
+  iframe: HTMLIFrameElementProperties
+  img: HTMLImageElementProperties
+  input: HTMLInputElementProperties
+  ins: HTMLModElementProperties
+  kbd: HTMLElementProperties
+  label: HTMLLabelElementProperties
+  legend: HTMLLegendElementProperties
+  li: HTMLLIElementProperties
+  link: HTMLLinkElementProperties
+  main: HTMLElementProperties
+  map: HTMLMapElementProperties
+  mark: HTMLElementProperties
+  marquee: HTMLMarqueeElementProperties
+  menu: HTMLMenuElementProperties
+  menuitem: HTMLElementProperties
+  meta: HTMLMetaElementProperties
+  meter: HTMLMeterElementProperties
+  nav: HTMLElementProperties
+  noframes: HTMLElementProperties
+  noscript: HTMLElementProperties
+  object: HTMLObjectElementProperties
+  ol: HTMLOListElementProperteis
+  optgroup: HTMLOptGroupElementProperties
+  option: HTMLOptionElementProperties
+  output: HTMLOutputElementProperties
+  p: HTMLParagraphElementProperties
+  param: HTMLParamElementProperties
+  picture: HTMLElementProperties
+  pre: HTMLPreElementProperties
+  progress: HTMLProgressElementProperties
+  q: HTMLQuoteElementProperties
+  rp: HTMLElementProperties
+  rt: HTMLElementProperties
+  ruby: HTMLElementProperties
+  s: HTMLElementProperties
+  samp: HTMLElementProperties
+  script: HTMLScriptElementProperties
+  section: HTMLElementProperties
+  select: HTMLSelectElementProperties
+  small: HTMLElementProperties
+  source: HTMLSourceElementProperties
+  span: HTMLSpanElementProperties
+  strike: HTMLElementProperties
+  strong: HTMLElementProperties
+  style: HTMLStyleElementProperties
+  sub: HTMLElementProperties
+  summary: HTMLElementProperties
+  sup: HTMLElementProperties
+  table: HTMLTableElementProperties
+  tbody: HTMLTableSectionElementProperties
+  td: HTMLTableCellElementProperties
+  template: HTMLTemplateElementProperties
+  textarea: HTMLTextAreaElementProperties
+  tfoot: HTMLTableSectionElementProperties
+  th: HTMLTableHeaderCellElementProperties
+  thead: HTMLTableSectionElementProperties
+  time: HTMLTimeElementProperties
+  title: HTMLTitleElementProperties
+  tr: HTMLTableRowElementProperties
+  track: HTMLTrackElementProperties
+  tt: HTMLElementProperties
+  u: HTMLElementProperties
+  ul: HTMLUListElementProperties
+  var: HTMLElementProperties
+  video: HTMLVideoElementProperties
+  wbr: HTMLElementProperties
 }
 ```
 

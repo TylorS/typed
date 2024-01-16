@@ -146,9 +146,8 @@ Extract the Identifier of a Fn
 **Signature**
 
 ```ts
-export type Context<T extends Fn<any, any>> = T extends Fn<infer K, infer F>
-  ? K | Effect.Effect.Context<ReturnType<F>>
-  : never
+export type Context<T extends Fn<any, any>> =
+  T extends Fn<infer K, infer F> ? K | Effect.Effect.Context<ReturnType<F>> : never
 ```
 
 Added in v1.0.0

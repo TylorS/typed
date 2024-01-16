@@ -157,15 +157,16 @@ Extract the Identifier of a Model
 **Signature**
 
 ```ts
-export type Identifier<T> = T extends Ref<infer I, infer _>
-  ? I
-  : T extends ScopedRef<infer I, infer _>
+export type Identifier<T> =
+  T extends Ref<infer I, infer _>
     ? I
-    : T extends SynchronizedRef<infer I, infer _>
+    : T extends ScopedRef<infer I, infer _>
       ? I
-      : T extends Model<infer R>
-        ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
-        : never
+      : T extends SynchronizedRef<infer I, infer _>
+        ? I
+        : T extends Model<infer R>
+          ? { readonly [K in keyof R]: Identifier<R[K]> }[keyof R]
+          : never
 ```
 
 Added in v1.0.0
@@ -192,15 +193,16 @@ Extract the State of a Model
 **Signature**
 
 ```ts
-export type State<T> = T extends Ref<infer _, infer S>
-  ? S
-  : T extends ScopedRef<infer _, infer S>
+export type State<T> =
+  T extends Ref<infer _, infer S>
     ? S
-    : T extends SynchronizedRef<infer _, infer S>
+    : T extends ScopedRef<infer _, infer S>
       ? S
-      : T extends Model<infer R>
-        ? { readonly [K in keyof R]: State<R[K]> }
-        : never
+      : T extends SynchronizedRef<infer _, infer S>
+        ? S
+        : T extends Model<infer R>
+          ? { readonly [K in keyof R]: State<R[K]> }
+          : never
 ```
 
 Added in v1.0.0

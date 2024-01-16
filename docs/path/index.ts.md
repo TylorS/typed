@@ -324,17 +324,18 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type FormatPart<P extends string> = A.Equals<string, P> extends 1
-  ? `/${string}`
-  : `` extends P
-    ? P
-    : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
-      ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-      : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
+export type FormatPart<P extends string> =
+  A.Equals<string, P> extends 1
+    ? `/${string}`
+    : `` extends P
+      ? P
+      : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `\\?${infer _}`
         ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
-        : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
-          ? P
-          : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
+        : RemoveTrailingSlash<RemoveLeadingSlash<P>> extends `{${infer _}`
+          ? RemoveTrailingSlash<RemoveLeadingSlash<P>>
+          : P extends QueryParam<infer _, infer _> | QueryParams<infer _, infer _>
+            ? P
+            : `/${RemoveTrailingSlash<RemoveLeadingSlash<P>>}`
 ```
 
 Added in v1.0.0
@@ -432,27 +433,28 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type InterpolatePart<P, Params, AST> = P extends Optional<Param<infer R>>
-  ? R extends keyof Params
-    ? readonly [Params[R], AST & Record<R, Params[R]>]
-    : readonly ["", AST]
-  : P extends Param<infer R>
+export type InterpolatePart<P, Params, AST> =
+  P extends Optional<Param<infer R>>
     ? R extends keyof Params
       ? readonly [Params[R], AST & Record<R, Params[R]>]
-      : readonly [P, AST]
-    : P extends Unnamed
-      ? FindNextIndex<AST> extends keyof Params
-        ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
+      : readonly ["", AST]
+    : P extends Param<infer R>
+      ? R extends keyof Params
+        ? readonly [Params[R], AST & Record<R, Params[R]>]
         : readonly [P, AST]
-      : P extends Prefix<infer Pre, Param<infer R>>
-        ? R extends keyof Params
-          ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
-          : []
-        : P extends Optional<Prefix<infer Pre, Param<infer R>>>
-          ? R extends keyof Params
-            ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
-            : []
+      : P extends Unnamed
+        ? FindNextIndex<AST> extends keyof Params
+          ? InterpolateUnnamedPart<Params, FindNextIndex<AST>, AST>
           : readonly [P, AST]
+        : P extends Prefix<infer Pre, Param<infer R>>
+          ? R extends keyof Params
+            ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Record<R, Params[R]>]
+            : []
+          : P extends Optional<Prefix<infer Pre, Param<infer R>>>
+            ? R extends keyof Params
+              ? [`${Pre}${A.Cast<Params[R], string>}`, AST & Partial<Record<R, Params[R]>>]
+              : []
+            : readonly [P, AST]
 ```
 
 Added in v1.0.0
@@ -467,14 +469,15 @@ export type InterpolateQueryParamPart<
   Params,
   Previous extends readonly [ReadonlyArray<string>, any],
   First extends boolean
-> = Part extends QueryParam<infer K, infer V>
-  ? InterpolateQueryParamPartWithKey<
-      First extends true ? `?${K}` : `&${K}`,
-      Previous[0],
-      InterpolatePart<V, Params, Previous[1]>,
-      First
-    >
-  : readonly [[[...Previous[0], Part], Previous[1]], false]
+> =
+  Part extends QueryParam<infer K, infer V>
+    ? InterpolateQueryParamPartWithKey<
+        First extends true ? `?${K}` : `&${K}`,
+        Previous[0],
+        InterpolatePart<V, Params, Previous[1]>,
+        First
+      >
+    : readonly [[[...Previous[0], Part], Previous[1]], false]
 ```
 
 Added in v1.0.0

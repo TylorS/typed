@@ -14,13 +14,14 @@ import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
-import { Anchor, type AnchorProps } from "./Anchor.js"
+import { a } from "./hyperscript.js"
+import type { TypedPropertiesMap } from "./Props.js"
 import { getEventHandler } from "./Props.js"
 
 /**
  * @since 1.0.0
  */
-export type LinkProps = Omit<AnchorProps, keyof URL> & {
+export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
   readonly to: string | Placeholder.Any<string>
   readonly relative?: boolean | Placeholder.Any<boolean>
   readonly replace?: boolean | Placeholder.Any<boolean>
@@ -81,6 +82,6 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
 
     const allProps = { ...props, href, state: stateRef, onClick: onClickEventHandler }
 
-    return Anchor(allProps as any as Props, ...children)
+    return a(allProps as any as Props, ...children)
   })
 }

@@ -10,6 +10,7 @@ import type { Placeholder } from "@typed/template/Placeholder"
 import type { Rendered } from "@typed/wire"
 import { Effect } from "effect"
 import type { ReadonlyRecord } from "effect"
+import type { HTMLPropertiesMap } from "./dom-properties.js"
 
 /**
  * @since 1.0.0
@@ -92,4 +93,13 @@ export function getEventHandler<R, E, Ev extends Event = Event>(
   } else {
     return handler
   }
+}
+
+/**
+ * @since 1.0.0
+ */
+export type TypedPropertiesMap = {
+  readonly [K in keyof HTMLPropertiesMap]: K extends keyof HTMLElementTagNameMap
+    ? TypedProps<HTMLPropertiesMap[K], HTMLElementTagNameMap[K]>
+    : TypedProps<HTMLPropertiesMap[K], HTMLElement>
 }

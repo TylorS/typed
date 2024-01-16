@@ -49,7 +49,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type LinkProps = Omit<AnchorProps, keyof URL> & {
+export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
   readonly to: string | Placeholder.Any<string>
   readonly relative?: boolean | Placeholder.Any<boolean>
   readonly replace?: boolean | Placeholder.Any<boolean>
