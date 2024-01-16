@@ -1,5 +1,17 @@
 # @typed/ui
 
+## 0.3.5
+
+### Patch Changes
+
+- Updated dependencies [[`7b6622c`](https://github.com/TylorS/typed/commit/7b6622c441ed393809df6596490265f8681bf096), [`f1e451a`](https://github.com/TylorS/typed/commit/f1e451aa75816c98c38ce70b700094d9bc45ab90), [`63f5a6e`](https://github.com/TylorS/typed/commit/63f5a6e105680e9ee4a3efb7f2218d6df7b6b3be)]:
+  - @typed/fx@1.20.3
+  - @typed/navigation@0.8.3
+  - @typed/dom@9.0.2
+  - @typed/route@2.0.3
+  - @typed/router@0.21.3
+  - @typed/template@0.3.5
+
 ## 0.3.4
 
 ### Patch Changes

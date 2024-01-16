@@ -1,5 +1,11 @@
 # @typed/dom
 
+## 9.0.2
+
+### Patch Changes
+
+- [`63f5a6e`](https://github.com/TylorS/typed/commit/63f5a6e105680e9ee4a3efb7f2218d6df7b6b3be) Thanks [@TylorS](https://github.com/TylorS)! - Use Runtime Scope param
+
 ## 9.0.1
 
 ### Patch Changes
