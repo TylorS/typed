@@ -361,8 +361,8 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
     })
   }
 
-  const onHashChange = () => {
-    onEvent({ _tag: "ReplaceState", state: history.state, url: Option.some(new URL(location.href)), skipCommit: false })
+  const onHashChange = (ev: HashChangeEvent) => {
+    onEvent({ _tag: "ReplaceState", state: history.state, url: Option.some(new URL(ev.newURL)), skipCommit: false })
   }
 
   window.addEventListener("hashchange", onHashChange, { capture: true })

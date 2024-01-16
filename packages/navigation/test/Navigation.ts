@@ -7,7 +7,6 @@ import { deepStrictEqual, ok } from "assert"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
 import * as happyDOM from "happy-dom"
-import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 import { describe, it } from "vitest"
 
 const equalDestination = (a: Navigation.Destination, b: Navigation.Destination) => {
@@ -232,14 +231,17 @@ describe(__filename, () => {
           deepStrictEqual(current.state, state)
           deepStrictEqual(history.state, initialState)
 
-          // Manually change the URL
-          location.href += "#baz"
-
           const hashChangeEvent = new window.HashChangeEvent("hashchange")
+
+          // We need to force hasChangeEvent to have these proeprties
+          Object.assign(hashChangeEvent, {
+            oldURL: location.href,
+            newURL: location.href + "#baz"
+          })
 
           window.dispatchEvent(hashChangeEvent)
 
-          yield* _(Effect.sleep(0))
+          yield* _(Effect.sleep(1))
 
           const hashChange = yield* _(currentEntry)
 
@@ -541,7 +543,7 @@ describe(__filename, () => {
   })
 })
 
-function makeWindow(options?: IHappyDOMOptions, state?: unknown) {
+function makeWindow(options?: ConstructorParameters<typeof happyDOM.Window>[0], state?: unknown) {
   const window = new happyDOM.Window(options)
 
   // If state is provided, replace the current history state

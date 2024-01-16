@@ -15,7 +15,6 @@ import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
-import type IHappyDOMOptions from "happy-dom/lib/window/IHappyDOMOptions.js"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
 import { adjustTime } from "./internal/utils.js"
@@ -29,6 +28,9 @@ import type { RenderTemplate } from "./RenderTemplate.js"
 // TODO: Form events
 // TODO: keyboard events
 // TODO: drag and drop events
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+export type HappyDOMOptions = ConstructorParameters<typeof import("happy-dom").Window>[0]
 
 /**
  * @since 1.0.0
@@ -52,7 +54,7 @@ export interface TestRender<E> {
 export function testRender<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
   options?:
-    & IHappyDOMOptions
+    & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
 ): Effect.Effect<
   Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>,
@@ -148,7 +150,9 @@ export function click<E>(
 
 // internals
 
-function getOrMakeWindow(options?: IHappyDOMOptions) {
+function getOrMakeWindow(
+  options?: HappyDOMOptions
+): Effect.Effect<Scope.Scope, never, Window & GlobalThis> {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     return Effect.gen(function*(_) {
       window.document.head.innerHTML = ""

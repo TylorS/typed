@@ -2444,10 +2444,11 @@ export function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
 export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<I, never, A>
 export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A> | Queue.Dequeue<A>): Fx<I, never, A> {
   return core.make((sink) =>
-    Effect.repeatWhileEffect(
-      Effect.matchCauseEffect(dequeue.take, sink),
-      () => dequeueIsActive(dequeue)
-    )
+    Effect.gen(function*(_) {
+      while (yield* _(dequeueIsActive(dequeue))) {
+        yield* _(dequeue.take, Effect.matchCauseEffect(sink))
+      }
+    })
   )
 }
 

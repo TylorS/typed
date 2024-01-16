@@ -9,7 +9,6 @@ import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
-import { constant, constVoid } from "effect/Function"
 import { globalValue } from "effect/GlobalValue"
 import * as Layer from "effect/Layer"
 import type * as Queue from "effect/Queue"
@@ -160,18 +159,15 @@ export interface WhileIdleRequestOptions<R, E, R2, E2> extends IdleRequestOption
 export const whileIdle = <R, E, R2, E2>(
   options: WhileIdleRequestOptions<R, E, R2, E2>
 ): Effect.Effect<Scope.Scope | R | R2, E | E2, void> =>
-  Effect.repeatWhileEffect(
-    Effect.flatMap(
-      whenIdle(options),
-      (deadline) =>
-        Effect.whileLoop({
-          while: () => shouldContinue(deadline),
-          body: constant(options.body),
-          step: constVoid
-        })
-    ),
-    constant(options.while)
-  )
+  Effect.gen(function*(_) {
+    while (yield* _(options.while)) {
+      const deadline = yield* _(whenIdle(options))
+
+      while (shouldContinue(deadline)) {
+        yield* _(options.body)
+      }
+    }
+  })
 
 /**
  * Dequeue values and perform an Effect while the event loop is not busy with any other work.
