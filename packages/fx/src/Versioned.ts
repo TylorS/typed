@@ -255,19 +255,10 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
   Effect.Effect.Error<VS[keyof VS]>,
   { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
 > {
-  return map(
-    tuple(
-      Object.entries(versioneds).map(([k, v]) =>
-        map(v, {
-          onFx: (x) => [k, x] as const,
-          onEffect: (x) => [k, x] as const
-        })
-      )
-    ),
-    {
-      onFx: Object.fromEntries,
-      onEffect: Object.fromEntries
-    }
+  return make(
+    Effect.map(Effect.all(Object.values(versioneds).map((v) => v.version)), (versions) => versions.reduce(sum, 0)),
+    core.struct(versioneds),
+    Effect.all(versioneds, { concurrency: "unbounded" }) as any
   )
 }
 

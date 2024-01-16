@@ -1432,7 +1432,7 @@ class RefSubjectTuple<
   ) {
     super()
 
-    this.versioned = Versioned.tuple(refs) as any
+    this.versioned = Versioned.hold(Versioned.tuple(refs)) as any
     this.version = this.versioned.version
     this.interrupt = Effect.all(refs.map((r) => r.interrupt), UNBOUNDED)
     this.subscriberCount = Effect.map(
@@ -1588,7 +1588,7 @@ class RefSubjectStruct<
   ) {
     super()
 
-    this.versioned = Versioned.struct(refs) as any
+    this.versioned = Versioned.hold(Versioned.struct(refs)) as any
     this.version = this.versioned.version
     this.interrupt = Effect.all(Object.values(refs).map((r) => r.interrupt), UNBOUNDED)
     this.subscriberCount = Effect.map(
