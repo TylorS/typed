@@ -416,14 +416,8 @@ function scopedRuntime<R>(): Effect.Effect<
     const scope = unsafeGet(runtime.context, Scope.Scope)
     const runFork = Runtime.runFork(runtime)
 
-    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> => {
-      const fiber: Fiber.RuntimeFiber<E, A> = effect.pipe(
-        Scope.extend(scope),
-        runFork
-      )
-
-      return fiber
-    }
+    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> =>
+      runFork(effect, { scope })
 
     const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
       new Promise((resolve, reject) => {

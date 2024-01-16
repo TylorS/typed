@@ -48,7 +48,7 @@
     "@effect/language-service": "0.1.0",
     "@effect/typeclass": "0.22.6",
     "@types/chai": "^4.3.11",
-    "@types/node": "^20.11.3",
+    "@types/node": "^20.11.4",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "@vitejs/plugin-react": "^4.2.1",

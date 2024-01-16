@@ -7,7 +7,6 @@ import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import type * as Exit from "effect/Exit"
-import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
 import type * as Scope from "effect/Scope"
 import { withScope } from "./internal/helpers.js"
@@ -37,14 +36,14 @@ export function withEmitter<R, E, A, R2, B>(
         sink,
         (sink): Effect.Effect<R | R2, E, B> => {
           return Effect.flatMap(Effect.runtime<R>(), (runtime): Effect.Effect<R2, E, B> => {
-            const runPromiseExit = Runtime.runPromiseExit(runtime)
+            const runCallback = Runtime.runCallback(runtime)
             const run = (effect: Effect.Effect<R, never, unknown>) =>
-              runPromiseExit(
-                Effect.flatMap(
-                  Effect.forkIn(effect, scope),
-                  Fiber.join
-                )
-              )
+              new Promise<Exit.Exit<never, unknown>>((resolve) => {
+                runCallback(effect, {
+                  scope,
+                  onExit: (exit) => resolve(exit)
+                })
+              })
 
             const emitter: Emitter<E, A> = {
               succeed: (value) => run(sink.onSuccess(value)),

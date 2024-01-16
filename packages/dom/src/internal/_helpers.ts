@@ -33,11 +33,7 @@ export function createScopedRuntime<R>(): Effect.Effect<
     const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
     const scope = yield* _(Effect.scope)
     const runFork = Runtime.runFork(runtime)
-    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => {
-      const fiber: Fiber.Fiber<E, A> = runFork(Effect.fromFiberEffect(Effect.forkIn(effect, scope)))
-
-      return fiber
-    }
+    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.Fiber<E, A> => runFork(effect, { scope })
 
     return {
       runtime,
