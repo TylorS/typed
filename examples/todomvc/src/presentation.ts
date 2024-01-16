@@ -18,7 +18,7 @@ const onEnterOrEscape = EventHandler.keys(
 
 const clearCompletedButton = html`<button
   class="clear-completed"
-  onclick="${Effect.uninterruptible(App.clearCompletedTodos)}"
+  onclick="${App.clearCompletedTodos}"
 >
   Clear completed
 </button>`

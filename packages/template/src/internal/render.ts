@@ -624,8 +624,10 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         // Create a persistent wire from our content
         const wire = persistent(content) as T
 
-        // Set the element when it is ready
-        yield* _(ctx.eventSource.setup(wire, scope))
+        // Setup our event listeners for our wire.
+        // We use the parentScope to allow event listeners to exist
+        // beyond the lifetime of the current Fiber, but no further than its parent template.
+        yield* _(ctx.eventSource.setup(wire, parentScope))
 
         // Emit our DomRenderEvent
         yield* _(
