@@ -35,10 +35,7 @@ Subject is an Fx type which can also be imperatively pushed into.
 **Signature**
 
 ```ts
-export interface Subject<R, E, A>
-  extends Push<R, E, A, R | Scope.Scope, E, A>,
-    Fx<R | Scope.Scope, E, A>,
-    Pipeable.Pipeable {
+export interface Subject<out R, in out E, in out A> extends Push<R, E, A, R | Scope.Scope, E, A>, Pipeable.Pipeable {
   readonly subscriberCount: Effect.Effect<R, never, number>
   readonly interrupt: Effect.Effect<R, never, void>
 }

@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import type { ElementRef } from "@typed/template/ElementRef"
 import type { DefaultEventMap } from "@typed/template/ElementSource"
@@ -61,10 +65,16 @@ export type EventsOf<El, EventMap extends {} = DefaultEventMap<El>> = {
     | undefined
 }
 
+/**
+ * @since 1.0.0
+ */
 export type RefOf<T extends Rendered> = {
   readonly ref?: ElementRef<T> | undefined
 }
 
+/**
+ * @since 1.0.0
+ */
 export type DataProps = {
   readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
 }

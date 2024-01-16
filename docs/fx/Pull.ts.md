@@ -33,7 +33,7 @@ An Effect which can be used to pull values of a Stream.
 **Signature**
 
 ```ts
-export interface Pull<R, E, A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
+export interface Pull<out R, out E, out A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
 ```
 
 Added in v1.18.0

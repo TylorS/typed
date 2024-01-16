@@ -187,7 +187,7 @@ A RefHashSet is a RefSubject that is specialized over an HashSet of values.
 **Signature**
 
 ```ts
-export interface RefHashSet<R, E, A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
+export interface RefHashSet<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
 ```
 
 Added in v1.18.0

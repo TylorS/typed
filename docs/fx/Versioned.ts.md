@@ -92,7 +92,9 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Versioned<R1, E1, R2, E2, A2, R3, E3, A3> extends Fx<R2, E2, A2>, Effect.Effect<R3, E3, A3> {
+export interface Versioned<out R1, out E1, out R2, out E2, out A2, out R3, out E3, out A3>
+  extends Fx<R2, E2, A2>,
+    Effect.Effect<R3, E3, A3> {
   readonly version: Effect.Effect<R1, E1, number>
 }
 ```

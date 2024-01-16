@@ -67,7 +67,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Guard<I, R, E, O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
+export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
 ```
 
 Added in v1.18.0

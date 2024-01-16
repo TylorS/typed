@@ -14,6 +14,7 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [EventOptions (type alias)](#eventoptions-type-alias)
+  - [HappyDOMOptions (type alias)](#happydomoptions-type-alias)
   - [TestRender (interface)](#testrender-interface)
   - [click](#click)
   - [dispatchEvent](#dispatchevent)
@@ -36,6 +37,14 @@ export type EventOptions = {
 ```
 
 Added in v1.0.0
+
+## HappyDOMOptions (type alias)
+
+**Signature**
+
+```ts
+export type HappyDOMOptions = ConstructorParameters<typeof import("happy-dom").Window>[0]
+```
 
 ## TestRender (interface)
 
@@ -91,7 +100,7 @@ Added in v1.0.0
 ```ts
 export declare function testRender<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
-  options?: IHappyDOMOptions & {
+  options?: HappyDOMOptions & {
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
   }
 ): Effect.Effect<

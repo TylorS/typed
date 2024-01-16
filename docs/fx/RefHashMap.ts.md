@@ -400,7 +400,8 @@ A RefHashMap is a RefSubject that is specialized over a HashMap of values.
 **Signature**
 
 ```ts
-export interface RefHashMap<R, E, K, V> extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>> {}
+export interface RefHashMap<out R, in out E, in out K, in out V>
+  extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>> {}
 ```
 
 Added in v1.18.0

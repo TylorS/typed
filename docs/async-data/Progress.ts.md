@@ -17,6 +17,7 @@ Added in v1.0.0
   - [Progress (interface)](#progress-interface)
   - [equals](#equals)
   - [make](#make)
+  - [pretty](#pretty)
   - [setLoaded](#setloaded)
   - [setTotal](#settotal)
 
@@ -39,10 +40,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Progress {
-  readonly loaded: bigint
-  readonly total: Option.Option<bigint>
-}
+export interface Progress
+  extends Data.Data<{
+    readonly loaded: bigint
+    readonly total: Option.Option<bigint>
+  }> {}
 ```
 
 Added in v1.0.0
@@ -63,6 +65,16 @@ Added in v1.0.0
 
 ```ts
 export declare const make: (loaded: bigint, total?: bigint | null) => Progress
+```
+
+Added in v1.0.0
+
+## pretty
+
+**Signature**
+
+```ts
+export declare function pretty(progress: Progress): string
 ```
 
 Added in v1.0.0

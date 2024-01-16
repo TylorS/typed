@@ -26,14 +26,19 @@ Added in v1.20.0
   - [GetSetDelete (interface)](#getsetdelete-interface)
   - [GetStructKind (type alias)](#getstructkind-type-alias)
   - [GetTupleKind (type alias)](#gettuplekind-type-alias)
+  - [Identifier (type alias)](#identifier-type-alias)
   - [MatchKind (type alias)](#matchkind-type-alias)
   - [RefSubject (interface)](#refsubject-interface)
   - [RefSubject (namespace)](#refsubject-namespace)
     - [Derived (interface)](#derived-interface)
     - [Tagged (interface)](#tagged-interface)
     - [Any (type alias)](#any-type-alias-2)
+    - [Context (type alias)](#context-type-alias-1)
+    - [Error (type alias)](#error-type-alias-1)
+    - [Identifier (type alias)](#identifier-type-alias-1)
+    - [Success (type alias)](#success-type-alias)
   - [RefSubjectOptions (interface)](#refsubjectoptions-interface)
-  - [Success (type alias)](#success-type-alias)
+  - [Success (type alias)](#success-type-alias-1)
   - [TupleFrom (type alias)](#tuplefrom-type-alias)
   - [asFalse](#asfalse)
   - [asTrue](#astrue)
@@ -121,7 +126,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Context<T> = Fx.Context<T>
+export type Context<T> = RefSubject.Context<T>
 ```
 
 Added in v1.20.0
@@ -131,7 +136,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Error<T> = Fx.Error<T>
+export type Error<T> = RefSubject.Error<T>
 ```
 
 Added in v1.20.0
@@ -229,6 +234,16 @@ export type GetTupleKind<Refs extends ReadonlyArray<Ref>, Kind extends RefKind =
 
 Added in v1.20.0
 
+## Identifier (type alias)
+
+**Signature**
+
+```ts
+export type Identifier<T> = RefSubject.Identifier<T>
+```
+
+Added in v1.20.0
+
 ## MatchKind (type alias)
 
 **Signature**
@@ -291,7 +306,10 @@ export interface Tagged<I, E, A> extends RefSubject<I, E, A> {
   /**
    * @since 1.20.0
    */
-  readonly make: <R>(fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
+  readonly make: <R>(
+    fxOrEffect: Fx<R, E, A> | Effect.Effect<R, E, A>,
+    options?: RefSubjectOptions<A>
+  ) => Layer.Layer<R, never, I>
 }
 ```
 
@@ -307,6 +325,46 @@ export type Any =
   | RefSubject<never, any, any>
   | RefSubject<any, never, any>
   | RefSubject<never, never, any>
+```
+
+Added in v1.20.0
+
+### Context (type alias)
+
+**Signature**
+
+```ts
+export type Context<T> = T extends RefSubject<infer R, infer _E, infer _A> ? R : never
+```
+
+Added in v1.20.0
+
+### Error (type alias)
+
+**Signature**
+
+```ts
+export type Error<T> = T extends RefSubject<infer _R, infer E, infer _A> ? E : never
+```
+
+Added in v1.20.0
+
+### Identifier (type alias)
+
+**Signature**
+
+```ts
+export type Identifier<T> = T extends RefSubject.Tagged<infer R, infer _E, infer _A> ? R : never
+```
+
+Added in v1.20.0
+
+### Success (type alias)
+
+**Signature**
+
+```ts
+export type Success<T> = T extends RefSubject<infer _R, infer _E, infer A> ? A : never
 ```
 
 Added in v1.20.0
@@ -330,7 +388,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Success<T> = Fx.Success<T>
+export type Success<T> = RefSubject.Success<T>
 ```
 
 Added in v1.20.0

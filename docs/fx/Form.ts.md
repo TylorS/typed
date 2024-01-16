@@ -75,7 +75,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Form<R, Entries extends Form.AnyEntries>
+export interface Form<out R, in out Entries extends Form.AnyEntries>
   extends Form.Base<
     R | Form.Context<Entries>,
     Form.Error<Entries>,
@@ -96,7 +96,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Base<R, E, I, O, Entries extends Form.AnyEntries>
+export interface Base<out R, out E, in out I, in out O, in out Entries extends Form.AnyEntries>
   extends Versioned.Versioned<R, never, R | Scope.Scope, E | ParseError, I, R, E | ParseError, I> {
   readonly [FormTypeId]: FormTypeId
 

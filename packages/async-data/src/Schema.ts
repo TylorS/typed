@@ -43,7 +43,10 @@ const NoDataSchemaJson = Schema.struct({
 })
 const NoDataSchema = Schema.instanceOf(AsyncData.NoData)
 
-export const NoData = NoDataSchemaJson
+/**
+ * @since 1.0.0
+ */
+export const NoData: Schema.Schema<{ readonly _tag: "NoData" }, AsyncData.NoData> = NoDataSchemaJson
   .pipe(
     Schema.transform(
       NoDataSchema,
@@ -60,6 +63,9 @@ export const NoData = NoDataSchemaJson
     })
   )
 
+/**
+ * @since 1.0.0
+ */
 export type NoDataFrom = Schema.Schema.From<typeof NoData>
 
 const ProgressSchemaJson = Schema.struct({
@@ -82,23 +88,30 @@ const ProgressSchema: Schema.Schema<
 const progressArbitrary: Arbitrary.Arbitrary<P.Progress> = (fc) =>
   fc.bigInt().chain((loaded) => fc.option(fc.bigInt({ min: loaded })).map((total) => P.make(loaded, total)))
 
-export const Progress = ProgressSchemaJson.pipe(
-  Schema.transform(
-    ProgressSchema,
-    (json): P.Progress => P.make(json.loaded, json.total),
-    (progress) => ({
-      loaded: progress.loaded,
-      total: Option.getOrUndefined(progress.total)
+/**
+ * @since 1.0.0
+ */
+export const Progress: Schema.Schema<{ readonly loaded: string; readonly total?: string | undefined }, P.Progress> =
+  ProgressSchemaJson.pipe(
+    Schema.transform(
+      ProgressSchema,
+      (json): P.Progress => P.make(json.loaded, json.total),
+      (progress) => ({
+        loaded: progress.loaded,
+        total: Option.getOrUndefined(progress.total)
+      })
+    ),
+    Schema.annotations({
+      [AST.IdentifierAnnotationId]: "Progress",
+      [Pretty.PrettyHookId]: () => "Progress",
+      [Arbitrary.ArbitraryHookId]: (): Arbitrary.Arbitrary<P.Progress> => progressArbitrary,
+      [Eq.EquivalenceHookId]: () => Equal.equals
     })
-  ),
-  Schema.annotations({
-    [AST.IdentifierAnnotationId]: "Progress",
-    [Pretty.PrettyHookId]: () => "Progress",
-    [Arbitrary.ArbitraryHookId]: (): Arbitrary.Arbitrary<P.Progress> => progressArbitrary,
-    [Eq.EquivalenceHookId]: () => Equal.equals
-  })
-)
+  )
 
+/**
+ * @since 1.0.0
+ */
 export type ProgressFrom = Schema.Schema.From<typeof Progress>
 
 const LoadingSchemaJson = Schema.struct({
@@ -125,7 +138,17 @@ const loadingArbitrary: Arbitrary.Arbitrary<AsyncData.Loading> = (fc) =>
     })
   )
 
-export const Loading = LoadingSchemaJson
+/**
+ * @since 1.0.0
+ */
+export const Loading: Schema.Schema<
+  {
+    readonly _tag: "Loading"
+    readonly timestamp: number
+    readonly progress?: ProgressFrom | undefined
+  },
+  AsyncData.Loading
+> = LoadingSchemaJson
   .pipe(
     Schema.transform(
       LoadingSchema,
@@ -140,6 +163,9 @@ export const Loading = LoadingSchemaJson
     })
   )
 
+/**
+ * @since 1.0.0
+ */
 export type LoadingFrom = Schema.Schema.From<typeof Loading>
 
 const FailureSchemaJson = <EI, E>(cause: Schema.Schema<Schema.CauseFrom<EI>, Cause.Cause<E>>) =>
@@ -180,10 +206,37 @@ const FailureSchema = <EI, E>(
     }
   )
 
+const failureArbitrary = <E>(
+  cause: Arbitrary.Arbitrary<Cause.Cause<E>>
+): Arbitrary.Arbitrary<AsyncData.Failure<E>> =>
+(fc) =>
+  fc.option(loadingArbitrary(fc)).chain((refreshing) =>
+    cause(fc).chain((cause) =>
+      fc.date().map((date) =>
+        AsyncData.failCause(cause, {
+          timestamp: date.getTime(),
+          refreshing: refreshing || undefined
+        })
+      )
+    )
+  )
+
+/**
+ * @since 1.0.0
+ */
 export const Failure = <EI, E>(
   error: Schema.Schema<EI, E>
 ): Schema.Schema<
-  FailureFrom<EI>,
+  {
+    readonly _tag: "Failure"
+    readonly cause: Schema.CauseFrom<EI>
+    readonly timestamp: number
+    readonly refreshing?: {
+      readonly _tag: "Loading"
+      readonly timestamp: number
+      readonly progress?: { readonly loaded: string; readonly total?: string | undefined } | undefined
+    } | undefined
+  },
   AsyncData.Failure<E>
 > =>
   FailureSchemaJson(Schema.cause(Schema.from(error)))
@@ -205,24 +258,14 @@ export const Failure = <EI, E>(
       Schema.annotations({
         [AST.IdentifierAnnotationId]: "AsyncData.Failure",
         [Pretty.PrettyHookId]: FAILURE_PRETTY,
-        [Arbitrary.ArbitraryHookId]: <E>(
-          cause: Arbitrary.Arbitrary<Cause.Cause<E>>
-        ): Arbitrary.Arbitrary<AsyncData.Failure<E>> =>
-        (fc) =>
-          fc.option(loadingArbitrary(fc)).chain((refreshing) =>
-            cause(fc).chain((cause) =>
-              fc.date().map((date) =>
-                AsyncData.failCause(cause, {
-                  timestamp: date.getTime(),
-                  refreshing: refreshing || undefined
-                })
-              )
-            )
-          ),
+        [Arbitrary.ArbitraryHookId]: failureArbitrary,
         [Eq.EquivalenceHookId]: () => Equal.equals
       })
     )
 
+/**
+ * @since 1.0.0
+ */
 export type FailureFrom<E> = Schema.Schema.From<ReturnType<typeof FailureSchemaJson<E, E>>>
 
 const SuccessSchemaJson = <AI, A>(
@@ -289,7 +332,35 @@ const SuccessSchema = <AI, A>(
     }
   )
 
-export const Success = <AI, A>(value: Schema.Schema<AI, A>): Schema.Schema<SuccessFrom<AI>, AsyncData.Success<A>> =>
+const successArbitrary = <A>(
+  value: Arbitrary.Arbitrary<A>
+): Arbitrary.Arbitrary<AsyncData.Success<A>> =>
+(fc) =>
+  fc.option(loadingArbitrary(fc)).chain((refreshing) =>
+    value(fc).chain((a) =>
+      fc.date().map((date) =>
+        AsyncData.success(a, {
+          timestamp: date.getTime(),
+          refreshing: refreshing || undefined
+        })
+      )
+    )
+  )
+
+/**
+ * @since 1.0.0
+ */
+export const Success = <AI, A>(
+  value: Schema.Schema<AI, A>
+): Schema.Schema<
+  {
+    readonly timestamp: number
+    readonly _tag: "Success"
+    readonly value: AI
+    readonly refreshing?: LoadingFrom | undefined
+  },
+  AsyncData.Success<A>
+> =>
   SuccessSchemaJson(Schema.from(value))
     .pipe(
       Schema.transform(
@@ -309,28 +380,24 @@ export const Success = <AI, A>(value: Schema.Schema<AI, A>): Schema.Schema<Succe
       Schema.annotations({
         [AST.IdentifierAnnotationId]: "AsyncData.Success",
         [Pretty.PrettyHookId]: SUCCESS_PRETTY,
-        [Arbitrary.ArbitraryHookId]: <A>(
-          value: Arbitrary.Arbitrary<A>
-        ): Arbitrary.Arbitrary<AsyncData.Success<A>> =>
-        (fc) =>
-          fc.option(loadingArbitrary(fc)).chain((refreshing) =>
-            value(fc).chain((a) =>
-              fc.date().map((date) =>
-                AsyncData.success(a, {
-                  timestamp: date.getTime(),
-                  refreshing: refreshing || undefined
-                })
-              )
-            )
-          ),
+        [Arbitrary.ArbitraryHookId]: successArbitrary,
         [Eq.EquivalenceHookId]: () => Equal.equals
       })
     )
 
+/**
+ * @since 1.0.0
+ */
 export type SuccessFrom<A> = Schema.Schema.From<ReturnType<typeof SuccessSchemaJson<A, A>>>
 
+/**
+ * @since 1.0.0
+ */
 export type AsyncDataFrom<E, A> = NoDataFrom | LoadingFrom | FailureFrom<E> | SuccessFrom<A>
 
+/**
+ * @since 1.0.0
+ */
 export const asyncData = <EI, E, AI, A>(
   error: Schema.Schema<EI, E>,
   value: Schema.Schema<AI, A>
@@ -391,10 +458,41 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
     },
     {
       [AST.IdentifierAnnotationId]: "AsyncData",
-
+      [Pretty.PrettyHookId]: asyncDataPretty,
+      [Arbitrary.ArbitraryHookId]: asyncDataArbitrary,
       [Eq.EquivalenceHookId]: () => Equal.equals
     }
   )
+}
+
+function asyncDataPretty<E, A>(
+  E: Pretty.Pretty<Cause.Cause<E>>,
+  A: Pretty.Pretty<A>
+): Pretty.Pretty<AsyncData.AsyncData<E, A>> {
+  return AsyncData.match({
+    NoData: () => NO_DATA_PRETTY,
+    Loading: LOADING_PRETTY,
+    Failure: (_, data) => FAILURE_PRETTY(E)(data),
+    Success: (_, data) => SUCCESS_PRETTY(A)(data)
+  })
+}
+
+function asyncDataArbitrary<E, A>(
+  E: Arbitrary.Arbitrary<Cause.Cause<E>>,
+  A: Arbitrary.Arbitrary<A>
+): Arbitrary.Arbitrary<AsyncData.AsyncData<E, A>> {
+  const noDataArb = Arbitrary.make(NoData)
+  const loadingArb = Arbitrary.make(Loading)
+  const failureArb = failureArbitrary(E)
+  const successArb = successArbitrary(A)
+
+  return (fc) =>
+    fc.oneof(
+      noDataArb(fc),
+      loadingArb(fc),
+      failureArb(fc),
+      successArb(fc)
+    )
 }
 
 function progressFromJson(json: ProgressFromTo | undefined): P.Progress | undefined {

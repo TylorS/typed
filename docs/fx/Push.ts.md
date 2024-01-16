@@ -46,10 +46,17 @@ Added in v1.20.0
 
 ## Push (interface)
 
+Push is an abstract type which represents a Type which is both an Fx and a Sink. The type parameters
+are decoupled from one another and allow mapping over the input and output of the Push separately for
+more complex use cases.
+
 **Signature**
 
 ```ts
-export interface Push<R, E, A, R2, E2, B> extends Sink.Sink<R, E, A>, Fx<R2, E2, B>, Pipeable.Pipeable {}
+export interface Push<out R, in E, in A, out R2, out E2, out B>
+  extends Sink.Sink<R, E, A>,
+    Fx<R2, E2, B>,
+    Pipeable.Pipeable {}
 ```
 
 Added in v1.20.0

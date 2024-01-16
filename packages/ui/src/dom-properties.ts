@@ -1,3 +1,10 @@
+/**
+ * @since 1.0.0
+ */
+
+/**
+ * @since 1.0.0
+ */
 export type ElementProperties = {
   className?: string | null | undefined
   id?: string | null | undefined
@@ -6,6 +13,9 @@ export type ElementProperties = {
   slot?: string | null | undefined
 }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLElementProperties =
   & ElementProperties
   & {
@@ -21,6 +31,9 @@ export type HTMLElementProperties =
     title?: string | null | undefined
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLAnchorElementProperties =
   & HTMLElementProperties
   & {
@@ -47,6 +60,9 @@ export type HTMLAnchorElementProperties =
     urn?: string | null | undefined
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLAppletElementProperties =
   & HTMLElementProperties
   & {
@@ -70,6 +86,9 @@ export type HTMLAppletElementProperties =
     width?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLAreaElementProperties =
   & HTMLElementProperties
   & {
@@ -90,14 +109,23 @@ export type HTMLAreaElementProperties =
     target?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLAudioElementProperties = HTMLElementProperties
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLBRElementProperties =
   & HTMLElementProperties
   & {
     clear?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLBaseElementProperties =
   & HTMLElementProperties
   & {
@@ -105,6 +133,9 @@ export type HTMLBaseElementProperties =
     target?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLBaseFontElementProperties =
   & HTMLElementProperties
   & {
@@ -112,6 +143,9 @@ export type HTMLBaseFontElementProperties =
     size?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLBodyElementProperties =
   & HTMLElementProperties
   & {
@@ -125,6 +159,9 @@ export type HTMLBodyElementProperties =
     vLink?: any
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLButtonElementProperties =
   & HTMLElementProperties
   & {
@@ -141,6 +178,9 @@ export type HTMLButtonElementProperties =
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLCanvasElementProperties =
   & HTMLElementProperties
   & {
@@ -148,30 +188,45 @@ export type HTMLCanvasElementProperties =
     width?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLDListElementProperties =
   & HTMLElementProperties
   & {
     compact?: boolean
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLDataElementProperties =
   & HTMLElementProperties
   & {
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLDataListElementProperties =
   & HTMLElementProperties
   & {
     options?: HTMLCollectionOf<HTMLOptionElement>
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLDirectoryElementProperties =
   & HTMLElementProperties
   & {
     compact?: boolean
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLDivElementProperties =
   & HTMLElementProperties
   & {
@@ -179,6 +234,9 @@ export type HTMLDivElementProperties =
     noWrap?: boolean
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLEmbedElementProperties =
   & HTMLElementProperties
   & {
@@ -193,6 +251,9 @@ export type HTMLEmbedElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLFieldSetElementProperties =
   & HTMLElementProperties
   & {
@@ -201,12 +262,18 @@ export type HTMLFieldSetElementProperties =
     name?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLFontElementProperties =
   & HTMLElementProperties
   & {
     face?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLFormElementProperties =
   & HTMLElementProperties
   & {
@@ -221,6 +288,9 @@ export type HTMLFormElementProperties =
     target?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLFrameElementProperties =
   & HTMLElementProperties
   & {
@@ -239,6 +309,9 @@ export type HTMLFrameElementProperties =
     width?: string | number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLFrameSetElementProperties =
   & HTMLElementProperties
   & {
@@ -251,6 +324,9 @@ export type HTMLFrameSetElementProperties =
     rows?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLHRElementProperties =
   & HTMLElementProperties
   & {
@@ -259,24 +335,36 @@ export type HTMLHRElementProperties =
     width?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLHeadElementProperties =
   & HTMLElementProperties
   & {
     profile?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLHeadingElementProperties =
   & HTMLElementProperties
   & {
     align?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLHtmlElementProperies =
   & HTMLElementProperties
   & {
     version?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLIFrameElementProperties =
   & HTMLElementProperties
   & {
@@ -299,6 +387,9 @@ export type HTMLIFrameElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLImageElementProperties =
   & HTMLElementProperties
   & {
@@ -323,6 +414,9 @@ export type HTMLImageElementProperties =
     width?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLInputElementProperties =
   & HTMLElementProperties
   & {
@@ -371,6 +465,9 @@ export type HTMLInputElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLLIElementProperties =
   & HTMLElementProperties
   & {
@@ -378,18 +475,27 @@ export type HTMLLIElementProperties =
     value?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLLabelElementProperties =
   & HTMLElementProperties
   & {
     htmlFor?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLLegendElementProperties =
   & HTMLElementProperties
   & {
     align?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLLinkElementProperties =
   & HTMLElementProperties
   & {
@@ -406,12 +512,18 @@ export type HTMLLinkElementProperties =
     integrity?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMapElementProperties =
   & HTMLElementProperties
   & {
     name?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMarqueeElementProperties =
   & HTMLElementProperties
   & {
@@ -428,6 +540,9 @@ export type HTMLMarqueeElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMediaElementProperties =
   & HTMLElementProperties
   & {
@@ -453,6 +568,9 @@ export type HTMLMediaElementProperties =
     volume?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMenuElementProperties =
   & HTMLElementProperties
   & {
@@ -460,6 +578,9 @@ export type HTMLMenuElementProperties =
     type?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMetaElementProperties =
   & HTMLElementProperties
   & {
@@ -471,6 +592,9 @@ export type HTMLMetaElementProperties =
     url?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLMeterElementProperties =
   & HTMLElementProperties
   & {
@@ -482,6 +606,9 @@ export type HTMLMeterElementProperties =
     value?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLModElementProperties =
   & HTMLElementProperties
   & {
@@ -489,6 +616,9 @@ export type HTMLModElementProperties =
     dateTime?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLOListElementProperteis =
   & HTMLElementProperties
   & {
@@ -497,6 +627,9 @@ export type HTMLOListElementProperteis =
     type?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLObjectElementProperties =
   & HTMLElementProperties
   & {
@@ -523,6 +656,9 @@ export type HTMLObjectElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLOptGroupElementProperties =
   & HTMLElementProperties
   & {
@@ -533,6 +669,9 @@ export type HTMLOptGroupElementProperties =
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLOptionElementProperties =
   & HTMLElementProperties
   & {
@@ -544,6 +683,9 @@ export type HTMLOptionElementProperties =
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLOutputElementProperties =
   & HTMLElementProperties
   & {
@@ -552,6 +694,9 @@ export type HTMLOutputElementProperties =
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLParagraphElementProperties =
   & HTMLElementProperties
   & {
@@ -559,6 +704,9 @@ export type HTMLParagraphElementProperties =
     clear?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLParamElementProperties =
   & HTMLElementProperties
   & {
@@ -568,12 +716,18 @@ export type HTMLParamElementProperties =
     valueType?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLPreElementProperties =
   & HTMLElementProperties
   & {
     width?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLProgressElementProperties =
   & HTMLElementProperties
   & {
@@ -581,12 +735,18 @@ export type HTMLProgressElementProperties =
     value?: number
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLQuoteElementProperties =
   & HTMLElementProperties
   & {
     cite?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLScriptElementProperties =
   & HTMLElementProperties
   & {
@@ -602,6 +762,9 @@ export type HTMLScriptElementProperties =
     integrity?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLSelectElementProperties =
   & HTMLElementProperties
   & {
@@ -617,6 +780,9 @@ export type HTMLSelectElementProperties =
     value?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLSourceElementProperties =
   & HTMLElementProperties
   & {
@@ -628,8 +794,14 @@ export type HTMLSourceElementProperties =
     type?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLSpanElementProperties = HTMLElementProperties
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLStyleElementProperties =
   & HTMLElementProperties
   & {
@@ -638,6 +810,9 @@ export type HTMLStyleElementProperties =
     type?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableCaptionElementProperties =
   & HTMLElementProperties
   & {
@@ -645,6 +820,9 @@ export type HTMLTableCaptionElementProperties =
     vAlign?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableCellElementProperties =
   & HTMLElementProperties
   & {
@@ -661,6 +839,9 @@ export type HTMLTableCellElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableColElementProperties =
   & HTMLElementProperties
   & {
@@ -669,8 +850,14 @@ export type HTMLTableColElementProperties =
     width?: any
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableDataCellElementProperties = HTMLElementProperties
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableElementProperties =
   & HTMLElementProperties
   & {
@@ -693,12 +880,18 @@ export type HTMLTableElementProperties =
     width?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableHeaderCellElementProperties =
   & HTMLElementProperties
   & {
     scope?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableRowElementProperties =
   & HTMLElementProperties
   & {
@@ -708,6 +901,9 @@ export type HTMLTableRowElementProperties =
     height?: any
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTableSectionElementProperties =
   & HTMLElementProperties
   & {
@@ -715,8 +911,14 @@ export type HTMLTableSectionElementProperties =
     rows?: HTMLCollectionOf<HTMLTableRowElement>
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTemplateElementProperties = HTMLElementProperties
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTextAreaElementProperties =
   & HTMLElementProperties
   & {
@@ -738,18 +940,27 @@ export type HTMLTextAreaElementProperties =
     wrap?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTimeElementProperties =
   & HTMLElementProperties
   & {
     dateTime?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTitleElementProperties =
   & HTMLElementProperties
   & {
     text?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLTrackElementProperties =
   & HTMLElementProperties
   & {
@@ -760,6 +971,9 @@ export type HTMLTrackElementProperties =
     srclang?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLUListElementProperties =
   & HTMLElementProperties
   & {
@@ -767,8 +981,14 @@ export type HTMLUListElementProperties =
     type?: string
   }
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLUnknownElementProperties = HTMLElementProperties
 
+/**
+ * @since 1.0.0
+ */
 export type HTMLVideoElementProperties =
   & HTMLElementProperties
   & {

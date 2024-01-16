@@ -516,7 +516,7 @@ A RefArray is a RefSubject that is specialized over an array of values.
 **Signature**
 
 ```ts
-export interface RefArray<R, E, A> extends RefSubject.RefSubject<R, E, ReadonlyArray<A>> {}
+export interface RefArray<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, ReadonlyArray<A>> {}
 ```
 
 Added in v1.18.0
