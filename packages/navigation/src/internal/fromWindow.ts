@@ -5,7 +5,6 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
 
 import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
 import type * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
 import * as Runtime from "effect/Runtime"
@@ -411,28 +410,12 @@ function scopedRuntime<R>(): Effect.Effect<
   never,
   ScopedRuntime<R>
 > {
-  return Effect.gen(function*(_) {
-    const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
-    const scope = unsafeGet(runtime.context, Scope.Scope)
-    const runFork = Runtime.runFork(runtime)
-
-    const run = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Fiber.RuntimeFiber<E, A> =>
-      runFork(effect, { scope })
-
-    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
-      new Promise((resolve, reject) => {
-        const fiber = run(effect)
-        fiber.addObserver(Exit.match({
-          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
-          onSuccess: resolve
-        }))
-      })
-
-    return {
+  return Effect.map(Effect.runtime<R | Scope.Scope>(), (runtime) => (
+    {
       runtime,
-      scope,
-      run,
-      runPromise
+      scope: unsafeGet(runtime.context, Scope.Scope),
+      run: Runtime.runFork(runtime),
+      runPromise: Runtime.runPromise(runtime)
     } as const
-  })
+  ))
 }
