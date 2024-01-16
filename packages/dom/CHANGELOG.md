@@ -1,5 +1,14 @@
 # @typed/dom
 
+## 9.0.1
+
+### Patch Changes
+
+- [`def0809`](https://github.com/TylorS/typed/commit/def08097d847bab113a0aebe22ffdcebaed5804e) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade all deps
+
+- Updated dependencies [[`def0809`](https://github.com/TylorS/typed/commit/def08097d847bab113a0aebe22ffdcebaed5804e)]:
+  - @typed/context@0.21.1
+
 ## 9.0.0
 
 ### Minor Changes
