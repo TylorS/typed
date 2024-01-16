@@ -538,10 +538,11 @@ describe("Parser", () => {
 
   it("parses templates with spread props", () => {
     const template = h`<div ...${{ id: "foo", class: "bar" }}></div>`
+    const props = new PropertiesPartNode(0)
     const expected = new Template(
-      [new ElementNode("div", [new PropertiesPartNode(0)], [])],
+      [new ElementNode("div", [props], [])],
       Parser.templateHash(template),
-      []
+      [[props, Chunk.of(0)]]
     )
 
     deepStrictEqual(Parser.parser.parse(template), expected)
