@@ -1,5 +1,17 @@
 # @typed/navigation
 
+## 0.8.2
+
+### Patch Changes
+
+- [`def0809`](https://github.com/TylorS/typed/commit/def08097d847bab113a0aebe22ffdcebaed5804e) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade all deps
+
+- Updated dependencies [[`def0809`](https://github.com/TylorS/typed/commit/def08097d847bab113a0aebe22ffdcebaed5804e)]:
+  - @typed/context@0.21.1
+  - @typed/dom@9.0.1
+  - @typed/fx@1.20.2
+  - @typed/id@0.3.1
+
 ## 0.8.1
 
 ### Patch Changes
