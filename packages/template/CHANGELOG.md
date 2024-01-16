@@ -1,5 +1,11 @@
 # @typed/template
 
+## 0.3.6
+
+### Patch Changes
+
+- [`10da4d5`](https://github.com/TylorS/typed/commit/10da4d5bfff9c5c56cc71ba0df7c11d362af3b1c) Thanks [@TylorS](https://github.com/TylorS)! - Improve event listener scoping
+
 ## 0.3.5
 
 ### Patch Changes
