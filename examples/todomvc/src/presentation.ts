@@ -16,6 +16,13 @@ const onEnterOrEscape = EventHandler.keys(
   "Escape"
 )
 
+const clearCompletedButton = html`<button
+  class="clear-completed"
+  onclick="${Effect.uninterruptible(App.clearCompletedTodos)}"
+>
+  Clear completed
+</button>`
+
 export const TodoApp = html`<section class="todoapp ${App.FilterState}">
     <header class="header">
       <h1>todos</h1>
@@ -50,7 +57,7 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
   Fx.if(
     App.SomeAreCompleted,
     {
-      onTrue: html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
+      onTrue: clearCompletedButton,
       onFalse: Fx.succeed(null)
     }
   )
