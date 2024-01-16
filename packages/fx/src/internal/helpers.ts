@@ -7,6 +7,7 @@ import * as Effectable from "effect/Effectable"
 import * as Equal from "effect/Equal"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Fiber from "effect/Fiber"
+import * as FiberSet from "effect/FiberSet"
 import * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
 import * as Scope from "effect/Scope"
@@ -225,31 +226,18 @@ export function withExhaustLatestFork<R, E, A>(
 }
 
 export function withUnboundedFork<R, E, A>(
-  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>,
-  executionStrategy: ExecutionStrategy.ExecutionStrategy
+  f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<R, E, A>
 ) {
-  return withScopedFork((fork, scope) =>
+  return Effect.scopeWith((scope) =>
     Effect.flatMap(
-      Ref.make<Map<symbol, Fiber.Fiber<never, void>>>(new Map()),
-      (ref) =>
+      FiberSet.make<never, void>(),
+      (set) =>
         Effect.flatMap(
-          f((effect) => {
-            const id = Symbol()
-
-            return Effect.tap(
-              fork(Effect.onExit(effect, () => Ref.update(ref, (map) => (map.delete(id), map)))),
-              (fiber) => {
-                if (Fiber.isRuntimeFiber(fiber)) {
-                  return Ref.update(ref, (map) => map.set(id, fiber))
-                } else {
-                  return Effect.unit
-                }
-              }
-            )
-          }, scope),
-          () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers.values()) : Effect.unit)
+          f((effect) => FiberSet.run(set, effect), scope),
+          () => Fiber.joinAll(set)
         )
-    ), executionStrategy)
+    )
+  )
 }
 
 export function withBoundedFork(capacity: number) {
