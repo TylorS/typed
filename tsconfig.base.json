@@ -43,6 +43,18 @@
       "@typed/context/examples/*": [
         "packages/context/examples/*"
       ],
+      "@typed/decoder": [
+        "packages/decoder/src/index.ts"
+      ],
+      "@typed/decoder/*": [
+        "packages/decoder/src/*"
+      ],
+      "@typed/decoder/test/*": [
+        "packages/decoder/test/*"
+      ],
+      "@typed/decoder/examples/*": [
+        "packages/decoder/examples/*"
+      ],
       "@typed/dom": [
         "packages/dom/src/index.ts"
       ],
