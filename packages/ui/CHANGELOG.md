@@ -1,5 +1,23 @@
 # @typed/ui
 
+## 0.3.7
+
+### Patch Changes
+
+- [`d960a6e`](https://github.com/TylorS/typed/commit/d960a6e76f2ba92510dfe997c42e9f74b83730fd) Thanks [@TylorS](https://github.com/TylorS)! - Add hyperscript helpers
+
+- [`644b790`](https://github.com/TylorS/typed/commit/644b790ff1b9ba976edc7a436408f548972e0b41) Thanks [@TylorS](https://github.com/TylorS)! - upgrade Effect
+
+- Updated dependencies [[`644b790`](https://github.com/TylorS/typed/commit/644b790ff1b9ba976edc7a436408f548972e0b41)]:
+  - @typed/environment@0.3.2
+  - @typed/navigation@0.8.4
+  - @typed/template@0.3.7
+  - @typed/context@0.21.2
+  - @typed/router@0.21.4
+  - @typed/route@2.0.4
+  - @typed/dom@9.0.3
+  - @typed/fx@1.20.4
+
 ## 0.3.6
 
 ### Patch Changes

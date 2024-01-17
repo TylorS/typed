@@ -1,5 +1,19 @@
 # @typed/router
 
+## 0.21.4
+
+### Patch Changes
+
+- [`644b790`](https://github.com/TylorS/typed/commit/644b790ff1b9ba976edc7a436408f548972e0b41) Thanks [@TylorS](https://github.com/TylorS)! - upgrade Effect
+
+- Updated dependencies [[`644b790`](https://github.com/TylorS/typed/commit/644b790ff1b9ba976edc7a436408f548972e0b41)]:
+  - @typed/environment@0.3.2
+  - @typed/navigation@0.8.4
+  - @typed/context@0.21.2
+  - @typed/route@2.0.4
+  - @typed/dom@9.0.3
+  - @typed/fx@1.20.4
+
 ## 0.21.3
 
 ### Patch Changes

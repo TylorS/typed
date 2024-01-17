@@ -1,5 +1,11 @@
 # @typed/context
 
+## 0.21.2
+
+### Patch Changes
+
+- [`644b790`](https://github.com/TylorS/typed/commit/644b790ff1b9ba976edc7a436408f548972e0b41) Thanks [@TylorS](https://github.com/TylorS)! - upgrade Effect
+
 ## 0.21.1
 
 ### Patch Changes
