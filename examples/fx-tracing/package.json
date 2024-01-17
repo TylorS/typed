@@ -33,7 +33,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/opentelemetry": "^0.30.6",
+    "@effect/opentelemetry": "^0.30.7",
     "@opentelemetry/exporter-trace-otlp-http": "^0.47.0",
     "@opentelemetry/otlp-exporter-base": "^0.47.0",
     "@opentelemetry/sdk-node": "^0.47.0",
@@ -41,6 +41,6 @@
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
-    "effect": "2.1.0"
+    "effect": "2.1.1"
   }
 }
