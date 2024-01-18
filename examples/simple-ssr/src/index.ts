@@ -6,7 +6,8 @@ import { htmlResponse } from "@typed/template/Platform"
 import { Effect, Layer } from "effect"
 import { createServer } from "node:http"
 
-const template = html`<html>
+const template = html`<!DOCTYPE html>
+<html>
   <head>
     <title>Typed SSR</title>
   </head>
