@@ -1,5 +1,5 @@
 import * as Equivalence from "@effect/schema/Equivalence"
-import { unsafeGet } from "@typed/context"
+import * as Context from "@typed/context"
 import { Window } from "@typed/dom/Window"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { GetRandomValues, Uuid } from "@typed/id"
@@ -11,7 +11,7 @@ import * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"
 
 import { Schema } from "@effect/schema"
-import type { Layer } from "effect"
+import { Exit, type Layer } from "effect"
 import type { Commit } from "../Layer.js"
 import type { BeforeNavigationEvent, Destination, NavigationEvent, Transition } from "../Navigation.js"
 import { Navigation, NavigationError } from "../Navigation.js"
@@ -410,12 +410,23 @@ function scopedRuntime<R>(): Effect.Effect<
   never,
   ScopedRuntime<R>
 > {
-  return Effect.map(Effect.runtime<R | Scope.Scope>(), (runtime) => (
-    {
+  return Effect.map(Effect.runtime<R | Scope.Scope>(), (runtime) => {
+    const scope = Context.get(runtime.context, Scope.Scope)
+    const runFork = Runtime.runFork(runtime)
+    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
+      new Promise((resolve, reject) => {
+        const fiber = runFork(effect, { scope })
+        fiber.addObserver(Exit.match({
+          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
+          onSuccess: resolve
+        }))
+      })
+
+    return {
       runtime,
-      scope: unsafeGet(runtime.context, Scope.Scope),
-      run: Runtime.runFork(runtime),
-      runPromise: Runtime.runPromise(runtime)
+      scope: Context.unsafeGet(runtime.context, Scope.Scope),
+      run: (eff) => runFork(eff, { scope }),
+      runPromise
     } as const
-  ))
+  })
 }

@@ -32,11 +32,12 @@ export function createScopedRuntime<R>(): Effect.Effect<
   return Effect.gen(function*(_) {
     const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
     const scope = yield* _(Effect.scope)
+    const runFork = Runtime.runFork(runtime)
 
     return {
       runtime,
       scope,
-      run: Runtime.runFork(runtime)
+      run: (eff) => runFork(eff, { scope })
     } as const
   })
 }

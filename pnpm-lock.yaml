@@ -45,8 +45,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@effect/typeclass':
-        specifier: 0.22.7
-        version: 0.22.7(effect@2.1.1)
+        specifier: 0.22.8
+        version: 0.22.8(effect@2.1.2)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -78,8 +78,8 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       eslint:
         specifier: ^8.56.0
         version: 8.56.0
@@ -87,8 +87,8 @@ importers:
         specifier: ^3.6.1
         version: 3.6.1(@typescript-eslint/parser@6.19.0)(eslint-plugin-import@2.29.1)(eslint@8.56.0)
       eslint-plugin-codegen:
-        specifier: 0.21.0
-        version: 0.21.0(eslint@8.56.0)
+        specifier: 0.22.0
+        version: 0.22.0(eslint@8.56.0)
       eslint-plugin-deprecation:
         specifier: ^2.0.0
         version: 2.0.0(eslint@8.56.0)(typescript@5.3.3)
@@ -150,8 +150,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/template/dist
       effect:
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.1.2
+        version: 2.1.2
     devDependencies:
       vite:
         specifier: ^5.0.11
@@ -166,8 +166,8 @@ importers:
   examples/fx-tracing:
     dependencies:
       '@effect/opentelemetry':
-        specifier: ^0.30.7
-        version: 0.30.7(@opentelemetry/api@1.7.0)(@opentelemetry/resources@1.20.0)(@opentelemetry/sdk-trace-base@1.20.0)(@opentelemetry/semantic-conventions@1.20.0)(effect@2.1.1)
+        specifier: ^0.30.8
+        version: 0.30.8(@opentelemetry/api@1.7.0)(@opentelemetry/resources@1.20.0)(@opentelemetry/sdk-trace-base@1.20.0)(@opentelemetry/semantic-conventions@1.20.0)(effect@2.1.2)
       '@opentelemetry/exporter-trace-otlp-http':
         specifier: ^0.47.0
         version: 0.47.0(@opentelemetry/api@1.7.0)
@@ -190,17 +190,17 @@ importers:
         specifier: workspace:*
         version: link:../../packages/fx/dist
       effect:
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.1.2
+        version: 2.1.2
 
   examples/simple-ssr:
     dependencies:
       '@effect/platform':
-        specifier: ^0.42.4
-        version: 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
+        specifier: ^0.42.6
+        version: 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
       '@effect/platform-node':
-        specifier: ^0.41.5
-        version: 0.41.5(@effect/platform@0.42.4)(effect@2.1.1)
+        specifier: ^0.41.7
+        version: 0.41.7(@effect/platform@0.42.6)(effect@2.1.2)
       '@typed/fx':
         specifier: workspace:*
         version: link:../../packages/fx/dist
@@ -208,8 +208,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/template/dist
       effect:
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.1.2
+        version: 2.1.2
     devDependencies:
       tsx:
         specifier: ^4.7.0
@@ -218,17 +218,17 @@ importers:
   examples/todomvc:
     dependencies:
       '@effect/platform':
-        specifier: ^0.42.4
-        version: 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
+        specifier: ^0.42.6
+        version: 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
       '@effect/platform-browser':
-        specifier: ^0.27.5
-        version: 0.27.5(@effect/platform@0.42.4)(effect@2.1.1)
+        specifier: ^0.27.7
+        version: 0.27.7(@effect/platform@0.42.6)(effect@2.1.2)
       '@effect/platform-node':
-        specifier: ^0.41.5
-        version: 0.41.5(@effect/platform@0.42.4)(effect@2.1.1)
+        specifier: ^0.41.7
+        version: 0.41.7(@effect/platform@0.42.6)(effect@2.1.2)
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
@@ -254,8 +254,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui/dist
       effect:
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 2.1.2
+        version: 2.1.2
       todomvc-app-css:
         specifier: ^2.4.3
         version: 2.4.3
@@ -285,8 +285,8 @@ importers:
         specifier: ^0.5.1
         version: 0.5.1(vite@5.0.11)
       vite-plugin-html:
-        specifier: ^3.2.1
-        version: 3.2.1(vite@5.0.11)
+        specifier: ^3.2.2
+        version: 3.2.2(vite@5.0.11)
       vite-plugin-top-level-await:
         specifier: ^1.4.1
         version: 1.4.1(vite@5.0.11)
@@ -297,11 +297,11 @@ importers:
   packages/async-data:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       fast-check:
         specifier: ^3.15.0
         version: 3.15.0
@@ -313,31 +313,31 @@ importers:
   packages/context:
     dependencies:
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/decoder:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/dom:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
@@ -349,18 +349,18 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/fx:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@effect/typeclass':
-        specifier: 0.22.7
-        version: 0.22.7(effect@2.1.1)
+        specifier: 0.22.8
+        version: 0.22.8(effect@2.1.2)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../async-data/dist
@@ -368,8 +368,8 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -391,21 +391,21 @@ importers:
   packages/id:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/navigation:
     dependencies:
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -419,8 +419,8 @@ importers:
         specifier: workspace:*
         version: link:../id/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     devDependencies:
       '@virtualstate/navigation':
         specifier: 1.0.1-alpha.199
@@ -446,8 +446,8 @@ importers:
         specifier: workspace:*
         version: link:../path/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
@@ -477,18 +477,18 @@ importers:
         specifier: workspace:*
         version: link:../route/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/template:
     dependencies:
       '@effect/platform':
-        specifier: 0.42.4
-        version: 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
+        specifier: 0.42.6
+        version: 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -505,8 +505,8 @@ importers:
         specifier: workspace:*
         version: link:../wire/dist
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
       typed-query-selector:
         specifier: ^2.11.0
         version: 2.11.0
@@ -530,11 +530,11 @@ importers:
   packages/ui:
     dependencies:
       '@effect/platform':
-        specifier: 0.42.4
-        version: 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
+        specifier: 0.42.6
+        version: 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
       '@effect/schema':
-        specifier: 0.60.4
-        version: 0.60.4(effect@2.1.1)(fast-check@3.15.0)
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -563,8 +563,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       effect:
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.1.2
+        version: 2.1.2
     publishDirectory: dist
 
   packages/wire:
@@ -716,6 +716,21 @@ packages:
 
   /@babel/helper-define-polyfill-provider@0.4.4(@babel/core@7.23.7):
     resolution: {integrity: sha512-QcJMILQCu2jm5TFPGA3lCpJJTeEP+mqeXooG/NZbg/h5FTFi6V0+99ahlRsW8/kRLyb24LZVCCiclDedhLKcBA==}
+    peerDependencies:
+      '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
+    dependencies:
+      '@babel/core': 7.23.7
+      '@babel/helper-compilation-targets': 7.23.6
+      '@babel/helper-plugin-utils': 7.22.5
+      debug: 4.3.4
+      lodash.debounce: 4.0.8
+      resolve: 1.22.8
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@babel/helper-define-polyfill-provider@0.5.0(@babel/core@7.23.7):
+    resolution: {integrity: sha512-NovQquuQLAQ5HuyjCz7WQP9MjRj7dx++yspwiyUiGl9ZyadHRSql1HZh5ogRd8W8w6YM6EQ/NTB8rgjLt5W65Q==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
     dependencies:
@@ -1731,9 +1746,9 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.23.3(@babel/core@7.23.7)
       '@babel/plugin-transform-unicode-sets-regex': 7.23.3(@babel/core@7.23.7)
       '@babel/preset-modules': 0.1.6-no-external-plugins(@babel/core@7.23.7)
-      babel-plugin-polyfill-corejs2: 0.4.7(@babel/core@7.23.7)
+      babel-plugin-polyfill-corejs2: 0.4.8(@babel/core@7.23.7)
       babel-plugin-polyfill-corejs3: 0.8.7(@babel/core@7.23.7)
-      babel-plugin-polyfill-regenerator: 0.5.4(@babel/core@7.23.7)
+      babel-plugin-polyfill-regenerator: 0.5.5(@babel/core@7.23.7)
       core-js-compat: 3.35.0
       semver: 6.3.1
     transitivePeerDependencies:
@@ -2069,8 +2084,8 @@ packages:
     resolution: {integrity: sha512-BnlM8LlaqCAYgdRfxlbR7gXGh/FD1scL1fPgNVJEPoOM08od1jtJz+iKhwfaud8TPnnhZR+TED2h5ynjanLeCQ==}
     dev: true
 
-  /@effect/opentelemetry@0.30.7(@opentelemetry/api@1.7.0)(@opentelemetry/resources@1.20.0)(@opentelemetry/sdk-trace-base@1.20.0)(@opentelemetry/semantic-conventions@1.20.0)(effect@2.1.1):
-    resolution: {integrity: sha512-a9F4qzyJqIDJSQqq1tyup2q1sMyVUZ4544GHljvhRAwUR9gxr1Yu0vBBY15DyE8ey/jZP2MKVWlacQkUy3mxKw==}
+  /@effect/opentelemetry@0.30.8(@opentelemetry/api@1.7.0)(@opentelemetry/resources@1.20.0)(@opentelemetry/sdk-trace-base@1.20.0)(@opentelemetry/semantic-conventions@1.20.0)(effect@2.1.2):
+    resolution: {integrity: sha512-QFTcbIe18exHIDcl4ultSc9WV1IZdtvhkg7ojNhAR37SoLkcjF+oon/E8sdZ0i8u72o9Arqan2BFx/BhZHmtEg==}
     peerDependencies:
       '@opentelemetry/api': ^1.6
       '@opentelemetry/resources': ^1.17
@@ -2079,7 +2094,7 @@ packages:
       '@opentelemetry/sdk-trace-node': ^1.17
       '@opentelemetry/sdk-trace-web': ^1.17
       '@opentelemetry/semantic-conventions': ^1.17
-      effect: ^2.1.1
+      effect: ^2.1.2
     peerDependenciesMeta:
       '@opentelemetry/sdk-metrics':
         optional: true
@@ -2094,39 +2109,39 @@ packages:
       '@opentelemetry/resources': 1.20.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/sdk-trace-base': 1.20.0(@opentelemetry/api@1.7.0)
       '@opentelemetry/semantic-conventions': 1.20.0
-      effect: 2.1.1
+      effect: 2.1.2
     dev: false
 
-  /@effect/platform-browser@0.27.5(@effect/platform@0.42.4)(effect@2.1.1):
-    resolution: {integrity: sha512-rlFQS+oV14jwpJSJzJHb7/7H3gQ4E2RiFfRTl1lB2JlKx9S7fcRjwdJmWOhvEcwrKNaxRl5HS7cZ12oRYt8FhA==}
+  /@effect/platform-browser@0.27.7(@effect/platform@0.42.6)(effect@2.1.2):
+    resolution: {integrity: sha512-BjK6fntr1MsAssUr/9JKWEeUjA+0tcNgWHKHWjN8FvBsYq/+xg4sihMfdVLkUnZiw3+71V7AOzVX3c7MKqXpjg==}
     peerDependencies:
-      '@effect/platform': ^0.42.4
-      effect: ^2.1.1
+      '@effect/platform': ^0.42.6
+      effect: ^2.1.2
     dependencies:
-      '@effect/platform': 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
-      effect: 2.1.1
+      '@effect/platform': 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
+      effect: 2.1.2
     dev: false
 
-  /@effect/platform-node@0.41.5(@effect/platform@0.42.4)(effect@2.1.1):
-    resolution: {integrity: sha512-ZWMCD+1A1FjhmjU94BAAg8PLc4leNdiGRMU7pIujPtWOdKtWX04V/AgS7N6RurkZmhWAm2e28FGoFuiWpRgZcw==}
+  /@effect/platform-node@0.41.7(@effect/platform@0.42.6)(effect@2.1.2):
+    resolution: {integrity: sha512-WYcIBmWP2Qs3bu2jm/RUMBo3M3r6qhj9xL7SqYkzZx7mkyXpNAGj9JNtErmvj7s5FIKK0GyZ1LQgX3ujkclLDw==}
     peerDependencies:
-      '@effect/platform': ^0.42.4
-      effect: ^2.1.1
+      '@effect/platform': ^0.42.6
+      effect: ^2.1.2
     dependencies:
-      '@effect/platform': 0.42.4(@effect/schema@0.60.4)(effect@2.1.1)
-      effect: 2.1.1
+      '@effect/platform': 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
+      effect: 2.1.2
       mime: 3.0.0
       multipasta: 0.1.21
     dev: false
 
-  /@effect/platform@0.42.4(@effect/schema@0.60.4)(effect@2.1.1):
-    resolution: {integrity: sha512-fL8n0ZBuarDA3vD4v3VhMwx/6tj2DHEfjSeCnaX8H1vz5TJK88mDBICs8uWsp8AF/sEAdjaNhAAtYrfYyVrUFw==}
+  /@effect/platform@0.42.6(@effect/schema@0.60.6)(effect@2.1.2):
+    resolution: {integrity: sha512-GiyPd3q/n3bRxn5h+Y763Ung3O7jkLw3mKZfckUpG4E6l+pMdAg7cftswkyg0Jop+EXm6mxUs+pXKVR67EJXOw==}
     peerDependencies:
-      '@effect/schema': ^0.60.4
-      effect: ^2.1.1
+      '@effect/schema': ^0.60.6
+      effect: ^2.1.2
     dependencies:
-      '@effect/schema': 0.60.4(effect@2.1.1)(fast-check@3.15.0)
-      effect: 2.1.1
+      '@effect/schema': 0.60.6(effect@2.1.2)(fast-check@3.15.0)
+      effect: 2.1.2
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
@@ -2142,22 +2157,22 @@ packages:
       fast-check: 3.15.0
     dev: true
 
-  /@effect/schema@0.60.4(effect@2.1.1)(fast-check@3.15.0):
-    resolution: {integrity: sha512-3xOZ3kPEJqwOdNY5kJAwc1OkSrpAiGNJRjBMa0Md99Vhdr0ChtTsenjMfOhC1CIxdwdZKRrUt5g+9nI+r+JfOg==}
+  /@effect/schema@0.60.6(effect@2.1.2)(fast-check@3.15.0):
+    resolution: {integrity: sha512-M9DE/7fE0pVRVt8ytMpbRFqyTSHG08Ww6vAj/4x710++kA9ijgAtRuDgzQTTa3dwoJnCX+78kAKTEAsZpdKB0A==}
     peerDependencies:
-      effect: ^2.1.1
+      effect: ^2.1.2
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.1.1
+      effect: 2.1.2
       fast-check: 3.15.0
     dev: false
 
-  /@effect/typeclass@0.22.7(effect@2.1.1):
-    resolution: {integrity: sha512-BkMtejSyhWQGGn080eEWuLnOq1kRHAxJL2t5GAiL/VJVhde5CcklWEDNrgfwduW1Xrn05QEqEgTI9Rnu/pLWdQ==}
+  /@effect/typeclass@0.22.8(effect@2.1.2):
+    resolution: {integrity: sha512-Vkxs5EH0Dp47tFJZ1hecsl7637XxObVfCPOj5aa7dAf9WeXkmoGvV5K5qWm/Bz4fkve4NETMJ4iFw7y/AV1sOg==}
     peerDependencies:
-      effect: ^2.1.1
+      effect: ^2.1.2
     dependencies:
-      effect: 2.1.1
+      effect: 2.1.2
 
   /@esbuild/aix-ppc64@0.19.11:
     resolution: {integrity: sha512-FnzU0LyE3ySQk7UntJO4+qIiQgI7KoODnZg5xzXIrFJlKd2P2gwHsHY4927xj9y5PJmJSzULiUCWmv7iWnNa7g==}
@@ -3965,14 +3980,14 @@ packages:
       '@babel/core': 7.23.7
     dev: true
 
-  /babel-plugin-polyfill-corejs2@0.4.7(@babel/core@7.23.7):
-    resolution: {integrity: sha512-LidDk/tEGDfuHW2DWh/Hgo4rmnw3cduK6ZkOI1NPFceSK3n/yAGeOsNT7FLnSGHkXj3RHGSEVkN3FsCTY6w2CQ==}
+  /babel-plugin-polyfill-corejs2@0.4.8(@babel/core@7.23.7):
+    resolution: {integrity: sha512-OtIuQfafSzpo/LhnJaykc0R/MMnuLSSVjVYy9mHArIZ9qTCSZ6TpWCuEKZYVoN//t8HqBNScHrOtCrIK5IaGLg==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
     dependencies:
       '@babel/compat-data': 7.23.5
       '@babel/core': 7.23.7
-      '@babel/helper-define-polyfill-provider': 0.4.4(@babel/core@7.23.7)
+      '@babel/helper-define-polyfill-provider': 0.5.0(@babel/core@7.23.7)
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -3990,13 +4005,13 @@ packages:
       - supports-color
     dev: true
 
-  /babel-plugin-polyfill-regenerator@0.5.4(@babel/core@7.23.7):
-    resolution: {integrity: sha512-S/x2iOCvDaCASLYsOOgWOq4bCfKYVqvO/uxjkaYyZ3rVsVE3CeAI/c84NpyuBBymEgNvHgjEot3a9/Z/kXvqsg==}
+  /babel-plugin-polyfill-regenerator@0.5.5(@babel/core@7.23.7):
+    resolution: {integrity: sha512-OJGYZlhLqBh2DDHeqAxWB1XIvr49CxiJ2gIt61/PU55CQK4Z58OzMqjDe1zwQdQk+rBYsRc+1rJmdajM3gimHg==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
     dependencies:
       '@babel/core': 7.23.7
-      '@babel/helper-define-polyfill-provider': 0.4.4(@babel/core@7.23.7)
+      '@babel/helper-define-polyfill-provider': 0.5.0(@babel/core@7.23.7)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4066,8 +4081,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001578
-      electron-to-chromium: 1.4.636
+      caniuse-lite: 1.0.30001579
+      electron-to-chromium: 1.4.638
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.22.2)
     dev: true
@@ -4128,8 +4143,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite@1.0.30001578:
-    resolution: {integrity: sha512-J/jkFgsQ3NEl4w2lCoM9ZPxrD+FoBNJ7uJUpGVjIg/j0OwJosWM36EPDv+Yyi0V4twBk9pPmlFS+PLykgEvUmg==}
+  /caniuse-lite@1.0.30001579:
+    resolution: {integrity: sha512-u5AUVkixruKHJjw/pj9wISlcMpgFWzSrczLZbrqBSxukQixmg0SJ5sZTpvaFvxU0HoQKd4yoyAogyrAz9pzJnA==}
     dev: true
 
   /chai@4.4.1:
@@ -4826,8 +4841,8 @@ packages:
     resolution: {integrity: sha512-fJhLzf5oouL4WZP314ZJgZz5Bel7OHTY+YFxO06sW1mSvqJz0s28y7jDHr5zhtTNM1YRvzbeLYUYfNaJYKqx1A==}
     dev: true
 
-  /effect@2.1.1:
-    resolution: {integrity: sha512-VA9t/HDs14TdJA7j+VroaPrKxmf0YLA4HMQ0eSxA/P2hv8Gre+vKGk3gxpR45OBR0KK7QOq3gMyCbVr/pW2F/g==}
+  /effect@2.1.2:
+    resolution: {integrity: sha512-MCRgwL2CukG7ZhXwqCDOZqWtDBDmofzvho91OS3SgAhjuVW8BoZHWGfHYT7U5WoKsvX9t7pEa8vrwfJfWwhZ5w==}
 
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
@@ -4837,8 +4852,8 @@ packages:
       jake: 10.8.7
     dev: true
 
-  /electron-to-chromium@1.4.636:
-    resolution: {integrity: sha512-NLE0GIy1OL9wRiKL20h9TkctBEYZuc99tquSS9MVdTahnuHputoETHeqDzgqGqyOY9NUH0g9wjfEuw5OD+wRcQ==}
+  /electron-to-chromium@1.4.638:
+    resolution: {integrity: sha512-gpmbAG2LbfPKcDaL5m9IKutKjUx4ZRkvGNkgL/8nKqxkXsBVYykVULboWlqCrHsh3razucgDJDuKoWJmGPdItA==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -5078,8 +5093,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-codegen@0.21.0(eslint@8.56.0):
-    resolution: {integrity: sha512-L7xNLx8Eskp0oBPUOdtKCd8c2K458baEiJz/3eXVYaST4kuzBguGDpXrjR7ohsVbHJsTgdiJGK0UjkAdu4hdXw==}
+  /eslint-plugin-codegen@0.22.0(eslint@8.56.0):
+    resolution: {integrity: sha512-SVMwDlH+zO7hLHTKm6ZSSFfRKDEQTAdtfUVZ+LyJ5iAO7vJu+oxgiSUI27Kshl1H+oBZi+S7biqWSbvaXXn8+w==}
     engines: {node: '>=12.0.0'}
     dependencies:
       '@babel/core': 7.23.7
@@ -8354,8 +8369,8 @@ packages:
     resolution: {integrity: sha512-N8hW3PG/3aOoZAN5V/NSAEDz0ZixDSSt5b/a05iqtpgfLWMSVuCo7w0k2vVvEjdrIoeGqZzweX2WlyioNIHchA==}
     dev: true
 
-  /tinypool@0.8.1:
-    resolution: {integrity: sha512-zBTCK0cCgRROxvs9c0CGK838sPkeokNGdQVUUwHAbynHFlmyJYj825f/oRs528HaIJ97lo0pLIlDUzwN+IorWg==}
+  /tinypool@0.8.2:
+    resolution: {integrity: sha512-SUszKYe5wgsxnNOVlBYO6IC+8VGWdVGZWAqUxp3UErNBtptZvWbwyUOyzNL59zigz2rCA92QiL3wvG+JDSdJdQ==}
     engines: {node: '>=14.0.0'}
     dev: true
 
@@ -8845,8 +8860,8 @@ packages:
       - supports-color
     dev: true
 
-  /vite-plugin-html@3.2.1(vite@5.0.11):
-    resolution: {integrity: sha512-UuNTUvGPa9BxZK1I/VC+hWMSl0eIE5ClEdXza3SGGb09jxxS7oAAjRGalUJNZI9lAPvu0W817GD53K/p78wxQw==}
+  /vite-plugin-html@3.2.2(vite@5.0.11):
+    resolution: {integrity: sha512-vb9C9kcdzcIo/Oc3CLZVS03dL5pDlOFuhGlZYDCJ840BhWl/0nGeZWf3Qy7NlOayscY4Cm/QRgULCQkEZige5Q==}
     peerDependencies:
       vite: '>=2.0.0'
     dependencies:
@@ -8989,7 +9004,7 @@ packages:
       std-env: 3.7.0
       strip-literal: 1.3.0
       tinybench: 2.6.0
-      tinypool: 0.8.1
+      tinypool: 0.8.2
       vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
       vite-node: 1.2.1(@types/node@20.11.5)
       why-is-node-running: 2.2.2

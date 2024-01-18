@@ -18,10 +18,10 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.42.4",
-    "@effect/platform-browser": "^0.27.5",
-    "@effect/platform-node": "^0.41.5",
-    "@effect/schema": "0.60.4",
+    "@effect/platform": "^0.42.6",
+    "@effect/platform-browser": "^0.27.7",
+    "@effect/platform-node": "^0.41.7",
+    "@effect/schema": "0.60.6",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
@@ -30,7 +30,7 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "2.1.1",
+    "effect": "2.1.2",
     "todomvc-app-css": "^2.4.3",
     "todomvc-common": "^1.0.5"
   },
@@ -42,7 +42,7 @@
     "tsx": "^4.7.0",
     "vite": "^5.0.11",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-html": "^3.2.1",
+    "vite-plugin-html": "^3.2.2",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-tsconfig-paths": "^4.3.1"
   }
