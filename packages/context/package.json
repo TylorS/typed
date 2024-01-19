@@ -1,6 +1,6 @@
 {
   "name": "@typed/context",
-  "version": "0.21.2",
+  "version": "0.21.3",
   "description": "",
   "publishConfig": {
     "access": "public",

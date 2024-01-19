@@ -1,5 +1,19 @@
 # @typed/template
 
+## 0.3.8
+
+### Patch Changes
+
+- [`d99f0aa`](https://github.com/TylorS/typed/commit/d99f0aa25f53b93bb70c9e3bb7de54a57fd2a13b) Thanks [@TylorS](https://github.com/TylorS)! - Support hydration of sibling components
+
+- [`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d) Thanks [@TylorS](https://github.com/TylorS)! - Ensure all forked Fibers are attached to Scope
+
+- Updated dependencies [[`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d)]:
+  - @typed/environment@0.3.3
+  - @typed/context@0.21.3
+  - @typed/dom@9.0.4
+  - @typed/fx@1.20.5
+
 ## 0.3.7
 
 ### Patch Changes

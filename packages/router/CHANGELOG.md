@@ -1,5 +1,19 @@
 # @typed/router
 
+## 0.21.5
+
+### Patch Changes
+
+- [`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d) Thanks [@TylorS](https://github.com/TylorS)! - Ensure all forked Fibers are attached to Scope
+
+- Updated dependencies [[`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d)]:
+  - @typed/environment@0.3.3
+  - @typed/navigation@0.8.5
+  - @typed/context@0.21.3
+  - @typed/route@2.0.5
+  - @typed/dom@9.0.4
+  - @typed/fx@1.20.5
+
 ## 0.21.4
 
 ### Patch Changes

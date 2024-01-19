@@ -1,5 +1,15 @@
 # @typed/fx
 
+## 1.20.5
+
+### Patch Changes
+
+- [`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d) Thanks [@TylorS](https://github.com/TylorS)! - Ensure all forked Fibers are attached to Scope
+
+- Updated dependencies [[`15da154`](https://github.com/TylorS/typed/commit/15da15406c3ec50a1cba475b785d038878c5370d)]:
+  - @typed/async-data@0.3.3
+  - @typed/context@0.21.3
+
 ## 1.20.4
 
 ### Patch Changes
