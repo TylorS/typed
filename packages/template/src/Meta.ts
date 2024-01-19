@@ -30,3 +30,9 @@ export const TEXT_START = "<!--text-->"
  * @since 1.0.0
  */
 export const TYPED_HOLE = (index: number) => `<!--hole${index}-->`
+
+/**
+ * Used to mark separation between the start and end of a template.
+ * @since 1.0.0
+ */
+export const MANY_HOLE = (key: PropertyKey) => `<!--many${key.toString()}-->`

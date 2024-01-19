@@ -13,7 +13,7 @@ import { unsafeGet } from "@typed/context"
 import { Either, ExecutionStrategy, Exit } from "effect"
 import * as Scope from "effect/Scope"
 import type { Template } from "../Template.js"
-import { CouldNotFindCommentError, CouldNotFindRootElement } from "./errors.js"
+import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRootElement } from "./errors.js"
 import { makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
 import type { RenderPartContext } from "./render.js"
@@ -22,8 +22,8 @@ import {
   findPath,
   getPreviousNodes,
   isComment,
+  isCommentStartingWithValue,
   isCommentWithValue,
-  isHtmlElement,
   type ParentChildNodes
 } from "./utils.js"
 
@@ -193,20 +193,36 @@ export function findTemplateResultPartChildNodes(
   parentTemplate: Template,
   childTemplate: Template,
   partIndex: number,
-  childIndex?: number
-): Either.Either<CouldNotFindRootElement | CouldNotFindCommentError, ParentChildNodes> {
+  manyIndex?: string
+): Either.Either<CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError, ParentChildNodes> {
   const [, path] = parentTemplate.parts[partIndex]
   const parentNode = findPath(where, path) as HTMLElement
   const childNodesEither = findPartChildNodes(parentNode, childTemplate.hash, partIndex)
   if (Either.isLeft(childNodesEither)) return Either.left(childNodesEither.left)
 
   const childNodes = childNodesEither.right
-  const parentChildNodes = {
-    parentNode,
-    childNodes: childIndex !== undefined ? [childNodes[childIndex]] : childNodes
+
+  if (manyIndex) {
+    const manyChildNodes = findManyChildNodes(childNodes, manyIndex)
+    if (Either.isLeft(manyChildNodes)) return Either.left(manyChildNodes.left)
+    return Either.right<ParentChildNodes>({ parentNode, childNodes: manyChildNodes.right })
   }
 
-  return Either.right(parentChildNodes)
+  return Either.right<ParentChildNodes>({
+    parentNode,
+    childNodes
+  })
+}
+
+export function findManyChildNodes(
+  childNodes: Array<Node>,
+  manyIndex: string
+): Either.Either<CouldNotFindManyCommentError, Array<Node>> {
+  const either = findManyComment(childNodes, manyIndex)
+  if (Either.isLeft(either)) return Either.left(either.left)
+
+  const [, index] = either.right
+  return Either.right(findPreviousManyComment(childNodes.slice(0, index)))
 }
 
 export function findPartChildNodes(
@@ -224,11 +240,10 @@ export function findPartChildNodes(
     for (let i = index; i > -1; --i) {
       const node = childNodes[i]
 
-      if (isHtmlElement(node) && node.dataset.typed === hash) {
-        nodes.unshift(node)
-      } else if (partIndex > 0 && isCommentWithValue(node, previousHoleValue)) {
+      if (partIndex > 0 && isCommentWithValue(node, previousHoleValue)) {
         break
       }
+      nodes.unshift(node)
     }
   } else {
     return Either.right([...getPreviousNodes(comment, partIndex), comment])
@@ -260,9 +275,39 @@ export function findPartComment(
   return Either.left(new CouldNotFindCommentError(partIndex))
 }
 
+export function findManyComment(
+  childNodes: ArrayLike<Node>,
+  manyIndex: string
+): Either.Either<CouldNotFindManyCommentError, readonly [Comment, number]> {
+  const search = `many${manyIndex}`
+
+  for (let i = 0; i < childNodes.length; ++i) {
+    const node = childNodes[i]
+
+    if (isCommentWithValue(node, search)) {
+      return Either.right([node, i] as const)
+    }
+  }
+
+  return Either.left(new CouldNotFindManyCommentError(manyIndex))
+}
+
+export function findPreviousManyComment(
+  childNodes: Array<Node>
+) {
+  for (let i = childNodes.length - 1; i > -1; --i) {
+    const node = childNodes[i]
+
+    if (isCommentStartingWithValue(node, "many")) {
+      return childNodes.slice(i + 1)
+    }
+  }
+  return childNodes
+}
+
 export function getHydrateEntry({
-  childIndex,
   document,
+  manyIndex,
   parentTemplate,
   renderContext,
   rootIndex,
@@ -275,15 +320,15 @@ export function getHydrateEntry({
   rootIndex: number
   parentTemplate: Template | null
   strings: TemplateStringsArray
-  childIndex?: number
+  manyIndex?: string
 }): Either.Either<
-  CouldNotFindRootElement | CouldNotFindCommentError,
+  CouldNotFindRootElement | CouldNotFindCommentError | CouldNotFindManyCommentError,
   { readonly template: Template; readonly wire: Node | Array<Node>; readonly where: ParentChildNodes }
 > {
   const { template } = getBrowserEntry(document, renderContext, strings)
 
   if (parentTemplate) {
-    const either = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex, childIndex)
+    const either = findTemplateResultPartChildNodes(where, parentTemplate, template, rootIndex, manyIndex)
     if (Either.isLeft(either)) {
       return Either.left(either.left)
     }

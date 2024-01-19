@@ -10,6 +10,7 @@ import * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
+import { type Rendered } from "@typed/wire"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
@@ -17,7 +18,9 @@ import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
-import { adjustTime } from "./internal/utils.js"
+import { renderToHtmlString } from "./Html.js"
+import { hydrate } from "./Hydrate.js"
+import { adjustTime, isCommentWithValue } from "./internal/utils.js"
 import { render } from "./Render.js"
 import * as RenderContext from "./RenderContext.js"
 import type { RenderEvent } from "./RenderEvent.js"
@@ -171,4 +174,90 @@ function getOrMakeWindow(
   return Effect.promise(() =>
     import("happy-dom").then((happyDOM) => new happyDOM.Window(options) as any as Window & GlobalThis)
   )
+}
+
+/**
+ * @since 1.0.0
+ */
+export interface TestHydrate<E, Elements> extends TestRender<E> {
+  readonly elements: Elements
+}
+
+/**
+ * @since 1.0.0
+ */
+export function testHydrate<R, E, Elements>(
+  fx: Fx.Fx<R, E, RenderEvent>,
+  f: (rendered: Rendered, window: Window & GlobalThis) => Elements,
+  options?:
+    & HappyDOMOptions
+    & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
+) {
+  return Effect.gen(function*(_) {
+    const window = yield* _(getOrMakeWindow(options))
+    const { body } = window.document
+
+    const html = yield* _(
+      renderToHtmlString(fx),
+      Effect.provide(RenderContext.server)
+    )
+
+    body.innerHTML = html
+
+    const rendered = Array.from(body.childNodes)
+
+    // Remove the typed-start
+    if (isCommentWithValue(rendered[0], "typed-start")) {
+      rendered.shift()
+    }
+    // Remove the typed-end
+    if (isCommentWithValue(rendered[rendered.length - 1], "typed-end")) {
+      rendered.pop()
+    }
+
+    const elements = f(rendered.length === 1 ? rendered[0] : rendered, window)
+
+    const elementRef = yield* _(ElementRef.make())
+    const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
+    const fiber = yield* _(
+      fx,
+      hydrate,
+      (x) =>
+        x.run(Sink.make(
+          (cause) =>
+            Cause.failureOrCause(cause).pipe(
+              Either.match({
+                onLeft: (error) => RefArray.append(errors, error),
+                onRight: (cause) => errors.onFailure(cause)
+              })
+            ),
+          (rendered) => ElementRef.set(elementRef, rendered)
+        )),
+      Effect.forkScoped,
+      Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
+    )
+
+    const test: TestHydrate<E, Elements> = {
+      elements,
+      window,
+      document: window.document,
+      elementRef,
+      errors,
+      lastError: RefArray.last(errors),
+      interrupt: Fiber.interrupt(fiber),
+      makeEvent: (type, init) => new window.Event(type, init),
+      makeCustomEvent: (type, init) => new window.CustomEvent(type, init),
+      dispatchEvent: (options) => dispatchEvent(test, options),
+      click: (options) => click(test, options)
+    }
+
+    // Allow our fibers to start
+    yield* _(adjustTime(1))
+    yield* _(adjustTime(1))
+
+    // Await the first render
+    yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
+
+    return test
+  })
 }

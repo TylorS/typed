@@ -43,9 +43,7 @@ import {
 import type { ParentChildNodes } from "./utils.js"
 import { findHoleComment, findPath } from "./utils.js"
 
-// TODO: We need to add support for hydration of templates
 // TODO: We need to re-think hydration for dynamic lists, probably just markers should be fine
-// TODO: We need to make Parts synchronous
 
 /**
  * @internal

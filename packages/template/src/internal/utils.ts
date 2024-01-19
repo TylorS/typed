@@ -14,6 +14,10 @@ export function isCommentWithValue(node: Node, value: string): node is Comment {
   return isComment(node) && node.nodeValue === value
 }
 
+export function isCommentStartingWithValue(node: Node, value: string): node is Comment {
+  return isComment(node) && (node.nodeValue?.startsWith(value) ?? false)
+}
+
 export function isHtmlElement(node: Node): node is HTMLElement {
   return node.nodeType === node.ELEMENT_NODE
 }

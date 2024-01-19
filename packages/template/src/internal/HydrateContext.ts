@@ -10,7 +10,9 @@ export type HydrateContext = {
   readonly where: ParentChildNodes
   readonly rootIndex: number
   readonly parentTemplate: Template | null
-  readonly childIndex?: number
+
+  // Used to match sibling components using many() to the correct elements
+  readonly manyIndex?: string
 
   /**@internal */
   hydrate: boolean

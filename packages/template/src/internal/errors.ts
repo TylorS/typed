@@ -10,6 +10,13 @@ export class CouldNotFindRootElement extends Error {
   }
 }
 
+export class CouldNotFindManyCommentError extends Error {
+  constructor(readonly manyIndex: string) {
+    super(`Could not find comment for many part ${manyIndex}`)
+  }
+}
+
 export function isHydrationError(e: unknown): e is CouldNotFindCommentError | CouldNotFindRootElement {
-  return e instanceof CouldNotFindCommentError || e instanceof CouldNotFindRootElement
+  return e instanceof CouldNotFindCommentError || e instanceof CouldNotFindRootElement ||
+    e instanceof CouldNotFindManyCommentError
 }

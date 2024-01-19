@@ -715,7 +715,7 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   return out
 }
 
-export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser2"), () => new ParserImpl())
+export const parser: Parser = globalValue(Symbol.for("@typed/template/Parser"), () => new ParserImpl())
 
 const digestSize = 2
 const multiplier = 33

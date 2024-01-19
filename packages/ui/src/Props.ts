@@ -77,7 +77,7 @@ export type RefOf<T extends Rendered> = {
  * @since 1.0.0
  */
 export type DataProps = {
-  readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
+  readonly data?: ReadonlyRecord.ReadonlyRecord<any> | Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
 }
 
 /**
