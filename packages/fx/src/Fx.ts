@@ -2384,7 +2384,7 @@ export const when: {
  */
 export const withEmitter = <E, A, R = never, E2 = never>(
   f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<R, E2, unknown>
-): Fx<R, E | E2, A> => core.make<R, E | E2, A>((sink) => Emitter.withEmitter(sink, f))
+): Fx<R | Scope.Scope, E | E2, A> => core.make<R | Scope.Scope, E | E2, A>((sink) => Emitter.withEmitter(sink, f))
 
 /**
  * Create an Fx which will wait a specified duration of time where no
