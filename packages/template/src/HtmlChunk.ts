@@ -63,8 +63,8 @@ export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
 /**
  * @since 1.0.0
  */
-export function templateToHtmlChunks({ hash, nodes }: Template) {
-  const chunks = fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, hash)))
+export function templateToHtmlChunks({ hash, nodes }: Template, isStatic: boolean) {
+  const chunks = fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, isStatic ? undefined : hash)))
 
   return chunks
 }

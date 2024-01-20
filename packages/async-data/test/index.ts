@@ -26,6 +26,16 @@ describe("AsyncData", () => {
     ok(AsyncData.isAsyncData(AsyncData.fail(1)))
     ok(AsyncData.isAsyncData(AsyncData.success(1)))
     ok(AsyncData.isAsyncData(AsyncData.optimistic(AsyncData.noData(), 1)))
+    ok(AsyncData.isAsyncData(AsyncData.optimistic(AsyncData.loading(), 1)))
+    ok(AsyncData.isAsyncData(AsyncData.optimistic(AsyncData.fail(1), 1)))
+    ok(AsyncData.isAsyncData(AsyncData.optimistic(AsyncData.success(1), 1)))
+    ok(!AsyncData.isAsyncData({}))
+    ok(!AsyncData.isAsyncData({ _tag: "NoData" }))
+    ok(!AsyncData.isAsyncData({ _tag: "Loading" }))
+    ok(!AsyncData.isAsyncData({ _tag: "Failure", cause: { _tag: "Fail", error: 1 } }))
+    ok(!AsyncData.isAsyncData({ _tag: "Success", value: 1 }))
+    ok(!AsyncData.isAsyncData({ _tag: "Optimistic", previous: { _tag: "NoData" }, value: 1 }))
+    ok(!AsyncData.isAsyncData(null))
   })
 
   it("dataEqual", () => {

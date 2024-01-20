@@ -38,7 +38,7 @@ export function renderToHtml<R, E>(
       fx.pipe(
         Fx.provide(RenderTemplate.layer(renderHtml(ctx))),
         Fx.map(toHtml),
-        Fx.padWith(padStart, padEnd)
+        (x) => ctx.environment === "static" ? x : Fx.padWith(x, padStart, padEnd)
       )
     )
   )
@@ -62,7 +62,8 @@ function renderHtml(ctx: RenderContext) {
     Placeholder.Error<Values[number]>,
     RenderEvent
   > => {
-    const entry = getServerEntry(templateStrings, ctx.templateCache)
+    const isStatic = ctx.environment === "static"
+    const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
     if (values.length === 0) {
       return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value))
     } else {
@@ -72,7 +73,7 @@ function renderHtml(ctx: RenderContext) {
             renderChunk<
               Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
               Placeholder.Error<Values[number]>
-            >(chunk, values)
+            >(chunk, values, isStatic)
           )
         ),
         (x) => (x.valueOf() as string).length > 0
@@ -83,41 +84,46 @@ function renderHtml(ctx: RenderContext) {
 
 function renderChunk<R, E>(
   chunk: HtmlChunk,
-  values: ReadonlyArray<Renderable<any, any>>
+  values: ReadonlyArray<Renderable<any, any>>,
+  isStatic: boolean
 ): Fx.Fx<R, E, RenderEvent> {
   if (chunk._tag === "text") {
     return Fx.succeed(HtmlRenderEvent(chunk.value))
   } else if (chunk._tag === "part") {
-    return renderPart<R, E>(chunk, values)
+    return renderPart<R, E>(chunk, values, isStatic)
   } else {
     return renderSparsePart<R, E>(chunk, values) as Fx.Fx<R, E, RenderEvent>
   }
 }
 
-function renderNode<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, RenderEvent> {
+function renderNode<R, E>(renderable: Renderable<any, any>, isStatic: boolean): Fx.Fx<R, E, RenderEvent> {
   switch (typeof renderable) {
     case "string":
     case "number":
     case "boolean":
     case "bigint":
-      return Fx.succeed(HtmlRenderEvent(TEXT_START + renderable.toString()))
+      return Fx.succeed(HtmlRenderEvent((isStatic ? "" : TEXT_START) + renderable.toString()))
     case "undefined":
     case "object":
-      return renderObject(renderable)
+      return renderObject(renderable, isStatic)
     default:
       return Fx.empty
   }
 }
 
-function renderObject<R, E>(renderable: object | null | undefined) {
+function renderObject<R, E>(renderable: object | null | undefined, isStatic: boolean) {
   if (renderable === null || renderable === undefined) {
-    return Fx.succeed(HtmlRenderEvent(TEXT_START))
+    return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START))
   } else if (Array.isArray(renderable)) {
-    return Fx.mergeOrdered(renderable.map(renderNode)) as any
+    return Fx.mergeOrdered(renderable.map((r) => renderNode(r, isStatic))) as any
   } else if (Fx.isFx<R, E, Renderable>(renderable)) {
-    return Fx.concatMap(takeOneIfNotRenderEvent(renderable), renderNode as any)
+    // @ts-expect-error Types are to deep to infer
+    return Fx.concatMap(takeOneIfNotRenderEvent(renderable), (r) => renderNode(r, isStatic) as any)
   } else if (Effect.isEffect(renderable)) {
-    return Fx.switchMap(Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>), renderNode<R, E>)
+    return Fx.switchMap(
+      Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>),
+      (r) => renderNode<R, E>(r, isStatic)
+    )
   } else if (isRenderEvent(renderable)) {
     return Fx.succeed(renderable)
   } else {
@@ -127,7 +133,8 @@ function renderObject<R, E>(renderable: object | null | undefined) {
 
 function renderPart<R, E>(
   chunk: PartChunk,
-  values: ReadonlyArray<Renderable<any, any>>
+  values: ReadonlyArray<Renderable<any, any>>,
+  isStatic: boolean
 ): Fx.Fx<R, E, RenderEvent> {
   const { node, render } = chunk
   const renderable: Renderable<any, any> = values[node.index]
@@ -143,7 +150,8 @@ function renderPart<R, E>(
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    return Fx.append(renderNode<R, E>(renderable), HtmlRenderEvent(TYPED_HOLE(node.index)))
+    if (isStatic) return renderNode<R, E>(renderable, isStatic)
+    return Fx.append(renderNode<R, E>(renderable, isStatic), HtmlRenderEvent(TYPED_HOLE(node.index)))
   } else if (node._tag === "properties") {
     if (renderable == null) return Fx.empty
     return Fx.map(
@@ -164,7 +172,7 @@ function renderPart<R, E>(
       return s ? Option.some(HtmlRenderEvent(s)) : Option.none()
     })
 
-    if (node._tag === "text-part") {
+    if (isStatic === false && node._tag === "text-part") {
       return Fx.append(Fx.prepend(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
     }
 
@@ -219,7 +227,8 @@ function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
 
 function getServerEntry(
   templateStrings: TemplateStringsArray,
-  templateCache: RenderContext["templateCache"]
+  templateCache: RenderContext["templateCache"],
+  isStatic: boolean
 ): ServerEntry {
   const cached = templateCache.get(templateStrings)
 
@@ -229,7 +238,7 @@ function getServerEntry(
     const entry: ServerEntry = {
       _tag: "Server",
       template,
-      chunks: templateToHtmlChunks(template)
+      chunks: templateToHtmlChunks(template, isStatic)
     }
 
     templateCache.set(templateStrings, entry)
