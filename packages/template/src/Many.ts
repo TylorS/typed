@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import type * as AsyncData from "@typed/async-data/AsyncData"
+import type { Progress } from "@typed/async-data/Progress"
 import * as RefAsyncData from "@typed/fx/AsyncData"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -138,20 +139,20 @@ export const manyAsyncData: {
     getKey: (a: A) => B,
     matchers: {
       NoData: NoData
-      Loading: (data: TODO) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
+      Loading: (data: RefSubject.Filtered<never, never, Progress>) => Loading
+      Failure: (data: RefSubject.Computed<never, never, E1>) => Failure
+      Success: (value: RefSubject.Computed<never, never, A>, key: B) => Success
     }
   ): Fx.Fx<
     R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
-    Fx.Fx.Success<NoData | Loading | Failure | Success>
+    RenderEvent | ReadonlyArray<RenderEvent>
   > => {
     return RefAsyncData.matchAsyncData(fx, {
       NoData: matchers.NoData,
       Loading: matchers.Loading,
       Failure: matchers.Failure,
-      Success: (ref, computed) => many(ref, getKey, (ref) => matchers.Success(ref, computed))
-    }) as any
+      Success: (ref) => many(ref, getKey, matchers.Success)
+    })
   }
 )
