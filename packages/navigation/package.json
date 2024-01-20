@@ -52,6 +52,6 @@
   },
   "devDependencies": {
     "@virtualstate/navigation": "1.0.1-alpha.199",
-    "happy-dom": "13.1.4"
+    "happy-dom": "13.2.0"
   }
 }

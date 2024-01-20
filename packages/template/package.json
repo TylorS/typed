@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@vitest/browser": "^1.2.1",
-    "happy-dom": "13.1.4",
+    "happy-dom": "13.2.0",
     "vitest": "1.2.1"
   }
 }

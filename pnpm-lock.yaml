@@ -61,7 +61,7 @@ importers:
         version: 6.19.0(eslint@8.56.0)(typescript@5.3.3)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.0.11)
+        version: 4.2.1(vite@5.0.12)
       '@vitest/coverage-v8':
         specifier: ^1.2.1
         version: 1.2.1(vitest@1.2.1)
@@ -87,8 +87,8 @@ importers:
         specifier: ^3.6.1
         version: 3.6.1(@typescript-eslint/parser@6.19.0)(eslint-plugin-import@2.29.1)(eslint@8.56.0)
       eslint-plugin-codegen:
-        specifier: 0.22.0
-        version: 0.22.0(eslint@8.56.0)
+        specifier: 0.22.1
+        version: 0.22.1(eslint@8.56.0)
       eslint-plugin-deprecation:
         specifier: ^2.0.0
         version: 2.0.0(eslint@8.56.0)(typescript@5.3.3)
@@ -126,14 +126,14 @@ importers:
         specifier: ^3.10.5
         version: 3.10.5
       vite:
-        specifier: ^5.0.11
-        version: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+        specifier: ^5.0.12
+        version: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
       vite-plugin-tsconfig-paths:
         specifier: ^1.4.1
-        version: 1.4.1(typescript@5.3.3)(vite@5.0.11)
+        version: 1.4.1(typescript@5.3.3)(vite@5.0.12)
       vitest:
         specifier: 1.2.1
-        version: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.1.4)
+        version: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.2.0)
 
   examples/counter:
     dependencies:
@@ -154,14 +154,14 @@ importers:
         version: 2.1.2
     devDependencies:
       vite:
-        specifier: ^5.0.11
-        version: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+        specifier: ^5.0.12
+        version: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.0.11)
+        version: 0.5.1(vite@5.0.12)
       vite-tsconfig-paths:
         specifier: ^4.3.1
-        version: 4.3.1(typescript@5.3.3)(vite@5.0.11)
+        version: 4.3.1(typescript@5.3.3)(vite@5.0.12)
 
   examples/fx-tracing:
     dependencies:
@@ -265,7 +265,7 @@ importers:
     devDependencies:
       '@giacomorebonato/vavite':
         specifier: ^0.0.4
-        version: 0.0.4(vite@5.0.11)
+        version: 0.0.4(vite@5.0.12)
       mock-storage:
         specifier: ^1.1.0
         version: 1.1.0
@@ -279,20 +279,20 @@ importers:
         specifier: ^4.7.0
         version: 4.7.0
       vite:
-        specifier: ^5.0.11
-        version: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+        specifier: ^5.0.12
+        version: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.0.11)
+        version: 0.5.1(vite@5.0.12)
       vite-plugin-html:
         specifier: ^3.2.2
-        version: 3.2.2(vite@5.0.11)
+        version: 3.2.2(vite@5.0.12)
       vite-plugin-top-level-await:
         specifier: ^1.4.1
-        version: 1.4.1(vite@5.0.11)
+        version: 1.4.1(vite@5.0.12)
       vite-tsconfig-paths:
         specifier: ^4.3.1
-        version: 4.3.1(typescript@5.3.3)(vite@5.0.11)
+        version: 4.3.1(typescript@5.3.3)(vite@5.0.12)
 
   packages/async-data:
     dependencies:
@@ -426,8 +426,8 @@ importers:
         specifier: 1.0.1-alpha.199
         version: 1.0.1-alpha.199
       happy-dom:
-        specifier: 13.1.4
-        version: 13.1.4
+        specifier: 13.2.0
+        version: 13.2.0
     publishDirectory: dist
 
   packages/path:
@@ -518,11 +518,11 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1(vitest@1.2.1)
       happy-dom:
-        specifier: 13.1.4
-        version: 13.1.4
+        specifier: 13.2.0
+        version: 13.2.0
       vitest:
         specifier: 1.2.1
-        version: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.1.4)
+        version: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.2.0)
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -582,7 +582,7 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
     dev: true
 
   /@babel/cli@7.23.4(@babel/core@7.23.7):
@@ -593,7 +593,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.23.7
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
       commander: 4.1.1
       convert-source-map: 2.0.0
       fs-readdir-recursive: 1.1.0
@@ -655,7 +655,7 @@ packages:
     dependencies:
       '@babel/types': 7.23.6
       '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
       jsesc: 2.5.2
     dev: true
 
@@ -2418,21 +2418,21 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@giacomorebonato/vavite@0.0.4(vite@5.0.11):
+  /@giacomorebonato/vavite@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-TllKdRdEmd4Jp9wrIAqV/RmOJNE0VSmG1x35RH4gwdEBAC0msMAW3DCSaOlUVgYNUZmZg8gLwjoqPnnL6ce12g==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      '@vavite-giacomorebonato/connect': 0.0.4(vite@5.0.11)
-      '@vavite-giacomorebonato/expose-vite-dev-server': 0.0.4(vite@5.0.11)
-      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.11)
-      '@vavite-giacomorebonato/multibuild-cli': 0.0.4(vite@5.0.11)
-      '@vavite-giacomorebonato/node-loader': 0.0.4(vite@5.0.11)
-      '@vavite-giacomorebonato/reloader': 0.0.4(vite@5.0.11)
+      '@vavite-giacomorebonato/connect': 0.0.4(vite@5.0.12)
+      '@vavite-giacomorebonato/expose-vite-dev-server': 0.0.4(vite@5.0.12)
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.12)
+      '@vavite-giacomorebonato/multibuild-cli': 0.0.4(vite@5.0.12)
+      '@vavite-giacomorebonato/node-loader': 0.0.4(vite@5.0.12)
+      '@vavite-giacomorebonato/reloader': 0.0.4(vite@5.0.12)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
   /@grpc/grpc-js@1.9.14:
@@ -2523,7 +2523,7 @@ packages:
     dependencies:
       '@jridgewell/set-array': 1.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
     dev: true
 
   /@jridgewell/resolve-uri@3.1.1:
@@ -2540,15 +2540,15 @@ packages:
     resolution: {integrity: sha512-UTYAUj/wviwdsMfzoSJspJxbkH5o1snzwX0//0ENX1u/55kkZZkcTZP6u9bwKGkv+dkk9at4m1Cpt0uY80kcpQ==}
     dependencies:
       '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
     dev: true
 
   /@jridgewell/sourcemap-codec@1.4.15:
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
     dev: true
 
-  /@jridgewell/trace-mapping@0.3.21:
-    resolution: {integrity: sha512-SRfKmRe1KvYnxjEMtxEr+J4HIeMX5YBg/qhRHpxEIGjhX1rshcHlnFUE9K0GazhVKWM7B+nARSkV8LuvJdJ5/g==}
+  /@jridgewell/trace-mapping@0.3.22:
+    resolution: {integrity: sha512-Wf963MzWtA2sjrNt+g18IAln9lKnlRp+K2eH4jjIoF1wYeq3aMREpG09xhlhdzS0EjwU7qmUJYangWa+151vZw==}
     dependencies:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -3575,37 +3575,37 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@vavite-giacomorebonato/connect@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/connect@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-JWdc6cCY6yqvDjraq4cnNEwWU24ggsDPAPHZKj3CfH/ETpIADLzvvrwUu43Z220PaGxDQt4rqZHrkkixKvKIqA==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.5
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /@vavite-giacomorebonato/expose-vite-dev-server@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/expose-vite-dev-server@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-+rWLDkQWi7do2DNhhAo/0JSk4ZCoT7lBc8mEDX9xQT7n2TfoSO7oXcodgJmMk075tLhKF3h5vdJnS+EbpSHdug==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /@vavite-giacomorebonato/multibuild-cli@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/multibuild-cli@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-j+WbdWk89dma0sx1BUqzBqRYXEtjawm+V9q7iK4ffVeQD7GazNj8BEWk20/FlTanHLiDZXQCijeDkGU+GgN1+Q==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.5
-      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.11)
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.0.12)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /@vavite-giacomorebonato/multibuild@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/multibuild@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-103FSR+XdGcx6ouionZST8sGmHHQPA4i6vEzWLuHWdvOtkKag13mSX8OtUwMxZeLIYaEIGR6S2pZZaiWGRDS+g==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
@@ -3613,24 +3613,24 @@ packages:
       '@types/node': 20.11.5
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /@vavite-giacomorebonato/node-loader@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/node-loader@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-qMT6YH+uZYJgpofj5eqrSdRBanKc3djdg0ft6vdx4PSAxxukMKtbmQuEpXKW/j+jZZd9FhEthE1IbfDnJnzhag==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /@vavite-giacomorebonato/reloader@0.0.4(vite@5.0.11):
+  /@vavite-giacomorebonato/reloader@0.0.4(vite@5.0.12):
     resolution: {integrity: sha512-RajS2Y2x/7wVH8JHh+l+L5Pif2DvgehXoA128M1Ok07qONLdXqE25yAYaTGIDAMhuTR6TjbHKQG/4vLO2/qxQA==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
   /@virtualstate/composite-key@1.0.0:
@@ -3646,7 +3646,7 @@ packages:
       uuid: 8.3.2
     dev: true
 
-  /@vitejs/plugin-react@4.2.1(vite@5.0.11):
+  /@vitejs/plugin-react@4.2.1(vite@5.0.12):
     resolution: {integrity: sha512-oojO9IDc4nCUUi8qIR11KoQm0XFFLIwsRBwHRR4d/88IWghn1y6ckz/bJ8GHDCsYEJee8mDzqtJxh15/cisJNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -3657,7 +3657,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.7)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3680,7 +3680,7 @@ packages:
       '@vitest/utils': 1.2.1
       magic-string: 0.30.5
       sirv: 2.0.4
-      vitest: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.1.4)
+      vitest: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.2.0)
     dev: true
 
   /@vitest/coverage-v8@1.2.1(vitest@1.2.1):
@@ -3701,7 +3701,7 @@ packages:
       std-env: 3.7.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.1.4)
+      vitest: 1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.2.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4082,7 +4082,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001579
-      electron-to-chromium: 1.4.638
+      electron-to-chromium: 1.4.640
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.22.2)
     dev: true
@@ -4438,10 +4438,6 @@ packages:
   /css-what@6.1.0:
     resolution: {integrity: sha512-HTUrgRJ7r4dsZKU6GjmpfRK1O76h97Z8MfS1G0FozR+oF2kG6Vfe8JE6zwrkbxigziPHinCJ+gCPjA9EaBDtRw==}
     engines: {node: '>= 6'}
-    dev: true
-
-  /css.escape@1.5.1:
-    resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
     dev: true
 
   /csstype@3.1.3:
@@ -4823,8 +4819,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /dotenv@16.3.1:
-    resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
+  /dotenv@16.3.2:
+    resolution: {integrity: sha512-HTlk5nmhkm8F6JcdXvHIzaorzCoziNQT9mGxLPVXW8wJF1TiGSL60ZGB4gHWabHOaMmWmhvk2/lPHfnBiT78AQ==}
     engines: {node: '>=12'}
     dev: true
 
@@ -4852,8 +4848,8 @@ packages:
       jake: 10.8.7
     dev: true
 
-  /electron-to-chromium@1.4.638:
-    resolution: {integrity: sha512-gpmbAG2LbfPKcDaL5m9IKutKjUx4ZRkvGNkgL/8nKqxkXsBVYykVULboWlqCrHsh3razucgDJDuKoWJmGPdItA==}
+  /electron-to-chromium@1.4.640:
+    resolution: {integrity: sha512-z/6oZ/Muqk4BaE7P69bXhUhpJbUM9ZJeka43ZwxsDshKtePns4mhBlh8bU5+yrnOnz3fhG82XLzGUXazOmsWnA==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -5093,8 +5089,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-codegen@0.22.0(eslint@8.56.0):
-    resolution: {integrity: sha512-SVMwDlH+zO7hLHTKm6ZSSFfRKDEQTAdtfUVZ+LyJ5iAO7vJu+oxgiSUI27Kshl1H+oBZi+S7biqWSbvaXXn8+w==}
+  /eslint-plugin-codegen@0.22.1(eslint@8.56.0):
+    resolution: {integrity: sha512-p8Nj3Mo4I2jsfCnaPkaR9Rh6eP9pT87xQiFz5TOymsco7unAysR4ZYWh8fuFV5oTdL6Y1C2oAVZdID2olhfHBg==}
     engines: {node: '>=12.0.0'}
     dependencies:
       '@babel/core': 7.23.7
@@ -5783,14 +5779,12 @@ packages:
       through2: 2.0.5
     dev: true
 
-  /happy-dom@13.1.4:
-    resolution: {integrity: sha512-f8STa4iuJcpXn7YjgqBEemzinyPAdjlHMxlCNbIERdRIjJO9Z9Cj3XW5LuiEhsURFfl0AOWqj0hQitme4gq+Gg==}
+  /happy-dom@13.2.0:
+    resolution: {integrity: sha512-aeFD9M5d1sN618nOpWy/76IiU5/UJxdYydPdzpXxEn4r7MQByrmtoH1iU9v8v9bJJ0fMte6OAMy6rDD/mGawfg==}
+    engines: {node: '>=16.0.0'}
     dependencies:
-      css.escape: 1.5.1
       entities: 4.5.0
-      iconv-lite: 0.6.3
       webidl-conversions: 7.0.0
-      whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
     dev: true
 
@@ -5887,13 +5881,6 @@ packages:
 
   /iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      safer-buffer: 2.1.2
-    dev: true
-
-  /iconv-lite@0.6.3:
-    resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
     dependencies:
       safer-buffer: 2.1.2
@@ -8807,7 +8794,7 @@ packages:
     resolution: {integrity: sha512-/EH/sDgxU2eGxajKdwLCDmQ4FWq+kpi3uCmBGpw1xJtnAxEjlD8j8PEiGWpCIMIs3ciNAgH0d3TTJiUkYzyZjA==}
     engines: {node: '>=10.12.0'}
     dependencies:
-      '@jridgewell/trace-mapping': 0.3.21
+      '@jridgewell/trace-mapping': 0.3.22
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
     dev: true
@@ -8835,7 +8822,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8847,7 +8834,7 @@ packages:
       - terser
     dev: true
 
-  /vite-plugin-compression@0.5.1(vite@5.0.11):
+  /vite-plugin-compression@0.5.1(vite@5.0.12):
     resolution: {integrity: sha512-5QJKBDc+gNYVqL/skgFAP81Yuzo9R+EAf19d+EtsMF/i8kFUpNi3J/H01QD3Oo8zBQn+NzoCIFkpPLynoOzaJg==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -8855,12 +8842,12 @@ packages:
       chalk: 4.1.2
       debug: 4.3.4
       fs-extra: 10.1.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /vite-plugin-html@3.2.2(vite@5.0.11):
+  /vite-plugin-html@3.2.2(vite@5.0.12):
     resolution: {integrity: sha512-vb9C9kcdzcIo/Oc3CLZVS03dL5pDlOFuhGlZYDCJ840BhWl/0nGeZWf3Qy7NlOayscY4Cm/QRgULCQkEZige5Q==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -8869,7 +8856,7 @@ packages:
       colorette: 2.0.20
       connect-history-api-fallback: 1.6.0
       consola: 2.15.3
-      dotenv: 16.3.1
+      dotenv: 16.3.2
       dotenv-expand: 8.0.3
       ejs: 3.1.9
       fast-glob: 3.3.2
@@ -8877,10 +8864,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     dev: true
 
-  /vite-plugin-top-level-await@1.4.1(vite@5.0.11):
+  /vite-plugin-top-level-await@1.4.1(vite@5.0.12):
     resolution: {integrity: sha512-hogbZ6yT7+AqBaV6lK9JRNvJDn4/IJvHLu6ET06arNfo0t2IsyCaon7el9Xa8OumH+ESuq//SDf8xscZFE0rWw==}
     peerDependencies:
       vite: '>=2.8'
@@ -8888,24 +8875,24 @@ packages:
       '@rollup/plugin-virtual': 3.0.2
       '@swc/core': 1.3.104
       uuid: 9.0.1
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - '@swc/helpers'
       - rollup
     dev: true
 
-  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.3.3)(vite@5.0.11):
+  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.3.3)(vite@5.0.12):
     resolution: {integrity: sha512-pGpvsPGDpiM5z7I9ZhBe7H2WAH0gAC2Lh55rM3pE+84V2q7qojNO28wdUl4i/M4XUfJcilhyucmbc9D7IKqpXA==}
     peerDependencies:
       vite: '*'
     dependencies:
       typescript-paths: 1.5.1(typescript@5.3.3)
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - typescript
     dev: true
 
-  /vite-tsconfig-paths@4.3.1(typescript@5.3.3)(vite@5.0.11):
+  /vite-tsconfig-paths@4.3.1(typescript@5.3.3)(vite@5.0.12):
     resolution: {integrity: sha512-cfgJwcGOsIxXOLU/nELPny2/LUD/lcf1IbfyeKTv2bsupVbTH/xpFtdQlBmIP1GEK2CjjLxYhFfB+QODFAx5aw==}
     peerDependencies:
       vite: '*'
@@ -8916,14 +8903,14 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.1(typescript@5.3.3)
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
     dev: true
 
-  /vite@5.0.11(@types/node@20.11.5)(terser@5.27.0):
-    resolution: {integrity: sha512-XBMnDjZcNAw/G1gEiskiM1v6yzM4GE5aMGvhWTlHAYYhxb7S3/V1s3m2LDHa8Vh6yIWYYB0iJwsEaS523c4oYA==}
+  /vite@5.0.12(@types/node@20.11.5)(terser@5.27.0):
+    resolution: {integrity: sha512-4hsnEkG3q0N4Tzf1+t6NdN9dg/L3BM+q8SWgbSPnJvrgH2kgdyzfVJwbR1ic69/4uMJJ/3dqDZZE5/WwqW8U1w==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -8959,7 +8946,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.1.4):
+  /vitest@1.2.1(@types/node@20.11.5)(@vitest/browser@1.2.1)(happy-dom@13.2.0):
     resolution: {integrity: sha512-TRph8N8rnSDa5M2wKWJCMnztCZS9cDcgVTQ6tsTFTG/odHJ4l5yNVqvbeDJYJRZ6is3uxaEpFs8LL6QM+YFSdA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -8996,7 +8983,7 @@ packages:
       chai: 4.4.1
       debug: 4.3.4
       execa: 8.0.1
-      happy-dom: 13.1.4
+      happy-dom: 13.2.0
       local-pkg: 0.5.0
       magic-string: 0.30.5
       pathe: 1.1.2
@@ -9005,7 +8992,7 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.6.0
       tinypool: 0.8.2
-      vite: 5.0.11(@types/node@20.11.5)(terser@5.27.0)
+      vite: 5.0.12(@types/node@20.11.5)(terser@5.27.0)
       vite-node: 1.2.1(@types/node@20.11.5)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
@@ -9036,13 +9023,6 @@ packages:
   /webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
-    dev: true
-
-  /whatwg-encoding@2.0.0:
-    resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
-    engines: {node: '>=12'}
-    dependencies:
-      iconv-lite: 0.6.3
     dev: true
 
   /whatwg-mimetype@3.0.0:
