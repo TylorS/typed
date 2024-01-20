@@ -46,7 +46,7 @@ Added in v1.20.0
 export declare function withEmitter<R, E, A, R2, B>(
   sink: Sink.Sink<R, E, A>,
   f: (emitter: Emitter<E, A>) => Effect.Effect<R2, E, B>
-): Effect.Effect<R | R2, never, void>
+): Effect.Effect<R | R2 | Scope.Scope, never, void>
 ```
 
 Added in v1.20.0

@@ -188,6 +188,9 @@ const SuccessFrom = <A>(value: A, timestamp: number, refreshing?: LoadingFrom): 
   return base
 }
 
+/**
+ * @since 1.0.0
+ */
 export type OptimisticFrom<E, A> = {
   readonly timestamp: number
   readonly _tag: "Optimistic"
@@ -324,6 +327,9 @@ function isAsyncDataFrom(value: unknown): value is AsyncDataFrom<any, any> {
     || isOptimisticFrom(value)
 }
 
+/**
+ * @since 1.0.0
+ */
 export const asyncDataFromJson = <EI, E, AI, A>(
   error: Schema.Schema<EI, E>,
   value: Schema.Schema<AI, A>

@@ -15,9 +15,11 @@ Added in v1.0.0
 - [utils](#utils)
   - [EventOptions (type alias)](#eventoptions-type-alias)
   - [HappyDOMOptions (type alias)](#happydomoptions-type-alias)
+  - [TestHydrate (interface)](#testhydrate-interface)
   - [TestRender (interface)](#testrender-interface)
   - [click](#click)
   - [dispatchEvent](#dispatchevent)
+  - [testHydrate](#testhydrate)
   - [testRender](#testrender)
 
 ---
@@ -45,6 +47,18 @@ Added in v1.0.0
 ```ts
 export type HappyDOMOptions = ConstructorParameters<typeof import("happy-dom").Window>[0]
 ```
+
+## TestHydrate (interface)
+
+**Signature**
+
+```ts
+export interface TestHydrate<E, Elements> extends TestRender<E> {
+  readonly elements: Elements
+}
+```
+
+Added in v1.0.0
 
 ## TestRender (interface)
 
@@ -88,6 +102,22 @@ Added in v1.0.0
 export declare function dispatchEvent<E>(
   { elementRef, makeEvent }: Pick<TestRender<E>, "elementRef" | "makeEvent">,
   options: EventOptions
+)
+```
+
+Added in v1.0.0
+
+## testHydrate
+
+**Signature**
+
+```ts
+export declare function testHydrate<R, E, Elements>(
+  fx: Fx.Fx<R, E, RenderEvent>,
+  f: (rendered: Rendered, window: Window & GlobalThis) => Elements,
+  options?: HappyDOMOptions & {
+    readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
+  }
 )
 ```
 

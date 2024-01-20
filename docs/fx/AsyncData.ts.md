@@ -34,6 +34,7 @@ Added in v1.20.0
   - [mapInputEffect](#mapinputeffect)
   - [matchAsyncData](#matchasyncdata)
   - [matchAsyncDataArray](#matchasyncdataarray)
+  - [optimistic](#optimistic)
   - [runAsyncData](#runasyncdata)
   - [runIfExpired](#runifexpired)
   - [runIfNoData](#runifnodata)
@@ -88,7 +89,11 @@ Await for the AsyncData to stop loading.
 ```ts
 export declare const awaitLoading: <R, E, A>(
   data: RefAsyncData<R, E, A>
-) => Effect.Effect<Scope.Scope | R, never, AsyncData.AsyncData<E, A>>
+) => Effect.Effect<
+  Scope.Scope | R,
+  never,
+  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<E, A>
+>
 ```
 
 Added in v1.20.0
@@ -102,7 +107,11 @@ Await for the AsyncData to stop loading or refreshing.
 ```ts
 export declare const awaitLoadingOrRefreshing: <R, E, A>(
   data: RefAsyncData<R, E, A>
-) => Effect.Effect<Scope.Scope | R, never, AsyncData.AsyncData<E, A>>
+) => Effect.Effect<
+  Scope.Scope | R,
+  never,
+  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<E, A>
+>
 ```
 
 Added in v1.20.0
@@ -254,20 +263,8 @@ export declare const matchAsyncData: {
   <E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(matchers: {
     readonly NoData: Fx.Fx<R2, E2, B>
     readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-    readonly Failure: (
-      error: RefSubject.Computed<never, never, E1>,
-      options: {
-        readonly timestamp: RefSubject.Computed<never, never, number>
-        readonly progress: RefSubject.Filtered<never, never, Progress>
-      }
-    ) => Fx.Fx<R4, E4, D>
-    readonly Success: (
-      value: RefSubject.Computed<never, never, A>,
-      options: {
-        readonly timestamp: RefSubject.Computed<never, never, number>
-        readonly progress: RefSubject.Filtered<never, never, Progress>
-      }
-    ) => Fx.Fx<R5, E5, F>
+    readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
+    readonly Success: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R5, E5, F>
   }): <R, E>(
     fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>
   ) => Fx.Fx<R2 | R3 | R4 | R5 | R, E2 | E3 | E4 | E5 | E, B | C | D | F>
@@ -276,20 +273,8 @@ export declare const matchAsyncData: {
     matchers: {
       readonly NoData: Fx.Fx<R2, E2, B>
       readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (
-        error: RefSubject.Computed<never, never, E1>,
-        options: {
-          readonly timestamp: RefSubject.Computed<never, never, number>
-          readonly progress: RefSubject.Filtered<never, never, Progress>
-        }
-      ) => Fx.Fx<R4, E4, D>
-      readonly Success: (
-        value: RefSubject.Computed<never, never, A>,
-        options: {
-          readonly timestamp: RefSubject.Computed<never, never, number>
-          readonly progress: RefSubject.Filtered<never, never, Progress>
-        }
-      ) => Fx.Fx<R5, E5, F>
+      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
+      readonly Success: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R5, E5, F>
     }
   ): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
 }
@@ -308,13 +293,7 @@ export declare const matchAsyncDataArray: {
     matchers: {
       readonly NoData: Fx.Fx<R2, E2, B>
       readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (
-        error: RefSubject.Computed<never, never, E1>,
-        options: {
-          readonly timestamp: RefSubject.Computed<never, never, number>
-          readonly progress: RefSubject.Filtered<never, never, Progress>
-        }
-      ) => Fx.Fx<R4, E4, D>
+      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
       readonly Success: (value: RefSubject.RefSubject<never, never, A>, key: K) => Fx.Fx<R5, E5, F>
     }
   ): <R, E>(
@@ -326,16 +305,32 @@ export declare const matchAsyncDataArray: {
     matchers: {
       readonly NoData: Fx.Fx<R2, E2, B>
       readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (
-        error: RefSubject.Computed<never, never, E1>,
-        options: {
-          readonly timestamp: RefSubject.Computed<never, never, number>
-          readonly progress: RefSubject.Filtered<never, never, Progress>
-        }
-      ) => Fx.Fx<R4, E4, D>
+      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
       readonly Success: (value: RefSubject.RefSubject<never, never, A>, key: K) => Fx.Fx<R5, E5, F>
     }
   ): Fx.Fx<Scope.Scope | R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | readonly F[]>
+}
+```
+
+Added in v1.20.0
+
+## optimistic
+
+Update with an optimistic value
+
+**Signature**
+
+```ts
+export declare const optimistic: {
+  <A>(
+    value: A,
+    options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
+  ): <R, E>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  <R, E, A>(
+    ref: RefAsyncData<R, E, A>,
+    value: A,
+    options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
+  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
 }
 ```
 

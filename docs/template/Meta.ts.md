@@ -13,6 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
+  - [MANY_HOLE](#many_hole)
   - [TEXT_START](#text_start)
   - [TYPED_END](#typed_end)
   - [TYPED_HASH](#typed_hash)
@@ -22,6 +23,18 @@ Added in v1.0.0
 ---
 
 # utils
+
+## MANY_HOLE
+
+Used to mark separation between the start and end of a template.
+
+**Signature**
+
+```ts
+export declare const MANY_HOLE: (key: PropertyKey) => string
+```
+
+Added in v1.0.0
 
 ## TEXT_START
 

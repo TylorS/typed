@@ -2,7 +2,7 @@
 title: "@typed/environment"
 has_children: true
 permalink: /docs/environment
-nav_order: 6
+nav_order: 7
 ---
 
 # @typed/environment

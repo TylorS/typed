@@ -1,6 +1,6 @@
 ---
 title: Props.ts
-nav_order: 6
+nav_order: 5
 parent: "@typed/ui"
 ---
 
@@ -59,7 +59,7 @@ Added in v1.0.0
 
 ```ts
 export type DataProps = {
-  readonly data?: Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
+  readonly data?: ReadonlyRecord.ReadonlyRecord<any> | Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
 }
 ```
 

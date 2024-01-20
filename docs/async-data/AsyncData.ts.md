@@ -25,14 +25,18 @@ Added in v1.0.0
   - [Failure (interface)](#failure-interface)
   - [FailureOptions (type alias)](#failureoptions-type-alias)
   - [Loading (class)](#loading-class)
+    - [[AsyncDataTypeId] (property)](#asyncdatatypeid-property)
     - [[Unify.typeSymbol] (property)](#unifytypesymbol-property)
     - [[Unify.unifySymbol] (property)](#unifyunifysymbol-property)
     - [[Unify.ignoreSymbol] (property)](#unifyignoresymbol-property)
   - [LoadingOptions (type alias)](#loadingoptions-type-alias)
   - [NoData (class)](#nodata-class)
+    - [[AsyncDataTypeId] (property)](#asyncdatatypeid-property-1)
     - [[Unify.typeSymbol] (property)](#unifytypesymbol-property-1)
     - [[Unify.unifySymbol] (property)](#unifyunifysymbol-property-1)
     - [[Unify.ignoreSymbol] (property)](#unifyignoresymbol-property-1)
+  - [Optimistic (interface)](#optimistic-interface)
+  - [OptimisticOptions (interface)](#optimisticoptions-interface)
   - [OptionalPartial (type alias)](#optionalpartial-type-alias)
   - [Refreshing (type alias)](#refreshing-type-alias)
   - [RefreshingFailure (interface)](#refreshingfailure-interface)
@@ -55,12 +59,14 @@ Added in v1.0.0
   - [isLoading](#isloading)
   - [isLoadingOrRefreshing](#isloadingorrefreshing)
   - [isNoData](#isnodata)
+  - [isOptimistic](#isoptimistic)
   - [isRefreshing](#isrefreshing)
   - [isSuccess](#issuccess)
   - [loading](#loading)
   - [map](#map)
   - [match](#match)
   - [noData](#nodata)
+  - [optimistic](#optimistic)
   - [startLoading](#startloading)
   - [stopLoading](#stoploading)
   - [success](#success)
@@ -77,7 +83,7 @@ in addition to Option-like states of NoData and Success.
 **Signature**
 
 ```ts
-export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A>
+export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A> | Optimistic<E, A>
 ```
 
 Added in v1.0.0
@@ -139,6 +145,8 @@ Added in v1.0.0
 
 ```ts
 export interface Failure<out E> extends Effect.Effect<never, E, never> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+
   /**
    * @since 1.18.0
    */
@@ -201,6 +209,16 @@ export declare class Loading
 
 Added in v1.0.0
 
+### [AsyncDataTypeId] (property)
+
+**Signature**
+
+```ts
+readonly [AsyncDataTypeId]: typeof AsyncDataTypeId
+```
+
+Added in v1.0.0
+
 ### [Unify.typeSymbol] (property)
 
 **Signature**
@@ -254,6 +272,16 @@ export declare class NoData
 
 Added in v1.0.0
 
+### [AsyncDataTypeId] (property)
+
+**Signature**
+
+```ts
+readonly [AsyncDataTypeId]: typeof AsyncDataTypeId
+```
+
+Added in v1.0.0
+
 ### [Unify.typeSymbol] (property)
 
 **Signature**
@@ -280,6 +308,38 @@ Added in v1.0.0
 
 ```ts
 readonly [Unify.ignoreSymbol]: AsyncData.IgnoreList
+```
+
+Added in v1.0.0
+
+## Optimistic (interface)
+
+**Signature**
+
+```ts
+export interface Optimistic<E, A> extends Effect.Effect<never, never, A> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+  readonly _tag: "Optimistic"
+  readonly value: A
+  readonly timestamp: number // Date.now()
+  readonly previous: AsyncData<E, A>
+
+  readonly [Unify.typeSymbol]: unknown
+  readonly [Unify.unifySymbol]: AsyncData.Unify<this>
+  readonly [Unify.ignoreSymbol]: AsyncData.IgnoreList
+}
+```
+
+Added in v1.0.0
+
+## OptimisticOptions (interface)
+
+**Signature**
+
+```ts
+export interface OptimisticOptions {
+  readonly timestamp: number // Date.now()
+}
 ```
 
 Added in v1.0.0
@@ -340,6 +400,8 @@ Added in v1.0.0
 
 ```ts
 export interface Success<out A> extends Effect.Effect<never, never, A> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
   /**
@@ -424,8 +486,13 @@ Added in v1.0.0
 
 ```ts
 export declare const flatMap: {
-  <A, E2, B>(f: (a: A, options: SuccessOptions) => AsyncData<E2, B>): <E>(data: AsyncData<E, A>) => AsyncData<E2 | E, B>
-  <E, A, E2, B>(data: AsyncData<E, A>, f: (a: A, options: SuccessOptions) => AsyncData<E, B>): AsyncData<E | E2, B>
+  <E, A, E2, B>(
+    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E2, B>
+  ): (data: AsyncData<E, A>) => AsyncData<E | E2, B>
+  <E, A, E2, B>(
+    data: AsyncData<E, A>,
+    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E, B>
+  ): AsyncData<E | E2, B>
 }
 ```
 
@@ -546,6 +613,16 @@ export declare const isNoData: <E, A>(data: AsyncData<E, A>) => data is NoData
 
 Added in v1.0.0
 
+## isOptimistic
+
+**Signature**
+
+```ts
+export declare const isOptimistic: <E, A>(data: AsyncData<E, A>) => data is Optimistic<E, A>
+```
+
+Added in v1.0.0
+
 ## isRefreshing
 
 **Signature**
@@ -598,21 +675,23 @@ Added in v1.0.0
 
 ```ts
 export declare const match: {
-  <E, A, R1, R2, R3, R4>(matchers: {
+  <E, A, R1, R2, R3, R4, R5>(matchers: {
     NoData: (data: NoData) => R1
     Loading: (data: Loading) => R2
     Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
     Success: (value: A, data: Success<A>) => R4
-  }): (data: AsyncData<E, A>) => Unify.Unify<R1 | R2 | R3 | R4>
-  <E, A, R1, R2, R3, R4>(
+    Optimistic: (value: A, data: Optimistic<E, A>) => R5
+  }): (data: AsyncData<E, A>) => Unify.Unify<R1 | R2 | R3 | R4 | R5>
+  <E, A, R1, R2, R3, R4, R5>(
     data: AsyncData<E, A>,
     matchers: {
       NoData: (data: NoData) => R1
       Loading: (data: Loading) => R2
       Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
       Success: (value: A, data: Success<A>) => R4
+      Optimistic: (value: A, data: Optimistic<E, A>) => R5
     }
-  ): Unify.Unify<R1 | R2 | R3 | R4>
+  ): Unify.Unify<R1 | R2 | R3 | R4 | R5>
 }
 ```
 
@@ -624,6 +703,19 @@ Added in v1.0.0
 
 ```ts
 export declare const noData: { (): NoData; <E, A>(): AsyncData<E, A> }
+```
+
+Added in v1.0.0
+
+## optimistic
+
+**Signature**
+
+```ts
+export declare const optimistic: {
+  <A>(value: A, options?: OptionalPartial<OptimisticOptions>): <E>(previous: AsyncData<E, A>) => Optimistic<E, A>
+  <E, A>(previous: AsyncData<E, A>, value: A, options?: OptionalPartial<OptimisticOptions>): Optimistic<E, A>
+}
 ```
 
 Added in v1.0.0

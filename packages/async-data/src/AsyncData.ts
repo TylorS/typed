@@ -74,6 +74,9 @@ export namespace AsyncData {
  * @since 1.0.0
  */
 export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
+  /**
+   * @since 1.0.0
+   */
   readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
 
   /**
@@ -102,6 +105,9 @@ export const noData: {
  * @since 1.0.0
  */
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
+  /**
+   * @since 1.0.0
+   */
   readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
 
   /**

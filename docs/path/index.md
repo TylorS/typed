@@ -2,7 +2,7 @@
 title: "@typed/path"
 has_children: true
 permalink: /docs/path
-nav_order: 10
+nav_order: 11
 ---
 
 # @typed/path
