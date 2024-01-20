@@ -9,10 +9,11 @@ import * as ParseResult from "@effect/schema/ParseResult"
 import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
 import * as AsyncData from "@typed/async-data/AsyncData"
-import { Equal } from "effect"
-import type * as Cause from "effect/Cause"
+import { Data, Equal, FiberId } from "effect"
+import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
+import { hasProperty } from "effect/Predicate"
 import * as P from "./Progress.js"
 
 const NO_DATA_PRETTY = "AsyncData.NoData"
@@ -24,55 +25,30 @@ const LOADING_PRETTY = (loading: AsyncData.Loading) =>
 const FAILURE_PRETTY = <E>(print: Pretty.Pretty<Cause.Cause<E>>) => (failure: AsyncData.Failure<E>) =>
   Option.match(failure.refreshing, {
     onNone: () => `AsyncData.Failure(timestamp=${failure.timestamp}, cause=${print(failure.cause)})`,
-    onSome: (loading) =>
-      `AsyncData.Failure(timestamp=${failure.timestamp}, refreshing=${LOADING_PRETTY(loading)}, cause=${
-        print(failure.cause)
-      })`
+    onSome: () => `AsyncData.Failure(timestamp=${failure.timestamp}, refreshing=true, cause=${print(failure.cause)})`
   })
 const SUCCESS_PRETTY = <A>(print: Pretty.Pretty<A>) => (success: AsyncData.Success<A>) =>
   Option.match(success.refreshing, {
     onNone: () => `AsyncData.Success(timestamp=${success.timestamp}, value=${print(success.value)})`,
-    onSome: (loading) =>
-      `AsyncData.Success(timestamp=${success.timestamp}, refreshing=${LOADING_PRETTY(loading)}, value=${
-        print(success.value)
-      })`
+    onSome: () => `AsyncData.Success(timestamp=${success.timestamp}, refreshing=true, value=${print(success.value)})`
   })
 
-const NoDataSchemaJson = Schema.struct({
-  _tag: Schema.literal("NoData")
-})
-const NoDataSchema = Schema.instanceOf(AsyncData.NoData)
+const OPTIMISTIC_PRETTY =
+  <E, A>(printError: Pretty.Pretty<Cause.Cause<E>>, printValue: Pretty.Pretty<A>) =>
+  (optimistic: AsyncData.Optimistic<E, A>) =>
+    `AsyncData.Optimistic(timestamp=${optimistic.timestamp}, value=${printValue(optimistic.value)}, previous=${
+      asyncDataPretty(printError, printValue)(optimistic.previous)
+    })`
 
 /**
  * @since 1.0.0
  */
-export const NoData: Schema.Schema<{ readonly _tag: "NoData" }, AsyncData.NoData> = NoDataSchemaJson
-  .pipe(
-    Schema.transform(
-      NoDataSchema,
-      (): AsyncData.NoData => AsyncData.noData(),
-      (): Schema.Schema.To<typeof NoDataSchemaJson> => ({
-        _tag: "NoData"
-      })
-    ),
-    Schema.annotations({
-      [AST.IdentifierAnnotationId]: NO_DATA_PRETTY,
-      [Pretty.PrettyHookId]: () => NO_DATA_PRETTY,
-      [Arbitrary.ArbitraryHookId]: (): Arbitrary.Arbitrary<AsyncData.NoData> => (fc) => fc.constant(AsyncData.noData()),
-      [Eq.EquivalenceHookId]: () => Equal.equals
-    })
-  )
-
-/**
- * @since 1.0.0
- */
-export type NoDataFrom = Schema.Schema.From<typeof NoData>
+export type NoDataFrom = { readonly _tag: "NoData" }
 
 const ProgressSchemaJson = Schema.struct({
   loaded: Schema.bigint,
   total: Schema.optional(Schema.bigint)
 })
-type ProgressFromTo = Schema.Schema.To<typeof ProgressSchemaJson>
 
 const ProgressSchema: Schema.Schema<
   {
@@ -112,23 +88,10 @@ export const Progress: Schema.Schema<{ readonly loaded: string; readonly total?:
 /**
  * @since 1.0.0
  */
-export type ProgressFrom = Schema.Schema.From<typeof Progress>
-
-const LoadingSchemaJson = Schema.struct({
-  _tag: Schema.literal("Loading"),
-  timestamp: Schema.number,
-  progress: Schema.optional(ProgressSchemaJson)
-})
-const LoadingSchema = Schema.instanceOf(AsyncData.Loading)
-
-const loadingFromJson = (json: Schema.Schema.To<typeof LoadingSchemaJson>): AsyncData.Loading =>
-  AsyncData.loading({ timestamp: json.timestamp, progress: progressFromJson(json.progress) })
-
-const loadingToJson = (loading: AsyncData.Loading): Schema.Schema.To<typeof LoadingSchemaJson> => ({
-  _tag: "Loading",
-  timestamp: loading.timestamp,
-  progress: progressToJson(loading.progress)
-})
+export type ProgressFrom = {
+  readonly loaded: string
+  readonly total?: string | undefined
+}
 
 const loadingArbitrary: Arbitrary.Arbitrary<AsyncData.Loading> = (fc) =>
   fc.option(progressArbitrary(fc)).map((progress) =>
@@ -141,70 +104,11 @@ const loadingArbitrary: Arbitrary.Arbitrary<AsyncData.Loading> = (fc) =>
 /**
  * @since 1.0.0
  */
-export const Loading: Schema.Schema<
-  {
-    readonly _tag: "Loading"
-    readonly timestamp: number
-    readonly progress?: ProgressFrom | undefined
-  },
-  AsyncData.Loading
-> = LoadingSchemaJson
-  .pipe(
-    Schema.transform(
-      LoadingSchema,
-      loadingFromJson,
-      loadingToJson
-    ),
-    Schema.annotations({
-      [AST.IdentifierAnnotationId]: "AsyncData.Loading",
-      [Pretty.PrettyHookId]: () => LOADING_PRETTY,
-      [Arbitrary.ArbitraryHookId]: () => loadingArbitrary,
-      [Eq.EquivalenceHookId]: () => Equal.equals
-    })
-  )
-
-/**
- * @since 1.0.0
- */
-export type LoadingFrom = Schema.Schema.From<typeof Loading>
-
-const FailureSchemaJson = <EI, E>(cause: Schema.Schema<Schema.CauseFrom<EI>, Cause.Cause<E>>) =>
-  Schema.struct({
-    _tag: Schema.literal("Failure"),
-    cause,
-    timestamp: Schema.number,
-    refreshing: Schema.optional(LoadingSchemaJson)
-  })
-
-const FailureSchema = <EI, E>(
-  error: Schema.Schema<EI, E>
-): Schema.Schema<AsyncData.Failure<EI>, AsyncData.Failure<E>> =>
-  Schema.declare(
-    [Schema.cause(error)],
-    Schema.struct({}),
-    (isDecoding, causeSchema) => {
-      const parseCause = isDecoding ? Schema.parse(causeSchema) : Schema.encode(causeSchema)
-
-      return (input, options) => {
-        return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData(input)) return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
-
-          switch (input._tag) {
-            case "Failure": {
-              const cause = yield* _(parseCause(input.cause, options))
-
-              return AsyncData.failCause(cause, {
-                timestamp: input.timestamp,
-                refreshing: Option.getOrUndefined(input.refreshing)
-              })
-            }
-            default:
-              return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
-          }
-        })
-      }
-    }
-  )
+export type LoadingFrom = {
+  readonly _tag: "Loading"
+  readonly timestamp: number
+  readonly progress?: ProgressFrom | undefined
+}
 
 const failureArbitrary = <E>(
   cause: Arbitrary.Arbitrary<Cause.Cause<E>>
@@ -224,113 +128,26 @@ const failureArbitrary = <E>(
 /**
  * @since 1.0.0
  */
-export const Failure = <EI, E>(
-  error: Schema.Schema<EI, E>
-): Schema.Schema<
-  {
-    readonly _tag: "Failure"
-    readonly cause: Schema.CauseFrom<EI>
-    readonly timestamp: number
-    readonly refreshing?: {
-      readonly _tag: "Loading"
-      readonly timestamp: number
-      readonly progress?: { readonly loaded: string; readonly total?: string | undefined } | undefined
-    } | undefined
-  },
-  AsyncData.Failure<E>
-> =>
-  FailureSchemaJson(Schema.cause(Schema.from(error)))
-    .pipe(
-      Schema.transform(
-        FailureSchema(error),
-        (json): AsyncData.Failure<EI> =>
-          AsyncData.failCause(json.cause, {
-            timestamp: json.timestamp,
-            refreshing: json.refreshing ? loadingFromJson(json.refreshing) : undefined
-          }),
-        (failure) => ({
-          _tag: "Failure",
-          cause: failure.cause,
-          timestamp: failure.timestamp,
-          refreshing: Option.getOrUndefined(Option.map(failure.refreshing, loadingToJson))
-        } as const)
-      ),
-      Schema.annotations({
-        [AST.IdentifierAnnotationId]: "AsyncData.Failure",
-        [Pretty.PrettyHookId]: FAILURE_PRETTY,
-        [Arbitrary.ArbitraryHookId]: failureArbitrary,
-        [Eq.EquivalenceHookId]: () => Equal.equals
-      })
-    )
+export type FailureFrom<E> = {
+  readonly _tag: "Failure"
+  readonly cause: Schema.CauseFrom<E>
+  readonly timestamp: number
+  readonly refreshing?: LoadingFrom | undefined
+}
 
-/**
- * @since 1.0.0
- */
-export type FailureFrom<E> = Schema.Schema.From<ReturnType<typeof FailureSchemaJson<E, E>>>
+const FailureFrom = <E>(cause: Schema.CauseFrom<E>, timestamp: number, refreshing?: LoadingFrom): FailureFrom<E> => {
+  const base = {
+    _tag: "Failure",
+    cause,
+    timestamp
+  } as const
 
-const SuccessSchemaJson = <AI, A>(
-  value: Schema.Schema<AI, A>
-): Schema.Schema<
-  {
-    readonly timestamp: number
-    readonly _tag: "Success"
-    readonly value: AI
-    readonly refreshing?: {
-      readonly timestamp: number
-      readonly _tag: "Loading"
-      readonly progress?: { readonly loaded: string; readonly total?: string | undefined } | undefined
-    } | undefined
-  },
-  {
-    readonly timestamp: number
-    readonly _tag: "Success"
-    readonly value: A
-    readonly refreshing?: {
-      readonly timestamp: number
-      readonly _tag: "Loading"
-      readonly progress?: { readonly loaded: bigint; readonly total?: bigint | undefined } | undefined
-    } | undefined
+  if (refreshing !== undefined) {
+    return { ...base, refreshing }
   }
-> =>
-  Schema.struct({
-    _tag: Schema.literal("Success"),
-    value,
-    timestamp: Schema.number,
-    refreshing: Schema.optional(LoadingSchemaJson)
-  })
 
-const SuccessSchema = <AI, A>(
-  value: Schema.Schema<AI, A>
-): Schema.Schema<AsyncData.Success<AI>, AsyncData.Success<A>> =>
-  Schema.declare(
-    [value],
-    Schema.struct({
-      _tag: Schema.literal("Success"),
-      timestamp: Schema.number
-    }),
-    (isDecoding, valueSchema) => {
-      const parseValue = isDecoding ? Schema.parse(valueSchema) : Schema.encode(valueSchema)
-
-      return (input, options) => {
-        return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData(input)) return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
-
-          switch (input._tag) {
-            case "Success": {
-              const value = yield* _(parseValue(input.value, options))
-
-              return AsyncData.success(value, {
-                timestamp: input.timestamp,
-                refreshing: Option.getOrUndefined(input.refreshing)
-              })
-            }
-            default:
-              return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
-          }
-        })
-      }
-    }
-  )
+  return base
+}
 
 const successArbitrary = <A>(
   value: Arbitrary.Arbitrary<A>
@@ -350,64 +167,293 @@ const successArbitrary = <A>(
 /**
  * @since 1.0.0
  */
-export const Success = <AI, A>(
-  value: Schema.Schema<AI, A>
-): Schema.Schema<
-  {
-    readonly timestamp: number
-    readonly _tag: "Success"
-    readonly value: AI
-    readonly refreshing?: LoadingFrom | undefined
-  },
-  AsyncData.Success<A>
-> =>
-  SuccessSchemaJson(Schema.from(value))
-    .pipe(
-      Schema.transform(
-        SuccessSchema(value),
-        (json): AsyncData.Success<AI> =>
-          AsyncData.success(json.value, {
-            timestamp: json.timestamp,
-            refreshing: json.refreshing ? loadingFromJson(json.refreshing) : undefined
-          }),
-        (success) => ({
-          _tag: "Success",
-          value: success.value,
-          timestamp: success.timestamp,
-          refreshing: Option.getOrUndefined(Option.map(success.refreshing, loadingToJson))
-        } as const)
-      ),
-      Schema.annotations({
-        [AST.IdentifierAnnotationId]: "AsyncData.Success",
-        [Pretty.PrettyHookId]: SUCCESS_PRETTY,
-        [Arbitrary.ArbitraryHookId]: successArbitrary,
-        [Eq.EquivalenceHookId]: () => Equal.equals
-      })
+export type SuccessFrom<A> = {
+  readonly timestamp: number
+  readonly _tag: "Success"
+  readonly value: A
+  readonly refreshing?: LoadingFrom | undefined
+}
+
+const SuccessFrom = <A>(value: A, timestamp: number, refreshing?: LoadingFrom): SuccessFrom<A> => {
+  const base = {
+    _tag: "Success",
+    value,
+    timestamp
+  } as const
+
+  if (refreshing !== undefined) {
+    return { ...base, refreshing }
+  }
+
+  return base
+}
+
+export type OptimisticFrom<E, A> = {
+  readonly timestamp: number
+  readonly _tag: "Optimistic"
+  readonly value: A
+  readonly previous: AsyncDataFrom<E, A>
+}
+
+const OptimisticFrom = <E, A>(value: A, timestamp: number, previous: AsyncDataFrom<E, A>): OptimisticFrom<E, A> => ({
+  _tag: "Optimistic",
+  value,
+  timestamp,
+  previous
+})
+
+const optimisticArbitrary = <E, A>(
+  causeArb: Arbitrary.Arbitrary<Cause.Cause<E>>,
+  valueArb: Arbitrary.Arbitrary<A>
+): Arbitrary.Arbitrary<AsyncData.Optimistic<E, A>> =>
+(fc) =>
+  asyncDataArbitrary(causeArb, valueArb)(fc).chain((previous) =>
+    valueArb(fc).chain((value) =>
+      fc.date().map((date) => AsyncData.optimistic(previous, value, { timestamp: date.getTime() }))
     )
+  )
 
 /**
  * @since 1.0.0
  */
-export type SuccessFrom<A> = Schema.Schema.From<ReturnType<typeof SuccessSchemaJson<A, A>>>
+export type AsyncDataFrom<E, A> = NoDataFrom | LoadingFrom | FailureFrom<E> | SuccessFrom<A> | OptimisticFrom<E, A>
 
-/**
- * @since 1.0.0
- */
-export type AsyncDataFrom<E, A> = NoDataFrom | LoadingFrom | FailureFrom<E> | SuccessFrom<A>
+const fromEq = (a: AsyncDataFrom<any, any>, b: AsyncDataFrom<any, any>): boolean => {
+  if (a._tag !== b._tag) return false
+
+  switch (a._tag) {
+    case "NoData":
+      return true
+    case "Loading": {
+      const loadingB = b as LoadingFrom
+
+      if (a.timestamp !== loadingB.timestamp) return false
+
+      if (a.progress === undefined && loadingB.progress === undefined) return true
+      if (a.progress === undefined || loadingB.progress === undefined) return false
+
+      return Equal.equals(Data.struct(a.progress), Data.struct(loadingB.progress))
+    }
+    case "Failure": {
+      const failureB = b as FailureFrom<any>
+
+      if (
+        !(
+          Equal.equals(Data.struct(a.cause), Data.struct(failureB.cause)) && a.timestamp === failureB.timestamp
+        )
+      ) return false
+
+      if (a.refreshing === undefined && failureB.refreshing === undefined) return true
+      if (a.refreshing === undefined || failureB.refreshing === undefined) return false
+
+      return Equal.equals(Data.struct(a.refreshing), Data.struct(failureB.refreshing))
+    }
+    case "Success": {
+      const successB = b as SuccessFrom<any>
+      return Equal.equals(a.value, successB.value) &&
+        a.timestamp === successB.timestamp &&
+        Equal.equals(a.refreshing, successB.refreshing)
+    }
+    case "Optimistic": {
+      const optimisticB = b as OptimisticFrom<any, any>
+      return Equal.equals(a.value, optimisticB.value) &&
+        a.timestamp === optimisticB.timestamp &&
+        fromEq(a.previous, optimisticB.previous)
+    }
+  }
+}
+
+function isNoDataFrom(value: unknown): value is NoDataFrom {
+  return hasProperty(value, "_tag") && value._tag === "NoData"
+}
+
+function isProgressFrom(value: unknown): value is ProgressFrom {
+  if (!(hasProperty(value, "loaded") && typeof value.loaded === "string")) return false
+
+  if (hasProperty(value, "total")) {
+    if (typeof value.total !== "string") return false
+  }
+
+  return true
+}
+
+function isLoadingFrom(value: unknown): value is LoadingFrom {
+  return hasProperty(value, "_tag")
+    && value._tag === "Loading"
+    && hasProperty(value, "timestamp")
+    && typeof value.timestamp === "number"
+    && (hasProperty(value, "progress") ? isProgressFrom(value.progress) : true)
+}
+
+const isCauseFrom = Schema.is(Schema.from(Schema.cause(Schema.unknown)))
+
+function isFailureFrom(value: unknown): value is FailureFrom<any> {
+  return hasProperty(value, "_tag")
+    && value._tag === "Failure"
+    && hasProperty(value, "cause")
+    && isCauseFrom(value.cause)
+    && hasProperty(value, "timestamp")
+    && typeof value.timestamp === "number"
+    && (hasProperty(value, "refreshing") ? isLoadingFrom(value.refreshing) : true)
+}
+
+function isSuccessFrom(value: unknown): value is SuccessFrom<any> {
+  return hasProperty(value, "_tag")
+    && value._tag === "Success"
+    && hasProperty(value, "value")
+    && hasProperty(value, "timestamp")
+    && typeof value.timestamp === "number"
+    && (hasProperty(value, "refreshing") ? isLoadingFrom(value.refreshing) : true)
+}
+
+function isOptimisticFrom(value: unknown): value is OptimisticFrom<any, any> {
+  return hasProperty(value, "_tag")
+    && value._tag === "Optimistic"
+    && hasProperty(value, "value")
+    && hasProperty(value, "previous")
+    && isAsyncDataFrom(value.previous)
+    && hasProperty(value, "timestamp")
+    && typeof value.timestamp === "number"
+}
+
+function isAsyncDataFrom(value: unknown): value is AsyncDataFrom<any, any> {
+  return isNoDataFrom(value)
+    || isLoadingFrom(value)
+    || isFailureFrom(value)
+    || isSuccessFrom(value)
+    || isOptimisticFrom(value)
+}
+
+export const asyncDataFromJson = <EI, E, AI, A>(
+  error: Schema.Schema<EI, E>,
+  value: Schema.Schema<AI, A>
+): Schema.Schema<AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>> =>
+  Schema.declare(
+    [
+      Schema.cause(error),
+      value
+    ],
+    Schema.annotations({
+      [Eq.EquivalenceHookId]: () => fromEq
+    })(Schema.struct({})),
+    (isDecoding, causeSchema, valueSchema) => {
+      const parseCause = isDecoding ? Schema.decode(causeSchema) : Schema.encode(causeSchema)
+      const parseValue = isDecoding ? Schema.decode(valueSchema) : Schema.encode(valueSchema)
+
+      const parseAsyncData = (
+        input: any,
+        options?: AST.ParseOptions
+      ): Effect.Effect<
+        never,
+        ParseResult.ParseError,
+        AsyncDataFrom<E, A>
+      > =>
+        Effect.gen(function*(_) {
+          if (!isAsyncDataFrom(input)) {
+            return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
+          }
+
+          switch (input._tag) {
+            case "NoData":
+            case "Loading":
+              return input
+            case "Failure": {
+              const cause = yield* _(parseCause(isDecoding ? input.cause : causeFromToCause(input.cause), options))
+              return FailureFrom(causeToCauseFrom(cause), input.timestamp, input.refreshing)
+            }
+            case "Success": {
+              const a = yield* _(parseValue(input.value, options))
+              return SuccessFrom(a, input.timestamp, input.refreshing)
+            }
+            case "Optimistic": {
+              const previous: AsyncDataFrom<any, any> = yield* _(parseAsyncData(input.previous, options))
+              const value = yield* _(parseValue(input.value, options))
+
+              return OptimisticFrom(value, input.timestamp, previous)
+            }
+          }
+        })
+
+      return parseAsyncData
+    },
+    {
+      [AST.IdentifierAnnotationId]: "AsyncDataFrom",
+      [Eq.EquivalenceHookId]: () => fromEq
+    }
+  )
 
 /**
  * @since 1.0.0
  */
 export const asyncData = <EI, E, AI, A>(
-  error: Schema.Schema<EI, E>,
-  value: Schema.Schema<AI, A>
+  errorSchema: Schema.Schema<EI, E>,
+  valueSchema: Schema.Schema<AI, A>
 ): Schema.Schema<AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>> => {
-  return Schema.union(
-    NoData,
-    Loading,
-    Failure(error),
-    Success(value)
-  )
+  const encodeCause = Schema.encode(Schema.cause(Schema.to(errorSchema)))
+
+  return asyncDataFromJson(errorSchema, valueSchema)
+    .pipe(Schema.transformOrFail(
+      asyncDataFromSelf(Schema.to(errorSchema), Schema.to(valueSchema)),
+      function decodeAsyncDataFrom(
+        c: AsyncDataFrom<E, A>,
+        options?: AST.ParseOptions
+      ): Effect.Effect<never, ParseResult.ParseError, AsyncData.AsyncData<E, A>> {
+        switch (c._tag) {
+          case "NoData":
+            return Effect.succeed(AsyncData.noData())
+          case "Loading":
+            return Effect.succeed(loadingFromJson(c)!)
+          case "Failure": {
+            console.log(causeFromToCause(c.cause))
+
+            return Effect.succeed(
+              AsyncData.failCause(causeFromToCause(c.cause), {
+                timestamp: c.timestamp,
+                refreshing: loadingFromJson(c.refreshing)
+              })
+            )
+          }
+          case "Success": {
+            return Effect.succeed(AsyncData.success(c.value, {
+              timestamp: c.timestamp,
+              refreshing: loadingFromJson(c.refreshing)
+            }))
+          }
+          case "Optimistic": {
+            return Effect.map(
+              decodeAsyncDataFrom(c.previous, options),
+              (previous) => AsyncData.optimistic(previous, c.value, { timestamp: c.timestamp })
+            )
+          }
+        }
+      },
+      function encodeAsyncDataFrom(
+        a: AsyncData.AsyncData<E, A>,
+        options?: AST.ParseOptions
+      ): Effect.Effect<never, ParseResult.ParseError, AsyncDataFrom<E, A>> {
+        switch (a._tag) {
+          case "NoData":
+            return Effect.succeed({ _tag: "NoData" })
+          case "Loading":
+            return Effect.succeed(loadingToJson(a))
+          case "Failure":
+            return Effect.map(
+              encodeCause(a.cause, options),
+              (cause) => FailureFrom(cause, a.timestamp, Option.getOrUndefined(Option.map(a.refreshing, loadingToJson)))
+            )
+          case "Success":
+            return Effect.succeed(
+              SuccessFrom(a.value, a.timestamp, Option.getOrUndefined(Option.map(a.refreshing, loadingToJson)))
+            )
+          case "Optimistic": {
+            return Effect.map(
+              encodeAsyncDataFrom(a.previous, options),
+              (previous) => OptimisticFrom(a.value, a.timestamp, previous)
+            )
+          }
+        }
+      }
+    ))
 }
 
 /**
@@ -425,10 +471,17 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
         Schema.Schema<Cause.Cause<any>, Cause.Cause<any>>,
         Schema.Schema<any, any>
       ]
-      const parseCause = isDecoding ? Schema.parse(causeSchema) : Schema.encode(causeSchema)
-      const parseValue = isDecoding ? Schema.parse(valueSchema) : Schema.encode(valueSchema)
+      const parseCause = isDecoding ? Schema.decode(causeSchema) : Schema.encode(causeSchema)
+      const parseValue = isDecoding ? Schema.decode(valueSchema) : Schema.encode(valueSchema)
 
-      return (input, options) => {
+      const parseAsyncData = (
+        input: unknown,
+        options?: AST.ParseOptions
+      ): Effect.Effect<
+        never,
+        ParseResult.ParseError,
+        AsyncData.AsyncData<any, any>
+      > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData(input)) return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
 
@@ -439,7 +492,7 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
             case "Failure": {
               const cause = yield* _(parseCause(input.cause, options))
 
-              return AsyncData.failCause(cause, {
+              return AsyncData.failCause(isDecoding ? cause : causeFromToCause(cause), {
                 timestamp: input.timestamp,
                 refreshing: Option.getOrUndefined(input.refreshing)
               })
@@ -452,9 +505,19 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
                 refreshing: Option.getOrUndefined(input.refreshing)
               })
             }
+            case "Optimistic": {
+              const previous = yield* _(parseAsyncData(input.previous, options))
+              const value = yield* _(parseValue(input.value, options))
+
+              return AsyncData.optimistic(previous, value, {
+                timestamp: input.timestamp
+              })
+            }
           }
         })
       }
+
+      return parseAsyncData
     },
     {
       [AST.IdentifierAnnotationId]: "AsyncData",
@@ -473,7 +536,8 @@ function asyncDataPretty<E, A>(
     NoData: () => NO_DATA_PRETTY,
     Loading: LOADING_PRETTY,
     Failure: (_, data) => FAILURE_PRETTY(E)(data),
-    Success: (_, data) => SUCCESS_PRETTY(A)(data)
+    Success: (_, data) => SUCCESS_PRETTY(A)(data),
+    Optimistic: (_, data) => OPTIMISTIC_PRETTY(E, A)(data)
   })
 }
 
@@ -481,29 +545,106 @@ function asyncDataArbitrary<E, A>(
   E: Arbitrary.Arbitrary<Cause.Cause<E>>,
   A: Arbitrary.Arbitrary<A>
 ): Arbitrary.Arbitrary<AsyncData.AsyncData<E, A>> {
-  const noDataArb = Arbitrary.make(NoData)
-  const loadingArb = Arbitrary.make(Loading)
   const failureArb = failureArbitrary(E)
   const successArb = successArbitrary(A)
+  const optimisticArb = optimisticArbitrary(E, A)
 
   return (fc) =>
     fc.oneof(
-      noDataArb(fc),
-      loadingArb(fc),
+      fc.constant(AsyncData.noData()),
+      fc.constant(AsyncData.loading()),
       failureArb(fc),
-      successArb(fc)
+      successArb(fc),
+      optimisticArb(fc)
     )
 }
 
-function progressFromJson(json: ProgressFromTo | undefined): P.Progress | undefined {
-  if (json === undefined) return
-  return P.make(json.loaded, json.total)
+function progressFromJson(json: ProgressFrom | undefined): Option.Option<P.Progress> {
+  if (json === undefined) return Option.none()
+  return Option.some(P.make(BigInt(json.loaded), json.total === undefined ? undefined : BigInt(json.total)))
 }
 
-function progressToJson(progres: Option.Option<P.Progress>): ProgressFromTo | undefined {
+function progressToJson(progres: Option.Option<P.Progress>): ProgressFrom | undefined {
   if (Option.isNone(progres)) return
   return {
-    loaded: progres.value.loaded,
-    total: Option.getOrUndefined(progres.value.total)
+    loaded: progres.value.loaded.toString(),
+    total: Option.getOrUndefined(progres.value.total)?.toString()
+  }
+}
+
+function loadingFromJson(json: LoadingFrom | undefined): AsyncData.Loading | undefined {
+  if (json === undefined) return
+  return AsyncData.loading({
+    timestamp: json.timestamp,
+    progress: Option.getOrUndefined(progressFromJson(json.progress))
+  })
+}
+
+function loadingToJson(loading: AsyncData.Loading): LoadingFrom {
+  const from: LoadingFrom = {
+    _tag: "Loading",
+    timestamp: loading.timestamp
+  }
+
+  if (Option.isSome(loading.progress)) {
+    return { ...from, progress: progressToJson(loading.progress) }
+  }
+
+  return from
+}
+
+function causeFromToCause<E>(from: Schema.CauseFrom<E>): Cause.Cause<E> {
+  switch (from._tag) {
+    case "Die":
+      return Cause.die(from.defect)
+    case "Empty":
+      return Cause.empty
+    case "Fail":
+      return Cause.fail(from.error)
+    case "Interrupt":
+      return Cause.interrupt(fiberIdFromToFiberId(from.fiberId))
+    case "Parallel":
+      return Cause.parallel(causeFromToCause(from.left), causeFromToCause(from.right))
+    case "Sequential":
+      return Cause.sequential(causeFromToCause(from.left), causeFromToCause(from.right))
+  }
+}
+
+function fiberIdFromToFiberId(id: Schema.FiberIdFrom): FiberId.FiberId {
+  switch (id._tag) {
+    case "None":
+      return FiberId.none
+    case "Runtime":
+      return FiberId.runtime(id.id, id.startTimeMillis)
+    case "Composite":
+      return FiberId.composite(fiberIdFromToFiberId(id.left), fiberIdFromToFiberId(id.right))
+  }
+}
+
+function causeToCauseFrom<E>(cause: Cause.Cause<E>): Schema.CauseFrom<E> {
+  switch (cause._tag) {
+    case "Die":
+      return { _tag: "Die", defect: cause.defect }
+    case "Empty":
+      return { _tag: "Empty" }
+    case "Fail":
+      return { _tag: "Fail", error: cause.error }
+    case "Interrupt":
+      return { _tag: "Interrupt", fiberId: fiberIdToFiberIdFrom(cause.fiberId) }
+    case "Parallel":
+      return { _tag: "Parallel", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+    case "Sequential":
+      return { _tag: "Sequential", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+  }
+}
+
+function fiberIdToFiberIdFrom(id: FiberId.FiberId): Schema.FiberIdFrom {
+  switch (id._tag) {
+    case "None":
+      return { _tag: "None" }
+    case "Runtime":
+      return { _tag: "Runtime", id: id.id, startTimeMillis: id.startTimeMillis }
+    case "Composite":
+      return { _tag: "Composite", left: fiberIdToFiberIdFrom(id.left), right: fiberIdToFiberIdFrom(id.right) }
   }
 }

@@ -1,24 +1,23 @@
 // Internal
 
-import * as Cause from "effect/Cause"
+import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Effectable from "effect/Effectable"
 import * as Equal from "effect/Equal"
 import { constant, pipe } from "effect/Function"
 import * as Hash from "effect/Hash"
-import * as Option from "effect/Option"
-import * as Unify from "effect/Unify"
-import { type AsyncData, type Failure, type Loading, type Success } from "../AsyncData.js"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./tag.js"
+import type * as Option from "effect/Option"
+import { hasProperty } from "effect/Predicate"
+import type { AsyncData, Failure, Loading, Optimistic, Success } from "../AsyncData.js"
+import { AsyncDataTypeId } from "../TypeId.js"
+import { FAILURE_TAG, OPTIMISTIC_TAG, SUCCESS_TAG } from "./tag.js"
 
+// @ts-expect-error
 export class FailureImpl<E> extends Effectable.Class<never, E, never> implements Failure<E> {
-  readonly _tag = "Failure"
+  readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
+  readonly _tag = FAILURE_TAG
 
-  commit: () => Effect.Effect<never, E, never>;
-
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.ignoreSymbol]!: AsyncData.IgnoreList
+  commit: () => Effect.Effect<never, E, never>
 
   constructor(readonly cause: Cause.Cause<E>, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
@@ -26,30 +25,38 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
     this.commit = constant(Effect.failCause(cause))
   }
 
-  [Equal.symbol] = (that: unknown) => {
-    return isAsyncData(that) && that._tag === "Failure"
-      && Equal.equals(this.cause, that.cause)
-      && Equal.equals(this.timestamp, that.timestamp)
-      && Equal.equals(this.refreshing, that.refreshing)
-  };
+  [Equal.symbol](that: unknown) {
+    if (this === that) return true
 
-  [Hash.symbol] = () => {
+    if (!isAsyncData(that) || that._tag !== FAILURE_TAG) return false
+
+    console.log(
+      Equal.equals(this.cause, that.cause),
+      this.timestamp === that.timestamp,
+      Equal.equals(this.refreshing, that.refreshing)
+    )
+
+    return Equal.equals(this.cause, that.cause)
+      && this.timestamp === that.timestamp
+      && Equal.equals(this.refreshing, that.refreshing)
+  }
+
+  [Hash.symbol]() {
     return pipe(
       Hash.string(this._tag),
       Hash.combine(Hash.hash(this.cause)),
+      Hash.combine(Hash.hash(this.timestamp)),
       Hash.combine(Hash.hash(this.refreshing))
     )
   }
 }
 
+// @ts-expect-error
 export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements Success<A> {
-  readonly _tag = "Success"
+  readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
+  readonly _tag = SUCCESS_TAG
 
-  commit: () => Effect.Effect<never, never, A>;
-
-  [Unify.typeSymbol]!: unknown;
-  [Unify.unifySymbol]!: AsyncData.Unify<this>;
-  [Unify.ignoreSymbol]!: AsyncData.IgnoreList
+  commit: () => Effect.Effect<never, never, A>
 
   constructor(readonly value: A, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
@@ -57,53 +64,57 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
     this.commit = constant(Effect.succeed(value))
   }
 
-  [Equal.symbol] = (that: unknown) => {
-    return isAsyncData(that) && that._tag === "Success"
+  [Equal.symbol](that: unknown) {
+    return isAsyncData(that) && that._tag === SUCCESS_TAG
       && Equal.equals(this.value, that.value)
       && Equal.equals(this.timestamp, that.timestamp)
       && Equal.equals(this.refreshing, that.refreshing)
-  };
+  }
 
-  [Hash.symbol] = () => {
+  [Hash.symbol]() {
     return pipe(
       Hash.string(this._tag),
       Hash.combine(Hash.hash(this.value)),
+      Hash.combine(Hash.hash(this.timestamp)),
       Hash.combine(Hash.hash(this.refreshing))
     )
   }
 }
 
-export function hasDataOptions(u: Record<PropertyKey, unknown>): boolean {
-  if ("timestamp" in u && "refreshing" in u) {
-    return typeof u.timestamp === "bigint" && Option.isOption(u.refreshing)
-  } else return false
-}
+// @ts-expect-error
+export class OptimisticImpl<E, A> extends Effectable.Class<never, never, A> implements Optimistic<E, A> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
+  readonly _tag = OPTIMISTIC_TAG
 
-export function hasEquality(u: Record<PropertyKey, unknown>): boolean {
-  return Equal.symbol in u && Hash.symbol in u
-}
+  commit: () => Effect.Effect<never, never, A>
 
-export function isTaggedRecord(u: unknown): u is Record<PropertyKey, unknown> & { readonly _tag: unknown } {
-  return isRecord(u) && "_tag" in u
-}
+  constructor(
+    readonly value: A,
+    readonly timestamp: number,
+    readonly previous: AsyncData<E, A>
+  ) {
+    super()
 
-export function isRecord(u: unknown): u is Record<PropertyKey, unknown> {
-  return typeof u === "object" && u !== null && !Array.isArray(u)
+    this.commit = constant(Effect.succeed(value))
+  }
+
+  [Equal.symbol](that: unknown) {
+    return isAsyncData(that) && that._tag === OPTIMISTIC_TAG
+      && Equal.equals(this.value, that.value)
+      && Equal.equals(this.timestamp, that.timestamp)
+      && Equal.equals(this.previous, that.previous)
+  }
+
+  [Hash.symbol]() {
+    return pipe(
+      Hash.string(this._tag),
+      Hash.combine(Hash.hash(this.value)),
+      Hash.combine(Hash.hash(this.timestamp)),
+      Hash.combine(Hash.hash(this.previous))
+    )
+  }
 }
 
 export function isAsyncData<E, A>(u: unknown): u is AsyncData<E, A> {
-  if (isTaggedRecord(u) && hasEquality(u)) {
-    switch (u._tag) {
-      case NO_DATA_TAG:
-        return "timstamp" in u && typeof u.timestamp === "bigint"
-      case LOADING_TAG:
-        return "progress" in u && Option.isOption(u.progress)
-      case FAILURE_TAG:
-        return hasDataOptions(u) && "cause" in u && Cause.isCause(u.cause)
-      case SUCCESS_TAG:
-        return hasDataOptions(u) && "value" in u
-      default:
-        return false
-    }
-  } else return false
+  return hasProperty(u, AsyncDataTypeId)
 }

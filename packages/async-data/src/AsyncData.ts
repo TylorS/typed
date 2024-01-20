@@ -17,8 +17,9 @@ import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Unify from "effect/Unify"
 import * as internal from "./internal/async-data.js"
-import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, SUCCESS_TAG } from "./internal/tag.js"
+import { FAILURE_TAG, LOADING_TAG, NO_DATA_TAG, OPTIMISTIC_TAG, SUCCESS_TAG } from "./internal/tag.js"
 import * as Progress from "./Progress.js"
+import { AsyncDataTypeId } from "./TypeId.js"
 
 const getCurrentTimestamp = () => Date.now()
 
@@ -28,7 +29,7 @@ const getCurrentTimestamp = () => Date.now()
  *
  * @since 1.0.0
  */
-export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A>
+export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A> | Optimistic<E, A>
 
 /**
  * @since 1.0.0
@@ -73,6 +74,8 @@ export namespace AsyncData {
  * @since 1.0.0
  */
 export class NoData extends Data.TaggedError(NO_DATA_TAG)<{}> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
+
   /**
    * @since 1.0.0
    */
@@ -99,6 +102,8 @@ export const noData: {
  * @since 1.0.0
  */
 export class Loading extends Data.TaggedError(LOADING_TAG)<LoadingOptions> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
+
   /**
    * @since 1.0.0
    */
@@ -138,14 +143,17 @@ export const loading: {
   <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
 } = (options?: OptionalPartial<LoadingOptions>): Loading =>
   new Loading({
+    [AsyncDataTypeId]: AsyncDataTypeId,
     timestamp: options?.timestamp ?? getCurrentTimestamp(),
     progress: Option.fromNullable(options?.progress)
-  })
+  } as any)
 
 /**
  * @since 1.0.0
  */
 export interface Failure<out E> extends Effect.Effect<never, E, never> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+
   /**
    * @since 1.18.0
    */
@@ -201,7 +209,7 @@ export const failCause: {
     cause,
     options?.timestamp ?? getCurrentTimestamp(),
     Option.fromNullable(options?.refreshing)
-  )
+  ) as any
 
 /**
  * @since 1.0.0
@@ -215,6 +223,8 @@ export const fail: {
  * @since 1.0.0
  */
 export interface Success<out A> extends Effect.Effect<never, never, A> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+
   readonly _tag: typeof SUCCESS_TAG
   readonly value: A
   /**
@@ -247,12 +257,58 @@ export const success: {
     value,
     options?.timestamp ?? getCurrentTimestamp(),
     Option.fromNullable(options?.refreshing)
-  )
+  ) as any
+
+/**
+ * @since 1.0.0
+ */
+export interface Optimistic<E, A> extends Effect.Effect<never, never, A> {
+  readonly [AsyncDataTypeId]: AsyncDataTypeId
+  readonly _tag: "Optimistic"
+  readonly value: A
+  readonly timestamp: number // Date.now()
+  readonly previous: AsyncData<E, A>
+
+  readonly [Unify.typeSymbol]: unknown
+  readonly [Unify.unifySymbol]: AsyncData.Unify<this>
+  readonly [Unify.ignoreSymbol]: AsyncData.IgnoreList
+}
+
+/**
+ * @since 1.0.0
+ */
+export interface OptimisticOptions {
+  readonly timestamp: number // Date.now()
+}
+
+const isAsyncDataFirst = (args: IArguments) => isAsyncData(args[0])
+
+/**
+ * @since 1.0.0
+ */
+export const optimistic: {
+  <A>(value: A, options?: OptionalPartial<OptimisticOptions>): <E>(previous: AsyncData<E, A>) => Optimistic<E, A>
+  <E, A>(previous: AsyncData<E, A>, value: A, options?: OptionalPartial<OptimisticOptions>): Optimistic<E, A>
+} = dual(
+  (args) => args.length === 3 || isAsyncDataFirst(args),
+  <E, A>(previous: AsyncData<E, A>, value: A, options?: OptionalPartial<OptimisticOptions>): Optimistic<E, A> =>
+    new internal.OptimisticImpl(
+      value,
+      options?.timestamp ?? getCurrentTimestamp(),
+      // We don't want to nest Optimistic values, so we unwrap the previous value if it's already optimistic
+      previous._tag === "Optimistic" ? previous.previous : previous
+    ) as any
+)
 
 /**
  * @since 1.0.0
  */
 export const isSuccess = <E, A>(data: AsyncData<E, A>): data is Success<A> => data._tag === SUCCESS_TAG
+
+/**
+ * @since 1.0.0
+ */
+export const isOptimistic = <E, A>(data: AsyncData<E, A>): data is Optimistic<E, A> => data._tag === OPTIMISTIC_TAG
 
 /**
  * @since 1.0.0
@@ -292,41 +348,48 @@ export interface RefreshingSuccess<A> extends Success<A> {
  * @since 1.0.0
  */
 export const isRefreshing = <E, A>(data: AsyncData<E, A>): data is Refreshing<E, A> =>
-  isSuccess(data) || isFailure(data) ? Option.isSome(data.refreshing) : false
+  isSuccess(data) || isFailure(data)
+    ? Option.isSome(data.refreshing)
+    : isOptimistic(data)
+    ? isRefreshing(data.previous)
+    : false
 
 /**
  * @since 1.0.0
  */
 export const isLoadingOrRefreshing = <E, A>(data: AsyncData<E, A>): data is Loading | Refreshing<E, A> =>
-  isLoading(data) || isRefreshing(data)
+  isLoading(data) || isRefreshing(data) || (isOptimistic(data) && isLoadingOrRefreshing(data.previous))
 
 /**
  * @since 1.0.0
  */
 export const match: {
-  <E, A, R1, R2, R3, R4>(
+  <E, A, R1, R2, R3, R4, R5>(
     matchers: {
       NoData: (data: NoData) => R1
       Loading: (data: Loading) => R2
       Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
       Success: (value: A, data: Success<A>) => R4
+      Optimistic: (value: A, data: Optimistic<E, A>) => R5
     }
-  ): (data: AsyncData<E, A>) => Unify.Unify<R1 | R2 | R3 | R4>
+  ): (data: AsyncData<E, A>) => Unify.Unify<R1 | R2 | R3 | R4 | R5>
 
-  <E, A, R1, R2, R3, R4>(
+  <E, A, R1, R2, R3, R4, R5>(
     data: AsyncData<E, A>,
     matchers: {
       NoData: (data: NoData) => R1
       Loading: (data: Loading) => R2
       Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
       Success: (value: A, data: Success<A>) => R4
+      Optimistic: (value: A, data: Optimistic<E, A>) => R5
     }
-  ): Unify.Unify<R1 | R2 | R3 | R4>
-} = dual(2, <E, A, R1, R2, R3, R4>(data: AsyncData<E, A>, matchers: {
+  ): Unify.Unify<R1 | R2 | R3 | R4 | R5>
+} = dual(2, <E, A, R1, R2, R3, R4, R5>(data: AsyncData<E, A>, matchers: {
   NoData: (data: NoData) => R1
   Loading: (data: Loading) => R2
   Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
   Success: (value: A, data: Success<A>) => R4
+  Optimistic: (value: A, data: Optimistic<E, A>) => R5
 }): Unify.Unify<R1 | R2 | R3 | R4> => {
   if (isSuccess(data)) {
     return matchers.Success(data.value, data) as Unify.Unify<R1 | R2 | R3 | R4>
@@ -334,8 +397,10 @@ export const match: {
     return matchers.Failure(data.cause, data) as Unify.Unify<R1 | R2 | R3 | R4>
   } else if (isLoading(data)) {
     return matchers.Loading(data) as Unify.Unify<R1 | R2 | R3 | R4>
-  } else {
+  } else if (isNoData(data)) {
     return matchers.NoData(data) as Unify.Unify<R1 | R2 | R3 | R4>
+  } else {
+    return matchers.Optimistic(data.value, data) as Unify.Unify<R1 | R2 | R3 | R4>
   }
 })
 
@@ -345,27 +410,41 @@ export const match: {
 export const map: {
   <A, B>(f: (a: A) => B): <E>(data: AsyncData<E, A>) => AsyncData<E, B>
   <E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B>
-} = dual(2, function<E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B> {
-  return isSuccess(data) ?
-    success(f(data.value), {
+} = dual(2, function map<E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B> {
+  if (isSuccess(data)) {
+    return success(f(data.value), {
+      timestamp: data.timestamp,
       refreshing: Option.getOrUndefined(data.refreshing)
-    }) :
-    data
+    })
+  } else if (isOptimistic(data)) {
+    return optimistic(map(data.previous, f), f(data.value), { timestamp: data.timestamp })
+  } else {
+    return data
+  }
 })
 
 /**
  * @since 1.0.0
  */
 export const flatMap: {
-  <A, E2, B>(f: (a: A, options: SuccessOptions) => AsyncData<E2, B>): <E>(data: AsyncData<E, A>) => AsyncData<E | E2, B>
-  <E, A, E2, B>(data: AsyncData<E, A>, f: (a: A, options: SuccessOptions) => AsyncData<E, B>): AsyncData<E | E2, B>
+  <E, A, E2, B>(
+    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E2, B>
+  ): (data: AsyncData<E, A>) => AsyncData<E | E2, B>
+  <E, A, E2, B>(
+    data: AsyncData<E, A>,
+    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E, B>
+  ): AsyncData<E | E2, B>
 } = dual(
   2,
   function<E, A, E2, B>(
     data: AsyncData<E, A>,
-    f: (a: A, options: SuccessOptions) => AsyncData<E2, B>
+    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E2, B>
   ): AsyncData<E | E2, B> {
-    return isSuccess(data) ? f(data.value, data) : data
+    if (isSuccess(data) || isOptimistic(data)) {
+      return f(data.value, data)
+    } else {
+      return data
+    }
   }
 )
 
@@ -379,6 +458,8 @@ export const startLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
     return Option.isSome(data.refreshing)
       ? data
       : failCause(data.cause, { ...data, refreshing: loading() })
+  } else if (isOptimistic(data)) {
+    return optimistic(startLoading(data.previous), data.value, data)
   } else {
     return loading()
   }
@@ -392,6 +473,8 @@ export const stopLoading = <E, A>(data: AsyncData<E, A>): AsyncData<E, A> => {
     return Option.isSome(data.refreshing) ? success(data.value) : data
   } else if (isFailure(data)) {
     return Option.isSome(data.refreshing) ? failCause(data.cause) : data
+  } else if (isOptimistic(data)) {
+    return optimistic(stopLoading(data.previous), data.value, data)
   } else {
     return noData()
   }
@@ -421,7 +504,7 @@ export const getFailure = <E, A>(data: AsyncData<E, A>): Option.Option<E> =>
  * @since 1.0.0
  */
 export const getSuccess = <E, A>(data: AsyncData<E, A>): Option.Option<A> =>
-  isSuccess(data) ? Option.some(data.value) : Option.none()
+  isSuccess(data) || isOptimistic(data) ? Option.some(data.value) : Option.none()
 
 const optionProgressEq = Option.getEquivalence(Progress.equals)
 
@@ -448,20 +531,45 @@ const successEquivalence = <A>(valueEq: Equivalence.Equivalence<A>): Equivalence
     refreshing: optionLoadingEq
   })
 
+const optimisticEquivalence = <E, A>(
+  valueEq: Equivalence.Equivalence<A>
+): Equivalence.Equivalence<Optimistic<E, A>> => {
+  let previousEq: Equivalence.Equivalence<AsyncData<E, A>> | undefined
+  const get = () => {
+    if (previousEq === undefined) {
+      previousEq = getEquivalence(valueEq)
+    }
+    return previousEq
+  }
+
+  return Equivalence.struct({
+    _tag: Equivalence.string,
+    value: valueEq,
+    timestamp: Equivalence.number,
+    previous: (a, b) => get()(a, b)
+  })
+}
+
 /**
  * @since 1.0.0
  */
-export const getEquivalence =
-  <E, A>(valueEq: Equivalence.Equivalence<A> = Equal.equals): Equivalence.Equivalence<AsyncData<E, A>> => (a, b) => {
+export const getEquivalence = <E, A>(
+  valueEq: Equivalence.Equivalence<A> = Equal.equals
+): Equivalence.Equivalence<AsyncData<E, A>> => {
+  const successEq_ = successEquivalence(valueEq)
+  const optimisticEq_ = optimisticEquivalence(valueEq)
+  return (a, b) => {
     if (a === b) return true
 
     return match(a, {
       NoData: () => isNoData(b),
       Loading: (l1) => isLoading(b) ? loadingEquivalence(l1, b) : false,
       Failure: (_, f1) => isFailure(b) ? failureEquivalence(f1, b) : false,
-      Success: (_, s1) => isSuccess(b) ? successEquivalence(valueEq)(s1, b) : false
+      Success: (_, s1) => isSuccess(b) ? successEq_(s1, b) : false,
+      Optimistic: (_, o1) => isOptimistic(b) ? optimisticEq_(o1, b) : false
     })
   }
+}
 
 /**
  * @since 1.0.0
@@ -483,8 +591,6 @@ export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A> {
   })
 }
 
-const isAsyncDataFirst = (args: IArguments) => args.length === 3 || isAsyncData(args[0])
-
 /**
  * @since 1.0.0
  */
@@ -498,7 +604,7 @@ export const isExpired: {
 ): boolean {
   return match(data, {
     NoData: () => true,
-    Loading: () => false,
+    Loading: ({ timestamp }) => isPastTTL(timestamp, ttl, now),
     Failure: (_, f) =>
       Option.isNone(f.refreshing)
         ? isPastTTL(f.timestamp, ttl, now)
@@ -506,14 +612,16 @@ export const isExpired: {
     Success: (_, s) =>
       Option.isNone(s.refreshing)
         ? isPastTTL(s.timestamp, ttl, now) :
-        isPastTTL(s.refreshing.value.timestamp, ttl, now)
+        isPastTTL(s.refreshing.value.timestamp, ttl, now),
+    Optimistic: (_, o) =>
+      isPastTTL(o.timestamp, ttl, now) || (o.previous._tag === NO_DATA_TAG ? false : isExpired(o.previous, ttl, now))
   })
 })
 
 function isPastTTL(timestamp: number, ttl: Duration.DurationInput, now: number): boolean {
   const millis = Duration.toMillis(ttl)
 
-  return now - timestamp > millis
+  return now - timestamp >= millis
 }
 
 /**
@@ -529,6 +637,8 @@ export function dataEqual<E, A>(first: AsyncData<E, A>, second: AsyncData<E, A>)
     Failure: (_, f1) =>
       isFailure(second) && Equal.equals(f1.cause, second.cause) && Equal.equals(f1.refreshing, second.refreshing),
     Success: (_, s1) =>
-      isSuccess(second) && Equal.equals(s1.value, second.value) && Equal.equals(s1.refreshing, second.refreshing)
+      isSuccess(second) && Equal.equals(s1.value, second.value) && Equal.equals(s1.refreshing, second.refreshing),
+    Optimistic: (_, o1) =>
+      isOptimistic(second) && Equal.equals(o1.value, second.value) && dataEqual(o1.previous, second.previous)
   })
 }
