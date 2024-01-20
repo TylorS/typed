@@ -26,6 +26,7 @@ export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
   readonly relative?: boolean | Placeholder.Any<boolean>
   readonly replace?: boolean | Placeholder.Any<boolean>
   readonly state?: unknown | Placeholder.Any<unknown>
+  readonly info?: unknown | Placeholder.Any<unknown>
   readonly reloadDocument?: boolean | Placeholder.Any<boolean>
 }
 
@@ -49,23 +50,28 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
     const toRef = yield* _(Placeholder.asRef(to))
     const relativeRef = yield* _(Placeholder.asRef(relative ?? true))
     const replaceRef = yield* _(Placeholder.asRef(replace ?? false))
-    const stateRef = yield* _(Placeholder.asRef(state as Placeholder.Any<unknown>))
+    const stateRef = yield* _(Placeholder.asRef(state))
+    const infoRef = yield* _(Placeholder.asRef(props.info))
     const reloadDocument = yield* _(Placeholder.asRef(props.reloadDocument ?? false))
     const href = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
       ([rel, to]) => rel ? makeHref(to) : Effect.succeed(to)
     )
     const navigate = Effect.gen(function*(_) {
-      const current = yield* _(Effect.all({ replace: replaceRef, state: stateRef, reloadDocument }))
+      const replace = yield* _(replaceRef)
+      const state = yield* _(stateRef)
+      const reload = yield* _(reloadDocument)
       const url = yield* _(href)
+      const info = yield* _(infoRef)
 
       yield* _(Navigation.navigate(url, {
-        history: current.replace ? "replace" : "auto",
-        state: current.state
+        info,
+        history: replace ? "replace" : "auto",
+        state
       }))
 
-      if (current.reloadDocument) {
-        yield* _(Navigation.reload({ state: current.state }))
+      if (reload) {
+        yield* _(Navigation.reload({ info, state }))
       }
     })
 

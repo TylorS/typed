@@ -43,6 +43,18 @@
       "@typed/context/examples/*": [
         "packages/context/build/examples/*"
       ],
+      "@typed/core": [
+        "packages/core/build/esm/index.js"
+      ],
+      "@typed/core/*": [
+        "packages/core/build/esm/*"
+      ],
+      "@typed/core/test/*": [
+        "packages/core/build/test/*"
+      ],
+      "@typed/core/examples/*": [
+        "packages/core/build/examples/*"
+      ],
       "@typed/decoder": [
         "packages/decoder/build/esm/index.js"
       ],
@@ -199,6 +211,9 @@
     "packages/context/build/esm/**/*",
     "packages/context/build/test/**/*",
     "packages/context/build/examples/**/*",
+    "packages/core/build/esm/**/*",
+    "packages/core/build/test/**/*",
+    "packages/core/build/examples/**/*",
     "packages/decoder/build/esm/**/*",
     "packages/decoder/build/test/**/*",
     "packages/decoder/build/examples/**/*",

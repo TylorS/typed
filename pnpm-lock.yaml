@@ -317,6 +317,58 @@ importers:
         version: 2.1.2
     publishDirectory: dist
 
+  packages/core:
+    dependencies:
+      '@effect/platform':
+        specifier: ^0.42.6
+        version: 0.42.6(@effect/schema@0.60.6)(effect@2.1.2)
+      '@effect/schema':
+        specifier: 0.60.6
+        version: 0.60.6(effect@2.1.2)(fast-check@3.15.0)
+      '@typed/async-data':
+        specifier: workspace:*
+        version: link:../async-data/dist
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../context/dist
+      '@typed/decoder':
+        specifier: workspace:*
+        version: link:../decoder/dist
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../dom/dist
+      '@typed/environment':
+        specifier: workspace:*
+        version: link:../environment/dist
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../fx/dist
+      '@typed/id':
+        specifier: workspace:*
+        version: link:../id/dist
+      '@typed/navigation':
+        specifier: workspace:*
+        version: link:../navigation/dist
+      '@typed/path':
+        specifier: workspace:*
+        version: link:../path/dist
+      '@typed/route':
+        specifier: workspace:*
+        version: link:../route/dist
+      '@typed/router':
+        specifier: workspace:*
+        version: link:../router/dist
+      '@typed/template':
+        specifier: workspace:*
+        version: link:../template/dist
+      '@typed/ui':
+        specifier: workspace:*
+        version: link:../ui/dist
+      effect:
+        specifier: ^2.1.2
+        version: 2.1.2
+    publishDirectory: dist
+
   packages/decoder:
     dependencies:
       '@effect/schema':
@@ -1749,7 +1801,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.4.8(@babel/core@7.23.7)
       babel-plugin-polyfill-corejs3: 0.8.7(@babel/core@7.23.7)
       babel-plugin-polyfill-regenerator: 0.5.5(@babel/core@7.23.7)
-      core-js-compat: 3.35.0
+      core-js-compat: 3.35.1
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
@@ -4000,7 +4052,7 @@ packages:
     dependencies:
       '@babel/core': 7.23.7
       '@babel/helper-define-polyfill-provider': 0.4.4(@babel/core@7.23.7)
-      core-js-compat: 3.35.0
+      core-js-compat: 3.35.1
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4378,8 +4430,8 @@ packages:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
     dev: true
 
-  /core-js-compat@3.35.0:
-    resolution: {integrity: sha512-5blwFAddknKeNgsjBzilkdQ0+YK8L1PfqPYq40NOYMYFSS38qj+hpTcLLWwpIwA2A5bje/x5jmVn2tzUMg9IVw==}
+  /core-js-compat@3.35.1:
+    resolution: {integrity: sha512-sftHa5qUJY3rs9Zht1WEnmkvXputCyDBczPnr7QDgL8n3qrF3CMXY4VPSYtOLLiOUJcah2WNXREd48iOl6mQIw==}
     dependencies:
       browserslist: 4.22.2
     dev: true

@@ -117,7 +117,7 @@ function renderObject<R, E>(renderable: object | null | undefined, isStatic: boo
   } else if (Array.isArray(renderable)) {
     return Fx.mergeOrdered(renderable.map((r) => renderNode(r, isStatic))) as any
   } else if (Fx.isFx<R, E, Renderable>(renderable)) {
-    // @ts-expect-error Types are to deep to infer
+    // @ts-ignore Types are to deep to infer
     return Fx.concatMap(takeOneIfNotRenderEvent(renderable), (r) => renderNode(r, isStatic) as any)
   } else if (Effect.isEffect(renderable)) {
     return Fx.switchMap(

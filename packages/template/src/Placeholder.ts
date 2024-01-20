@@ -59,7 +59,7 @@ export namespace Placeholder {
    * @since 1.0.0
    */
   export function asRef<R = never, E = never, A = never>(
-    placeholder: Placeholder<R, E, A>
+    placeholder: Placeholder<R, E, A> | Fx<R, E, A> | Effect.Effect<R, E, A> | A
   ): Effect.Effect<R | Scope.Scope, never, RefSubject.RefSubject<never, E, A>> {
     if (isFx<R, E, A>(placeholder) || Effect.isEffect(placeholder)) {
       return RefSubject.make(placeholder as Fx<R, E, A>)
