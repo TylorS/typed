@@ -1,5 +1,11 @@
 # @typed/async-data
 
+## 0.3.4
+
+### Patch Changes
+
+- [`ba79c88`](https://github.com/TylorS/typed/commit/ba79c88c4b1f0b10d3aa6ce08c345fd57d13a0b7) Thanks [@TylorS](https://github.com/TylorS)! - Optimistic updates
+
 ## 0.3.3
 
 ### Patch Changes

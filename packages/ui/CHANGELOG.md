@@ -1,5 +1,16 @@
 # @typed/ui
 
+## 0.3.9
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/fx@1.20.6
+  - @typed/navigation@0.8.6
+  - @typed/route@2.0.6
+  - @typed/router@0.21.6
+  - @typed/template@0.3.9
+
 ## 0.3.8
 
 ### Patch Changes
