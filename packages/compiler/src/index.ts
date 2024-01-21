@@ -9,10 +9,10 @@
  * Compiler docs: https://tylors.github.io/typed/docs/compiler/Compiler.ts.html
  * @since 1.0.0
  */
-export * from "./Compiler"
+export * from "./Compiler.js"
 
 /**
  * Compiler docs: https://tylors.github.io/typed/docs/compiler/typescript/factories.ts.html
  * @since 1.0.0
  */
-export * as factories from "./typescript/factories"
+export * as factories from "./typescript/factories.js"

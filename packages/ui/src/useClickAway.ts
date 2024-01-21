@@ -10,7 +10,7 @@ import { getElements } from "@typed/template/ElementSource"
 import type { Rendered } from "@typed/wire"
 import type { Effect, Fiber, Scope } from "effect"
 import * as Option from "effect/Option"
-import { addEventListeners } from "./internal/addEventListener"
+import { addEventListeners } from "./internal/addEventListener.js"
 
 /**
  * @since 1.0.0

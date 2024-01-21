@@ -1,4 +1,4 @@
-import type { Sink } from "../Sink"
+import type { Sink } from "../Sink.js"
 import * as EffectLoopOp from "./effect-loop-operator.js"
 import * as EffectOp from "./effect-operator.js"
 import * as LoopOp from "./loop-operator.js"
