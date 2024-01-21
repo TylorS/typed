@@ -54,6 +54,7 @@ export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
   readonly relative?: boolean | Placeholder.Any<boolean>
   readonly replace?: boolean | Placeholder.Any<boolean>
   readonly state?: unknown | Placeholder.Any<unknown>
+  readonly info?: unknown | Placeholder.Any<unknown>
   readonly reloadDocument?: boolean | Placeholder.Any<boolean>
 }
 ```

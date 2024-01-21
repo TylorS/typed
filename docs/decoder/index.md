@@ -2,7 +2,7 @@
 title: "@typed/decoder"
 has_children: true
 permalink: /docs/decoder
-nav_order: 5
+nav_order: 6
 ---
 
 # @typed/decoder

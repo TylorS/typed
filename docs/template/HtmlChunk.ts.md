@@ -136,7 +136,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function templateToHtmlChunks({ hash, nodes }: Template)
+export declare function templateToHtmlChunks({ hash, nodes }: Template, isStatic: boolean)
 ```
 
 Added in v1.0.0

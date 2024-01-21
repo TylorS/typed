@@ -2,7 +2,7 @@
 title: "@typed/template"
 has_children: true
 permalink: /docs/template
-nav_order: 14
+nav_order: 15
 ---
 
 # @typed/template

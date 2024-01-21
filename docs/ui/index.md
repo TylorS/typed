@@ -2,7 +2,7 @@
 title: "@typed/ui"
 has_children: true
 permalink: /docs/ui
-nav_order: 15
+nav_order: 16
 ---
 
 # @typed/ui
