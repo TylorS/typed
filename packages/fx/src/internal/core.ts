@@ -2464,12 +2464,16 @@ export function debounce<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput
   return switchMapEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
 }
 
+function emitAndSleep<A>(value: A, delay: Duration.DurationInput) {
+  return make<A>((sink) => Effect.zipRight(sink.onSuccess(value), Effect.sleep(delay)))
+}
+
 export function throttle<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
-  return exhaustMapEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
+  return exhaustMap(fx, (a) => emitAndSleep(a, delay))
 }
 
 export function throttleLatest<R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A> {
-  return exhaustMapLatestEffect(fx, (a) => Effect.as(Effect.sleep(delay), a))
+  return exhaustMapLatest(fx, (a) => emitAndSleep(a, delay))
 }
 
 export function fromAsyncIterable<A>(iterable: AsyncIterable<A>): Fx<never, never, A> {
