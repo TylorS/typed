@@ -1,7 +1,7 @@
 /**
  * @since 1.18.0
  */
-import { Schema } from "@effect/schema"
+import { Equivalence, Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import { type ParseError } from "@effect/schema/ParseResult"
 import type { Cause } from "effect/Cause"
@@ -79,7 +79,9 @@ export function derive<I, O>(options: FormEntryOptions<I, O>): MakeFormEntry<I, 
     const initial = Fx.mapEffect(Effect.isEffect(input) ? Fx.fromEffect(input) : input, (o) => encode(o, parseOptions))
 
     return Effect.map(
-      RefSubject.make(initial),
+      RefSubject.make(initial, {
+        eq: Equivalence.make(Schema.from(options.schema))
+      }),
       (inputRef): FormEntry<never, E, I, O> | FormEntry.Derived<never, R, E, I, O> => {
         if (RefSubject.isRefSubject<R, E, O>(input)) {
           const persist = Effect.flatMap(
@@ -115,7 +117,7 @@ export function deriveInput<I, O>(options: FormEntryOptions<I, O>): MakeInputFor
     const initial: Fx.Fx<R, E | ParseError, I> = Effect.isEffect(input) ? Fx.fromEffect(input) : input
 
     return Effect.map(
-      RefSubject.make(initial),
+      RefSubject.make(initial, { eq: Equivalence.make(Schema.from(options.schema)) }),
       (inputRef): FormEntry<never, E, I, O> | FormEntry.Derived<never, R, E, I, O> => {
         if (RefSubject.isRefSubject<R, E, O>(input)) {
           const persist = Effect.flatMap(

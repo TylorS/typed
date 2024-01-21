@@ -17,7 +17,7 @@ import { FxEffectBase } from "./internal/protos.js"
 import { hold } from "./internal/share.js"
 import * as RefSubject from "./RefSubject.js"
 import type * as Sink from "./Sink.js"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
+import { RefSubjectTypeId, TypeId } from "./TypeId.js"
 import type * as Versioned from "./Versioned.js"
 
 /**
@@ -445,8 +445,8 @@ const deriveMakeInputEntries = <
           const entries: any = {}
 
           for (const prop of propertySignatures) {
-            const nested = propOf(input, prop.name)
             const ast = prop.isOptional ? AST.createUnion([prop.type, AST.undefinedKeyword]) : prop.type
+            const nested = propOf(input, prop.name)
 
             if (prop.type._tag === "TypeLiteral") {
               entries[prop.name] = Form(
@@ -472,7 +472,7 @@ const deriveMakeInputEntries = <
       }
       default: {
         // TODO: Wrap in an error
-        return Effect.die(new TypeError("Form.deriveMakeEntries only supports TypeLiteral schemas."))
+        return Effect.die(new TypeError("Form.deriveMakeInputEntries only supports TypeLiteral schemas."))
       }
     }
   })
@@ -486,8 +486,6 @@ const propOf = <R, E, O>(
     | Effect.Effect<R, E, O>,
   key: keyof O
 ) => {
-  if (RefSubjectTypeId in input || ComputedTypeId in input || FilteredTypeId in input) {
-    return RefSubject.map(input, (o) => o[key])
-  } else if (TypeId in input) return core.map(input, (o) => o[key])
+  if (TypeId in input) return core.map(input, (o) => o[key])
   else return Effect.map(input, (o) => o[key])
 }
