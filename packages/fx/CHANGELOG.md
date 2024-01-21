@@ -1,5 +1,20 @@
 # @typed/fx
 
+## 1.21.0
+
+### Minor Changes
+
+- [`0b5c6ed`](https://github.com/TylorS/typed/commit/0b5c6edd739f753c5616a07cee5b9e08f8507595) Thanks [@TylorS](https://github.com/TylorS)! - Start of @typed/core package.
+
+  @typed/core is an existing package, and this will break it's public API to be a part of the larger modern
+  Typed project.
+
+### Patch Changes
+
+- Updated dependencies [[`0b5c6ed`](https://github.com/TylorS/typed/commit/0b5c6edd739f753c5616a07cee5b9e08f8507595)]:
+  - @typed/async-data@0.4.0
+  - @typed/context@0.22.0
+
 ## 1.20.6
 
 ### Patch Changes
