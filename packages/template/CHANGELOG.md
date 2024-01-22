@@ -1,5 +1,17 @@
 # @typed/template
 
+## 0.4.1
+
+### Patch Changes
+
+- [`41c4b1b`](https://github.com/TylorS/typed/commit/41c4b1b17718b8f06ba006716a752aebc7c4b5cb) Thanks [@TylorS](https://github.com/TylorS)! - Update Effect deps
+
+- Updated dependencies [[`41c4b1b`](https://github.com/TylorS/typed/commit/41c4b1b17718b8f06ba006716a752aebc7c4b5cb), [`75cd3ed`](https://github.com/TylorS/typed/commit/75cd3edab120b54a2d9761c3dd5c7a4bd81b970e)]:
+  - @typed/environment@0.4.1
+  - @typed/context@0.22.1
+  - @typed/dom@10.0.1
+  - @typed/fx@1.21.1
+
 ## 0.4.0
 
 ### Minor Changes
