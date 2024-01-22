@@ -1,5 +1,17 @@
 # @typed/fx
 
+## 1.21.1
+
+### Patch Changes
+
+- [`41c4b1b`](https://github.com/TylorS/typed/commit/41c4b1b17718b8f06ba006716a752aebc7c4b5cb) Thanks [@TylorS](https://github.com/TylorS)! - Update Effect deps
+
+- [`75cd3ed`](https://github.com/TylorS/typed/commit/75cd3edab120b54a2d9761c3dd5c7a4bd81b970e) Thanks [@TylorS](https://github.com/TylorS)! - Throttle should emit immediately
+
+- Updated dependencies [[`41c4b1b`](https://github.com/TylorS/typed/commit/41c4b1b17718b8f06ba006716a752aebc7c4b5cb)]:
+  - @typed/async-data@0.4.1
+  - @typed/context@0.22.1
+
 ## 1.21.0
 
 ### Minor Changes

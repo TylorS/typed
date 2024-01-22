@@ -1,5 +1,11 @@
 # @typed/decoder
 
+## 0.14.1
+
+### Patch Changes
+
+- [`41c4b1b`](https://github.com/TylorS/typed/commit/41c4b1b17718b8f06ba006716a752aebc7c4b5cb) Thanks [@TylorS](https://github.com/TylorS)! - Update Effect deps
+
 ## 0.14.0
 
 ### Minor Changes
