@@ -536,7 +536,7 @@ importers:
   packages/template:
     dependencies:
       '@effect/platform':
-        specifier: 0.42.7
+        specifier: ^0.42.7
         version: 0.42.7(@effect/schema@0.60.7)(effect@2.2.0)
       '@effect/schema':
         specifier: 0.60.7
@@ -582,7 +582,7 @@ importers:
   packages/ui:
     dependencies:
       '@effect/platform':
-        specifier: 0.42.7
+        specifier: ^0.42.7
         version: 0.42.7(@effect/schema@0.60.7)(effect@2.2.0)
       '@effect/schema':
         specifier: 0.60.7
