@@ -63,6 +63,7 @@ export namespace Form {
     readonly entries: Entries
 
     readonly schema: S.Schema<
+      R,
       I,
       O
     >
@@ -156,6 +157,7 @@ export function Form<Entries extends Form.AnyEntries>(entries: Entries): Form<Fo
  * @since 1.18.0
  */
 export type MakeForm<
+  R0,
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
@@ -169,7 +171,7 @@ export type MakeForm<
   <R, E>(fx: Fx<R, E, O> | Effect.Effect<R, E, O>): Effect.Effect<
     R | Scope.Scope,
     never,
-    [FormFromIO<E, I, O>] extends [Form<never, infer R>] ? Form<never, R> : never
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never
   >
 }
 
@@ -177,20 +179,21 @@ export type MakeForm<
  * @since 1.20.0
  */
 export type MakeInputForm<
+  R0,
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
   <R, E>(fx: RefSubject.RefSubject<R, E, I>): Effect.Effect<
     R | Scope.Scope,
     never,
-    [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>] ? Form.Derived<R, never, R2>
+    [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>] ? Form.Derived<R, _, R2>
       : never
   >
 
   <R, E>(fx: Fx<R, E, I> | Effect.Effect<R, E, I>): Effect.Effect<
     R | Scope.Scope,
     never,
-    [FormFromIO<E, I, O>] extends [Form<never, infer R>] ? Form<never, R> : never
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never
   >
 }
 
@@ -198,11 +201,12 @@ export type MakeInputForm<
  * @since 1.18.0
  */
 export type FormFromIO<
+  R,
   E,
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = Form<
-  never,
+  R,
   [FormEntriesFromIO<E, I, O>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 >
 
@@ -242,9 +246,10 @@ export type DerivedFromIO<
  * @since 1.20.0
  */
 export function derive<
+  R0,
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
-  O extends Partial<AnyObjectWithKeys<keyof I>>
->(schema: S.Schema<I, O>): MakeForm<I, O> {
+  O extends Partial<{ readonly [K in keyof I]: any }>
+>(schema: S.Schema<R0, I, O>): MakeForm<R0, I, O> {
   return (input) =>
     Effect.map(deriveMakeEntries(input, schema.ast), (entries) => {
       const form = (Form as any)(entries)
@@ -267,9 +272,10 @@ export function derive<
  * @since 1.18.0
  */
 export function deriveInput<
+  R0,
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>
->(schema: S.Schema<I, O>): MakeInputForm<I, O> {
+>(schema: S.Schema<R0, I, O>): MakeInputForm<R0, I, O> {
   return <R, E>(input: RefSubject.RefSubject<R, E, I> | Fx<R, E, I> | Effect.Effect<R, E, I>) =>
     Effect.map(deriveMakeInputEntries(input, schema.ast), (entries) => {
       const form = (Form as any)(entries)
@@ -356,7 +362,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
 
 function buildSchema<Entries extends Form.AnyEntries>(
   entries: Entries
-): S.Schema<Form.Input<Entries>, Form.Output<Entries>> {
+): S.Schema<Form.Context<Entries>, Form.Input<Entries>, Form.Output<Entries>> {
   const schemas: any = {}
 
   for (const key of Reflect.ownKeys(entries)) {
@@ -372,9 +378,9 @@ function buildSchema<Entries extends Form.AnyEntries>(
   return S.struct(schemas) as any
 }
 
-type DeriveEntries<E, I extends Readonly<Record<PropertyKey, any>>, O extends Readonly<Record<keyof I, any>>> = {
-  readonly [K in keyof I]: I[K] extends Readonly<Record<PropertyKey, any>> ? DeriveEntries<E, I[K], O[K]>
-    : FormEntry.FormEntry<never, E, I[K], O[K]>
+type DeriveEntries<R, E, I extends Readonly<Record<PropertyKey, any>>, O extends Readonly<Record<keyof I, any>>> = {
+  readonly [K in keyof I]: I[K] extends Readonly<Record<PropertyKey, any>> ? DeriveEntries<R, E, I[K], O[K]>
+    : FormEntry.FormEntry<R, E, I[K], O[K]>
 }
 
 const deriveMakeEntries = <
@@ -385,7 +391,7 @@ const deriveMakeEntries = <
 >(
   input: RefSubject.RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<R, E, O>,
   ast: AST.AST
-): Effect.Effect<R | Scope.Scope, never, DeriveEntries<E, I, O>> =>
+): Effect.Effect<R | Scope.Scope, never, DeriveEntries<R, E, I, O>> =>
   Effect.suspend(() => {
     switch (ast._tag) {
       case "TypeLiteral": {
@@ -409,7 +415,7 @@ const deriveMakeEntries = <
               )
             } else {
               entries[prop.name] = yield* _(
-                FormEntry.derive<any, any>({
+                FormEntry.derive<any, any, any>({
                   name: prop.name,
                   schema: S.make(ast)
                 })(nested as Fx<R, E, any>)
@@ -435,7 +441,7 @@ const deriveMakeInputEntries = <
 >(
   input: RefSubject.RefSubject<R, E, I> | Fx<R, E, I> | Effect.Effect<R, E, I>,
   ast: AST.AST
-): Effect.Effect<R | Scope.Scope, never, DeriveEntries<E, I, O>> =>
+): Effect.Effect<R | Scope.Scope, never, DeriveEntries<R, E, I, O>> =>
   Effect.suspend(() => {
     switch (ast._tag) {
       case "TypeLiteral": {
@@ -459,7 +465,7 @@ const deriveMakeInputEntries = <
               )
             } else {
               entries[prop.name] = yield* _(
-                FormEntry.deriveInput<any, any>({
+                FormEntry.deriveInput<any, any, any>({
                   name: prop.name,
                   schema: S.make(ast)
                 })(nested as Fx<R, E, any>)

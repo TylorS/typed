@@ -51,6 +51,7 @@ const ProgressSchemaJson = Schema.struct({
 })
 
 const ProgressSchema: Schema.Schema<
+  never,
   {
     readonly loaded: bigint
     readonly total: Option.Option<bigint>
@@ -67,23 +68,26 @@ const progressArbitrary: Arbitrary.Arbitrary<P.Progress> = (fc) =>
 /**
  * @since 1.0.0
  */
-export const Progress: Schema.Schema<{ readonly loaded: string; readonly total?: string | undefined }, P.Progress> =
-  ProgressSchemaJson.pipe(
-    Schema.transform(
-      ProgressSchema,
-      (json): P.Progress => P.make(json.loaded, json.total),
-      (progress) => ({
-        loaded: progress.loaded,
-        total: Option.getOrUndefined(progress.total)
-      })
-    ),
-    Schema.annotations({
-      [AST.IdentifierAnnotationId]: "Progress",
-      [Pretty.PrettyHookId]: () => "Progress",
-      [Arbitrary.ArbitraryHookId]: (): Arbitrary.Arbitrary<P.Progress> => progressArbitrary,
-      [Eq.EquivalenceHookId]: () => Equal.equals
+export const Progress: Schema.Schema<
+  never,
+  { readonly loaded: string; readonly total?: string | undefined },
+  P.Progress
+> = ProgressSchemaJson.pipe(
+  Schema.transform(
+    ProgressSchema,
+    (json): P.Progress => P.make(json.loaded, json.total),
+    (progress) => ({
+      loaded: progress.loaded,
+      total: Option.getOrUndefined(progress.total)
     })
-  )
+  ),
+  Schema.annotations({
+    [AST.IdentifierAnnotationId]: "Progress",
+    [Pretty.PrettyHookId]: () => "Progress",
+    [Arbitrary.ArbitraryHookId]: (): Arbitrary.Arbitrary<P.Progress> => progressArbitrary,
+    [Eq.EquivalenceHookId]: () => Equal.equals
+  })
+)
 
 /**
  * @since 1.0.0
@@ -319,7 +323,7 @@ function isOptimisticFrom(value: unknown): value is OptimisticFrom<any, any> {
     && typeof value.timestamp === "number"
 }
 
-function isAsyncDataFrom(value: unknown): value is AsyncDataFrom<any, any> {
+function isAsyncDataFrom<E = unknown, A = unknown>(value: unknown): value is AsyncDataFrom<E, A> {
   return isNoDataFrom(value)
     || isLoadingFrom(value)
     || isFailureFrom(value)
@@ -330,33 +334,27 @@ function isAsyncDataFrom(value: unknown): value is AsyncDataFrom<any, any> {
 /**
  * @since 1.0.0
  */
-export const asyncDataFromJson = <EI, E, AI, A>(
-  error: Schema.Schema<EI, E>,
-  value: Schema.Schema<AI, A>
-): Schema.Schema<AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>> =>
-  Schema.declare(
-    [
-      Schema.cause(error),
-      value
-    ],
-    Schema.annotations({
-      [Eq.EquivalenceHookId]: () => fromEq
-    })(Schema.struct({})),
-    (isDecoding, causeSchema, valueSchema) => {
-      const parseCause = isDecoding ? Schema.decode(causeSchema) : Schema.encode(causeSchema)
-      const parseValue = isDecoding ? Schema.decode(valueSchema) : Schema.encode(valueSchema)
+export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
+  error: Schema.Schema<R1, EI, E>,
+  value: Schema.Schema<R2, AI, A>
+): Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>> => {
+  return Schema.declare(
+    [Schema.cause(error, Schema.unknown), value],
+    (causeSchema, valueSchema) => {
+      const parseCause = Schema.decode(causeSchema)
+      const parseValue = Schema.decode(valueSchema)
 
       const parseAsyncData = (
-        input: any,
-        options?: AST.ParseOptions
+        input: unknown,
+        options?: AST.ParseOptions | undefined
       ): Effect.Effect<
-        never,
-        ParseResult.ParseError,
+        R1 | R2,
+        ParseResult.ParseIssue,
         AsyncDataFrom<E, A>
-      > =>
-        Effect.gen(function*(_) {
-          if (!isAsyncDataFrom(input)) {
-            return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
+      > => {
+        return Effect.gen(function*(_) {
+          if (!isAsyncDataFrom<EI, AI>(input)) {
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
           }
 
           switch (input._tag) {
@@ -364,37 +362,78 @@ export const asyncDataFromJson = <EI, E, AI, A>(
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(isDecoding ? input.cause : causeFromToCause(input.cause), options))
-              return FailureFrom(causeToCauseFrom(cause), input.timestamp, input.refreshing)
+              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
+              return FailureFrom(cause, input.timestamp, input.refreshing)
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options))
+              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
               return SuccessFrom(a, input.timestamp, input.refreshing)
             }
             case "Optimistic": {
-              const previous: AsyncDataFrom<any, any> = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options))
-
+              const previous = yield* _(parseAsyncData(input.previous, options))
+              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
               return OptimisticFrom(value, input.timestamp, previous)
             }
           }
         })
+      }
+
+      return parseAsyncData
+    },
+    (causeSchema, valueSchema) => {
+      const parseCause = Schema.encode(causeSchema)
+      const parseValue = Schema.encode(valueSchema)
+
+      const parseAsyncData = (
+        input: unknown,
+        options?: AST.ParseOptions
+      ): Effect.Effect<
+        R1 | R2,
+        ParseResult.ParseIssue,
+        AsyncDataFrom<EI, AI>
+      > => {
+        return Effect.gen(function*(_) {
+          if (!isAsyncDataFrom<E, A>(input)) {
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
+          }
+
+          switch (input._tag) {
+            case "NoData":
+            case "Loading":
+              return input
+            case "Failure": {
+              const cause = yield* _(parseCause(causeFromToCause(input.cause), options), parseErrorToParseIssue)
+              return FailureFrom(cause, input.timestamp, input.refreshing)
+            }
+            case "Success": {
+              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              return SuccessFrom(a, input.timestamp, input.refreshing)
+            }
+            case "Optimistic": {
+              const previous = yield* _(parseAsyncData(input.previous, options))
+              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              return OptimisticFrom(value, input.timestamp, previous)
+            }
+          }
+        })
+      }
 
       return parseAsyncData
     },
     {
-      [AST.IdentifierAnnotationId]: "AsyncDataFrom",
-      [Eq.EquivalenceHookId]: () => fromEq
+      title: "AsyncDataFrom",
+      equivalence: () => fromEq
     }
   )
+}
 
 /**
  * @since 1.0.0
  */
-export const asyncData = <EI, E, AI, A>(
-  errorSchema: Schema.Schema<EI, E>,
-  valueSchema: Schema.Schema<AI, A>
-): Schema.Schema<AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>> => {
+export const asyncData = <R1, EI, E, R2, AI, A>(
+  errorSchema: Schema.Schema<R1, EI, E>,
+  valueSchema: Schema.Schema<R2, AI, A>
+): Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>> => {
   const encodeCause = Schema.encode(Schema.cause(Schema.to(errorSchema)))
 
   return asyncDataFromJson(errorSchema, valueSchema)
@@ -403,15 +442,13 @@ export const asyncData = <EI, E, AI, A>(
       function decodeAsyncDataFrom(
         c: AsyncDataFrom<E, A>,
         options?: AST.ParseOptions
-      ): Effect.Effect<never, ParseResult.ParseError, AsyncData.AsyncData<E, A>> {
+      ): Effect.Effect<never, ParseResult.ParseIssue, AsyncData.AsyncData<E, A>> {
         switch (c._tag) {
           case "NoData":
             return Effect.succeed(AsyncData.noData())
           case "Loading":
             return Effect.succeed(loadingFromJson(c)!)
           case "Failure": {
-            console.log(causeFromToCause(c.cause))
-
             return Effect.succeed(
               AsyncData.failCause(causeFromToCause(c.cause), {
                 timestamp: c.timestamp,
@@ -436,7 +473,7 @@ export const asyncData = <EI, E, AI, A>(
       function encodeAsyncDataFrom(
         a: AsyncData.AsyncData<E, A>,
         options?: AST.ParseOptions
-      ): Effect.Effect<never, ParseResult.ParseError, AsyncDataFrom<E, A>> {
+      ): Effect.Effect<never, ParseResult.ParseIssue, AsyncDataFrom<E, A>> {
         switch (a._tag) {
           case "NoData":
             return Effect.succeed({ _tag: "NoData" })
@@ -444,7 +481,7 @@ export const asyncData = <EI, E, AI, A>(
             return Effect.succeed(loadingToJson(a))
           case "Failure":
             return Effect.map(
-              encodeCause(a.cause, options),
+              parseErrorToParseIssue(encodeCause(a.cause, options)),
               (cause) => FailureFrom(cause, a.timestamp, Option.getOrUndefined(Option.map(a.refreshing, loadingToJson)))
             )
           case "Success":
@@ -465,46 +502,43 @@ export const asyncData = <EI, E, AI, A>(
 /**
  * @since 1.0.0
  */
-export const asyncDataFromSelf = <EI, E, AI, A>(
-  error: Schema.Schema<EI, E>,
-  value: Schema.Schema<AI, A>
-): Schema.Schema<AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>> => {
+export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
+  error: Schema.Schema<R1, EI, E>,
+  value: Schema.Schema<R2, AI, A>
+): Schema.Schema<R1 | R2, AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>> => {
   return Schema.declare(
-    [Schema.cause(error), value],
-    Schema.struct({}),
-    (isDecoding, ...params) => {
-      const [causeSchema, valueSchema] = params as readonly [
-        Schema.Schema<Cause.Cause<any>, Cause.Cause<any>>,
-        Schema.Schema<any, any>
-      ]
-      const parseCause = isDecoding ? Schema.decode(causeSchema) : Schema.encode(causeSchema)
-      const parseValue = isDecoding ? Schema.decode(valueSchema) : Schema.encode(valueSchema)
+    [Schema.causeFromSelf(error), value],
+    (causeSchema, valueSchema) => {
+      const parseCause = Schema.decode(causeSchema)
+      const parseValue = Schema.decode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
         options?: AST.ParseOptions
       ): Effect.Effect<
-        never,
-        ParseResult.ParseError,
-        AsyncData.AsyncData<any, any>
+        R1 | R2,
+        ParseResult.ParseIssue,
+        AsyncData.AsyncData<E, A>
       > => {
         return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData(input)) return yield* _(ParseResult.fail(ParseResult.forbidden(input)))
+          if (!AsyncData.isAsyncData<EI, AI>(input)) {
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
+          }
 
           switch (input._tag) {
             case "NoData":
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(input.cause, options))
+              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
 
-              return AsyncData.failCause(isDecoding ? cause : causeFromToCause(cause), {
+              return AsyncData.failCause(cause, {
                 timestamp: input.timestamp,
                 refreshing: Option.getOrUndefined(input.refreshing)
               })
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options))
+              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
 
               return AsyncData.success(a, {
                 timestamp: input.timestamp,
@@ -513,7 +547,56 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
             }
             case "Optimistic": {
               const previous = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options))
+              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+
+              return AsyncData.optimistic(previous, value, {
+                timestamp: input.timestamp
+              })
+            }
+          }
+        })
+      }
+
+      return parseAsyncData
+    },
+    (causeSchema, valueSchema) => {
+      const parseCause = Schema.encode(causeSchema)
+      const parseValue = Schema.encode(valueSchema)
+
+      const parseAsyncData = (
+        input: unknown,
+        options?: AST.ParseOptions
+      ): Effect.Effect<
+        R1 | R2,
+        ParseResult.ParseIssue,
+        AsyncData.AsyncData<EI, AI>
+      > => {
+        return Effect.gen(function*(_) {
+          if (!AsyncData.isAsyncData<E, A>(input)) return yield* _(Effect.fail(ParseResult.forbidden(input)))
+
+          switch (input._tag) {
+            case "NoData":
+            case "Loading":
+              return input
+            case "Failure": {
+              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
+
+              return AsyncData.failCause(cause, {
+                timestamp: input.timestamp,
+                refreshing: Option.getOrUndefined(input.refreshing)
+              })
+            }
+            case "Success": {
+              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+
+              return AsyncData.success(a, {
+                timestamp: input.timestamp,
+                refreshing: Option.getOrUndefined(input.refreshing)
+              })
+            }
+            case "Optimistic": {
+              const previous = yield* _(parseAsyncData(input.previous, options))
+              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
 
               return AsyncData.optimistic(previous, value, {
                 timestamp: input.timestamp
@@ -526,10 +609,10 @@ export const asyncDataFromSelf = <EI, E, AI, A>(
       return parseAsyncData
     },
     {
-      [AST.IdentifierAnnotationId]: "AsyncData",
-      [Pretty.PrettyHookId]: asyncDataPretty,
-      [Arbitrary.ArbitraryHookId]: asyncDataArbitrary,
-      [Eq.EquivalenceHookId]: () => Equal.equals
+      title: "AsyncData",
+      pretty: asyncDataPretty,
+      arbitrary: asyncDataArbitrary,
+      equivalence: () => Equal.equals
     }
   )
 }
@@ -627,30 +710,8 @@ function fiberIdFromToFiberId(id: Schema.FiberIdFrom): FiberId.FiberId {
   }
 }
 
-function causeToCauseFrom<E>(cause: Cause.Cause<E>): Schema.CauseFrom<E> {
-  switch (cause._tag) {
-    case "Die":
-      return { _tag: "Die", defect: cause.defect }
-    case "Empty":
-      return { _tag: "Empty" }
-    case "Fail":
-      return { _tag: "Fail", error: cause.error }
-    case "Interrupt":
-      return { _tag: "Interrupt", fiberId: fiberIdToFiberIdFrom(cause.fiberId) }
-    case "Parallel":
-      return { _tag: "Parallel", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
-    case "Sequential":
-      return { _tag: "Sequential", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
-  }
-}
-
-function fiberIdToFiberIdFrom(id: FiberId.FiberId): Schema.FiberIdFrom {
-  switch (id._tag) {
-    case "None":
-      return { _tag: "None" }
-    case "Runtime":
-      return { _tag: "Runtime", id: id.id, startTimeMillis: id.startTimeMillis }
-    case "Composite":
-      return { _tag: "Composite", left: fiberIdToFiberIdFrom(id.left), right: fiberIdToFiberIdFrom(id.right) }
-  }
+function parseErrorToParseIssue<R, A>(
+  effect: Effect.Effect<R, ParseResult.ParseError, A>
+): Effect.Effect<R, ParseResult.ParseIssue, A> {
+  return Effect.catchTag(effect, "ParseError", (error) => Effect.fail(error.error))
 }

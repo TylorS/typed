@@ -6,7 +6,7 @@
 import type { ParseOptions } from "@effect/schema/AST"
 import * as P from "@effect/schema/Parser"
 import type * as ParseResult from "@effect/schema/ParseResult"
-import type * as S from "@effect/schema/Schema"
+import * as S from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
@@ -35,9 +35,9 @@ export const Storage: Context.Tagged<Storage> = Context.Tagged<Storage>("@typed/
  * @since 8.19.0
  * @category getters
  */
-export const getItem: (key: string) => StorageEffect<never, never, O.Option<string>> = (
+export const getItem: (key: string) => StorageEffect<Storage, never, O.Option<string>> = (
   key: string
-): StorageEffect<never, never, O.Option<string>> =>
+): StorageEffect<Storage, never, O.Option<string>> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -54,10 +54,10 @@ export const getItem: (key: string) => StorageEffect<never, never, O.Option<stri
  * @since 8.19.0
  * @category setters
  */
-export const setItem: (key: string, value: string) => StorageEffect<never, never, void> = (
+export const setItem: (key: string, value: string) => StorageEffect<Storage, never, void> = (
   key: string,
   value: string
-): StorageEffect<never, never, void> =>
+): StorageEffect<Storage, never, void> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -73,9 +73,9 @@ export const setItem: (key: string, value: string) => StorageEffect<never, never
  * @since 8.19.0
  * @category setters
  */
-export const removeItem: (key: string) => StorageEffect<never, never, void> = (
+export const removeItem: (key: string) => StorageEffect<Storage, never, void> = (
   key: string
-): StorageEffect<never, never, void> =>
+): StorageEffect<Storage, never, void> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -113,23 +113,25 @@ export const localStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
  * @since 8.19.0
  * @category models
  */
-export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<string, any>>>> {
+export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<any, string, any>>>> {
   readonly schemas: Schemas
 
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
+  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
     value: S.Schema.To<Schemas[K]>,
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, void>
+  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, void>
 
-  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<never, never, void>
+  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<Storage, never, void>
 
-  readonly key: <K extends keyof Schemas & string>(key: K) => SchemaKeyStorage<Schemas[K]>
+  readonly key: <K extends keyof Schemas & string>(
+    key: K
+  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.To<Schemas[K]>>
 }
 
 /**
@@ -139,19 +141,19 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
  * @since 8.19.0
  * @category models
  */
-export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
-  readonly schema: S
+export interface SchemaKeyStorage<R, O> {
+  readonly schema: S.Schema<R, string, O>
 
   readonly get: (
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.Schema.To<S>>>
+  ) => StorageEffect<Storage | R, ParseResult.ParseError, O.Option<O>>
 
   readonly set: (
-    value: S.Schema.To<S>,
+    value: O,
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, void>
+  ) => StorageEffect<Storage | R, ParseResult.ParseError, void>
 
-  readonly remove: StorageEffect<never, never, void>
+  readonly remove: StorageEffect<Storage, never, void>
 }
 
 /**
@@ -160,14 +162,14 @@ export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
  * @category constructors
  */
 export function SchemaStorage<
-  const Schemas extends Readonly<Record<string, S.Schema<string, any>>>
+  const Schemas extends Readonly<Record<string, S.Schema<any, string, any>>>
 >(schemas: Schemas): SchemaStorage<Schemas> {
   const decoders: Partial<
     {
       [K in keyof Schemas]: (
         i: S.Schema.From<Schemas[K]>,
         options?: ParseOptions
-      ) => Effect.Effect<never, ParseResult.ParseError, S.Schema.To<Schemas[K]>>
+      ) => Effect.Effect<S.Schema.Context<Schemas[K]>, ParseResult.ParseError, S.Schema.To<Schemas[K]>>
     }
   > = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
@@ -195,7 +197,7 @@ export function SchemaStorage<
 
         const decoder = getDecoder(key)
 
-        const result = yield* $(decoder(option.value, options))
+        const result = yield* $(decoder(option.value as S.Schema.From<Schemas[K]>, options))
 
         return O.some(result)
       })
@@ -229,12 +231,12 @@ export function SchemaStorage<
  * @since 8.19.0
  * @category constructors
  */
-export function SchemaKeyStorage<K extends string, S extends S.Schema<string, any>>(
+export function SchemaKeyStorage<K extends string, R, O>(
   key: K,
-  schema: S
-): SchemaKeyStorage<S> {
-  const decoder = P.decode(schema)
-  const encoder = P.encode(schema)
+  schema: S.Schema<R, string, O>
+): SchemaKeyStorage<R, O> {
+  const decoder = S.decode(schema)
+  const encoder = S.encode(schema)
 
   const get = (options?: ParseOptions) =>
     StorageEffect(
@@ -251,7 +253,7 @@ export function SchemaKeyStorage<K extends string, S extends S.Schema<string, an
       })
     )
 
-  const set = (value: S.Schema.To<S>, options?: ParseOptions) =>
+  const set = (value: O, options?: ParseOptions) =>
     StorageEffect(
       Effect.gen(function*($) {
         const encoded = yield* $(encoder(value, options))
@@ -276,7 +278,7 @@ export function SchemaKeyStorage<K extends string, S extends S.Schema<string, an
  * @since 8.19.0
  * @category models
  */
-export interface StorageEffect<R, E, A> extends Effect.Effect<R | Storage, E, A> {
+export interface StorageEffect<R, E, A> extends Effect.Effect<R, E, A> {
   readonly local: Effect.Effect<Window | Exclude<R, Storage>, E, A>
   readonly session: Effect.Effect<Window | Exclude<R, Storage>, E, A>
 }
@@ -290,10 +292,10 @@ export interface StorageEffect<R, E, A> extends Effect.Effect<R | Storage, E, A>
  * @category constructors
  */
 export function StorageEffect<R, E, A>(
-  effect: Effect.Effect<R | Storage, E, A>
-): StorageEffect<Exclude<R, Storage>, E, A> {
+  effect: Effect.Effect<R, E, A>
+): StorageEffect<R, E, A> {
   return Object.assign(effect, {
     local: Effect.provide(effect, localStorage),
     session: Effect.provide(effect, sessionStorage)
-  }) as StorageEffect<Exclude<R, Storage>, E, A>
+  })
 }

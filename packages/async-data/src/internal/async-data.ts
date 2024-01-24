@@ -30,12 +30,6 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
 
     if (!isAsyncData(that) || that._tag !== FAILURE_TAG) return false
 
-    console.log(
-      Equal.equals(this.cause, that.cause),
-      this.timestamp === that.timestamp,
-      Equal.equals(this.refreshing, that.refreshing)
-    )
-
     return Equal.equals(this.cause, that.cause)
       && this.timestamp === that.timestamp
       && Equal.equals(this.refreshing, that.refreshing)

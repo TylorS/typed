@@ -53,13 +53,13 @@ export function make<I, R, E, O>(
 }
 
 // Avoid creating Decoders for the same Schema over and over again
-const schemaDecoderCache = new WeakMap<Schema.Schema<any, any>, Decoder<any, never, ParseError, any>>()
+const schemaDecoderCache = new WeakMap<Schema.Schema<any, any>, Decoder<any, any, ParseError, any>>()
 
 /**
  * Lift a Schema<I, O> into a Decoder<I, never, ParseError, O>.
  * @since 1.0.0
  */
-export function fromSchema<I, O>(schema: Schema.Schema<I, O>): Decoder<I, never, ParseError, O> {
+export function fromSchema<R, I, O>(schema: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, O> {
   const cached = schemaDecoderCache.get(schema)
   if (cached === undefined) {
     const decoder = make(Schema.decode(schema))
@@ -79,8 +79,8 @@ export const mapEffect: {
     f: (value: O) => Effect.Effect<R2, E2, B>
   ): {
     <I, R, E>(input: Decoder<I, R, E, O>): Decoder<I, R | R2, E | E2 | ParseError, B>
-    <I>(input: Schema.Schema<I, O>): Decoder<I, R2, E2 | ParseError, B>
-    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<I, O>): Decoder<
+    <R, I>(input: Schema.Schema<R, I, O>): Decoder<I, R2, E2 | ParseError, B>
+    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<
       I,
       R | R2,
       E | E2 | ParseError,
@@ -95,17 +95,17 @@ export const mapEffect: {
     B
   >
 
-  <I, O, R2, E2, B>(
-    input: Schema.Schema<I, O>,
+  <R, I, O, R2, E2, B>(
+    input: Schema.Schema<R, I, O>,
     f: (value: O) => Effect.Effect<R2, E2, B>
-  ): Decoder<I, R2, E2 | ParseError, B>
+  ): Decoder<I, R | R2, E2 | ParseError, B>
 
   <I, R = never, E = never, O = never, R2 = never, E2 = never, B = never>(
-    input: Decoder<I, R, E, O> | Schema.Schema<I, O>,
+    input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
     f: (value: O) => Effect.Effect<R2, E2, B>
   ): Decoder<I, R | R2, E | E2 | ParseError, B>
 } = dual(2, function parse<I, R = never, E = never, O = never, R2 = never, E2 = never, B = never>(
-  input: Decoder<I, R, E, O> | Schema.Schema<I, O>,
+  input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
   f: (value: O) => Effect.Effect<R2, E2, B>
 ): Decoder<I, R | R2, E | E2 | ParseError, B> {
   const decoder = getDecoder(input)
@@ -122,14 +122,14 @@ export const mapEffect: {
 export const map: {
   <O, B>(f: (o: O) => B): {
     <I, R, E>(input: Decoder<I, R, E, O>): Decoder<I, R, E, B>
-    <I>(input: Schema.Schema<I, O>): Decoder<I, never, ParseError, B>
-    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<I, O>): Decoder<I, R, E | ParseError, B>
+    <R, I>(input: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, B>
+    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R, E | ParseError, B>
   }
 
   <I, R, E, O, B>(input: Decoder<I, R, E, O>, f: (o: O) => B): Decoder<I, R, E, B>
-  <I, O, B>(input: Schema.Schema<I, O>, f: (o: O) => B): Decoder<I, never, ParseError, B>
-  <I, R, E, O, B>(input: Decoder<I, R, E, O> | Schema.Schema<I, O>, f: (o: O) => B): Decoder<I, R, ParseError | E, B>
-} = dual(2, function<I, R, E, O, B>(input: Decoder<I, R, E, O> | Schema.Schema<I, O>, f: (o: O) => B) {
+  <R, I, O, B>(input: Schema.Schema<R, I, O>, f: (o: O) => B): Decoder<I, never, ParseError, B>
+  <I, R, E, O, B>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>, f: (o: O) => B): Decoder<I, R, ParseError | E, B>
+} = dual(2, function<I, R, E, O, B>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>, f: (o: O) => B) {
   return mapEffect(input, (o) => Effect.sync(() => f(o)))
 })
 
@@ -142,18 +142,18 @@ export const compose: {
     to: Decoder<O, R2, E2, B>
   ): {
     <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R | R2, E | E2, B>
-    <I>(from: Schema.Schema<I, O>): Decoder<I, R2, E2 | ParseError, B>
-    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<I, O>): Decoder<I, R | R2, E | E2 | ParseError, B>
+    <R, I>(from: Schema.Schema<R, I, O>): Decoder<I, R2, E2 | ParseError, B>
+    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R | R2, E | E2 | ParseError, B>
   }
 
   <O, B>(to: Schema.Schema<O, B>): {
     <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R, E | ParseError, B>
-    <I>(from: Schema.Schema<I, O>): Decoder<I, never, ParseError, B>
-    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<I, O>): Decoder<I, R, E | ParseError, B>
+    <R, I>(from: Schema.Schema<R, I, O>): Decoder<I, never, ParseError, B>
+    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R, E | ParseError, B>
   }
 
   <O, R2, E2, B>(
-    to: Decoder<O, R2, E2, B> | Schema.Schema<O, B>
+    to: Decoder<O, R2, E2, B> | Schema.Schema<R2, O, B>
   ): {
     <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R | R2, E | E2 | ParseError, B>
     <I>(from: Schema.Schema<I, O>): Decoder<I, R2, E2 | ParseError, B>
@@ -164,16 +164,16 @@ export const compose: {
     from: Decoder<I, R, E, O>,
     to: Decoder<O, R2, E2, B>
   ): Decoder<I, R | R2, E | E2, B>
-  <I, O, R2, E2, B>(from: Schema.Schema<I, O>, to: Decoder<O, R2, E2, B>): Decoder<I, R2, E2 | ParseError, B>
-  <I, R, E, O, B>(from: Decoder<I, R, E, O>, to: Schema.Schema<O, B>): Decoder<I, R, E | ParseError, B>
-  <I, O, B>(from: Schema.Schema<I, O>, to: Schema.Schema<O, B>): Decoder<I, never, ParseError, B>
+  <R, I, O, R2, E2, B>(from: Schema.Schema<R, I, O>, to: Decoder<O, R2, E2, B>): Decoder<I, R | R2, E2 | ParseError, B>
+  <I, R, E, R2, O, B>(from: Decoder<I, R, E, O>, to: Schema.Schema<R2, O, B>): Decoder<I, R | R2, E | ParseError, B>
+  <R, I, O, R2, B>(from: Schema.Schema<R, I, O>, to: Schema.Schema<R2, O, B>): Decoder<I, R | R2, ParseError, B>
   <I, R, E, O, R2, E2, B>(
-    from: Decoder<I, R, E, O> | Schema.Schema<I, O>,
-    to: Decoder<O, R2, E2, B> | Schema.Schema<O, B>
+    from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
+    to: Decoder<O, R2, E2, B> | Schema.Schema<R2, O, B>
   ): Decoder<I, R | R2, ParseError | E | E2, B>
 } = dual(2, function<I, R, E, O, R2, E2, B>(
-  from: Decoder<I, R, E, O> | Schema.Schema<I, O>,
-  to: Decoder<O, R2, E2, B> | Schema.Schema<O, B>
+  from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
+  to: Decoder<O, R2, E2, B> | Schema.Schema<R2, O, B>
 ) {
   return mapEffect(from, getDecoder(to).decode)
 })
@@ -185,9 +185,9 @@ export const compose: {
  */
 export const getDecoder: {
   <I, R, E, O>(decoder: Decoder<I, R, E, O>): Decoder<I, R, E, O>
-  <I, O>(schema: Schema.Schema<I, O>): Decoder<I, never, ParseError, O>
+  <R, I, O>(schema: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, O>
   <I, R = never, E = never, O = never>(
-    decoder: Decoder<I, R, E, O> | Schema.Schema<I, O>
+    decoder: Decoder<I, R, E, O> | Schema.Schema<R, I, O>
   ): Decoder<I, R, E | ParseError, O>
 } = function getDecoder<I, R, E, O>(
   decoder: Decoder<I, R, E, O> | Schema.Schema<I, O>

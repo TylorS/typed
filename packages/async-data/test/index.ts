@@ -4,6 +4,7 @@ import * as AsyncData from "@typed/async-data/AsyncData"
 import * as AsyncDataSchema from "@typed/async-data/Schema"
 import { ok } from "assert"
 import { Effect } from "effect"
+import { describe, it } from "vitest"
 
 const equalAsyncData = <E, A>(
   a: AsyncData.AsyncData<E, A>,
@@ -312,7 +313,7 @@ describe("AsyncData", () => {
   })
 })
 
-function encodeDecodeAreDual<I, O>(schema: Schema.Schema<I, O>, input: I, output: O) {
+function encodeDecodeAreDual<R, I, O>(schema: Schema.Schema<R, I, O>, input: I, output: O) {
   return Effect.gen(function*(_) {
     const encode = Schema.encode(schema)
     const decode = Schema.decode(schema)
