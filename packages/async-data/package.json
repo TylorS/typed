@@ -1,6 +1,6 @@
 {
   "name": "@typed/async-data",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "",
   "publishConfig": {
     "access": "public",

@@ -1,5 +1,11 @@
 # @typed/async-data
 
+## 0.5.1
+
+### Patch Changes
+
+- [`afc377d`](https://github.com/TylorS/typed/commit/afc377df0ac5de0c74353b2655691f366ba9af19) Thanks [@TylorS](https://github.com/TylorS)! - Simplify AsyncData Schemas
+
 ## 0.5.0
 
 ### Minor Changes

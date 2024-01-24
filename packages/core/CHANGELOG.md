@@ -1,5 +1,18 @@
 # @typed/core
 
+## 3.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`afc377d`](https://github.com/TylorS/typed/commit/afc377df0ac5de0c74353b2655691f366ba9af19)]:
+  - @typed/async-data@0.5.1
+  - @typed/fx@1.22.1
+  - @typed/navigation@0.10.1
+  - @typed/route@3.1.1
+  - @typed/router@0.23.1
+  - @typed/template@0.5.1
+  - @typed/ui@0.5.1
+
 ## 3.1.0
 
 ### Minor Changes
