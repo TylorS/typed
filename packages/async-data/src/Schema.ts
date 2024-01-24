@@ -5,6 +5,7 @@
 import * as Arbitrary from "@effect/schema/Arbitrary"
 import * as AST from "@effect/schema/AST"
 import * as Eq from "@effect/schema/Equivalence"
+import * as Parser from "@effect/schema/Parser"
 import * as ParseResult from "@effect/schema/ParseResult"
 import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
@@ -301,7 +302,7 @@ function isFailureFrom(value: unknown): value is FailureFrom<any> {
     && isCauseFrom(value.cause)
     && hasProperty(value, "timestamp")
     && typeof value.timestamp === "number"
-    && (hasProperty(value, "refreshing") ? isLoadingFrom(value.refreshing) : true)
+    && (hasProperty(value, "refreshing") ? value.refreshing === undefined || isLoadingFrom(value.refreshing) : true)
 }
 
 function isSuccessFrom(value: unknown): value is SuccessFrom<any> {
@@ -310,7 +311,7 @@ function isSuccessFrom(value: unknown): value is SuccessFrom<any> {
     && hasProperty(value, "value")
     && hasProperty(value, "timestamp")
     && typeof value.timestamp === "number"
-    && (hasProperty(value, "refreshing") ? isLoadingFrom(value.refreshing) : true)
+    && (hasProperty(value, "refreshing") ? value.refreshing === undefined || isLoadingFrom(value.refreshing) : true)
 }
 
 function isOptimisticFrom(value: unknown): value is OptimisticFrom<any, any> {
@@ -341,8 +342,8 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
   return Schema.declare(
     [Schema.cause(error, Schema.unknown), value],
     (causeSchema, valueSchema) => {
-      const parseCause = Schema.decode(causeSchema)
-      const parseValue = Schema.decode(valueSchema)
+      const parseCause = Parser.decode(causeSchema)
+      const parseValue = Parser.decode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -362,16 +363,16 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
+              const cause = yield* _(parseCause(input.cause, options))
               return FailureFrom(cause, input.timestamp, input.refreshing)
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const a = yield* _(parseValue(input.value, options))
               return SuccessFrom(a, input.timestamp, input.refreshing)
             }
             case "Optimistic": {
               const previous = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const value = yield* _(parseValue(input.value, options))
               return OptimisticFrom(value, input.timestamp, previous)
             }
           }
@@ -381,8 +382,8 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
       return parseAsyncData
     },
     (causeSchema, valueSchema) => {
-      const parseCause = Schema.encode(causeSchema)
-      const parseValue = Schema.encode(valueSchema)
+      const parseCause = Parser.encode(causeSchema)
+      const parseValue = Parser.encode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -402,16 +403,16 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(causeFromToCause(input.cause), options), parseErrorToParseIssue)
+              const cause = yield* _(parseCause(causeFromToCause(input.cause), options))
               return FailureFrom(cause, input.timestamp, input.refreshing)
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const a = yield* _(parseValue(input.value, options))
               return SuccessFrom(a, input.timestamp, input.refreshing)
             }
             case "Optimistic": {
               const previous = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const value = yield* _(parseValue(input.value, options))
               return OptimisticFrom(value, input.timestamp, previous)
             }
           }
@@ -422,7 +423,11 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
     },
     {
       title: "AsyncDataFrom",
-      equivalence: () => fromEq
+      equivalence: () => fromEq,
+      arbitrary: (causeArb, valueArb) => (fc) =>
+        asyncDataArbitrary(causeArb, valueArb)(fc).map(asyncDataToAsyncDataFrom),
+      pretty: (causePretty, valuePretty) => (from) =>
+        asyncDataPretty(causePretty, valuePretty)(asyncDataFromToAsyncData(from))
     }
   )
 }
@@ -434,68 +439,11 @@ export const asyncData = <R1, EI, E, R2, AI, A>(
   errorSchema: Schema.Schema<R1, EI, E>,
   valueSchema: Schema.Schema<R2, AI, A>
 ): Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>> => {
-  const encodeCause = Schema.encode(Schema.cause(Schema.to(errorSchema)))
-
   return asyncDataFromJson(errorSchema, valueSchema)
-    .pipe(Schema.transformOrFail(
+    .pipe(Schema.transform(
       asyncDataFromSelf(Schema.to(errorSchema), Schema.to(valueSchema)),
-      function decodeAsyncDataFrom(
-        c: AsyncDataFrom<E, A>,
-        options?: AST.ParseOptions
-      ): Effect.Effect<never, ParseResult.ParseIssue, AsyncData.AsyncData<E, A>> {
-        switch (c._tag) {
-          case "NoData":
-            return Effect.succeed(AsyncData.noData())
-          case "Loading":
-            return Effect.succeed(loadingFromJson(c)!)
-          case "Failure": {
-            return Effect.succeed(
-              AsyncData.failCause(causeFromToCause(c.cause), {
-                timestamp: c.timestamp,
-                refreshing: loadingFromJson(c.refreshing)
-              })
-            )
-          }
-          case "Success": {
-            return Effect.succeed(AsyncData.success(c.value, {
-              timestamp: c.timestamp,
-              refreshing: loadingFromJson(c.refreshing)
-            }))
-          }
-          case "Optimistic": {
-            return Effect.map(
-              decodeAsyncDataFrom(c.previous, options),
-              (previous) => AsyncData.optimistic(previous, c.value, { timestamp: c.timestamp })
-            )
-          }
-        }
-      },
-      function encodeAsyncDataFrom(
-        a: AsyncData.AsyncData<E, A>,
-        options?: AST.ParseOptions
-      ): Effect.Effect<never, ParseResult.ParseIssue, AsyncDataFrom<E, A>> {
-        switch (a._tag) {
-          case "NoData":
-            return Effect.succeed({ _tag: "NoData" })
-          case "Loading":
-            return Effect.succeed(loadingToJson(a))
-          case "Failure":
-            return Effect.map(
-              parseErrorToParseIssue(encodeCause(a.cause, options)),
-              (cause) => FailureFrom(cause, a.timestamp, Option.getOrUndefined(Option.map(a.refreshing, loadingToJson)))
-            )
-          case "Success":
-            return Effect.succeed(
-              SuccessFrom(a.value, a.timestamp, Option.getOrUndefined(Option.map(a.refreshing, loadingToJson)))
-            )
-          case "Optimistic": {
-            return Effect.map(
-              encodeAsyncDataFrom(a.previous, options),
-              (previous) => OptimisticFrom(a.value, a.timestamp, previous)
-            )
-          }
-        }
-      }
+      asyncDataFromToAsyncData,
+      asyncDataToAsyncDataFrom
     ))
 }
 
@@ -509,8 +457,8 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
   return Schema.declare(
     [Schema.causeFromSelf(error), value],
     (causeSchema, valueSchema) => {
-      const parseCause = Schema.decode(causeSchema)
-      const parseValue = Schema.decode(valueSchema)
+      const parseCause = Parser.decode(causeSchema)
+      const parseValue = Parser.decode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -530,7 +478,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
+              const cause = yield* _(parseCause(input.cause, options))
 
               return AsyncData.failCause(cause, {
                 timestamp: input.timestamp,
@@ -538,7 +486,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
               })
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const a = yield* _(parseValue(input.value, options))
 
               return AsyncData.success(a, {
                 timestamp: input.timestamp,
@@ -547,7 +495,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
             }
             case "Optimistic": {
               const previous = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const value = yield* _(parseValue(input.value, options))
 
               return AsyncData.optimistic(previous, value, {
                 timestamp: input.timestamp
@@ -560,8 +508,8 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
       return parseAsyncData
     },
     (causeSchema, valueSchema) => {
-      const parseCause = Schema.encode(causeSchema)
-      const parseValue = Schema.encode(valueSchema)
+      const parseCause = Parser.encode(causeSchema)
+      const parseValue = Parser.encode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -579,7 +527,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
             case "Loading":
               return input
             case "Failure": {
-              const cause = yield* _(parseCause(input.cause, options), parseErrorToParseIssue)
+              const cause = yield* _(parseCause(input.cause, options))
 
               return AsyncData.failCause(cause, {
                 timestamp: input.timestamp,
@@ -587,7 +535,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
               })
             }
             case "Success": {
-              const a = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const a = yield* _(parseValue(input.value, options))
 
               return AsyncData.success(a, {
                 timestamp: input.timestamp,
@@ -596,7 +544,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
             }
             case "Optimistic": {
               const previous = yield* _(parseAsyncData(input.previous, options))
-              const value = yield* _(parseValue(input.value, options), parseErrorToParseIssue)
+              const value = yield* _(parseValue(input.value, options))
 
               return AsyncData.optimistic(previous, value, {
                 timestamp: input.timestamp
@@ -710,8 +658,78 @@ function fiberIdFromToFiberId(id: Schema.FiberIdFrom): FiberId.FiberId {
   }
 }
 
-function parseErrorToParseIssue<R, A>(
-  effect: Effect.Effect<R, ParseResult.ParseError, A>
-): Effect.Effect<R, ParseResult.ParseIssue, A> {
-  return Effect.catchTag(effect, "ParseError", (error) => Effect.fail(error.error))
+function causeToCauseFrom<E>(cause: Cause.Cause<E>): Schema.CauseFrom<E> {
+  switch (cause._tag) {
+    case "Die":
+      return { _tag: "Die", defect: cause.defect }
+    case "Empty":
+      return { _tag: "Empty" }
+    case "Fail":
+      return { _tag: "Fail", error: cause.error }
+    case "Interrupt":
+      return { _tag: "Interrupt", fiberId: fiberIdToFiberIdFrom(cause.fiberId) }
+    case "Parallel":
+      return { _tag: "Parallel", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+    case "Sequential":
+      return { _tag: "Sequential", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+  }
+}
+
+function fiberIdToFiberIdFrom(id: FiberId.FiberId): Schema.FiberIdFrom {
+  switch (id._tag) {
+    case "None":
+      return { _tag: "None" }
+    case "Runtime":
+      return { _tag: "Runtime", id: id.id, startTimeMillis: id.startTimeMillis }
+    case "Composite":
+      return { _tag: "Composite", left: fiberIdToFiberIdFrom(id.left), right: fiberIdToFiberIdFrom(id.right) }
+  }
+}
+
+const NO_DATA_FROM: NoDataFrom = { _tag: "NoData" } as const
+
+function asyncDataToAsyncDataFrom<E, A>(data: AsyncData.AsyncData<E, A>): AsyncDataFrom<E, A> {
+  switch (data._tag) {
+    case "NoData":
+      return NO_DATA_FROM
+    case "Loading":
+      return loadingToJson(data)
+    case "Failure":
+      return FailureFrom(
+        causeToCauseFrom(data.cause),
+        data.timestamp,
+        Option.getOrUndefined(Option.map(data.refreshing, loadingToJson))
+      )
+    case "Success":
+      return SuccessFrom(
+        data.value,
+        data.timestamp,
+        Option.getOrUndefined(Option.map(data.refreshing, loadingToJson))
+      )
+    case "Optimistic":
+      return OptimisticFrom(data.value, data.timestamp, asyncDataToAsyncDataFrom(data.previous))
+  }
+}
+
+function asyncDataFromToAsyncData<E, A>(data: AsyncDataFrom<E, A>): AsyncData.AsyncData<E, A> {
+  switch (data._tag) {
+    case "NoData":
+      return AsyncData.noData()
+    case "Loading":
+      return loadingFromJson(data)!
+    case "Failure":
+      return AsyncData.failCause(causeFromToCause(data.cause), {
+        timestamp: data.timestamp,
+        refreshing: loadingFromJson(data.refreshing)
+      })
+    case "Success":
+      return AsyncData.success(data.value, {
+        timestamp: data.timestamp,
+        refreshing: loadingFromJson(data.refreshing)
+      })
+    case "Optimistic":
+      return AsyncData.optimistic(asyncDataFromToAsyncData(data.previous), data.value, {
+        timestamp: data.timestamp
+      })
+  }
 }
