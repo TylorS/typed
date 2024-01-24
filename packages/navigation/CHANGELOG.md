@@ -1,5 +1,19 @@
 # @typed/navigation
 
+## 0.10.0
+
+### Minor Changes
+
+- [`e5a9baf`](https://github.com/TylorS/typed/commit/e5a9baf92b283187ce547f5664a2e15587721276) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade to latest @effect/schema w/ R parameter
+
+### Patch Changes
+
+- Updated dependencies [[`e5a9baf`](https://github.com/TylorS/typed/commit/e5a9baf92b283187ce547f5664a2e15587721276)]:
+  - @typed/context@0.23.0
+  - @typed/dom@11.0.0
+  - @typed/fx@1.22.0
+  - @typed/id@0.5.0
+
 ## 0.9.1
 
 ### Patch Changes
