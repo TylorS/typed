@@ -10,6 +10,7 @@ import {
   getTextUntilCloseBrace,
   getTextUntilPart,
   getWhitespace,
+  PART_REGEX,
   PART_STRING
 } from "./chunks.js"
 
@@ -697,6 +698,10 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
   let pos: number = 0
   const out: Array<Template.TextNode | T> = []
 
+  if (!PART_REGEX.test(s)) {
+    return [new Template.TextNode(s)]
+  }
+
   while (pos < s.length) {
     if ((next = getPart(s, pos))) {
       out.push(f(parseInt(next.match[2], 10)))
@@ -706,10 +711,12 @@ function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Templat
 
       pos += next.length
     } else {
-      out.push(new Template.TextNode(s.substring(pos)))
-
-      return out
+      break
     }
+  }
+
+  if (pos < s.length) {
+    out.push(new Template.TextNode(s.slice(pos)))
   }
 
   return out
@@ -729,18 +736,16 @@ export function templateHash(strings: ReadonlyArray<string>) {
   const hashes = new Uint32Array(digestSize).fill(fill)
 
   for (let i = 0; i < strings.length; i++) {
-    const s = strings[i]
+    const string = strings[i]
 
-    for (let j = 0; j < s.length; j++) {
+    for (let j = 0; j < string.length; j++) {
       const key = j % digestSize
-
-      hashes[key] = (hashes[key] * multiplier) ^ s.charCodeAt(j)
+      hashes[key] = hashes[key] * multiplier + string.charCodeAt(j)
     }
   }
 
   return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)))
 }
-
 function isSpread(str: string) {
   return str[0] === chars.dot && str[1] === chars.dot && str[2] === chars.dot
 }
