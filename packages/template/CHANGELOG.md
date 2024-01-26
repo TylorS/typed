@@ -1,5 +1,11 @@
 # @typed/template
 
+## 0.5.2
+
+### Patch Changes
+
+- [`f90dcff`](https://github.com/TylorS/typed/commit/f90dcffd401036e8ad88739cf5a6bfc2fa41b679) Thanks [@TylorS](https://github.com/TylorS)! - Ensure larger SVGs can be parsed
+
 ## 0.5.1
 
 ### Patch Changes
