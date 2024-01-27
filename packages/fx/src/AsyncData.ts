@@ -65,6 +65,43 @@ export const runAsyncData: {
 /**
  * @since 1.20.0
  */
+export const runOptimistic: {
+  <R2, E, A>(
+    effect: Effect.Effect<R2, E, A>,
+    value: A
+  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
+  <R, E, A, R2>(
+    ref: RefAsyncData<R, E, A>,
+    effect: Effect.Effect<R2, E, A>,
+    value: A
+  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
+} = dual(3, function runOptimistic<R, E, A, R2>(
+  ref: RefAsyncData<R, E, A>,
+  effect: Effect.Effect<R2, E, A>,
+  value: A
+): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>> {
+  return ref.runUpdates(({ get, set }) =>
+    Effect.uninterruptibleMask((restore) =>
+      Effect.flatMap(
+        Effect.flatMap(
+          Effect.flatMap(get, (current) =>
+            set(
+              AsyncData.optimistic(
+                AsyncData.startLoading(AsyncData.isOptimistic(current) ? current.previous : current),
+                value
+              )
+            )),
+          () => Effect.exit(restore(effect))
+        ),
+        (exit) => set(AsyncData.fromExit(exit))
+      )
+    )
+  )
+})
+
+/**
+ * @since 1.20.0
+ */
 export const matchAsyncData: {
   <E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
     matchers: {
@@ -138,7 +175,8 @@ export const matchAsyncData: {
                 (value) =>
                   Effect.map(
                     success,
-                    (d) => AsyncData.map(d, () => value) as AsyncData.Success<A> | AsyncData.Optimistic<E1, A>
+                    (d): AsyncData.Success<A> | AsyncData.Optimistic<E1, A> =>
+                      AsyncData.isOptimistic(d) ? AsyncData.optimistic(d.previous, value) : AsyncData.success(value)
                   )
               ),
               success
