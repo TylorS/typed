@@ -15,6 +15,7 @@ import { dual, pipe } from "effect/Function"
 
 import type { ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"
+import type { Simplify } from "effect/Types"
 
 /**
  * @since 1.0.0
@@ -110,14 +111,14 @@ const makeHref_ = <P extends string, P2 extends string>(
  */
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
-  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+  ...params: [keyof Simplify<ParamsOf<P>>] extends [never] ? [params?: {}] : [params: ParamsOf<P>]
 ): RefSubject.Filtered<Navigation | CurrentRoute, never, string> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return RefSubject.filterMapEffect(
     CurrentPath,
     (currentPath) =>
-      Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params))
+      Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params as any))
   )
 }
 
