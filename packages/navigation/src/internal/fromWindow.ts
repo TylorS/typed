@@ -123,7 +123,7 @@ function setupWithNavigation(
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
       Effect.gen(function*(_) {
         const { key, state, url } = to
@@ -184,6 +184,7 @@ function setupWithNavigation(
       canGoForward,
       beforeHandlers,
       handlers,
+      formDataHandlers,
       commit
     } as const
   })
@@ -247,7 +248,7 @@ function setupWithHistory(
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
       Effect.sync(() => {
         const { type } = event
@@ -269,8 +270,9 @@ function setupWithHistory(
       canGoForward,
       beforeHandlers,
       handlers,
+      formDataHandlers,
       commit
-    } as ModelAndIntent
+    } satisfies ModelAndIntent
   })
 }
 

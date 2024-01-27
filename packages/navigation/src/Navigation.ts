@@ -2,16 +2,18 @@
  * @since 1.0.0
  */
 
-import { ParseResult } from "@effect/schema"
+import type * as HttpClient from "@effect/platform/HttpClient"
+import { Parser, ParseResult } from "@effect/schema"
 import * as Schema from "@effect/schema/Schema"
 import { Tagged } from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import * as IdSchema from "@typed/id/Schema"
 import type { Option, Scope } from "effect"
-
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
+import type { Simplify } from "effect/Types"
+
 /**
  * @since 1.0.0
  */
@@ -54,11 +56,24 @@ export interface Navigation {
 
   readonly beforeNavigation: <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
 
   readonly onNavigation: <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+
+  readonly submit: (
+    data: FormData,
+    formInput?: Simplify<Omit<FormInputFrom, "data">>
+  ) => Effect.Effect<
+    HttpClient.client.Client.Default,
+    NavigationError | HttpClient.error.HttpClientError,
+    Option.Option<HttpClient.response.ClientResponse>
+  >
+
+  readonly onFormData: <R = never, R2 = never>(
+    handler: FormDataHandler<R, R2>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
 }
 
 /**
@@ -211,6 +226,19 @@ export type NavigationHandler<R, R2> = (
 /**
  * @since 1.0.0
  */
+export type FormDataHandler<R, R2> = (
+  event: FormDataEvent
+) => Effect.Effect<
+  R,
+  RedirectError | CancelNavigation,
+  Option.Option<
+    Effect.Effect<R2, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
+  >
+>
+
+/**
+ * @since 1.0.0
+ */
 export class NavigationError extends Data.TaggedError("NavigationError")<{ readonly error: unknown }> {}
 
 /**
@@ -236,6 +264,99 @@ export interface NavigateOptions {
   readonly state?: unknown
   readonly info?: unknown
 }
+
+/**
+ * @since 1.0.0
+ */
+export const FileSchemaFrom = Schema.struct({
+  _id: Schema.literal("File"),
+  name: Schema.string,
+  data: Schema.string // Base64 encoded
+})
+
+/**
+ * @since 1.0.0
+ */
+export type FileSchemaFrom = Schema.Schema.From<typeof FileSchemaFrom>
+
+const decodeBase64 = Parser.decode(Schema.Base64)
+const encodeBase64 = Parser.encode(Schema.Base64)
+
+/**
+ * @since 1.0.0
+ */
+export const FileSchema = FileSchemaFrom.pipe(
+  Schema.transformOrFail(
+    Schema.instanceOf(File),
+    ({ data, name }) => Effect.map(decodeBase64(data), (buffer) => new File([buffer], name)),
+    (file) =>
+      Effect.promise(() => file.arrayBuffer()).pipe(
+        Effect.flatMap((buffer) => encodeBase64(new Uint8Array(buffer))),
+        Effect.map((data): FileSchemaFrom => ({ _id: "File", name: file.name, data }))
+      )
+  )
+)
+
+/**
+ * @since 1.0.0
+ */
+export const FormDataSchema = Schema.record(Schema.string, Schema.union(Schema.string, FileSchema)).pipe(
+  Schema.transform(
+    Schema.instanceOf(FormData),
+    (formData) => {
+      const data = new FormData()
+
+      for (const [key, value] of Object.entries(formData)) {
+        if (value instanceof File) {
+          data.append(key, value, value.name)
+        } else {
+          data.append(key, value)
+        }
+      }
+
+      return data
+    },
+    (formData) => Object.fromEntries(formData.entries())
+  )
+)
+
+const optionNullable = { as: "Option", nullable: true } as const
+
+/**
+ * @since 1.0.0
+ */
+export const FormInputSchema = Schema.struct({
+  name: Schema.optional(Schema.string, optionNullable),
+  action: Schema.optional(Schema.string, optionNullable),
+  method: Schema.optional(Schema.string, optionNullable),
+  encoding: Schema.optional(Schema.string, optionNullable),
+  data: FormDataSchema
+})
+
+/**
+ * @since 1.0.0
+ */
+export type FormInputFrom = Schema.Schema.From<typeof FormInputSchema>
+
+/**
+ * @since 1.0.0
+ */
+export interface FormInput extends Schema.Schema.To<typeof FormInputSchema> {}
+
+/**
+ * @since 1.0.0
+ */
+export const FormDataEvent = Schema.extend(Schema.struct({ from: Destination }), FormInputSchema)
+
+/**
+ * @since 1.0.0
+ */
+export type FormDataEventJson = Schema.Schema.From<typeof FormDataEvent>
+
+/**
+ * @since 1.0.0
+ */
+export interface FormDataEvent extends Schema.Schema.To<typeof FormDataEvent> {}
 
 /**
  * @since 1.0.0
@@ -378,4 +499,27 @@ export function handleRedirect(error: RedirectError) {
     history: "replace",
     ...error.options
   })
+}
+
+/**
+ * @since 1.0.0
+ */
+export function submit(
+  data: FormData,
+  formInput?: Simplify<Omit<FormInputFrom, "data">>
+): Effect.Effect<
+  Navigation | HttpClient.client.Client.Default,
+  NavigationError | HttpClient.error.HttpClientError,
+  Option.Option<HttpClient.response.ClientResponse>
+> {
+  return Navigation.withEffect((n) => n.submit(data, formInput))
+}
+
+/**
+ * @since 1.0.0
+ */
+export function onFormData<R = never, R2 = never>(
+  handler: FormDataHandler<R, R2>
+): Effect.Effect<Navigation | R | R2 | Scope.Scope, never, void> {
+  return Navigation.withEffect((n) => n.onFormData(handler))
 }

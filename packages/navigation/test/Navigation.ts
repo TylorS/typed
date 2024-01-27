@@ -1,3 +1,4 @@
+import * as HttpClient from "@effect/platform-node/HttpClient"
 import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -472,6 +473,54 @@ describe(__filename, () => {
         }).pipe(
           Effect.provide(Navigation.fromWindow),
           Window.provide(window),
+          Effect.scoped
+        )
+
+        await Effect.runPromise(test)
+      })
+    })
+
+    describe("FormData", () => {
+      it("allows submiting a Form with FormData", async () => {
+        const url = new URL("https://example.com/foo/1")
+        const state = { x: Math.random() }
+        const window = makeWindow({ url: url.href }, state)
+
+        const test = Effect.gen(function*(_) {
+          const { onFormData, submit } = yield* _(Navigation.Navigation)
+          const data = new FormData()
+          data.set("foo", "bar")
+          data.set("bar", "baz")
+
+          let called = false
+          let matched = false
+
+          yield* _(onFormData((event) =>
+            Effect.sync(() => {
+              called = true
+              deepStrictEqual(event.data.get("foo"), "bar")
+              deepStrictEqual(event.data.get("bar"), "baz")
+
+              // Optionally, you can return an Effect to "intercept" this event
+              return Option.some(Effect.sync(() => {
+                matched = true
+                // Here you could make an HttpRequest and return the Option.some(ClientResponse)
+                return Option.none()
+              }))
+            })
+          ))
+
+          yield* _(submit(data))
+
+          deepStrictEqual(called, true)
+          deepStrictEqual(matched, true)
+        }).pipe(
+          Effect.provide(Navigation.fromWindow),
+          Window.provide(window),
+          // Only used when no handlers intercept the event
+          // At which point the form will be submitted using the HttpClient
+          // And the submit will resolve with Option.Some<ClientResponse>
+          Effect.provide(HttpClient.client.layer),
           Effect.scoped
         )
 

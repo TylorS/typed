@@ -1,3 +1,5 @@
+import * as HttpClient from "@effect/platform/HttpClient"
+
 import { Schema } from "@effect/schema"
 import type * as Context from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -12,6 +14,9 @@ import type {
   BeforeNavigationEvent,
   BeforeNavigationHandler,
   CancelNavigation,
+  FormDataEvent,
+  FormDataHandler,
+  FormInputFrom,
   NavigateOptions,
   Navigation,
   NavigationError,
@@ -60,8 +65,17 @@ export type ModelAndIntent = {
     never,
     Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>
   >
+
+  readonly formDataHandlers: RefSubject.RefSubject<
+    never,
+    never,
+    Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>
+  >
+
   readonly commit: Commit
 }
+
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308])
 
 export function setupFromModelAndIntent(
   modelAndIntent: ModelAndIntent,
@@ -70,8 +84,7 @@ export function setupFromModelAndIntent(
   getRandomValues: Context.Fn.FnOf<typeof GetRandomValues>,
   newNavigationState?: () => NavigationState
 ) {
-  const { beforeHandlers, canGoBack, canGoForward, commit, handlers, state } = modelAndIntent
-
+  const { beforeHandlers, canGoBack, canGoForward, commit, formDataHandlers, handlers, state } = modelAndIntent
   const entries = RefSubject.map(state, (s) => s.entries)
   const currentEntry = RefSubject.map(state, (s) => s.entries[s.index])
   const transition = RefSubject.map(state, (s) => s.transition)
@@ -120,6 +133,52 @@ export function setupFromModelAndIntent(
       if (matches.length > 0) {
         yield* _(Effect.all(matches, { discard: true }))
       }
+    })
+
+  const runFormDataHandlers = (
+    event: FormDataEvent
+  ): Effect.Effect<
+    HttpClient.client.Client.Default,
+    NavigationError | HttpClient.error.HttpClientError,
+    Either.Either<RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
+  > =>
+    Effect.gen(function*(_) {
+      const handlers = yield* _(formDataHandlers)
+      const matches: Array<
+        Effect.Effect<never, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
+      > = []
+
+      for (const [handler, ctx] of handlers) {
+        const exit = yield* _(handler(event), Effect.provide(ctx), Effect.either)
+        if (Either.isRight(exit)) {
+          const match = exit.right
+          if (Option.isSome(match)) {
+            matches.push(Effect.provide(match.value, ctx))
+          }
+        } else {
+          return Either.left(exit.left)
+        }
+      }
+
+      if (matches.length > 0) {
+        for (const match of matches) {
+          const exit = yield* _(match, Effect.either)
+          if (Either.isLeft(exit)) {
+            return Either.left(exit.left)
+          } else if (Option.isSome(exit.right)) {
+            return Either.right(exit.right)
+          }
+        }
+      } else {
+        // Only if there are 0 matches, we'll make a request to the server ourselves
+        const response = yield* _(
+          makeFormDataRequest(event, Option.getOrElse(event.action, () => event.from.url.href))
+        )
+
+        return Either.right(Option.some(response))
+      }
+
+      return Either.right(Option.none())
     })
 
   const runNavigationEvent = (
@@ -190,7 +249,7 @@ export function setupFromModelAndIntent(
     get: Effect.Effect<never, never, NavigationState>,
     set: (a: NavigationState) => Effect.Effect<never, never, NavigationState>,
     depth: number
-  ) =>
+  ): Effect.Effect<never, NavigationError, Destination> =>
     Effect.gen(function*(_) {
       if (depth >= 25) {
         return yield* _(Effect.dieMessage(`Redirect loop detected.`))
@@ -208,7 +267,7 @@ export function setupFromModelAndIntent(
 
         return yield* _(runNavigationEvent(event, get, set, depth + 1))
       }
-    })
+    }).pipe(GetRandomValues.provide(getRandomValues))
 
   const navigate = (pathOrUrl: string | URL, options?: NavigateOptions, skipCommit: boolean = false) =>
     state.runUpdates(({ get, set }) =>
@@ -347,6 +406,73 @@ export function setupFromModelAndIntent(
       })
     )
 
+  const submit = (
+    data: FormData,
+    input?: Omit<FormInputFrom, "data">
+  ): Effect.Effect<
+    HttpClient.client.Client.Default,
+    NavigationError | HttpClient.error.HttpClientError,
+    Option.Option<HttpClient.response.ClientResponse>
+  > =>
+    state.runUpdates(({ get, set }) =>
+      Effect.gen(function*(_) {
+        const { entries, index } = yield* _(get)
+        const from = entries[index]
+        const event: FormDataEvent = {
+          from,
+          data,
+          name: Option.fromNullable(input?.name),
+          action: Option.fromNullable(input?.action),
+          method: Option.fromNullable(input?.method),
+          encoding: Option.fromNullable(input?.encoding)
+        }
+
+        const either = yield* _(runFormDataHandlers(event))
+
+        if (Either.isLeft(either)) {
+          yield* _(handleError(either.left, get, set, 0))
+          return Option.none<HttpClient.response.ClientResponse>()
+        } else {
+          if (Option.isNone(either.right)) {
+            return either.right
+          }
+
+          const response = either.right.value
+
+          // If it is a redirect
+          if (REDIRECT_STATUS_CODES.has(response.status)) {
+            const location = HttpClient.headers.get(response.headers, "location")
+
+            // And we have a location header
+            if (Option.isSome(location)) {
+              // Then we navigate to that location
+              yield* _(navigate(location.value, { history: "replace" }))
+            }
+          }
+
+          return Option.some(response)
+        }
+      })
+    )
+
+  const onFormData = <R = never, R2 = never>(
+    handler: FormDataHandler<R, R2>
+  ): Effect.Effect<R | R2 | Scope.Scope, never, void> =>
+    Effect.contextWithEffect((ctx) => {
+      const entry = [handler, ctx] as const
+
+      return Effect.zipRight(
+        RefSubject.update(formDataHandlers, (handlers) => new Set([...handlers, entry])),
+        Effect.addFinalizer(() =>
+          RefSubject.update(formDataHandlers, (handlers) => {
+            const updated = new Set(handlers)
+            updated.delete(entry)
+            return updated
+          })
+        )
+      )
+    })
+
   const navigation = {
     back,
     base,
@@ -362,7 +488,9 @@ export function setupFromModelAndIntent(
     reload,
     transition,
     traverseTo,
-    updateCurrentEntry
+    updateCurrentEntry,
+    submit,
+    onFormData
   } satisfies Navigation
 
   return navigation
@@ -494,22 +622,53 @@ export function isDestination(proposed: ProposedDestination): proposed is Destin
   return "id" in proposed && "key" in proposed
 }
 
+const strictEqual = <A>(a: A, b: A) => a === b
+
 export function makeHandlersState() {
   return Effect.gen(function*(_) {
     const beforeHandlers = yield* _(
       RefSubject.fromEffect(
-        Effect.sync(() => new Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>())
+        Effect.sync(() => new Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>()),
+        { eq: strictEqual }
       )
     )
     const handlers = yield* _(
       RefSubject.fromEffect(
-        Effect.sync(() => new Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>())
+        Effect.sync(() => new Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>()),
+        { eq: strictEqual }
+      )
+    )
+    const formDataHandlers = yield* _(
+      RefSubject.fromEffect(
+        Effect.sync(() => new Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>()),
+        { eq: strictEqual }
       )
     )
 
     return {
       beforeHandlers,
-      handlers
+      handlers,
+      formDataHandlers
     }
   })
+}
+
+function makeFormDataRequest(event: FormDataEvent, url: string) {
+  const headers = new Headers()
+
+  if (Option.isSome(event.encoding)) {
+    headers.set("Content-Type", event.encoding.value)
+  }
+  const method = Option.getOrElse(event.method, () => "POST")
+
+  return Effect.flatMap(
+    HttpClient.client.Client,
+    (client) =>
+      client(
+        HttpClient.request.make(method as "POST")(url, {
+          headers: HttpClient.headers.fromInput(headers),
+          body: HttpClient.body.formData(event.data)
+        })
+      )
+  )
 }

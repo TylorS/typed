@@ -76,7 +76,7 @@ function setupMemory(
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
     const commit: Commit = options.commit ?? (() => Effect.unit)
 
     return {
@@ -85,6 +85,7 @@ function setupMemory(
       canGoForward,
       beforeHandlers,
       handlers,
+      formDataHandlers,
       commit
     } as const
   })
