@@ -659,16 +659,19 @@ function makeFormDataRequest(event: FormDataEvent, url: string) {
   if (Option.isSome(event.encoding)) {
     headers.set("Content-Type", event.encoding.value)
   }
-  const method = Option.getOrElse(event.method, () => "POST")
+  const method = Option.getOrElse(event.method, () => "GET")
+  const request = method === "GET" ?
+    HttpClient.request.make(method)(url, {
+      headers: HttpClient.headers.fromInput(headers),
+      urlParams: Array.from(event.data.entries()) as ReadonlyArray<readonly [string, string]>
+    }) :
+    HttpClient.request.make(method as "POST")(url, {
+      headers: HttpClient.headers.fromInput(headers),
+      body: HttpClient.body.formData(event.data)
+    })
 
   return Effect.flatMap(
     HttpClient.client.Client,
-    (client) =>
-      client(
-        HttpClient.request.make(method as "POST")(url, {
-          headers: HttpClient.headers.fromInput(headers),
-          body: HttpClient.body.formData(event.data)
-        })
-      )
+    (client) => client(request)
   )
 }
