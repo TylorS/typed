@@ -522,7 +522,9 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
         AsyncData.AsyncData<EI, AI>
       > => {
         return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData<E, A>(input)) return yield* _(Effect.fail(ParseResult.forbidden(schema.ast, input)))
+          if (!AsyncData.isAsyncData<E, A>(input)) {
+            return yield* _(Effect.fail(ParseResult.forbidden(schema.ast, input)))
+          }
 
           switch (input._tag) {
             case "NoData":
