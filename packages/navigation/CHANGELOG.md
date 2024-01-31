@@ -1,5 +1,19 @@
 # @typed/navigation
 
+## 0.10.2
+
+### Patch Changes
+
+- [`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- [`ad49fd8`](https://github.com/TylorS/typed/commit/ad49fd8fb289b20a5cb4cd147eb898c363706694) Thanks [@TylorS](https://github.com/TylorS)! - Add Navigation.submit + Navigation.onFormData
+
+- Updated dependencies [[`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262)]:
+  - @typed/context@0.23.1
+  - @typed/dom@11.0.1
+  - @typed/fx@1.22.2
+  - @typed/id@0.5.1
+
 ## 0.10.1
 
 ### Patch Changes

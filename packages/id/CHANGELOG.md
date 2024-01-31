@@ -1,5 +1,14 @@
 # @typed/id
 
+## 0.5.1
+
+### Patch Changes
+
+- [`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- Updated dependencies [[`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262)]:
+  - @typed/context@0.23.1
+
 ## 0.5.0
 
 ### Minor Changes
