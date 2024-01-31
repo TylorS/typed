@@ -28,18 +28,6 @@ export * as AsyncData from "./AsyncData.js"
 export * as Emitter from "./Emitter.js"
 
 /**
- * [Form documentation](https://tylors.github.io/typed/fx/Form.ts.html)
- * @since 1.18.0
- */
-export * as Form from "./Form.js"
-
-/**
- * [FormEntry documentation](https://tylors.github.io/typed/fx/FormEntry.ts.html)
- * @since 1.18.0
- */
-export * as FormEntry from "./FormEntry.js"
-
-/**
  * [Guard documentation](https://tylors.github.io/typed/fx/Guard.ts.html)
  * @since 1.18.0
  */

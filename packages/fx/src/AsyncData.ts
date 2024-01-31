@@ -9,13 +9,15 @@ import * as Cause from "effect/Cause"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
-import type * as Exit from "effect/Exit"
+import * as Exit from "effect/Exit"
 import { dual } from "effect/Function"
 import type * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import * as RefSubject from "./RefSubject.js"
 import * as Sink from "./Sink.js"
 import { RefSubjectTypeId } from "./TypeId.js"
+
+const isRefFirst = (length: number) => (args: IArguments) => args.length === length || RefSubjectTypeId in args[0]
 
 /**
  * @since 1.20.0
@@ -66,20 +68,23 @@ export const runAsyncData: {
  * @since 1.20.0
  */
 export const runOptimistic: {
-  <R2, E, A>(
+  <R2, E, A, R3 = never>(
     effect: Effect.Effect<R2, E, A>,
-    value: A
-  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
-  <R, E, A, R2>(
+    value: A,
+    onCause?: (cause: Cause.Cause<E>) => Effect.Effect<R3, never, unknown>
+  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R | R2 | R3, never, AsyncData.AsyncData<E, A>>
+  <R, E, A, R2, R3 = never>(
     ref: RefAsyncData<R, E, A>,
     effect: Effect.Effect<R2, E, A>,
-    value: A
-  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
-} = dual(3, function runOptimistic<R, E, A, R2>(
+    value: A,
+    onCause?: (cause: Cause.Cause<E>) => Effect.Effect<R3, never, unknown>
+  ): Effect.Effect<R | R2 | R3, never, AsyncData.AsyncData<E, A>>
+} = dual(isRefFirst(4), function runOptimistic<R, E, A, R2, R3 = never>(
   ref: RefAsyncData<R, E, A>,
   effect: Effect.Effect<R2, E, A>,
-  value: A
-): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>> {
+  value: A,
+  onCause?: (cause: Cause.Cause<E>) => Effect.Effect<R3, never, unknown>
+): Effect.Effect<R | R2 | R3, never, AsyncData.AsyncData<E, A>> {
   return ref.runUpdates(({ get, set }) =>
     Effect.uninterruptibleMask((restore) =>
       Effect.flatMap(
@@ -93,7 +98,15 @@ export const runOptimistic: {
             )),
           () => Effect.exit(restore(effect))
         ),
-        (exit) => set(AsyncData.fromExit(exit))
+        (exit) => {
+          const updateValue = set(AsyncData.fromExit(exit))
+
+          if (onCause && Exit.isFailure(exit)) {
+            return Effect.zipLeft(updateValue, onCause(exit.cause))
+          } else {
+            return updateValue
+          }
+        }
       )
     )
   )
@@ -365,8 +378,6 @@ export const mapInput = <R, E, A, B>(
   f: (b: B) => A
 ): Sink.Sink<R, E, B> => Sink.map(asSink(ref), f)
 
-const isRefFirst = (args: IArguments) => args.length === 3 || RefSubjectTypeId in args[0]
-
 /**
  * Fail with a given cause
  * @since 1.20.0
@@ -382,7 +393,7 @@ export const failCause: {
     cause: Cause.Cause<E>,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
   ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-} = dual(isRefFirst, <R, E, A>(
+} = dual(isRefFirst(3), <R, E, A>(
   ref: RefAsyncData<R, E, A>,
   cause: Cause.Cause<E>,
   options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
@@ -403,7 +414,7 @@ export const fail: {
     error: E,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
   ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-} = dual(isRefFirst, <R, E, A>(
+} = dual(isRefFirst(3), <R, E, A>(
   ref: RefAsyncData<R, E, A>,
   error: E,
   options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
@@ -425,7 +436,7 @@ export const succeed: {
     options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
   ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
 } = dual(
-  isRefFirst,
+  isRefFirst(3),
   <R, E, A>(
     ref: RefAsyncData<R, E, A>,
     value: A,
@@ -449,7 +460,7 @@ export const optimistic: {
     options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
   ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
 } = dual(
-  isRefFirst,
+  isRefFirst(3),
   <R, E, A>(
     ref: RefAsyncData<R, E, A>,
     value: A,

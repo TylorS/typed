@@ -97,20 +97,20 @@ export function useLink<Params extends UseLinkParams>(
   never,
   [UseLink<Params>] extends [infer R] ? { readonly [K in keyof R]: R[K] } : never
 > {
-  type Ref<T extends keyof UseLink<Params>> = UseLink<Params>[T]
+  type Return<T extends keyof UseLink<Params>> = UseLink<Params>[T]
 
   return Effect.gen(function*(_) {
     const toRef = yield* _(Placeholder.asRef(to))
-    const relativeRef: Ref<"relative"> = yield* _(Placeholder.asRef(relative ?? true))
-    const replaceRef: Ref<"replace"> = yield* _(Placeholder.asRef(replace ?? false))
-    const stateRef: Ref<"state"> = (yield* _(Placeholder.asRef(state))) as any
-    const infoRef: Ref<"info"> = yield* _(Placeholder.asRef(info)) as any
-    const reloadDocumentRef: Ref<"reloadDocument"> = yield* _(Placeholder.asRef(reloadDocument ?? false))
-    const href: Ref<"href"> = RefSubject.mapEffect(
+    const relativeRef: Return<"relative"> = yield* _(Placeholder.asRef(relative ?? true))
+    const replaceRef: Return<"replace"> = yield* _(Placeholder.asRef(replace ?? false))
+    const stateRef: Return<"state"> = (yield* _(Placeholder.asRef(state))) as any
+    const infoRef: Return<"info"> = yield* _(Placeholder.asRef(info)) as any
+    const reloadDocumentRef: Return<"reloadDocument"> = yield* _(Placeholder.asRef(reloadDocument ?? false))
+    const href: Return<"href"> = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
       ([rel, to]) => rel ? Effect.orDie(makeHref(to)) : Effect.succeed(to)
     )
-    const navigate: Ref<"navigate"> = Effect.gen(function*(_) {
+    const navigate: Return<"navigate"> = Effect.gen(function*(_) {
       const replace = yield* _(replaceRef)
       const state = yield* _(stateRef)
       const url = yield* _(href)

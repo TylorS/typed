@@ -87,7 +87,9 @@ export function makeEventSource(): EventSource {
         const listener = (ev: Event) =>
           run(
             Effect.forEach(handlers, ([el, handler]) =>
-              ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.unit)
+              ev.target === el || el.contains(ev.target as Node)
+                ? handler.handler(proxyCurrentTarget(ev, el))
+                : Effect.unit)
           )
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
         disposables.push(disposable(() => element.removeEventListener(event, listener)))
@@ -106,7 +108,7 @@ export function makeEventSource(): EventSource {
           run(
             Effect.forEach(handlers, ([el, handler]) =>
               ev.target === el || el.contains(ev.target as Node)
-                ? handler.handler(proxyCurrentTargetForCaptureEvents(ev, el))
+                ? handler.handler(proxyCurrentTarget(ev, el))
                 : Effect.unit)
           )
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
@@ -165,7 +167,7 @@ export function makeEventSource(): EventSource {
 
 const EVENT_PROPERTY_TO_REPLACE = "currentTarget"
 
-function proxyCurrentTargetForCaptureEvents<E extends Event>(event: E, currentTarget: Element): E {
+function proxyCurrentTarget<E extends Event>(event: E, currentTarget: Element): E {
   return new Proxy(event, {
     get(target: E, property: string | symbol) {
       return property === EVENT_PROPERTY_TO_REPLACE ? currentTarget : target[property as keyof E]

@@ -56,7 +56,6 @@ export function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, 
   )
 }
 
-// @ts-expect-error does not implement Placeholder
 class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never, T, never, NoSuchElementException, T>
   implements ElementRef<T>
 {

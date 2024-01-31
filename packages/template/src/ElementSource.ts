@@ -291,7 +291,6 @@ function isElement(element: RenderedWithoutArray): element is Element {
  * @internal
  * @since 1.0.0
  */
-// @ts-expect-error Doesn't implement Placeholder
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>

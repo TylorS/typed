@@ -13,6 +13,7 @@ import * as Route from "@typed/route"
 import type { Scope } from "effect"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
+import type { Simplify } from "effect/Types"
 import type { CurrentRoute } from "./CurrentRoute.js"
 import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
 
@@ -61,7 +62,7 @@ export interface RouteMatcher<R, E, A> {
 
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
-    ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
+    ...params: [keyof Simplify<Path.ParamsOf<P>>] extends [never] ? [params?: {}] : [params: Path.ParamsOf<P>]
   ) => Fx.Fx<
     Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope,
     Exclude<E, Navigation.RedirectError>,
@@ -169,7 +170,7 @@ class RouteMatcherImpl<R, E, A> implements RouteMatcher<R, E, A> {
 
   redirect<const P extends string>(
     route: P | Route.Route<P>,
-    ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
+    ...params: [keyof Simplify<Path.ParamsOf<P>>] extends [never] ? [params?: {}] : [params: Path.ParamsOf<P>]
   ): Fx.Fx<
     R | Navigation.Navigation | CurrentEnvironment | CurrentRoute | Scope.Scope,
     Exclude<E, Navigation.RedirectError>,

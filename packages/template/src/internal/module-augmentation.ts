@@ -41,4 +41,7 @@ declare global {
 
 declare module "@typed/fx/Fx" {
   export interface Fx<R, E, A> extends Placeholder<R, E, A> {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface FxEffectBase<R, E, A, R2, E2, B> extends Placeholder<R, E, A> {}
 }

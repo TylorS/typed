@@ -17,7 +17,7 @@ import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRoo
 import { makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
 import type { RenderPartContext } from "./render.js"
-import { getBrowserEntry, renderPart2, renderTemplate } from "./render.js"
+import { getBrowserEntry, renderPart, renderTemplate } from "./render.js"
 import {
   findPath,
   getPreviousNodes,
@@ -97,7 +97,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         // Connect our interpolated values to our template parts
         const effects: Array<Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>> = []
         for (const [part, path] of template.parts) {
-          const eff = renderPart2(part, where, path, ctx)
+          const eff = renderPart(part, where, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
