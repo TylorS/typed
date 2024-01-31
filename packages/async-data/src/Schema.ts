@@ -339,7 +339,7 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
   error: Schema.Schema<R1, EI, E>,
   value: Schema.Schema<R2, AI, A>
 ): Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>> => {
-  return Schema.declare(
+  const schema = Schema.declare(
     [Schema.cause(error, Schema.unknown), value],
     (causeSchema, valueSchema) => {
       const parseCause = Parser.decode(causeSchema)
@@ -355,7 +355,7 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<EI, AI>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -395,7 +395,7 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<E, A>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -430,6 +430,8 @@ export const asyncDataFromJson = <R1, EI, E, R2, AI, A>(
         asyncDataPretty(causePretty, valuePretty)(asyncDataFromToAsyncData(from))
     }
   )
+
+  return schema
 }
 
 /**
@@ -454,7 +456,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
   error: Schema.Schema<R1, EI, E>,
   value: Schema.Schema<R2, AI, A>
 ): Schema.Schema<R1 | R2, AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>> => {
-  return Schema.declare(
+  const schema = Schema.declare(
     [Schema.causeFromSelf(error), value],
     (causeSchema, valueSchema) => {
       const parseCause = Parser.decode(causeSchema)
@@ -470,7 +472,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
       > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData<EI, AI>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -520,7 +522,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
         AsyncData.AsyncData<EI, AI>
       > => {
         return Effect.gen(function*(_) {
-          if (!AsyncData.isAsyncData<E, A>(input)) return yield* _(Effect.fail(ParseResult.forbidden(input)))
+          if (!AsyncData.isAsyncData<E, A>(input)) return yield* _(Effect.fail(ParseResult.forbidden(schema.ast, input)))
 
           switch (input._tag) {
             case "NoData":
@@ -563,6 +565,7 @@ export const asyncDataFromSelf = <R1, EI, E, R2, AI, A>(
       equivalence: () => Equal.equals
     }
   )
+  return schema
 }
 
 function asyncDataPretty<E, A>(
