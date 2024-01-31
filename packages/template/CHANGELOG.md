@@ -1,5 +1,17 @@
 # @typed/template
 
+## 0.5.3
+
+### Patch Changes
+
+- [`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- Updated dependencies [[`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262)]:
+  - @typed/environment@0.5.1
+  - @typed/context@0.23.1
+  - @typed/dom@11.0.1
+  - @typed/fx@1.22.2
+
 ## 0.5.2
 
 ### Patch Changes

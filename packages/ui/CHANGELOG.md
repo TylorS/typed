@@ -1,5 +1,21 @@
 # @typed/ui
 
+## 0.5.3
+
+### Patch Changes
+
+- [`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- Updated dependencies [[`a790363`](https://github.com/TylorS/typed/commit/a7903635c148362809f39bdad120655f668a0262), [`ad49fd8`](https://github.com/TylorS/typed/commit/ad49fd8fb289b20a5cb4cd147eb898c363706694)]:
+  - @typed/environment@0.5.1
+  - @typed/navigation@0.10.2
+  - @typed/template@0.5.3
+  - @typed/context@0.23.1
+  - @typed/router@0.23.2
+  - @typed/route@3.1.2
+  - @typed/dom@11.0.1
+  - @typed/fx@1.22.2
+
 ## 0.5.2
 
 ### Patch Changes
