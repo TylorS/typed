@@ -25,7 +25,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const nanoId: Schema.Schema<string, NanoId.NanoId>
+export declare const nanoId: Schema.Schema<never, string, NanoId.NanoId>
 ```
 
 Added in v1.0.0
@@ -35,7 +35,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const uuid: Schema.Schema<string, Uuid.Uuid>
+export declare const uuid: Schema.Schema<never, string, Uuid.Uuid>
 ```
 
 Added in v1.0.0

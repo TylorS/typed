@@ -44,10 +44,10 @@ Construct a SchemaKeyStorage
 **Signature**
 
 ```ts
-export declare function SchemaKeyStorage<K extends string, S extends S.Schema<string, any>>(
+export declare function SchemaKeyStorage<K extends string, R, O>(
   key: K,
-  schema: S
-): SchemaKeyStorage<S>
+  schema: S.Schema<R, string, O>
+): SchemaKeyStorage<R, O>
 ```
 
 Added in v8.19.0
@@ -59,7 +59,7 @@ Construct a SchemaStorage
 **Signature**
 
 ```ts
-export declare function SchemaStorage<const Schemas extends Readonly<Record<string, S.Schema<string, any>>>>(
+export declare function SchemaStorage<const Schemas extends Readonly<Record<string, S.Schema<any, string, any>>>>(
   schemas: Schemas
 ): SchemaStorage<Schemas>
 ```
@@ -75,9 +75,7 @@ sessionStorage.
 **Signature**
 
 ```ts
-export declare function StorageEffect<R, E, A>(
-  effect: Effect.Effect<R | Storage, E, A>
-): StorageEffect<Exclude<R, Storage>, E, A>
+export declare function StorageEffect<R, E, A>(effect: Effect.Effect<R, E, A>): StorageEffect<R, E, A>
 ```
 
 Added in v8.19.0
@@ -130,7 +128,7 @@ Get an item from storage
 **Signature**
 
 ```ts
-export declare const getItem: (key: string) => StorageEffect<never, never, O.Option<string>>
+export declare const getItem: (key: string) => StorageEffect<Storage, never, O.Option<string>>
 ```
 
 Added in v8.19.0
@@ -145,14 +143,14 @@ It allows you to get/set/remove a value for a specific key.
 **Signature**
 
 ```ts
-export interface SchemaKeyStorage<S extends S.Schema<string, any>> {
-  readonly schema: S
+export interface SchemaKeyStorage<R, O> {
+  readonly schema: S.Schema<R, string, O>
 
-  readonly get: (options?: ParseOptions) => StorageEffect<never, ParseResult.ParseError, O.Option<S.Schema.To<S>>>
+  readonly get: (options?: ParseOptions) => StorageEffect<Storage | R, ParseResult.ParseError, O.Option<O>>
 
-  readonly set: (value: S.Schema.To<S>, options?: ParseOptions) => StorageEffect<never, ParseResult.ParseError, void>
+  readonly set: (value: O, options?: ParseOptions) => StorageEffect<Storage | R, ParseResult.ParseError, void>
 
-  readonly remove: StorageEffect<never, never, void>
+  readonly remove: StorageEffect<Storage, never, void>
 }
 ```
 
@@ -168,23 +166,25 @@ JSON.parse is used on the values to store and retrieve them.
 **Signature**
 
 ```ts
-export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<string, any>>>> {
+export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<any, string, any>>>> {
   readonly schemas: Schemas
 
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
+  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
     value: S.Schema.To<Schemas[K]>,
     options?: ParseOptions
-  ) => StorageEffect<never, ParseResult.ParseError, void>
+  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, void>
 
-  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<never, never, void>
+  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<Storage, never, void>
 
-  readonly key: <K extends keyof Schemas & string>(key: K) => SchemaKeyStorage<Schemas[K]>
+  readonly key: <K extends keyof Schemas & string>(
+    key: K
+  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.To<Schemas[K]>>
 }
 ```
 
@@ -212,7 +212,7 @@ sessionStorage.
 **Signature**
 
 ```ts
-export interface StorageEffect<R, E, A> extends Effect.Effect<R | Storage, E, A> {
+export interface StorageEffect<R, E, A> extends Effect.Effect<R, E, A> {
   readonly local: Effect.Effect<Window | Exclude<R, Storage>, E, A>
   readonly session: Effect.Effect<Window | Exclude<R, Storage>, E, A>
 }
@@ -229,7 +229,7 @@ Delete an item from storage
 **Signature**
 
 ```ts
-export declare const removeItem: (key: string) => StorageEffect<never, never, void>
+export declare const removeItem: (key: string) => StorageEffect<Storage, never, void>
 ```
 
 Added in v8.19.0
@@ -241,7 +241,7 @@ set an item from storage
 **Signature**
 
 ```ts
-export declare const setItem: (key: string, value: string) => StorageEffect<never, never, void>
+export declare const setItem: (key: string, value: string) => StorageEffect<Storage, never, void>
 ```
 
 Added in v8.19.0

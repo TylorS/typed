@@ -26,6 +26,17 @@ Added in v1.0.0
   - [Destination](#destination)
   - [Destination (interface)](#destination-interface)
   - [DestinationJson (type alias)](#destinationjson-type-alias)
+  - [FileSchema](#fileschema)
+  - [FileSchemaFrom](#fileschemafrom)
+  - [FileSchemaFrom (type alias)](#fileschemafrom-type-alias)
+  - [FormDataEvent](#formdataevent)
+  - [FormDataEvent (interface)](#formdataevent-interface)
+  - [FormDataEventJson (type alias)](#formdataeventjson-type-alias)
+  - [FormDataHandler (type alias)](#formdatahandler-type-alias)
+  - [FormDataSchema](#formdataschema)
+  - [FormInput (interface)](#forminput-interface)
+  - [FormInputFrom (type alias)](#forminputfrom-type-alias)
+  - [FormInputSchema](#forminputschema)
   - [NavigateOptions (interface)](#navigateoptions-interface)
   - [Navigation](#navigation)
   - [Navigation (interface)](#navigation-interface)
@@ -52,8 +63,10 @@ Added in v1.0.0
   - [isNavigationError](#isnavigationerror)
   - [isRedirectError](#isredirecterror)
   - [navigate](#navigate)
+  - [onFormData](#onformdata)
   - [redirectToPath](#redirecttopath)
   - [reload](#reload)
+  - [submit](#submit)
   - [traverseTo](#traverseto)
   - [updateCurrentEntry](#updatecurrententry)
 
@@ -67,6 +80,7 @@ Added in v1.0.0
 
 ```ts
 export declare const BeforeNavigationEvent: Schema.Schema<
+  never,
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly from: {
@@ -216,6 +230,7 @@ Added in v1.0.0
 
 ```ts
 export declare const Destination: Schema.Schema<
+  never,
   {
     readonly id: string
     readonly key: string
@@ -245,6 +260,184 @@ Added in v1.0.0
 
 ```ts
 export type DestinationJson = Schema.Schema.From<typeof Destination>
+```
+
+Added in v1.0.0
+
+## FileSchema
+
+**Signature**
+
+```ts
+export declare const FileSchema: Schema.Schema<
+  never,
+  { readonly _id: "File"; readonly name: string; readonly data: string },
+  File
+>
+```
+
+Added in v1.0.0
+
+## FileSchemaFrom
+
+**Signature**
+
+```ts
+export declare const FileSchemaFrom: Schema.Schema<
+  never,
+  { readonly _id: "File"; readonly name: string; readonly data: string },
+  { readonly _id: "File"; readonly name: string; readonly data: string }
+>
+```
+
+Added in v1.0.0
+
+## FileSchemaFrom (type alias)
+
+**Signature**
+
+```ts
+export type FileSchemaFrom = Schema.Schema.From<typeof FileSchemaFrom>
+```
+
+Added in v1.0.0
+
+## FormDataEvent
+
+**Signature**
+
+```ts
+export declare const FormDataEvent: Schema.Schema<
+  never,
+  {
+    readonly from: {
+      readonly id: string
+      readonly key: string
+      readonly url: string
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+    readonly data: {
+      readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string }
+    }
+    readonly name?: string | null | undefined
+    readonly action?: string | null | undefined
+    readonly method?: string | null | undefined
+    readonly encoding?: string | null | undefined
+  },
+  {
+    readonly from: {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+    readonly name: Option.Option<string>
+    readonly data: FormData
+    readonly action: Option.Option<string>
+    readonly method: Option.Option<string>
+    readonly encoding: Option.Option<string>
+  }
+>
+```
+
+Added in v1.0.0
+
+## FormDataEvent (interface)
+
+**Signature**
+
+```ts
+export interface FormDataEvent extends Schema.Schema.To<typeof FormDataEvent> {}
+```
+
+Added in v1.0.0
+
+## FormDataEventJson (type alias)
+
+**Signature**
+
+```ts
+export type FormDataEventJson = Schema.Schema.From<typeof FormDataEvent>
+```
+
+Added in v1.0.0
+
+## FormDataHandler (type alias)
+
+**Signature**
+
+```ts
+export type FormDataHandler<R, R2> = (
+  event: FormDataEvent
+) => Effect.Effect<
+  R,
+  RedirectError | CancelNavigation,
+  Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>>
+>
+```
+
+Added in v1.0.0
+
+## FormDataSchema
+
+**Signature**
+
+```ts
+export declare const FormDataSchema: Schema.Schema<
+  never,
+  { readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string } },
+  FormData
+>
+```
+
+Added in v1.0.0
+
+## FormInput (interface)
+
+**Signature**
+
+```ts
+export interface FormInput extends Schema.Schema.To<typeof FormInputSchema> {}
+```
+
+Added in v1.0.0
+
+## FormInputFrom (type alias)
+
+**Signature**
+
+```ts
+export type FormInputFrom = Schema.Schema.From<typeof FormInputSchema>
+```
+
+Added in v1.0.0
+
+## FormInputSchema
+
+**Signature**
+
+```ts
+export declare const FormInputSchema: Schema.Schema<
+  never,
+  {
+    readonly data: {
+      readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string }
+    }
+    readonly name?: string | null | undefined
+    readonly action?: string | null | undefined
+    readonly method?: string | null | undefined
+    readonly encoding?: string | null | undefined
+  },
+  {
+    readonly name: Option.Option<string>
+    readonly data: FormData
+    readonly action: Option.Option<string>
+    readonly method: Option.Option<string>
+    readonly encoding: Option.Option<string>
+  }
+>
 ```
 
 Added in v1.0.0
@@ -318,11 +511,24 @@ export interface Navigation {
 
   readonly beforeNavigation: <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
 
   readonly onNavigation: <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, unknown>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+
+  readonly submit: (
+    data: FormData,
+    formInput?: Simplify<Omit<FormInputFrom, "data">>
+  ) => Effect.Effect<
+    HttpClient.client.Client.Default,
+    NavigationError | HttpClient.error.HttpClientError,
+    Option.Option<HttpClient.response.ClientResponse>
+  >
+
+  readonly onFormData: <R = never, R2 = never>(
+    handler: FormDataHandler<R, R2>
+  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
 }
 ```
 
@@ -344,6 +550,7 @@ Added in v1.0.0
 
 ```ts
 export declare const NavigationEvent: Schema.Schema<
+  never,
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly info: unknown
@@ -409,6 +616,7 @@ Added in v1.0.0
 
 ```ts
 export declare const NavigationType: Schema.Schema<
+  never,
   "push" | "replace" | "reload" | "traverse",
   "push" | "replace" | "reload" | "traverse"
 >
@@ -432,6 +640,7 @@ Added in v1.0.0
 
 ```ts
 export declare const ProposedDestination: Schema.Schema<
+  never,
   { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
   { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
 >
@@ -475,6 +684,7 @@ Added in v1.0.0
 
 ```ts
 export declare const Transition: Schema.Schema<
+  never,
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly from: {
@@ -635,6 +845,18 @@ export declare const navigate: (
 
 Added in v1.0.0
 
+## onFormData
+
+**Signature**
+
+```ts
+export declare function onFormData<R = never, R2 = never>(
+  handler: FormDataHandler<R, R2>
+): Effect.Effect<Navigation | R | R2 | Scope.Scope, never, void>
+```
+
+Added in v1.0.0
+
 ## redirectToPath
 
 **Signature**
@@ -657,6 +879,23 @@ export declare const reload: (options?: {
   readonly info?: unknown
   readonly state?: unknown
 }) => Effect.Effect<Navigation, NavigationError, Destination>
+```
+
+Added in v1.0.0
+
+## submit
+
+**Signature**
+
+```ts
+export declare function submit(
+  data: FormData,
+  formInput?: Simplify<Omit<FormInputFrom, "data">>
+): Effect.Effect<
+  Navigation | HttpClient.client.Client.Default,
+  NavigationError | HttpClient.error.HttpClientError,
+  Option.Option<HttpClient.response.ClientResponse>
+>
 ```
 
 Added in v1.0.0

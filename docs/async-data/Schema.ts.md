@@ -99,6 +99,7 @@ Added in v1.0.0
 
 ```ts
 export declare const Progress: Schema.Schema<
+  never,
   { readonly loaded: string; readonly total?: string | undefined },
   P.Progress
 >
@@ -139,10 +140,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncData: <EI, E, AI, A>(
-  errorSchema: Schema.Schema<EI, E>,
-  valueSchema: Schema.Schema<AI, A>
-) => Schema.Schema<AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>>
+export declare const asyncData: <R1, EI, E, R2, AI, A>(
+  errorSchema: Schema.Schema<R1, EI, E>,
+  valueSchema: Schema.Schema<R2, AI, A>
+) => Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>>
 ```
 
 Added in v1.0.0
@@ -152,10 +153,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncDataFromJson: <EI, E, AI, A>(
-  error: Schema.Schema<EI, E>,
-  value: Schema.Schema<AI, A>
-) => Schema.Schema<AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>>
+export declare const asyncDataFromJson: <R1, EI, E, R2, AI, A>(
+  error: Schema.Schema<R1, EI, E>,
+  value: Schema.Schema<R2, AI, A>
+) => Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>>
 ```
 
 Added in v1.0.0
@@ -165,10 +166,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncDataFromSelf: <EI, E, AI, A>(
-  error: Schema.Schema<EI, E>,
-  value: Schema.Schema<AI, A>
-) => Schema.Schema<AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>>
+export declare const asyncDataFromSelf: <R1, EI, E, R2, AI, A>(
+  error: Schema.Schema<R1, EI, E>,
+  value: Schema.Schema<R2, AI, A>
+) => Schema.Schema<R1 | R2, AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>>
 ```
 
 Added in v1.0.0
