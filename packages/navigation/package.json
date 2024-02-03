@@ -54,6 +54,6 @@
   "devDependencies": {
     "@effect/platform-node": "^0.42.7",
     "@virtualstate/navigation": "1.0.1-alpha.199",
-    "happy-dom": "13.3.5"
+    "happy-dom": "13.3.8"
   }
 }
