@@ -83,7 +83,7 @@ export const makeDomServices = (params: DomServicesParams): Context.Context<DomS
     window,
     document,
     rootElement: { rootElement: params.rootElement || document.body },
-    parentElement: { parentElement: params.parentElement || document.body },
+    parentElement: { parentElement: params.parentElement || params.rootElement || document.body },
     history,
     location,
     navigator
