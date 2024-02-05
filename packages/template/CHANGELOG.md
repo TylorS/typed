@@ -1,5 +1,14 @@
 # @typed/template
 
+## 0.5.4
+
+### Patch Changes
+
+- [`30e652a`](https://github.com/TylorS/typed/commit/30e652aacf3345a01cf84431d0556ab9adae348e) Thanks [@TylorS](https://github.com/TylorS)! - chore: upgrade deps
+
+- Updated dependencies [[`e8bc344`](https://github.com/TylorS/typed/commit/e8bc3440053b21c808a1547255b44e441c1bd12a)]:
+  - @typed/dom@11.0.2
+
 ## 0.5.3
 
 ### Patch Changes
