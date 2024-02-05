@@ -41,6 +41,9 @@
       "path": "packages/router"
     },
     {
+      "path": "packages/storybook"
+    },
+    {
       "path": "packages/template"
     },
     {

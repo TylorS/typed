@@ -1,0 +1,37 @@
+{
+  "name": "storybook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@typed/core": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/storybook": "workspace:*",
+    "@typed/template": "workspace:*",
+    "@typed/tsconfig": "workspace:*",
+    "@typed/ui": "workspace:*",
+    "vite-tsconfig-paths": "^4.3.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^7.6.12",
+    "@storybook/addon-interactions": "^7.6.12",
+    "@storybook/addon-links": "^7.6.12",
+    "@storybook/blocks": "^7.6.12",
+    "@storybook/html": "^7.6.12",
+    "@storybook/html-vite": "^7.6.12",
+    "@storybook/test": "^7.6.12",
+    "@storybook/types": "^7.6.12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "storybook": "^7.6.12",
+    "vite": "^5.0.12"
+  }
+}

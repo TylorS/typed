@@ -60,7 +60,6 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
     const navigate = Effect.gen(function*(_) {
       const replace = yield* _(replaceRef)
       const state = yield* _(stateRef)
-      const reload = yield* _(reloadDocument)
       const url = yield* _(href)
       const info = yield* _(infoRef)
 
@@ -70,7 +69,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
         state
       }))
 
-      if (reload) {
+      if (yield* _(reloadDocument)) {
         yield* _(Navigation.reload({ info, state }))
       }
     })

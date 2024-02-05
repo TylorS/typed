@@ -163,6 +163,18 @@
       "@typed/router/examples/*": [
         "packages/router/build/examples/*"
       ],
+      "@typed/storybook": [
+        "packages/storybook/build/esm/index.js"
+      ],
+      "@typed/storybook/*": [
+        "packages/storybook/build/esm/*"
+      ],
+      "@typed/storybook/test/*": [
+        "packages/storybook/build/test/*"
+      ],
+      "@typed/storybook/examples/*": [
+        "packages/storybook/build/examples/*"
+      ],
       "@typed/template": [
         "packages/template/build/esm/index.js"
       ],
@@ -241,6 +253,9 @@
     "packages/router/build/esm/**/*",
     "packages/router/build/test/**/*",
     "packages/router/build/examples/**/*",
+    "packages/storybook/build/esm/**/*",
+    "packages/storybook/build/test/**/*",
+    "packages/storybook/build/examples/**/*",
     "packages/template/build/esm/**/*",
     "packages/template/build/test/**/*",
     "packages/template/build/examples/**/*",

@@ -163,6 +163,18 @@
       "@typed/router/examples/*": [
         "packages/router/examples/*"
       ],
+      "@typed/storybook": [
+        "packages/storybook/src/index.ts"
+      ],
+      "@typed/storybook/*": [
+        "packages/storybook/src/*"
+      ],
+      "@typed/storybook/test/*": [
+        "packages/storybook/test/*"
+      ],
+      "@typed/storybook/examples/*": [
+        "packages/storybook/examples/*"
+      ],
       "@typed/template": [
         "packages/template/src/index.ts"
       ],

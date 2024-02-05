@@ -1,0 +1,6 @@
+{
+  "extends": "@typed/tsconfig/base.json",
+  "include": [
+    "stories"
+  ],
+}
