@@ -355,11 +355,15 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
 
   // In a proper browser this will allow patching to hide the id/key's associated with the state
   if (stateDescriptor) {
-    Object.defineProperty(history, "state", {
-      get() {
-        return getOriginalState(stateDescriptor.get!.call(history))
-      }
-    })
+    try {
+      Object.defineProperty(history, "state", {
+        get() {
+          return getOriginalState(stateDescriptor.get!.call(history))
+        }
+      })
+    } catch {
+      // We tried, but it didn't work
+    }
   }
 
   const onHashChange = (ev: HashChangeEvent) => {
@@ -386,7 +390,11 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
     history.forward = original.forward
 
     if (stateDescriptor) {
-      Object.defineProperty(history, "state", stateDescriptor)
+      try {
+        Object.defineProperty(history, "state", stateDescriptor)
+      } catch {
+        // We tried, but it didn't work
+      }
     }
 
     window.removeEventListener("hashchange", onHashChange)
