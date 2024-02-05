@@ -26,13 +26,18 @@ export type CoreServices =
   | RenderContext.RenderContext
 
 /**
+ * @since 1.0.0
+ */
+export type CoreDomServices = DomServices | CoreServices
+
+/**
  * Construct CoreServices from a browser's Window object
  * @since 1.0.0
  */
 export function fromWindow(
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-): Layer.Layer<never, never, CoreServices | DomServices> {
+): Layer.Layer<never, never, CoreDomServices> {
   const getRandomValues = (length: number) => window.crypto.getRandomValues(new Uint8Array(length))
   return Layer.provideMerge(
     Layer.mergeAll(
