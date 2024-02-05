@@ -1,3 +1,8 @@
+/**
+ * Storybook v3 renderer.
+ * @since 1.0.0
+ */
+
 import type { RenderContext } from "@storybook/types"
 
 import { domServices } from "@typed/dom/DomServices"
@@ -12,6 +17,10 @@ import { RenderContext as TemplateContext, renderLayer } from "@typed/template"
 import { Cause, Effect, FiberId, Layer } from "effect"
 import type { TypedRenderer } from "./types"
 
+/**
+ * Storybook v3 renderer.
+ * @since 1.0.0
+ */
 export async function renderToCanvas(
   {
     showError,

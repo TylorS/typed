@@ -2,7 +2,7 @@
 title: "@typed/wire"
 has_children: true
 permalink: /docs/wire
-nav_order: 17
+nav_order: 18
 ---
 
 # @typed/wire

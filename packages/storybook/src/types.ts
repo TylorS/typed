@@ -1,3 +1,8 @@
+/**
+ * Storybook types for Typed projects.
+ * @since 1.0.0
+ */
+
 import type { BuilderOptions, StorybookConfigVite } from "@storybook/builder-vite"
 import type {
   ArgTypes,
@@ -20,10 +25,16 @@ import type { Types } from "effect"
 type FrameworkName = "@storybook/typed"
 type BuilderName = "@storybook/builder-vite"
 
+/**
+ * @since 1.0.0
+ */
 export type FrameworkOptions = {
   builder?: BuilderOptions
 }
 
+/**
+ * @since 1.0.0
+ */
 export type StorybookConfigFramework = {
   framework:
     | FrameworkName
@@ -44,6 +55,10 @@ export type StorybookConfigFramework = {
 /**
  * The interface for Storybook configuration in `main.ts` files.
  */
+
+/**
+ * @since 1.0.0
+ */
 export type StorybookConfig = Types.Simplify<
   & Omit<
     StorybookConfigBase,
@@ -53,18 +68,32 @@ export type StorybookConfig = Types.Simplify<
   & StorybookConfigFramework
 >
 
+/**
+ * @since 1.0.0
+ */
 export interface TypedRenderer extends WebRenderer {
   component: TypedComponent
   storyResult: Fx<CoreDomServices, any, RenderEvent>
 }
 
-export type { RenderContext } from "@storybook/types"
+export type {
+  /**
+   * @since 1.0.0
+   */
+  RenderContext
+} from "@storybook/types"
 
+/**
+ * @since 1.0.0
+ */
 export type TypedComponent<Props = any, R = any, E = any> = (
   props: Props,
   ...children: ReadonlyArray<Renderable<CoreDomServices, E>>
 ) => Fx<R | CoreDomServices, E, RenderEvent>
 
+/**
+ * @since 1.0.0
+ */
 export type Meta<Args> = {
   title?: string
   id?: string
@@ -82,6 +111,9 @@ export type Meta<Args> = {
   args?: Partial<Args>
 }
 
+/**
+ * @since 1.0.0
+ */
 export type StoryObj<Args, T extends Meta<any> = never> = Types.Simplify<
   & Omit<
     StoryAnnotations<
@@ -99,7 +131,22 @@ export type StoryObj<Args, T extends Meta<any> = never> = Types.Simplify<
   }
 >
 
+/**
+ * @since 1.0.0
+ */
 export type Decorator<TArgs = StrictArgs> = DecoratorFunction<TypedRenderer, TArgs>
+
+/**
+ * @since 1.0.0
+ */
 export type Loader<TArgs = StrictArgs> = LoaderFunction<TypedRenderer, TArgs>
+
+/**
+ * @since 1.0.0
+ */
 export type StoryContext<TArgs = StrictArgs> = GenericStoryContext<TypedRenderer, TArgs>
+
+/**
+ * @since 1.0.0
+ */
 export type Preview = ProjectAnnotations<TypedRenderer>

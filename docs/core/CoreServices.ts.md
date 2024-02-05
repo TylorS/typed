@@ -15,12 +15,23 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
+  - [CoreDomServices (type alias)](#coredomservices-type-alias)
   - [CoreServices (type alias)](#coreservices-type-alias)
   - [fromWindow](#fromwindow)
 
 ---
 
 # utils
+
+## CoreDomServices (type alias)
+
+**Signature**
+
+```ts
+export type CoreDomServices = DomServices | CoreServices
+```
+
+Added in v1.0.0
 
 ## CoreServices (type alias)
 
@@ -49,7 +60,7 @@ Construct CoreServices from a browser's Window object
 export declare function fromWindow(
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-): Layer.Layer<never, never, CoreServices | DomServices>
+): Layer.Layer<never, never, CoreDomServices>
 ```
 
 Added in v1.0.0
