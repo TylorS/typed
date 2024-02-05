@@ -1,5 +1,11 @@
 # @typed/dom
 
+## 11.0.2
+
+### Patch Changes
+
+- [`e8bc344`](https://github.com/TylorS/typed/commit/e8bc3440053b21c808a1547255b44e441c1bd12a) Thanks [@TylorS](https://github.com/TylorS)! - Initialize Storybook preset
+
 ## 11.0.1
 
 ### Patch Changes
