@@ -420,7 +420,7 @@ const RenderPartMap: RenderPartMap = {
               templatePart.name,
               node.index,
               ({ value }) => setValue(value, index),
-              null
+              attr.value
             ),
           (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(node.index)),
           () => ctx.expected++
@@ -897,7 +897,8 @@ function matchSettablePart(
     },
     Directive: (directive) => {
       expect()
-      return directive(makePart())
+      const part = makePart()
+      return Effect.flatMap(directive(part), () => schedule(() => setValue(part.value)))
     },
     Otherwise: (otherwise) => {
       setValue(otherwise)
