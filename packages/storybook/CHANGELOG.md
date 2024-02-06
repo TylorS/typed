@@ -1,5 +1,11 @@
 # @typed/storybook
 
+## 0.0.2
+
+### Patch Changes
+
+- [`73903b4`](https://github.com/TylorS/typed/commit/73903b455946275cc14f740408181f8285412b3c) Thanks [@TylorS](https://github.com/TylorS)! - preview file for rendering stories
+
 ## 0.0.1
 
 ### Patch Changes
