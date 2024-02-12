@@ -40,8 +40,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.43.7",
-    "@effect/schema": "0.61.5",
+    "@effect/platform": "^0.44.5",
+    "@effect/schema": "0.62.4",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
@@ -55,6 +55,6 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "^2.2.3"
+    "effect": "^2.3.3"
   }
 }
