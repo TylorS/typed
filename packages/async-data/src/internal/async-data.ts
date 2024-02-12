@@ -46,11 +46,11 @@ export class FailureImpl<E> extends Effectable.Class<never, E, never> implements
 }
 
 // @ts-expect-error
-export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements Success<A> {
+export class SuccessImpl<A> extends Effectable.Class<A> implements Success<A> {
   readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
   readonly _tag = SUCCESS_TAG
 
-  commit: () => Effect.Effect<never, never, A>
+  commit: () => Effect.Effect<A>
 
   constructor(readonly value: A, readonly timestamp: number, readonly refreshing: Option.Option<Loading>) {
     super()
@@ -76,16 +76,16 @@ export class SuccessImpl<A> extends Effectable.Class<never, never, A> implements
 }
 
 // @ts-expect-error
-export class OptimisticImpl<E, A> extends Effectable.Class<never, never, A> implements Optimistic<E, A> {
+export class OptimisticImpl<A, E> extends Effectable.Class<A> implements Optimistic<A, E> {
   readonly [AsyncDataTypeId]: AsyncDataTypeId = AsyncDataTypeId
   readonly _tag = OPTIMISTIC_TAG
 
-  commit: () => Effect.Effect<never, never, A>
+  commit: () => Effect.Effect<A>
 
   constructor(
     readonly value: A,
     readonly timestamp: number,
-    readonly previous: AsyncData<E, A>
+    readonly previous: AsyncData<A, E>
   ) {
     super()
 

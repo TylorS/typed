@@ -10,12 +10,9 @@ import * as Option from "effect/Option"
 /**
  * @since 1.0.0
  */
-export interface Progress extends
-  Data.Data<{
-    readonly loaded: bigint
-    readonly total: Option.Option<bigint>
-  }>
-{
+export interface Progress {
+  readonly loaded: bigint
+  readonly total: Option.Option<bigint>
 }
 
 /**
@@ -62,9 +59,7 @@ export const setTotal: {
 /**
  * @since 1.0.0
  */
-export const equals: Equivalence.Equivalence<Progress> = Equivalence.struct<
-  { readonly [K in Exclude<keyof Progress, keyof Data.Data<any>>]: Equivalence.Equivalence<Progress[K]> }
->({
+export const equals: Equivalence.Equivalence<Progress> = Equivalence.struct({
   loaded: Equivalence.bigint,
   total: Option.getEquivalence(Equivalence.bigint)
 })
