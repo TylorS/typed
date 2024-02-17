@@ -63,6 +63,7 @@ jobs:
     needs: [build, test, lint, docs]
     steps:
       - uses: ./actions/setup-repo.yml
+      - run: pnpm build
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
