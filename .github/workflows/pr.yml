@@ -44,6 +44,10 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install
       - run: pnpm run build
+      - uses: actions/upload-artifact@master
+        with:
+          name: workspace
+          path: ./
 
   test:
     runs-on: ubuntu-latest
@@ -52,6 +56,21 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install pnpm
+        id: pnpm-install
+        run: |
+          corepack enable
+      - uses: actions/download-artifact@master
+        with:
+          name: workspace
+          path: ./
       - run: pnpm run test
 
   circular:
@@ -61,6 +80,21 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install pnpm
+        id: pnpm-install
+        run: |
+          corepack enable
+      - uses: actions/download-artifact@master
+        with:
+          name: workspace
+          path: ./
       - run: pnpm run circular
 
   lint:
@@ -70,6 +104,21 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install pnpm
+        id: pnpm-install
+        run: |
+          corepack enable
+      - uses: actions/download-artifact@master
+        with:
+          name: workspace
+          path: ./
       - run: pnpm run lint
 
   docs:
@@ -79,4 +128,19 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install pnpm
+        id: pnpm-install
+        run: |
+          corepack enable
+      - uses: actions/download-artifact@master
+        with:
+          name: workspace
+          path: ./
       - run: pnpm run docs
