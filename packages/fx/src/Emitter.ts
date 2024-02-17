@@ -50,9 +50,9 @@ export function withEmitter<R, E, A, R2, B>(
             }
 
             return f(emitter)
-          });
+          })
         }
       ),
     ExecutionStrategy.sequential
-  );
+  )
 }

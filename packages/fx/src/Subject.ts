@@ -293,7 +293,7 @@ class TaggedImpl<I, E, A> extends FromTag<I, Subject<never, E, A>, never, E, A> 
       isDataFirst,
       <R2, E2, B>(fxOrEffect: Fx<R2, E2, B> | Effect.Effect<B, E2, R2>, replay?: number) => {
         if (TypeId in fxOrEffect) return provide(fxOrEffect as Fx<Exclude<R2, I>, E2, B>, this.make(replay))
-        else return Effect.provide(fxOrEffect as Effect.Effect<B, E2, R2>, this.make(replay));
+        else return Effect.provide(fxOrEffect as Effect.Effect<B, E2, R2>, this.make(replay))
       }
     )
   }

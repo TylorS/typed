@@ -161,10 +161,22 @@ export type MakeForm<
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
-  <R, E>(fx: RefSubject.RefSubject<R, E, O>): Effect.Effect<[DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>] ? Form.Derived<R, never, R2>
-    : never, never, R | Scope.Scope>
+  <R, E>(
+    fx: RefSubject.RefSubject<R, E, O>
+  ): Effect.Effect<
+    [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>] ? Form.Derived<R, never, R2>
+      : never,
+    never,
+    R | Scope.Scope
+  >
 
-  <R, E>(fx: Fx<R, E, O> | Effect.Effect<O, E, R>): Effect.Effect<[FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never, never, R | Scope.Scope>
+  <R, E>(
+    fx: Fx<R, E, O> | Effect.Effect<O, E, R>
+  ): Effect.Effect<
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
+    never,
+    R | Scope.Scope
+  >
 }
 
 /**
@@ -175,10 +187,22 @@ export type MakeInputForm<
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
-  <R, E>(fx: RefSubject.RefSubject<R, E, I>): Effect.Effect<[DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>] ? Form.Derived<R, _, R2>
-    : never, never, R | Scope.Scope>
+  <R, E>(
+    fx: RefSubject.RefSubject<R, E, I>
+  ): Effect.Effect<
+    [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>] ? Form.Derived<R, _, R2>
+      : never,
+    never,
+    R | Scope.Scope
+  >
 
-  <R, E>(fx: Fx<R, E, I> | Effect.Effect<I, E, R>): Effect.Effect<[FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never, never, R | Scope.Scope>
+  <R, E>(
+    fx: Fx<R, E, I> | Effect.Effect<I, E, R>
+  ): Effect.Effect<
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
+    never,
+    R | Scope.Scope
+  >
 }
 
 /**
@@ -275,7 +299,7 @@ export function deriveInput<
       }
 
       return form
-    });
+    })
 }
 
 function isParseError(u: unknown): u is ParseError {

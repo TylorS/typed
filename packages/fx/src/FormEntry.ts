@@ -102,7 +102,7 @@ export function derive<R, I, O>(options: FormEntryOptions<R, I, O>): MakeFormEnt
           return new FromEntryImpl(inputRef, options.name, options.schema)
         }
       }
-    );
+    )
   }
 
   return makeFormEntry as MakeFormEntry<R, I, O>
@@ -138,7 +138,7 @@ export function deriveInput<R, I, O>(options: FormEntryOptions<R, I, O>): MakeIn
           return new FromEntryImpl(inputRef, options.name, options.schema)
         }
       }
-    );
+    )
   }
 
   return makeFormEntry as MakeInputFormEntry<R, I, O>

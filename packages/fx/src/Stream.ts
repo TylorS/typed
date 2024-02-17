@@ -31,7 +31,7 @@ export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<A, E, R> {
         Effect.zipRight(Effect.promise(() => emit(Effect.fail(Option.none())))),
         Effect.forkScoped
       )
-  );
+  )
 }
 
 /**
