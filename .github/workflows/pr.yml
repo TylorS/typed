@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install
       - run: pnpm run build
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@3.1.3
         with:
           name: workspace
           path: ./
@@ -67,7 +67,7 @@ jobs:
         id: pnpm-install
         run: |
           corepack enable
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@2.1.1
         with:
           name: workspace
           path: ./
@@ -91,7 +91,7 @@ jobs:
         id: pnpm-install
         run: |
           corepack enable
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@2.1.1
         with:
           name: workspace
           path: ./
@@ -115,7 +115,7 @@ jobs:
         id: pnpm-install
         run: |
           corepack enable
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@2.1.1
         with:
           name: workspace
           path: ./
@@ -139,7 +139,7 @@ jobs:
         id: pnpm-install
         run: |
           corepack enable
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@2.1.1
         with:
           name: workspace
           path: ./
