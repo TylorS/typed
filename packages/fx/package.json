@@ -1,6 +1,6 @@
 {
   "name": "@typed/fx",
-  "version": "1.22.2",
+  "version": "1.23.0",
   "description": "",
   "publishConfig": {
     "access": "public",
