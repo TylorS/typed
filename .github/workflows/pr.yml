@@ -1,9 +1,8 @@
-name: PR Flow
+name: Main Flow
 
 on:
-  pull_request:
-    branches:
-      - 'development'
+  push:
+    branches: [development]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -14,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.11.1]
+        node-version: [20.11.0]
 
     steps:
       - uses: actions/checkout@v3
@@ -42,6 +41,42 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
       - run: pnpm run circular
-      - run: pnpm run test --coverage
+      - run: pnpm run test
       - run: pnpm run lint
+      - run: pnpm run docs
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run test
+
+  circular:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run circular
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run lint
+
+  docs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
       - run: pnpm run docs

@@ -44,6 +44,50 @@ jobs:
       - run: pnpm run test
       - run: pnpm run lint
       - run: pnpm run docs
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run test
+
+  circular:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run circular
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run lint
+
+  docs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [build]
+    steps:
+      - run: pnpm run docs
+
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.11.0]
+    needs: [test, circular, lint, docs]
+    steps:
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
