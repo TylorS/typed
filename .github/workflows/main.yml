@@ -73,6 +73,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
       - run: pnpm run test
 
   circular:
@@ -103,6 +104,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
       - run: pnpm run circular
 
   lint:
@@ -133,6 +135,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
       - run: pnpm run lint
 
   docs:
@@ -163,6 +166,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
       - run: pnpm run docs
 
 
@@ -195,6 +199,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
