@@ -29,7 +29,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Commit = (to: Destination, event: BeforeNavigationEvent) => Effect.Effect<never, NavigationError, void>
+export type Commit = (to: Destination, event: BeforeNavigationEvent) => Effect.Effect<void, NavigationError>
 ```
 
 Added in v1.0.0
@@ -73,7 +73,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fromWindow: Layer.Layer<Window, never, Navigation>
+export declare const fromWindow: Layer.Layer<Navigation, never, Window>
 ```
 
 Added in v1.0.0
@@ -83,7 +83,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const initialMemory: (options: InitialMemoryOptions) => Layer.Layer<never, never, Navigation>
+export declare const initialMemory: (options: InitialMemoryOptions) => Layer.Layer<Navigation>
 ```
 
 Added in v1.0.0
@@ -93,7 +93,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const memory: (options: MemoryOptions) => Layer.Layer<never, never, Navigation>
+export declare const memory: (options: MemoryOptions) => Layer.Layer<Navigation>
 ```
 
 Added in v1.0.0

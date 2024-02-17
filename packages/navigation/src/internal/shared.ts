@@ -92,7 +92,7 @@ export function setupFromModelAndIntent(
   const runBeforeHandlers = (event: BeforeNavigationEvent) =>
     Effect.gen(function*(_) {
       const handlers = yield* _(beforeHandlers)
-      const matches: Array<Effect.Effect<never, RedirectError | CancelNavigation, unknown>> = []
+      const matches: Array<Effect.Effect<unknown, RedirectError | CancelNavigation>> = []
 
       for (const [handler, ctx] of handlers) {
         const exit = yield* _(handler(event), Effect.provide(ctx), Effect.either)
@@ -121,7 +121,7 @@ export function setupFromModelAndIntent(
   const runHandlers = (event: NavigationEvent) =>
     Effect.gen(function*(_) {
       const eventHandlers = yield* _(handlers)
-      const matches: Array<Effect.Effect<never, never, unknown>> = []
+      const matches: Array<Effect.Effect<unknown>> = []
 
       for (const [handler, ctx] of eventHandlers) {
         const match = yield* _(handler(event), Effect.provide(ctx))
@@ -138,14 +138,14 @@ export function setupFromModelAndIntent(
   const runFormDataHandlers = (
     event: FormDataEvent
   ): Effect.Effect<
-    HttpClient.client.Client.Default,
+    Either.Either<RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>,
     NavigationError | HttpClient.error.HttpClientError,
-    Either.Either<RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
+    Scope.Scope | HttpClient.client.Client.Default
   > =>
     Effect.gen(function*(_) {
       const handlers = yield* _(formDataHandlers)
       const matches: Array<
-        Effect.Effect<never, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
+        Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>
       > = []
 
       for (const [handler, ctx] of handlers) {
@@ -183,11 +183,11 @@ export function setupFromModelAndIntent(
 
   const runNavigationEvent = (
     beforeEvent: BeforeNavigationEvent,
-    get: Effect.Effect<never, never, NavigationState>,
-    set: (a: NavigationState) => Effect.Effect<never, never, NavigationState>,
+    get: Effect.Effect<NavigationState>,
+    set: (a: NavigationState) => Effect.Effect<NavigationState>,
     depth: number,
     skipCommit: boolean = false
-  ): Effect.Effect<never, NavigationError, Destination> =>
+  ): Effect.Effect<Destination, NavigationError> =>
     Effect.gen(function*(_) {
       let current = yield* _(get)
       current = yield* _(set({ ...current, transition: Option.some(beforeEvent) }))
@@ -246,10 +246,10 @@ export function setupFromModelAndIntent(
 
   const handleError = (
     error: RedirectError | CancelNavigation,
-    get: Effect.Effect<never, never, NavigationState>,
-    set: (a: NavigationState) => Effect.Effect<never, never, NavigationState>,
+    get: Effect.Effect<NavigationState>,
+    set: (a: NavigationState) => Effect.Effect<NavigationState>,
     depth: number
-  ): Effect.Effect<never, NavigationError, Destination> =>
+  ): Effect.Effect<Destination, NavigationError> =>
     Effect.gen(function*(_) {
       if (depth >= 25) {
         return yield* _(Effect.dieMessage(`Redirect loop detected.`))
@@ -355,7 +355,7 @@ export function setupFromModelAndIntent(
 
   const beforeNavigation = <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
-  ): Effect.Effect<R | R2 | Scope.Scope, never, void> =>
+  ): Effect.Effect<void, never, R | R2 | Scope.Scope> =>
     Effect.contextWithEffect((ctx) => {
       const entry = [handler, ctx] as const
 
@@ -373,7 +373,7 @@ export function setupFromModelAndIntent(
 
   const onNavigation = <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
-  ): Effect.Effect<R | R2 | Scope.Scope, never, void> =>
+  ): Effect.Effect<void, never, R | R2 | Scope.Scope> =>
     Effect.contextWithEffect((ctx) => {
       const entry = [handler, ctx] as const
 
@@ -410,9 +410,9 @@ export function setupFromModelAndIntent(
     data: FormData,
     input?: Omit<FormInputFrom, "data">
   ): Effect.Effect<
-    HttpClient.client.Client.Default,
+    Option.Option<HttpClient.response.ClientResponse>,
     NavigationError | HttpClient.error.HttpClientError,
-    Option.Option<HttpClient.response.ClientResponse>
+    Scope.Scope | HttpClient.client.Client.Default
   > =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*(_) {
@@ -457,7 +457,7 @@ export function setupFromModelAndIntent(
 
   const onFormData = <R = never, R2 = never>(
     handler: FormDataHandler<R, R2>
-  ): Effect.Effect<R | R2 | Scope.Scope, never, void> =>
+  ): Effect.Effect<void, never, R | R2 | Scope.Scope> =>
     Effect.contextWithEffect((ctx) => {
       const entry = [handler, ctx] as const
 

@@ -15,41 +15,41 @@ export type EffectOperator =
 
 export interface MapEffect<A, R2, E2, B> {
   readonly _tag: "MapEffect"
-  readonly f: (a: A) => Effect.Effect<R2, E2, B>
+  readonly f: (a: A) => Effect.Effect<B, E2, R2>
 }
 
-export const MapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): MapEffect<A, R2, E2, B> => ({
+export const MapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): MapEffect<A, R2, E2, B> => ({
   _tag: "MapEffect",
   f
 })
 
 export interface TapEffect<A, R2, E2, B> {
   readonly _tag: "TapEffect"
-  readonly f: (a: A) => Effect.Effect<R2, E2, B>
+  readonly f: (a: A) => Effect.Effect<B, E2, R2>
 }
 
-export const TapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<R2, E2, B>): TapEffect<A, R2, E2, B> => ({
+export const TapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): TapEffect<A, R2, E2, B> => ({
   _tag: "TapEffect",
   f
 })
 
 export interface FilterEffect<A, R2, E2> {
   readonly _tag: "FilterEffect"
-  readonly f: (a: A) => Effect.Effect<R2, E2, boolean>
+  readonly f: (a: A) => Effect.Effect<boolean, E2, R2>
 }
 
-export const FilterEffect = <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): FilterEffect<A, R2, E2> => ({
+export const FilterEffect = <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): FilterEffect<A, R2, E2> => ({
   _tag: "FilterEffect",
   f
 })
 
 export interface FilterMapEffect<A, R2, E2, B> {
   readonly _tag: "FilterMapEffect"
-  readonly f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+  readonly f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
 }
 
 export const FilterMapEffect = <A, R2, E2, B>(
-  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+  f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
 ): FilterMapEffect<A, R2, E2, B> => ({ _tag: "FilterMapEffect", f })
 
 type EffectOperatorFusionMap = {
@@ -255,8 +255,8 @@ export function compileCauseEffectOperatorSink<R>(
 
 export function compileEffectLoop<B, A, R2, E2, C>(
   operator: EffectOperator,
-  loop: (b: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
-): (b: B, i: any) => Effect.Effect<R2, E2, Option.Option<readonly [C, B]>> {
+  loop: (b: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
+): (b: B, i: any) => Effect.Effect<Option.Option<readonly [C, B]>, E2, R2> {
   return matchEffectOperator(operator, {
     MapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), (a) => loop(b, a)), Option.some),
     TapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), () => loop(b, i)), Option.some),
@@ -275,8 +275,8 @@ export function compileEffectLoop<B, A, R2, E2, C>(
 
 export function compileEffectReducer<B, A, R2, E2>(
   operator: EffectOperator,
-  loop: (b: B, a: A) => Effect.Effect<R2, E2, B>
-): (b: B, i: any) => Effect.Effect<R2, E2, Option.Option<B>> {
+  loop: (b: B, a: A) => Effect.Effect<B, E2, R2>
+): (b: B, i: any) => Effect.Effect<Option.Option<B>, E2, R2> {
   return matchEffectOperator(operator, {
     MapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), (a) => loop(b, a)), Option.some),
     TapEffect: (op) => (b, i) => Effect.map(Effect.flatMap(op.f(i), () => loop(b, i)), Option.some),
@@ -298,7 +298,7 @@ export function runSyncReduce<A, B, R2, E2>(
   op: EffectOperator,
   seed: B,
   f: (acc: B, a: any) => B
-): Effect.Effect<R2, E2, B> {
+): Effect.Effect<B, E2, R2> {
   return matchEffectOperator(op, {
     MapEffect: (op) => SyncProducer.runReduceEffect(producer, seed, (acc, a) => Effect.map(op.f(a), (b) => f(acc, b))),
     TapEffect: (op) => SyncProducer.runReduceEffect(producer, seed, (acc, a) => Effect.map(op.f(a), () => f(acc, a))),

@@ -34,7 +34,7 @@ Convert a Stream to an Fx
 **Signature**
 
 ```ts
-export declare function fromStream<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, A>
+export declare function fromStream<R, E, A>(stream: Stream.Stream<A, E, R>): Fx.Fx<R, E, A>
 ```
 
 Added in v1.18.0
@@ -46,7 +46,7 @@ Convert a Stream to an Fx of chunks
 **Signature**
 
 ```ts
-export declare function fromStreamChunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>>
+export declare function fromStreamChunked<R, E, A>(stream: Stream.Stream<A, E, R>): Fx.Fx<R, E, Chunk.Chunk<A>>
 ```
 
 Added in v1.18.0
@@ -58,7 +58,7 @@ Convert an Fx to a Stream
 **Signature**
 
 ```ts
-export declare function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A>
+export declare function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<A, E, R>
 ```
 
 Added in v1.18.0
@@ -72,8 +72,8 @@ that have not yet been pulled.
 
 ```ts
 export declare const toStreamBounded: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 }
 ```
 
@@ -88,8 +88,8 @@ that have not yet been pulled.
 
 ```ts
 export declare const toStreamDropping: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 }
 ```
 
@@ -105,12 +105,12 @@ that have not yet been pulled.
 ```ts
 export declare const toStreamQueued: {
   <E, A, R2, E2>(
-    make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
-  ): <R>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R2 | R, E | E2, A>
+    make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
+  ): <R>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E | E2, R2 | R>
   <R, E, A, R2, E2>(
     fx: Fx.Fx<R, E, A>,
-    make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
-  ): Stream.Stream<R | R2, E | E2, A>
+    make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
+  ): Stream.Stream<A, E | E2, R | R2>
 }
 ```
 
@@ -125,8 +125,8 @@ that have not yet been pulled.
 
 ```ts
 export declare const toStreamSliding: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 }
 ```
 

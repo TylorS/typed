@@ -19,14 +19,14 @@ import type { Sink } from "./Sink.js"
  * An Effect which can be used to pull values of a Stream.
  * @since 1.18.0
  */
-export interface Pull<out R, out E, out A> extends Effect.Effect<R, Option.Option<E>, Chunk.Chunk<A>> {}
+export interface Pull<out R, out E, out A> extends Effect.Effect<Chunk.Chunk<A>, Option.Option<E>, R> {}
 
 function schedulePull<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
-  f: (effect: Effect.Effect<R | R3, never, unknown>) => Effect.Effect<R2, never, unknown>,
+  f: (effect: Effect.Effect<unknown, never, R | R3>) => Effect.Effect<unknown, never, R2>,
   sink: Sink<R3, E, A>
-): Effect.Effect<R2, never, void> {
-  return Effect.asyncEffect((resume) =>
+): Effect.Effect<void, never, R2> {
+  return Effect.asyncEffect<void, never, never, void, never, R2>((resume) =>
     pull.pipe(
       Effect.matchCauseEffect({
         onFailure: (cause: Cause.Cause<Option.Option<E>>) =>
@@ -56,18 +56,18 @@ export const schedule: {
   <R2, R3, E, A>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<R3, E, A>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R | R2 | R3, never, unknown>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<R3, E, A>
-  ): Effect.Effect<R | R2 | R3, never, unknown>
+  ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function schedule<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
   sink: Sink<R3, E, A>
-): Effect.Effect<R | R2 | R3, never, void> {
+): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.schedule(schedule), sink)
 })
 
@@ -80,17 +80,17 @@ export const repeat: {
   <R2, R3, E, A>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<R3, E, A>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<R | R2 | R3, never, unknown>
+  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<R3, E, A>
-  ): Effect.Effect<R | R2 | R3, never, unknown>
+  ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function repeat<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
   sink: Sink<R3, E, A>
-): Effect.Effect<R | R2 | R3, never, void> {
+): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.repeat(schedule), sink)
 })

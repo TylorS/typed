@@ -49,7 +49,7 @@ export function renderToHtml<R, E>(
  */
 export function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
-): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string> {
+): Effect.Effect<string, E, Exclude<R, RenderTemplate> | RenderContext> {
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }
 
@@ -121,9 +121,9 @@ function renderObject<R, E>(renderable: object | null | undefined, isStatic: boo
     return Fx.concatMap(takeOneIfNotRenderEvent(renderable), (r) => renderNode(r, isStatic) as any)
   } else if (Effect.isEffect(renderable)) {
     return Fx.switchMap(
-      Fx.fromEffect(renderable as Effect.Effect<R, E, Renderable>),
+      Fx.fromEffect(renderable as Effect.Effect<Renderable, E, R>),
       (r) => renderNode<R, E>(r, isStatic)
-    )
+    );
   } else if (isRenderEvent(renderable)) {
     return Fx.succeed(renderable)
   } else {

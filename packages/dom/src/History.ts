@@ -28,7 +28,7 @@ export const History: Context.Tagged<History, History> = Context.Tagged<History>
 export const pushState: (
   url: string | URL,
   data?: unknown
-) => Effect.Effect<History, never, void> = (url: string | URL, data?: unknown) =>
+) => Effect.Effect<void, never, History> = (url: string | URL, data?: unknown) =>
   History.with((h) => h.pushState(data, "", url))
 
 /**
@@ -39,7 +39,7 @@ export const pushState: (
 export const replaceState: (
   url: string | URL,
   data?: unknown
-) => Effect.Effect<History, never, void> = (url: string | URL, data?: unknown) =>
+) => Effect.Effect<void, never, History> = (url: string | URL, data?: unknown) =>
   History.with((h) => h.replaceState(data, "", url))
 
 /**
@@ -47,7 +47,7 @@ export const replaceState: (
  * @since 8.19.0
  * @category actions
  */
-export const getState: Effect.Effect<History, never, unknown> = History.with(
+export const getState: Effect.Effect<unknown, never, History> = History.with(
   (h) => h.state as unknown
 )
 
@@ -56,7 +56,7 @@ export const getState: Effect.Effect<History, never, unknown> = History.with(
  * @since 8.19.0
  * @category actions
  */
-export const go: (delta: number) => Effect.Effect<History, never, void> = (delta: number) =>
+export const go: (delta: number) => Effect.Effect<void, never, History> = (delta: number) =>
   History.with((h) => h.go(delta))
 
 /**
@@ -64,28 +64,28 @@ export const go: (delta: number) => Effect.Effect<History, never, void> = (delta
  * @since 8.19.0
  * @category actions
  */
-export const back: Effect.Effect<History, never, void> = History.with((h) => h.back())
+export const back: Effect.Effect<void, never, History> = History.with((h) => h.back())
 
 /**
  * Go forward in the history
  * @since 8.19.0
  * @category actions
  */
-export const forward: Effect.Effect<History, never, void> = History.with((h) => h.forward())
+export const forward: Effect.Effect<void, never, History> = History.with((h) => h.forward())
 
 /**
  * Get the number of history entries
  * @since 8.19.0
  * @category actions
  */
-export const getLength: Effect.Effect<History, never, number> = History.with((h) => h.length)
+export const getLength: Effect.Effect<number, never, History> = History.with((h) => h.length)
 
 /**
  * Get the current scroll restoration behavior
  * @since 8.19.0
  * @category actions
  */
-export const getScrollRestoration: Effect.Effect<History, never, ScrollRestoration> = History.with(
+export const getScrollRestoration: Effect.Effect<ScrollRestoration, never, History> = History.with(
   (h) => h.scrollRestoration
 )
 
@@ -96,7 +96,7 @@ export const getScrollRestoration: Effect.Effect<History, never, ScrollRestorati
  */
 export const setScrollRestoration: (
   scrollRestoration: ScrollRestoration
-) => Effect.Effect<History, never, void> = (scrollRestoration: ScrollRestoration) =>
+) => Effect.Effect<void, never, History> = (scrollRestoration: ScrollRestoration) =>
   Effect.asUnit(History.with((h) => (h.scrollRestoration = scrollRestoration)))
 
 /**
@@ -104,11 +104,11 @@ export const setScrollRestoration: (
  * @since 8.19.0
  * @category actions
  */
-export const setAutoScrollRestoration: Effect.Effect<History, never, void> = setScrollRestoration("auto")
+export const setAutoScrollRestoration: Effect.Effect<void, never, History> = setScrollRestoration("auto")
 
 /**
  * Get the current scroll restoration behavior to "manual"
  * @since 8.19.0
  * @category actions
  */
-export const setManualScrollRestoration: Effect.Effect<History, never, void> = setScrollRestoration("manual")
+export const setManualScrollRestoration: Effect.Effect<void, never, History> = setScrollRestoration("manual")

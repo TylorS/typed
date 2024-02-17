@@ -83,7 +83,7 @@ A Repository can be implemented with a collection of Fns.
 export type RepositoryImplement<Fns extends AnyFns> = {
   readonly implement: <Impls extends { readonly [K in keyof Fns]: EffectFn.Extendable<Fn.FnOf<Fns[K]>> }>(
     implementations: Impls
-  ) => Layer.Layer<EffectFn.Context<Impls[keyof Impls]>, never, Fn.Identifier<Fns[keyof Fns]>>
+  ) => Layer.Layer<Fn.Identifier<Fns[keyof Fns]>, never, EffectFn.Context<Impls[keyof Impls]>>
 }
 ```
 
@@ -98,8 +98,8 @@ A Repository can be implemented with a collection of Fns.
 ```ts
 export type RepositoryMake<Fns extends AnyFns> = {
   readonly make: <R, E, Impls extends { readonly [K in keyof Fns]: EffectFn.Extendable<Fn.FnOf<Fns[K]>> }>(
-    implementations: Effect.Effect<R, E, Impls>
-  ) => Layer.Layer<Exclude<EffectFn.Context<Impls[keyof Impls]>, Scope>, never, Fn.Identifier<Fns[keyof Fns]>>
+    implementations: Effect.Effect<Impls, E, R>
+  ) => Layer.Layer<Fn.Identifier<Fns[keyof Fns]>, never, Exclude<EffectFn.Context<Impls[keyof Impls]>, Scope>>
 }
 ```
 

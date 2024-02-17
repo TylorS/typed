@@ -149,7 +149,7 @@ export interface ElementSource<
     options?: AddEventListenerOptions
   ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
 
-  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
+  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<void, NoSuchElementException>
 }
 ```
 

@@ -34,7 +34,7 @@ export const CustomElementRegistry: Tagged<CustomElementRegistry> = Tagged<Custo
  */
 export const get = <K extends keyof HTMLElementTagNameMap>(
   name: K
-): Effect.Effect<CustomElementRegistry, NoSuchElementException, CustomElementConstructor> =>
+): Effect.Effect<CustomElementConstructor, NoSuchElementException, CustomElementRegistry> =>
   CustomElementRegistry.withEffect((r) => Option.fromNullable(r.get(name)))
 
 /**
@@ -44,7 +44,7 @@ export const define = <K extends keyof HTMLElementTagNameMap>(
   name: K,
   constructor: CustomElementConstructor,
   options?: ElementDefinitionOptions
-): Effect.Effect<CustomElementRegistry, never, void> =>
+): Effect.Effect<void, never, CustomElementRegistry> =>
   CustomElementRegistry.with((r) => r.define(name, constructor, options))
 
 /**
@@ -52,7 +52,7 @@ export const define = <K extends keyof HTMLElementTagNameMap>(
  */
 export const whenDefined = <K extends keyof HTMLElementTagNameMap>(
   name: K
-): Effect.Effect<CustomElementRegistry, never, CustomElementConstructor> =>
+): Effect.Effect<CustomElementConstructor, never, CustomElementRegistry> =>
   CustomElementRegistry.withEffect((r) => Effect.promise(() => r.whenDefined(name)))
 
 /**
@@ -60,4 +60,4 @@ export const whenDefined = <K extends keyof HTMLElementTagNameMap>(
  */
 export const upgrade = (
   node: Node
-): Effect.Effect<CustomElementRegistry, never, void> => CustomElementRegistry.with((r) => r.upgrade(node))
+): Effect.Effect<void, never, CustomElementRegistry> => CustomElementRegistry.with((r) => r.upgrade(node))

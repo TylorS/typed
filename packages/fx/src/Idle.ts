@@ -112,7 +112,7 @@ export const defaultIdleScheduler: IdleScheduler = globalValue(
  * @since 1.18.0
  * @category combinators
  */
-export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effect.Effect<R, E, B> = Effect
+export const withIdleScheduler: <R, E, B>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R> = Effect
   .withScheduler(defaultIdleScheduler)
 
 /**
@@ -120,14 +120,14 @@ export const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effec
  * @since 1.18.0
  * @category layers
  */
-export const setIdleScheduler: Layer.Layer<never, never, never> = Layer.setScheduler(defaultIdleScheduler)
+export const setIdleScheduler: Layer.Layer<never> = Layer.setScheduler(defaultIdleScheduler)
 
 /**
  * Request to run some work with requestIdleCallback returning an IdleDeadline
  * @since 1.18.0
  * @category scoped
  */
-export const whenIdle = (options?: IdleRequestOptions): Effect.Effect<Scope.Scope, never, IdleDeadline> =>
+export const whenIdle = (options?: IdleRequestOptions): Effect.Effect<IdleDeadline, never, Scope.Scope> =>
   Effect.asyncEffect((resume) => {
     const id = requestIdleCallback((deadline) => resume(Effect.succeed(deadline)), options)
 
@@ -148,8 +148,8 @@ export function shouldContinue(deadline: IdleDeadline): boolean {
  * @category params
  */
 export interface WhileIdleRequestOptions<R, E, R2, E2> extends IdleRequestOptions {
-  readonly while: Effect.Effect<R, E, boolean>
-  readonly body: Effect.Effect<R2, E2, unknown>
+  readonly while: Effect.Effect<boolean, E, R>
+  readonly body: Effect.Effect<unknown, E2, R2>
 }
 
 /**
@@ -158,7 +158,7 @@ export interface WhileIdleRequestOptions<R, E, R2, E2> extends IdleRequestOption
  */
 export const whileIdle = <R, E, R2, E2>(
   options: WhileIdleRequestOptions<R, E, R2, E2>
-): Effect.Effect<Scope.Scope | R | R2, E | E2, void> =>
+): Effect.Effect<void, E | E2, Scope.Scope | R | R2> =>
   Effect.gen(function*(_) {
     while (yield* _(options.while)) {
       const deadline = yield* _(whenIdle(options))
@@ -175,27 +175,27 @@ export const whileIdle = <R, E, R2, E2>(
  */
 export function dequeueWhileIdle<A, R2, E2, B>(
   dequeue: Queue.Dequeue<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, R2 | Scope.Scope>
 
 export function dequeueWhileIdle<I, A, R2, E2, B>(
   dequeue: Context.Dequeue<I, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<I | R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, I | R2 | Scope.Scope>
 
 export function dequeueWhileIdle<I = never, A = unknown, R2 = never, E2 = never, B = unknown>(
   dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<I | R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, I | R2 | Scope.Scope>
 
 export function dequeueWhileIdle<I, A, R2, E2, B>(
   dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<I | R2 | Scope.Scope, E2, void> {
+): Effect.Effect<void, E2, I | R2 | Scope.Scope> {
   return whileIdle({
     while: dequeueIsActive(dequeue),
     body: Effect.flatMap(dequeue.take, f),
@@ -209,10 +209,10 @@ export function dequeueWhileIdle<I, A, R2, E2, B>(
 export interface IdleQueue<I> {
   readonly add: <R>(
     part: I,
-    task: Effect.Effect<R, never, unknown>
-  ) => Effect.Effect<R | Scope.Scope, never, void>
+    task: Effect.Effect<unknown, never, R>
+  ) => Effect.Effect<void, never, R | Scope.Scope>
 
-  readonly interrupt: Effect.Effect<never, never, void>
+  readonly interrupt: Effect.Effect<void>
 }
 
 /**
@@ -220,20 +220,20 @@ export interface IdleQueue<I> {
  */
 export const makeIdleQueue = <I>(
   options?: IdleRequestOptions
-): Effect.Effect<Scope.Scope, never, IdleQueue<I>> =>
+): Effect.Effect<IdleQueue<I>, never, Scope.Scope> =>
   withScope((scope) => Effect.sync(() => new IdleQueueImpl<I>(scope, options)), ExecutionStrategy.sequential)
 
 class IdleQueueImpl<I> implements IdleQueue<I> {
-  queue = new Map<I, Effect.Effect<never, never, unknown>>()
+  queue = new Map<I, Effect.Effect<unknown>>()
   scheduled = false
 
-  readonly interrupt: Effect.Effect<never, never, void>
-  readonly scheduleNextRun: Effect.Effect<never, never, void>
+  readonly interrupt: Effect.Effect<void>
+  readonly scheduleNextRun: Effect.Effect<void>
 
   constructor(readonly scope: Scope.CloseableScope, readonly options?: IdleRequestOptions) {
     this.interrupt = Effect.fiberIdWith((id) => Scope.close(scope, Exit.interrupt(id)))
 
-    const run: Effect.Effect<Scope.Scope, never, void> = Effect.flatMap(
+    const run: Effect.Effect<void, never, Scope.Scope> = Effect.flatMap(
       whenIdle(this.options),
       (deadline) =>
         Effect.gen(this, function*(_) {
@@ -274,7 +274,7 @@ class IdleQueueImpl<I> implements IdleQueue<I> {
     )
   }
 
-  add = <R>(part: I, task: Effect.Effect<R, never, unknown>) =>
+  add = <R>(part: I, task: Effect.Effect<unknown, never, R>) =>
     Effect.contextWithEffect((ctx: Context.Context<R>) => {
       const provided = Effect.provide(task, ctx)
       this.queue.set(part, provided)

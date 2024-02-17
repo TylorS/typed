@@ -1,6 +1,6 @@
 ---
 title: Test.ts
-nav_order: 23
+nav_order: 22
 parent: "@typed/template"
 ---
 
@@ -71,11 +71,11 @@ export interface TestRender<E> {
   readonly elementRef: ElementRef.ElementRef
   readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
   readonly lastError: RefSubject.Filtered<never, never, E>
-  readonly interrupt: Effect.Effect<never, never, void>
+  readonly interrupt: Effect.Effect<void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
-  readonly dispatchEvent: (options: EventOptions) => Effect.Effect<never, Cause.NoSuchElementException, void>
-  readonly click: (options?: Omit<EventOptions, "event">) => Effect.Effect<never, Cause.NoSuchElementException, void>
+  readonly dispatchEvent: (options: EventOptions) => Effect.Effect<void, Cause.NoSuchElementException>
+  readonly click: (options?: Omit<EventOptions, "event">) => Effect.Effect<void, Cause.NoSuchElementException>
 }
 ```
 
@@ -134,9 +134,9 @@ export declare function testRender<R, E>(
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
   }
 ): Effect.Effect<
-  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>,
+  TestRender<E>,
   never,
-  TestRender<E>
+  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>
 >
 ```
 

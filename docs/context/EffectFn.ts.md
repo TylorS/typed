@@ -35,8 +35,8 @@ EffectFn is a type-alias for a function that returns an Effect.
 **Signature**
 
 ```ts
-export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, R = any, E = any, A = any> {
-  (...args: Args): Effect.Effect<R, E, A>
+export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, A = any, E = any, R = any> {
+  (...args: Args): Effect.Effect<A, E, R>
 }
 ```
 
@@ -58,7 +58,7 @@ A helper for extracting the arguments of an EffectFn.
 export type ArgsOf<T extends EffectFn> = T extends (
   ...args: infer Args
 ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-Effect.Effect<infer _R, infer _E, infer _A>
+Effect.Effect<infer _A, infer _E, infer _R>
   ? Args
   : never
 ```
@@ -75,7 +75,7 @@ A helper for extracting the context of an EffectFn.
 export type Context<T extends EffectFn> = T extends (
   ...args: infer _Args
 ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-Effect.Effect<infer R, infer _E, infer _A>
+Effect.Effect<infer _A, infer _E, infer R>
   ? R
   : never
 ```
@@ -92,7 +92,7 @@ A helper for extracting the error of an EffectFn.
 export type Error<T extends EffectFn> = T extends (
   ...args: infer _Args
 ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-Effect.Effect<infer _R, infer E, infer _A>
+Effect.Effect<infer _A, infer E, infer _R>
   ? E
   : never
 ```
@@ -106,8 +106,8 @@ A helper for utilizing an EffectFn in an `extends` clause.
 **Signature**
 
 ```ts
-export type Extendable<T extends EffectFn> = T extends (...args: infer Args) => Effect.Effect<infer R, infer E, infer A>
-  ? (...args: Args) => Effect.Effect<[R] extends [never] ? any : R, E, A>
+export type Extendable<T extends EffectFn> = T extends (...args: infer Args) => Effect.Effect<infer A, infer E, infer R>
+  ? (...args: Args) => Effect.Effect<A, E, [R] extends [never] ? any : R>
   : never
 ```
 
@@ -123,7 +123,7 @@ A helper for extracting the success of an EffectFn.
 export type Success<T extends EffectFn> = T extends (
   ...args: infer _Args
 ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-Effect.Effect<infer _R, infer _E, infer A>
+Effect.Effect<infer A, infer _E, infer _R>
   ? A
   : never
 ```

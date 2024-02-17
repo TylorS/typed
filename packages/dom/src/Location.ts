@@ -25,56 +25,56 @@ export const Location: Context.Tagged<Location> = Context.Tagged<Location>("@typ
  * @since 8.19.0
  * @category getters
  */
-export const getHref: Effect.Effect<Location, never, string> = Location.with((l) => l.href)
+export const getHref: Effect.Effect<string, never, Location> = Location.with((l) => l.href)
 
 /**
  * Get the origin from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getOrigin: Effect.Effect<Location, never, string> = Location.with((l) => l.origin)
+export const getOrigin: Effect.Effect<string, never, Location> = Location.with((l) => l.origin)
 
 /**
  * Get the protocol from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getProtocol: Effect.Effect<Location, never, string> = Location.with((l) => l.protocol)
+export const getProtocol: Effect.Effect<string, never, Location> = Location.with((l) => l.protocol)
 
 /**
  * Get the host from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getHost: Effect.Effect<Location, never, string> = Location.with((l) => l.host)
+export const getHost: Effect.Effect<string, never, Location> = Location.with((l) => l.host)
 
 /**
  * Get the hostname from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getHostname: Effect.Effect<Location, never, string> = Location.with((l) => l.hostname)
+export const getHostname: Effect.Effect<string, never, Location> = Location.with((l) => l.hostname)
 
 /**
  * Get the port from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getPort: Effect.Effect<Location, never, string> = Location.with((l) => l.port)
+export const getPort: Effect.Effect<string, never, Location> = Location.with((l) => l.port)
 
 /**
  * Get the pathname from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getPathname: Effect.Effect<Location, never, string> = Location.with((l) => l.pathname)
+export const getPathname: Effect.Effect<string, never, Location> = Location.with((l) => l.pathname)
 
 /**
  * Get the search params string from the current Location
  * @since 8.19.0
  * @category getters
  */
-export const getSearch: Effect.Effect<Location, never, URLSearchParams> = Location.with((l) =>
+export const getSearch: Effect.Effect<URLSearchParams, never, Location> = Location.with((l) =>
   new URLSearchParams(l.search)
 )
 
@@ -83,14 +83,14 @@ export const getSearch: Effect.Effect<Location, never, URLSearchParams> = Locati
  * @since 8.19.0
  * @category getters
  */
-export const getHash: Effect.Effect<Location, never, string> = Location.with((l) => l.hash)
+export const getHash: Effect.Effect<string, never, Location> = Location.with((l) => l.hash)
 
 /**
  * Assign the current URL
  * @since 8.19.0
  * @category actions
  */
-export const assign: (url: string) => Effect.Effect<Location, never, void> = (url: string) =>
+export const assign: (url: string) => Effect.Effect<void, never, Location> = (url: string) =>
   Location.with((l) => l.assign(url))
 
 /**
@@ -98,12 +98,12 @@ export const assign: (url: string) => Effect.Effect<Location, never, void> = (ur
  * @since 8.19.0
  * @category getters
  */
-export const reload: Effect.Effect<Location, never, void> = Location.with((l) => l.reload())
+export const reload: Effect.Effect<void, never, Location> = Location.with((l) => l.reload())
 
 /**
  * Replace the current URL
  * @since 8.19.0
  * @category getters
  */
-export const replace: (url: string) => Effect.Effect<Location, never, void> = (url: string) =>
+export const replace: (url: string) => Effect.Effect<void, never, Location> = (url: string) =>
   Location.with((l) => l.replace(url))

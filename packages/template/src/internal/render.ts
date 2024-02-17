@@ -55,7 +55,7 @@ export type RenderPartContext = {
   readonly refCounter: IndexRefCounter2
   readonly renderContext: RenderContext
   readonly values: ReadonlyArray<Renderable<any, any>>
-  readonly onCause: (cause: Cause<any>) => Effect.Effect<never, never, void>
+  readonly onCause: (cause: Cause<any>) => Effect.Effect<void>
 
   readonly makeHydrateContext?: (index: number) => HydrateContext
 
@@ -68,7 +68,7 @@ type RenderPartMap = {
     part: Extract<Template.PartNode | Template.SparsePartNode, { _tag: K }>,
     node: Node,
     ctx: RenderPartContext
-  ) => null | Effect.Effect<any, any, void> | Array<Effect.Effect<any, any, void>>
+  ) => null | Effect.Effect<void, any, any> | Array<Effect.Effect<void, any, any>>
 }
 
 const RenderPartMap: RenderPartMap = {
@@ -283,7 +283,7 @@ const RenderPartMap: RenderPartMap = {
         added.forEach((a) => previous.add(a))
       }
 
-      const effects: Array<Effect.Effect<any, any, void>> = []
+      const effects: Array<Effect.Effect<void, any, any>> = []
       const entries = Object.entries(renderable)
 
       loop:
@@ -403,7 +403,7 @@ const RenderPartMap: RenderPartMap = {
         return ctx.renderContext.queue.add(element, () => attr.value = values.join(""))
       })
 
-    const effects: Array<Effect.Effect<any, any, void>> = []
+    const effects: Array<Effect.Effect<void, any, any>> = []
 
     for (let i = 0; i < templatePart.nodes.length; ++i) {
       const node = templatePart.nodes[i]
@@ -461,7 +461,7 @@ const RenderPartMap: RenderPartMap = {
         return ctx.renderContext.queue.add(comment, () => comment.textContent = values.join(""))
       })
 
-    const effects: Array<Effect.Effect<any, any, void>> = []
+    const effects: Array<Effect.Effect<void, any, any>> = []
 
     for (let i = 0; i < templatePart.nodes.length; ++i) {
       const node = templatePart.nodes[i]
@@ -551,7 +551,7 @@ export function renderPart2(
   content: ParentChildNodes,
   path: Chunk<number>,
   ctx: RenderPartContext
-): Effect.Effect<any, any, void> | Array<Effect.Effect<any, any, void>> | null {
+): Effect.Effect<void, any, any> | Array<Effect.Effect<void, any, any>> | null {
   return RenderPartMap[part._tag](part as any, findPath(content, path), ctx)
 }
 
@@ -592,13 +592,13 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         }
 
         // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>> = []
+        const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
         for (const [part, path] of entry.template.parts) {
           const eff = renderPart2(part, content, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>
+                Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
               >
             )
           }
@@ -636,14 +636,14 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           // Close our scope whenever the current Fiber is interrupted
           Effect.ensuring(Scope.close(scope, Exit.unit))
         )
-      })
-    })
+      });
+    });
   }
 
 function getEventHandler<R, E>(
   renderable: any,
   ctx: Context.Context<any> | Context.Context<never>,
-  onCause: (cause: Cause<E>) => Effect.Effect<never, never, unknown>
+  onCause: (cause: Cause<E>) => Effect.Effect<unknown>
 ): EventHandler.EventHandler<never, never> | null {
   if (renderable && typeof renderable === "object") {
     if (EventHandler.EventHandlerTypeId in renderable) {
@@ -666,7 +666,7 @@ function getEventHandler<R, E>(
 function handlePart<R, E, R2>(
   renderable: unknown,
   sink: Sink.Sink<R2, any, any>
-): Effect.Effect<R | R2 | Scope.Scope, never, any> {
+): Effect.Effect<any, never, R | R2 | Scope.Scope> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {
@@ -678,7 +678,7 @@ function handlePart<R, E, R2>(
       } else if (TypeId in renderable) {
         return (renderable as Fx.Fx<R | R2, any, any>).run(sink)
       } else if (Effect.EffectTypeId in renderable) {
-        return Effect.matchCauseEffect(renderable as Effect.Effect<R, E, any>, sink)
+        return Effect.matchCauseEffect(renderable as Effect.Effect<any, E, R>, sink);
       } else return sink.onSuccess(renderable)
     }
     default:
@@ -710,7 +710,7 @@ export function attachRoot<T extends RenderEvent | null>(
   cache: RenderContext["renderCache"],
   where: HTMLElement,
   what: RenderEvent | null // TODO: Should we support HTML RenderEvents here too?
-): Effect.Effect<never, never, ToRendered<T>> {
+): Effect.Effect<ToRendered<T>> {
   return Effect.sync(() => {
     const wire = what?.valueOf() as ToRendered<T>
     const previous = cache.get(where)
@@ -883,7 +883,7 @@ function matchSettablePart(
   renderable: Renderable<any, any>,
   setValue: (value: any) => void,
   makePart: () => Part,
-  schedule: (f: () => void) => Effect.Effect<Scope.Scope, never, void>,
+  schedule: (f: () => void) => Effect.Effect<void, never, Scope.Scope>,
   expect: () => void
 ) {
   return matchRenderable(renderable, {
@@ -908,11 +908,11 @@ function matchSettablePart(
 }
 
 function matchRenderable(renderable: Renderable<any, any>, matches: {
-  Fx: (fx: Fx.Fx<any, any, any>) => Effect.Effect<any, any, void> | null
-  Effect: (effect: Effect.Effect<any, any, any>) => Effect.Effect<any, any, void> | null
-  Directive: (directive: Directive<any, any>) => Effect.Effect<any, any, void> | null
-  Otherwise: (_: Renderable<any, any>) => Effect.Effect<any, any, void> | null
-}): Effect.Effect<any, any, void> | null {
+  Fx: (fx: Fx.Fx<any, any, any>) => Effect.Effect<void, any, any> | null
+  Effect: (effect: Effect.Effect<any, any, any>) => Effect.Effect<void, any, any> | null
+  Directive: (directive: Directive<any, any>) => Effect.Effect<void, any, any> | null
+  Otherwise: (_: Renderable<any, any>) => Effect.Effect<void, any, any> | null
+}): Effect.Effect<void, any, any> | null {
   if (Fx.isFx(renderable)) {
     return matches.Fx(renderable)
   } else if (Effect.isEffect(renderable)) {

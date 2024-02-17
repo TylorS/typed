@@ -53,8 +53,8 @@ Map the values within the HashMap
 
 ```ts
 export declare const map: {
-  <K, V>(f: (v: V, k: K) => V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K, V>(f: (v: V, k: K) => V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -71,8 +71,8 @@ export declare const modify: {
   <K, V>(
     key: K,
     f: (v: V) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, f: (v: V) => V): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, f: (v: V) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -89,12 +89,12 @@ export declare const modifyAt: {
   <K, V>(
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
   <R, E, K, V>(
     self: RefHashMap<R, E, K, V>,
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -112,13 +112,13 @@ export declare const modifyHash: {
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
   <R, E, K, V>(
     self: RefHashMap<R, E, K, V>,
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -132,8 +132,8 @@ Remove a value at key from the HashMap
 
 ```ts
 export declare const remove: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -147,8 +147,8 @@ Remove a value at key from the HashMap
 
 ```ts
 export declare const removeMany: {
-  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -162,8 +162,8 @@ Set a value at a particular key in the HashMap
 
 ```ts
 export declare const set: {
-  <K, V>(key: K, value: V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K, V>(key: K, value: V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -323,11 +323,11 @@ Construct a new RefHashMap with the given initial value.
 
 ```ts
 export declare function make<R, E, K, V>(
-  initial: Effect.Effect<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
+  initial: Effect.Effect<HashMap.HashMap<K, V>, E, R>
+): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
 export declare function make<R, E, K, V>(
   initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
+): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -341,7 +341,7 @@ This function creates a new RefHashMap from a given HashMap.
 ```ts
 export declare function of<K, V>(
   map: HashMap.HashMap<K, V>
-): Effect.Effect<Scope.Scope, never, RefHashMap<never, never, K, V>>
+): Effect.Effect<RefHashMap<never, never, K, V>, never, Scope.Scope>
 ```
 
 Added in v1.18.0

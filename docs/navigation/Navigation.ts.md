@@ -80,7 +80,27 @@ Added in v1.0.0
 
 ```ts
 export declare const BeforeNavigationEvent: Schema.Schema<
-  never,
+  {
+    readonly type: "push" | "replace" | "reload" | "traverse"
+    readonly from: {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+    readonly to:
+      | {
+          readonly id: Uuid
+          readonly key: Uuid
+          readonly url: URL
+          readonly state: unknown
+          readonly sameDocument: boolean
+        }
+      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
+    readonly delta: number
+    readonly info: unknown
+  },
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly from: {
@@ -102,27 +122,7 @@ export declare const BeforeNavigationEvent: Schema.Schema<
     readonly delta: number
     readonly info: unknown
   },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: Uuid
-          readonly key: Uuid
-          readonly url: URL
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
-    readonly delta: number
-    readonly info: unknown
-  }
+  never
 >
 ```
 
@@ -156,9 +156,9 @@ Added in v1.0.0
 export type BeforeNavigationHandler<R, R2> = (
   event: BeforeNavigationEvent
 ) => Effect.Effect<
-  R,
+  Option.Option<Effect.Effect<unknown, RedirectError | CancelNavigation, R2>>,
   RedirectError | CancelNavigation,
-  Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, unknown>>
+  R
 >
 ```
 
@@ -230,7 +230,7 @@ Added in v1.0.0
 
 ```ts
 export declare const Destination: Schema.Schema<
-  never,
+  { readonly id: Uuid; readonly key: Uuid; readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
   {
     readonly id: string
     readonly key: string
@@ -238,7 +238,7 @@ export declare const Destination: Schema.Schema<
     readonly state: unknown
     readonly sameDocument: boolean
   },
-  { readonly id: Uuid; readonly key: Uuid; readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
+  never
 >
 ```
 
@@ -270,9 +270,9 @@ Added in v1.0.0
 
 ```ts
 export declare const FileSchema: Schema.Schema<
-  never,
+  File,
   { readonly _id: "File"; readonly name: string; readonly data: string },
-  File
+  never
 >
 ```
 
@@ -284,9 +284,9 @@ Added in v1.0.0
 
 ```ts
 export declare const FileSchemaFrom: Schema.Schema<
-  never,
   { readonly _id: "File"; readonly name: string; readonly data: string },
-  { readonly _id: "File"; readonly name: string; readonly data: string }
+  { readonly _id: "File"; readonly name: string; readonly data: string },
+  never
 >
 ```
 
@@ -308,7 +308,20 @@ Added in v1.0.0
 
 ```ts
 export declare const FormDataEvent: Schema.Schema<
-  never,
+  {
+    readonly from: {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+    readonly name: Option.Option<string>
+    readonly data: FormData
+    readonly action: Option.Option<string>
+    readonly method: Option.Option<string>
+    readonly encoding: Option.Option<string>
+  },
   {
     readonly from: {
       readonly id: string
@@ -325,20 +338,7 @@ export declare const FormDataEvent: Schema.Schema<
     readonly method?: string | null | undefined
     readonly encoding?: string | null | undefined
   },
-  {
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly name: Option.Option<string>
-    readonly data: FormData
-    readonly action: Option.Option<string>
-    readonly method: Option.Option<string>
-    readonly encoding: Option.Option<string>
-  }
+  never
 >
 ```
 
@@ -372,9 +372,9 @@ Added in v1.0.0
 export type FormDataHandler<R, R2> = (
   event: FormDataEvent
 ) => Effect.Effect<
-  R,
+  Option.Option<Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation, R2>>,
   RedirectError | CancelNavigation,
-  Option.Option<Effect.Effect<R2, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>>
+  R
 >
 ```
 
@@ -386,9 +386,9 @@ Added in v1.0.0
 
 ```ts
 export declare const FormDataSchema: Schema.Schema<
-  never,
+  FormData,
   { readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string } },
-  FormData
+  never
 >
 ```
 
@@ -420,7 +420,13 @@ Added in v1.0.0
 
 ```ts
 export declare const FormInputSchema: Schema.Schema<
-  never,
+  {
+    readonly name: Option.Option<string>
+    readonly data: FormData
+    readonly action: Option.Option<string>
+    readonly method: Option.Option<string>
+    readonly encoding: Option.Option<string>
+  },
   {
     readonly data: {
       readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string }
@@ -430,13 +436,7 @@ export declare const FormInputSchema: Schema.Schema<
     readonly method?: string | null | undefined
     readonly encoding?: string | null | undefined
   },
-  {
-    readonly name: Option.Option<string>
-    readonly data: FormData
-    readonly action: Option.Option<string>
-    readonly method: Option.Option<string>
-    readonly encoding: Option.Option<string>
-  }
+  never
 >
 ```
 
@@ -486,49 +486,44 @@ export interface Navigation {
 
   readonly canGoForward: RefSubject.Computed<never, never, boolean>
 
-  readonly navigate: (
-    url: string | URL,
-    options?: NavigateOptions
-  ) => Effect.Effect<never, NavigationError, Destination>
+  readonly navigate: (url: string | URL, options?: NavigateOptions) => Effect.Effect<Destination, NavigationError>
 
-  readonly back: (options?: { readonly info?: unknown }) => Effect.Effect<never, NavigationError, Destination>
+  readonly back: (options?: { readonly info?: unknown }) => Effect.Effect<Destination, NavigationError>
 
-  readonly forward: (options?: { readonly info?: unknown }) => Effect.Effect<never, NavigationError, Destination>
+  readonly forward: (options?: { readonly info?: unknown }) => Effect.Effect<Destination, NavigationError>
 
   readonly traverseTo: (
     key: Destination["key"],
     options?: { readonly info?: unknown }
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<Destination, NavigationError>
 
-  readonly updateCurrentEntry: (options: {
-    readonly state: unknown
-  }) => Effect.Effect<never, NavigationError, Destination>
+  readonly updateCurrentEntry: (options: { readonly state: unknown }) => Effect.Effect<Destination, NavigationError>
 
   readonly reload: (options?: {
     readonly info?: unknown
     readonly state?: unknown
-  }) => Effect.Effect<never, NavigationError, Destination>
+  }) => Effect.Effect<Destination, NavigationError>
 
   readonly beforeNavigation: <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 
   readonly onNavigation: <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 
   readonly submit: (
     data: FormData,
     formInput?: Simplify<Omit<FormInputFrom, "data">>
   ) => Effect.Effect<
-    HttpClient.client.Client.Default,
+    Option.Option<HttpClient.response.ClientResponse>,
     NavigationError | HttpClient.error.HttpClientError,
-    Option.Option<HttpClient.response.ClientResponse>
+    Scope.Scope | HttpClient.client.Client.Default
   >
 
   readonly onFormData: <R = never, R2 = never>(
     handler: FormDataHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 }
 ```
 
@@ -550,7 +545,17 @@ Added in v1.0.0
 
 ```ts
 export declare const NavigationEvent: Schema.Schema<
-  never,
+  {
+    readonly type: "push" | "replace" | "reload" | "traverse"
+    readonly info: unknown
+    readonly destination: {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+  },
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly info: unknown
@@ -562,17 +567,7 @@ export declare const NavigationEvent: Schema.Schema<
       readonly sameDocument: boolean
     }
   },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly info: unknown
-    readonly destination: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-  }
+  never
 >
 ```
 
@@ -605,7 +600,7 @@ Added in v1.0.0
 ```ts
 export type NavigationHandler<R, R2> = (
   event: NavigationEvent
-) => Effect.Effect<R, never, Option.Option<Effect.Effect<R2, never, unknown>>>
+) => Effect.Effect<Option.Option<Effect.Effect<unknown, never, R2>>, never, R>
 ```
 
 Added in v1.0.0
@@ -616,9 +611,9 @@ Added in v1.0.0
 
 ```ts
 export declare const NavigationType: Schema.Schema<
-  never,
   "push" | "replace" | "reload" | "traverse",
-  "push" | "replace" | "reload" | "traverse"
+  "push" | "replace" | "reload" | "traverse",
+  never
 >
 ```
 
@@ -640,9 +635,9 @@ Added in v1.0.0
 
 ```ts
 export declare const ProposedDestination: Schema.Schema<
-  never,
+  { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
   { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
-  { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
+  never
 >
 ```
 
@@ -684,7 +679,25 @@ Added in v1.0.0
 
 ```ts
 export declare const Transition: Schema.Schema<
-  never,
+  {
+    readonly type: "push" | "replace" | "reload" | "traverse"
+    readonly from: {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    }
+    readonly to:
+      | {
+          readonly id: Uuid
+          readonly key: Uuid
+          readonly url: URL
+          readonly state: unknown
+          readonly sameDocument: boolean
+        }
+      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
+  },
   {
     readonly type: "push" | "replace" | "reload" | "traverse"
     readonly from: {
@@ -704,25 +717,7 @@ export declare const Transition: Schema.Schema<
         }
       | { readonly url: string; readonly state: unknown; readonly sameDocument: boolean }
   },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: Uuid
-          readonly key: Uuid
-          readonly url: URL
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
-  }
+  never
 >
 ```
 
@@ -755,7 +750,7 @@ Added in v1.0.0
 ```ts
 export declare const back: (options?: {
   readonly info?: unknown
-}) => Effect.Effect<Navigation, NavigationError, Destination>
+}) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0
@@ -777,7 +772,7 @@ Added in v1.0.0
 ```ts
 export declare const forward: (options?: {
   readonly info?: unknown
-}) => Effect.Effect<Navigation, NavigationError, Destination>
+}) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0
@@ -840,7 +835,7 @@ Added in v1.0.0
 export declare const navigate: (
   url: string | URL,
   options?: NavigateOptions
-) => Effect.Effect<Navigation, NavigationError, Destination>
+) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0
@@ -852,7 +847,7 @@ Added in v1.0.0
 ```ts
 export declare function onFormData<R = never, R2 = never>(
   handler: FormDataHandler<R, R2>
-): Effect.Effect<Navigation | R | R2 | Scope.Scope, never, void>
+): Effect.Effect<void, never, Navigation | R | R2 | Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -878,7 +873,7 @@ Added in v1.0.0
 export declare const reload: (options?: {
   readonly info?: unknown
   readonly state?: unknown
-}) => Effect.Effect<Navigation, NavigationError, Destination>
+}) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0
@@ -892,9 +887,9 @@ export declare function submit(
   data: FormData,
   formInput?: Simplify<Omit<FormInputFrom, "data">>
 ): Effect.Effect<
-  Navigation | HttpClient.client.Client.Default,
+  Option.Option<HttpClient.response.ClientResponse>,
   NavigationError | HttpClient.error.HttpClientError,
-  Option.Option<HttpClient.response.ClientResponse>
+  Navigation | HttpClient.client.Client.Default | Scope.Scope
 >
 ```
 
@@ -908,7 +903,7 @@ Added in v1.0.0
 export declare const traverseTo: (
   key: Uuid,
   options?: { readonly info?: unknown }
-) => Effect.Effect<Navigation, NavigationError, Destination>
+) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0
@@ -920,7 +915,7 @@ Added in v1.0.0
 ```ts
 export declare const updateCurrentEntry: (options: {
   readonly state: unknown
-}) => Effect.Effect<Navigation, NavigationError, Destination>
+}) => Effect.Effect<Destination, NavigationError, Navigation>
 ```
 
 Added in v1.0.0

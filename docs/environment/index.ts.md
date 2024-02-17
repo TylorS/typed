@@ -82,7 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isDom: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isDom: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -92,7 +92,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isServer: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isServer: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -102,7 +102,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isServiceWorker: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isServiceWorker: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -112,7 +112,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isStatic: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isStatic: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -122,7 +122,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isTest: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isTest: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -132,7 +132,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isWebWorker: Effect.Effect<CurrentEnvironment, never, boolean>
+export declare const isWebWorker: Effect.Effect<boolean, never, CurrentEnvironment>
 ```
 
 Added in v1.0.0

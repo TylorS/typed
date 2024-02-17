@@ -30,9 +30,9 @@ Construct a Pool implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function Pool<E, A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Pool<IdentifierOf<I>, E, A>
+export declare function Pool<A, E>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, A, E>
+  <const I>(identifier: I): Pool<IdentifierOf<I>, A, E>
 }
 ```
 
@@ -47,21 +47,21 @@ Contextual wrapper for @effect/io/Pool
 **Signature**
 
 ```ts
-export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
-  readonly invalidate: (a: A) => Effect.Effect<I | Scope, never, void>
-  readonly get: Effect.Effect<I | Scope, E, A>
+export interface Pool<I, A, E> extends Tag<I, P.Pool<A, E>> {
+  readonly invalidate: (a: A) => Effect.Effect<void, never, I | Scope>
+  readonly get: Effect.Effect<A, E, I | Scope>
 
   readonly make: <R>(options: {
-    readonly acquire: Effect.Effect<R, E, A>
+    readonly acquire: Effect.Effect<A, E, R>
     readonly size: number
-  }) => Layer.Layer<R, never, I>
+  }) => Layer.Layer<I, never, R>
 
   readonly makeWithTTL: <R>(options: {
-    readonly acquire: Effect.Effect<R, E, A>
+    readonly acquire: Effect.Effect<A, E, R>
     readonly min: number
     readonly max: number
     readonly timeToLive: DurationInput
-  }) => Layer.Layer<R, never, I>
+  }) => Layer.Layer<I, never, R>
 }
 ```
 

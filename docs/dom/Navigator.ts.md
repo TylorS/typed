@@ -52,7 +52,7 @@ Check to see if the current navigator can share
 **Signature**
 
 ```ts
-export declare const canShare: (shareData?: ShareData) => Effect.Effect<Navigator, never, boolean>
+export declare const canShare: (shareData?: ShareData) => Effect.Effect<boolean, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -64,7 +64,7 @@ Share data with the current navigator
 **Signature**
 
 ```ts
-export declare const share: (shareData: ShareData) => Effect.Effect<Navigator, never, void>
+export declare const share: (shareData: ShareData) => Effect.Effect<void, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -76,7 +76,7 @@ Store a Credential
 **Signature**
 
 ```ts
-export declare const storeCredential: (credential: Credential) => Effect.Effect<Navigator, never, Credential>
+export declare const storeCredential: (credential: Credential) => Effect.Effect<Credential, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -88,7 +88,7 @@ Write clipboard items
 **Signature**
 
 ```ts
-export declare const writeClipboard: (items: ClipboardItems) => Effect.Effect<Navigator, never, void>
+export declare const writeClipboard: (items: ClipboardItems) => Effect.Effect<void, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -100,7 +100,7 @@ Write text from the clipboard
 **Signature**
 
 ```ts
-export declare const writeClipboardText: (text: string) => Effect.Effect<Navigator, never, void>
+export declare const writeClipboardText: (text: string) => Effect.Effect<void, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -116,7 +116,7 @@ Create a new Credential
 ```ts
 export declare const createCredential: (
   options?: CredentialCreationOptions
-) => Effect.Effect<Navigator, never, Option<Credential>>
+) => Effect.Effect<Option<Credential>, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -131,7 +131,7 @@ Create a new ClipboardItem
 export declare const makeClipoboardItem: (
   items: Record<string, string | Blob | PromiseLike<string | Blob>>,
   options?: ClipboardItemOptions | undefined
-) => Effect.Effect<GlobalThis, never, ClipboardItem>
+) => Effect.Effect<ClipboardItem, never, GlobalThis>
 ```
 
 Added in v8.19.0
@@ -159,7 +159,7 @@ Check to see if the current navigator can utilize cookies
 **Signature**
 
 ```ts
-export declare const checkCookieEnabled: Effect.Effect<Navigator, never, boolean>
+export declare const checkCookieEnabled: Effect.Effect<boolean, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -171,7 +171,7 @@ Check to see if the current navigator is online
 **Signature**
 
 ```ts
-export declare const checkOnline: Effect.Effect<Navigator, never, boolean>
+export declare const checkOnline: Effect.Effect<boolean, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -183,7 +183,7 @@ Check to see if the current navigator has a PDF viewer
 **Signature**
 
 ```ts
-export declare const checkPdfViewerEnabled: Effect.Effect<Navigator, never, boolean>
+export declare const checkPdfViewerEnabled: Effect.Effect<boolean, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -197,7 +197,7 @@ Get a Credential
 ```ts
 export declare const getCredential: (
   options?: CredentialRequestOptions
-) => Effect.Effect<Navigator, never, Option<Credential>>
+) => Effect.Effect<Option<Credential>, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -211,7 +211,7 @@ Get the current navigator's geolocation
 ```ts
 export declare const getCurrentPosition: (
   options?: PositionOptions
-) => Effect.Effect<Navigator, GeolocationPositionError, GeolocationPosition>
+) => Effect.Effect<GeolocationPosition, GeolocationPositionError, Navigator>
 ```
 
 Added in v8.19.0
@@ -223,7 +223,7 @@ Check to see if the current navigator concurrency
 **Signature**
 
 ```ts
-export declare const getHardwareConcurrency: Effect.Effect<Navigator, never, number>
+export declare const getHardwareConcurrency: Effect.Effect<number, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -235,7 +235,7 @@ Check to see if the current navigator's max touch points
 **Signature**
 
 ```ts
-export declare const getMaxTouchPoints: Effect.Effect<Navigator, never, number>
+export declare const getMaxTouchPoints: Effect.Effect<number, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -247,7 +247,7 @@ Check to see if the current navigator has any media devices
 **Signature**
 
 ```ts
-export declare const getMediaDevices: Effect.Effect<Navigator, never, MediaDevices>
+export declare const getMediaDevices: Effect.Effect<MediaDevices, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -259,7 +259,7 @@ Check to see if the current navigator has any media sessions
 **Signature**
 
 ```ts
-export declare const getMediaSession: Effect.Effect<Navigator, never, MediaSession>
+export declare const getMediaSession: Effect.Effect<MediaSession, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -271,7 +271,7 @@ Get the current navigator's user agent
 **Signature**
 
 ```ts
-export declare const getUserAgent: Effect.Effect<Navigator, never, string>
+export declare const getUserAgent: Effect.Effect<string, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -283,7 +283,7 @@ Read from the clipboard
 **Signature**
 
 ```ts
-export declare const readClipboard: Effect.Effect<Navigator, never, ClipboardItems>
+export declare const readClipboard: Effect.Effect<ClipboardItems, never, Navigator>
 ```
 
 Added in v8.19.0
@@ -295,7 +295,7 @@ Read text from the clipboard
 **Signature**
 
 ```ts
-export declare const readClipboardText: Effect.Effect<Navigator, never, string>
+export declare const readClipboardText: Effect.Effect<string, never, Navigator>
 ```
 
 Added in v8.19.0

@@ -71,14 +71,14 @@ Transform a Versioned's output value as both an Fx and Effect using an Effect.
 ```ts
 export declare const mapEffect: {
   <A, R3, E3, C, B, R4, E4, D>(options: {
-    onFx: (a: A) => Effect.Effect<R3, E3, C>
-    onEffect: (b: B) => Effect.Effect<R4, E4, D>
+    onFx: (a: A) => Effect.Effect<C, E3, R3>
+    onEffect: (b: B) => Effect.Effect<D, E4, R4>
   }): <R0, E0, R, E, R2, E2>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
   ) => Versioned<never, never, R3 | R, E3 | E, C, R4 | R0 | R2, E4 | E0 | E2, D>
   <R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
-    options: { onFx: (a: A) => Effect.Effect<R3, E3, C>; onEffect: (b: B) => Effect.Effect<R4, E4, D> }
+    options: { onFx: (a: A) => Effect.Effect<C, E3, R3>; onEffect: (b: B) => Effect.Effect<D, E4, R4> }
   ): Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D>
 }
 ```
@@ -94,8 +94,8 @@ Added in v1.18.0
 ```ts
 export interface Versioned<out R1, out E1, out R2, out E2, out A2, out R3, out E3, out A3>
   extends Fx<R2, E2, A2>,
-    Effect.Effect<R3, E3, A3> {
-  readonly version: Effect.Effect<R1, E1, number>
+    Effect.Effect<A3, E3, R3> {
+  readonly version: Effect.Effect<number, E1, R1>
 }
 ```
 
@@ -157,9 +157,9 @@ Added in v1.0.0
 
 ```ts
 export declare function make<R1, E1, R2, E2, A2, R3, E3, A3>(
-  version: Effect.Effect<R1, E1, number>,
+  version: Effect.Effect<number, E1, R1>,
   fx: Fx<R2, E2, A2>,
-  effect: Effect.Effect<R3, E3, A3>
+  effect: Effect.Effect<A3, E3, R3>
 ): Versioned<R1, E1, R2, E2, A2, R3, E3, A3>
 ```
 
@@ -199,7 +199,7 @@ export declare const provide: {
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
   ) => Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
   <R3, S>(
-    layer: Layer.Layer<R3, never, S>
+    layer: Layer.Layer<S, never, R3>
   ): <R0, E0, R, E, A, R2, E2, B>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
   ) => Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
@@ -209,11 +209,11 @@ export declare const provide: {
   ): Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
   <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
-    context: Layer.Layer<R3, never, S>
+    context: Layer.Layer<S, never, R3>
   ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
   <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
     versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
-    context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<R3, never, S>
+    context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<S, never, R3>
   ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
 }
 ```
@@ -264,7 +264,7 @@ Added in v1.0.0
 export declare function transform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
   input: Versioned<R0, E0, R, E, A, R2, E2, B>,
   transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
-  transformGet: (effect: Effect.Effect<R2, E2, B>) => Effect.Effect<R4, E4, D>
+  transformGet: (effect: Effect.Effect<B, E2, R2>) => Effect.Effect<D, E4, R4>
 ): Versioned<never, never, R3, E3, C, R0 | R4, E0 | E4, D>
 ```
 

@@ -87,7 +87,7 @@ Useful for operators the end the stream early.
 
 ```ts
 export interface WithEarlyExit<R, E, A> extends Sink<R, E, A> {
-  readonly earlyExit: Effect.Effect<never, never, void>
+  readonly earlyExit: Effect.Effect<void>
 }
 ```
 
@@ -123,8 +123,8 @@ Sink is a data structure which can be used to consume values from a stream.
 
 ```ts
 export interface Sink<out R, in E, in A> {
-  onFailure(cause: Cause.Cause<E>): Effect.Effect<R, never, unknown>
-  onSuccess(value: A): Effect.Effect<R, never, unknown>
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R>
+  onSuccess(value: A): Effect.Effect<unknown, never, R>
 }
 ```
 
@@ -141,7 +141,7 @@ Added in v1.20.0
 ```ts
 export interface Tagged<I, E, A> extends Sink<I, E, A> {
   readonly tag: C.Tagged<I, Sink<never, E, A>>
-  readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<R, never, I>
+  readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<I, never, R>
 }
 ```
 
@@ -207,11 +207,11 @@ Added in v1.20.0
 ```ts
 export declare const dropAfterEffect: {
   <A, R2, E2>(
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>
   ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
   <R, E, A, R2, E2>(
     sink: Sink<R, E | E2, A>,
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>
   ): Sink<R | R2, E | E2, A>
 }
 ```
@@ -238,11 +238,11 @@ Added in v1.20.0
 ```ts
 export declare const dropWhileEffect: {
   <A, R2, E2>(
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>
   ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
   <R, E, A, R2, E2>(
     sink: Sink<R, E | E2, A>,
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>
   ): Sink<R | R2, E | E2, A>
 }
 ```
@@ -265,8 +265,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, boolean>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A>(sink: Sink<R, E, A>, f: (a: A) => Effect.Effect<R, E, boolean>): Sink<R, E, A>
+  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
+  <R, E, A>(sink: Sink<R, E, A>, f: (a: A) => Effect.Effect<boolean, E, R>): Sink<R, E, A>
 }
 ```
 
@@ -289,11 +289,11 @@ Added in v1.20.0
 ```ts
 export declare const filterMapEffect: {
   <B, R2, E2, A>(
-    f: (b: B) => Effect.Effect<R2, E2, Option.Option<A>>
+    f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
   ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, B>
   <R, E, A, R2, E2, B>(
     sink: Sink<R, E | E2, A>,
-    f: (b: B) => Effect.Effect<R2, E2, Option.Option<A>>
+    f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
   ): Sink<R | R2, E | E2, B>
 }
 ```
@@ -341,7 +341,7 @@ Added in v1.20.0
 export declare function filterMapLoopCauseEffect<R, E, A, B, R2, E2, C>(
   sink: Sink<R, E2 | C, A>,
   seed: B,
-  f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Option.Option<Cause.Cause<C>>, B]>
+  f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
 ): Sink<R | R2, E, A>
 ```
 
@@ -355,12 +355,12 @@ Added in v1.20.0
 export declare const filterMapLoopEffect: {
   <B, A, R2, E2, C>(
     seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+    f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
   ): <R, E>(sink: Sink<R, E, C>) => Sink<R2 | R, E2 | E, A>
   <R, E, A, B, R2, C>(
     sink: Sink<R, E, C>,
     seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E, readonly [Option.Option<C>, B]>
+    f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R2>
   ): Sink<R | R2, E, A>
 }
 ```
@@ -431,12 +431,12 @@ Added in v1.20.0
 export declare const loopCauseEffect: {
   <B, A, R2, E2, C>(
     seed: B,
-    f: (acc: B, a: Cause.Cause<A>) => Effect.Effect<R2, E2, readonly [Cause.Cause<C>, B]>
+    f: (acc: B, a: Cause.Cause<A>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
   ): <R, E>(sink: Sink<R, C | E, A>) => Sink<R, C | E, A>
   <R, E, A, B, C>(
     sink: Sink<R, E | C, A>,
     seed: B,
-    f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<R, E, readonly [Cause.Cause<C>, B]>
+    f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E, R>
   ): Sink<R, E | C, A>
 }
 ```
@@ -451,12 +451,12 @@ Added in v1.20.0
 export declare const loopEffect: {
   <B, A, R2, E2, C>(
     seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
+    f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
   ): <R, E>(sink: Sink<R, E, C>) => Sink<R2 | R, E2 | E, A>
   <R, E, A, B, C>(
     sink: Sink<R, E, C>,
     seed: B,
-    f: (acc: B, a: A) => Effect.Effect<R, E, readonly [C, B]>
+    f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
   ): Sink<R, E, A>
 }
 ```
@@ -469,8 +469,8 @@ Added in v1.20.0
 
 ```ts
 export declare function make<E, R, A, R2>(
-  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<R, never, unknown>,
-  onSuccess: (value: A) => Effect.Effect<R2, never, unknown>
+  onFailure: (cause: Cause.Cause<E>) => Effect.Effect<unknown, never, R>,
+  onSuccess: (value: A) => Effect.Effect<unknown, never, R2>
 ): Sink<R | R2, E, A>
 ```
 
@@ -482,8 +482,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapEffect: {
-  <B, R2, E2, A>(f: (b: B) => Effect.Effect<R2, E2, A>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(sink: Sink<R, E | E2, A>, f: (b: B) => Effect.Effect<R2, E2, A>): Sink<R | R2, E | E2, B>
+  <B, R2, E2, A>(f: (b: B) => Effect.Effect<A, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, B>
+  <R, E, A, R2, E2, B>(sink: Sink<R, E | E2, A>, f: (b: B) => Effect.Effect<A, E2, R2>): Sink<R | R2, E | E2, B>
 }
 ```
 
@@ -523,13 +523,13 @@ Added in v1.20.0
 export declare const slice: {
   <R, E, A, R2>(
     bounds: Bounds,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<R2, never, unknown>
-  ): (sink: Sink<R, E, A>) => Effect.Effect<R | R2, never, void>
+    f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
+  ): (sink: Sink<R, E, A>) => Effect.Effect<void, never, R | R2>
   <R, E, A, R2>(
     sink: Sink<R, E, A>,
     bounds: Bounds,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<R2, never, unknown>
-  ): Effect.Effect<R | R2, never, void>
+    f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
+  ): Effect.Effect<void, never, R | R2>
 }
 ```
 
@@ -556,13 +556,13 @@ Added in v1.20.0
 export declare const takeWhile: {
   <R, E, A, R2, B>(
     predicate: Predicate.Predicate<A>,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<R2, E, B>
-  ): (sink: Sink<R, E, A>) => Effect.Effect<R | R2, never, void>
+    f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
+  ): (sink: Sink<R, E, A>) => Effect.Effect<void, never, R | R2>
   <R, E, A, R2, B>(
     sink: Sink<R, E, A>,
     predicate: Predicate.Predicate<A>,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<R2, E, B>
-  ): Effect.Effect<R | R2, never, void>
+    f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
+  ): Effect.Effect<void, never, R | R2>
 }
 ```
 
@@ -575,14 +575,14 @@ Added in v1.20.0
 ```ts
 export declare const takeWhileEffect: {
   <R, E, A, R2, E2, R3, E3, B>(
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<R3, E3, B>
-  ): <R, E>(sink: Sink<R, E, A>) => Effect.Effect<R3 | R, never, void>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
+    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
+  ): <R, E>(sink: Sink<R, E, A>) => Effect.Effect<void, never, R3 | R>
   <R, E, A, R2, E2, R3, E3, B>(
     sink: Sink<R, E | E2 | E3, A>,
-    predicate: (a: A) => Effect.Effect<R2, E2, boolean>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<R3, E3, B>
-  ): Effect.Effect<R | R3, never, void>
+    predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
+    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
+  ): Effect.Effect<void, never, R | R3>
 }
 ```
 
@@ -594,8 +594,8 @@ Added in v1.20.0
 
 ```ts
 export declare const tapEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<R2, E2, unknown>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(sink: Sink<R, E | E2, A>, f: (a: A) => Effect.Effect<R2, E2, unknown>): Sink<R | R2, E | E2, A>
+  <A, R2, E2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
+  <R, E, A, R2, E2>(sink: Sink<R, E | E2, A>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Sink<R | R2, E | E2, A>
 }
 ```
 
@@ -608,8 +608,8 @@ Added in v1.20.0
 ```ts
 export declare function withEarlyExit<R, E, A, R2, B>(
   sink: Sink<R, E, A>,
-  f: (sink: WithEarlyExit<R, E, A>) => Effect.Effect<R2, E, B>
-): Effect.Effect<R | R2, never, void>
+  f: (sink: WithEarlyExit<R, E, A>) => Effect.Effect<B, E, R2>
+): Effect.Effect<void, never, R | R2>
 ```
 
 Added in v1.20.0

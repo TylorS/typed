@@ -39,7 +39,7 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
    */
   readonly apply: <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
-  ) => Effect.Effect<I | EffectFn.Context<T>, EffectFn.Error<T>, EffectFn.Success<T>>
+  ) => Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
 
   /**
    * A helper to implement a Layer for your effectful function which
@@ -48,7 +48,7 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
    */
   readonly implement: <T2 extends EffectFn.Extendable<T>>(
     implementation: T2
-  ) => Layer.Layer<EffectFn.Context<T2>, never, I>
+  ) => Layer.Layer<I, never, EffectFn.Context<T2>>
 
   /**
    * A helper for implementing an providing a Layer to an Effect.
@@ -58,13 +58,13 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
     <T2 extends EffectFn.Extendable<T>>(
       implementation: T2
     ): <R, E, A>(
-      effect: Effect.Effect<R, E, A>
-    ) => Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
+      effect: Effect.Effect<A, E, R>
+    ) => Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>>
 
     <R, E, A, T2 extends EffectFn.Extendable<T>>(
-      effect: Effect.Effect<R, E, A>,
+      effect: Effect.Effect<A, E, R>,
       implementation: T2
-    ): Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A>
+    ): Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>>
   }
 }
 
@@ -90,7 +90,7 @@ export function Fn<T extends EffectFn>(): {
 const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
   const implement = <T2 extends EffectFn.Extendable<S>>(
     implementation: T2
-  ): Layer.Layer<EffectFn.Context<T2>, never, I> =>
+  ): Layer.Layer<I, never, EffectFn.Context<T2>> =>
     tagged.layer(
       Effect.map(
         Effect.context<EffectFn.Context<T2>>(),
@@ -105,9 +105,9 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
     provideImplementation: dual(
       2,
       <R, E, A, T2 extends EffectFn.Extendable<S>>(
-        effect: Effect.Effect<R, E, A>,
+        effect: Effect.Effect<A, E, R>,
         implementation: T2
-      ): Effect.Effect<Exclude<R, I> | EffectFn.Context<T2>, E | EffectFn.Error<T2>, A> =>
+      ): Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>> =>
         Effect.provide(effect, implement(implementation))
     )
   }) as Fn<I, S>

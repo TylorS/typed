@@ -61,7 +61,7 @@ A product type from a struct of Tags
 export interface TaggedStruct<Tags extends StructOfTags>
   extends Actions<C.Tag.Identifier<Tags[keyof Tags]>, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>,
     Provision<C.Tag.Identifier<Tags[keyof Tags]>, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>,
-    Effect.Effect<C.Tag.Identifier<Tags[keyof Tags]>, never, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }> {
+    Effect.Effect<{ readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }, never, C.Tag.Identifier<Tags[keyof Tags]>> {
   readonly tags: Tags
 }
 ```
@@ -78,7 +78,7 @@ A product type from a tuple of Tags
 export interface TaggedTuple<Tags extends TupleOfTags>
   extends Actions<C.Tag.Identifier<Tags[number]>, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>,
     Provision<C.Tag.Identifier<Tags[number]>, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>,
-    Effect.Effect<C.Tag.Identifier<Tags[number]>, never, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }> {
+    Effect.Effect<{ readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }, never, C.Tag.Identifier<Tags[number]>> {
   readonly tags: Tags
 }
 ```

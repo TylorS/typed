@@ -12,12 +12,12 @@ export type EffectLoopOperator<B = any, A = any, R = any, E = any, C = any> =
 export interface LoopEffectOperator<B, A, R, E, C> {
   readonly _tag: "LoopEffect"
   readonly seed: B
-  readonly f: (acc: B, a: A) => Effect.Effect<R, E, readonly [C, B]>
+  readonly f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
 }
 
 export function LoopEffectOperator<const B, A, R, E, C>(
   seed: B,
-  f: (acc: B, a: A) => Effect.Effect<R, E, readonly [C, B]>
+  f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
 ): LoopEffectOperator<B, A, R, E, C> {
   return { _tag: "LoopEffect", seed, f }
 }
@@ -25,12 +25,12 @@ export function LoopEffectOperator<const B, A, R, E, C>(
 export interface FilterMapLoopEffectOperator<B, A, R, E, C> {
   readonly _tag: "FilterMapLoopEffect"
   readonly seed: B
-  readonly f: (acc: B, a: A) => Effect.Effect<R, E, readonly [Option.Option<C>, B]>
+  readonly f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R>
 }
 
 export function FilterMapLoopEffectOperator<const B, A, R, E, C>(
   seed: B,
-  f: (acc: B, a: A) => Effect.Effect<R, E, readonly [Option.Option<C>, B]>
+  f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R>
 ): FilterMapLoopEffectOperator<B, A, R, E, C> {
   return { _tag: "FilterMapLoopEffect", seed, f }
 }

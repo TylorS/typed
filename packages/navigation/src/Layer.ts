@@ -10,7 +10,7 @@ import type { BeforeNavigationEvent, Destination, Navigation, NavigationError } 
 /**
  * @since 1.0.0
  */
-export const fromWindow: Layer.Layer<Window, never, Navigation> = internalFromWindow.fromWindow
+export const fromWindow: Layer.Layer<Navigation, never, Window> = internalFromWindow.fromWindow
 
 /**
  * @since 1.0.0
@@ -27,7 +27,7 @@ export interface MemoryOptions {
 /**
  * @since 1.0.0
  */
-export const memory: (options: MemoryOptions) => Layer.Layer<never, never, Navigation> = internalMemory.memory
+export const memory: (options: MemoryOptions) => Layer.Layer<Navigation> = internalMemory.memory
 
 /**
  * @since 1.0.0
@@ -44,10 +44,9 @@ export interface InitialMemoryOptions {
 /**
  * @since 1.0.0
  */
-export const initialMemory: (options: InitialMemoryOptions) => Layer.Layer<never, never, Navigation> =
-  internalMemory.initialMemory
+export const initialMemory: (options: InitialMemoryOptions) => Layer.Layer<Navigation> = internalMemory.initialMemory
 
 /**
  * @since 1.0.0
  */
-export type Commit = (to: Destination, event: BeforeNavigationEvent) => Effect.Effect<never, NavigationError, void>
+export type Commit = (to: Destination, event: BeforeNavigationEvent) => Effect.Effect<void, NavigationError>

@@ -20,26 +20,26 @@ export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
   readonly [R.RefTypeId]: R.RefTypeId
 
   // Ref Operators
-  readonly get: Effect.Effect<I, never, A>
-  readonly getAndSet: (a: A) => Effect.Effect<I, never, A>
-  readonly getAndUpdate: (f: (a: A) => A) => Effect.Effect<I, never, A>
-  readonly getAndUpdateSome: (f: (a: A) => Option<A>) => Effect.Effect<I, never, A>
-  readonly modify: <B>(f: (a: A) => readonly [B, A]) => Effect.Effect<I, never, B>
-  readonly modifySome: <B>(fallback: B, f: (a: A) => Option<readonly [B, A]>) => Effect.Effect<I, never, B>
-  readonly set: (a: A) => Effect.Effect<I, never, void>
-  readonly setAndGet: (a: A) => Effect.Effect<I, never, A>
-  readonly update: (f: (a: A) => A) => Effect.Effect<I, never, void>
-  readonly updateAndGet: (f: (a: A) => A) => Effect.Effect<I, never, A>
-  readonly updateSome: (f: (a: A) => Option<A>) => Effect.Effect<I, never, void>
-  readonly updateSomeAndGet: (f: (a: A) => Option<A>) => Effect.Effect<I, never, A>
+  readonly get: Effect.Effect<A, never, I>
+  readonly getAndSet: (a: A) => Effect.Effect<A, never, I>
+  readonly getAndUpdate: (f: (a: A) => A) => Effect.Effect<A, never, I>
+  readonly getAndUpdateSome: (f: (a: A) => Option<A>) => Effect.Effect<A, never, I>
+  readonly modify: <B>(f: (a: A) => readonly [B, A]) => Effect.Effect<B, never, I>
+  readonly modifySome: <B>(fallback: B, f: (a: A) => Option<readonly [B, A]>) => Effect.Effect<B, never, I>
+  readonly set: (a: A) => Effect.Effect<void, never, I>
+  readonly setAndGet: (a: A) => Effect.Effect<A, never, I>
+  readonly update: (f: (a: A) => A) => Effect.Effect<void, never, I>
+  readonly updateAndGet: (f: (a: A) => A) => Effect.Effect<A, never, I>
+  readonly updateSome: (f: (a: A) => Option<A>) => Effect.Effect<void, never, I>
+  readonly updateSomeAndGet: (f: (a: A) => Option<A>) => Effect.Effect<A, never, I>
 
   // Provision
 
-  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I>, E, B>
+  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I>>
 
   readonly layer: <R2, E2>(
-    effect: Effect.Effect<R2, E2, A>
-  ) => Layer.Layer<R2, E2, I>
+    effect: Effect.Effect<A, E2, R2>
+  ) => Layer.Layer<I, E2, R2>
 }
 
 /**

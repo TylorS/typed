@@ -60,7 +60,7 @@ Construct CoreServices from a browser's Window object
 export declare function fromWindow(
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-): Layer.Layer<never, never, CoreDomServices>
+): Layer.Layer<CoreDomServices>
 ```
 
 Added in v1.0.0

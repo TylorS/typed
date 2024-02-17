@@ -18,23 +18,23 @@ import { Tag } from "./Tag.js"
  * @since 1.0.0
  * @category models
  */
-export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
-  readonly invalidate: (a: A) => Effect.Effect<I | Scope, never, void>
-  readonly get: Effect.Effect<I | Scope, E, A>
+export interface Pool<I, A, E> extends Tag<I, P.Pool<A, E>> {
+  readonly invalidate: (a: A) => Effect.Effect<void, never, I | Scope>
+  readonly get: Effect.Effect<A, E, I | Scope>
 
   readonly make: <R>(options: {
-    readonly acquire: Effect.Effect<R, E, A>
+    readonly acquire: Effect.Effect<A, E, R>
     readonly size: number
-  }) => Layer.Layer<R, never, I>
+  }) => Layer.Layer<I, never, R>
 
   readonly makeWithTTL: <R>(
     options: {
-      readonly acquire: Effect.Effect<R, E, A>
+      readonly acquire: Effect.Effect<A, E, R>
       readonly min: number
       readonly max: number
       readonly timeToLive: DurationInput
     }
-  ) => Layer.Layer<R, never, I>
+  ) => Layer.Layer<I, never, R>
 }
 
 /**
@@ -42,12 +42,12 @@ export interface Pool<I, E, A> extends Tag<I, P.Pool<E, A>> {
  * @since 1.0.0
  * @category constructors
  */
-export function Pool<E, A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Pool<IdentifierOf<I>, E, A>
+export function Pool<A, E>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Pool<IdentifierOf<I>, A, E>
+  <const I>(identifier: I): Pool<IdentifierOf<I>, A, E>
 } {
-  return <const I extends IdentifierInput<any>>(identifier: I): Pool<IdentifierOf<I>, E, A> => {
-    const tag = withActions(Tag<I, P.Pool<E, A>>(identifier))
+  return <const I extends IdentifierInput<any>>(identifier: I): Pool<IdentifierOf<I>, A, E> => {
+    const tag = withActions(Tag<I, P.Pool<A, E>>(identifier))
 
     return Object.assign(
       tag,
@@ -55,18 +55,18 @@ export function Pool<E, A>(): {
         get: tag.withEffect(P.get),
         invalidate: (a: A) => tag.withEffect(P.invalidate(a)),
         make: <R>(options: {
-          readonly acquire: Effect.Effect<R, E, A>
+          readonly acquire: Effect.Effect<A, E, R>
           readonly size: number
         }) => Layer.scoped(tag, P.make(options)),
         makeWithTTL: <R>(
           options: {
-            readonly acquire: Effect.Effect<R, E, A>
+            readonly acquire: Effect.Effect<A, E, R>
             readonly min: number
             readonly max: number
             readonly timeToLive: DurationInput
           }
         ) => Layer.scoped(tag, P.makeWithTTL(options))
       } as const
-    ) satisfies Pool<IdentifierOf<I>, E, A>
+    ) satisfies Pool<IdentifierOf<I>, A, E>
   }
 }

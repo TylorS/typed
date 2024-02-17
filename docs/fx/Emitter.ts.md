@@ -28,11 +28,11 @@ Added in v1.20.0
 
 ```ts
 export interface Emitter<in E, in A> {
-  readonly succeed: (value: A) => Promise<Exit.Exit<never, unknown>>
-  readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<never, unknown>>
-  readonly fail: (error: E) => Promise<Exit.Exit<never, unknown>>
-  readonly die: (error: unknown) => Promise<Exit.Exit<never, unknown>>
-  readonly end: () => Promise<Exit.Exit<never, unknown>>
+  readonly succeed: (value: A) => Promise<Exit.Exit<unknown>>
+  readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<unknown>>
+  readonly fail: (error: E) => Promise<Exit.Exit<unknown>>
+  readonly die: (error: unknown) => Promise<Exit.Exit<unknown>>
+  readonly end: () => Promise<Exit.Exit<unknown>>
 }
 ```
 
@@ -45,8 +45,8 @@ Added in v1.20.0
 ```ts
 export declare function withEmitter<R, E, A, R2, B>(
   sink: Sink.Sink<R, E, A>,
-  f: (emitter: Emitter<E, A>) => Effect.Effect<R2, E, B>
-): Effect.Effect<R | R2 | Scope.Scope, never, void>
+  f: (emitter: Emitter<E, A>) => Effect.Effect<B, E, R2>
+): Effect.Effect<void, never, R | R2 | Scope.Scope>
 ```
 
 Added in v1.20.0

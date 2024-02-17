@@ -27,7 +27,7 @@ Added in v1.0.0
 ```ts
 export declare function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
   refs: Refs,
-  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, E2, B>
+  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<B, E2, R2>
 ): Fx.Fx<Document | R2 | Scope.Scope, E2, B>
 ```
 
@@ -40,8 +40,8 @@ Added in v1.0.0
 ```ts
 export declare function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2>(
   refs: Refs,
-  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, never, unknown>
-): Effect.Effect<Document | Scope.Scope | R2, never, Fiber.RuntimeFiber<never, void>>
+  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<unknown, never, R2>
+): Effect.Effect<Fiber.RuntimeFiber<void>, never, Document | Scope.Scope | R2>
 ```
 
 Added in v1.0.0

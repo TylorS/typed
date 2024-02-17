@@ -48,7 +48,7 @@ export function make<const P extends string>(
 export function layer<const P extends string>(
   route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
-): Layer.Layer<never, never, CurrentRoute> {
+): Layer.Layer<CurrentRoute> {
   return CurrentRoute.layer(make(route as Route.Route<string>, parent))
 }
 
@@ -69,16 +69,16 @@ export const CurrentParams: RefSubject.Filtered<Navigation | CurrentRoute, never
 export const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
-  ): <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, CurrentRoute>, E, A>
+  ): <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 
   <R, E, A, P extends string>(
-    effect: Effect.Effect<R, E, A>,
+    effect: Effect.Effect<A, E, R>,
     route: Route.Route<P>
-  ): Effect.Effect<Exclude<R, CurrentRoute>, E, A>
+  ): Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 } = dual(2, <R, E, A, P extends string>(
-  effect: Effect.Effect<R, E, A>,
+  effect: Effect.Effect<A, E, R>,
   route: Route.Route<P>
-): Effect.Effect<Exclude<R, CurrentRoute>, E, A> =>
+): Effect.Effect<A, E, Exclude<R, CurrentRoute>> =>
   Effect.contextWithEffect((ctx) => {
     const parent = Context.getOption(ctx, CurrentRoute)
 
@@ -156,7 +156,7 @@ export function isActive<const P extends string>(
 /**
  * @since 1.0.0
  */
-export const browser: Layer.Layer<Document.Document, never, CurrentRoute> = CurrentRoute.layer(
+export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = CurrentRoute.layer(
   Effect.gen(function*(_) {
     const document = yield* _(Document.Document)
     const base = document.querySelector("base")
@@ -172,7 +172,7 @@ export const browser: Layer.Layer<Document.Document, never, CurrentRoute> = Curr
 /**
  * @since 1.0.0
  */
-export const server = (base: string = "/"): Layer.Layer<never, never, CurrentRoute> =>
+export const server = (base: string = "/"): Layer.Layer<CurrentRoute> =>
   CurrentRoute.layer({ route: Route.fromPath(base), parent: Option.none() })
 
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>

@@ -39,7 +39,7 @@ Added in v1.0.0
 ```ts
 export declare function renderToHtmlString<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>
-): Effect.Effect<Exclude<R, RenderTemplate> | RenderContext, E, string>
+): Effect.Effect<string, E, Exclude<R, RenderTemplate> | RenderContext>
 ```
 
 Added in v1.0.0

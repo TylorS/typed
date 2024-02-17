@@ -85,7 +85,7 @@ export declare function isElementRef(value: unknown): value is ElementRef
 **Signature**
 
 ```ts
-export declare function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>>
+export declare function make<T extends Rendered = Rendered>(): Effect.Effect<ElementRef<T>, never, Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -95,7 +95,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>>
+export declare function of<T extends Rendered>(rendered: T): Effect.Effect<ElementRef<T>, never, Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -106,8 +106,8 @@ Added in v1.0.0
 
 ```ts
 export declare const set: {
-  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
-  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
+  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<A, never, never>
+  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<A, never, never>
 }
 ```
 

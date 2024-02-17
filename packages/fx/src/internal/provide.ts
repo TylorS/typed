@@ -25,10 +25,10 @@ export const ProvideContext = <A>(i0: Context.Context<A>): ProvideContext<A> => 
 
 export interface ProvideLayer<R, E, A> {
   readonly _tag: "ProvideLayer"
-  readonly i0: Layer.Layer<R, E, A>
+  readonly i0: Layer.Layer<A, E, R>
 }
 
-export const ProvideLayer = <R, E, A>(i0: Layer.Layer<R, E, A>): ProvideLayer<R, E, A> => ({
+export const ProvideLayer = <R, E, A>(i0: Layer.Layer<A, E, R>): ProvideLayer<R, E, A> => ({
   _tag: "ProvideLayer",
   i0
 })
@@ -48,12 +48,12 @@ export const ProvideService = <I, S>(i0: Context.Tag<I, S>, i1: S): ProvideServi
 export interface ProvideServiceEffect<R, E, I, S> {
   readonly _tag: "ProvideServiceEffect"
   readonly i0: Context.Tag<I, S>
-  readonly i1: Effect.Effect<R, E, S>
+  readonly i1: Effect.Effect<S, E, R>
 }
 
 export const ProvideServiceEffect = <R, E, I, S>(
   i0: Context.Tag<I, S>,
-  i1: Effect.Effect<R, E, S>
+  i1: Effect.Effect<S, E, R>
 ): ProvideServiceEffect<R, E, I, S> => ({
   _tag: "ProvideServiceEffect",
   i0,
@@ -75,9 +75,9 @@ export function matchProvide<R = never, E = never, A = never, B = never>(
   matchers: {
     readonly ProvideContext: (i0: Context.Context<A>) => B
     readonly ProvideRuntime: (i0: Runtime.Runtime<A>) => B
-    readonly ProvideLayer: (i0: Layer.Layer<R, E, A>) => B
+    readonly ProvideLayer: (i0: Layer.Layer<A, E, R>) => B
     readonly ProvideService: (tag: Context.Tag<A, any>, service: any) => B
-    readonly ProvideServiceEffect: (tag: Context.Tag<A, any>, service: Effect.Effect<R, E, any>) => B
+    readonly ProvideServiceEffect: (tag: Context.Tag<A, any>, service: Effect.Effect<any, E, R>) => B
   }
 ): B {
   return matchers[self._tag](self.i0 as any, (self as any).i1)
@@ -97,7 +97,7 @@ export function buildWithScope<R, E, A>(
   return Layer.buildWithScope(toLayer(provide), scope)
 }
 
-export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<R, E, A> {
+export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<A, E, R> {
   switch (provide._tag) {
     case "ProvideContext":
       return Layer.succeedContext(provide.i0)
@@ -113,13 +113,13 @@ export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<R, E, A
 }
 
 export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
-  effect: Effect.Effect<R, E, A>,
+  effect: Effect.Effect<A, E, R>,
   provide: Provide<R2, E2, S>
-): Effect.Effect<Exclude<R, S> | R2, E | E2, A> {
+): Effect.Effect<A, E | E2, Exclude<R, S> | R2> {
   return Effect.provide(effect, toLayer(provide))
 }
 
-export function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<never, never, R> {
+export function runtimeToLayer<R>(runtime: Runtime.Runtime<R>): Layer.Layer<R> {
   // Calculate patch
   const patchRefs = FiberRefsPatch.diff(Runtime.defaultRuntime.fiberRefs, runtime.fiberRefs)
   const patchFlags = RuntimeFlags.diff(Runtime.defaultRuntime.runtimeFlags, runtime.runtimeFlags)

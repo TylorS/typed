@@ -29,10 +29,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const GetRandomValues: Context.Fn<
-  GetRandomValues,
-  (length: number) => Effect.Effect<never, never, Uint8Array>
->
+export declare const GetRandomValues: Context.Fn<GetRandomValues, (length: number) => Effect.Effect<Uint8Array>>
 ```
 
 Added in v1.0.0
@@ -52,7 +49,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const getRandomValues: Layer.Layer<never, never, GetRandomValues>
+export declare const getRandomValues: Layer.Layer<GetRandomValues, never, never>
 ```
 
 Added in v1.0.0
@@ -62,7 +59,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const nodeCrypto: (crypto: typeof  => Layer.Layer<never, never, GetRandomValues>
+export declare const nodeCrypto: (crypto: typeof  => Layer.Layer<GetRandomValues>
 ```
 
 Added in v1.0.0
@@ -72,7 +69,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const pseudoRandom: Layer.Layer<never, never, GetRandomValues>
+export declare const pseudoRandom: Layer.Layer<GetRandomValues, never, never>
 ```
 
 Added in v1.0.0
@@ -82,7 +79,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const webCrypto: (crypto: Crypto) => Layer.Layer<never, never, GetRandomValues>
+export declare const webCrypto: (crypto: Crypto) => Layer.Layer<GetRandomValues>
 ```
 
 Added in v1.0.0

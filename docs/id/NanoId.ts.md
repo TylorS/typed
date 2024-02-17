@@ -92,7 +92,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeNanoId: Effect.Effect<GetRandomValues, never, NanoId>
+export declare const makeNanoId: Effect.Effect<NanoId, never, GetRandomValues>
 ```
 
 Added in v1.0.0
@@ -102,7 +102,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeNanoIdSeed: Effect.Effect<GetRandomValues, never, NanoIdSeed>
+export declare const makeNanoIdSeed: Effect.Effect<NanoIdSeed, never, GetRandomValues>
 ```
 
 Added in v1.0.0

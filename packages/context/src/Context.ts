@@ -3,7 +3,8 @@
  * @since 1.0.0
  */
 
-import { type Context, get, isContext, type Tag, type ValidTagsById } from "effect/Context"
+import { get, isContext } from "effect/Context"
+import type { Context, Tag, ValidTagsById } from "effect/Context"
 import { dual } from "effect/Function"
 
 export {

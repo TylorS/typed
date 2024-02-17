@@ -28,18 +28,18 @@ export interface RefArray<out R, in out E, in out A> extends RefSubject.RefSubje
  * @category constructors
  */
 export function make<R, E, A>(
-  initial: Effect.Effect<R, E, ReadonlyArray<A>>,
+  initial: Effect.Effect<ReadonlyArray<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
+): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
 export function make<R, E, A>(
   initial: Fx.Fx<R, E, ReadonlyArray<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
+): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
 
 export function make<R, E, A>(
-  initial: Effect.Effect<R, E, ReadonlyArray<A>> | Fx.Fx<R, E, ReadonlyArray<A>>,
+  initial: Effect.Effect<ReadonlyArray<A>, E, R> | Fx.Fx<R, E, ReadonlyArray<A>>,
   eq: Equivalence<A> = equals
-): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>> {
+): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope> {
   return RefSubject.make(
     initial,
     {
@@ -91,8 +91,8 @@ export function tagged(): {
  * @category combinators
  */
 export const prepend: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<R, E, ReadonlyArray<A>>
+  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function prepend<R, E, A>(ref: RefArray<R, E, A>, value: A) {
   return RefSubject.update(ref, ReadonlyArray.prepend(value))
 })
@@ -103,8 +103,8 @@ export const prepend: {
  * @category combinators
  */
 export const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, ReadonlyArray<A>>
+  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(
   2,
   function prependAll<R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>) {
@@ -118,8 +118,8 @@ export const prependAll: {
  * @category combinators
  */
 export const append: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<R, E, ReadonlyArray<A>>
+  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function append<R, E, A>(ref: RefArray<R, E, A>, value: A) {
   return RefSubject.update(ref, ReadonlyArray.append(value))
 })
@@ -132,8 +132,8 @@ export const append: {
 export const appendAll: {
   <A>(
     value: Iterable<A>
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function appendAll<R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>) {
   return RefSubject.update(ref, ReadonlyArray.appendAll(value))
 })
@@ -144,8 +144,8 @@ export const appendAll: {
  * @category combinators
  */
 export const drop: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, ReadonlyArray<A>>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function drop<R, E, A>(ref: RefArray<R, E, A>, n: number) {
   return RefSubject.update(ref, ReadonlyArray.drop(n))
 })
@@ -156,8 +156,8 @@ export const drop: {
  * @category combinators
  */
 export const dropRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, ReadonlyArray<A>>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function dropRight<R, E, A>(ref: RefArray<R, E, A>, n: number) {
   return RefSubject.update(ref, ReadonlyArray.dropRight(n))
 })
@@ -170,11 +170,11 @@ export const dropRight: {
 export const dropWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     predicate: (a: unknown) => boolean
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(
   2,
   function dropWhile<R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean) {
@@ -239,12 +239,12 @@ export const insertAt: {
   <A>(
     index: number,
     a: A
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     index: number,
     a: A
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(3, function insertAt<R, E, A>(ref: RefArray<R, E, A>, index: number, a: A) {
   return RefSubject.update(ref, (as) => Option.getOrElse(ReadonlyArray.insertAt(as, index, a), () => [...as, a]))
 })
@@ -320,12 +320,12 @@ export const modifyAt: {
   <A>(
     index: number,
     f: (a: A) => A
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     index: number,
     f: (a: A) => A
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(3, function modifyAt<R, E, A>(ref: RefArray<R, E, A>, index: number, f: (a: A) => A) {
   return RefSubject.update(ref, ReadonlyArray.modify(index, f))
 })
@@ -407,12 +407,12 @@ export const replaceAt: {
   <A>(
     index: number,
     a: A
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     index: number,
     a: A
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(3, function replaceAt<R, E, A>(ref: RefArray<R, E, A>, index: number, a: A) {
   return RefSubject.update(ref, ReadonlyArray.replace(index, a))
 })
@@ -423,8 +423,8 @@ export const replaceAt: {
  * @category combinators
  */
 export const rotate: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, ReadonlyArray<A>>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function rotate<R, E, A>(ref: RefArray<R, E, A>, n: number) {
   return RefSubject.update(ref, ReadonlyArray.rotate(n))
 })
@@ -437,11 +437,11 @@ export const rotate: {
 export const sortBy: {
   <A>(
     orders: Iterable<Order.Order<A>>
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     orders: Iterable<Order.Order<A>>
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function sortBy<R, E, A>(ref: RefArray<R, E, A>, orders: Iterable<Order.Order<A>>) {
   return RefSubject.update(ref, ReadonlyArray.sortBy(...orders))
 })
@@ -452,8 +452,8 @@ export const sortBy: {
  * @category combinators
  */
 export const take: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, ReadonlyArray<A>>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function take<R, E, A>(ref: RefArray<R, E, A>, n: number) {
   return RefSubject.update(ref, ReadonlyArray.take(n))
 })
@@ -464,8 +464,8 @@ export const take: {
  * @category combinators
  */
 export const takeRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, ReadonlyArray<A>>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(2, function takeRight<R, E, A>(ref: RefArray<R, E, A>, n: number) {
   return RefSubject.update(ref, ReadonlyArray.takeRight(n))
 })
@@ -478,11 +478,11 @@ export const takeRight: {
 export const takeWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, ReadonlyArray<A>>
+  ): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R>
   <R, E, A>(
     ref: RefArray<R, E, A>,
     predicate: (a: unknown) => boolean
-  ): Effect.Effect<R, E, ReadonlyArray<A>>
+  ): Effect.Effect<ReadonlyArray<A>, E, R>
 } = dual(
   2,
   function takeWhile<R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean) {
@@ -496,7 +496,7 @@ export const takeWhile: {
  * @category combinators
  */
 export const dedupeWith =
-  <A>(valueEq: Equivalence<A>) => <R, E>(ref: RefArray<R, E, A>): Effect.Effect<R, E, ReadonlyArray<A>> =>
+  <A>(valueEq: Equivalence<A>) => <R, E>(ref: RefArray<R, E, A>): Effect.Effect<ReadonlyArray<A>, E, R> =>
     RefSubject.update(ref, ReadonlyArray.dedupeWith(valueEq))
 
 /**

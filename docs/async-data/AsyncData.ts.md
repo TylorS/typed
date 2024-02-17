@@ -83,7 +83,7 @@ in addition to Option-like states of NoData and Success.
 **Signature**
 
 ```ts
-export type AsyncData<E, A> = NoData | Loading | Failure<E> | Success<A> | Optimistic<E, A>
+export type AsyncData<A, E = never> = NoData | Loading | Failure<E> | Success<A> | Optimistic<A, E>
 ```
 
 Added in v1.0.0
@@ -124,7 +124,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Error<T> = [T] extends [AsyncData<infer E, infer _>] ? E : never
+export type Error<T> = [T] extends [AsyncData<infer _, infer E>] ? E : never
 ```
 
 Added in v1.0.0
@@ -134,7 +134,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Success<T> = [T] extends [AsyncData<infer _, infer A>] ? A : never
+export type Success<T> = [T] extends [AsyncData<infer A, infer _>] ? A : never
 ```
 
 Added in v1.0.0
@@ -317,12 +317,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Optimistic<E, A> extends Effect.Effect<never, never, A> {
+export interface Optimistic<A, E = never> extends Effect.Effect<never, never, A> {
   readonly [AsyncDataTypeId]: AsyncDataTypeId
   readonly _tag: "Optimistic"
   readonly value: A
   readonly timestamp: number // Date.now()
-  readonly previous: AsyncData<E, A>
+  readonly previous: AsyncData<A, E>
 
   readonly [Unify.typeSymbol]: unknown
   readonly [Unify.unifySymbol]: AsyncData.Unify<this>
@@ -365,7 +365,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Refreshing<E, A> = RefreshingFailure<E> | RefreshingSuccess<A>
+export type Refreshing<A, E> = RefreshingFailure<E> | RefreshingSuccess<A>
 ```
 
 Added in v1.0.0
@@ -439,7 +439,7 @@ without needing to manage timestamps.
 **Signature**
 
 ```ts
-export declare function dataEqual<E, A>(first: AsyncData<E, A>, second: AsyncData<E, A>): boolean
+export declare function dataEqual<A, E>(first: AsyncData<A, E>, second: AsyncData<A, E>): boolean
 ```
 
 Added in v1.0.0
@@ -449,7 +449,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const done: <E, A>(exit: Exit.Exit<E, A>) => AsyncData<E, A>
+export declare const done: <A, E = never>(exit: Exit.Exit<A, E>) => AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -461,7 +461,7 @@ Added in v1.0.0
 ```ts
 export declare const fail: {
   <E>(error: E, options?: OptionalPartial<FailureOptions>): Failure<E>
-  <E, A>(error: E, options?: OptionalPartial<FailureOptions>): AsyncData<E, A>
+  <A, E>(error: E, options?: OptionalPartial<FailureOptions>): AsyncData<A, E>
 }
 ```
 
@@ -474,7 +474,7 @@ Added in v1.0.0
 ```ts
 export declare const failCause: {
   <E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): Failure<E>
-  <E, A>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): AsyncData<E, A>
+  <A, E>(cause: Cause.Cause<E>, options?: OptionalPartial<FailureOptions>): AsyncData<A, E>
 }
 ```
 
@@ -486,13 +486,13 @@ Added in v1.0.0
 
 ```ts
 export declare const flatMap: {
-  <E, A, E2, B>(
-    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E2, B>
-  ): (data: AsyncData<E, A>) => AsyncData<E | E2, B>
-  <E, A, E2, B>(
-    data: AsyncData<E, A>,
-    f: (a: A, data: Success<A> | Optimistic<E, A>) => AsyncData<E, B>
-  ): AsyncData<E | E2, B>
+  <A, E, B, E2>(
+    f: (a: A, data: Success<A> | Optimistic<A, E>) => AsyncData<B, E2>
+  ): (data: AsyncData<A, E>) => AsyncData<B, E | E2>
+  <A, E, B, E2>(
+    data: AsyncData<A, E>,
+    f: (a: A, data: Success<A> | Optimistic<A, E>) => AsyncData<B, E>
+  ): AsyncData<B, E | E2>
 }
 ```
 
@@ -503,7 +503,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<E, A>
+export declare function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -513,7 +513,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromExit<E, A>(exit: Exit.Exit<E, A>): AsyncData<E, A>
+export declare function fromExit<A, E>(exit: Exit.Exit<A, E>): AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -523,9 +523,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const getEquivalence: <E, A>(
+export declare const getEquivalence: <A, E>(
   valueEq?: Equivalence.Equivalence<A>
-) => Equivalence.Equivalence<AsyncData<E, A>>
+) => Equivalence.Equivalence<AsyncData<A, E>>
 ```
 
 Added in v1.0.0
@@ -535,7 +535,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const getFailure: <E, A>(data: AsyncData<E, A>) => Option.Option<E>
+export declare const getFailure: <A, E>(data: AsyncData<A, E>) => Option.Option<E>
 ```
 
 Added in v1.0.0
@@ -545,7 +545,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const getSuccess: <E, A>(data: AsyncData<E, A>) => Option.Option<A>
+export declare const getSuccess: <A, E>(data: AsyncData<A, E>) => Option.Option<A>
 ```
 
 Added in v1.0.0
@@ -555,7 +555,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isAsyncData: <E, A>(u: unknown) => u is AsyncData<E, A>
+export declare const isAsyncData: <A, E>(u: unknown) => u is AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -566,8 +566,8 @@ Added in v1.0.0
 
 ```ts
 export declare const isExpired: {
-  (ttl: Duration.DurationInput, now?: number): <E, A>(data: AsyncData<E, A>) => boolean
-  <E, A>(data: AsyncData<E, A>, ttl: Duration.DurationInput, now?: number): boolean
+  (ttl: Duration.DurationInput, now?: number): <A, E>(data: AsyncData<A, E>) => boolean
+  <A, E>(data: AsyncData<A, E>, ttl: Duration.DurationInput, now?: number): boolean
 }
 ```
 
@@ -578,7 +578,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isFailure: <E, A>(data: AsyncData<E, A>) => data is Failure<E>
+export declare const isFailure: <A, E>(data: AsyncData<A, E>) => data is Failure<E>
 ```
 
 Added in v1.0.0
@@ -588,7 +588,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isLoading: <E, A>(data: AsyncData<E, A>) => data is Loading
+export declare const isLoading: <A, E>(data: AsyncData<A, E>) => data is Loading
 ```
 
 Added in v1.0.0
@@ -598,7 +598,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isLoadingOrRefreshing: <E, A>(data: AsyncData<E, A>) => data is Loading | Refreshing<E, A>
+export declare const isLoadingOrRefreshing: <A, E>(data: AsyncData<A, E>) => data is Loading | Refreshing<A, E>
 ```
 
 Added in v1.0.0
@@ -608,7 +608,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isNoData: <E, A>(data: AsyncData<E, A>) => data is NoData
+export declare const isNoData: <A, E>(data: AsyncData<A, E>) => data is NoData
 ```
 
 Added in v1.0.0
@@ -618,7 +618,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isOptimistic: <E, A>(data: AsyncData<E, A>) => data is Optimistic<E, A>
+export declare const isOptimistic: <A, E>(data: AsyncData<A, E>) => data is Optimistic<A, E>
 ```
 
 Added in v1.0.0
@@ -628,7 +628,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isRefreshing: <E, A>(data: AsyncData<E, A>) => data is Refreshing<E, A>
+export declare const isRefreshing: <A, E>(data: AsyncData<A, E>) => data is Refreshing<A, E>
 ```
 
 Added in v1.0.0
@@ -638,7 +638,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isSuccess: <E, A>(data: AsyncData<E, A>) => data is Success<A>
+export declare const isSuccess: <A, E>(data: AsyncData<A, E>) => data is Success<A>
 ```
 
 Added in v1.0.0
@@ -650,7 +650,7 @@ Added in v1.0.0
 ```ts
 export declare const loading: {
   (options?: OptionalPartial<LoadingOptions>): Loading
-  <E, A>(options?: OptionalPartial<LoadingOptions>): AsyncData<E, A>
+  <A, E>(options?: OptionalPartial<LoadingOptions>): AsyncData<A, E>
 }
 ```
 
@@ -662,8 +662,8 @@ Added in v1.0.0
 
 ```ts
 export declare const map: {
-  <A, B>(f: (a: A) => B): <E>(data: AsyncData<E, A>) => AsyncData<E, B>
-  <E, A, B>(data: AsyncData<E, A>, f: (a: A) => B): AsyncData<E, B>
+  <A, B>(f: (a: A) => B): <E>(data: AsyncData<A, E>) => AsyncData<B, E>
+  <A, E, B>(data: AsyncData<A, E>, f: (a: A) => B): AsyncData<B, E>
 }
 ```
 
@@ -675,21 +675,21 @@ Added in v1.0.0
 
 ```ts
 export declare const match: {
-  <E, A, R1, R2, R3, R4, R5>(matchers: {
+  <A, E, R1, R2, R3, R4, R5>(matchers: {
     NoData: (data: NoData) => R1
     Loading: (data: Loading) => R2
     Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
     Success: (value: A, data: Success<A>) => R4
-    Optimistic: (value: A, data: Optimistic<E, A>) => R5
-  }): (data: AsyncData<E, A>) => Unify.Unify<R1 | R2 | R3 | R4 | R5>
-  <E, A, R1, R2, R3, R4, R5>(
-    data: AsyncData<E, A>,
+    Optimistic: (value: A, data: Optimistic<A, E>) => R5
+  }): (data: AsyncData<A, E>) => Unify.Unify<R1 | R2 | R3 | R4 | R5>
+  <A, E, R1, R2, R3, R4, R5>(
+    data: AsyncData<A, E>,
     matchers: {
       NoData: (data: NoData) => R1
       Loading: (data: Loading) => R2
       Failure: (cause: Cause.Cause<E>, data: Failure<E>) => R3
       Success: (value: A, data: Success<A>) => R4
-      Optimistic: (value: A, data: Optimistic<E, A>) => R5
+      Optimistic: (value: A, data: Optimistic<A, E>) => R5
     }
   ): Unify.Unify<R1 | R2 | R3 | R4 | R5>
 }
@@ -702,7 +702,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const noData: { (): NoData; <E, A>(): AsyncData<E, A> }
+export declare const noData: { (): NoData; <A, E>(): AsyncData<A, E> }
 ```
 
 Added in v1.0.0
@@ -713,8 +713,8 @@ Added in v1.0.0
 
 ```ts
 export declare const optimistic: {
-  <A>(value: A, options?: OptionalPartial<OptimisticOptions>): <E>(previous: AsyncData<E, A>) => Optimistic<E, A>
-  <E, A>(previous: AsyncData<E, A>, value: A, options?: OptionalPartial<OptimisticOptions>): Optimistic<E, A>
+  <A>(value: A, options?: OptionalPartial<OptimisticOptions>): <E>(previous: AsyncData<A, E>) => Optimistic<A, E>
+  <A, E = never>(previous: AsyncData<A, E>, value: A, options?: OptionalPartial<OptimisticOptions>): Optimistic<A, E>
 }
 ```
 
@@ -725,7 +725,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const startLoading: <E, A>(data: AsyncData<E, A>) => AsyncData<E, A>
+export declare const startLoading: <A, E>(data: AsyncData<A, E>) => AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -735,7 +735,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const stopLoading: <E, A>(data: AsyncData<E, A>) => AsyncData<E, A>
+export declare const stopLoading: <A, E>(data: AsyncData<A, E>) => AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -747,7 +747,7 @@ Added in v1.0.0
 ```ts
 export declare const success: {
   <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A>
-  <E, A>(value: A, options?: OptionalPartial<SuccessOptions>): AsyncData<E, A>
+  <A, E>(value: A, options?: OptionalPartial<SuccessOptions>): AsyncData<A, E>
 }
 ```
 

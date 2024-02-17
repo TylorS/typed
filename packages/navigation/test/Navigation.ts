@@ -1,4 +1,4 @@
-import * as HttpClient from "@effect/platform-node/HttpClient"
+import * as HttpClient from "@effect/platform/HttpClient"
 import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"

@@ -60,7 +60,7 @@ Construct a new DOMParser
 **Signature**
 
 ```ts
-export declare const makeDOMParser: Effect.Effect<GlobalThis, never, DOMParser>
+export declare const makeDOMParser: Effect.Effect<DOMParser, never, GlobalThis>
 ```
 
 Added in v8.19.0

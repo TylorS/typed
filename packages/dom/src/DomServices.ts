@@ -109,8 +109,8 @@ export type DomServicesElementParams = {
  */
 export const provideDomServices = (window: Window & GlobalThis, params?: DomServicesElementParams) =>
 <R, E, A>(
-  effect: Effect.Effect<R | DomServices, E, A>
-): Effect.Effect<Exclude<R, DomServices>, E, A> =>
+  effect: Effect.Effect<A, E, R | DomServices>
+): Effect.Effect<A, E, Exclude<R, DomServices>> =>
   Effect.provide(
     effect,
     makeDomServices({
@@ -128,7 +128,7 @@ export const provideDomServices = (window: Window & GlobalThis, params?: DomServ
  */
 export const domServices = (
   params?: DomServicesElementParams
-): Layer.Layer<Window | GlobalThis, never, DomServices> =>
+): Layer.Layer<DomServices, never, Window | GlobalThis> =>
   Layer.effectContext(
     Window.withEffect((window) =>
       GlobalThis.with((globalThis) =>

@@ -40,9 +40,9 @@ Added in v1.0.0
 
 ```ts
 export interface Blocking extends BeforeNavigationEvent {
-  readonly cancel: Effect.Effect<never, never, Destination>
-  readonly confirm: Effect.Effect<never, never, Destination>
-  readonly redirect: (urlOrPath: string | URL, options?: NavigateOptions) => Effect.Effect<never, never, Destination>
+  readonly cancel: Effect.Effect<Destination>
+  readonly confirm: Effect.Effect<Destination>
+  readonly redirect: (urlOrPath: string | URL, options?: NavigateOptions) => Effect.Effect<Destination>
 }
 ```
 
@@ -54,7 +54,7 @@ Added in v1.0.0
 
 ```ts
 export interface UseBlockNavigationParams<R = never> {
-  readonly shouldBlock?: (event: BeforeNavigationEvent) => Effect.Effect<R, RedirectError | CancelNavigation, boolean>
+  readonly shouldBlock?: (event: BeforeNavigationEvent) => Effect.Effect<boolean, RedirectError | CancelNavigation, R>
 }
 ```
 
@@ -67,7 +67,7 @@ Added in v1.0.0
 ```ts
 export declare const useBlockNavigation: <R = never>(
   params?: UseBlockNavigationParams<R>
-) => Effect.Effect<Navigation | R | Scope.Scope, never, BlockNavigation>
+) => Effect.Effect<BlockNavigation, never, Navigation | R | Scope.Scope>
 ```
 
 Added in v1.0.0

@@ -33,7 +33,7 @@ Added in v1.18.0
 ```ts
 export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
   readonly name: PropertyKey
-  readonly schema: Schema.Schema<R, I, O>
+  readonly schema: Schema.Schema<O, I, R>
   readonly decoded: RefSubject.Computed<R, E | ParseError, O>
 }
 ```
@@ -50,7 +50,7 @@ Added in v1.18.0
 
 ```ts
 export interface Derived<R, R2, E, I, O> extends FormEntry<R, E, I, O> {
-  readonly persist: Effect.Effect<R2, E | ParseError, O>
+  readonly persist: Effect.Effect<O, E | ParseError, R2>
 }
 ```
 
@@ -63,7 +63,7 @@ Added in v1.18.0
 ```ts
 export interface FormEntryOptions<R, I, O> {
   readonly name: PropertyKey
-  readonly schema: Schema.Schema<R, I, O>
+  readonly schema: Schema.Schema<O, I, R>
 }
 ```
 
@@ -77,9 +77,9 @@ Added in v1.18.0
 export type MakeFormEntry<R0, I, O> = {
   <R, E>(
     ref: RefSubject.RefSubject<R, E, O>
-  ): Effect.Effect<R0 | R | Scope.Scope, never, FormEntry.Derived<never, R, E, I, O>>
-  <R, E>(fx: Fx.Fx<R, E, O>): Effect.Effect<R0 | R | Scope.Scope, never, FormEntry<never, E, I, O>>
-  <R, E>(effect: Effect.Effect<R, E, O>): Effect.Effect<R0 | R | Scope.Scope, never, FormEntry<never, E, I, O>>
+  ): Effect.Effect<FormEntry.Derived<never, R, E, I, O>, never, R0 | R | Scope.Scope>
+  <R, E>(fx: Fx.Fx<R, E, O>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
+  <R, E>(effect: Effect.Effect<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
 }
 ```
 
@@ -93,9 +93,9 @@ MakeRefSubject is a RefSubject factory function dervied from a Schema.
 
 ```ts
 export type MakeInputFormEntry<R0, I, O> = {
-  <R, E>(ref: RefSubject.RefSubject<R, E, I>): Effect.Effect<R | Scope.Scope, never, FormEntry.Derived<R0, R, E, I, O>>
-  <R, E>(fx: Fx.Fx<R, E, I>): Effect.Effect<R | Scope.Scope, never, FormEntry<R0, E, I, O>>
-  <R, E>(effect: Effect.Effect<R, E, I>): Effect.Effect<R | Scope.Scope, never, FormEntry<R0, E, I, O>>
+  <R, E>(ref: RefSubject.RefSubject<R, E, I>): Effect.Effect<FormEntry.Derived<R0, R, E, I, O>, never, R | Scope.Scope>
+  <R, E>(fx: Fx.Fx<R, E, I>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
+  <R, E>(effect: Effect.Effect<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
 }
 ```
 

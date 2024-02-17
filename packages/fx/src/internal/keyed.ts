@@ -20,7 +20,7 @@ type StateContext<A, C> = {
   output: C
 }
 
-const StateContext = Context.Tag<StateContext<any, any>>()
+const StateContext = Context.GenericTag<StateContext<any, any>>("@services/StateContext")
 
 class Keyed<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
   implements Fx<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
@@ -127,7 +127,7 @@ class KeyedEntry<A, C> {
     public index: number,
     public output: Option.Option<C>,
     public readonly ref: RefSubject.RefSubject<never, never, A>,
-    public readonly interrupt: Effect.Effect<never, never, void>
+    public readonly interrupt: Effect.Effect<void>
   ) {}
 }
 
@@ -160,7 +160,7 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   parentScope: Scope.Scope,
   options: KeyedOptions<A, B, R2, E2, C>,
   sink: Sink.Sink<R2 | R3, E | E2, ReadonlyArray<C>>,
-  scheduleNextEmit: Effect.Effect<R3, never, D>
+  scheduleNextEmit: Effect.Effect<D, never, R3>
 ) {
   return Effect.gen(function*(_) {
     const value = values[patch.index]

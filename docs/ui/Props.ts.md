@@ -73,7 +73,7 @@ Added in v1.0.0
 export type EventsOf<El, EventMap extends {} = DefaultEventMap<El>> = {
   readonly [K in keyof EventMap as K extends string ? `on${Capitalize<K>}` : never]?:
     | EventHandler.EventHandler<any, any, EventWithCurrentTarget<El, Extract<EventMap[K], Event>>>
-    | Effect.Effect<any, any, unknown>
+    | Effect.Effect<unknown, any, any>
     | null
     | undefined
 }
@@ -139,7 +139,7 @@ Added in v1.0.0
 
 ```ts
 export declare function getEventHandler<R, E, Ev extends Event = Event>(
-  handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<R, E, unknown> | null | undefined
+  handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<unknown, E, R> | null | undefined
 ): EventHandler.EventHandler<R, E, Ev> | null
 ```
 

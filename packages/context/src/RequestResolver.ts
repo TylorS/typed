@@ -27,33 +27,33 @@ export interface RequestResolver<
 
   readonly fromFunction: (
     f: (req: Request.Req<Requests[keyof Requests]>) => Request.Success<Requests[keyof Requests]>
-  ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>>
 
   readonly fromFunctionBatched: (
     f: (
       reqs: Array<Request.Req<Requests[keyof Requests]>>
     ) => Array<Request.Success<Requests[keyof Requests]>>
-  ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>>
 
   readonly make: <R>(
-    f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id>
+    f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id, never, R>
 
   readonly makeBatched: <R>(
-    f: (req: Array<Request.Req<Requests[keyof Requests]>>) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
+    f: (req: Array<Request.Req<Requests[keyof Requests]>>) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>, never, R>
 
   readonly makeWithEntry: <R>(
     f: (
       req: Array<Array<Req.Entry<Request.Req<Requests[keyof Requests]>>>>
-    ) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
+    ) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>, never, R>
 }
 
 type DerivedRequests<Id, Reqs extends Readonly<Record<string, Request<any, any, any>>>> = {
   readonly [K in keyof Reqs]: (
     ...input: Request.InputArg<Reqs[K]>
-  ) => Effect.Effect<Id, Request.Error<Reqs[K]>, Request.Success<Reqs[K]>>
+  ) => Effect.Effect<Request.Success<Reqs[K]>, Request.Error<Reqs[K]>, Id>
 }
 
 type Compact<Input> = [{ [K in keyof Input]: Input[K] }] extends [infer R] ? R : never
@@ -83,11 +83,11 @@ export function RequestResolver<
       r.implement((req: _Req) => tag.withEffect((resolver) => Effect.request(req, resolver)))
     )
     const requestLayer = Layer.mergeAll(first, ...rest) as Layer.Layer<
-      IdentifierOf<Id>,
+      Request.Identifier<Requests[keyof Requests]>,
       never,
-      Request.Identifier<Requests[keyof Requests]>
+      IdentifierOf<Id>
     >
-    const provideMerge = <R>(resolverLayer: Layer.Layer<R, never, IdentifierOf<Id>>) =>
+    const provideMerge = <R>(resolverLayer: Layer.Layer<IdentifierOf<Id>, never, R>) =>
       Layer.provideMerge(requestLayer, resolverLayer)
 
     const derivedRequests = Object.fromEntries(

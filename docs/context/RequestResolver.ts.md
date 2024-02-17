@@ -61,23 +61,23 @@ export interface RequestResolver<Id, Requests extends Readonly<Record<string, Re
 
   readonly fromFunction: (
     f: (req: Request.Req<Requests[keyof Requests]>) => Request.Success<Requests[keyof Requests]>
-  ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>>
 
   readonly fromFunctionBatched: (
     f: (reqs: Array<Request.Req<Requests[keyof Requests]>>) => Array<Request.Success<Requests[keyof Requests]>>
-  ) => Layer.Layer<never, never, Id | Request.Identifier<Requests[keyof Requests]>>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>>
 
   readonly make: <R>(
-    f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id>
+    f: (req: Array<Array<Request.Req<Requests[keyof Requests]>>>) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id, never, R>
 
   readonly makeBatched: <R>(
-    f: (req: Array<Request.Req<Requests[keyof Requests]>>) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
+    f: (req: Array<Request.Req<Requests[keyof Requests]>>) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>, never, R>
 
   readonly makeWithEntry: <R>(
-    f: (req: Array<Array<Req.Entry<Request.Req<Requests[keyof Requests]>>>>) => Effect.Effect<R, never, void>
-  ) => Layer.Layer<R, never, Id | Request.Identifier<Requests[keyof Requests]>>
+    f: (req: Array<Array<Req.Entry<Request.Req<Requests[keyof Requests]>>>>) => Effect.Effect<void, never, R>
+  ) => Layer.Layer<Id | Request.Identifier<Requests[keyof Requests]>, never, R>
 }
 ```
 

@@ -22,7 +22,7 @@ export interface AddEventListenerOptions<T extends EventTarget, EventName extend
 
   readonly handler: (
     event: EventWithCurrentTarget<T, DefaultEventMap<T>[EventName]>
-  ) => Effect.Effect<R2, never, unknown>
+  ) => Effect.Effect<unknown, never, R2>
 }
 
 /**
@@ -33,12 +33,12 @@ export interface AddEventListenerOptions<T extends EventTarget, EventName extend
 export const addEventListener: {
   <T extends EventTarget, EventName extends string, R = never>(
     options: AddEventListenerOptions<T, EventName, R>
-  ): (target: T) => Effect.Effect<R | Scope.Scope, never, void>
+  ): (target: T) => Effect.Effect<void, never, R | Scope.Scope>
 
   <T extends EventTarget, EventName extends string, R = never>(
     target: T,
     options: AddEventListenerOptions<T, EventName, R>
-  ): Effect.Effect<R | Scope.Scope, never, void>
+  ): Effect.Effect<void, never, R | Scope.Scope>
 } = dual(
   2,
   function addEventListener<T extends EventTarget, EventName extends string, R = never>(
@@ -77,17 +77,17 @@ export const dispatchEvent: {
   <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
     event: EventName,
     options?: EventInit
-  ): (target: T) => Effect.Effect<GlobalThis, never, boolean>
+  ): (target: T) => Effect.Effect<boolean, never, GlobalThis>
 
   <T extends EventTarget, EventName extends keyof DefaultEventMap<T>>(
     target: T,
     event: EventName,
     options?: EventInit
-  ): Effect.Effect<GlobalThis, never, boolean>
+  ): Effect.Effect<boolean, never, GlobalThis>
 } = dual(3, function dispatchEventWith<
   T extends EventTarget,
   EventName extends keyof DefaultEventMap<T>
->(target: T, event: EventName, options?: EventInit): Effect.Effect<GlobalThis, never, boolean> {
+>(target: T, event: EventName, options?: EventInit): Effect.Effect<boolean, never, GlobalThis> {
   return GlobalThis.with((globalThis) => target.dispatchEvent(new globalThis.Event(event as string, options)))
 })
 

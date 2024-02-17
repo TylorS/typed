@@ -20,16 +20,16 @@ import { Tag } from "./Tag.js"
  * @since 1.0.0
  */
 export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>> {
-  readonly cacheStats: Effect<I, never, C.CacheStats>
-  readonly contains: (key: K) => Effect<I, never, boolean>
-  readonly entryStats: (key: K) => Effect<I, never, Option<C.EntryStats>>
-  readonly get: (key: K) => Effect<I | Scope, E, A>
-  readonly getOption: (key: K) => Effect<I | Scope, E, Option<A>>
-  readonly getOptionComplete: (key: K) => Effect<I | Scope, E, Option<A>>
-  readonly invalidate: (key: K) => Effect<I, never, void>
-  readonly invalidateAll: Effect<I, never, void>
-  readonly refresh: (key: K) => Effect<I, E, void>
-  readonly size: Effect<I, never, number>
+  readonly cacheStats: Effect<C.CacheStats, never, I>
+  readonly contains: (key: K) => Effect<boolean, never, I>
+  readonly entryStats: (key: K) => Effect<Option<C.EntryStats>, never, I>
+  readonly get: (key: K) => Effect<A, E, I | Scope>
+  readonly getOption: (key: K) => Effect<Option<A>, E, I | Scope>
+  readonly getOptionComplete: (key: K) => Effect<Option<A>, E, I | Scope>
+  readonly invalidate: (key: K) => Effect<void, never, I>
+  readonly invalidateAll: Effect<void, never, I>
+  readonly refresh: (key: K) => Effect<void, E, I>
+  readonly size: Effect<number, never, I>
 
   readonly make: <R>(
     options: {
@@ -37,15 +37,15 @@ export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>>
       readonly timeToLive: DurationInput
       readonly lookup: SC.Lookup<K, R, E, A>
     }
-  ) => Layer.Layer<R, never, I>
+  ) => Layer.Layer<I, never, R>
 
   readonly makeWith: <R>(
     options: {
       readonly capacity: number
       readonly lookup: SC.Lookup<K, R, E, A>
-      readonly timeToLive: (exit: Exit<E, A>) => DurationInput
+      readonly timeToLive: (exit: Exit<A, E>) => DurationInput
     }
-  ) => Layer.Layer<R, never, I>
+  ) => Layer.Layer<I, never, R>
 }
 
 /**

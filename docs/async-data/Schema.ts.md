@@ -34,7 +34,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type AsyncDataFrom<E, A> = NoDataFrom | LoadingFrom | FailureFrom<E> | SuccessFrom<A> | OptimisticFrom<E, A>
+export type AsyncDataFrom<A, E> = NoDataFrom | LoadingFrom | FailureFrom<E> | SuccessFrom<A> | OptimisticFrom<A, E>
 ```
 
 Added in v1.0.0
@@ -83,11 +83,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type OptimisticFrom<E, A> = {
+export type OptimisticFrom<A, E> = {
   readonly timestamp: number
   readonly _tag: "Optimistic"
   readonly value: A
-  readonly previous: AsyncDataFrom<E, A>
+  readonly previous: AsyncDataFrom<A, E>
 }
 ```
 
@@ -99,9 +99,9 @@ Added in v1.0.0
 
 ```ts
 export declare const Progress: Schema.Schema<
-  never,
+  P.Progress,
   { readonly loaded: string; readonly total?: string | undefined },
-  P.Progress
+  never
 >
 ```
 
@@ -140,10 +140,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncData: <R1, EI, E, R2, AI, A>(
-  errorSchema: Schema.Schema<R1, EI, E>,
-  valueSchema: Schema.Schema<R2, AI, A>
-) => Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncData.AsyncData<E, A>>
+export declare const asyncData: <A, AI, R1, E, EI, R2>(
+  valueSchema: Schema.Schema<A, AI, R2>,
+  errorSchema: Schema.Schema<E, EI, R1>
+) => Schema.Schema<AsyncData.AsyncData<A, E>, AsyncDataFrom<AI, EI>, R1 | R2>
 ```
 
 Added in v1.0.0
@@ -153,10 +153,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncDataFromJson: <R1, EI, E, R2, AI, A>(
-  error: Schema.Schema<R1, EI, E>,
-  value: Schema.Schema<R2, AI, A>
-) => Schema.Schema<R1 | R2, AsyncDataFrom<EI, AI>, AsyncDataFrom<E, A>>
+export declare const asyncDataFromJson: <A, AI, R1, E, EI, R2>(
+  value: Schema.Schema<A, AI, R1>,
+  error: Schema.Schema<E, EI, R2>
+) => Schema.Schema<AsyncDataFrom<A, E>, AsyncDataFrom<AI, EI>, R1 | R2>
 ```
 
 Added in v1.0.0
@@ -166,10 +166,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asyncDataFromSelf: <R1, EI, E, R2, AI, A>(
-  error: Schema.Schema<R1, EI, E>,
-  value: Schema.Schema<R2, AI, A>
-) => Schema.Schema<R1 | R2, AsyncData.AsyncData<EI, AI>, AsyncData.AsyncData<E, A>>
+export declare const asyncDataFromSelf: <A, AI, R1, E, EI, R2>(
+  value: Schema.Schema<A, AI, R2>,
+  error: Schema.Schema<E, EI, R1>
+) => Schema.Schema<AsyncData.AsyncData<A, E>, AsyncData.AsyncData<AI, EI>, R1 | R2>
 ```
 
 Added in v1.0.0

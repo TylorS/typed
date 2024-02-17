@@ -43,8 +43,8 @@ Add a value to the current state of a RefHashSet.
 
 ```ts
 export declare const add: {
-  <A>(value: A): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, value: A): Effect.Effect<R, E, HashSet.HashSet<A>>
+  <A>(value: A): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  <R, E, A>(ref: RefHashSet<R, E, A>, value: A): Effect.Effect<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -58,8 +58,8 @@ Append an iterable of values to the current state of a RefHashSet.
 
 ```ts
 export declare const appendAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, HashSet.HashSet<A>>
+  <A>(value: Iterable<A>): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  <R, E, A>(ref: RefHashSet<R, E, A>, value: Iterable<A>): Effect.Effect<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -200,8 +200,8 @@ Added in v1.18.0
 
 ```ts
 export declare function make<R, E, A>(
-  initial: Effect.Effect<R, E, HashSet.HashSet<A>> | Fx.Fx<R, E, HashSet.HashSet<A>>
-): Effect.Effect<R | Scope.Scope, never, RefHashSet<never, E, A>>
+  initial: Effect.Effect<HashSet.HashSet<A>, E, R> | Fx.Fx<R, E, HashSet.HashSet<A>>
+): Effect.Effect<RefHashSet<never, E, A>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0

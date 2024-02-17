@@ -30,9 +30,9 @@ export interface BlockNavigation extends RefSubject.Computed<never, never, Optio
  * @since 1.0.0
  */
 export interface Blocking extends BeforeNavigationEvent {
-  readonly cancel: Effect.Effect<never, never, Destination>
-  readonly confirm: Effect.Effect<never, never, Destination>
-  readonly redirect: (urlOrPath: string | URL, options?: NavigateOptions) => Effect.Effect<never, never, Destination>
+  readonly cancel: Effect.Effect<Destination>
+  readonly confirm: Effect.Effect<Destination>
+  readonly redirect: (urlOrPath: string | URL, options?: NavigateOptions) => Effect.Effect<Destination>
 }
 
 type InternalBlockState = Unblocked | Blocked
@@ -45,12 +45,12 @@ const Unblocked: Unblocked = Data.struct({ _tag: "Unblocked" })
 type Blocked = {
   readonly _tag: "Blocked"
   readonly event: BeforeNavigationEvent
-  readonly deferred: Deferred.Deferred<RedirectError | CancelNavigation, void>
+  readonly deferred: Deferred.Deferred<void, RedirectError | CancelNavigation>
 }
 
 const Blocked = (event: BeforeNavigationEvent) =>
   Effect.map(
-    Deferred.make<RedirectError | CancelNavigation, void>(),
+    Deferred.make<void, RedirectError | CancelNavigation>(),
     (deferred): Blocked => Data.struct({ _tag: "Blocked", deferred, event })
   )
 
@@ -58,7 +58,7 @@ const Blocked = (event: BeforeNavigationEvent) =>
  * @since 1.0.0
  */
 export interface UseBlockNavigationParams<R = never> {
-  readonly shouldBlock?: (event: BeforeNavigationEvent) => Effect.Effect<R, RedirectError | CancelNavigation, boolean>
+  readonly shouldBlock?: (event: BeforeNavigationEvent) => Effect.Effect<boolean, RedirectError | CancelNavigation, R>
 }
 
 /**
@@ -66,7 +66,7 @@ export interface UseBlockNavigationParams<R = never> {
  */
 export const useBlockNavigation = <R = never>(
   params: UseBlockNavigationParams<R> = {}
-): Effect.Effect<Navigation | R | Scope.Scope, never, BlockNavigation> =>
+): Effect.Effect<BlockNavigation, never, Navigation | R | Scope.Scope> =>
   Effect.gen(function*(_) {
     const navigation = yield* _(Navigation)
     const blockState = yield* _(RefSubject.of<InternalBlockState>(Unblocked))

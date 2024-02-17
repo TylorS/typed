@@ -70,7 +70,7 @@ type RenderChunkMap = {
     chunk: Extract<HtmlChunk, { _tag: K }>,
     index: number,
     values: ReadonlyArray<Renderable<any, any>>,
-    onChunk: (index: number, value: string) => Effect.Effect<never, never, void>
+    onChunk: (index: number, value: string) => Effect.Effect<void>
   ) => RenderChunk<R, E>
 }
 
@@ -98,7 +98,7 @@ const renderChunkMap: RenderChunkMap = {
 export function htmlChunksToRenderChunks<R, E>(
   chunks: ReadonlyArray<HtmlChunk>,
   values: ReadonlyArray<Renderable<R, E>>,
-  onChunk: (index: number, value: string) => Effect.Effect<never, never, void>
+  onChunk: (index: number, value: string) => Effect.Effect<void>
 ) {
   const output: Array<RenderChunk<R, E>> = Array(chunks.length)
 
@@ -113,7 +113,7 @@ export function htmlChunksToRenderChunks<R, E>(
 type PartNodeMap = {
   readonly [K in PartNode["_tag"]]: (
     node: Extract<PartNode, { _tag: K }>,
-    onChunk: (value: unknown) => Effect.Effect<never, never, void>
+    onChunk: (value: unknown) => Effect.Effect<void>
   ) => Part
 }
 
@@ -137,14 +137,14 @@ const partNodeMap: PartNodeMap = {
 
 export function partNodeToPart(
   node: PartNode,
-  onChunk: (value: unknown) => Effect.Effect<never, never, void>
+  onChunk: (value: unknown) => Effect.Effect<void>
 ): Part {
   return partNodeMap[node._tag](node as any, onChunk)
 }
 
 function sparsePartNodeToPart(
   node: SparsePartNode,
-  onChunk: (value: string | null) => Effect.Effect<never, never, void>
+  onChunk: (value: string | null) => Effect.Effect<void>
 ) {
   if (node._tag === "sparse-attr") {
     return renderSparseAttr(node, onChunk)
@@ -157,7 +157,7 @@ function sparsePartNodeToPart(
 
 function renderSparseAttr(
   attrNode: SparseAttrNode,
-  setAttribute: (value: string | null) => Effect.Effect<never, never, void>
+  setAttribute: (value: string | null) => Effect.Effect<void>
 ): SparseAttributePart {
   const { nodes } = attrNode
   const values: Map<number, string | null> = new Map()
@@ -204,7 +204,7 @@ function renderSparseAttr(
 
 function renderSparseClassName(
   classNameNode: SparseClassNameNode,
-  setClassName: (value: string | null) => Effect.Effect<never, never, void>
+  setClassName: (value: string | null) => Effect.Effect<void>
 ): SparseClassNamePart {
   const { nodes } = classNameNode
   const values: Map<number, string | null> = new Map()
@@ -250,7 +250,7 @@ function renderSparseClassName(
 
 function renderSparseComment(
   commentNode: SparseCommentNode,
-  setComment: (value: string | null) => Effect.Effect<never, never, void>
+  setComment: (value: string | null) => Effect.Effect<void>
 ): SparseCommentPart {
   const { nodes } = commentNode
   const values: Map<number, string | null | undefined> = new Map()

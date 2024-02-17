@@ -30,7 +30,7 @@ class RefCounter {
 }
 
 export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
-  _FxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<never, unknown>>> = MutableRef.make(Option.none())
+  _FxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<unknown>>> = MutableRef.make(Option.none())
   _RefCount = new RefCounter()
 
   constructor(
@@ -40,7 +40,7 @@ export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
     super()
   }
 
-  run<R3>(sink: Sink<R3, E, A>): Effect.Effect<R | R2 | R3 | Scope.Scope, never, unknown> {
+  run<R3>(sink: Sink<R3, E, A>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
     return withScopedFork(
       (fork) =>
         Effect.flatMap(
@@ -53,7 +53,7 @@ export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
     )
   }
 
-  private initialize(): Effect.Effect<R | R2, never, unknown> {
+  private initialize(): Effect.Effect<unknown, never, R | R2> {
     return Effect.suspend(() => {
       if (this._RefCount.increment() === 1) {
         return this.i0.run(this.i1).pipe(
@@ -80,7 +80,7 @@ export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
     })
   }
 
-  private interrupt(): Effect.Effect<R | R2, never, void> {
+  private interrupt(): Effect.Effect<void, never, R | R2> {
     return Effect.suspend(() => {
       const fiber = Option.getOrNull(MutableRef.getAndSet(this._FxFiber, Option.none()))
 

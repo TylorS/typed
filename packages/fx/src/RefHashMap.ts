@@ -27,15 +27,15 @@ export interface RefHashMap<out R, in out E, in out K, in out V>
  * @category constructors
  */
 export function make<R, E, K, V>(
-  initial: Effect.Effect<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
+  initial: Effect.Effect<HashMap.HashMap<K, V>, E, R>
+): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
 export function make<R, E, K, V>(
   initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>>
+): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
 
 export function make<R, E, K, V>(
-  initial: Effect.Effect<R, E, HashMap.HashMap<K, V>> | Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<R | Scope.Scope, never, RefHashMap<never, E, K, V>> {
+  initial: Effect.Effect<HashMap.HashMap<K, V>, E, R> | Fx.Fx<R, E, HashMap.HashMap<K, V>>
+): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope> {
   return RefSubject.make(initial)
 }
 
@@ -59,7 +59,7 @@ export const tagged: <K, V>() => {
  */
 export function of<K, V>(
   map: HashMap.HashMap<K, V>
-): Effect.Effect<Scope.Scope, never, RefHashMap<never, never, K, V>> {
+): Effect.Effect<RefHashMap<never, never, K, V>, never, Scope.Scope> {
   return make(Effect.succeed(map))
 }
 
@@ -129,12 +129,12 @@ export function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject
 export const map: {
   <K, V>(
     f: (v: V, k: K) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(2, function map<R, E, K, V>(
   refHashMap: RefHashMap<R, E, K, V>,
   f: (v: V, k: K) => V
-): Effect.Effect<R, E, HashMap.HashMap<K, V>> {
+): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.update(refHashMap, HashMap.map(f))
 })
 
@@ -147,17 +147,17 @@ export const modify: {
   <K, V>(
     key: K,
     f: (v: V) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
   <R, E, K, V>(
     refHashMap: RefHashMap<R, E, K, V>,
     key: K,
     f: (v: V) => V
-  ): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(3, function map<R, E, K, V>(
   refHashMap: RefHashMap<R, E, K, V>,
   key: K,
   f: (v: V) => V
-): Effect.Effect<R, E, HashMap.HashMap<K, V>> {
+): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.update(refHashMap, HashMap.modify(key, f))
 })
 
@@ -170,17 +170,17 @@ export const modifyAt: {
   <K, V>(
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
   <R, E, K, V>(
     self: RefHashMap<R, E, K, V>,
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(3, function modifyAt<R, E, K, V>(
   self: RefHashMap<R, E, K, V>,
   key: K,
   f: HashMap.HashMap.UpdateFn<V>
-): Effect.Effect<R, E, HashMap.HashMap<K, V>> {
+): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.update(self, HashMap.modifyAt(key, f))
 })
 
@@ -194,19 +194,19 @@ export const modifyHash: {
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
   <R, E, K, V>(
     self: RefHashMap<R, E, K, V>,
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(4, function modifyAt<R, E, K, V>(
   self: RefHashMap<R, E, K, V>,
   key: K,
   hash: number,
   f: HashMap.HashMap.UpdateFn<V>
-): Effect.Effect<R, E, HashMap.HashMap<K, V>> {
+): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.update(self, HashMap.modifyHash(key, hash, f))
 })
 
@@ -239,8 +239,8 @@ export const reduce: {
  * @category combinators
  */
 export const remove: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(2, function remove<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K) {
   return RefSubject.update(refHashMap, HashMap.remove(key))
 })
@@ -251,8 +251,8 @@ export const remove: {
  * @category combinators
  */
 export const removeMany: {
-  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(2, function removeMany<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>) {
   return RefSubject.update(refHashMap, HashMap.removeMany(key))
 })
@@ -266,8 +266,8 @@ export const set: {
   <K, V>(
     key: K,
     value: V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<R, E, HashMap.HashMap<K, V>>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<R, E, HashMap.HashMap<K, V>>
+  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 } = dual(3, function set<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V) {
   return RefSubject.update(refHashMap, HashMap.set(key, value))
 })

@@ -19,7 +19,7 @@ export type EventHandlerTypeId = typeof EventHandlerTypeId
  */
 export interface EventHandler<R, E, Ev extends Event = Event> extends Placeholder<R, E, null> {
   readonly [EventHandlerTypeId]: EventHandlerTypeId
-  readonly handler: (event: Ev) => Effect<R, E, unknown>
+  readonly handler: (event: Ev) => Effect<unknown, E, R>
   readonly options: AddEventListenerOptions | undefined
 }
 
@@ -40,7 +40,7 @@ export type EventOf<T> = T extends EventHandler<infer _R, infer _E, infer Ev> ? 
  * @since 1.0.0
  */
 export function make<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<R, E, unknown>,
+  handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<R, E, Ev> {
   return {
@@ -54,7 +54,7 @@ export function make<R, E, Ev extends Event>(
  * @since 1.0.0
  */
 export function preventDefault<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<R, E, unknown>,
+  handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<R, E, Ev> {
   return make((ev) => (ev.preventDefault(), handler(ev)), options)
@@ -64,7 +64,7 @@ export function preventDefault<R, E, Ev extends Event>(
  * @since 1.0.0
  */
 export function stopPropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<R, E, unknown>,
+  handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<R, E, Ev> {
   return make((ev) => (ev.stopPropagation(), handler(ev)), options)
@@ -74,7 +74,7 @@ export function stopPropagation<R, E, Ev extends Event>(
  * @since 1.0.0
  */
 export function stopImmediatePropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<R, E, unknown>,
+  handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<R, E, Ev> {
   return make((ev) => (ev.stopImmediatePropagation(), handler(ev)), options)
@@ -85,11 +85,11 @@ export function stopImmediatePropagation<R, E, Ev extends Event>(
  */
 export function target<T extends HTMLElement>() {
   return <R, E, Ev extends Event>(
-    handler: (event: EventWithTarget<T, Ev>) => Effect<R, E, unknown>,
+    handler: (event: EventWithTarget<T, Ev>) => Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<R, E, EventWithTarget<T, Ev>> => {
     return make(handler, options)
-  }
+  };
 }
 
 /**
@@ -97,8 +97,8 @@ export function target<T extends HTMLElement>() {
  */
 export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
   return <R, E>(
-    handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect<R, E, unknown>,
+    handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<R, E, KeyboardEvent> =>
-    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : unit, options)
+    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : unit, options);
 }

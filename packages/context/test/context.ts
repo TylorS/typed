@@ -163,12 +163,12 @@ describe(__filename, () => {
 
   describe("Request + RequestResolver", () => {
     it("allow utilizing Requests and RequestResolvers via the context", async () => {
-      interface FooRequest extends Request.Request<never, number> {
+      interface FooRequest extends Request.Request<number> {
         readonly _tag: "Foo"
       }
       const FooRequest = Context.Request.tagged<FooRequest>("Foo")("FooRequest")
 
-      interface BarRequest extends Request.Request<never, number> {
+      interface BarRequest extends Request.Request<number> {
         readonly _tag: "Bar"
       }
       const BarRequest = Context.Request.tagged<BarRequest>("Bar")("BarRequest")

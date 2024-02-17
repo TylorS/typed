@@ -44,9 +44,9 @@ output values independently of encoding.
 **Signature**
 
 ```ts
-export interface Decoder<I, R, E, O> {
+export interface Decoder<I, O, E = never, R = never> {
   readonly [DecoderTypeId]: DecoderTypeId
-  readonly decode: (input: I, options?: ParseOptions) => Effect.Effect<R, E, O>
+  readonly decode: (input: I, options?: ParseOptions) => Effect.Effect<O, E, R>
   readonly options?: ParseOptions | undefined
 }
 ```
@@ -81,35 +81,35 @@ Pipe the output of a Decoder/Schema into another Decoder/Schema for transformati
 
 ```ts
 export declare const compose: {
-  <O, R2, E2, B>(
-    to: Decoder<O, R2, E2, B>
+  <O, B, E2, R2>(
+    to: Decoder<O, B, E2, R2>
   ): {
-    <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R2 | R, E2 | E, B>
-    <R, I>(from: Schema.Schema<R, I, O>): Decoder<I, R2, ParseError | E2, B>
-    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R2 | R, ParseError | E2 | E, B>
+    <I, R, E>(from: Decoder<I, O, E, R>): Decoder<I, B, E2 | E, R2 | R>
+    <I, R>(from: Schema.Schema<O, I, R>): Decoder<I, B, ParseError | E2, R>
+    <I, R, E>(from: Decoder<I, O, E, R> | Schema.Schema<O, I, R>): Decoder<I, B, ParseError | E2 | E, R2 | R>
   }
   <O, B>(
-    to: Schema.Schema<O, B, B>
+    to: Schema.Schema<O, B, never>
   ): {
-    <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R, ParseError | E, B>
-    <R, I>(from: Schema.Schema<R, I, O>): Decoder<I, never, ParseError, B>
-    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R, ParseError | E, B>
+    <I, R, E>(from: Decoder<I, O, E, R>): Decoder<I, B, ParseError | E, R>
+    <I, R>(from: Schema.Schema<O, I, R>): Decoder<I, B, ParseError, never>
+    <I, R, E>(from: Decoder<I, O, E, R> | Schema.Schema<O, I, R>): Decoder<I, R, ParseError | E, B>
   }
-  <O, R2, E2, B>(
-    to: Decoder<O, R2, E2, B> | Schema.Schema<R2, O, B>
+  <O, B, E2, R2>(
+    to: Decoder<O, B, E2, R2> | Schema.Schema<B, O, R2>
   ): {
-    <I, R, E>(from: Decoder<I, R, E, O>): Decoder<I, R2 | R, ParseError | E2 | E, B>
-    <I>(from: Schema.Schema<I, O, O>): Decoder<I, R2, ParseError | E2, B>
-    <I, R, E>(from: Decoder<I, R, E, O> | Schema.Schema<I, O, O>): Decoder<I, R2 | R, ParseError | E2 | E, B>
+    <I, R, E>(from: Decoder<I, O, E, R>): Decoder<I, R2 | R, ParseError | E2 | E, B>
+    <I, R>(from: Schema.Schema<I, O, R>): Decoder<I, B, ParseError | E2, R>
+    <I, R, E>(from: Decoder<I, O, E, R> | Schema.Schema<I, O, never>): Decoder<I, R2 | R, ParseError | E2 | E, B>
   }
-  <I, R, E, O, R2, E2, B>(from: Decoder<I, R, E, O>, to: Decoder<O, R2, E2, B>): Decoder<I, R | R2, E | E2, B>
-  <R, I, O, R2, E2, B>(from: Schema.Schema<R, I, O>, to: Decoder<O, R2, E2, B>): Decoder<I, R | R2, ParseError | E2, B>
-  <I, R, E, R2, O, B>(from: Decoder<I, R, E, O>, to: Schema.Schema<R2, O, B>): Decoder<I, R | R2, ParseError | E, B>
-  <R, I, O, R2, B>(from: Schema.Schema<R, I, O>, to: Schema.Schema<R2, O, B>): Decoder<I, R | R2, ParseError, B>
-  <I, R, E, O, R2, E2, B>(
-    from: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
-    to: Decoder<O, R2, E2, B> | Schema.Schema<R2, O, B>
-  ): Decoder<I, R | R2, ParseError | E | E2, B>
+  <I, R, E, O, B, E2, R2>(from: Decoder<I, O, E, R>, to: Decoder<O, B, E2, R2>): Decoder<I, B, E | E2, R | R2>
+  <O, I, R, B, E2, R2>(from: Schema.Schema<O, I, R>, to: Decoder<O, B, E2, R2>): Decoder<I, B, ParseError | E2, R | R2>
+  <I, R, E, R2, O, B>(from: Decoder<I, O, E, R>, to: Schema.Schema<B, O, R2>): Decoder<I, B, ParseError | E, R | R2>
+  <O, I, R, R2, B>(from: Schema.Schema<O, I, R>, to: Schema.Schema<B, O, R2>): Decoder<I, B, ParseError, R | R2>
+  <I, R, E, O, B, E2, R2>(
+    from: Decoder<I, O, E, R> | Schema.Schema<O, I, R>,
+    to: Decoder<O, B, E2, R2> | Schema.Schema<B, O, R2>
+  ): Decoder<I, B, ParseError | E | E2, R | R2>
 }
 ```
 
@@ -122,7 +122,7 @@ Lift a Schema<I, O> into a Decoder<I, never, ParseError, O>.
 **Signature**
 
 ```ts
-export declare function fromSchema<R, I, O>(schema: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, O>
+export declare function fromSchema<O, I, R>(schema: Schema.Schema<O, I, R>): Decoder<I, O, ParseError, R>
 ```
 
 Added in v1.0.0
@@ -135,11 +135,11 @@ Get a Decoder from a Decoder or Schema.
 
 ```ts
 export declare const getDecoder: {
-  <I, R, E, O>(decoder: Decoder<I, R, E, O>): Decoder<I, R, E, O>
-  <R, I, O>(schema: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, O>
-  <I, R = never, E = never, O = never>(
-    decoder: Decoder<I, R, E, O> | Schema.Schema<R, I, O>
-  ): Decoder<I, R, ParseError | E, O>
+  <I, O, E, R>(decoder: Decoder<I, O, E, R>): Decoder<I, O, E, R>
+  <O, I, R>(schema: Schema.Schema<O, I, R>): Decoder<I, O, ParseError, R>
+  <I, O = never, E = never, R = never>(
+    decoder: Decoder<I, O, E, R> | Schema.Schema<O, I, R>
+  ): Decoder<I, O, ParseError | E, R>
 }
 ```
 
@@ -154,7 +154,7 @@ Check if a value is a Decoder.
 ```ts
 export declare function isDecoder<I = unknown, R = unknown, E = unknown, O = unknown>(
   u: unknown
-): u is Decoder<I, R, E, O>
+): u is Decoder<I, O, E, R>
 ```
 
 Added in v1.0.0
@@ -164,10 +164,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make<I, R, E, O>(
-  decode: (input: I, options?: ParseOptions) => Effect.Effect<R, E, O>,
+export declare function make<I, O, E, R>(
+  decode: (input: I, options?: ParseOptions) => Effect.Effect<O, E, R>,
   options?: ParseOptions
-): Decoder<I, R, E, O>
+): Decoder<I, O, E, R>
 ```
 
 Added in v1.0.0
@@ -183,13 +183,13 @@ export declare const map: {
   <O, B>(
     f: (o: O) => B
   ): {
-    <I, R, E>(input: Decoder<I, R, E, O>): Decoder<I, R, E, B>
-    <R, I>(input: Schema.Schema<R, I, O>): Decoder<I, R, ParseError, B>
-    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R, ParseError | E, B>
+    <I, E, R>(input: Decoder<I, O, E, R>): Decoder<I, B, E, R>
+    <I, R>(input: Schema.Schema<O, I, R>): Decoder<I, B, ParseError, R>
+    <I, E, R>(input: Decoder<I, O, E, R> | Schema.Schema<O, I, R>): Decoder<I, B, ParseError | E, R>
   }
-  <I, R, E, O, B>(input: Decoder<I, R, E, O>, f: (o: O) => B): Decoder<I, R, E, B>
-  <R, I, O, B>(input: Schema.Schema<R, I, O>, f: (o: O) => B): Decoder<I, never, ParseError, B>
-  <I, R, E, O, B>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>, f: (o: O) => B): Decoder<I, R, ParseError | E, B>
+  <I, O, E, R, B>(input: Decoder<I, O, E, R>, f: (o: O) => B): Decoder<I, B, E, R>
+  <O, I, R, B>(input: Schema.Schema<O, I, R>, f: (o: O) => B): Decoder<I, B, ParseError, never>
+  <I, O, E, R, B>(input: Decoder<I, O, E, R> | Schema.Schema<O, I, R>, f: (o: O) => B): Decoder<I, B, ParseError | E, R>
 }
 ```
 
@@ -203,25 +203,25 @@ Transform the output of a Decoder/Schema using an Effect.
 
 ```ts
 export declare const mapEffect: {
-  <O, R2, E2, B>(
-    f: (value: O) => Effect.Effect<R2, E2, B>
+  <O, B, E2, R2>(
+    f: (value: O) => Effect.Effect<B, E2, R2>
   ): {
-    <I, R, E>(input: Decoder<I, R, E, O>): Decoder<I, R2 | R, E2 | E | ParseError, B>
-    <R, I>(input: Schema.Schema<R, I, O>): Decoder<I, R2, E2 | ParseError, B>
-    <I, R, E>(input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>): Decoder<I, R2 | R, E2 | ParseError | E, B>
+    <I, E, R>(input: Decoder<I, O, E, R>): Decoder<I, B, E2 | E | ParseError, R2 | R>
+    <I, R>(input: Schema.Schema<O, I, R>): Decoder<I, B, E2 | ParseError, R2>
+    <I, R, E>(input: Decoder<I, O, E, R> | Schema.Schema<O, I, R>): Decoder<I, B, E2 | ParseError | E, R2 | R>
   }
-  <I, R, E, O, R2, E2, B>(
-    input: Decoder<I, R, E, O>,
-    f: (value: O) => Effect.Effect<R2, E2, B>
-  ): Decoder<I, R | R2, E | E2 | ParseError, B>
-  <R, I, O, R2, E2, B>(
-    input: Schema.Schema<R, I, O>,
-    f: (value: O) => Effect.Effect<R2, E2, B>
-  ): Decoder<I, R | R2, E2 | ParseError, B>
-  <I, R = never, E = never, O = never, R2 = never, E2 = never, B = never>(
-    input: Decoder<I, R, E, O> | Schema.Schema<R, I, O>,
-    f: (value: O) => Effect.Effect<R2, E2, B>
-  ): Decoder<I, R | R2, E | E2 | ParseError, B>
+  <I, O, E, R, B, E2, R2>(
+    input: Decoder<I, O, E, R>,
+    f: (value: O) => Effect.Effect<B, E2, R2>
+  ): Decoder<I, B, E | E2 | ParseError, R | R2>
+  <O, I, R, B, E2, R2>(
+    input: Schema.Schema<O, I, R>,
+    f: (value: O) => Effect.Effect<B, E2, R2>
+  ): Decoder<I, B, E2 | ParseError, R | R2>
+  <I, O, E = never, R = never, B = never, E2 = never, R2 = never>(
+    input: Decoder<I, O, E, R> | Schema.Schema<O, I, R>,
+    f: (value: O) => Effect.Effect<B, E2, R2>
+  ): Decoder<I, B, E | E2 | ParseError, R | R2>
 }
 ```
 

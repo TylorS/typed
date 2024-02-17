@@ -100,11 +100,11 @@ Added in v1.20.0
 ```ts
 export declare const exhaustMapEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, Scope.Scope | R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
 }
 ```
@@ -136,11 +136,11 @@ Added in v1.20.0
 ```ts
 export declare const exhaustMapLatestEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, Scope.Scope | R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
 }
 ```
@@ -167,11 +167,11 @@ Added in v1.20.0
 ```ts
 export declare const filterEffect: {
   <B, R3, E3>(
-    f: (b: B) => Effect.Effect<R3, E3, boolean>
+    f: (b: B) => Effect.Effect<boolean, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, R3 | R2, E3 | E2, B>
   <R, E, A, R2, E2, B, R3, E3>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, boolean>
+    f: (b: B) => Effect.Effect<boolean, E3, R3>
   ): Push<R, E, A, R2 | R3, E2 | E3, B>
 }
 ```
@@ -202,11 +202,11 @@ Added in v1.20.0
 ```ts
 export declare const filterInputEffect: {
   <A, R3, E>(
-    f: (a: A) => Effect.Effect<R3, E, boolean>
+    f: (a: A) => Effect.Effect<boolean, E, R3>
   ): <R, R2, E2, B>(push: Push<R, E, A, R2, E2, B>) => Push<R3 | R, E, A, R2, E2, B>
   <R, E, A, R2, E2, B, R3>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (a: A) => Effect.Effect<R3, E, boolean>
+    f: (a: A) => Effect.Effect<boolean, E, R3>
   ): Push<R | R3, E, A, R2, E2, B>
 }
 ```
@@ -233,11 +233,11 @@ Added in v1.20.0
 ```ts
 export declare const filterMapEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>
+    f: (b: B) => Effect.Effect<Option.Option<C>, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, Option.Option<C>>
+    f: (b: B) => Effect.Effect<Option.Option<C>, E3, R3>
   ): Push<R, E, A, R2 | R3, E2 | E3, C>
 }
 ```
@@ -268,11 +268,11 @@ Added in v1.20.0
 ```ts
 export declare const filterMapInputEffect: {
   <C, R3, E, A>(
-    f: (c: C) => Effect.Effect<R3, E, Option.Option<A>>
+    f: (c: C) => Effect.Effect<Option.Option<A>, E, R3>
   ): <R, R2, E2, B>(push: Push<R, E, A, R2, E2, B>) => Push<R3 | R, E, C, R2, E2, B>
   <R, E, A, R2, E2, B, R3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (c: C) => Effect.Effect<R3, E, Option.Option<A>>
+    f: (c: C) => Effect.Effect<Option.Option<A>, E, R3>
   ): Push<R | R3, E, C, R2, E2, B>
 }
 ```
@@ -304,11 +304,11 @@ Added in v1.20.0
 ```ts
 export declare const flatMapEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, Scope.Scope | R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
 }
 ```
@@ -348,11 +348,11 @@ Added in v1.20.0
 ```ts
 export declare const mapEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): Push<R, E, A, R2 | R3, E2 | E3, C>
 }
 ```
@@ -384,11 +384,11 @@ Added in v1.20.0
 ```ts
 export declare const mapInputEffect: {
   <C, R3, E, A>(
-    f: (c: C) => Effect.Effect<R3, E, A>
+    f: (c: C) => Effect.Effect<A, E, R3>
   ): <R, R2, E2, B>(push: Push<R, E, A, R2, E2, B>) => Push<R3 | R, E, C, R2, E2, B>
   <R, E, A, R2, E2, B, R3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (c: C) => Effect.Effect<R3, E, A>
+    f: (c: C) => Effect.Effect<A, E, R3>
   ): Push<R | R3, E, C, R2, E2, B>
 }
 ```
@@ -420,11 +420,11 @@ Added in v1.20.0
 ```ts
 export declare const switchMapEffect: {
   <B, R3, E3, C>(
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): <R, E, A, R2, E2>(push: Push<R, E, A, R2, E2, B>) => Push<R, E, A, Scope.Scope | R3 | R2, E3 | E2, C>
   <R, E, A, R2, E2, B, R3, E3, C>(
     push: Push<R, E, A, R2, E2, B>,
-    f: (b: B) => Effect.Effect<R3, E3, C>
+    f: (b: B) => Effect.Effect<C, E3, R3>
   ): Push<R, E, A, Scope.Scope | R2 | R3, E2 | E3, C>
 }
 ```

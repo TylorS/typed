@@ -58,8 +58,8 @@ Append a value to the current state of a RefChunk.
 
 ```ts
 export declare const append: {
-  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -73,8 +73,8 @@ Append an iterable of values to the current state of a RefChunk.
 
 ```ts
 export declare const appendAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -87,7 +87,7 @@ Remove any duplicate values from a RefChunk.
 **Signature**
 
 ```ts
-export declare const dedupe: <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+export declare const dedupe: <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
 ```
 
 Added in v1.18.0
@@ -100,8 +100,8 @@ Drop the first `n` values from a RefChunk.
 
 ```ts
 export declare const drop: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -115,8 +115,8 @@ Drop the last `n` values from a RefChunk.
 
 ```ts
 export declare const dropRight: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -130,8 +130,8 @@ Drop values from a RefChunk while a predicate is true.
 
 ```ts
 export declare const dropWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -160,8 +160,8 @@ Modify the value at a particular index of a RefChunk.
 
 ```ts
 export declare const modifyAt: {
-  <A>(index: number, f: (a: A) => A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, index: number, f: (a: A) => A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(index: number, f: (a: A) => A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, index: number, f: (a: A) => A): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -175,8 +175,8 @@ Prepend a value to the current state of a RefChunk.
 
 ```ts
 export declare const prepend: {
-  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -190,8 +190,8 @@ Prepend an iterable of values to the current state of a RefChunk.
 
 ```ts
 export declare const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -205,8 +205,8 @@ Replace a value at a particular index of a RefChunk.
 
 ```ts
 export declare const replaceAt: {
-  <A>(index: number, a: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, index: number, a: A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(index: number, a: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, index: number, a: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -220,8 +220,8 @@ Take the first `n` values from a RefChunk.
 
 ```ts
 export declare const take: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -235,8 +235,8 @@ Take the last `n` values from a RefChunk.
 
 ```ts
 export declare const takeRight: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -250,8 +250,8 @@ Take values from a RefChunk while a predicate is true.
 
 ```ts
 export declare const takeWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean): Effect.Effect<Chunk.Chunk<A>, E, R>
 }
 ```
 
@@ -385,13 +385,13 @@ Construct a new RefChunk with the given initial value.
 
 ```ts
 export declare function make<R, E, A>(
-  initial: Effect.Effect<R, E, Chunk.Chunk<A>>,
+  initial: Effect.Effect<Chunk.Chunk<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
+): Effect.Effect<RefChunk<never, E, A>, never, R | Scope.Scope>
 export declare function make<R, E, A>(
   initial: Fx.Fx<R, E, Chunk.Chunk<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
+): Effect.Effect<RefChunk<never, E, A>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0

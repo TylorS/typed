@@ -18,7 +18,7 @@ import {
   setupFromModelAndIntent
 } from "./shared.js"
 
-export const memory = (options: MemoryOptions): Layer.Layer<never, never, Navigation> =>
+export const memory = (options: MemoryOptions): Layer.Layer<Navigation> =>
   Navigation.scoped(
     Effect.gen(function*(_) {
       const getRandomValues = yield* _(GetRandomValues)
@@ -33,7 +33,7 @@ export const memory = (options: MemoryOptions): Layer.Layer<never, never, Naviga
 
 export function initialMemory(
   options: InitialMemoryOptions
-): Layer.Layer<never, never, Navigation> {
+): Layer.Layer<Navigation> {
   return Navigation.scoped(
     Effect.gen(function*(_) {
       const getRandomValues = yield* _(GetRandomValues)
@@ -56,11 +56,7 @@ export function initialMemory(
 
 function setupMemory(
   options: MemoryOptions
-): Effect.Effect<
-  GetRandomValues | Scope.Scope,
-  never,
-  ModelAndIntent
-> {
+): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
   return Effect.gen(function*(_) {
     const state = yield* _(
       RefSubject.fromEffect(

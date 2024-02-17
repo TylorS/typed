@@ -94,7 +94,7 @@ Added in v1.0.0
 
 ```ts
 export interface RenderQueue {
-  readonly add: (part: unknown, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: unknown, task: () => void) => Effect.Effect<void, never, Scope.Scope>
 }
 ```
 
@@ -108,7 +108,7 @@ Added in v1.0.0
 export declare const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices>
+) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices>
 ```
 
 Added in v1.0.0
@@ -151,7 +151,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const server: Layer.Layer<never, never, RenderContext | CurrentEnvironment>
+export declare const server: Layer.Layer<RenderContext | CurrentEnvironment, never, never>
 ```
 
 Added in v1.0.0
@@ -161,7 +161,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const static: Layer.Layer<never, never, RenderContext | CurrentEnvironment>
+export declare const static: Layer.Layer<RenderContext | CurrentEnvironment, never, never>
 ```
 
 Added in v1.0.0

@@ -63,11 +63,11 @@ const UNBOUNDED = { concurrency: "unbounded" } as const
 // TODO: expose FxBase and FxEffectBase
 
 export function make<A>(
-  run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<never, never, unknown>
+  run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<unknown>
 ): Fx<never, never, A>
-export function make<E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<never, never, unknown>): Fx<never, E, A>
-export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A>
-export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<R, never, unknown>): Fx<R, E, A> {
+export function make<E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown>): Fx<never, E, A>
+export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown, never, R>): Fx<R, E, A>
+export function make<R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown, never, R>): Fx<R, E, A> {
   return new Make(run)
 }
 
@@ -76,7 +76,7 @@ class Make<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return Effect.contextWithEffect((ctx) => this._run(Sink.provide(sink, ctx)))
   }
 }
@@ -86,7 +86,7 @@ class Producer<A> extends FxBase<never, never, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, never, A>): Effect.Effect<unknown, never, R2> {
     return SyncProducer.runSink(this.i0, sink)
   }
 }
@@ -112,7 +112,7 @@ class ProducerEffect<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return EffectProducer.runSink(this.i0, sink)
   }
 }
@@ -124,7 +124,7 @@ export function isProducerEffect<R, E, A>(fx: Fx<R, E, A>): fx is ProducerEffect
   return fx.constructor === ProducerEffect
 }
 
-export const fromEffect = <R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A> =>
+export const fromEffect = <R, E, A>(effect: Effect.Effect<A, E, R>): Fx<R, E, A> =>
   matchEffectPrimitive<R, E, A, Fx<R, E, A>>(effect, {
     // Match over Effect primitives and return Fx primitives to allow fusion to take place
     Success: succeed,
@@ -138,12 +138,12 @@ export const fromEffect = <R, E, A>(effect: Effect.Effect<R, E, A>): Fx<R, E, A>
   })
 
 export const fromScheduled = <R, E, I, R2, O>(
-  input: Effect.Effect<R, E, I>,
+  input: Effect.Effect<I, E, R>,
   schedule: Schedule.Schedule<R2, I, O>
 ): Fx<R | R2, E, O> => new ProducerEffect(EffectProducer.FromScheduled(input, schedule))
 
 export const schedule = <R, E, A, R2, O>(
-  input: Effect.Effect<R, E, A>,
+  input: Effect.Effect<A, E, R>,
   schedule: Schedule.Schedule<R2, unknown, O>
 ): Fx<R | R2, E, A> => new ProducerEffect(EffectProducer.Scheduled(input, schedule))
 
@@ -152,7 +152,7 @@ class FailCause<E> extends FxBase<never, E, never> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, never>): Effect.Effect<R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, never>): Effect.Effect<unknown, never, R2> {
     return sink.onFailure(this.i0)
   }
 }
@@ -175,7 +175,7 @@ class Transformer<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(Op.compileOperatorSink(this.i1, sink))
   }
 
@@ -215,7 +215,7 @@ class ProducerSyncTransformer<R, E, A> extends FxBase<R, E, A> implements Fx<R, 
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return SyncProducer.runSink(this.i0, Op.compileOperatorSink(this.i1, sink))
   }
 }
@@ -237,22 +237,22 @@ export const filterMap = <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Optio
 
 export const mapEffect = <R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
+  f: (a: A) => Effect.Effect<B, E2, R2>
 ): Fx<R | R2, E | E2, B> => Transformer.make(fx, EffectOp.MapEffect(f))
 
 export const filterMapEffect = <R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>
+  f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
 ): Fx<R | R2, E | E2, B> => Transformer.make(fx, EffectOp.FilterMapEffect(f))
 
 export const filterEffect = <R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, boolean>
+  f: (a: A) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E | E2, A> => Transformer.make(fx, EffectOp.FilterEffect(f))
 
 export const tapEffect = <R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, unknown>
+  f: (a: A) => Effect.Effect<unknown, E2, R2>
 ): Fx<R | R2, E | E2, A> => Transformer.make(fx, EffectOp.TapEffect(f))
 
 export const loop = <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C> =>
@@ -270,33 +270,33 @@ export const filterMapLoop = <R, E, A, B, C>(
 export const loopEffect = <R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [C, B]>
+  f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
 ): Fx<R | R2, E | E2, C> => Transformer.make(fx, EffectLoopOp.LoopEffectOperator(seed, f))
 
 export const filterMapLoopEffect = <R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (acc: B, a: A) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
 ): Fx<R | R2, E | E2, C> => Transformer.make(fx, EffectLoopOp.FilterMapLoopEffectOperator(seed, f))
 
 export const observe = <R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R | R2, E | E2, void> => Observe.make(fx, f)
+  f: (a: A) => Effect.Effect<B, E2, R2>
+): Effect.Effect<void, E | E2, R | R2> => Observe.make(fx, f)
 
 const constUnit = () => Effect.unit
 
-export const drain = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, void> => Observe.make(fx, constUnit)
+export const drain = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<void, E, R> => Observe.make(fx, constUnit)
 
 class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
   constructor(
     readonly i0: Fx<R, E, A>,
-    readonly i1: (a: A) => Effect.Effect<R2, E2, B>
+    readonly i1: (a: A) => Effect.Effect<B, E2, R2>
   ) {
     super()
   }
 
-  toEffect(): Effect.Effect<R | R2, E | E2, void> {
+  toEffect(): Effect.Effect<void, E | E2, R | R2> {
     return Effect.asyncEffect((resume) => {
       const { i0: fx, i1: f } = this
       const onFailure = (cause: Cause.Cause<E | E2>) => Effect.sync(() => resume(Effect.failCause(cause)))
@@ -310,8 +310,8 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
 
   static make<R, E, A, R2, E2, B>(
     fx: Fx<R, E, A>,
-    f: (a: A) => Effect.Effect<R2, E2, B>
-  ): Effect.Effect<R | R2, E | E2, void> {
+    f: (a: A) => Effect.Effect<B, E2, R2>
+  ): Effect.Effect<void, E | E2, R | R2> {
     if (isEmpty(fx)) {
       return Effect.unit
     } else if (isNever(fx)) {
@@ -320,9 +320,9 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
       return SyncProducer.runEffect(fx.i0, f)
     } else if (isProducerSyncTransformer(fx)) {
       return Op.matchOperator(fx.i1, {
-        SyncOperator: (op): Effect.Effect<R | R2, E | E2, void> =>
+        SyncOperator: (op): Effect.Effect<void, E | E2, R | R2> =>
           SyncOp.matchSyncOperator(op, {
-            Map: (op): Effect.Effect<R | R2, E | E2, void> =>
+            Map: (op): Effect.Effect<void, E | E2, R | R2> =>
               SyncProducer.effectOnce(() => SyncProducer.runEffect(fx.i0, (a) => f(op.f(a)))),
             Filter: (op) =>
               SyncProducer.effectOnce(() =>
@@ -338,7 +338,7 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
           }),
         EffectOperator: (op) =>
           EffectOp.matchEffectOperator(op, {
-            MapEffect: (op): Effect.Effect<R | R2, E | E2, void> =>
+            MapEffect: (op): Effect.Effect<void, E | E2, R | R2> =>
               SyncProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), f)),
             FilterMapEffect: (op) =>
               SyncProducer.runEffect(fx.i0, (a) =>
@@ -394,9 +394,9 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
       return EffectProducer.runEffect(fx.i0, f)
     } else if (isProducerEffectTransformer(fx)) {
       return Op.matchOperator(fx.i1, {
-        SyncOperator: (op): Effect.Effect<R | R2, E | E2, void> =>
+        SyncOperator: (op): Effect.Effect<void, E | E2, R | R2> =>
           SyncOp.matchSyncOperator(op, {
-            Map: (op): Effect.Effect<R | R2, E | E2, void> =>
+            Map: (op): Effect.Effect<void, E | E2, R | R2> =>
               SyncProducer.effectOnce(() => EffectProducer.runEffect(fx.i0, (a) => f(op.f(a)))),
             Filter: (op) =>
               SyncProducer.effectOnce(() =>
@@ -412,7 +412,7 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
           }),
         EffectOperator: (op) =>
           EffectOp.matchEffectOperator(op, {
-            MapEffect: (op): Effect.Effect<R | R2, E | E2, void> =>
+            MapEffect: (op): Effect.Effect<void, E | E2, R | R2> =>
               EffectProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), f)),
             FilterMapEffect: (op) =>
               EffectProducer.runEffect(fx.i0, (a) =>
@@ -472,7 +472,7 @@ class Observe<R, E, A, R2, E2, B> extends EffectBase<R | R2, E | E2, void> {
   }
 }
 
-export const reduce = <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<R, E, B> =>
+export const reduce = <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<B, E, R> =>
   Reduce.make(fx, seed, f)
 
 class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
@@ -480,7 +480,7 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
     super()
   }
 
-  toEffect(): Effect.Effect<R, E, B> {
+  toEffect(): Effect.Effect<B, E, R> {
     return Effect.suspend(() => {
       let acc = this.i1
 
@@ -557,7 +557,7 @@ class Reduce<R, E, A, B> extends EffectBase<R, E, B> {
   }
 }
 
-export const toReadonlyArray = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, ReadonlyArray<A>> =>
+export const toReadonlyArray = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<ReadonlyArray<A>, E, R> =>
   Effect.suspend(() => {
     const init = [] as Array<A>
     return Reduce.make(fx, init, (acc, a) => {
@@ -578,7 +578,7 @@ class Slice<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return Sink.slice(sink, this.i1, (s) => this.i0.run(s))
   }
 
@@ -628,7 +628,7 @@ class ProducerEffectTransformer<R, E, A, R2, E2, B> extends FxBase<R | R2, E | E
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return EffectProducer.runSink(this.i0, Op.compileOperatorSink(this.i1, sink))
   }
 }
@@ -643,7 +643,7 @@ export function isProducerEffectTransformer<R, E, A>(
 }
 
 class Empty extends FxBase<never, never, never> {
-  run<R2>(): Effect.Effect<R2, never, unknown> {
+  run<R2>(): Effect.Effect<unknown, never, R2> {
     return Effect.unit
   }
 }
@@ -658,7 +658,7 @@ export function isEmpty<R, E, A>(fx: Fx<R, E, A>): fx is Empty {
 export const empty: Fx<never, never, never> = new Empty()
 
 class Never extends FxBase<never, never, never> {
-  run<R2>(): Effect.Effect<R2, never, unknown> {
+  run<R2>(): Effect.Effect<unknown, never, R2> {
     return Effect.never
   }
 }
@@ -723,7 +723,7 @@ class PadWith<
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A | B | C>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A | B | C>): Effect.Effect<unknown, never, R | R2> {
     const onSuccess = (a: A | B | C) => sink.onSuccess(a)
 
     return Effect.forEach(this.i1, onSuccess, DISCARD).pipe(
@@ -783,7 +783,7 @@ export function switchMap<R, E, A, R2, E2, B>(
 
 export function switchMapEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
   return switchMap(fx, (a) => fromEffect(f(a)), executionStrategy)
@@ -799,7 +799,7 @@ export function exhaustMap<R, E, A, R2, E2, B>(
 
 export function exhaustMapEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
   return exhaustMap(fx, (a) => fromEffect(f(a)), executionStrategy)
@@ -815,7 +815,7 @@ export function exhaustMapLatest<R, E, A, R2, E2, B>(
 
 export function exhaustMapLatestEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
   return exhaustMapLatest(fx, (a) => fromEffect(f(a)), executionStrategy)
@@ -823,7 +823,7 @@ export function exhaustMapLatestEffect<R, E, A, R2, E2, B>(
 
 export function exhaustFilterMapLatestEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, Option.Option<B>>,
+  f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
   return exhaustMapLatest(fx, (a) =>
@@ -855,7 +855,7 @@ export function concatMap<R, E, A, R2, E2, B>(
 
 export function flatMapConcurrentlyEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   capacity: number,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
@@ -872,7 +872,7 @@ export function flatMap<R, E, A, R2, E2, B>(
 
 export function flatMapEffect<R, E, A, R2, E2, B>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   executionStrategy?: ExecutionStrategy.ExecutionStrategy
 ): Fx<R | R2 | Scope.Scope, E | E2, B> {
   return flatMap(fx, (a) => fromEffect(f(a)), executionStrategy)
@@ -890,9 +890,9 @@ class FlatMapWithStrategy<
     f: (
       fork: FxFork,
       scope: Scope.Scope
-    ) => Effect.Effect<R, E, A>,
+    ) => Effect.Effect<A, E, R>,
     executionStrategy: ExecutionStrategy.ExecutionStrategy
-  ) => Effect.Effect<Scope.Scope | R, E, void>
+  ) => Effect.Effect<void, E, Scope.Scope | R>
 
   constructor(
     readonly i0: Fx<R, E, A>,
@@ -905,7 +905,7 @@ class FlatMapWithStrategy<
     this.withFork = withFlattenStrategy(i2)
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<R | R2 | R3 | Scope.Scope, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
     return this.withFork(
       (fork) =>
         Sink.withEarlyExit(sink, (sink) =>
@@ -959,7 +959,7 @@ class FlatMapWithStrategy<
 }
 
 export function fromFxEffect<R, E, R2, E2, B>(
-  effect: Effect.Effect<R, E, Fx<R2, E2, B>>
+  effect: Effect.Effect<Fx<R2, E2, B>, E, R>
 ): Fx<R | R2, E | E2, B> {
   return new FromFxEffect(effect)
 }
@@ -971,11 +971,11 @@ class FromFxEffect<
   E2,
   B
 > extends FxBase<R | R2, E | E2, B> {
-  constructor(readonly i0: Effect.Effect<R, E, Fx<R2, E2, B>>) {
+  constructor(readonly i0: Effect.Effect<Fx<R2, E2, B>, E, R>) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.matchCauseEffect(this.i0, {
       onFailure: (cause) => sink.onFailure(cause),
       onSuccess: (fx) => fx.run(sink)
@@ -1022,7 +1022,7 @@ class ContinueWith<
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.flatMap(this.i0.run(sink), () => this.i1().run(sink))
   }
 
@@ -1064,7 +1064,7 @@ class OrElseCause<
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.catchAllCause(observe(this.i0, sink.onSuccess), (cause) => this.i1(cause).run(sink))
   }
 
@@ -1099,9 +1099,9 @@ class OrElse<
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.catchAll(
-      Effect.asyncEffect<never, E, void, R | R2 | R3, never, unknown>((resume) =>
+      Effect.asyncEffect<unknown, E, never, void, never, R | R2 | R3>((resume) =>
         Effect.zipRight(
           this.i0.run(
             Sink.make(
@@ -1116,7 +1116,7 @@ class OrElse<
           Effect.sync(() => resume(Effect.unit))
         )
       ),
-      (error) => this.i1(error).run(sink)
+      (error: E) => this.i1(error).run(sink)
     )
   }
 
@@ -1141,7 +1141,7 @@ class Suspend<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0().run(sink)
   }
 }
@@ -1155,7 +1155,7 @@ class SuspendedTransformer<R, E, A, R2, E2, B> extends FxBase<R | R2, E2, B> {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E2, B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E2, B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return this.i0().run(Op.compileOperatorSink(this.i1, sink))
   }
 }
@@ -1220,7 +1220,7 @@ class MergeWithStrategy<
 
   run<R2>(
     sink: Sink.Sink<R2, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  ): Effect.Effect<Fx.Context<FX[number]> | R2, never, unknown> {
+  ): Effect.Effect<unknown, never, Fx.Context<FX[number]> | R2> {
     switch (this.i1._tag) {
       case "Unordered":
         return runUnordered(this.i0, sink, this.i1.concurrency === Infinity ? "unbounded" : this.i1.concurrency)
@@ -1252,7 +1252,7 @@ function runUnordered<
   fx: FX,
   sink: Sink.Sink<R2, any, any>,
   concurrency: number | "unbounded"
-): Effect.Effect<R2 | Fx.Context<FX[number]>, never, unknown> {
+): Effect.Effect<unknown, never, R2 | Fx.Context<FX[number]>> {
   return Effect.forEach(fx, (fx) => fx.run(sink), { concurrency, discard: true })
 }
 
@@ -1263,7 +1263,7 @@ function runOrdered<
   fx: FX,
   sink: Sink.Sink<R2, any, any>,
   concurrency: number | "unbounded"
-): Effect.Effect<R2 | Fx.Context<FX[number]>, never, unknown> {
+): Effect.Effect<unknown, never, R2 | Fx.Context<FX[number]>> {
   return Effect.suspend(
     () => {
       const buffers = withBuffers(fx.length, sink)
@@ -1293,7 +1293,7 @@ function runSwitch<
 >(
   fx: FX,
   sink: Sink.Sink<R2, any, any>
-): Effect.Effect<R2 | Fx.Context<FX[number]>, never, unknown> {
+): Effect.Effect<unknown, never, R2 | Fx.Context<FX[number]>> {
   return Effect.forEach(fx, (fx) => fx.run(sink), { concurrency: 1, discard: true })
 }
 
@@ -1316,7 +1316,7 @@ class TakeWhile<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return Sink.takeWhile(sink, this.i1, (s) => this.i0.run(s))
   }
 
@@ -1347,7 +1347,7 @@ class DropUntil<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(Sink.dropWhile(sink, this.i1))
   }
 
@@ -1371,7 +1371,7 @@ class DropAfter<R, E, A> extends FxBase<R, E, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(Sink.dropAfter(sink, this.i1))
   }
 
@@ -1385,30 +1385,30 @@ class DropAfter<R, E, A> extends FxBase<R, E, A> {
 
 export function takeWhileEffect<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, boolean>
+  f: (a: A) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E | E2, A> {
   return TakeWhileEffect.make(fx, f)
 }
 
 export function takeUntilEffect<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, boolean>
+  f: (a: A) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E | E2, A> {
   return TakeWhileEffect.make(fx, (a) => Effect.map(f(a), Boolean.not))
 }
 
 class TakeWhileEffect<R, E, A, R2, E2> extends FxBase<R | R2, E | E2, A> {
-  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<R2, E2, boolean>) {
+  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<boolean, E2, R2>) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Sink.takeWhileEffect(sink, this.i1, (s) => this.i0.run(s))
   }
 
   static make<R, E, A, R2, E2>(
     fx: Fx<R, E, A>,
-    f: (a: A) => Effect.Effect<R2, E2, boolean>
+    f: (a: A) => Effect.Effect<boolean, E2, R2>
   ): Fx<R | R2, E | E2, A> {
     if (isEmpty(fx) || isNever(fx)) return fx
     else {
@@ -1419,30 +1419,30 @@ class TakeWhileEffect<R, E, A, R2, E2> extends FxBase<R | R2, E | E2, A> {
 
 export function dropWhileEffect<R, E, A>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R, E, boolean>
+  f: (a: A) => Effect.Effect<boolean, E, R>
 ): Fx<R, E, A> {
   return DropWhileEffect.make(fx, f)
 }
 
 export function dropUntilEffect<R, E, A>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R, E, boolean>
+  f: (a: A) => Effect.Effect<boolean, E, R>
 ): Fx<R, E, A> {
   return DropWhileEffect.make(fx, (a) => Effect.map(f(a), Boolean.not))
 }
 
 class DropWhileEffect<R, E, A> extends FxBase<R, E, A> {
-  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<R, E, boolean>) {
+  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<boolean, E, R>) {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(Sink.dropWhileEffect(sink, this.i1))
   }
 
   static make<R, E, A>(
     fx: Fx<R, E, A>,
-    f: (a: A) => Effect.Effect<R, E, boolean>
+    f: (a: A) => Effect.Effect<boolean, E, R>
   ): Fx<R, E, A> {
     if (isEmpty(fx) || isNever(fx)) return fx
     else {
@@ -1453,23 +1453,23 @@ class DropWhileEffect<R, E, A> extends FxBase<R, E, A> {
 
 export function dropAfterEffect<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, boolean>
+  f: (a: A) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E | E2, A> {
   return DropAfterEffect.make(fx, f)
 }
 
 class DropAfterEffect<R, E, A, R2, E2> extends FxBase<R | R2, E | E2, A> {
-  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<R2, E2, boolean>) {
+  constructor(readonly i0: Fx<R, E, A>, readonly i1: (a: A) => Effect.Effect<boolean, E2, R2>) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<unknown, never, R | R2 | R3> {
     return this.i0.run(Sink.dropAfterEffect(sink, this.i1))
   }
 
   static make<R, E, A, R2, E2>(
     fx: Fx<R, E, A>,
-    f: (a: A) => Effect.Effect<R2, E2, boolean>
+    f: (a: A) => Effect.Effect<boolean, E2, R2>
   ): Fx<R | R2, E | E2, A> {
     if (isEmpty(fx) || isNever(fx)) return fx
     else {
@@ -1504,7 +1504,7 @@ class During<R, E, A, R2, E2, R3, E3, B> extends FxBase<R | R2 | R3 | Scope.Scop
     super()
   }
 
-  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, A>): Effect.Effect<R | R2 | R3 | R4 | Scope.Scope, never, unknown> {
+  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, A>): Effect.Effect<unknown, never, R | R2 | R3 | R4 | Scope.Scope> {
     return withScopedFork(
       (fork) =>
         Sink.withEarlyExit(sink, (s) => {
@@ -1551,7 +1551,7 @@ class During<R, E, A, R2, E2, R3, E3, B> extends FxBase<R | R2 | R3 | Scope.Scop
 
 export function middleware<R, E, A, R3>(
   fx: Fx<R, E, A>,
-  effect: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R3, never, unknown>,
+  effect: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R3>,
   sink?: (sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>
 ): Fx<R3, E, A> {
   return new Middleware(fx, effect, sink)
@@ -1559,21 +1559,21 @@ export function middleware<R, E, A, R3>(
 
 export function onExit<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  f: (exit: Exit.Exit<never, unknown>) => Effect.Effect<R2, never, unknown>
+  f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
 ): Fx<R | R2, E, A> {
   return middleware(fx, Effect.onExit(f))
 }
 
 export function onInterrupt<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<R2, never, unknown>
+  f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<unknown, never, R2>
 ): Fx<R | R2, E, A> {
   return middleware(fx, Effect.onInterrupt(f))
 }
 
 export function onError<R, E, A, R2>(
   fx: Fx<R, E, A>,
-  f: (cause: Cause.Cause<never>) => Effect.Effect<R2, never, unknown>
+  f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>
 ): Fx<R | R2, E, A> {
   return middleware(fx, Effect.onError(f))
 }
@@ -1696,13 +1696,13 @@ export function withTracer<R, E, A>(
 class Middleware<R, E, A, R2> extends FxBase<R2, E, A> {
   constructor(
     readonly i0: Fx<R, E, A>,
-    readonly i1: (effect: Effect.Effect<R, never, unknown>) => Effect.Effect<R2, never, unknown>,
+    readonly i1: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R2>,
     readonly i2?: (sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>
   ) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<unknown, never, R2 | R3> {
     return Effect.contextWithEffect((ctx) => {
       const s = Sink.provide(sink, ctx)
 
@@ -1712,23 +1712,23 @@ class Middleware<R, E, A, R2> extends FxBase<R2, E, A> {
 }
 
 export function acquireUseRelease<R, E, A, R2, E2, B, R3, E3, C>(
-  acquire: Effect.Effect<R, E, A>,
+  acquire: Effect.Effect<A, E, R>,
   use: (a: A) => Fx<R2, E2, B>,
-  release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, C>
+  release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
 ): Fx<R | R2 | R3, E | E2 | E3, B> {
   return new AcquireUseRelease(acquire, use, release)
 }
 
 class AcquireUseRelease<R, E, A, R2, E2, B, R3, E3, C> extends FxBase<R | R2 | R3, E | E2 | E3, B> {
   constructor(
-    readonly acquire: Effect.Effect<R, E, A>,
+    readonly acquire: Effect.Effect<A, E, R>,
     readonly use: (a: A) => Fx<R2, E2, B>,
-    readonly release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<R3, E3, C>
+    readonly release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
   ) {
     super()
   }
 
-  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, B>): Effect.Effect<R | R2 | R3 | R4, never, unknown> {
+  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, B>): Effect.Effect<unknown, never, R | R2 | R3 | R4> {
     return Effect.catchAllCause(
       Effect.acquireUseRelease(
         this.acquire,
@@ -1775,7 +1775,7 @@ export function provideContext<R, E, A, R2>(
 
 export function provideLayer<R, E, A, R2, E2, S>(
   fx: Fx<R, E, A>,
-  layer: Layer.Layer<R2, E2, S>
+  layer: Layer.Layer<S, E2, R2>
 ): Fx<R2 | Exclude<R, S>, E | E2, A> {
   return ProvideFx.make(fx, Provide.ProvideLayer(layer))
 }
@@ -1798,16 +1798,16 @@ export function provideService<R, E, A, I, S>(
 export function provideServiceEffect<R, E, A, I, S, R2, E2>(
   fx: Fx<R, E, A>,
   service: Context.Tag<I, S>,
-  instance: Effect.Effect<R2, E2, S>
+  instance: Effect.Effect<S, E2, R2>
 ): Fx<Exclude<R, I> | R2, E | E2, A> {
   return ProvideFx.make(fx, Provide.ProvideServiceEffect(service, instance))
 }
 
 export function provide<R, E, A, R2 = never, E2 = never, S = never>(
   fx: Fx<R, E, A>,
-  provide: Layer.Layer<R2, E2, S> | Context.Context<S> | Runtime.Runtime<S>
+  provide: Layer.Layer<S, E2, R2> | Context.Context<S> | Runtime.Runtime<S>
 ): Fx<Exclude<R, S> | R2, E | E2, A> {
-  if (Layer.isLayer(provide)) return provideLayer(fx, provide as Layer.Layer<R2, E2, S>)
+  if (Layer.isLayer(provide)) return provideLayer(fx, provide as Layer.Layer<S, E2, R2>)
   else if (Context.isContext(provide)) return provideContext(fx, provide as Context.Context<S>)
   else return provideRuntime(fx, provide as Runtime.Runtime<S>)
 }
@@ -1817,7 +1817,7 @@ class ProvideFx<R, E, A, R2, E2, S> extends FxBase<R2 | Exclude<R, S>, E | E2, A
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<R2 | R3 | Exclude<R, S>, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A>): Effect.Effect<unknown, never, R2 | R3 | Exclude<R, S>> {
     return Effect.acquireUseRelease(
       Scope.make(),
       (scope) =>
@@ -1898,14 +1898,14 @@ export function filterMapError<R, E, A, E2>(
 
 export function mapCauseEffect<R, E, A, R2, E2, E3>(
   fx: Fx<R, E, A>,
-  f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Cause.Cause<E3>>
+  f: (cause: Cause.Cause<E>) => Effect.Effect<Cause.Cause<E3>, E2, R2>
 ): Fx<R | R2, E2 | E3, A> {
   return new TransformerCause(fx, EffectOp.MapEffect(f))
 }
 
 export function mapErrorEffect<R, E, A, R2, E2, E3>(
   fx: Fx<R, E, A>,
-  f: (e: E) => Effect.Effect<R2, E2, E3>
+  f: (e: E) => Effect.Effect<E3, E2, R2>
 ): Fx<R | R2, E2 | E3, A> {
   return mapCauseEffect(fx, (cause) =>
     Either.match(Cause.failureOrCause(cause), {
@@ -1916,14 +1916,14 @@ export function mapErrorEffect<R, E, A, R2, E2, E3>(
 
 export function filterCauseEffect<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, boolean>
+  f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E2, A> {
   return new TransformerCause(fx, EffectOp.FilterEffect(f))
 }
 
 export function filterErrorEffect<R, E, A, R2, E2>(
   fx: Fx<R, E, A>,
-  f: (e: E) => Effect.Effect<R2, E2, boolean>
+  f: (e: E) => Effect.Effect<boolean, E2, R2>
 ): Fx<R | R2, E2, A> {
   return filterCauseEffect(fx, (cause) =>
     Either.match(Cause.failureOrCause(cause), {
@@ -1934,14 +1934,14 @@ export function filterErrorEffect<R, E, A, R2, E2>(
 
 export function filterMapCauseEffect<R, E, A, R2, E2, E3>(
   fx: Fx<R, E, A>,
-  f: (cause: Cause.Cause<E>) => Effect.Effect<R2, E2, Option.Option<Cause.Cause<E3>>>
+  f: (cause: Cause.Cause<E>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>
 ): Fx<R | R2, E2 | E3, A> {
   return new TransformerCause(fx, EffectOp.FilterMapEffect(f))
 }
 
 export function filterMapErrorEffect<R, E, A, R2, E2, E3>(
   fx: Fx<R, E, A>,
-  f: (e: E) => Effect.Effect<R2, E2, Option.Option<E3>>
+  f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>
 ): Fx<R | R2, E2 | E3, A> {
   return filterMapCauseEffect(fx, (cause) =>
     Either.match(Cause.failureOrCause(cause), {
@@ -1976,7 +1976,7 @@ export function loopError<R, E, A, B, C>(
 export function loopCauseEffect<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Cause.Cause<C>, B]>
+  f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
 ): Fx<R | R2, E2 | C, A> {
   return new TransformerCause(fx, EffectLoopOp.LoopEffectOperator(seed, f))
 }
@@ -1984,7 +1984,7 @@ export function loopCauseEffect<R, E, A, R2, E2, B, C>(
 export function loopErrorEffect<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [C, B]>
+  f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>
 ) {
   return loopCauseEffect(fx, seed, (b, cause) =>
     Either.match(Cause.failureOrCause(cause), {
@@ -2019,7 +2019,7 @@ export function filterMapLoopError<R, E, A, B, C>(
 export function filterMapLoopCauseEffect<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<R2, E2, readonly [Option.Option<Cause.Cause<C>>, B]>
+  f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
 ): Fx<R | R2, E2 | C, A> {
   return new TransformerCause(fx, EffectLoopOp.FilterMapLoopEffectOperator(seed, f))
 }
@@ -2027,7 +2027,7 @@ export function filterMapLoopCauseEffect<R, E, A, R2, E2, B, C>(
 export function filterMapLoopErrorEffect<R, E, A, R2, E2, B, C>(
   fx: Fx<R, E, A>,
   seed: B,
-  f: (b: B, e: E) => Effect.Effect<R2, E2, readonly [Option.Option<C>, B]>
+  f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
 ) {
   return filterMapLoopCauseEffect(fx, seed, (b, cause) =>
     Either.match(Cause.failureOrCause(cause), {
@@ -2041,7 +2041,7 @@ class TransformerCause<R, E, A, R2, E2> extends FxBase<R | R2, E2, A> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, E2, A>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, E2, A>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(Op.compileOperatorSinkCause(this.i1, sink))
   }
 }
@@ -2167,9 +2167,9 @@ class FlatMapCauseWithStrategy<
     f: (
       fork: FxFork,
       scope: Scope.Scope
-    ) => Effect.Effect<R, E, A>,
+    ) => Effect.Effect<A, E, R>,
     executionStrategy: ExecutionStrategy.ExecutionStrategy
-  ) => Effect.Effect<Scope.Scope | R, E, void>
+  ) => Effect.Effect<void, E, Scope.Scope | R>
 
   constructor(
     readonly i0: Fx<R, E, A>,
@@ -2182,7 +2182,7 @@ class FlatMapCauseWithStrategy<
     this.withFork = withFlattenStrategy(this.i2)
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3 | Scope.Scope, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
     return this.withFork(
       (fork) => this.i0.run(Sink.make((cause) => fork(this.i1(cause).run(sink)), (a) => sink.onSuccess(a))),
       this.i3
@@ -2205,9 +2205,9 @@ class MatchWithStrategy<
     f: (
       fork: FxFork,
       scope: Scope.Scope
-    ) => Effect.Effect<R, E, A>,
+    ) => Effect.Effect<A, E, R>,
     executionStrategy: ExecutionStrategy.ExecutionStrategy
-  ) => Effect.Effect<Scope.Scope | R, E, void>
+  ) => Effect.Effect<void, E, Scope.Scope | R>
 
   constructor(
     readonly i0: Fx<R, E, A>,
@@ -2221,7 +2221,7 @@ class MatchWithStrategy<
     this.withFork = withFlattenStrategy(this.i3)
   }
 
-  run<R4>(sink: Sink.Sink<R4, E2 | E3, B | C>): Effect.Effect<R | R2 | R3 | R4 | Scope.Scope, never, unknown> {
+  run<R4>(sink: Sink.Sink<R4, E2 | E3, B | C>): Effect.Effect<unknown, never, R | R2 | R3 | R4 | Scope.Scope> {
     return this.withFork(
       (fork) =>
         this.i0.run(Sink.make(
@@ -2374,7 +2374,7 @@ class Tuple<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
 
   run<R2>(
     sink: Sink.Sink<R2, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
-  ): Effect.Effect<Fx.Context<FX[number]> | R2, never, unknown> {
+  ): Effect.Effect<unknown, never, Fx.Context<FX[number]> | R2> {
     return tupleSink(
       sink,
       (onSuccess) =>
@@ -2437,16 +2437,16 @@ export function all<const FX extends ReadonlyArray<Fx<any, any, any> | Readonly<
 
 export function exit<R, E, A>(
   fx: Fx<R, E, A>
-): Fx<R, never, Exit.Exit<E, A>> {
+): Fx<R, never, Exit.Exit<A, E>> {
   return new ExitFx(fx)
 }
 
-class ExitFx<R, E, A> extends FxBase<R, never, Exit.Exit<E, A>> {
+class ExitFx<R, E, A> extends FxBase<R, never, Exit.Exit<A, E>> {
   constructor(readonly i0: Fx<R, E, A>) {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, never, Exit.Exit<E, A>>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, never, Exit.Exit<A, E>>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(
       Sink.make((cause) => sink.onSuccess(Exit.failCause(cause)), (a) => sink.onSuccess(Exit.succeed(a)))
     )
@@ -2485,10 +2485,10 @@ class FromAsyncIterable<A> extends FxBase<never, never, A> {
     super()
   }
 
-  run<R>(sink: Sink.Sink<R, never, A>): Effect.Effect<R, never, unknown> {
+  run<R>(sink: Sink.Sink<R, never, A>): Effect.Effect<unknown, never, R> {
     return Effect.asyncEffect((cb) => {
       const iterator = this.i0[Symbol.asyncIterator]()
-      const loop = (result: IteratorResult<A>): Effect.Effect<R, never, unknown> =>
+      const loop = (result: IteratorResult<A>): Effect.Effect<unknown, never, R> =>
         result.done
           ? Effect.sync(() => cb(Effect.unit))
           : Effect.zipRight(sink.onSuccess(result.value), Effect.flatMap(Effect.promise(() => iterator.next()), loop))
@@ -2501,13 +2501,13 @@ class FromAsyncIterable<A> extends FxBase<never, never, A> {
   }
 }
 
-export function findFirst<R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<R, E, A> {
+export function findFirst<R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<A, E, R> {
   return Effect.asyncEffect((cb) =>
     observe(fx, (a) => predicate(a) ? Effect.sync(() => cb(Effect.succeed(a))) : Effect.unit)
   )
 }
 
-export function first<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<R, E, A> {
+export function first<R, E, A>(fx: Fx<R, E, A>): Effect.Effect<A, E, R> {
   return findFirst(fx, constTrue)
 }
 
@@ -2520,7 +2520,7 @@ class EitherFx<R, E, A> extends FxBase<R, never, Either.Either<E, A>> {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<R2, never, Either.Either<E, A>>): Effect.Effect<R | R2, never, unknown> {
+  run<R2>(sink: Sink.Sink<R2, never, Either.Either<E, A>>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(
       Sink.make(
         (cause) =>
@@ -2553,7 +2553,7 @@ class MergeRace<R, E, A, R2, E2, B> extends FxBase<R | R2, E | E2, A | B> {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, A | B>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.gen(this, function*(_) {
       const fiber1 = yield* _(Effect.fork(this.i0.run(Sink.make(
         sink.onFailure,
@@ -2594,13 +2594,13 @@ class RaceAll<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
 
   run<R2>(
     sink: Sink.Sink<R2, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
-  ): Effect.Effect<Fx.Context<FX[number]> | R2, never, unknown> {
+  ): Effect.Effect<unknown, never, Fx.Context<FX[number]> | R2> {
     return Effect.gen(this, function*(_) {
-      const winner = yield* _(Deferred.make<never, Fiber.RuntimeFiber<never, unknown>>())
-      const fibers: Array<Fiber.RuntimeFiber<never, unknown>> = []
+      const winner = yield* _(Deferred.make<Fiber.RuntimeFiber<unknown>>())
+      const fibers: Array<Fiber.RuntimeFiber<unknown>> = []
 
       for (const fx of this.i0) {
-        const fiber: Fiber.RuntimeFiber<never, unknown> = yield* _(Effect.fork(fx.run(Sink.make(
+        const fiber: Fiber.RuntimeFiber<unknown> = yield* _(Effect.fork(fx.run(Sink.make(
           sink.onFailure,
           (a) => Effect.flatMap(Deferred.succeed(winner, fiber), () => sink.onSuccess(a))
         ))))
@@ -2640,7 +2640,7 @@ class Snapshot<R, E, A, R2, E2, B, C> extends FxBase<R | R2, E | E2, C> {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, C>): Effect.Effect<R | R2 | R3, never, unknown> {
+  run<R3>(sink: Sink.Sink<R3, E | E2, C>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.flatMap(
       Ref.make(Option.none<B>()),
       (ref) =>
@@ -2668,7 +2668,7 @@ class Snapshot<R, E, A, R2, E2, B, C> extends FxBase<R | R2, E | E2, C> {
 export function snapshotEffect<R, E, A, R2, E2, B, R3, E3, C>(
   fx: Fx<R, E, A>,
   sampled: Fx<R2, E2, B>,
-  f: (a: A, b: B) => Effect.Effect<R3, E3, C>
+  f: (a: A, b: B) => Effect.Effect<C, E3, R3>
 ): Fx<R | R2 | R3, E | E2 | E3, C> {
   return new SnapshotEffect(fx, sampled, f)
 }
@@ -2677,12 +2677,12 @@ class SnapshotEffect<R, E, A, R2, E2, B, R3, E3, C> extends FxBase<R | R2 | R3, 
   constructor(
     readonly i0: Fx<R, E, A>,
     readonly i1: Fx<R2, E2, B>,
-    readonly i2: (a: A, b: B) => Effect.Effect<R3, E3, C>
+    readonly i2: (a: A, b: B) => Effect.Effect<C, E3, R3>
   ) {
     super()
   }
 
-  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, C>): Effect.Effect<R | R2 | R3 | R4, never, unknown> {
+  run<R4>(sink: Sink.Sink<R4, E | E2 | E3, C>): Effect.Effect<unknown, never, R | R2 | R3 | R4> {
     return Effect.flatMap(
       Ref.make(Option.none<B>()),
       (ref) =>

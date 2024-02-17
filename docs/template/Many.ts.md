@@ -57,7 +57,7 @@ export declare const manyAsyncData: {
       Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, readonly A[]>>
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>
   ) => Fx.Fx<
     R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>,
     E | Fx.Fx.Error<NoData> | Fx.Fx.Error<Loading> | Fx.Fx.Error<Failure> | Fx.Fx.Error<Success>,
@@ -74,7 +74,7 @@ export declare const manyAsyncData: {
     Failure extends Fx.Fx<any, any, any>,
     Success extends Fx.Fx<any, any, any>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, readonly A[]>>,
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>,
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData

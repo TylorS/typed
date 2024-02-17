@@ -1,4 +1,5 @@
 import * as Equivalence from "@effect/schema/Equivalence"
+import type { ParseError } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import * as AsyncData from "@typed/async-data/AsyncData"
 import * as AsyncDataSchema from "@typed/async-data/Schema"
@@ -78,10 +79,10 @@ describe("AsyncData", () => {
   })
 
   it("map", () => {
-    equalAsyncData(AsyncData.map(AsyncData.noData<string, number>(), (n) => n + 1), AsyncData.noData())
-    equalAsyncData(AsyncData.map(AsyncData.loading<string, number>(), (n) => n + 1), AsyncData.loading())
-    equalAsyncData(AsyncData.map(AsyncData.fail<string, number>("error"), (n) => n + 1), AsyncData.fail("error"))
-    equalAsyncData(AsyncData.map(AsyncData.success<string, number>(1), (n) => n + 1), AsyncData.success(2))
+    equalAsyncData(AsyncData.map(AsyncData.noData<number, string>(), (n) => n + 1), AsyncData.noData())
+    equalAsyncData(AsyncData.map(AsyncData.loading<number, string>(), (n) => n + 1), AsyncData.loading())
+    equalAsyncData(AsyncData.map(AsyncData.fail<number, string>("error"), (n) => n + 1), AsyncData.fail("error"))
+    equalAsyncData(AsyncData.map(AsyncData.success<number, string>(1), (n) => n + 1), AsyncData.success(2))
     equalAsyncData(
       AsyncData.map(AsyncData.optimistic(AsyncData.noData(), 1), (n) => n + 1),
       AsyncData.optimistic(AsyncData.noData(), 2)
@@ -102,19 +103,19 @@ describe("AsyncData", () => {
 
   it("flatMap", () => {
     equalAsyncData(
-      AsyncData.flatMap(AsyncData.noData<string, number>(), (n) => AsyncData.success(n + 1)),
+      AsyncData.flatMap(AsyncData.noData<number, string>(), (n) => AsyncData.success(n + 1)),
       AsyncData.noData()
     )
     equalAsyncData(
-      AsyncData.flatMap(AsyncData.loading<string, number>(), (n) => AsyncData.success(n + 1)),
+      AsyncData.flatMap(AsyncData.loading<number, string>(), (n) => AsyncData.success(n + 1)),
       AsyncData.loading()
     )
     equalAsyncData(
-      AsyncData.flatMap(AsyncData.fail<string, number>("error"), (n) => AsyncData.success(n + 1)),
+      AsyncData.flatMap(AsyncData.fail<number, string>("error"), (n) => AsyncData.success(n + 1)),
       AsyncData.fail("error")
     )
     equalAsyncData(
-      AsyncData.flatMap(AsyncData.success<string, number>(1), (n) => AsyncData.success(n + 1)),
+      AsyncData.flatMap(AsyncData.success<number, string>(1), (n) => AsyncData.success(n + 1)),
       AsyncData.success(2)
     )
 
@@ -213,7 +214,7 @@ describe("AsyncData", () => {
   describe("Schema", () => {
     describe(AsyncDataSchema.asyncDataFromJson, () => {
       it("encodes/decodes AsyncData JSON", async () => {
-        const schema = AsyncDataSchema.asyncDataFromJson(Schema.NumberFromString, Schema.bigint)
+        const schema = AsyncDataSchema.asyncDataFromJson(Schema.bigint, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {
@@ -248,7 +249,7 @@ describe("AsyncData", () => {
 
     describe(AsyncDataSchema.asyncDataFromSelf, () => {
       it("encodes/decodes AsyncData values", async () => {
-        const schema = AsyncDataSchema.asyncDataFromSelf(Schema.NumberFromString, Schema.bigint)
+        const schema = AsyncDataSchema.asyncDataFromSelf(Schema.bigint, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {
@@ -278,7 +279,7 @@ describe("AsyncData", () => {
 
     describe(AsyncDataSchema.asyncData, () => {
       it("encodes/decodes AsyncData from JSON", async () => {
-        const schema = AsyncDataSchema.asyncData(Schema.NumberFromString, Schema.bigint)
+        const schema = AsyncDataSchema.asyncData(Schema.bigint, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {
@@ -313,7 +314,11 @@ describe("AsyncData", () => {
   })
 })
 
-function encodeDecodeAreDual<R, I, O>(schema: Schema.Schema<R, I, O>, input: I, output: O) {
+function encodeDecodeAreDual<O, I, R>(
+  schema: Schema.Schema<O, I, R>,
+  input: I,
+  output: O
+): Effect.Effect<void, ParseError, R> {
   return Effect.gen(function*(_) {
     const encode = Schema.encode(schema)
     const decode = Schema.decode(schema)

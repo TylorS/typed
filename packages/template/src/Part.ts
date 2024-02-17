@@ -33,7 +33,7 @@ export interface AttributePart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -45,7 +45,7 @@ export interface BooleanPart {
   readonly value: boolean | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -56,7 +56,7 @@ export interface ClassNamePart {
   readonly value: ReadonlyArray<string> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -67,7 +67,7 @@ export interface DataPart {
   readonly value: Readonly<Record<string, string | undefined>> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -79,7 +79,7 @@ export interface EventPart {
   readonly source: ElementSource<any>
   readonly value: null
   readonly index: number
-  readonly onCause: (cause: Cause<unknown>) => Effect<never, never, unknown>
+  readonly onCause: (cause: Cause<unknown>) => Effect<unknown>
   readonly addEventListener: (handler: EventHandler<never, never, Event>) => void
 }
 
@@ -92,7 +92,7 @@ export interface PropertyPart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -112,7 +112,7 @@ export interface CommentPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -123,7 +123,7 @@ export interface TextPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -134,7 +134,7 @@ export interface NodePart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -145,7 +145,7 @@ export interface PropertiesPart {
   readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<Scope, never, void>
+  readonly update: (value: this["value"]) => Effect<void, never, Scope>
 }
 
 /**
@@ -161,7 +161,7 @@ export interface SparseAttributePart {
   readonly name: string
   readonly parts: ReadonlyArray<AttributePart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>) => Effect<Scope, never, void>
+  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
 }
 
 /**
@@ -171,7 +171,7 @@ export interface SparseClassNamePart {
   readonly _tag: "sparse/className"
   readonly parts: ReadonlyArray<ClassNamePart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>) => Effect<Scope, never, void>
+  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
 }
 
 /**
@@ -181,7 +181,7 @@ export interface SparseCommentPart {
   readonly _tag: "sparse/comment"
   readonly parts: ReadonlyArray<CommentPart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>) => Effect<Scope, never, void>
+  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
 }
 
 /**

@@ -1,6 +1,7 @@
-import * as Http from "@effect/platform-node/HttpServer"
+import * as Server from "@effect/platform-node/Http/Server"
 import * as NodeContext from "@effect/platform-node/NodeContext"
-import { runMain } from "@effect/platform-node/Runtime"
+import { runMain } from "@effect/platform-node/NodeRuntime"
+import * as HttpServer from "@effect/platform/HttpServer"
 import { html, RenderContext } from "@typed/template"
 import { htmlResponse } from "@typed/template/Platform"
 import { Effect, Layer } from "effect"
@@ -16,15 +17,13 @@ const template = html`<!DOCTYPE html>
   </body>
 </html>`
 
-const server = Http.router.empty.pipe(
-  Http.router.get("/", htmlResponse(template)),
-  Http.server.serve(Http.middleware.logger)
+const server = HttpServer.router.empty.pipe(
+  HttpServer.router.get("/", htmlResponse(template)),
+  HttpServer.server.serve(HttpServer.middleware.logger)
 )
 
-const ServerLive = Http.server.layer(() => createServer(), { port: 3000 })
-
 const HttpLive = server.pipe(
-  Layer.provide(ServerLive),
+  Layer.provide(Server.layer(() => createServer(), { port: 3000 })),
   Layer.provide(NodeContext.layer),
   Layer.provide(RenderContext.server)
 )

@@ -349,7 +349,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
       ): Effect.Effect<
         AsyncDataFrom<A, E>,
         ParseResult.ParseIssue,
-        R1 | R2
+        never
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<AI, EI>(input)) {
@@ -389,7 +389,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
       ): Effect.Effect<
         AsyncDataFrom<AI, EI>,
         ParseResult.ParseIssue,
-        R1 | R2
+        never
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<A, E>(input)) {
@@ -469,7 +469,7 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       ): Effect.Effect<
         AsyncData.AsyncData<A, E>,
         ParseResult.ParseIssue,
-        R1 | R2
+        never
       > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData<AI, EI>(input)) {
@@ -520,7 +520,7 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       ): Effect.Effect<
         AsyncData.AsyncData<AI, EI>,
         ParseResult.ParseIssue,
-        R1 | R2
+        never
       > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData<A, E>(input)) {

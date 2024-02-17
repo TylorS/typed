@@ -37,7 +37,7 @@ export type CoreDomServices = DomServices | CoreServices
 export function fromWindow(
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-): Layer.Layer<never, never, CoreDomServices> {
+): Layer.Layer<CoreDomServices> {
   const getRandomValues = (length: number) => window.crypto.getRandomValues(new Uint8Array(length))
   return Layer.provideMerge(
     Layer.mergeAll(

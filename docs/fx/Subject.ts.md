@@ -36,8 +36,8 @@ Subject is an Fx type which can also be imperatively pushed into.
 
 ```ts
 export interface Subject<out R, in out E, in out A> extends Push<R, E, A, R | Scope.Scope, E, A>, Pipeable.Pipeable {
-  readonly subscriberCount: Effect.Effect<R, never, number>
-  readonly interrupt: Effect.Effect<R, never, void>
+  readonly subscriberCount: Effect.Effect<number, never, R>
+  readonly interrupt: Effect.Effect<void, never, R>
 }
 ```
 
@@ -55,7 +55,7 @@ Added in v1.20.0
 export interface Tagged<I, E, A> extends Subject<I, E, A> {
   readonly tag: C.Tagged<I, Subject<never, E, A>>
 
-  readonly make: (replay?: number) => Layer.Layer<never, never, I>
+  readonly make: (replay?: number) => Layer.Layer<I>
   readonly provide: Provide<I>
 }
 ```
@@ -76,13 +76,13 @@ export type Provide<I> = <
       fxOrEffect: T
     ) => [T] extends [Fx<infer R2, infer E2, infer B>]
       ? Fx<Exclude<R2, I>, E2, B>
-      : [T] extends [Effect.Effect<infer R2, infer E2, infer B>]
-        ? Effect.Effect<Exclude<R2, I>, E2, B>
+      : [T] extends [Effect.Effect<infer B, infer E2, infer R2>]
+        ? Effect.Effect<B, E2, Exclude<R2, I>>
         : never
   : Args extends readonly [Fx<infer R2, infer E2, infer B>]
     ? Fx<Exclude<R2, I>, E2, B>
-    : Args extends readonly [Effect.Effect<infer R2, infer E2, infer B>]
-      ? Effect.Effect<Exclude<R2, I>, E2, B>
+    : Args extends readonly [Effect.Effect<infer B, infer E2, infer R2>]
+      ? Effect.Effect<B, E2, Exclude<R2, I>>
       : never
 ```
 
@@ -103,7 +103,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function make<E, A>(replay?: number): Effect.Effect<Scope.Scope, never, Subject<never, E, A>>
+export declare function make<E, A>(replay?: number): Effect.Effect<Subject<never, E, A>, never, Scope.Scope>
 ```
 
 Added in v1.20.0

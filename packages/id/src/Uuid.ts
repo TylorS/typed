@@ -48,12 +48,12 @@ export type UuidSeed = readonly [
 /**
  * @since 1.0.0
  */
-export const makeUuidSeed: Effect.Effect<GetRandomValues, never, UuidSeed> = GetRandomValues.apply(32) as any
+export const makeUuidSeed: Effect.Effect<UuidSeed, never, GetRandomValues> = GetRandomValues.apply(32) as any
 
 /**
  * @since 1.0.0
  */
-export const makeUuid: Effect.Effect<GetRandomValues, never, Uuid> = Effect.map(makeUuidSeed, uuid4)
+export const makeUuid: Effect.Effect<Uuid, never, GetRandomValues> = Effect.map(makeUuidSeed, uuid4)
 
 /**
  * Convert array of 16 byte values to UUID string format of the form:

@@ -66,13 +66,13 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
    * Get the current state of the Model
    * @since 1.0.0
    */
-  readonly get: Effect.Effect<Model.Identifier<this>, never, Model.State<this>>
+  readonly get: Effect.Effect<Model.State<this>, never, Model.Identifier<this>>
 
   /**
    * Set the state of the Model
    * @since 1.0.0
    */
-  readonly set: (state: Model.State<this>) => Effect.Effect<Model.Identifier<this>, never, void>
+  readonly set: (state: Model.State<this>) => Effect.Effect<void, never, Model.Identifier<this>>
 
   /**
    * Update the state of the Model
@@ -80,7 +80,7 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
    */
   readonly update: (
     f: (state: Model.State<this>) => Model.State<this>
-  ) => Effect.Effect<Model.Identifier<this>, never, void>
+  ) => Effect.Effect<void, never, Model.Identifier<this>>
 
   /**
    * Modify the state of the Model and return a value
@@ -88,7 +88,7 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
    */
   readonly modify: <B>(
     f: (state: Model.State<this>) => readonly [B, Model.State<this>]
-  ) => Effect.Effect<Model.Identifier<this>, never, B>
+  ) => Effect.Effect<B, never, Model.Identifier<this>>
 
   /**
    * Provide a Model to an Effect
@@ -96,15 +96,15 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
    */
   readonly provide: (
     state: Model.State<this>
-  ) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, Model.Identifier<this>> | Scope, E, B>
+  ) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, Model.Identifier<this>> | Scope>
 
   /**
    * Construct a Layer to provide a Model to an Effect
    * @since 1.0.0
    */
   readonly layer: <R, E>(
-    effect: Effect.Effect<R, E, Model.State<this>>
-  ) => Layer.Layer<Exclude<R, Scope>, E, Model.Identifier<this>>
+    effect: Effect.Effect<Model.State<this>, E, R>
+  ) => Layer.Layer<Model.Identifier<this>, E, Exclude<R, Scope>>
 }
 ```
 

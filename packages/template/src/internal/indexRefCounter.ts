@@ -3,19 +3,15 @@ import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 
 export type IndexRefCounter = {
-  release: (index: number) => Effect.Effect<never, never, void>
-  wait: Effect.Effect<never, never, void>
+  release: (index: number) => Effect.Effect<void>
+  wait: Effect.Effect<void>
 }
 
 /**
  * @internal
  */
-export function indexRefCounter(expected: number): Effect.Effect<
-  never,
-  never,
-  IndexRefCounter
-> {
-  return Effect.map(Deferred.make<never, void>(), (deferred) => {
+export function indexRefCounter(expected: number): Effect.Effect<IndexRefCounter> {
+  return Effect.map(Deferred.make<void>(), (deferred) => {
     const done = Deferred.succeed(deferred, undefined)
     const indexes = new Set<number>(Array.from({ length: expected }, (_, i) => i))
 
@@ -33,24 +29,20 @@ export function indexRefCounter(expected: number): Effect.Effect<
       release,
       wait: Deferred.await(deferred)
     }
-  })
+  });
 }
 
 export type IndexRefCounter2 = {
-  release: (index: number) => Effect.Effect<never, never, void>
-  expect: (count: number) => Effect.Effect<never, never, boolean>
-  wait: Effect.Effect<never, never, void>
+  release: (index: number) => Effect.Effect<void>
+  expect: (count: number) => Effect.Effect<boolean>
+  wait: Effect.Effect<void>
 }
 
 /**
  * @internal
  */
-export function indexRefCounter2(): Effect.Effect<
-  never,
-  never,
-  IndexRefCounter2
-> {
-  return Effect.map(Deferred.make<never, void>(), (deferred) => {
+export function indexRefCounter2(): Effect.Effect<IndexRefCounter2> {
+  return Effect.map(Deferred.make<void>(), (deferred) => {
     let expected: Option.Option<number> = Option.none<number>()
     const done = Deferred.succeed(deferred, undefined)
     const indexes = new Set<number>()
@@ -90,5 +82,5 @@ export function indexRefCounter2(): Effect.Effect<
       expect,
       wait: Deferred.await(deferred)
     }
-  })
+  });
 }

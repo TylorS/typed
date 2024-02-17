@@ -16,11 +16,11 @@ export interface EventSource {
     handler: Handler<Ev>
   ) => void
 
-  readonly setup: (rendered: Rendered, scope: Scope.Scope) => Effect.Effect<never, never, void>
+  readonly setup: (rendered: Rendered, scope: Scope.Scope) => Effect.Effect<void>
 }
 
 type Entry = readonly [Element, Handler<any>]
-type Run = <E, A>(effect: Effect.Effect<never, E, A>) => Fiber.RuntimeFiber<E, A>
+type Run = <E, A>(effect: Effect.Effect<A, E>) => Fiber.RuntimeFiber<A, E>
 
 const disposable = (f: () => void): Disposable => ({
   [Symbol.dispose]: f
@@ -130,7 +130,7 @@ export function makeEventSource(): EventSource {
       const disposables: Array<Disposable> = []
       const fibers = new Map<symbol, Fiber.RuntimeFiber<any, any>>()
       const runFork = Runtime.runFork(runtime)
-      const run: Run = <E, A>(effect: Effect.Effect<never, E, A>) => {
+      const run: Run = <E, A>(effect: Effect.Effect<A, E>) => {
         const id = Symbol()
         const fiber = runFork(Effect.onExit(effect, () => Effect.sync(() => fibers.delete(id))))
         fibers.set(id, fiber)

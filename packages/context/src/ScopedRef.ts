@@ -19,14 +19,14 @@ export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
   readonly [S.ScopedRefTypeId]: S.ScopedRefTypeId
 
   // ScopedRef Operators
-  readonly get: Effect.Effect<I, never, A>
-  readonly set: <R, E>(acquire: Effect.Effect<R, E, A>) => Effect.Effect<R | I, E, void>
+  readonly get: Effect.Effect<A, never, I>
+  readonly set: <R, E>(acquire: Effect.Effect<A, E, R>) => Effect.Effect<void, E, R | I>
 
   // Provision
-  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<R, E, B>) => Effect.Effect<Exclude<R, I> | Scope, E, B>
+  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I> | Scope>
   readonly layer: <R2, E2>(
-    effect: Effect.Effect<R2, E2, A>
-  ) => Layer.Layer<Exclude<R2, Scope>, E2, I>
+    effect: Effect.Effect<A, E2, R2>
+  ) => Layer.Layer<I, E2, Exclude<R2, Scope>>
 }
 
 /**
@@ -44,11 +44,11 @@ export function ScopedRef<A>(): {
     const tag = Tag<I, S.ScopedRef<A>>(id)
 
     const withRef = <R2, E2, B>(
-      f: (ref: S.ScopedRef<A>) => Effect.Effect<R2, E2, B>
+      f: (ref: S.ScopedRef<A>) => Effect.Effect<B, E2, R2>
     ) => Effect.flatMap(tag, f)
 
     const get = withRef(S.get)
-    const set = <R, E>(a: Effect.Effect<R, E, A>) => withRef(S.set(a))
+    const set = <R, E>(a: Effect.Effect<A, E, R>) => withRef(S.set(a))
 
     const actions: Omit<ScopedRef<IdentifierOf<I>, A>, keyof typeof tag> = {
       [S.ScopedRefTypeId]: S.ScopedRefTypeId,

@@ -35,45 +35,45 @@ export interface Navigation {
   readonly navigate: (
     url: string | URL,
     options?: NavigateOptions
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<Destination, NavigationError>
 
-  readonly back: (options?: { readonly info?: unknown }) => Effect.Effect<never, NavigationError, Destination>
+  readonly back: (options?: { readonly info?: unknown }) => Effect.Effect<Destination, NavigationError>
 
-  readonly forward: (options?: { readonly info?: unknown }) => Effect.Effect<never, NavigationError, Destination>
+  readonly forward: (options?: { readonly info?: unknown }) => Effect.Effect<Destination, NavigationError>
 
   readonly traverseTo: (
     key: Destination["key"],
     options?: { readonly info?: unknown }
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<Destination, NavigationError>
 
   readonly updateCurrentEntry: (
     options: { readonly state: unknown }
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<Destination, NavigationError>
 
   readonly reload: (
     options?: { readonly info?: unknown; readonly state?: unknown }
-  ) => Effect.Effect<never, NavigationError, Destination>
+  ) => Effect.Effect<Destination, NavigationError>
 
   readonly beforeNavigation: <R = never, R2 = never>(
     handler: BeforeNavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 
   readonly onNavigation: <R = never, R2 = never>(
     handler: NavigationHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 
   readonly submit: (
     data: FormData,
     formInput?: Simplify<Omit<FormInputFrom, "data">>
   ) => Effect.Effect<
-    HttpClient.client.Client.Default,
+    Option.Option<HttpClient.response.ClientResponse>,
     NavigationError | HttpClient.error.HttpClientError,
-    Option.Option<HttpClient.response.ClientResponse>
+    Scope.Scope | HttpClient.client.Client.Default
   >
 
   readonly onFormData: <R = never, R2 = never>(
     handler: FormDataHandler<R, R2>
-  ) => Effect.Effect<R | R2 | Scope.Scope, never, void>
+  ) => Effect.Effect<void, never, R | R2 | Scope.Scope>
 }
 
 /**
@@ -203,11 +203,11 @@ export interface NavigationEvent extends Schema.Schema.To<typeof NavigationEvent
 export type BeforeNavigationHandler<R, R2> = (
   event: BeforeNavigationEvent
 ) => Effect.Effect<
-  R,
-  RedirectError | CancelNavigation,
   Option.Option<
-    Effect.Effect<R2, RedirectError | CancelNavigation, unknown>
-  >
+    Effect.Effect<unknown, RedirectError | CancelNavigation, R2>
+  >,
+  RedirectError | CancelNavigation,
+  R
 >
 
 /**
@@ -216,11 +216,11 @@ export type BeforeNavigationHandler<R, R2> = (
 export type NavigationHandler<R, R2> = (
   event: NavigationEvent
 ) => Effect.Effect<
-  R,
-  never,
   Option.Option<
-    Effect.Effect<R2, never, unknown>
-  >
+    Effect.Effect<unknown, never, R2>
+  >,
+  never,
+  R
 >
 
 /**
@@ -229,11 +229,11 @@ export type NavigationHandler<R, R2> = (
 export type FormDataHandler<R, R2> = (
   event: FormDataEvent
 ) => Effect.Effect<
-  R,
-  RedirectError | CancelNavigation,
   Option.Option<
-    Effect.Effect<R2, RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>
-  >
+    Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation, R2>
+  >,
+  RedirectError | CancelNavigation,
+  R
 >
 
 /**
@@ -400,12 +400,12 @@ export function isCancelNavigation(e: unknown): e is CancelNavigation {
 export const navigate = (
   url: string | URL,
   options?: NavigateOptions
-): Effect.Effect<Navigation, NavigationError, Destination> => Navigation.withEffect((n) => n.navigate(url, options))
+): Effect.Effect<Destination, NavigationError, Navigation> => Navigation.withEffect((n) => n.navigate(url, options))
 
 /**
  * @since 1.0.0
  */
-export const back: (options?: { readonly info?: unknown }) => Effect.Effect<Navigation, NavigationError, Destination> =
+export const back: (options?: { readonly info?: unknown }) => Effect.Effect<Destination, NavigationError, Navigation> =
   (opts) => Navigation.withEffect((n) => n.back(opts))
 
 /**
@@ -413,7 +413,7 @@ export const back: (options?: { readonly info?: unknown }) => Effect.Effect<Navi
  */
 export const forward: (
   options?: { readonly info?: unknown }
-) => Effect.Effect<Navigation, NavigationError, Destination> = (
+) => Effect.Effect<Destination, NavigationError, Navigation> = (
   opts
 ) => Navigation.withEffect((n) => n.forward(opts))
 
@@ -423,7 +423,7 @@ export const forward: (
 export const traverseTo: (
   key: Uuid,
   options?: { readonly info?: unknown }
-) => Effect.Effect<Navigation, NavigationError, Destination> = (key, opts) =>
+) => Effect.Effect<Destination, NavigationError, Navigation> = (key, opts) =>
   Navigation.withEffect((n) => n.traverseTo(key, opts))
 
 /**
@@ -431,7 +431,7 @@ export const traverseTo: (
  */
 export const updateCurrentEntry: (
   options: { readonly state: unknown }
-) => Effect.Effect<Navigation, NavigationError, Destination> = (opts) =>
+) => Effect.Effect<Destination, NavigationError, Navigation> = (opts) =>
   Navigation.withEffect((n) => n.updateCurrentEntry(opts))
 
 /**
@@ -439,7 +439,7 @@ export const updateCurrentEntry: (
  */
 export const reload: (
   options?: { readonly info?: unknown; readonly state?: unknown }
-) => Effect.Effect<Navigation, NavigationError, Destination> = (
+) => Effect.Effect<Destination, NavigationError, Navigation> = (
   opts
 ) => Navigation.withEffect((n) => n.reload(opts))
 
@@ -508,9 +508,9 @@ export function submit(
   data: FormData,
   formInput?: Simplify<Omit<FormInputFrom, "data">>
 ): Effect.Effect<
-  Navigation | HttpClient.client.Client.Default,
+  Option.Option<HttpClient.response.ClientResponse>,
   NavigationError | HttpClient.error.HttpClientError,
-  Option.Option<HttpClient.response.ClientResponse>
+  Navigation | HttpClient.client.Client.Default | Scope.Scope
 > {
   return Navigation.withEffect((n) => n.submit(data, formInput))
 }
@@ -520,6 +520,6 @@ export function submit(
  */
 export function onFormData<R = never, R2 = never>(
   handler: FormDataHandler<R, R2>
-): Effect.Effect<Navigation | R | R2 | Scope.Scope, never, void> {
+): Effect.Effect<void, never, Navigation | R | R2 | Scope.Scope> {
   return Navigation.withEffect((n) => n.onFormData(handler))
 }

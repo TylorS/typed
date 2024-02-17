@@ -18,13 +18,13 @@ import { Tag } from "./Tag.js"
  * @category models
  */
 export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
-  readonly get: (key: K) => Effect<I, E, A>
+  readonly get: (key: K) => Effect<A, E, I>
 
-  readonly getEither: (key: K) => Effect<I, E, Either<A, A>>
+  readonly getEither: (key: K) => Effect<Either<A, A>, E, I>
 
-  readonly refresh: (key: K) => Effect<I, E, void>
+  readonly refresh: (key: K) => Effect<void, E, I>
 
-  readonly set: (key: K, value: A) => Effect<I, never, void>
+  readonly set: (key: K, value: A) => Effect<void, never, I>
 
   readonly make: <R>(
     options: {
@@ -32,15 +32,15 @@ export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
       readonly timeToLive: DurationInput
       readonly lookup: C.Lookup<K, R, E, A>
     }
-  ) => Layer.Layer<R, never, I>
+  ) => Layer.Layer<I, never, R>
 
   readonly makeWith: <R>(
     options: {
       readonly capacity: number
       readonly lookup: C.Lookup<K, R, E, A>
-      readonly timeToLive: (exit: Exit<E, A>) => DurationInput
+      readonly timeToLive: (exit: Exit<A, E>) => DurationInput
     }
-  ) => Layer.Layer<R, never, I>
+  ) => Layer.Layer<I, never, R>
 }
 
 /**

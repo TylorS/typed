@@ -17,8 +17,8 @@ import { addEventListeners } from "./internal/addEventListener.js"
  */
 export function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2>(
   refs: Refs,
-  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, never, unknown>
-): Effect.Effect<Document | Scope.Scope | R2, never, Fiber.RuntimeFiber<never, void>> {
+  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<unknown, never, R2>
+): Effect.Effect<Fiber.RuntimeFiber<void>, never, Document | Scope.Scope | R2> {
   return Fx.forkScoped(onClickAway(refs, f))
 }
 
@@ -27,7 +27,7 @@ export function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<an
  */
 export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
   refs: Refs,
-  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<R2, E2, B>
+  f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<B, E2, R2>
 ): Fx.Fx<Document | R2 | Scope.Scope, E2, B> {
   return Fx.fromFxEffect(Document.with((document) => {
     const events = addEventListeners(document, "click", "touchend", "contextmenu")

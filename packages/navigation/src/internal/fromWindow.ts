@@ -38,7 +38,7 @@ declare global {
   }
 }
 
-export const fromWindow: Layer.Layer<Window, never, Navigation> = Navigation.scoped(
+export const fromWindow: Layer.Layer<Navigation, never, Window> = Navigation.scoped(
   Window.withEffect((window) => {
     const getRandomValues = (length: number) => Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
     return Effect.gen(function*(_) {
@@ -108,12 +108,8 @@ const getNavigationState = (navigation: NativeNavigation): NavigationState => {
 
 function setupWithNavigation(
   navigation: NativeNavigation,
-  runPromise: <E, A>(effect: Effect.Effect<Scope.Scope, E, A>) => Promise<A>
-): Effect.Effect<
-  Scope.Scope | GetRandomValues,
-  never,
-  ModelAndIntent
-> {
+  runPromise: <E, A>(effect: Effect.Effect<A, E, Scope.Scope>) => Promise<A>
+): Effect.Effect<ModelAndIntent, never, Scope.Scope | GetRandomValues> {
   return Effect.gen(function*(_) {
     const state = yield* _(
       RefSubject.fromEffect(
@@ -150,7 +146,7 @@ function setupWithNavigation(
     const runHandlers = (native: NativeEvent) =>
       Effect.gen(function*(_) {
         const eventHandlers = yield* _(handlers)
-        const matches: Array<Effect.Effect<never, never, unknown>> = []
+        const matches: Array<Effect.Effect<unknown>> = []
 
         const event: NavigationEvent = {
           type: native.navigationType,
@@ -220,11 +216,7 @@ function shouldNotIntercept(navigationEvent: NativeEvent): boolean {
 function setupWithHistory(
   window: Window,
   onEvent: (event: HistoryEvent) => void
-): Effect.Effect<
-  GetRandomValues | Scope.Scope,
-  never,
-  ModelAndIntent
-> {
+): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
   return Effect.gen(function*(_) {
     const { location } = window
     const { original: history, unpatch } = patchHistory(window, onEvent)
@@ -411,19 +403,15 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
 type ScopedRuntime<R> = {
   readonly runtime: Runtime.Runtime<R | Scope.Scope>
   readonly scope: Scope.Scope
-  readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.RuntimeFiber<E, A>
-  readonly runPromise: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Promise<A>
+  readonly run: <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>) => Fiber.RuntimeFiber<A, E>
+  readonly runPromise: <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>) => Promise<A>
 }
 
-function scopedRuntime<R>(): Effect.Effect<
-  R | Scope.Scope,
-  never,
-  ScopedRuntime<R>
-> {
+function scopedRuntime<R>(): Effect.Effect<ScopedRuntime<R>, never, R | Scope.Scope> {
   return Effect.map(Effect.runtime<R | Scope.Scope>(), (runtime) => {
     const scope = Context.get(runtime.context, Scope.Scope)
     const runFork = Runtime.runFork(runtime)
-    const runPromise = <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>): Promise<A> =>
+    const runPromise = <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>): Promise<A> =>
       new Promise((resolve, reject) => {
         const fiber = runFork(effect, { scope })
         fiber.addObserver(Exit.match({

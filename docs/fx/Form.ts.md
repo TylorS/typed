@@ -102,7 +102,7 @@ export interface Base<out R, out E, in out I, in out O, in out Entries extends F
 
   readonly entries: Entries
 
-  readonly schema: S.Schema<R, I, O>
+  readonly schema: S.Schema<O, I, R>
 
   readonly get: <K extends keyof Entries>(key: K) => Entries[K]
 
@@ -118,7 +118,7 @@ Added in v1.18.0
 
 ```ts
 export interface Derived<R, R2, Entries extends AnyEntries> extends Form<R, Entries> {
-  readonly persist: Effect.Effect<R2, Error<Entries>, Output<Entries>>
+  readonly persist: Effect.Effect<Output<Entries>, Error<Entries>, R2>
 }
 ```
 
@@ -276,19 +276,19 @@ export type MakeForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<keyof 
   <R, E>(
     fx: RefSubject.RefSubject<R, E, O>
   ): Effect.Effect<
-    R | Scope.Scope,
-    never,
     [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>]
       ? Form.Derived<R, never, R2>
-      : never
+      : never,
+    never,
+    R | Scope.Scope
   >
 
   <R, E>(
-    fx: Fx<R, E, O> | Effect.Effect<R, E, O>
+    fx: Fx<R, E, O> | Effect.Effect<O, E, R>
   ): Effect.Effect<
-    R | Scope.Scope,
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,
-    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never
+    R | Scope.Scope
   >
 }
 ```
@@ -304,19 +304,19 @@ export type MakeInputForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<k
   <R, E>(
     fx: RefSubject.RefSubject<R, E, I>
   ): Effect.Effect<
-    R | Scope.Scope,
-    never,
     [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>]
       ? Form.Derived<R, _, R2>
-      : never
+      : never,
+    never,
+    R | Scope.Scope
   >
 
   <R, E>(
-    fx: Fx<R, E, I> | Effect.Effect<R, E, I>
+    fx: Fx<R, E, I> | Effect.Effect<I, E, R>
   ): Effect.Effect<
-    R | Scope.Scope,
+    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,
-    [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never
+    R | Scope.Scope
   >
 }
 ```
@@ -332,7 +332,7 @@ export declare function derive<
   R0,
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<{ readonly [K in keyof I]: any }>
->(schema: S.Schema<R0, I, O>): MakeForm<R0, I, O>
+>(schema: S.Schema<O, I, R0>): MakeForm<R0, I, O>
 ```
 
 Added in v1.20.0
@@ -346,7 +346,7 @@ export declare function deriveInput<
   R0,
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>
->(schema: S.Schema<R0, I, O>): MakeInputForm<R0, I, O>
+>(schema: S.Schema<O, I, R0>): MakeInputForm<R0, I, O>
 ```
 
 Added in v1.18.0

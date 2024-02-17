@@ -91,7 +91,7 @@ export const manyAsyncData: {
       Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>
   ) => Fx.Fx<
     R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
@@ -109,7 +109,7 @@ export const manyAsyncData: {
     Failure extends Fx.Fx<any, any, any>,
     Success extends Fx.Fx<any, any, any>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
@@ -135,7 +135,7 @@ export const manyAsyncData: {
     Failure extends Fx.Fx<any, any, RenderEvent>,
     Success extends Fx.Fx<any, any, RenderEvent>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, ReadonlyArray<A>>>,
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
     getKey: (a: A) => B,
     matchers: {
       NoData: NoData

@@ -8,7 +8,7 @@ import * as Domain from "./domain"
 
 /* #region Services */
 
-export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<never, never, Domain.Todo>>()("CreateTodo")
+export const CreateTodo = Context.Fn<(text: string) => Effect.Effect<Domain.Todo>>()("CreateTodo")
 export type CreateTodo = Context.Fn.Context<typeof CreateTodo>
 
 /* #endregion */
@@ -48,7 +48,7 @@ export const AllAreCompleted: RefSubject.Computed<TodoList, never, boolean> = Re
 
 /* #region Intent */
 
-export const createTodo: Effect.Effect<CreateTodo | TodoList | TodoText, never, Option.Option<Domain.Todo>> = Effect
+export const createTodo: Effect.Effect<Option.Option<Domain.Todo>, never, CreateTodo | TodoList | TodoText> = Effect
   .flatMap(TodoText, (text) =>
     Effect.if(text.trim() === "", {
       onFalse: CreateTodo.apply(text).pipe(
@@ -59,24 +59,24 @@ export const createTodo: Effect.Effect<CreateTodo | TodoList | TodoText, never, 
       onTrue: Effect.succeed(Option.none<Domain.Todo>())
     }))
 
-export const editTodo = (id: Domain.TodoId, text: string): Effect.Effect<TodoList, never, Domain.TodoList> =>
+export const editTodo = (id: Domain.TodoId, text: string): Effect.Effect<Domain.TodoList, never, TodoList> =>
   Effect.if(text.trim() === "", {
     onFalse: RefSubject.update(TodoList, Domain.editText(id, text)),
     onTrue: RefSubject.update(TodoList, Domain.deleteTodo(id))
   })
 
-export const toggleTodoCompleted: (id: Domain.TodoId) => Effect.Effect<TodoList, never, Domain.TodoList> = (id) =>
+export const toggleTodoCompleted: (id: Domain.TodoId) => Effect.Effect<Domain.TodoList, never, TodoList> = (id) =>
   RefSubject.update(TodoList, Domain.toggleCompleted(id))
 
-export const deleteTodo: (id: Domain.TodoId) => Effect.Effect<TodoList, never, Domain.TodoList> = (id) =>
+export const deleteTodo: (id: Domain.TodoId) => Effect.Effect<Domain.TodoList, never, TodoList> = (id) =>
   RefSubject.update(TodoList, Domain.deleteTodo(id))
 
-export const clearCompletedTodos: Effect.Effect<TodoList, never, Domain.TodoList> = RefSubject.update(
+export const clearCompletedTodos: Effect.Effect<Domain.TodoList, never, TodoList> = RefSubject.update(
   TodoList,
   Domain.clearCompleted
 )
 
-export const toggleAllCompleted: Effect.Effect<TodoList, never, Domain.TodoList> = RefSubject.update(
+export const toggleAllCompleted: Effect.Effect<Domain.TodoList, never, TodoList> = RefSubject.update(
   TodoList,
   Domain.toggleAllCompleted
 )

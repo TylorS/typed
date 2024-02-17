@@ -56,7 +56,7 @@ export interface ElementSource<
     options?: AddEventListenerOptions
   ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
 
-  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<never, NoSuchElementException, void>
+  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<void, NoSuchElementException>
 }
 
 /**
@@ -326,7 +326,7 @@ export class ElementSourceImpl<
     return new ElementSourceImpl<T>(RefSubject.filterMapEffect(Versioned.of(rootElement), Effect.succeedSome)) as any
   }
 
-  toEffect(): Effect.Effect<never, NoSuchElementException, Rendered.Elements<T>> {
+  toEffect(): Effect.Effect<Rendered.Elements<T>, NoSuchElementException> {
     return this.elements
   }
 

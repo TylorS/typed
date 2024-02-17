@@ -19,8 +19,8 @@ import * as Sink from "./Sink.js"
  * @since 1.18.0
  * @category conversions
  */
-export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
-  return Stream.asyncScoped<R | Scope.Scope, E, A>((emit) =>
+export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<A, E, R> {
+  return Stream.asyncScoped<A, E, R | Scope.Scope>((emit) =>
     fx.run(
       Sink.make(
         (cause) => Effect.promise(() => emit(Effect.failCause(Cause.map(cause, Option.some)))),
@@ -31,7 +31,7 @@ export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
         Effect.zipRight(Effect.promise(() => emit(Effect.fail(Option.none())))),
         Effect.forkScoped
       )
-  )
+  );
 }
 
 /**
@@ -42,17 +42,17 @@ export function toStream<R, E, A>(fx: Fx.Fx<R, E, A>): Stream.Stream<R, E, A> {
  */
 export const toStreamQueued: {
   <E, A, R2, E2>(
-    make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
-  ): <R>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R | R2, E | E2, A>
+    make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
+  ): <R>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E | E2, R | R2>
 
   <R, E, A, R2, E2>(
     fx: Fx.Fx<R, E, A>,
-    make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
-  ): Stream.Stream<R | R2, E | E2, A>
+    make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
+  ): Stream.Stream<A, E | E2, R | R2>
 } = dual(2, function toStreamQueued<R, E, A, R2, E2>(
   fx: Fx.Fx<R, E, A>,
-  make: Effect.Effect<R2, E2, Queue.Queue<Exit.Exit<Option.Option<E>, A>>>
-): Stream.Stream<R | R2, E | E2, A> {
+  make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
+): Stream.Stream<A, E | E2, R | R2> {
   return make.pipe(
     Effect.tap((queue) =>
       fx.pipe(
@@ -76,11 +76,11 @@ export const toStreamQueued: {
  * @category conversions
  */
 export const toStreamSliding: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 } = dual(
   2,
-  function toStreamSliding<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A> {
+  function toStreamSliding<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R> {
     return toStreamQueued(fx, Queue.sliding(capacity))
   }
 )
@@ -92,11 +92,11 @@ export const toStreamSliding: {
  * @category conversions
  */
 export const toStreamDropping: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 } = dual(
   2,
-  function toStreamDropping<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A> {
+  function toStreamDropping<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R> {
     return toStreamQueued(fx, Queue.dropping(capacity))
   }
 )
@@ -108,11 +108,11 @@ export const toStreamDropping: {
  * @category conversions
  */
 export const toStreamBounded: {
-  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<R, E, A>
-  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A>
+  (capacity: number): <R, E, A>(fx: Fx.Fx<R, E, A>) => Stream.Stream<A, E, R>
+  <R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R>
 } = dual(
   2,
-  function toStreamBounded<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<R, E, A> {
+  function toStreamBounded<R, E, A>(fx: Fx.Fx<R, E, A>, capacity: number): Stream.Stream<A, E, R> {
     return toStreamQueued(fx, Queue.bounded(capacity))
   }
 )
@@ -123,7 +123,7 @@ export const toStreamBounded: {
  * @category conversions
  */
 export function fromStream<R, E, A>(
-  stream: Stream.Stream<R, E, A>
+  stream: Stream.Stream<A, E, R>
 ): Fx.Fx<R, E, A> {
   return Fx.make<R, E, A>((sink) => Effect.catchAllCause(Stream.runForEach(stream, sink.onSuccess), sink.onFailure))
 }
@@ -133,7 +133,7 @@ export function fromStream<R, E, A>(
  * @since 1.18.0
  * @category conversions
  */
-export function fromStreamChunked<R, E, A>(stream: Stream.Stream<R, E, A>): Fx.Fx<R, E, Chunk.Chunk<A>> {
+export function fromStreamChunked<R, E, A>(stream: Stream.Stream<A, E, R>): Fx.Fx<R, E, Chunk.Chunk<A>> {
   return Fx.make<R, E, Chunk.Chunk<A>>((sink) =>
     Effect.catchAllCause(Stream.runForEachChunk(stream, sink.onSuccess), sink.onFailure)
   )

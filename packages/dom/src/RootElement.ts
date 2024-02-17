@@ -33,5 +33,5 @@ export const RootElement: Context.Tagged<RootElement> = Context.Tagged<RootEleme
  */
 export const addRootElementListener = <EventName extends string, R = never>(
   options: AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
-): Effect.Effect<R | RootElement | Scope.Scope, never, void> =>
+): Effect.Effect<void, never, R | RootElement | Scope.Scope> =>
   RootElement.withEffect((r) => addEventListener(r.rootElement, options))

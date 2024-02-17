@@ -26,6 +26,6 @@ export const GlobalThis: Context.Tagged<GlobalThis> = Context.Tagged<GlobalThis>
  * Construct a new DOMParser
  * @since 8.19.0
  */
-export const makeDOMParser: Effect.Effect<GlobalThis, never, globalThis.DOMParser> = GlobalThis.with((globalThis) =>
+export const makeDOMParser: Effect.Effect<globalThis.DOMParser, never, GlobalThis> = GlobalThis.with((globalThis) =>
   new globalThis.DOMParser()
 )

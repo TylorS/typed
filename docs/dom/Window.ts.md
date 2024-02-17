@@ -52,7 +52,7 @@ Add an event listener to the Window
 ```ts
 export declare const addWindowListener: <EventName extends string, R = never>(
   options: EventTarget.AddEventListenerOptions<Window, EventName, R>
-) => Effect.Effect<Window | R | Scope.Scope, never, void>
+) => Effect.Effect<void, never, Window | R | Scope.Scope>
 ```
 
 Added in v8.19.0
@@ -66,7 +66,7 @@ Get the computed style of an Element
 **Signature**
 
 ```ts
-export declare const getComputedStyle: (el: Element) => Effect.Effect<Window, never, CSSStyleDeclaration>
+export declare const getComputedStyle: (el: Element) => Effect.Effect<CSSStyleDeclaration, never, Window>
 ```
 
 Added in v8.19.0
@@ -78,7 +78,7 @@ Get the innerHeight from the Window
 **Signature**
 
 ```ts
-export declare const getInnerHeight: Effect.Effect<Window, never, number>
+export declare const getInnerHeight: Effect.Effect<number, never, Window>
 ```
 
 Added in v8.19.0
@@ -90,7 +90,7 @@ Get the innerWidth from the Window
 **Signature**
 
 ```ts
-export declare const getInnerWidth: Effect.Effect<Window, never, number>
+export declare const getInnerWidth: Effect.Effect<number, never, Window>
 ```
 
 Added in v8.19.0

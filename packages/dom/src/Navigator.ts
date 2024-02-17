@@ -29,7 +29,7 @@ export const Navigator: Context.Tagged<Navigator> = Context.Tagged<Navigator>("@
  * @since 8.19.0
  * @category actions
  */
-export const canShare: (shareData?: ShareData) => Effect.Effect<Navigator, never, boolean> = (
+export const canShare: (shareData?: ShareData) => Effect.Effect<boolean, never, Navigator> = (
   shareData?: ShareData
 ) => Navigator.with((n) => n.canShare(shareData))
 
@@ -38,7 +38,7 @@ export const canShare: (shareData?: ShareData) => Effect.Effect<Navigator, never
  * @since 8.19.0
  * @category actions
  */
-export const share: (shareData: ShareData) => Effect.Effect<Navigator, never, void> = (
+export const share: (shareData: ShareData) => Effect.Effect<void, never, Navigator> = (
   shareData: ShareData
 ) => Navigator.withEffect((n) => Effect.promise(() => n.share(shareData)))
 
@@ -47,7 +47,7 @@ export const share: (shareData: ShareData) => Effect.Effect<Navigator, never, vo
  * @since 8.19.0
  * @category getters
  */
-export const readClipboardText: Effect.Effect<Navigator, never, string> = Navigator.withEffect(
+export const readClipboardText: Effect.Effect<string, never, Navigator> = Navigator.withEffect(
   (n) => Effect.promise(() => n.clipboard.readText())
 )
 
@@ -56,7 +56,7 @@ export const readClipboardText: Effect.Effect<Navigator, never, string> = Naviga
  * @since 8.19.0
  * @category actions
  */
-export const writeClipboardText: (text: string) => Effect.Effect<Navigator, never, void> = (
+export const writeClipboardText: (text: string) => Effect.Effect<void, never, Navigator> = (
   text: string
 ) => Navigator.withEffect((n) => Effect.promise(() => n.clipboard.writeText(text)))
 
@@ -65,7 +65,7 @@ export const writeClipboardText: (text: string) => Effect.Effect<Navigator, neve
  * @since 8.19.0
  * @category getters
  */
-export const readClipboard: Effect.Effect<Navigator, never, ClipboardItems> = Navigator.withEffect(
+export const readClipboard: Effect.Effect<ClipboardItems, never, Navigator> = Navigator.withEffect(
   (n) => Effect.promise(() => n.clipboard.read())
 )
 
@@ -77,14 +77,14 @@ export const readClipboard: Effect.Effect<Navigator, never, ClipboardItems> = Na
 export const makeClipoboardItem = (
   items: Record<string, string | Blob | PromiseLike<string | Blob>>,
   options?: ClipboardItemOptions | undefined
-): Effect.Effect<GlobalThis, never, ClipboardItem> => GlobalThis.with((g) => new g.ClipboardItem(items, options))
+): Effect.Effect<ClipboardItem, never, GlobalThis> => GlobalThis.with((g) => new g.ClipboardItem(items, options))
 
 /**
  * Write clipboard items
  * @since 8.19.0
  * @category actions
  */
-export const writeClipboard = (items: ClipboardItems): Effect.Effect<Navigator, never, void> =>
+export const writeClipboard = (items: ClipboardItems): Effect.Effect<void, never, Navigator> =>
   Navigator.withEffect((n) => Effect.promise(() => n.clipboard.write(items)))
 
 /**
@@ -92,7 +92,7 @@ export const writeClipboard = (items: ClipboardItems): Effect.Effect<Navigator, 
  * @since 8.19.0
  * @category getters
  */
-export const checkCookieEnabled: Effect.Effect<Navigator, never, boolean> = Navigator.with(
+export const checkCookieEnabled: Effect.Effect<boolean, never, Navigator> = Navigator.with(
   (n) => n.cookieEnabled
 )
 
@@ -101,7 +101,7 @@ export const checkCookieEnabled: Effect.Effect<Navigator, never, boolean> = Navi
  * @since 8.19.0
  * @category getters
  */
-export const getHardwareConcurrency: Effect.Effect<Navigator, never, number> = Navigator.with(
+export const getHardwareConcurrency: Effect.Effect<number, never, Navigator> = Navigator.with(
   (n) => n.hardwareConcurrency
 )
 
@@ -110,7 +110,7 @@ export const getHardwareConcurrency: Effect.Effect<Navigator, never, number> = N
  * @since 8.19.0
  * @category getters
  */
-export const getMaxTouchPoints: Effect.Effect<Navigator, never, number> = Navigator.with(
+export const getMaxTouchPoints: Effect.Effect<number, never, Navigator> = Navigator.with(
   (n) => n.maxTouchPoints
 )
 
@@ -119,7 +119,7 @@ export const getMaxTouchPoints: Effect.Effect<Navigator, never, number> = Naviga
  * @since 8.19.0
  * @category getters
  */
-export const getMediaDevices: Effect.Effect<Navigator, never, MediaDevices> = Navigator.with(
+export const getMediaDevices: Effect.Effect<MediaDevices, never, Navigator> = Navigator.with(
   (n) => n.mediaDevices
 )
 
@@ -128,7 +128,7 @@ export const getMediaDevices: Effect.Effect<Navigator, never, MediaDevices> = Na
  * @since 8.19.0
  * @category getters
  */
-export const getMediaSession: Effect.Effect<Navigator, never, MediaSession> = Navigator.with(
+export const getMediaSession: Effect.Effect<MediaSession, never, Navigator> = Navigator.with(
   (n) => n.mediaSession
 )
 
@@ -137,14 +137,14 @@ export const getMediaSession: Effect.Effect<Navigator, never, MediaSession> = Na
  * @since 8.19.0
  * @category getters
  */
-export const checkOnline: Effect.Effect<Navigator, never, boolean> = Navigator.with((n) => n.onLine)
+export const checkOnline: Effect.Effect<boolean, never, Navigator> = Navigator.with((n) => n.onLine)
 
 /**
  * Check to see if the current navigator has a PDF viewer
  * @since 8.19.0
  * @category getters
  */
-export const checkPdfViewerEnabled: Effect.Effect<Navigator, never, boolean> = Navigator.with(
+export const checkPdfViewerEnabled: Effect.Effect<boolean, never, Navigator> = Navigator.with(
   (n) => n.pdfViewerEnabled
 )
 
@@ -153,7 +153,7 @@ export const checkPdfViewerEnabled: Effect.Effect<Navigator, never, boolean> = N
  * @since 8.19.0
  * @category getters
  */
-export const getUserAgent: Effect.Effect<Navigator, never, string> = Navigator.with(
+export const getUserAgent: Effect.Effect<string, never, Navigator> = Navigator.with(
   (n) => n.userAgent
 )
 
@@ -164,7 +164,7 @@ export const getUserAgent: Effect.Effect<Navigator, never, string> = Navigator.w
  */
 export const createCredential = (
   options?: CredentialCreationOptions
-): Effect.Effect<Navigator, never, Option<Credential>> =>
+): Effect.Effect<Option<Credential>, never, Navigator> =>
   pipe(
     Navigator.withEffect((n) => Effect.promise(() => n.credentials.create(options))),
     Effect.map(fromNullable)
@@ -177,7 +177,7 @@ export const createCredential = (
  */
 export const getCredential = (
   options?: CredentialRequestOptions
-): Effect.Effect<Navigator, never, Option<Credential>> =>
+): Effect.Effect<Option<Credential>, never, Navigator> =>
   pipe(
     Navigator.withEffect((n) => Effect.promise(() => n.credentials.get(options))),
     Effect.map(fromNullable)
@@ -190,7 +190,7 @@ export const getCredential = (
  */
 export const storeCredential = (
   credential: Credential
-): Effect.Effect<Navigator, never, Credential> =>
+): Effect.Effect<Credential, never, Navigator> =>
   Navigator.withEffect((n) => Effect.promise(() => n.credentials.store(credential)))
 
 /**
@@ -200,7 +200,7 @@ export const storeCredential = (
  */
 export const getCurrentPosition = (
   options?: PositionOptions
-): Effect.Effect<Navigator, GeolocationPositionError, GeolocationPosition> =>
+): Effect.Effect<GeolocationPosition, GeolocationPositionError, Navigator> =>
   Navigator.withEffect((n) =>
     Effect.tryPromise({
       try: () =>

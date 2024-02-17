@@ -7,11 +7,11 @@ import { EffectBase } from "./protos.js"
 
 export class DeferredRef<E, A> extends EffectBase<never, E, A> {
   // Keep track of the latest value emitted by the stream
-  public current!: Option.Option<Exit.Exit<E, A>>
+  public current!: Option.Option<Exit.Exit<A, E>>
   public version!: number
-  public deferred!: Deferred.Deferred<E, A>
+  public deferred!: Deferred.Deferred<A, E>
 
-  constructor(private id: FiberId.FiberId, private eq: Equivalence.Equivalence<Exit.Exit<E, A>>) {
+  constructor(private id: FiberId.FiberId, private eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
     super()
     this.reset()
   }
@@ -26,7 +26,7 @@ export class DeferredRef<E, A> extends EffectBase<never, E, A> {
     })
   }
 
-  done(exit: Exit.Exit<E, A>) {
+  done(exit: Exit.Exit<A, E>) {
     const current = this.current
 
     this.current = Option.some(exit)
@@ -53,10 +53,10 @@ export class DeferredRef<E, A> extends EffectBase<never, E, A> {
   }
 }
 
-export function make<E, A>(eq: Equivalence.Equivalence<Exit.Exit<E, A>>) {
+export function make<E, A>(eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
   return Effect.map(Effect.fiberId, (id) => new DeferredRef(id, eq))
 }
 
-export function unsafeMake<E, A>(id: FiberId.FiberId, eq: Equivalence.Equivalence<Exit.Exit<E, A>>) {
+export function unsafeMake<E, A>(id: FiberId.FiberId, eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
   return new DeferredRef(id, eq)
 }

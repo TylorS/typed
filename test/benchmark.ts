@@ -14,7 +14,7 @@ export class BenchmarkBuilder {
 
   test<E, A>(
     name: string,
-    effect: Effect.Effect<never, E, A>,
+    effect: Effect.Effect<A, E>,
     options?: BenchmarkOptions
   ): BenchmarkBuilder {
     return new BenchmarkBuilder(this.name, [
@@ -27,7 +27,7 @@ export class BenchmarkBuilder {
     name: string,
     tests: Array<{
       name: string
-      effect: Effect.Effect<never, E, A>
+      effect: Effect.Effect<A, E>
       options?: BenchmarkOptions
     }>,
     options?: BenchmarkOptions
@@ -49,7 +49,7 @@ interface Comparison<E, A> {
   readonly name: string
   readonly tests: Array<{
     name: string
-    effect: Effect.Effect<never, E, A>
+    effect: Effect.Effect<A, E>
     options?: BenchmarkOptions
   }>
   readonly timeout?: number
@@ -58,7 +58,7 @@ interface Comparison<E, A> {
 
 interface Benchmark<E, A> {
   readonly name: string
-  readonly effect: Effect.Effect<never, E, A>
+  readonly effect: Effect.Effect<A, E>
   readonly timeout?: number
   readonly iterations?: number
 }
@@ -72,7 +72,7 @@ function Comparison<E, A>(
   name: string,
   tests: Array<{
     name: string
-    effect: Effect.Effect<never, E, A>
+    effect: Effect.Effect<A, E>
     options?: BenchmarkOptions
   }>,
   options?: BenchmarkOptions
@@ -86,7 +86,7 @@ function Comparison<E, A>(
 
 function Benchmark<E, A>(
   name: string,
-  effect: Effect.Effect<never, E, A>,
+  effect: Effect.Effect<A, E>,
   options?: BenchmarkOptions
 ): Benchmark<E, A> {
   return {
@@ -257,7 +257,7 @@ function formatMilliseconds(ms: number): string {
   }
 }
 
-const timed = <R, E, A, B>(effect: Effect.Effect<R, E, A>, f: (time: number, a: A) => B) =>
+const timed = <R, E, A, B>(effect: Effect.Effect<A, E, R>, f: (time: number, a: A) => B) =>
   Effect.suspend(() => {
     const start = performance.now()
 

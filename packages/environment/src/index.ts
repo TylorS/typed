@@ -31,9 +31,9 @@ export const Environment: { readonly [_ in Environment]: _ } = {
 /**
  * @since 1.0.0
  */
-export const CurrentEnvironment = Context.Tagged<Environment>()((_) =>
-  class CurrentEnvironment extends _("@typed/environment/CurrentEnvironment") {}
-)
+export const CurrentEnvironment = Context.Tagged<Environment>()((
+  _
+) => (class CurrentEnvironment extends _("@typed/environment/CurrentEnvironment") {}))
 
 /**
  * @since 1.0.0
@@ -43,37 +43,37 @@ export type CurrentEnvironment = Context.Tag.Identifier<typeof CurrentEnvironmen
 /**
  * @since 1.0.0
  */
-export const isDom: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "dom")
+export const isDom: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) => e === "dom")
 
 /**
  * @since 1.0.0
  */
-export const isServer: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+export const isServer: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
   e === "server"
 )
 
 /**
  * @since 1.0.0
  */
-export const isStatic: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+export const isStatic: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
   e === "static"
 )
 
 /**
  * @since 1.0.0
  */
-export const isTest: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) => e === "test")
+export const isTest: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) => e === "test")
 
 /**
  * @since 1.0.0
  */
-export const isServiceWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+export const isServiceWorker: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
   e === "serviceWorker"
 )
 
 /**
  * @since 1.0.0
  */
-export const isWebWorker: Effect.Effect<CurrentEnvironment, never, boolean> = CurrentEnvironment.with((e) =>
+export const isWebWorker: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
   e === "webWorker"
 )

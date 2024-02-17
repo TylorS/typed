@@ -92,7 +92,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const browser: Layer.Layer<Document.Document, never, CurrentRoute<string>>
+export declare const browser: Layer.Layer<CurrentRoute<string>, never, Document.Document>
 ```
 
 Added in v1.0.0
@@ -118,7 +118,7 @@ Added in v1.0.0
 export declare function layer<const P extends string>(
   route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
-): Layer.Layer<never, never, CurrentRoute>
+): Layer.Layer<CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -154,7 +154,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const server: (base?: string) => Layer.Layer<never, never, CurrentRoute>
+export declare const server: (base?: string) => Layer.Layer<CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -167,11 +167,11 @@ Added in v1.0.0
 export declare const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
-  ): <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<Exclude<R, CurrentRoute<string>>, E, A>
+  ): <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
   <R, E, A, P extends string>(
-    effect: Effect.Effect<R, E, A>,
+    effect: Effect.Effect<A, E, R>,
     route: Route.Route<P>
-  ): Effect.Effect<Exclude<R, CurrentRoute<string>>, E, A>
+  ): Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
 }
 ```
 

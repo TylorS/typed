@@ -39,7 +39,7 @@ Added in v1.0.0
 export declare function htmlResponse<R, E>(
   fx: Fx.Fx<R, E, RenderEvent>,
   options?: HttpServer.response.Options
-): Effect.Effect<RenderContext.RenderContext | Exclude<R, RenderTemplate>, E, HttpServer.response.ServerResponse>
+): Effect.Effect<HttpServer.response.ServerResponse, E, RenderContext.RenderContext | Exclude<R, RenderTemplate>>
 ```
 
 Added in v1.0.0

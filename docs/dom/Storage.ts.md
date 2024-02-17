@@ -46,7 +46,7 @@ Construct a SchemaKeyStorage
 ```ts
 export declare function SchemaKeyStorage<K extends string, R, O>(
   key: K,
-  schema: S.Schema<R, string, O>
+  schema: S.Schema<O, string, R>
 ): SchemaKeyStorage<R, O>
 ```
 
@@ -75,7 +75,7 @@ sessionStorage.
 **Signature**
 
 ```ts
-export declare function StorageEffect<R, E, A>(effect: Effect.Effect<R, E, A>): StorageEffect<R, E, A>
+export declare function StorageEffect<A, E, R>(effect: Effect.Effect<A, E, R>): StorageEffect<A, E, Exclude<R, Storage>>
 ```
 
 Added in v8.19.0
@@ -102,7 +102,7 @@ A Layer for using localStorage for Storage
 **Signature**
 
 ```ts
-export declare const localStorage: Layer.Layer<Window, never, Storage>
+export declare const localStorage: Layer.Layer<Storage, never, Window>
 ```
 
 Added in v8.19.0
@@ -114,7 +114,7 @@ A Layer for using sessionStorage for Storage
 **Signature**
 
 ```ts
-export declare const sessionStorage: Layer.Layer<Window, never, Storage>
+export declare const sessionStorage: Layer.Layer<Storage, never, Window>
 ```
 
 Added in v8.19.0
@@ -128,7 +128,7 @@ Get an item from storage
 **Signature**
 
 ```ts
-export declare const getItem: (key: string) => StorageEffect<Storage, never, O.Option<string>>
+export declare const getItem: (key: string) => StorageEffect<O.Option<string>>
 ```
 
 Added in v8.19.0
@@ -144,13 +144,13 @@ It allows you to get/set/remove a value for a specific key.
 
 ```ts
 export interface SchemaKeyStorage<R, O> {
-  readonly schema: S.Schema<R, string, O>
+  readonly schema: S.Schema<O, string, R>
 
-  readonly get: (options?: ParseOptions) => StorageEffect<Storage | R, ParseResult.ParseError, O.Option<O>>
+  readonly get: (options?: ParseOptions) => StorageEffect<O.Option<O>, ParseResult.ParseError, R>
 
-  readonly set: (value: O, options?: ParseOptions) => StorageEffect<Storage | R, ParseResult.ParseError, void>
+  readonly set: (value: O, options?: ParseOptions) => StorageEffect<void, ParseResult.ParseError, R>
 
-  readonly remove: StorageEffect<Storage, never, void>
+  readonly remove: StorageEffect<void>
 }
 ```
 
@@ -172,15 +172,15 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
+  ) => StorageEffect<O.Option<S.Schema.To<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
     value: S.Schema.To<Schemas[K]>,
     options?: ParseOptions
-  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, void>
+  ) => StorageEffect<void, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
-  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<Storage, never, void>
+  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<void>
 
   readonly key: <K extends keyof Schemas & string>(
     key: K
@@ -212,9 +212,9 @@ sessionStorage.
 **Signature**
 
 ```ts
-export interface StorageEffect<R, E, A> extends Effect.Effect<R, E, A> {
-  readonly local: Effect.Effect<Window | Exclude<R, Storage>, E, A>
-  readonly session: Effect.Effect<Window | Exclude<R, Storage>, E, A>
+export interface StorageEffect<A, E = never, R = never> extends Effect.Effect<A, E, Exclude<R, Storage> | Storage> {
+  readonly local: Effect.Effect<A, E, Window | Exclude<R, Storage>>
+  readonly session: Effect.Effect<A, E, Window | Exclude<R, Storage>>
 }
 ```
 
@@ -229,7 +229,7 @@ Delete an item from storage
 **Signature**
 
 ```ts
-export declare const removeItem: (key: string) => StorageEffect<Storage, never, void>
+export declare const removeItem: (key: string) => StorageEffect<void>
 ```
 
 Added in v8.19.0
@@ -241,7 +241,7 @@ set an item from storage
 **Signature**
 
 ```ts
-export declare const setItem: (key: string, value: string) => StorageEffect<Storage, never, void>
+export declare const setItem: (key: string, value: string) => StorageEffect<void>
 ```
 
 Added in v8.19.0

@@ -57,7 +57,7 @@ Create a new Attr
 export declare const createAttributeNS: (
   namespace: string | null,
   qualifiedName: string
-) => Effect.Effect<Document, never, Attr>
+) => Effect.Effect<Attr, never, Document>
 ```
 
 Added in v8.19.0
@@ -83,7 +83,7 @@ Create a new comment node
 **Signature**
 
 ```ts
-export declare const createComment: (data: string) => Effect.Effect<Document, never, Comment>
+export declare const createComment: (data: string) => Effect.Effect<Comment, never, Document>
 ```
 
 Added in v8.19.0
@@ -95,7 +95,7 @@ Create a new document fragment
 **Signature**
 
 ```ts
-export declare const createDocumentFragment: Effect.Effect<Document, never, DocumentFragment>
+export declare const createDocumentFragment: Effect.Effect<DocumentFragment, never, Document>
 ```
 
 Added in v8.19.0
@@ -109,7 +109,7 @@ Create a new element
 ```ts
 export declare const createElement: <TagName extends keyof HTMLElementTagNameMap>(
   tagName: TagName
-) => Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]>
+) => Effect.Effect<HTMLElementTagNameMap[TagName], never, Document>
 ```
 
 Added in v8.19.0
@@ -121,7 +121,7 @@ Create a new element with a namespace
 **Signature**
 
 ```ts
-export declare const createElementNS: (namespaceURI: string, tagName: string) => Effect.Effect<Document, never, Element>
+export declare const createElementNS: (namespaceURI: string, tagName: string) => Effect.Effect<Element, never, Document>
 ```
 
 Added in v8.19.0
@@ -135,7 +135,7 @@ Create a new SVG element
 ```ts
 export declare const createSvgElement: <TagName extends keyof SVGElementTagNameMap>(
   tagName: TagName
-) => Effect.Effect<Document, never, SVGElementTagNameMap[TagName]>
+) => Effect.Effect<SVGElementTagNameMap[TagName], never, Document>
 ```
 
 Added in v8.19.0
@@ -147,7 +147,7 @@ Create a new text node
 **Signature**
 
 ```ts
-export declare const createTextNode: (data: string) => Effect.Effect<Document, never, Text>
+export declare const createTextNode: (data: string) => Effect.Effect<Text, never, Document>
 ```
 
 Added in v8.19.0
@@ -159,7 +159,7 @@ Retrieve the body element from the current Document
 **Signature**
 
 ```ts
-export declare const getBody: Effect.Effect<Document, never, HTMLBodyElement>
+export declare const getBody: Effect.Effect<HTMLBodyElement, never, Document>
 ```
 
 Added in v8.19.0
@@ -171,7 +171,7 @@ Retrieve the head element from the current Document
 **Signature**
 
 ```ts
-export declare const getHead: Effect.Effect<Document, never, HTMLHeadElement>
+export declare const getHead: Effect.Effect<HTMLHeadElement, never, Document>
 ```
 
 Added in v8.19.0
@@ -187,7 +187,7 @@ Add an event listener to the document
 ```ts
 export declare const addDocumentListener: <EventName extends string, R = never>(
   options: AddEventListenerOptions<Document, EventName, R>
-) => Effect.Effect<Scope.Scope | Document | R, never, void>
+) => Effect.Effect<void, never, Scope.Scope | Document | R>
 ```
 
 Added in v8.19.0
@@ -231,7 +231,7 @@ Update a link tag
 **Signature**
 
 ```ts
-export declare const updateLink: (params: LinkParams) => Effect.Effect<Document, never, HTMLLinkElement>
+export declare const updateLink: (params: LinkParams) => Effect.Effect<HTMLLinkElement, never, Document>
 ```
 
 Added in v8.19.0
@@ -243,7 +243,7 @@ Update a meta tag
 **Signature**
 
 ```ts
-export declare const updateMeta: (params: MetaParams) => Effect.Effect<Document, never, HTMLMetaElement>
+export declare const updateMeta: (params: MetaParams) => Effect.Effect<HTMLMetaElement, never, Document>
 ```
 
 Added in v8.19.0
@@ -285,7 +285,7 @@ Create a new Range
 **Signature**
 
 ```ts
-export declare const createRange: Effect.Effect<Document, never, Range>
+export declare const createRange: Effect.Effect<Range, never, Document>
 ```
 
 Added in v8.19.0
@@ -301,7 +301,7 @@ export declare const createTreeWalker: (
   root: Node,
   whatToShow?: number,
   filter?: NodeFilter | null
-) => Effect.Effect<Document, never, TreeWalker>
+) => Effect.Effect<TreeWalker, never, Document>
 ```
 
 Added in v8.19.0
@@ -313,7 +313,7 @@ Get the <html> element
 **Signature**
 
 ```ts
-export declare const getDocumentElement: Effect.Effect<Document, never, HTMLElement>
+export declare const getDocumentElement: Effect.Effect<HTMLElement, never, Document>
 ```
 
 Added in v8.19.0
@@ -325,7 +325,7 @@ Import a node into the current document
 **Signature**
 
 ```ts
-export declare const importNode: <T extends Node>(node: T, deep?: boolean) => Effect.Effect<Document, never, T>
+export declare const importNode: <T extends Node>(node: T, deep?: boolean) => Effect.Effect<T, never, Document>
 ```
 
 Added in v8.19.0
@@ -337,7 +337,7 @@ Update the title of the document
 **Signature**
 
 ```ts
-export declare const updateTitle: (title: string) => Effect.Effect<Document, never, string>
+export declare const updateTitle: (title: string) => Effect.Effect<string, never, Document>
 ```
 
 Added in v8.19.0

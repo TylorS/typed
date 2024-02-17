@@ -10,8 +10,8 @@ const mostScheduler = newDefaultScheduler()
 export function comparison(name: string, tests: {
   rxjs?: () => rxjs.Observable<any>
   most?: () => mostTypes.Stream<any>
-  fx?: () => Effect.Effect<never, any, any>
-  v3?: () => Effect.Effect<never, any, any>
+  fx?: () => Effect.Effect<any, any>
+  v3?: () => Effect.Effect<any, any>
   array?: () => any
 }, options?: BenchmarkOptions) {
   const comparisions: any = []
@@ -40,7 +40,7 @@ export function comparison(name: string, tests: {
 }
 
 const runRxjs = (observable: rxjs.Observable<any>) =>
-  Effect.async<never, never, void>((resume) => {
+  Effect.async<void>((resume) => {
     observable.subscribe({ complete: () => resume(Effect.unit) })
   })
 

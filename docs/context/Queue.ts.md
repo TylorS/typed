@@ -49,33 +49,33 @@ Contextual wrappers around @effect/data/Queue
 ```ts
 export interface Queue<I, A> extends Tag<I, Q.Queue<A>> {
   // Common
-  readonly capacity: Effect.Effect<I, never, number>
-  readonly isActive: Effect.Effect<I, never, boolean>
-  readonly size: Effect.Effect<I, never, number>
-  readonly isFull: Effect.Effect<I, never, boolean>
-  readonly isEmpty: Effect.Effect<I, never, boolean>
-  readonly shutdown: Effect.Effect<I, never, void>
-  readonly isShutdown: Effect.Effect<I, never, boolean>
-  readonly awaitShutdown: Effect.Effect<I, never, void>
+  readonly capacity: Effect.Effect<number, never, I>
+  readonly isActive: Effect.Effect<boolean, never, I>
+  readonly size: Effect.Effect<number, never, I>
+  readonly isFull: Effect.Effect<boolean, never, I>
+  readonly isEmpty: Effect.Effect<boolean, never, I>
+  readonly shutdown: Effect.Effect<void, never, I>
+  readonly isShutdown: Effect.Effect<boolean, never, I>
+  readonly awaitShutdown: Effect.Effect<void, never, I>
 
   // Dequeue
-  readonly take: Effect.Effect<I, never, A>
-  readonly takeAll: Effect.Effect<I, never, Chunk.Chunk<A>>
-  readonly takeUpTo: (max: number) => Effect.Effect<I, never, Chunk.Chunk<A>>
-  readonly takeBetween: (min: number, max: number) => Effect.Effect<I, never, Chunk.Chunk<A>>
-  readonly takeN: (n: number) => Effect.Effect<I, never, Chunk.Chunk<A>>
-  readonly poll: Effect.Effect<I, never, Option<A>>
+  readonly take: Effect.Effect<A, never, I>
+  readonly takeAll: Effect.Effect<Chunk.Chunk<A>, never, I>
+  readonly takeUpTo: (max: number) => Effect.Effect<Chunk.Chunk<A>, never, I>
+  readonly takeBetween: (min: number, max: number) => Effect.Effect<Chunk.Chunk<A>, never, I>
+  readonly takeN: (n: number) => Effect.Effect<Chunk.Chunk<A>, never, I>
+  readonly poll: Effect.Effect<Option<A>, never, I>
 
   // Enqueue
-  readonly offer: (a: A) => Effect.Effect<I, never, boolean>
-  readonly offerAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
+  readonly offer: (a: A) => Effect.Effect<boolean, never, I>
+  readonly offerAll: (as: Iterable<A>) => Effect.Effect<boolean, never, I>
 
   // Queue
-  readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
-  readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
-  readonly make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => Layer.Layer<never, never, I>
-  readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
-  readonly unbounded: Layer.Layer<never, never, I>
+  readonly bounded: (capacity: number) => Layer.Layer<I>
+  readonly dropping: (capacity: number) => Layer.Layer<I>
+  readonly make: (queue: Q.BackingQueue<A>, strategy: Q.Strategy<A>) => Layer.Layer<I>
+  readonly sliding: (capacity: number) => Layer.Layer<I>
+  readonly unbounded: Layer.Layer<I>
 }
 ```
 

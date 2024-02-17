@@ -65,8 +65,8 @@ Append a value to the current state of a RefArray.
 
 ```ts
 export declare const append: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<R, E, readonly A[]>
+  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -80,8 +80,8 @@ Append an iterable of values to the current state of a RefArray.
 
 ```ts
 export declare const appendAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, readonly A[]>
+  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -96,7 +96,7 @@ Remove any duplicate values from a RefArray.
 ```ts
 export declare const dedupeWith: <A>(
   valueEq: Equivalence<A>
-) => <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
+) => <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
 ```
 
 Added in v1.18.0
@@ -109,8 +109,8 @@ Drop the first `n` values from a RefArray.
 
 ```ts
 export declare const drop: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, readonly A[]>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -124,8 +124,8 @@ Drop the last `n` values from a RefArray.
 
 ```ts
 export declare const dropRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, readonly A[]>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -139,8 +139,8 @@ Drop values from a RefArray while a predicate is true.
 
 ```ts
 export declare const dropWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<R, E, readonly A[]>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -154,8 +154,8 @@ Insert a value at a particular index of a RefArray.
 
 ```ts
 export declare const insertAt: {
-  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<R, E, readonly A[]>
+  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -184,8 +184,8 @@ Modify the value at a particular index of a RefArray.
 
 ```ts
 export declare const modifyAt: {
-  <A>(index: number, f: (a: A) => A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, f: (a: A) => A): Effect.Effect<R, E, readonly A[]>
+  <A>(index: number, f: (a: A) => A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, index: number, f: (a: A) => A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -199,8 +199,8 @@ Prepend a value to the current state of a RefArray.
 
 ```ts
 export declare const prepend: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<R, E, readonly A[]>
+  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -214,8 +214,8 @@ Prepend an iterable of values to the current state of a RefArray.
 
 ```ts
 export declare const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, readonly A[]>
+  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -229,8 +229,8 @@ Replace a value at a particular index of a RefArray.
 
 ```ts
 export declare const replaceAt: {
-  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<R, E, readonly A[]>
+  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -244,8 +244,8 @@ Rotate the values of a RefArray by `n` places. Helpful for things like carousels
 
 ```ts
 export declare const rotate: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, readonly A[]>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -259,8 +259,8 @@ Sort the values of a RefArray using a provided Order.
 
 ```ts
 export declare const sortBy: {
-  <A>(orders: Iterable<Order.Order<A>>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, orders: Iterable<Order.Order<A>>): Effect.Effect<R, E, readonly A[]>
+  <A>(orders: Iterable<Order.Order<A>>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, orders: Iterable<Order.Order<A>>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -274,8 +274,8 @@ Take the first `n` values from a RefArray.
 
 ```ts
 export declare const take: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, readonly A[]>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -289,8 +289,8 @@ Take the last `n` values from a RefArray.
 
 ```ts
 export declare const takeRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<R, E, readonly A[]>
+  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -304,8 +304,8 @@ Take values from a RefArray while a predicate is true.
 
 ```ts
 export declare const takeWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<R, E, readonly A[]>
+  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -454,13 +454,13 @@ Construct a new RefArray with the given initial value.
 
 ```ts
 export declare function make<R, E, A>(
-  initial: Effect.Effect<R, E, ReadonlyArray<A>>,
+  initial: Effect.Effect<ReadonlyArray<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
+): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
 export declare function make<R, E, A>(
   initial: Fx.Fx<R, E, ReadonlyArray<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefArray<never, E, A>>
+): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0

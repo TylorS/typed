@@ -26,18 +26,18 @@ export interface RefChunk<out R, in out E, in out A> extends RefSubject.RefSubje
  * @category constructors
  */
 export function make<R, E, A>(
-  initial: Effect.Effect<R, E, Chunk.Chunk<A>>,
+  initial: Effect.Effect<Chunk.Chunk<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
+): Effect.Effect<RefChunk<never, E, A>, never, R | Scope.Scope>
 export function make<R, E, A>(
   initial: Fx.Fx<R, E, Chunk.Chunk<A>>,
   eq?: Equivalence<A>
-): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>>
+): Effect.Effect<RefChunk<never, E, A>, never, R | Scope.Scope>
 
 export function make<R, E, A>(
-  initial: Fx.Fx<R, E, Chunk.Chunk<A>> | Effect.Effect<R, E, Chunk.Chunk<A>>,
+  initial: Fx.Fx<R, E, Chunk.Chunk<A>> | Effect.Effect<Chunk.Chunk<A>, E, R>,
   eq: Equivalence<A> = equals
-): Effect.Effect<R | Scope.Scope, never, RefChunk<never, E, A>> {
+): Effect.Effect<RefChunk<never, E, A>, never, R | Scope.Scope> {
   return RefSubject.make(
     initial,
     {
@@ -65,8 +65,8 @@ export const tagged: <A>() => {
  * @category combinators
  */
 export const prepend: {
-  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function prepend<R, E, A>(ref: RefChunk<R, E, A>, value: A) {
   return RefSubject.update(ref, Chunk.prepend(value))
 })
@@ -77,8 +77,8 @@ export const prepend: {
  * @category combinators
  */
 export const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(
   2,
   function prependAll<R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>) {
@@ -92,8 +92,8 @@ export const prependAll: {
  * @category combinators
  */
 export const append: {
-  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<R, E, Chunk.Chunk<A>>
+  <A>(value: A): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function append<R, E, A>(ref: RefChunk<R, E, A>, value: A) {
   return RefSubject.update(ref, Chunk.append(value))
 })
@@ -106,8 +106,8 @@ export const append: {
 export const appendAll: {
   <A>(
     value: Iterable<A>
-  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function appendAll<R, E, A>(ref: RefChunk<R, E, A>, value: Iterable<A>) {
   return RefSubject.update(ref, Chunk.appendAll(Chunk.fromIterable(value)))
 })
@@ -118,8 +118,8 @@ export const appendAll: {
  * @category combinators
  */
 export const drop: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function drop<R, E, A>(ref: RefChunk<R, E, A>, n: number) {
   return RefSubject.update(ref, Chunk.drop(n))
 })
@@ -130,8 +130,8 @@ export const drop: {
  * @category combinators
  */
 export const dropRight: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function dropRight<R, E, A>(ref: RefChunk<R, E, A>, n: number) {
   return RefSubject.update(ref, Chunk.dropRight(n))
 })
@@ -144,11 +144,11 @@ export const dropRight: {
 export const dropWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <R, E, A>(
     ref: RefChunk<R, E, A>,
     predicate: (a: A) => boolean
-  ): Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(
   2,
   function dropWhile<R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean) {
@@ -256,12 +256,12 @@ export const modifyAt: {
   <A>(
     index: number,
     f: (a: A) => A
-  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <R, E, A>(
     ref: RefChunk<R, E, A>,
     index: number,
     f: (a: A) => A
-  ): Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(3, function modifyAt<R, E, A>(ref: RefChunk<R, E, A>, index: number, f: (a: A) => A) {
   return RefSubject.update(ref, Chunk.modify(index, f))
 })
@@ -343,12 +343,12 @@ export const replaceAt: {
   <A>(
     index: number,
     a: A
-  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <R, E, A>(
     ref: RefChunk<R, E, A>,
     index: number,
     a: A
-  ): Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(3, function replaceAt<R, E, A>(ref: RefChunk<R, E, A>, index: number, a: A) {
   return RefSubject.update(ref, Chunk.replace(index, a))
 })
@@ -359,8 +359,8 @@ export const replaceAt: {
  * @category combinators
  */
 export const take: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function take<R, E, A>(ref: RefChunk<R, E, A>, n: number) {
   return RefSubject.update(ref, Chunk.take(n))
 })
@@ -371,8 +371,8 @@ export const take: {
  * @category combinators
  */
 export const takeRight: {
-  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
-  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<R, E, Chunk.Chunk<A>>
+  (n: number): <R, E, A>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <R, E, A>(ref: RefChunk<R, E, A>, n: number): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function takeRight<R, E, A>(ref: RefChunk<R, E, A>, n: number) {
   return RefSubject.update(ref, Chunk.takeRight(n))
 })
@@ -385,11 +385,11 @@ export const takeRight: {
 export const takeWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): <R, E>(ref: RefChunk<R, E, A>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <R, E, A>(
     ref: RefChunk<R, E, A>,
     predicate: (a: A) => boolean
-  ): Effect.Effect<R, E, Chunk.Chunk<A>>
+  ): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(
   2,
   function takeWhile<R, E, A>(ref: RefChunk<R, E, A>, predicate: (a: A) => boolean) {
@@ -402,5 +402,5 @@ export const takeWhile: {
  * @since 1.18.0
  * @category combinators
  */
-export const dedupe = <R, E, A>(ref: RefChunk<R, E, A>): Effect.Effect<R, E, Chunk.Chunk<A>> =>
+export const dedupe = <R, E, A>(ref: RefChunk<R, E, A>): Effect.Effect<Chunk.Chunk<A>, E, R> =>
   RefSubject.update(ref, Chunk.dedupe)

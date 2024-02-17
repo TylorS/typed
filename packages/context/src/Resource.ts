@@ -15,33 +15,33 @@ import { Tag } from "./Tag.js"
  * @since 1.0.0
  * @category models
  */
-export interface Resource<I, E, A> extends Tag<I, R.Resource<E, A>> {
-  readonly get: Effect.Effect<I, E, A>
+export interface Resource<I, A, E> extends Tag<I, R.Resource<A, E>> {
+  readonly get: Effect.Effect<A, E, I>
 
-  readonly refresh: Effect.Effect<I, E, void>
+  readonly refresh: Effect.Effect<void, E, I>
 
   readonly auto: <R, R2, Out>(
-    acquire: Effect.Effect<R, E, A>,
+    acquire: Effect.Effect<A, E, R>,
     policy: Schedule.Schedule<R2, unknown, Out>
-  ) => Layer.Layer<R | R2, never, I>
+  ) => Layer.Layer<I, never, R | R2>
 
-  readonly manual: <R>(acquire: Effect.Effect<R, E, A>) => Layer.Layer<R, never, I>
+  readonly manual: <R>(acquire: Effect.Effect<A, E, R>) => Layer.Layer<I, never, R>
 }
 
 /**
  * Construct a Resource implementation to be utilized from the Effect Context.
  * @since 1.0.0
  */
-export function Resource<E, A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Resource<IdentifierOf<I>, E, A>
+export function Resource<A, E>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, A, E>
+  <const I>(identifier: I): Resource<IdentifierOf<I>, A, E>
 } {
-  function makeResource<const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, E, A>
-  function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, E, A>
-  function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, E, A> {
-    const tag = Tag<I, R.Resource<E, A>>(identifier)
+  function makeResource<const I extends IdentifierFactory<any>>(identifier: I): Resource<IdentifierOf<I>, A, E>
+  function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, A, E>
+  function makeResource<const I>(identifier: I): Resource<IdentifierOf<I>, A, E> {
+    const tag = Tag<I, R.Resource<A, E>>(identifier)
 
-    const self: Omit<Resource<IdentifierOf<I>, E, A>, keyof typeof tag> = {
+    const self: Omit<Resource<IdentifierOf<I>, A, E>, keyof typeof tag> = {
       get: Effect.flatMap(tag, R.get),
       refresh: Effect.flatMap(tag, R.refresh),
       auto: (acquire, policy) => Layer.scoped(tag, R.auto(acquire, policy)),

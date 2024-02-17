@@ -44,11 +44,11 @@ export interface TestRender<E> {
   readonly elementRef: ElementRef.ElementRef
   readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
   readonly lastError: RefSubject.Filtered<never, never, E>
-  readonly interrupt: Effect.Effect<never, never, void>
+  readonly interrupt: Effect.Effect<void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
-  readonly dispatchEvent: (options: EventOptions) => Effect.Effect<never, Cause.NoSuchElementException, void>
-  readonly click: (options?: Omit<EventOptions, "event">) => Effect.Effect<never, Cause.NoSuchElementException, void>
+  readonly dispatchEvent: (options: EventOptions) => Effect.Effect<void, Cause.NoSuchElementException>
+  readonly click: (options?: Omit<EventOptions, "event">) => Effect.Effect<void, Cause.NoSuchElementException>
 }
 
 /**
@@ -59,11 +59,7 @@ export function testRender<R, E>(
   options?:
     & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
-): Effect.Effect<
-  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>,
-  never,
-  TestRender<E>
-> {
+): Effect.Effect<TestRender<E>, never, Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>> {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
     const elementRef = yield* _(ElementRef.make())
@@ -155,7 +151,7 @@ export function click<E>(
 
 function getOrMakeWindow(
   options?: HappyDOMOptions
-): Effect.Effect<Scope.Scope, never, Window & GlobalThis> {
+): Effect.Effect<Window & GlobalThis, never, Scope.Scope> {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     return Effect.gen(function*(_) {
       window.document.head.innerHTML = ""

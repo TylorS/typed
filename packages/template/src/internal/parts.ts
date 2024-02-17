@@ -34,7 +34,7 @@ import { findHoleComment } from "./utils.js"
 const strictEq = Equivalence.strict<any>()
 
 const base = <T extends Part["_tag"]>(tag: T) =>
-  class Base {
+  (class Base {
     readonly _tag: T = tag
 
     constructor(
@@ -45,7 +45,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
           value: Extract<Part, { readonly _tag: T }>["value"]
           part: Extract<Part, { readonly _tag: T }>
         }
-      ) => Effect.Effect<Scope, never, void>,
+      ) => Effect.Effect<void, never, Scope>,
       public value: Extract<Part, { readonly _tag: T }>["value"],
       readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
     ) {
@@ -73,7 +73,7 @@ const base = <T extends Part["_tag"]>(tag: T) =>
     getValue(value: unknown) {
       return value
     }
-  }
+  })
 
 export class AttributePartImpl extends base("attribute") implements AttributePart {
   constructor(
@@ -295,7 +295,7 @@ export class EventPartImpl implements EventPart {
     readonly name: string,
     readonly index: number,
     readonly source: ElementSource<any>,
-    readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<never, never, unknown>,
+    readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<unknown>,
     readonly addEventListener: <Ev extends Event>(handler: EventHandler<never, never, Ev>) => void
   ) {
   }
@@ -490,7 +490,7 @@ function fromKeyValue(name: string, value: unknown): Array<NameValue> {
 }
 
 const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
-  class Base {
+  (class Base {
     readonly _tag: T = tag
 
     constructor(
@@ -500,7 +500,7 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
           value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
           part: Extract<SparsePart, { readonly _tag: T }>
         }
-      ) => Effect.Effect<Scope, never, void>,
+      ) => Effect.Effect<void, never, Scope>,
       public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
       readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
         equals
@@ -517,7 +517,7 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
         part: this
       } as any)
     }
-  }
+  })
 
 type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart | CommentPart | StaticText>> =
   ReadonlyArray<

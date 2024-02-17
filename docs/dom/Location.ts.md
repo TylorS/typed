@@ -44,7 +44,7 @@ Assign the current URL
 **Signature**
 
 ```ts
-export declare const assign: (url: string) => Effect.Effect<Location, never, void>
+export declare const assign: (url: string) => Effect.Effect<void, never, Location>
 ```
 
 Added in v8.19.0
@@ -72,7 +72,7 @@ Get the hash from the current Location
 **Signature**
 
 ```ts
-export declare const getHash: Effect.Effect<Location, never, string>
+export declare const getHash: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -84,7 +84,7 @@ Get the host from the current Location
 **Signature**
 
 ```ts
-export declare const getHost: Effect.Effect<Location, never, string>
+export declare const getHost: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -96,7 +96,7 @@ Get the hostname from the current Location
 **Signature**
 
 ```ts
-export declare const getHostname: Effect.Effect<Location, never, string>
+export declare const getHostname: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -108,7 +108,7 @@ Get the href from the current Location
 **Signature**
 
 ```ts
-export declare const getHref: Effect.Effect<Location, never, string>
+export declare const getHref: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -120,7 +120,7 @@ Get the origin from the current Location
 **Signature**
 
 ```ts
-export declare const getOrigin: Effect.Effect<Location, never, string>
+export declare const getOrigin: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -132,7 +132,7 @@ Get the pathname from the current Location
 **Signature**
 
 ```ts
-export declare const getPathname: Effect.Effect<Location, never, string>
+export declare const getPathname: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -144,7 +144,7 @@ Get the port from the current Location
 **Signature**
 
 ```ts
-export declare const getPort: Effect.Effect<Location, never, string>
+export declare const getPort: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -156,7 +156,7 @@ Get the protocol from the current Location
 **Signature**
 
 ```ts
-export declare const getProtocol: Effect.Effect<Location, never, string>
+export declare const getProtocol: Effect.Effect<string, never, Location>
 ```
 
 Added in v8.19.0
@@ -168,7 +168,7 @@ Get the search params string from the current Location
 **Signature**
 
 ```ts
-export declare const getSearch: Effect.Effect<Location, never, URLSearchParams>
+export declare const getSearch: Effect.Effect<URLSearchParams, never, Location>
 ```
 
 Added in v8.19.0
@@ -180,7 +180,7 @@ Reload the current URL
 **Signature**
 
 ```ts
-export declare const reload: Effect.Effect<Location, never, void>
+export declare const reload: Effect.Effect<void, never, Location>
 ```
 
 Added in v8.19.0
@@ -192,7 +192,7 @@ Replace the current URL
 **Signature**
 
 ```ts
-export declare const replace: (url: string) => Effect.Effect<Location, never, void>
+export declare const replace: (url: string) => Effect.Effect<void, never, Location>
 ```
 
 Added in v8.19.0

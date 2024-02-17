@@ -48,7 +48,7 @@ export const matchSyncProducer = <A, R>(
 export function runSink<A, R, E>(
   producer: SyncProducer<A>,
   sink: Sink<R, E, A>
-): Effect.Effect<R, never, unknown> {
+): Effect.Effect<unknown, never, R> {
   return matchSyncProducer(producer, {
     Success: (a) => sink.onSuccess(a),
     FromSync: (a) => Effect.suspend(() => sink.onSuccess(a())),
@@ -61,7 +61,7 @@ export function runReduce<A, B>(
   producer: SyncProducer<A>,
   initial: B,
   f: (b: B, a: any) => B
-): Effect.Effect<never, never, B> {
+): Effect.Effect<B> {
   return matchSyncProducer(producer, {
     Success: (a) => syncOnce(() => f(initial, a)),
     FromSync: (a) => syncOnce(() => f(initial, a())),
@@ -73,8 +73,8 @@ export function runReduce<A, B>(
 export function runReduceEffect<A, R2, E2, B>(
   producer: SyncProducer<A>,
   initial: B,
-  f: (b: B, a: any) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R2, E2, B> {
+  f: (b: B, a: any) => Effect.Effect<B, E2, R2>
+): Effect.Effect<B, E2, R2> {
   return matchSyncProducer(producer, {
     Success: (a) => effectOnce(() => f(initial, a)),
     FromSync: (a) => Effect.suspend(() => f(initial, a())),
@@ -83,7 +83,7 @@ export function runReduceEffect<A, R2, E2, B>(
   })
 }
 
-function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
+function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): Effect.Effect<unknown, never, R2> {
   if (array.length === 0) return Effect.unit
   else if (array.length === 1) return sink.onSuccess(array[0])
   else {
@@ -96,8 +96,8 @@ function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): 
   }
 }
 
-function iterableToSink<A, R2>(array: Iterable<A>, sink: Sink<R2, never, A>): Effect.Effect<R2, never, unknown> {
-  let effect: Effect.Effect<R2, never, any> = Effect.unit
+function iterableToSink<A, R2>(array: Iterable<A>, sink: Sink<R2, never, A>): Effect.Effect<unknown, never, R2> {
+  let effect: Effect.Effect<any, never, R2> = Effect.unit
 
   for (const item of array) {
     effect = Effect.zipRight(effect, sink.onSuccess(item))
@@ -106,7 +106,7 @@ function iterableToSink<A, R2>(array: Iterable<A>, sink: Sink<R2, never, A>): Ef
   return effect
 }
 
-export const syncOnce = <A>(f: () => A): Effect.Effect<never, never, A> => {
+export const syncOnce = <A>(f: () => A): Effect.Effect<A> => {
   let memoized: Option.Option<A> = Option.none()
   const get = () => {
     if (Option.isSome(memoized)) {
@@ -121,7 +121,7 @@ export const syncOnce = <A>(f: () => A): Effect.Effect<never, never, A> => {
   return Effect.sync(get)
 }
 
-export const effectOnce = <R, E, A>(f: () => Effect.Effect<R, E, A>): Effect.Effect<R, E, A> => {
+export const effectOnce = <R, E, A>(f: () => Effect.Effect<A, E, R>): Effect.Effect<A, E, R> => {
   let memoized: Option.Option<A> = Option.none()
 
   return Effect.suspend(() => {
@@ -135,10 +135,10 @@ export const effectOnce = <R, E, A>(f: () => Effect.Effect<R, E, A>): Effect.Eff
 
 export function runEffect<A, R2, E2, B>(
   producer: SyncProducer<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R2, E2, void> {
+  f: (a: A) => Effect.Effect<B, E2, R2>
+): Effect.Effect<void, E2, R2> {
   return matchSyncProducer(producer, {
-    Success: (a): Effect.Effect<R2, E2, void> => f(a),
+    Success: (a): Effect.Effect<void, E2, R2> => f(a),
     FromSync: (a) => Effect.suspend(() => f(a())),
     FromArray: (a) => Effect.forEach(a, f, DISCARD),
     FromIterable: (a) => Effect.forEach(a, f, DISCARD)

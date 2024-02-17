@@ -24,7 +24,7 @@ export {
  */
 export function it<E, A>(
   name: string,
-  test: () => Effect.Effect<Scope, E, A>,
+  test: () => Effect.Effect<A, E, Scope>,
   options?: vitest.TestOptions
 ) {
   return vitest.it(
@@ -45,7 +45,7 @@ export function test<E, A>(
   name: string,
   test: (options: {
     readonly clock: TestClock.TestClock
-  }) => Effect.Effect<Scope | TestServices.TestServices, E, A>,
+  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
   options?: vitest.TestOptions
 ) {
   return vitest.it(

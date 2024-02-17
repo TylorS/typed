@@ -45,7 +45,7 @@ Run an Effect using the IdleScheduler.
 **Signature**
 
 ```ts
-export declare const withIdleScheduler: <R, E, B>(self: Effect.Effect<R, E, B>) => Effect.Effect<R, E, B>
+export declare const withIdleScheduler: <R, E, B>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R>
 ```
 
 Added in v1.18.0
@@ -107,8 +107,8 @@ The options provided to `whileIdle`
 
 ```ts
 export interface WhileIdleRequestOptions<R, E, R2, E2> extends IdleRequestOptions {
-  readonly while: Effect.Effect<R, E, boolean>
-  readonly body: Effect.Effect<R2, E2, unknown>
+  readonly while: Effect.Effect<boolean, E, R>
+  readonly body: Effect.Effect<unknown, E2, R2>
 }
 ```
 
@@ -123,7 +123,7 @@ Request to run some work with requestIdleCallback returning an IdleDeadline
 **Signature**
 
 ```ts
-export declare const whenIdle: (options?: IdleRequestOptions) => Effect.Effect<Scope.Scope, never, IdleDeadline>
+export declare const whenIdle: (options?: IdleRequestOptions) => Effect.Effect<IdleDeadline, never, Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -136,9 +136,9 @@ Added in v1.18.0
 
 ```ts
 export interface IdleQueue<I> {
-  readonly add: <R>(part: I, task: Effect.Effect<R, never, unknown>) => Effect.Effect<R | Scope.Scope, never, void>
+  readonly add: <R>(part: I, task: Effect.Effect<unknown, never, R>) => Effect.Effect<void, never, R | Scope.Scope>
 
-  readonly interrupt: Effect.Effect<never, never, void>
+  readonly interrupt: Effect.Effect<void>
 }
 ```
 
@@ -153,19 +153,19 @@ Dequeue values and perform an Effect while the event loop is not busy with any o
 ```ts
 export declare function dequeueWhileIdle<A, R2, E2, B>(
   dequeue: Queue.Dequeue<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, R2 | Scope.Scope>
 export declare function dequeueWhileIdle<I, A, R2, E2, B>(
   dequeue: Context.Dequeue<I, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<I | R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, I | R2 | Scope.Scope>
 export declare function dequeueWhileIdle<I = never, A = unknown, R2 = never, E2 = never, B = unknown>(
   dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>,
+  f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
-): Effect.Effect<I | R2 | Scope.Scope, E2, void>
+): Effect.Effect<void, E2, I | R2 | Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -175,7 +175,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const makeIdleQueue: <I>(options?: IdleRequestOptions) => Effect.Effect<Scope.Scope, never, IdleQueue<I>>
+export declare const makeIdleQueue: <I>(options?: IdleRequestOptions) => Effect.Effect<IdleQueue<I>, never, Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -201,7 +201,7 @@ Schedule a while-loop to run using requestIdleCallback.
 ```ts
 export declare const whileIdle: <R, E, R2, E2>(
   options: WhileIdleRequestOptions<R, E, R2, E2>
-) => Effect.Effect<Scope.Scope | R | R2, E | E2, void>
+) => Effect.Effect<void, E | E2, Scope.Scope | R | R2>
 ```
 
 Added in v1.18.0

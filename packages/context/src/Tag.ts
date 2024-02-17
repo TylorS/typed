@@ -7,7 +7,7 @@
 import * as C from "effect/Context"
 import type { Tagged } from "./Extensions.js"
 import type { IdentifierFactory, IdentifierInput, IdentifierOf } from "./Identifier.js"
-import { makeIdentifier } from "./Identifier.js"
+import { identifierToString, makeIdentifier } from "./Identifier.js"
 
 /**
  * Provides extensions to the `Context` module's Tag implementation to
@@ -37,7 +37,7 @@ export function Tag<S>(id?: unknown) {
 }
 
 function makeTag<const I extends IdentifierInput<any>, S>(id: I): Tag<IdentifierOf<I>, S> {
-  return C.Tag<IdentifierOf<I>, S>(makeIdentifier(id))
+  return C.GenericTag<IdentifierOf<I>, S>(identifierToString(makeIdentifier(id)))
 }
 
 /**

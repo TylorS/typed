@@ -237,13 +237,13 @@ export declare const mapEffect: {
   <P extends string, R2, E2, B>(
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }) => Effect.Effect<R2, E2, B>
+    }) => Effect.Effect<B, E2, R2>
   ): (route: Route<P>) => Guard.Guard<string, R2, E2, B>
   <P extends string, R2, E2, B>(
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }) => Effect.Effect<R2, E2, B>
+    }) => Effect.Effect<B, E2, R2>
   ): Guard.Guard<string, R2, E2, B>
 }
 ```
@@ -259,7 +259,7 @@ export declare const tap: {
   <P extends string, R2, E2, B>(
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }) => Effect.Effect<R2, E2, B>
+    }) => Effect.Effect<B, E2, R2>
   ): (
     route: Route<P>
   ) => Guard.Guard<
@@ -274,7 +274,7 @@ export declare const tap: {
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }) => Effect.Effect<R2, E2, B>
+    }) => Effect.Effect<B, E2, R2>
   ): Guard.Guard<
     string,
     R2,

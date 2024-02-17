@@ -35,9 +35,9 @@ export const Storage: Context.Tagged<Storage> = Context.Tagged<Storage>("@typed/
  * @since 8.19.0
  * @category getters
  */
-export const getItem: (key: string) => StorageEffect<Storage, never, O.Option<string>> = (
+export const getItem: (key: string) => StorageEffect<O.Option<string>> = (
   key: string
-): StorageEffect<Storage, never, O.Option<string>> =>
+): StorageEffect<O.Option<string>> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -54,10 +54,10 @@ export const getItem: (key: string) => StorageEffect<Storage, never, O.Option<st
  * @since 8.19.0
  * @category setters
  */
-export const setItem: (key: string, value: string) => StorageEffect<Storage, never, void> = (
+export const setItem: (key: string, value: string) => StorageEffect<void> = (
   key: string,
   value: string
-): StorageEffect<Storage, never, void> =>
+): StorageEffect<void> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -73,9 +73,9 @@ export const setItem: (key: string, value: string) => StorageEffect<Storage, nev
  * @since 8.19.0
  * @category setters
  */
-export const removeItem: (key: string) => StorageEffect<Storage, never, void> = (
+export const removeItem: (key: string) => StorageEffect<void> = (
   key: string
-): StorageEffect<Storage, never, void> =>
+): StorageEffect<void> =>
   StorageEffect(
     Storage.with((s) => {
       try {
@@ -91,7 +91,7 @@ export const removeItem: (key: string) => StorageEffect<Storage, never, void> = 
  * @since 8.19.0
  * @category context
  */
-export const sessionStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
+export const sessionStorage: Layer.Layer<Storage, never, Window> = Storage.layer(
   Window.with((w) => w.sessionStorage)
 )
 
@@ -100,7 +100,7 @@ export const sessionStorage: Layer.Layer<Window, never, Storage> = Storage.layer
  * @since 8.19.0
  * @category context
  */
-export const localStorage: Layer.Layer<Window, never, Storage> = Storage.layer(
+export const localStorage: Layer.Layer<Storage, never, Window> = Storage.layer(
   Window.with((w) => w.localStorage)
 )
 
@@ -119,15 +119,15 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, O.Option<S.Schema.To<Schemas[K]>>>
+  ) => StorageEffect<O.Option<S.Schema.To<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
     value: S.Schema.To<Schemas[K]>,
     options?: ParseOptions
-  ) => StorageEffect<Storage | S.Schema.Context<Schemas[K]>, ParseResult.ParseError, void>
+  ) => StorageEffect<void, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
-  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<Storage, never, void>
+  readonly remove: <K extends keyof Schemas & string>(key: K) => StorageEffect<void>
 
   readonly key: <K extends keyof Schemas & string>(
     key: K
@@ -142,18 +142,18 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
  * @category models
  */
 export interface SchemaKeyStorage<R, O> {
-  readonly schema: S.Schema<R, string, O>
+  readonly schema: S.Schema<O, string, R>
 
   readonly get: (
     options?: ParseOptions
-  ) => StorageEffect<Storage | R, ParseResult.ParseError, O.Option<O>>
+  ) => StorageEffect<O.Option<O>, ParseResult.ParseError, R>
 
   readonly set: (
     value: O,
     options?: ParseOptions
-  ) => StorageEffect<Storage | R, ParseResult.ParseError, void>
+  ) => StorageEffect<void, ParseResult.ParseError, R>
 
-  readonly remove: StorageEffect<Storage, never, void>
+  readonly remove: StorageEffect<void>
 }
 
 /**
@@ -169,7 +169,7 @@ export function SchemaStorage<
       [K in keyof Schemas]: (
         i: S.Schema.From<Schemas[K]>,
         options?: ParseOptions
-      ) => Effect.Effect<S.Schema.Context<Schemas[K]>, ParseResult.ParseError, S.Schema.To<Schemas[K]>>
+      ) => Effect.Effect<S.Schema.To<Schemas[K]>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
     }
   > = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
@@ -180,7 +180,7 @@ export function SchemaStorage<
       [K in keyof Schemas]: (
         i: S.Schema.To<Schemas[K]>,
         options?: ParseOptions
-      ) => Effect.Effect<never, ParseResult.ParseError, S.Schema.From<Schemas[K]>>
+      ) => Effect.Effect<S.Schema.From<Schemas[K]>, ParseResult.ParseError>
     }
   > = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
@@ -233,12 +233,12 @@ export function SchemaStorage<
  */
 export function SchemaKeyStorage<K extends string, R, O>(
   key: K,
-  schema: S.Schema<R, string, O>
+  schema: S.Schema<O, string, R>
 ): SchemaKeyStorage<R, O> {
   const decoder = S.decode(schema)
   const encoder = S.encode(schema)
 
-  const get = (options?: ParseOptions) =>
+  const get = (options?: ParseOptions): StorageEffect<O.Option<O>, ParseResult.ParseError, R> =>
     StorageEffect(
       Effect.gen(function*($) {
         const option = yield* $(getItem(key))
@@ -278,9 +278,9 @@ export function SchemaKeyStorage<K extends string, R, O>(
  * @since 8.19.0
  * @category models
  */
-export interface StorageEffect<R, E, A> extends Effect.Effect<R, E, A> {
-  readonly local: Effect.Effect<Window | Exclude<R, Storage>, E, A>
-  readonly session: Effect.Effect<Window | Exclude<R, Storage>, E, A>
+export interface StorageEffect<A, E = never, R = never> extends Effect.Effect<A, E, Exclude<R, Storage> | Storage> {
+  readonly local: Effect.Effect<A, E, Window | Exclude<R, Storage>>
+  readonly session: Effect.Effect<A, E, Window | Exclude<R, Storage>>
 }
 
 /**
@@ -291,11 +291,11 @@ export interface StorageEffect<R, E, A> extends Effect.Effect<R, E, A> {
  * @since 8.19.0
  * @category constructors
  */
-export function StorageEffect<R, E, A>(
-  effect: Effect.Effect<R, E, A>
-): StorageEffect<R, E, A> {
+export function StorageEffect<A, E, R>(
+  effect: Effect.Effect<A, E, R>
+): StorageEffect<A, E, Exclude<R, Storage>> {
   return Object.assign(effect, {
     local: Effect.provide(effect, localStorage),
     session: Effect.provide(effect, sessionStorage)
-  })
+  }) as StorageEffect<A, E, Exclude<R, Storage>>
 }

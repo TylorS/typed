@@ -111,16 +111,16 @@ export function asGuard<P extends string>(route: Route<P>): Guard.Guard<string, 
  */
 export const mapEffect: {
   <P extends string, R2, E2, B>(
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
   ): (route: Route<P>) => Guard.Guard<string, R2, E2, B>
 
   <P extends string, R2, E2, B>(
     route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
   ): Guard.Guard<string, R2, E2, B>
 } = dual(2, function mapEffect<P extends string, R2, E2, B>(
   route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+  f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
 ): Guard.Guard<string, R2, E2, B> {
   return Guard.mapEffect(asGuard(route), f)
 })
@@ -187,16 +187,16 @@ export const filter: {
  */
 export const tap: {
   <P extends string, R2, E2, B>(
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
   ): (route: Route<P>) => Guard.Guard<string, R2, E2, Path.ParamsOf<P>>
 
   <P extends string, R2, E2, B>(
     route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
   ): Guard.Guard<string, R2, E2, Path.ParamsOf<P>>
 } = dual(2, function tap<P extends string, R2, E2, B>(
   route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => Effect.Effect<R2, E2, B>
+  f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
 ): Guard.Guard<string, R2, E2, Path.ParamsOf<P>> {
   return Guard.tap(asGuard(route), f)
 })

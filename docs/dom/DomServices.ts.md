@@ -74,7 +74,7 @@ Create a Layer for DOM services that depend on a Window and GlobalThis
 ```ts
 export declare const domServices: (
   params?: DomServicesElementParams
-) => Layer.Layer<Window | GlobalThis, never, DomServices>
+) => Layer.Layer<DomServices, never, Window | GlobalThis>
 ```
 
 Added in v8.19.0
@@ -89,7 +89,7 @@ Provide DOM services to an Effect
 export declare const provideDomServices: (
   window: Window & GlobalThis,
   params?: DomServicesElementParams
-) => <R, E, A>(effect: Effect.Effect<DomServices | R, E, A>) => Effect.Effect<Exclude<R, DomServices>, E, A>
+) => <R, E, A>(effect: Effect.Effect<A, E, DomServices | R>) => Effect.Effect<A, E, Exclude<R, DomServices>>
 ```
 
 Added in v8.19.0

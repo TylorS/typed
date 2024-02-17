@@ -75,7 +75,7 @@ export declare const define: <K extends keyof HTMLElementTagNameMap>(
   name: K,
   constructor: CustomElementConstructor,
   options?: ElementDefinitionOptions
-) => Effect.Effect<CustomElementRegistry, never, void>
+) => Effect.Effect<void, never, CustomElementRegistry>
 ```
 
 Added in v1.0.0
@@ -87,7 +87,7 @@ Added in v1.0.0
 ```ts
 export declare const get: <K extends keyof HTMLElementTagNameMap>(
   name: K
-) => Effect.Effect<CustomElementRegistry, NoSuchElementException, CustomElementConstructor>
+) => Effect.Effect<CustomElementConstructor, NoSuchElementException, CustomElementRegistry>
 ```
 
 Added in v1.0.0
@@ -97,7 +97,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const upgrade: (node: Node) => Effect.Effect<CustomElementRegistry, never, void>
+export declare const upgrade: (node: Node) => Effect.Effect<void, never, CustomElementRegistry>
 ```
 
 Added in v1.0.0
@@ -109,7 +109,7 @@ Added in v1.0.0
 ```ts
 export declare const whenDefined: <K extends keyof HTMLElementTagNameMap>(
   name: K
-) => Effect.Effect<CustomElementRegistry, never, CustomElementConstructor>
+) => Effect.Effect<CustomElementConstructor, never, CustomElementRegistry>
 ```
 
 Added in v1.0.0

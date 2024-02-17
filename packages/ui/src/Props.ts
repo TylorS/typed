@@ -61,7 +61,7 @@ export type EventsOf<El, EventMap extends {} = DefaultEventMap<El>> = {
       any,
       EventWithCurrentTarget<El, Extract<EventMap[K], Event>>
     >
-    | Effect.Effect<any, any, unknown>
+    | Effect.Effect<unknown, any, any>
     | null
     | undefined
 }
@@ -84,7 +84,7 @@ export type DataProps = {
  * @since 1.0.0
  */
 export function getEventHandler<R, E, Ev extends Event = Event>(
-  handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<R, E, unknown> | null | undefined
+  handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<unknown, E, R> | null | undefined
 ): EventHandler.EventHandler<R, E, Ev> | null {
   if (!handler) return null
 

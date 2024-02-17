@@ -10,21 +10,21 @@ export type EffectProducer<R = any, E = any, A = any> =
 
 export interface FromEffect<R, E, A> {
   readonly _tag: "FromEffect"
-  readonly source: Effect.Effect<R, E, A>
+  readonly source: Effect.Effect<A, E, R>
 }
 
-export function FromEffect<R, E, A>(source: Effect.Effect<R, E, A>): FromEffect<R, E, A> {
+export function FromEffect<R, E, A>(source: Effect.Effect<A, E, R>): FromEffect<R, E, A> {
   return { _tag: "FromEffect", source }
 }
 
 export interface FromScheduled<R, E, I, O> {
   readonly _tag: "FromScheduled"
-  readonly input: Effect.Effect<R, E, I>
+  readonly input: Effect.Effect<I, E, R>
   readonly schedule: Schedule.Schedule<R, I, O>
 }
 
 export function FromScheduled<R, E, R2, I, O>(
-  input: Effect.Effect<R, E, I>,
+  input: Effect.Effect<I, E, R>,
   schedule: Schedule.Schedule<R2, I, O>
 ): FromScheduled<R | R2, E, I, O> {
   return { _tag: "FromScheduled", schedule, input }
@@ -32,12 +32,12 @@ export function FromScheduled<R, E, R2, I, O>(
 
 export interface Scheduled<R, E, A, O> {
   readonly _tag: "Scheduled"
-  readonly input: Effect.Effect<R, E, A>
+  readonly input: Effect.Effect<A, E, R>
   readonly schedule: Schedule.Schedule<R, unknown, O>
 }
 
 export function Scheduled<R, E, A, R2, O>(
-  input: Effect.Effect<R, E, A>,
+  input: Effect.Effect<A, E, R>,
   schedule: Schedule.Schedule<R2, unknown, O>
 ): Scheduled<R | R2, E, A, O> {
   return { _tag: "Scheduled", schedule, input }
@@ -46,7 +46,7 @@ export function Scheduled<R, E, A, R2, O>(
 export function runSink<R, E, A, R2>(
   producer: EffectProducer<R, E, A>,
   sink: Sink.Sink<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
+): Effect.Effect<unknown, never, R | R2> {
   switch (producer._tag) {
     case "FromEffect":
       return Effect.matchCauseEffect(producer.source, sink)
@@ -60,7 +60,7 @@ export function runSink<R, E, A, R2>(
 function runFromScheduled<R, E, I, O, R2>(
   scheduled: FromScheduled<R, E, I, O>,
   sink: Sink.Sink<R2, E, O>
-): Effect.Effect<R | R2, never, unknown> {
+): Effect.Effect<unknown, never, R | R2> {
   return Effect.catchAllCause(
     Effect.flatMap(
       scheduled.input,
@@ -73,7 +73,7 @@ function runFromScheduled<R, E, I, O, R2>(
 function runSchedule<R, E, A, O, R2>(
   scheduled: Scheduled<R, E, A, O>,
   sink: Sink.Sink<R2, E, A>
-): Effect.Effect<R | R2, never, unknown> {
+): Effect.Effect<unknown, never, R | R2> {
   return Effect.catchAllCause(
     Effect.schedule(Effect.matchCauseEffect(scheduled.input, sink), scheduled.schedule),
     sink.onFailure
@@ -82,8 +82,8 @@ function runSchedule<R, E, A, O, R2>(
 
 export function runEffect<R, E, A, R2, E2, B>(
   producer: EffectProducer<R, E, A>,
-  f: (a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R | R2, E | E2, unknown> {
+  f: (a: A) => Effect.Effect<B, E2, R2>
+): Effect.Effect<unknown, E | E2, R | R2> {
   switch (producer._tag) {
     case "FromEffect":
       return Effect.flatMap(producer.source, f)
@@ -91,7 +91,7 @@ export function runEffect<R, E, A, R2, E2, B>(
       return Effect.flatMap(
         producer.input,
         (i) =>
-          Effect.asyncEffect<never, E | E2, unknown, R | R2, never, unknown>((resume) => {
+          Effect.asyncEffect<unknown, E | E2, never, unknown, never, R | R2>((resume) => {
             const onFailure = (cause: Cause.Cause<E | E2>) => Effect.succeed(resume(Effect.failCause(cause)))
 
             return Effect.matchCauseEffect(
@@ -115,8 +115,8 @@ export function runEffect<R, E, A, R2, E2, B>(
 export function runReduceEffect<R, E, A, R2, E2, B>(
   producer: EffectProducer<R, E, A>,
   initial: B,
-  f: (b: B, a: A) => Effect.Effect<R2, E2, B>
-): Effect.Effect<R | R2, E | E2, B> {
+  f: (b: B, a: A) => Effect.Effect<B, E2, R2>
+): Effect.Effect<B, E | E2, R | R2> {
   return Effect.suspend(() => {
     let acc = initial
 

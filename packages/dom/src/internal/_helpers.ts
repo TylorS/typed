@@ -21,13 +21,13 @@ export const ROOT_CSS_SELECTOR = `:root` as const
 export type ROOT_CSS_SELECTOR = typeof ROOT_CSS_SELECTOR
 
 export function createScopedRuntime<R>(): Effect.Effect<
-  R | Scope.Scope,
-  never,
   {
     readonly runtime: Runtime.Runtime<R | Scope.Scope>
     readonly scope: Scope.Scope
-    readonly run: <E, A>(effect: Effect.Effect<R | Scope.Scope, E, A>) => Fiber.Fiber<E, A>
-  }
+    readonly run: <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>) => Fiber.Fiber<A, E>
+  },
+  never,
+  R | Scope.Scope
 > {
   return Effect.gen(function*(_) {
     const runtime = yield* _(Effect.runtime<R | Scope.Scope>())

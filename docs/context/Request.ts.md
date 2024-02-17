@@ -144,10 +144,8 @@ export interface RequestConstructor {
   ) => {
     <const Id extends IdentifierFactory<any>>(
       id: Id
-    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
-    <const Id>(
-      id: Id
-    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId | keyof Data.Case>>, Req>
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId>>, Req>
+    <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, "_tag" | typeof R.RequestTypeId>>, Req>
   }
   /**
    * Construct a Request implementation to be utilized from the Effect Context.
@@ -157,8 +155,8 @@ export interface RequestConstructor {
   readonly of: <Req extends R.Request<any, any>>() => {
     <const Id extends IdentifierFactory<any>>(
       id: Id
-    ): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
-    <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId | keyof Data.Case>>, Req>
+    ): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId>>, Req>
+    <const Id>(id: Id): Request<IdentifierOf<Id>, Compact<Omit<Req, typeof R.RequestTypeId>>, Req>
   }
 }
 ```
@@ -175,12 +173,12 @@ Contextual wrappers around @effect/io/Request
 
 ```ts
 export interface Request<I, Input, Req extends R.Request<any, any>>
-  extends Fn<I, (requests: Req) => Effect<never, R.Request.Error<Req>, R.Request.Success<Req>>> {
+  extends Fn<I, (requests: Req) => Effect<R.Request.Success<Req>, R.Request.Error<Req>>> {
   /**
    * Make the request using the provided impleemtation from the Effect Context.
    * @since 1.0.0
    */
-  readonly make: (...input: SimplifyInputArg<Input>) => Effect<I, R.Request.Error<Req>, R.Request.Success<Req>>
+  readonly make: (...input: SimplifyInputArg<Input>) => Effect<R.Request.Success<Req>, R.Request.Error<Req>, I>
 }
 ```
 

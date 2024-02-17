@@ -39,7 +39,7 @@ const strictEqual = Option.getEquivalence((a, b) => a === b)
 /**
  * @since 1.0.0
  */
-export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
+export function make<T extends Rendered = Rendered>(): Effect.Effect<ElementRef<T>, never, Scope.Scope> {
   return Effect.map(
     RefSubject.of(Option.none<T>(), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
@@ -49,7 +49,7 @@ export function make<T extends Rendered = Rendered>(): Effect.Effect<Scope.Scope
 /**
  * @since 1.0.0
  */
-export function of<T extends Rendered>(rendered: T): Effect.Effect<Scope.Scope, never, ElementRef<T>> {
+export function of<T extends Rendered>(rendered: T): Effect.Effect<ElementRef<T>, never, Scope.Scope> {
   return Effect.map(
     RefSubject.of(Option.some<T>(rendered), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
@@ -88,7 +88,7 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never
     return compact(this.ref)
   }
 
-  toEffect(): Effect.Effect<never, NoSuchElementException, T> {
+  toEffect(): Effect.Effect<T, NoSuchElementException> {
     return Effect.flatten(this.ref)
   }
 }
@@ -97,8 +97,8 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never
  * @since 1.0.0
  */
 export const set: {
-  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<never, never, A>
-  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<never, never, A>
+  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<A>
+  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<A>
 } = dual(2, function set<A extends Rendered>(elementRef: ElementRef<A>, value: A) {
   return Effect.as(RefSubject.set(elementRef[ElementRefTypeId], Option.some(value)), value)
 })

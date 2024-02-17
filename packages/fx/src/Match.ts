@@ -116,7 +116,7 @@ const variance: Matcher.Variance<any, any, any, any> = {
 
 class When<R, E, I, A, O> {
   constructor(
-    readonly guard: (input: I) => Effect.Effect<R, E, Option.Option<A>>,
+    readonly guard: (input: I) => Effect.Effect<Option.Option<A>, E, R>,
     readonly onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R, E, O>
   ) {}
 }
@@ -125,8 +125,8 @@ class Matched<R, E, I, A, O> {
   constructor(
     readonly when: When<R, E, I, A, O>,
     readonly ref: RefSubject.RefSubject<never, never, A>,
-    readonly fiber: Fiber.Fiber<never, unknown>,
-    readonly interrupt: Effect.Effect<never, never, void>
+    readonly fiber: Fiber.Fiber<unknown>,
+    readonly interrupt: Effect.Effect<void>
   ) {}
 }
 

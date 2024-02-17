@@ -50,7 +50,7 @@ Added in v1.0.0
 ```ts
 export declare function renderLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
-): Layer.Layer<Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>, never, never>
+): Layer.Layer<never, never, Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>>
 ```
 
 Added in v1.0.0

@@ -21,81 +21,81 @@ export interface PubSub<I, A> extends Tag<I, PS.PubSub<A>> {
   /**
    * The capacity of the PubSub
    */
-  readonly capacity: Effect.Effect<I, never, number>
+  readonly capacity: Effect.Effect<number, never, I>
 
   /**
    * Is the PubSub active?
    */
-  readonly isActive: Effect.Effect<I, never, boolean>
+  readonly isActive: Effect.Effect<boolean, never, I>
 
   /**
    * The current size of the PubSub
    */
-  readonly size: Effect.Effect<I, never, number>
+  readonly size: Effect.Effect<number, never, I>
 
   /**
    * Is the PubSub full?
    */
-  readonly isFull: Effect.Effect<I, never, boolean>
+  readonly isFull: Effect.Effect<boolean, never, I>
 
   /**
    * Is the PubSub empty?
    */
-  readonly isEmpty: Effect.Effect<I, never, boolean>
+  readonly isEmpty: Effect.Effect<boolean, never, I>
 
   /**
    * Shutdown the PubSub
    */
-  readonly shutdown: Effect.Effect<I, never, void>
+  readonly shutdown: Effect.Effect<void, never, I>
 
   /**
    * Is the PubSub shutdown?
    */
-  readonly isShutdown: Effect.Effect<I, never, boolean>
+  readonly isShutdown: Effect.Effect<boolean, never, I>
 
   /**
    * Wait for the PubSub to shutdown
    */
-  readonly awaitShutdown: Effect.Effect<I, never, void>
+  readonly awaitShutdown: Effect.Effect<void, never, I>
 
   // PubSub
 
   /**
    * Publish a value to the PubSub
    */
-  readonly publish: (a: A) => Effect.Effect<I, never, boolean>
+  readonly publish: (a: A) => Effect.Effect<boolean, never, I>
 
   /**
    * Publish multiple values to the PubSub
    */
-  readonly publishAll: (as: Iterable<A>) => Effect.Effect<I, never, boolean>
+  readonly publishAll: (as: Iterable<A>) => Effect.Effect<boolean, never, I>
 
   /**
    * Subscribe to the PubSub
    */
-  readonly subscribe: Effect.Effect<I | Scope, never, Q.Dequeue<A>>
+  readonly subscribe: Effect.Effect<Q.Dequeue<A>, never, I | Scope>
 
   // Constructors
 
   /**
    * Create a bounded PubSub
    */
-  readonly bounded: (capacity: number) => Layer.Layer<never, never, I>
+  readonly bounded: (capacity: number) => Layer.Layer<I>
 
   /**
    * Create a dropping PubSub
    */
-  readonly dropping: (capacity: number) => Layer.Layer<never, never, I>
+  readonly dropping: (capacity: number) => Layer.Layer<I>
 
   /**
    * Create a sliding PubSub
    */
-  readonly sliding: (capacity: number) => Layer.Layer<never, never, I>
+  readonly sliding: (capacity: number) => Layer.Layer<I>
 
   /**
    * Create an unbounded PubSub
    */
-  readonly unbounded: Layer.Layer<never, never, I>
+  readonly unbounded: Layer.Layer<I>
 }
 
 /**

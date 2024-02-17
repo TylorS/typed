@@ -39,7 +39,7 @@ Dispatch an Event from the current ParentElement
 export declare const dispatchEvent: <EventName extends keyof HTMLElementEventMap>(
   event: EventName,
   options?: EventInit
-) => Effect.Effect<GlobalThis | ParentElement, never, boolean>
+) => Effect.Effect<boolean, never, GlobalThis | ParentElement>
 ```
 
 Added in v8.19.0
@@ -69,7 +69,7 @@ Add an event listener to the current ParentElement
 ```ts
 export declare const addParentElementListener: <EventName extends string, R = never>(
   options: EventTarget.AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
-) => Effect.Effect<Scope.Scope | ParentElement | R, never, void>
+) => Effect.Effect<void, never, Scope.Scope | ParentElement | R>
 ```
 
 Added in v8.19.0
@@ -83,7 +83,7 @@ Query for an element using a CSS selector, relative to the current ParentElement
 ```ts
 export declare const querySelector: <A extends HTMLElement>(
   selector: string
-) => Effect.Effect<ParentElement, never, Option.Option<A>>
+) => Effect.Effect<Option.Option<A>, never, ParentElement>
 ```
 
 Added in v8.19.0
@@ -97,7 +97,7 @@ Query for multiple elements using a CSS selector, relative to the current Parent
 ```ts
 export declare const querySelectorAll: <A extends HTMLElement>(
   selector: string
-) => Effect.Effect<ParentElement, never, readonly A[]>
+) => Effect.Effect<readonly A[], never, ParentElement>
 ```
 
 Added in v8.19.0

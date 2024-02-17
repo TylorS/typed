@@ -67,7 +67,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
+export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
 ```
 
 Added in v1.18.0
@@ -200,9 +200,9 @@ Added in v1.18.0
 ```ts
 export declare const mapEffect: {
   <O, R2, E2, B>(
-    f: (o: O) => Effect.Effect<R2, E2, B>
+    f: (o: O) => Effect.Effect<B, E2, R2>
   ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R2 | R, E2 | E, B>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<R2, E2, B>): Guard<I, R | R2, E | E2, B>
+  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, B>
 }
 ```
 
@@ -215,9 +215,9 @@ Added in v1.18.0
 ```ts
 export declare const tap: {
   <O, R2, E2, B>(
-    f: (o: O) => Effect.Effect<R2, E2, B>
+    f: (o: O) => Effect.Effect<B, E2, R2>
   ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R2 | R, E2 | E, O>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<R2, E2, B>): Guard<I, R | R2, E | E2, O>
+  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, O>
 }
 ```
 

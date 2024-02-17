@@ -49,7 +49,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const getFailure: <R, E, A>(ref: RefAsyncData<R, E, A>) => RefSubject.Filtered<R, never, E>
+export declare const getFailure: <A, E, R>(ref: RefAsyncData<A, E, R>) => RefSubject.Filtered<R, never, E>
 ```
 
 Added in v1.20.0
@@ -59,7 +59,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const getSuccess: <R, E, A>(ref: RefAsyncData<R, E, A>) => RefSubject.Filtered<R, never, A>
+export declare const getSuccess: <A, E, R>(ref: RefAsyncData<A, E, R>) => RefSubject.Filtered<R, never, A>
 ```
 
 Added in v1.20.0
@@ -73,7 +73,7 @@ Convert RefAsyncData into a Sink.
 **Signature**
 
 ```ts
-export declare const asSink: <R, E, A>(ref: RefAsyncData<R, E, A>) => Sink.Sink<R, E, A>
+export declare const asSink: <A, E, R>(ref: RefAsyncData<A, E, R>) => Sink.Sink<R, E, A>
 ```
 
 Added in v1.20.0
@@ -87,12 +87,12 @@ Await for the AsyncData to stop loading.
 **Signature**
 
 ```ts
-export declare const awaitLoading: <R, E, A>(
-  data: RefAsyncData<R, E, A>
+export declare const awaitLoading: <A, E, R>(
+  data: RefAsyncData<A, E, R>
 ) => Effect.Effect<
-  Scope.Scope | R,
+  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<A, E>,
   never,
-  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<E, A>
+  Scope.Scope | R
 >
 ```
 
@@ -105,12 +105,12 @@ Await for the AsyncData to stop loading or refreshing.
 **Signature**
 
 ```ts
-export declare const awaitLoadingOrRefreshing: <R, E, A>(
-  data: RefAsyncData<R, E, A>
+export declare const awaitLoadingOrRefreshing: <A, E, R>(
+  data: RefAsyncData<A, E, R>
 ) => Effect.Effect<
-  Scope.Scope | R,
+  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<A, E>,
   never,
-  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<E, A>
+  Scope.Scope | R
 >
 ```
 
@@ -123,9 +123,9 @@ Change the current value of a RefAsyncData to a loading or refreshing state.
 **Signature**
 
 ```ts
-export declare const startLoading: <R, E, A>(
-  ref: RefAsyncData<R, E, A>
-) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+export declare const startLoading: <A, E, R>(
+  ref: RefAsyncData<A, E, R>
+) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -137,9 +137,9 @@ Change the current value of a RefAsyncData to a non-loading/non-refreshing state
 **Signature**
 
 ```ts
-export declare const stopLoading: <R, E, A>(
-  ref: RefAsyncData<R, E, A>
-) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+export declare const stopLoading: <A, E, R>(
+  ref: RefAsyncData<A, E, R>
+) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -151,7 +151,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface RefAsyncData<R, E, A> extends RefSubject.RefSubject<R, never, AsyncData.AsyncData<E, A>> {}
+export interface RefAsyncData<A, E, R> extends RefSubject.RefSubject<R, never, AsyncData.AsyncData<A, E>> {}
 ```
 
 Added in v1.20.0
@@ -161,9 +161,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function asyncDataRequest<R, E, A>(
-  effect: Effect.Effect<R, E, A>
-): Fx.Fx<R, never, AsyncData.AsyncData<E, A>>
+export declare function asyncDataRequest<A, E, R>(
+  effect: Effect.Effect<A, E, R>
+): Fx.Fx<R, never, AsyncData.AsyncData<A, E>>
 ```
 
 Added in v1.20.0
@@ -176,8 +176,8 @@ Set Exit value of RefAsyncData
 
 ```ts
 export declare const done: {
-  <E, A>(exit: Exit.Exit<E, A>): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-  <R, E, A>(ref: RefAsyncData<R, E, A>, exit: Exit.Exit<E, A>): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  <E, A>(exit: Exit.Exit<A, E>): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  <A, E, R>(ref: RefAsyncData<A, E, R>, exit: Exit.Exit<A, E>): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
 ```
 
@@ -194,12 +194,12 @@ export declare const fail: {
   <E>(
     error: E,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
-  ): <R, A>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-  <R, E, A>(
-    ref: RefAsyncData<R, E, A>,
+  ): <R, A>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  <A, E, R>(
+    ref: RefAsyncData<A, E, R>,
     error: E,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
-  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
 ```
 
@@ -216,12 +216,12 @@ export declare const failCause: {
   <E>(
     cause: Cause.Cause<E>,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
-  ): <R, A>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-  <R, E, A>(
-    ref: RefAsyncData<R, E, A>,
+  ): <R, A>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  <A, E, R>(
+    ref: RefAsyncData<A, E, R>,
     cause: Cause.Cause<E>,
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
-  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
 ```
 
@@ -234,7 +234,7 @@ Map the input value
 **Signature**
 
 ```ts
-export declare const mapInput: <R, E, A, B>(ref: RefAsyncData<R, E, A>, f: (b: B) => A) => Sink.Sink<R, E, B>
+export declare const mapInput: <R, E, A, B>(ref: RefAsyncData<A, E, R>, f: (b: B) => A) => Sink.Sink<R, E, B>
 ```
 
 Added in v1.20.0
@@ -247,8 +247,8 @@ Map the input value using an Effect
 
 ```ts
 export declare const mapInputEffect: <R, E, A, R2, B>(
-  ref: RefAsyncData<R, E, A>,
-  f: (b: B) => Effect.Effect<R2, E, A>
+  ref: RefAsyncData<A, E, R>,
+  f: (b: B) => Effect.Effect<A, E, R2>
 ) => Sink.Sink<R | R2, E, B>
 ```
 
@@ -266,10 +266,10 @@ export declare const matchAsyncData: {
     readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
     readonly Success: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R5, E5, F>
   }): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<A, E1>>
   ) => Fx.Fx<R2 | R3 | R4 | R5 | R, E2 | E3 | E4 | E5 | E, B | C | D | F>
   <R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, A>>,
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<A, E1>>,
     matchers: {
       readonly NoData: Fx.Fx<R2, E2, B>
       readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
@@ -297,10 +297,10 @@ export declare const matchAsyncDataArray: {
       readonly Success: (value: RefSubject.RefSubject<never, never, A>, key: K) => Fx.Fx<R5, E5, F>
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, readonly A[]>>
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>
   ) => Fx.Fx<Scope.Scope | R2 | R3 | R4 | R5 | R, E2 | E3 | E4 | E5 | E, B | C | D | readonly F[]>
   <R, E, E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<E1, readonly A[]>>,
+    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>,
     getKey: (a: A) => K,
     matchers: {
       readonly NoData: Fx.Fx<R2, E2, B>
@@ -325,12 +325,12 @@ export declare const optimistic: {
   <A>(
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
-  ): <R, E>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-  <R, E, A>(
-    ref: RefAsyncData<R, E, A>,
+  ): <R, E>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  <A, E, R>(
+    ref: RefAsyncData<A, E, R>,
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
-  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
 ```
 
@@ -342,13 +342,13 @@ Added in v1.20.0
 
 ```ts
 export declare const runAsyncData: {
-  <R2, E, A>(
-    effect: Effect.Effect<R2, E, A>
-  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R2 | R, never, AsyncData.AsyncData<E, A>>
+  <R2, A, E>(
+    effect: Effect.Effect<A, E, R2>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
   <R, E, A, R2>(
-    ref: RefAsyncData<R, E, A>,
-    effect: Effect.Effect<R2, E, A>
-  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
+    ref: RefAsyncData<A, E, R>,
+    effect: Effect.Effect<A, E, R2>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
 }
 ```
 
@@ -360,15 +360,15 @@ Added in v1.20.0
 
 ```ts
 export declare const runIfExpired: {
-  <R2, E, A>(
-    effect: Effect.Effect<R2, E, A>,
+  <R2, A, E>(
+    effect: Effect.Effect<A, E, R2>,
     options: { readonly ttl: Duration.DurationInput; readonly now?: number }
-  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R2 | R, never, AsyncData.AsyncData<E, A>>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
   <R, E, A, R2>(
-    ref: RefAsyncData<R, E, A>,
-    effect: Effect.Effect<R2, E, A>,
+    ref: RefAsyncData<A, E, R>,
+    effect: Effect.Effect<A, E, R2>,
     options: { readonly ttl: Duration.DurationInput; readonly now?: number }
-  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
 }
 ```
 
@@ -380,13 +380,13 @@ Added in v1.20.0
 
 ```ts
 export declare const runIfNoData: {
-  <R2, E, A>(
-    effect: Effect.Effect<R2, E, A>
-  ): <R>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R2 | R, never, AsyncData.AsyncData<E, A>>
+  <R2, A, E>(
+    effect: Effect.Effect<A, E, R2>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
   <R, E, A, R2>(
-    ref: RefAsyncData<R, E, A>,
-    effect: Effect.Effect<R2, E, A>
-  ): Effect.Effect<R | R2, never, AsyncData.AsyncData<E, A>>
+    ref: RefAsyncData<A, E, R>,
+    effect: Effect.Effect<A, E, R2>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
 }
 ```
 
@@ -403,12 +403,12 @@ export declare const succeed: {
   <A>(
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
-  ): <R, E>(ref: RefAsyncData<R, E, A>) => Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
-  <R, E, A>(
-    ref: RefAsyncData<R, E, A>,
+  ): <R, E>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  <A, E, R>(
+    ref: RefAsyncData<A, E, R>,
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
-  ): Effect.Effect<R, never, AsyncData.AsyncData<E, A>>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
 ```
 

@@ -57,7 +57,7 @@ export const RenderContext: Context.Tagged<RenderContext, RenderContext> = Conte
  * @since 1.0.0
  */
 export interface RenderQueue {
-  readonly add: (part: unknown, task: () => void) => Effect.Effect<Scope.Scope, never, void>
+  readonly add: (part: unknown, task: () => void) => Effect.Effect<void, never, Scope.Scope>
 }
 
 /**
@@ -120,7 +120,7 @@ const buildWithCurrentEnvironment = (environment: Environment, skipRenderSchedul
 export const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-) => Layer.Layer<never, never, RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
+) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices> = (window, options) =>
   Layer.provideMerge(
     Layer.mergeAll(
       buildWithCurrentEnvironment(
@@ -135,11 +135,11 @@ export const dom: (
 /**
  * @since 1.0.0
  */
-export const server: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment(
+export const server: Layer.Layer<RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment(
   "server"
 )
 
-const static_: Layer.Layer<never, never, RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment("static")
+const static_: Layer.Layer<RenderContext | CurrentEnvironment> = buildWithCurrentEnvironment("static")
 
 export {
   /**
@@ -151,7 +151,7 @@ export {
 class RenderQueueImpl implements RenderQueue {
   queue = new Map<unknown, () => void>()
   scheduled = false
-  run: Effect.Effect<Scope.Scope, never, void>
+  run: Effect.Effect<void, never, Scope.Scope>
 
   constructor(
     readonly scope: Scope.Scope,
@@ -196,7 +196,7 @@ class RenderQueueImpl implements RenderQueue {
     )
   })
 
-  runIdle: Effect.Effect<Scope.Scope, never, void> = Effect.suspend(() => {
+  runIdle: Effect.Effect<void, never, Scope.Scope> = Effect.suspend(() => {
     return Effect.flatMap(
       Idle.whenIdle(this.options),
       (deadline) =>
@@ -219,8 +219,8 @@ class RenderQueueImpl implements RenderQueue {
     )
   })
 
-  runAnimationFrame: Effect.Effect<Scope.Scope, never, void> = Effect.zipRight(
-    Effect.asyncOption<never, never, void>((cb) => {
+  runAnimationFrame: Effect.Effect<void, never, Scope.Scope> = Effect.zipRight(
+    Effect.asyncOption<void>((cb) => {
       const id = requestAnimationFrame(() => cb(Effect.unit))
       return Option.some(Effect.sync(() => cancelAnimationFrame(id)))
     }),

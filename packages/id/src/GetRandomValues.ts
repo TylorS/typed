@@ -10,8 +10,8 @@ import * as Random from "effect/Random"
 /**
  * @since 1.0.0
  */
-export const GetRandomValues = Context.Fn<(length: number) => Effect.Effect<never, never, Uint8Array>>()(
-  (_) => class GetRandomValues extends _("@typed/id/GetRandomValues") {}
+export const GetRandomValues = Context.Fn<(length: number) => Effect.Effect<Uint8Array>>()(
+  (_) => (class GetRandomValues extends _("@typed/id/GetRandomValues") {})
 )
 /**
  * @since 1.0.0
@@ -23,7 +23,7 @@ const getRandomValuesWeb = (crypto: Crypto, length: number) => crypto.getRandomV
 /**
  * @since 1.0.0
  */
-export const webCrypto = (crypto: Crypto): Layer.Layer<never, never, GetRandomValues> =>
+export const webCrypto = (crypto: Crypto): Layer.Layer<GetRandomValues> =>
   GetRandomValues.implement((length) => Effect.sync(() => getRandomValuesWeb(crypto, length)))
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -40,13 +40,13 @@ const getRandomValuesNode = (crypto: typeof import("node:crypto"), length: numbe
  * @since 1.0.0
  */
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-export const nodeCrypto = (crypto: typeof import("node:crypto")): Layer.Layer<never, never, GetRandomValues> =>
+export const nodeCrypto = (crypto: typeof import("node:crypto")): Layer.Layer<GetRandomValues> =>
   GetRandomValues.implement((length) => Effect.sync(() => getRandomValuesNode(crypto, length)))
 
 /**
  * @since 1.0.0
  */
-export const pseudoRandom: Layer.Layer<never, never, GetRandomValues> = GetRandomValues.implement((length) =>
+export const pseudoRandom: Layer.Layer<GetRandomValues> = GetRandomValues.implement((length) =>
   Effect.gen(function*(_) {
     const view = new Uint8Array(length)
 
@@ -61,7 +61,7 @@ export const pseudoRandom: Layer.Layer<never, never, GetRandomValues> = GetRando
 /**
  * @since 1.0.0
  */
-export const getRandomValues: Layer.Layer<never, never, GetRandomValues> = GetRandomValues.layer(
+export const getRandomValues: Layer.Layer<GetRandomValues> = GetRandomValues.layer(
   Effect.gen(function*(_) {
     if (typeof crypto === "undefined") {
       const crypto = yield* _(Effect.promise(() => import("node:crypto")))

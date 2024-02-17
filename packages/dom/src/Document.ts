@@ -27,7 +27,7 @@ export const Document: Context.Tagged<Document> = Context.Tagged<Document>("@typ
  * @since 8.19.0
  * @category elements
  */
-export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document.with(
+export const getBody: Effect.Effect<HTMLBodyElement, never, Document> = Document.with(
   (d) => d.body as HTMLBodyElement
 )
 
@@ -36,7 +36,7 @@ export const getBody: Effect.Effect<Document, never, HTMLBodyElement> = Document
  * @since 8.19.0
  * @category elements
  */
-export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = Document.with((d) => d.head)
+export const getHead: Effect.Effect<HTMLHeadElement, never, Document> = Document.with((d) => d.head)
 
 /**
  * Add an event listener to the document
@@ -45,7 +45,7 @@ export const getHead: Effect.Effect<Document, never, HTMLHeadElement> = Document
  */
 export const addDocumentListener = <EventName extends string, R = never>(
   options: AddEventListenerOptions<Document, EventName, R>
-): Effect.Effect<R | Document | Scope.Scope, never, void> => Document.withEffect((d) => addEventListener(d, options))
+): Effect.Effect<void, never, R | Document | Scope.Scope> => Document.withEffect((d) => addEventListener(d, options))
 
 /**
  * Create a new element
@@ -54,11 +54,11 @@ export const addDocumentListener = <EventName extends string, R = never>(
  */
 export const createElement: <TagName extends keyof HTMLElementTagNameMap>(
   tagName: TagName
-) => Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]> = <
+) => Effect.Effect<HTMLElementTagNameMap[TagName], never, Document> = <
   TagName extends keyof HTMLElementTagNameMap
 >(
   tagName: TagName
-): Effect.Effect<Document, never, HTMLElementTagNameMap[TagName]> => Document.with((d) => d.createElement(tagName))
+): Effect.Effect<HTMLElementTagNameMap[TagName], never, Document> => Document.with((d) => d.createElement(tagName))
 
 /**
  * Create a new element with a namespace
@@ -68,7 +68,7 @@ export const createElement: <TagName extends keyof HTMLElementTagNameMap>(
 export const createElementNS = (
   namespaceURI: string,
   tagName: string
-): Effect.Effect<Document, never, Element> => Document.with((d) => d.createElementNS(namespaceURI, tagName))
+): Effect.Effect<Element, never, Document> => Document.with((d) => d.createElementNS(namespaceURI, tagName))
 
 /**
  * Create a new SVG element
@@ -77,11 +77,11 @@ export const createElementNS = (
  */
 export const createSvgElement = <TagName extends keyof SVGElementTagNameMap>(
   tagName: TagName
-): Effect.Effect<Document, never, SVGElementTagNameMap[TagName]> =>
+): Effect.Effect<SVGElementTagNameMap[TagName], never, Document> =>
   createElementNS("http://www.w3.org/2000/svg", tagName) as Effect.Effect<
-    Document,
+    SVGElementTagNameMap[TagName],
     never,
-    SVGElementTagNameMap[TagName]
+    Document
   >
 
 /**
@@ -89,7 +89,7 @@ export const createSvgElement = <TagName extends keyof SVGElementTagNameMap>(
  * @since 8.19.0
  * @category elements
  */
-export const createTextNode = (data: string): Effect.Effect<Document, never, Text> =>
+export const createTextNode = (data: string): Effect.Effect<Text, never, Document> =>
   Document.with((d) => d.createTextNode(data))
 
 /**
@@ -97,7 +97,7 @@ export const createTextNode = (data: string): Effect.Effect<Document, never, Tex
  * @since 8.19.0
  * @category elements
  */
-export const createComment = (data: string): Effect.Effect<Document, never, Comment> =>
+export const createComment = (data: string): Effect.Effect<Comment, never, Document> =>
   Document.with((d) => d.createComment(data))
 
 /**
@@ -105,7 +105,7 @@ export const createComment = (data: string): Effect.Effect<Document, never, Comm
  * @since 8.19.0
  * @category elements
  */
-export const createDocumentFragment: Effect.Effect<Document, never, DocumentFragment> = Document.with((d) =>
+export const createDocumentFragment: Effect.Effect<DocumentFragment, never, Document> = Document.with((d) =>
   d.createDocumentFragment()
 )
 
@@ -120,7 +120,7 @@ export const createTreeWalker = (root: Node, whatToShow?: number, filter?: NodeF
  * Create a new Range
  * @since 8.19.0
  */
-export const createRange: Effect.Effect<Document, never, Range> = Document.with((d) => d.createRange())
+export const createRange: Effect.Effect<Range, never, Document> = Document.with((d) => d.createRange())
 
 /**
  * Create a new Attr
@@ -130,13 +130,13 @@ export const createRange: Effect.Effect<Document, never, Range> = Document.with(
 export const createAttributeNS = (
   namespace: string | null,
   qualifiedName: string
-): Effect.Effect<Document, never, Attr> => Document.with((d) => d.createAttributeNS(namespace, qualifiedName))
+): Effect.Effect<Attr, never, Document> => Document.with((d) => d.createAttributeNS(namespace, qualifiedName))
 
 /**
  * Get the <html> element
  * @since 8.19.0
  */
-export const getDocumentElement: Effect.Effect<Document, never, HTMLElement> = Document.with(
+export const getDocumentElement: Effect.Effect<HTMLElement, never, Document> = Document.with(
   (d) => d.documentElement
 )
 
@@ -147,14 +147,14 @@ export const getDocumentElement: Effect.Effect<Document, never, HTMLElement> = D
 export const importNode: <T extends Node>(
   node: T,
   deep?: boolean
-) => Effect.Effect<Document, never, T> = <T extends Node>(node: T, deep?: boolean) =>
+) => Effect.Effect<T, never, Document> = <T extends Node>(node: T, deep?: boolean) =>
   Document.with((d) => d.importNode(node, deep))
 
 /**
  * Update the title of the document
  * @since 8.19.0
  */
-export const updateTitle: (title: string) => Effect.Effect<Document, never, string> = (
+export const updateTitle: (title: string) => Effect.Effect<string, never, Document> = (
   title: string
 ) => Document.with((d) => (d.title = title))
 
@@ -173,7 +173,7 @@ export type MetaParams = {
  * @since 8.19.0
  * @category metadata
  */
-export const updateMeta: (params: MetaParams) => Effect.Effect<Document, never, HTMLMetaElement> = (
+export const updateMeta: (params: MetaParams) => Effect.Effect<HTMLMetaElement, never, Document> = (
   params: MetaParams
 ) =>
   Document.with((d) => {
@@ -215,7 +215,7 @@ export type LinkParams = {
  * @since 8.19.0
  * @category metadata
  */
-export const updateLink: (params: LinkParams) => Effect.Effect<Document, never, HTMLLinkElement> = (
+export const updateLink: (params: LinkParams) => Effect.Effect<HTMLLinkElement, never, Document> = (
   params: LinkParams
 ) =>
   Document.with((d) => {

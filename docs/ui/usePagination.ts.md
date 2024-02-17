@@ -35,10 +35,10 @@ export interface Pagination<E, A> {
   readonly paginated: RefSubject.Computed<never, E, ReadonlyArray<A>>
   readonly viewing: RefSubject.Computed<never, E, Viewing>
 
-  readonly goBack: Effect.Effect<never, never, number>
-  readonly goForward: Effect.Effect<never, E, number>
-  readonly goToStart: Effect.Effect<never, never, number>
-  readonly goToEnd: Effect.Effect<never, E, number>
+  readonly goBack: Effect.Effect<number>
+  readonly goForward: Effect.Effect<number, E>
+  readonly goToStart: Effect.Effect<number>
+  readonly goToEnd: Effect.Effect<number, E>
 }
 ```
 
@@ -79,7 +79,7 @@ Added in v1.0.0
 export declare function usePagination<R, E, A>(
   items: RefSubject.Computed<R, E, ReadonlyArray<A>>,
   options: PaginationOptions = {}
-): Effect.Effect<R | Scope.Scope, never, Pagination<E, A>>
+): Effect.Effect<Pagination<E, A>, never, R | Scope.Scope>
 ```
 
 Added in v1.0.0

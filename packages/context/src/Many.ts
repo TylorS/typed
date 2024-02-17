@@ -26,7 +26,7 @@ export interface TaggedTuple<Tags extends TupleOfTags> extends
     C.Tag.Identifier<Tags[number]>,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >,
-  Effect.Effect<C.Tag.Identifier<Tags[number]>, never, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>
+  Effect.Effect<{ readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }, never, C.Tag.Identifier<Tags[number]>>
 {
   readonly tags: Tags
 }
@@ -38,9 +38,9 @@ export interface TaggedTuple<Tags extends TupleOfTags> extends
  */
 export function tuple<Tags extends TupleOfTags>(...tags: Tags): TaggedTuple<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
-    C.Tag.Identifier<Tags[number]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> },
     never,
-    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+    C.Tag.Identifier<Tags[number]>
   >
 
   const self: Omit<TaggedTuple<Tags>, keyof Effect.Effect<any, any, any>> = {
@@ -79,7 +79,11 @@ export interface TaggedStruct<Tags extends StructOfTags> extends
     C.Tag.Identifier<Tags[keyof Tags]>,
     { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
   >,
-  Effect.Effect<C.Tag.Identifier<Tags[keyof Tags]>, never, { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }>
+  Effect.Effect<
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> },
+    never,
+    C.Tag.Identifier<Tags[keyof Tags]>
+  >
 {
   readonly tags: Tags
 }
@@ -91,9 +95,9 @@ export interface TaggedStruct<Tags extends StructOfTags> extends
  */
 export function struct<Tags extends StructOfTags>(tags: Tags): TaggedStruct<Tags> {
   const all = Effect.all(tags) as any as Effect.Effect<
-    C.Tag.Identifier<Tags[keyof Tags]>,
+    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> },
     never,
-    { readonly [K in keyof Tags]: C.Tag.Service<Tags[K]> }
+    C.Tag.Identifier<Tags[keyof Tags]>
   >
 
   const self: Omit<TaggedStruct<Tags>, keyof Effect.Effect<any, any, any>> = {

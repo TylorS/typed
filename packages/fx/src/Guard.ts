@@ -10,7 +10,7 @@ import * as Option from "effect/Option"
 /**
  * @since 1.18.0
  */
-export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<R, E, Option.Option<O>>
+export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
 
 /**
  * @since 1.18.0
@@ -59,12 +59,12 @@ export const compose: {
  */
 export const mapEffect: {
   <O, R2, E2, B>(
-    f: (o: O) => Effect.Effect<R2, E2, B>
+    f: (o: O) => Effect.Effect<B, E2, R2>
   ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, B>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<R2, E2, B>): Guard<I, R | R2, E | E2, B>
+  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, B>
 } = dual(2, function mapEffect<I, R, E, O, R2, E2, B>(
   guard: Guard<I, R, E, O>,
-  f: (o: O) => Effect.Effect<R2, E2, B>
+  f: (o: O) => Effect.Effect<B, E2, R2>
 ): Guard<I, R | R2, E | E2, B> {
   return compose(guard, (o) => Effect.asSome(f(o)))
 })
@@ -87,12 +87,12 @@ export const map: {
  */
 export const tap: {
   <O, R2, E2, B>(
-    f: (o: O) => Effect.Effect<R2, E2, B>
+    f: (o: O) => Effect.Effect<B, E2, R2>
   ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, O>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<R2, E2, B>): Guard<I, R | R2, E | E2, O>
+  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, O>
 } = dual(2, function tap<I, R, E, O, R2, E2, B>(
   guard: Guard<I, R, E, O>,
-  f: (o: O) => Effect.Effect<R2, E2, B>
+  f: (o: O) => Effect.Effect<B, E2, R2>
 ): Guard<I, R | R2, E | E2, O> {
   return compose(guard, (o) => Effect.as(f(o), Option.some(o)))
 })

@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeUuid: Effect.Effect<GetRandomValues, never, Uuid>
+export declare const makeUuid: Effect.Effect<Uuid, never, GetRandomValues>
 ```
 
 Added in v1.0.0
@@ -99,7 +99,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeUuidSeed: Effect.Effect<GetRandomValues, never, UuidSeed>
+export declare const makeUuidSeed: Effect.Effect<UuidSeed, never, GetRandomValues>
 ```
 
 Added in v1.0.0

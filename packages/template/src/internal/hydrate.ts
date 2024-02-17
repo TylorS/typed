@@ -95,13 +95,13 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         }
 
         // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>> = []
+        const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
         for (const [part, path] of template.parts) {
           const eff = renderPart2(part, where, path, ctx)
           if (eff !== null) {
             effects.push(
               ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<Scope.Scope | Placeholder.Context<Values[number]>, never, void>
+                Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
               >
             )
           }
@@ -129,8 +129,8 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           Effect.ensuring(Scope.close(scope, Exit.unit))
         )
       })
-    )
-  }
+    );
+  };
 }
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {

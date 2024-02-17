@@ -10,8 +10,8 @@ import type * as Effect from "effect/Effect"
  * @since 1.0.0
  * @category models
  */
-export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, R = any, E = any, A = any> {
-  (...args: Args): Effect.Effect<R, E, A>
+export interface EffectFn<Args extends ReadonlyArray<any> = ReadonlyArray<any>, A = any, E = any, R = any> {
+  (...args: Args): Effect.Effect<A, E, R>
 }
 
 /**
@@ -25,7 +25,7 @@ export namespace EffectFn {
    */
   export type Extendable<T extends EffectFn> = T extends (
     ...args: infer Args
-  ) => Effect.Effect<infer R, infer E, infer A> ? (...args: Args) => Effect.Effect<[R] extends [never] ? any : R, E, A>
+  ) => Effect.Effect<infer A, infer E, infer R> ? (...args: Args) => Effect.Effect<A, E, [R] extends [never] ? any : R>
     : never
 
   /**
@@ -36,7 +36,7 @@ export namespace EffectFn {
   export type ArgsOf<T extends EffectFn> = T extends (
     ...args: infer Args
   ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Effect.Effect<infer _R, infer _E, infer _A> ? Args
+  Effect.Effect<infer _A, infer _E, infer _R> ? Args
     : never
 
   /**
@@ -47,7 +47,7 @@ export namespace EffectFn {
   export type Context<T extends EffectFn> = T extends (
     ...args: infer _Args
   ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Effect.Effect<infer R, infer _E, infer _A> ? R
+  Effect.Effect<infer _A, infer _E, infer R> ? R
     : never
 
   /**
@@ -58,7 +58,7 @@ export namespace EffectFn {
   export type Error<T extends EffectFn> = T extends (
     ...args: infer _Args
   ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Effect.Effect<infer _R, infer E, infer _A> ? E
+  Effect.Effect<infer _A, infer E, infer _R> ? E
     : never
 
   /**
@@ -69,6 +69,6 @@ export namespace EffectFn {
   export type Success<T extends EffectFn> = T extends (
     ...args: infer _Args
   ) => // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Effect.Effect<infer _R, infer _E, infer A> ? A
+  Effect.Effect<infer A, infer _E, infer _R> ? A
     : never
 }

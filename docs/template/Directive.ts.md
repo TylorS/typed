@@ -38,7 +38,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function Directive<R, E>(directive: (part: Part.Part) => Effect.Effect<R, E, unknown>): Directive<R, E>
+export declare function Directive<R, E>(directive: (part: Part.Part) => Effect.Effect<unknown, E, R>): Directive<R, E>
 ```
 
 Added in v1.0.0
@@ -51,7 +51,7 @@ Added in v1.0.0
 export interface Directive<R, E> extends Placeholder<R, E, unknown> {
   readonly [DirectiveTypeId]: DirectiveTypeId
 
-  (part: Part.Part): Effect.Effect<R, E, unknown>
+  (part: Part.Part): Effect.Effect<unknown, E, R>
 }
 ```
 
@@ -83,7 +83,7 @@ Added in v1.0.0
 
 ```ts
 export declare const attribute: <R, E>(
-  directive: (part: Part.AttributePart) => Effect.Effect<R, E, unknown>
+  directive: (part: Part.AttributePart) => Effect.Effect<unknown, E, R>
 ) => Directive<R, E>
 ```
 
@@ -95,7 +95,7 @@ Added in v1.0.0
 
 ```ts
 export declare const boolean: <R, E>(
-  directive: (part: Part.BooleanPart) => Effect.Effect<R, E, unknown>
+  directive: (part: Part.BooleanPart) => Effect.Effect<unknown, E, R>
 ) => Directive<R, E>
 ```
 
@@ -107,7 +107,7 @@ Added in v1.0.0
 
 ```ts
 export declare const className: <R, E>(
-  directive: (part: Part.ClassNamePart) => Effect.Effect<R, E, unknown>
+  directive: (part: Part.ClassNamePart) => Effect.Effect<unknown, E, R>
 ) => Directive<R, E>
 ```
 
@@ -119,7 +119,7 @@ Added in v1.0.0
 
 ```ts
 export declare const comment: <R, E>(
-  directive: (part: Part.CommentPart) => Effect.Effect<R, E, unknown>
+  directive: (part: Part.CommentPart) => Effect.Effect<unknown, E, R>
 ) => Directive<R, E>
 ```
 
@@ -130,7 +130,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const data: <R, E>(directive: (part: Part.DataPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
+export declare const data: <R, E>(directive: (part: Part.DataPart) => Effect.Effect<unknown, E, R>) => Directive<R, E>
 ```
 
 Added in v1.0.0
@@ -140,7 +140,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const event: <R, E>(directive: (part: Part.EventPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
+export declare const event: <R, E>(directive: (part: Part.EventPart) => Effect.Effect<unknown, E, R>) => Directive<R, E>
 ```
 
 Added in v1.0.0
@@ -160,7 +160,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
+export declare const node: <R, E>(directive: (part: Part.NodePart) => Effect.Effect<unknown, E, R>) => Directive<R, E>
 ```
 
 Added in v1.0.0
@@ -171,7 +171,7 @@ Added in v1.0.0
 
 ```ts
 export declare const property: <R, E>(
-  directive: (part: Part.PropertyPart) => Effect.Effect<R, E, unknown>
+  directive: (part: Part.PropertyPart) => Effect.Effect<unknown, E, R>
 ) => Directive<R, E>
 ```
 
@@ -182,7 +182,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ref: <R, E>(directive: (part: Part.RefPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
+export declare const ref: <R, E>(directive: (part: Part.RefPart) => Effect.Effect<unknown, E, R>) => Directive<R, E>
 ```
 
 Added in v1.0.0
@@ -192,7 +192,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const text: <R, E>(directive: (part: Part.TextPart) => Effect.Effect<R, E, unknown>) => Directive<R, E>
+export declare const text: <R, E>(directive: (part: Part.TextPart) => Effect.Effect<unknown, E, R>) => Directive<R, E>
 ```
 
 Added in v1.0.0

@@ -34,7 +34,7 @@ export const ParentElement: Context.Tagged<ParentElement> = Context.Tagged<Paren
  */
 export const querySelector: <A extends HTMLElement>(
   selector: string
-) => Effect.Effect<ParentElement, never, Option.Option<A>> = <A extends HTMLElement>(
+) => Effect.Effect<Option.Option<A>, never, ParentElement> = <A extends HTMLElement>(
   selector: string
 ) => ParentElement.with((p) => Option.fromNullable(p.parentElement.querySelector<A>(selector)))
 
@@ -45,7 +45,7 @@ export const querySelector: <A extends HTMLElement>(
  */
 export const querySelectorAll: <A extends HTMLElement>(
   selector: string
-) => Effect.Effect<ParentElement, never, ReadonlyArray<A>> = <A extends HTMLElement>(
+) => Effect.Effect<ReadonlyArray<A>, never, ParentElement> = <A extends HTMLElement>(
   selector: string
 ) =>
   ParentElement.with(
@@ -60,7 +60,7 @@ export const querySelectorAll: <A extends HTMLElement>(
 export const dispatchEvent = <EventName extends keyof HTMLElementEventMap>(
   event: EventName,
   options?: EventInit
-): Effect.Effect<GlobalThis | ParentElement, never, boolean> =>
+): Effect.Effect<boolean, never, GlobalThis | ParentElement> =>
   ParentElement.withEffect((p) => EventTarget.dispatchEvent(p.parentElement, event, options))
 
 /**
@@ -70,5 +70,5 @@ export const dispatchEvent = <EventName extends keyof HTMLElementEventMap>(
  */
 export const addParentElementListener = <EventName extends string, R = never>(
   options: EventTarget.AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
-): Effect.Effect<R | ParentElement | Scope.Scope, never, void> =>
+): Effect.Effect<void, never, R | ParentElement | Scope.Scope> =>
   ParentElement.withEffect((p) => EventTarget.addEventListener(p.parentElement, options))

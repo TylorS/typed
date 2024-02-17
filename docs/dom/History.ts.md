@@ -42,7 +42,7 @@ Go back in the history
 **Signature**
 
 ```ts
-export declare const back: Effect.Effect<History, never, void>
+export declare const back: Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -54,7 +54,7 @@ Go forward in the history
 **Signature**
 
 ```ts
-export declare const forward: Effect.Effect<History, never, void>
+export declare const forward: Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -66,7 +66,7 @@ Get the number of history entries
 **Signature**
 
 ```ts
-export declare const getLength: Effect.Effect<History, never, number>
+export declare const getLength: Effect.Effect<number, never, History>
 ```
 
 Added in v8.19.0
@@ -78,7 +78,7 @@ Get the current scroll restoration behavior
 **Signature**
 
 ```ts
-export declare const getScrollRestoration: Effect.Effect<History, never, ScrollRestoration>
+export declare const getScrollRestoration: Effect.Effect<ScrollRestoration, never, History>
 ```
 
 Added in v8.19.0
@@ -90,7 +90,7 @@ get the current state from the History object
 **Signature**
 
 ```ts
-export declare const getState: Effect.Effect<History, never, unknown>
+export declare const getState: Effect.Effect<unknown, never, History>
 ```
 
 Added in v8.19.0
@@ -102,7 +102,7 @@ Navigate to a delta in the history
 **Signature**
 
 ```ts
-export declare const go: (delta: number) => Effect.Effect<History, never, void>
+export declare const go: (delta: number) => Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -114,7 +114,7 @@ Call pushState on the History object
 **Signature**
 
 ```ts
-export declare const pushState: (url: string | URL, data?: unknown) => Effect.Effect<History, never, void>
+export declare const pushState: (url: string | URL, data?: unknown) => Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -126,7 +126,7 @@ Call replaceState on the History object
 **Signature**
 
 ```ts
-export declare const replaceState: (url: string | URL, data?: unknown) => Effect.Effect<History, never, void>
+export declare const replaceState: (url: string | URL, data?: unknown) => Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -138,7 +138,7 @@ Get the current scroll restoration behavior to "auto"
 **Signature**
 
 ```ts
-export declare const setAutoScrollRestoration: Effect.Effect<History, never, void>
+export declare const setAutoScrollRestoration: Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -150,7 +150,7 @@ Get the current scroll restoration behavior to "manual"
 **Signature**
 
 ```ts
-export declare const setManualScrollRestoration: Effect.Effect<History, never, void>
+export declare const setManualScrollRestoration: Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
@@ -162,7 +162,7 @@ Set the current scroll restoration behavior
 **Signature**
 
 ```ts
-export declare const setScrollRestoration: (scrollRestoration: ScrollRestoration) => Effect.Effect<History, never, void>
+export declare const setScrollRestoration: (scrollRestoration: ScrollRestoration) => Effect.Effect<void, never, History>
 ```
 
 Added in v8.19.0
