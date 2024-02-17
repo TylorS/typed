@@ -85,7 +85,7 @@ jobs:
         name: Setup Repo
       - run: pnpm build
       - name: Create Release Pull Request or Publish
-        name: changesets
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm run version
