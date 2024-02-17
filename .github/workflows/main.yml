@@ -24,6 +24,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
+        id: Setup Repo
       - run: pnpm run build
       - run: pnpm run circular
 
@@ -38,6 +39,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
+        id: Setup Repo
       - run: pnpm run test
 
   lint:
@@ -51,6 +53,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
+        id: Setup Repo
       - run: pnpm run lint
 
   docs:
@@ -64,6 +67,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
+        id: Setup Repo
       - run: pnpm run docs
 
 
@@ -78,6 +82,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
+        id: Setup Repo
       - run: pnpm build
       - name: Create Release Pull Request or Publish
         id: changesets
