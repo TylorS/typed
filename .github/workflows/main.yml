@@ -148,7 +148,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build, test, circular, lint, docs]
+    needs: [build, test, lint, docs]
     steps:
       - uses: actions/checkout@v3
         with:
