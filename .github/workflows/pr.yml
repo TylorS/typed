@@ -1,7 +1,7 @@
 name: Main Flow
 
 on:
-  push:
+  pull_request:
     branches: [development]
 
   # Allows you to run this workflow manually from the Actions tab
