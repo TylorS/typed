@@ -20,7 +20,7 @@ jobs:
         node-version: [20.11.0]
 
     steps:
-      - uses: ./actions/setup-repo.yml
+      - uses: ./.github/workflows/actions/setup-repo.yml
       - run: pnpm run build
       - run: pnpm run circular
 
@@ -31,7 +31,7 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
-      - uses: ./actions/setup-repo.yml
+      - uses: ./.github/workflows/actions/setup-repo.yml
       - run: pnpm run test
 
   lint:
@@ -41,7 +41,7 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
-      - uses: ./actions/setup-repo.yml
+      - uses: ./.github/workflows/actions/setup-repo.yml
       - run: pnpm run lint
 
   docs:
@@ -51,7 +51,7 @@ jobs:
         node-version: [20.11.0]
     needs: [build]
     steps:
-      - uses: ./actions/setup-repo.yml
+      - uses: ./.github/workflows/actions/setup-repo.yml
       - run: pnpm run docs
 
 
@@ -62,7 +62,7 @@ jobs:
         node-version: [20.11.0]
     needs: [build, test, lint, docs]
     steps:
-      - uses: ./actions/setup-repo.yml
+      - uses: ./.github/workflows/actions/setup-repo.yml
       - run: pnpm build
       - name: Create Release Pull Request or Publish
         id: changesets
