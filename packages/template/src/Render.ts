@@ -41,6 +41,10 @@ export function render<R, E, T extends RenderEvent | null>(
  */
 export function renderLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<R, E, T>
-): Layer.Layer<never, never, Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>> {
+): Layer.Layer<
+  never,
+  never,
+  Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>
+> {
   return Fx.drainLayer(Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(e))))
 }

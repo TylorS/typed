@@ -123,7 +123,7 @@ function renderObject<R, E>(renderable: object | null | undefined, isStatic: boo
     return Fx.switchMap(
       Fx.fromEffect(renderable as Effect.Effect<Renderable, E, R>),
       (r) => renderNode<R, E>(r, isStatic)
-    );
+    )
   } else if (isRenderEvent(renderable)) {
     return Fx.succeed(renderable)
   } else {

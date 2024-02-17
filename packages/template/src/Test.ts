@@ -59,7 +59,11 @@ export function testRender<R, E>(
   options?:
     & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
-): Effect.Effect<TestRender<E>, never, Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>> {
+): Effect.Effect<
+  TestRender<E>,
+  never,
+  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>
+> {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
     const elementRef = yield* _(ElementRef.make())

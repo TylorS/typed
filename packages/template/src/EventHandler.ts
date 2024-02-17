@@ -89,7 +89,7 @@ export function target<T extends HTMLElement>() {
     options?: AddEventListenerOptions
   ): EventHandler<R, E, EventWithTarget<T, Ev>> => {
     return make(handler, options)
-  };
+  }
 }
 
 /**
@@ -100,5 +100,5 @@ export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
     handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<R, E, KeyboardEvent> =>
-    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : unit, options);
+    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : unit, options)
 }

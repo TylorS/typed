@@ -129,8 +129,8 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           Effect.ensuring(Scope.close(scope, Exit.unit))
         )
       })
-    );
-  };
+    )
+  }
 }
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {

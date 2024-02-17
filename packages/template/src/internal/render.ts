@@ -636,8 +636,8 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           // Close our scope whenever the current Fiber is interrupted
           Effect.ensuring(Scope.close(scope, Exit.unit))
         )
-      });
-    });
+      })
+    })
   }
 
 function getEventHandler<R, E>(
@@ -678,7 +678,7 @@ function handlePart<R, E, R2>(
       } else if (TypeId in renderable) {
         return (renderable as Fx.Fx<R | R2, any, any>).run(sink)
       } else if (Effect.EffectTypeId in renderable) {
-        return Effect.matchCauseEffect(renderable as Effect.Effect<any, E, R>, sink);
+        return Effect.matchCauseEffect(renderable as Effect.Effect<any, E, R>, sink)
       } else return sink.onSuccess(renderable)
     }
     default:

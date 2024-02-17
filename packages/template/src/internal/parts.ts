@@ -33,47 +33,46 @@ import { findHoleComment } from "./utils.js"
 
 const strictEq = Equivalence.strict<any>()
 
-const base = <T extends Part["_tag"]>(tag: T) =>
-  (class Base {
-    readonly _tag: T = tag
+const base = <T extends Part["_tag"]>(tag: T) => (class Base {
+  readonly _tag: T = tag
 
-    constructor(
-      readonly index: number,
-      readonly commit: (
-        params: {
-          previous: Extract<Part, { readonly _tag: T }>["value"]
-          value: Extract<Part, { readonly _tag: T }>["value"]
-          part: Extract<Part, { readonly _tag: T }>
-        }
-      ) => Effect.Effect<void, never, Scope>,
-      public value: Extract<Part, { readonly _tag: T }>["value"],
-      readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
-    ) {
-      this.update = this.update.bind(this)
-    }
-
-    update(input: this["value"]) {
-      const previous = this.value as any
-      const value = this.getValue(input) as any
-
-      if (this.eq(previous as any, value as any)) {
-        return Effect.unit
+  constructor(
+    readonly index: number,
+    readonly commit: (
+      params: {
+        previous: Extract<Part, { readonly _tag: T }>["value"]
+        value: Extract<Part, { readonly _tag: T }>["value"]
+        part: Extract<Part, { readonly _tag: T }>
       }
+    ) => Effect.Effect<void, never, Scope>,
+    public value: Extract<Part, { readonly _tag: T }>["value"],
+    readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
+  ) {
+    this.update = this.update.bind(this)
+  }
 
-      return Effect.flatMap(
-        this.commit.call(this, {
-          previous,
-          value,
-          part: this as any
-        }),
-        () => Effect.sync(() => this.value = value)
-      )
+  update(input: this["value"]) {
+    const previous = this.value as any
+    const value = this.getValue(input) as any
+
+    if (this.eq(previous as any, value as any)) {
+      return Effect.unit
     }
 
-    getValue(value: unknown) {
-      return value
-    }
-  })
+    return Effect.flatMap(
+      this.commit.call(this, {
+        previous,
+        value,
+        part: this as any
+      }),
+      () => Effect.sync(() => this.value = value)
+    )
+  }
+
+  getValue(value: unknown) {
+    return value
+  }
+})
 
 export class AttributePartImpl extends base("attribute") implements AttributePart {
   constructor(
@@ -489,35 +488,34 @@ function fromKeyValue(name: string, value: unknown): Array<NameValue> {
   }
 }
 
-const sparse = <T extends SparsePart["_tag"]>(tag: T) =>
-  (class Base {
-    readonly _tag: T = tag
+const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
+  readonly _tag: T = tag
 
-    constructor(
-      readonly commit: (
-        params: {
-          previous: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
-          value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
-          part: Extract<SparsePart, { readonly _tag: T }>
-        }
-      ) => Effect.Effect<void, never, Scope>,
-      public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
-      readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
-        equals
-    ) {}
-
-    update = (value: this["value"]) => {
-      if (this.eq(this.value as any, value as any)) {
-        return Effect.unit
+  constructor(
+    readonly commit: (
+      params: {
+        previous: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
+        value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
+        part: Extract<SparsePart, { readonly _tag: T }>
       }
+    ) => Effect.Effect<void, never, Scope>,
+    public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
+    readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
+      equals
+  ) {}
 
-      return this.commit({
-        previous: this.value,
-        value: this.value = value as any,
-        part: this
-      } as any)
+  update = (value: this["value"]) => {
+    if (this.eq(this.value as any, value as any)) {
+      return Effect.unit
     }
-  })
+
+    return this.commit({
+      previous: this.value,
+      value: this.value = value as any,
+      part: this
+    } as any)
+  }
+})
 
 type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart | CommentPart | StaticText>> =
   ReadonlyArray<

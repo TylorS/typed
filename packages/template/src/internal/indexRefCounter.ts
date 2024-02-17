@@ -29,7 +29,7 @@ export function indexRefCounter(expected: number): Effect.Effect<IndexRefCounter
       release,
       wait: Deferred.await(deferred)
     }
-  });
+  })
 }
 
 export type IndexRefCounter2 = {
@@ -82,5 +82,5 @@ export function indexRefCounter2(): Effect.Effect<IndexRefCounter2> {
       expect,
       wait: Deferred.await(deferred)
     }
-  });
+  })
 }
