@@ -44,17 +44,12 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - run: pnpm install
       - run: pnpm run build
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: workspace
-          path: ./*/packages/*/dist/**
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -78,10 +73,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      - uses: actions/download-artifact@v2.1.1
-        with:
-          name: workspace
-          path: ./
       - run: pnpm run test
 
   circular:
@@ -89,7 +80,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -113,10 +103,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      - uses: actions/download-artifact@v2.1.1
-        with:
-          name: workspace
-          path: ./
       - run: pnpm run circular
 
   lint:
@@ -124,7 +110,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -148,10 +133,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      - uses: actions/download-artifact@v2.1.1
-        with:
-          name: workspace
-          path: ./
       - run: pnpm run lint
 
   docs:
@@ -159,7 +140,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -183,10 +163,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      - uses: actions/download-artifact@v2.1.1
-        with:
-          name: workspace
-          path: ./
       - run: pnpm run docs
 
 
@@ -195,7 +171,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [test, circular, lint, docs]
+    needs: [build, test, circular, lint, docs]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -219,10 +195,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-      - uses: actions/download-artifact@v2.1.1
-        with:
-          name: workspace
-          path: ./
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
