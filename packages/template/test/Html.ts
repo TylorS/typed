@@ -1,9 +1,9 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Directive from "@typed/template/Directive"
 import { make } from "@typed/template/EventHandler"
-import { renderToHtml } from "@typed/template/Html"
+import { renderToHtml, serverLayer } from "@typed/template/Html"
 import { TEXT_START, TYPED_HOLE } from "@typed/template/Meta"
-import * as RenderContext from "@typed/template/RenderContext"
+import type * as RenderContext from "@typed/template/RenderContext"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { html } from "@typed/template/RenderTemplate"
@@ -276,7 +276,7 @@ describe("Html", () => {
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
-  return effect.pipe(Effect.provide(RenderContext.server), Effect.scoped)
+  return effect.pipe(Effect.provide(serverLayer), Effect.scoped)
 }
 
 async function testHtmlChunks(
