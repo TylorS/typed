@@ -30,7 +30,6 @@ const HttpLive = server.pipe(
 
 HttpLive.pipe(
   Layer.launch,
-  Effect.scoped,
   Effect.tapErrorCause(Effect.logError),
   runMain
 )
