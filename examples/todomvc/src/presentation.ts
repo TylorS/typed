@@ -59,7 +59,7 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
     </section>
   </section>`
 
-function TodoItem(todo: RefSubject.RefSubject<never, never, Domain.Todo>, id: Domain.TodoId) {
+function TodoItem(todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
   return Fx.genScoped(function*(_) {
     // Track whether this todo is being edited
     const isEditing = yield* _(RefSubject.of(false))
