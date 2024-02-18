@@ -493,20 +493,20 @@ Fx.
 export declare const matchTags: {
   <A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
     matchers: Matchers
-  ): <R, E>(
-    fx: Fx<R, E, A>
+  ): <E, R>(
+    fx: Fx<A, E, R>
   ) => Fx<
-    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>,
     E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
-    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>
   >
-  <R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
-    fx: Fx<R, E, A>,
+  <A extends { readonly _tag: string }, E, R, Matchers extends DefaultMatchersFrom<A>>(
+    fx: Fx<A, E, R>,
     matchers: Matchers
   ): Fx<
-    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>,
     E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
-    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>
   >
 }
 ```
@@ -535,7 +535,7 @@ Type-alias for a Effect.forkIn(scope) that returns a Fiber
 **Signature**
 
 ```ts
-export type ScopedFork = <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<Fiber.Fiber<A, E>, never, R>
+export type ScopedFork = <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<Fiber.Fiber<A, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -558,9 +558,7 @@ Added in v1.20.0
 
 ```ts
 export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
-  readonly [Tag in A["_tag"]]: (
-    value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
-  ) => Fx<any, any, any>
+  readonly [Tag in A["_tag"]]: (value: RefSubject<Extract<A, { readonly _tag: Tag }>>) => Fx<any, any, any>
 }
 ```
 
@@ -583,13 +581,13 @@ Fx is a push-based reactive primitive built atop of Effect.
 **Signature**
 
 ```ts
-export interface Fx<out R, out E, out A> extends Pipeable.Pipeable {
-  readonly [TypeId]: Fx.Variance<R, E, A>
+export interface Fx<out A, out E = never, out R = never> extends Pipeable.Pipeable {
+  readonly [TypeId]: Fx.Variance<A, E, R>
 
   /**
    * @since 1.20.0
    */
-  run<R2 = never>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2>
+  run<R2 = never>(sink: Sink.Sink<A, E, R2>): Effect.Effect<unknown, never, R | R2>
 }
 ```
 
@@ -604,7 +602,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface Variance<R, E, A> {
+export interface Variance<A, E, R> {
   readonly _R: Types.Covariant<R>
   readonly _E: Types.Covariant<E>
   readonly _A: Types.Covariant<A>
@@ -618,7 +616,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
+export type Context<T> = T extends Fx<infer _A, infer _E, infer R> ? R : never
 ```
 
 Added in v1.20.0
@@ -628,7 +626,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
+export type Error<T> = T extends Fx<infer _A, infer E, infer _R> ? E : never
 ```
 
 Added in v1.20.0
@@ -638,7 +636,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+export type Success<T> = T extends Fx<infer A, infer _E, infer _R> ? A : never
 ```
 
 Added in v1.20.0
@@ -648,7 +646,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Unify<T> = T extends Fx<infer R, infer E, infer A> | infer _ ? Fx<R, E, A> : never
+export type Unify<T> = T extends Fx<infer A, infer E, infer R> | infer _ ? Fx<A, E, R> : never
 ```
 
 Added in v1.20.0
@@ -658,7 +656,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare class FxEffectBase<R, E, A, R2, E2, B>
+export declare class FxEffectBase<A, E, R, B, E2, R2>
 ```
 
 Added in v1.20.0
@@ -668,7 +666,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<void, never, R | R3>
+run<R3>(sink: Sink.Sink<A, E, R3>): Effect.Effect<void, never, R | R3>
 ```
 
 Added in v1.20.0
@@ -678,7 +676,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-abstract toFx(): Fx<R, E, A>
+abstract toFx(): Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -698,9 +696,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface KeyedOptions<A, B, R2, E2, C> {
+export interface KeyedOptions<A, B, C, E2, R2> {
   readonly getKey: (a: A) => B
-  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly onValue: (ref: RefSubject<A>, key: B) => Fx<C, E2, R2>
   readonly debounce?: Duration.DurationInput
 }
 ```
@@ -712,9 +710,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type MatchCauseOptions<E, A, R2, E2, B, R3, E3, C> = {
-  readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
-  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+export type MatchCauseOptions<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (cause: Cause.Cause<E>) => Fx<B, E2, R2>
+  readonly onSuccess: (a: A) => Fx<C, E3, R3>
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
 }
 ```
@@ -726,9 +724,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type MatchErrorOptions<E, A, R2, E2, B, R3, E3, C> = {
-  readonly onFailure: (e: E) => Fx<R2, E2, B>
-  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+export type MatchErrorOptions<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (e: E) => Fx<B, E2, R2>
+  readonly onSuccess: (a: A) => Fx<C, E3, R3>
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
 }
 ```
@@ -760,9 +758,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface WithKeyOptions<A, B, R2, E2, C> {
+export interface WithKeyOptions<A, B, C, E2, R2> {
   readonly getKey: (a: A) => B
-  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly onValue: (ref: RefSubject<A>, key: B) => Fx<C, E2, R2>
 }
 ```
 
@@ -774,15 +772,15 @@ Added in v1.20.0
 
 ```ts
 export declare const acquireUseRelease: {
-  <A, R2, E2, B, R3, E3, C>(
-    use: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2, C, E3, R3>(
+    use: (a: A) => Fx<B, E2, R2>,
     release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
-  ): <R, E>(acquire: Effect.Effect<A, E, R>) => Fx<R2 | R3 | R, E2 | E3 | E, B>
-  <R, E, A, R2, E2, B, R3, E3, C>(
+  ): <E, R>(acquire: Effect.Effect<A, E, R>) => Fx<B, E2 | E3 | E, R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
     acquire: Effect.Effect<A, E, R>,
-    use: (a: A) => Fx<R2, E2, B>,
+    use: (a: A) => Fx<B, E2, R2>,
     release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
-  ): Fx<R | R2 | R3, E | E2 | E3, B>
+  ): Fx<B, E | E2 | E3, R | R2 | R3>
 }
 ```
 
@@ -796,10 +794,10 @@ Added in v1.20.0
 export declare const all: {
   <const FX extends readonly Fx<any, any, any>[]>(
     fx: FX
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  ): Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
   <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
     fx: FX
-  ): Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  ): Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[string]>, Fx.Context<FX[string]>>
 }
 ```
 
@@ -811,8 +809,8 @@ Added in v1.20.0
 
 ```ts
 export declare const annotateLogs: {
-  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+  (key: string | Record<string, unknown>, value?: unknown): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, key: string | Record<string, unknown>, value?: unknown): Fx<A, E, R>
 }
 ```
 
@@ -824,8 +822,8 @@ Added in v1.20.0
 
 ```ts
 export declare const annotateSpans: {
-  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+  (key: string | Record<string, unknown>, value?: unknown): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, key: string | Record<string, unknown>, value?: unknown): Fx<A, E, R>
 }
 ```
 
@@ -837,8 +835,8 @@ Added in v1.20.0
 
 ```ts
 export declare const append: {
-  <C>(end: C): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, C | A>
-  <R, E, A, C>(fx: Fx<R, E, A>, end: C): Fx<R, E, A | C>
+  <C>(end: C): <A, E, R>(fx: Fx<A, E, R>) => Fx<C | A, E, R>
+  <A, E, R, C>(fx: Fx<A, E, R>, end: C): Fx<A | C, E, R>
 }
 ```
 
@@ -850,8 +848,8 @@ Added in v1.20.0
 
 ```ts
 export declare const appendAll: {
-  <C>(end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, C | A>
-  <R, E, A, C>(fx: Fx<R, E, A>, end: Iterable<C>): Fx<R, E, A | C>
+  <C>(end: Iterable<C>): <A, E, R>(fx: Fx<A, E, R>) => Fx<C | A, E, R>
+  <A, E, R, C>(fx: Fx<A, E, R>, end: Iterable<C>): Fx<A | C, E, R>
 }
 ```
 
@@ -863,8 +861,8 @@ Added in v1.20.0
 
 ```ts
 export declare const at: {
-  (duration: Duration.DurationInput): <A>(value: A) => Fx<never, never, A>
-  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A>
+  (duration: Duration.DurationInput): <A>(value: A) => Fx<A, never, never>
+  <A>(value: A, duration: Duration.DurationInput): Fx<A, never, never>
 }
 ```
 
@@ -875,7 +873,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const compact: <R, E, A>(fx: Fx<R, E, Option.Option<A>>) => Fx<R, E, A>
+export declare const compact: <A, E, R>(fx: Fx<Option.Option<A>, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -886,15 +884,15 @@ Added in v1.20.0
 
 ```ts
 export declare const concatMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -906,8 +904,8 @@ Added in v1.20.0
 
 ```ts
 export declare const continueWith: {
-  <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(f: () => Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: () => Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 }
 ```
 
@@ -919,8 +917,8 @@ Added in v1.20.0
 
 ```ts
 export declare const debounce: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, Scope.Scope | R>
 }
 ```
 
@@ -935,8 +933,8 @@ events have occurred before emitting a value.
 
 ```ts
 export declare const delay: {
-  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<Scope.Scope | R, E, A>
+  (delay: DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, Scope.Scope | R>
 }
 ```
 
@@ -947,7 +945,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const die: (error: unknown) => Fx<never, never, never>
+export declare const die: (error: unknown) => Fx<never>
 ```
 
 Added in v1.20.0
@@ -957,7 +955,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<void, E, R>
+export declare const drain: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E, R>
 ```
 
 Added in v1.20.0
@@ -980,8 +978,8 @@ Added in v1.20.0
 
 ```ts
 export declare const drop: {
-  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
+  (n: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, n: number): Fx<A, E, R>
 }
 ```
 
@@ -993,10 +991,10 @@ Added in v1.20.0
 
 ```ts
 export declare const dropAfter: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -1008,8 +1006,8 @@ Added in v1.20.0
 
 ```ts
 export declare const dropAfterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -1021,10 +1019,10 @@ Added in v1.20.0
 
 ```ts
 export declare const dropUntil: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, A | B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<A | B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<A | B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -1036,8 +1034,8 @@ Added in v1.20.0
 
 ```ts
 export declare const dropUntilEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -1049,10 +1047,10 @@ Added in v1.20.0
 
 ```ts
 export declare const dropWhile: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -1064,8 +1062,8 @@ Added in v1.20.0
 
 ```ts
 export declare const dropWhileEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -1077,13 +1075,13 @@ Added in v1.20.0
 
 ```ts
 export declare const during: {
-  <R2, E2, A, R3, E3, B>(
-    window: Fx<R2, E2, Fx<R3, E3, B>>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, A>
-  <R, E, A, R2, E2, R3, E3, B>(
-    fx: Fx<R, E, A>,
-    window: Fx<R2, E2, Fx<R3, E3, B>>
-  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, A>
+  <E2, R2, A, R3, E3, B>(
+    window: Fx<Fx<B, E3, R3>, E2, R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E3 | E, Scope.Scope | R2 | R3 | R>
+  <A, E, R, E2, R2, R3, E3, B>(
+    fx: Fx<A, E, R>,
+    window: Fx<Fx<B, E3, R3>, E2, R2>
+  ): Fx<A, E | E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -1094,7 +1092,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>>
+export declare const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<E, A>, never, R>
 ```
 
 Added in v1.20.0
@@ -1115,8 +1113,8 @@ Added in v1.20.0
 
 ```ts
 export declare const ensuring: {
-  <R2>(finalizer: Effect.Effect<unknown, never, R2>): <R, E, A>(self: Fx<R, E, A>) => Fx<R2 | R, E, A>
-  <R, E, A, R2>(self: Fx<R, E, A>, finalizer: Effect.Effect<unknown, never, R2>): Fx<R | R2, E, A>
+  <R2>(finalizer: Effect.Effect<unknown, never, R2>): <A, E, R>(self: Fx<A, E, R>) => Fx<A, E, R2 | R>
+  <A, E, R, R2>(self: Fx<A, E, R>, finalizer: Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
 }
 ```
 
@@ -1128,15 +1126,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1148,15 +1146,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1168,15 +1166,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1188,15 +1186,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1208,15 +1206,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapLatest: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1228,15 +1226,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapLatestCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1248,15 +1246,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapLatestEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1268,15 +1266,15 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMapLatestError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1288,13 +1286,13 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMatchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -1306,13 +1304,13 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMatchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -1324,13 +1322,13 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMatchLatestCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -1342,13 +1340,13 @@ Added in v1.20.0
 
 ```ts
 export declare const exhaustMatchLatestError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -1359,7 +1357,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<A, E>>
+export declare const exit: <A, E, R>(fx: Fx<A, E, R>) => Fx<Exit.Exit<A, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -1390,10 +1388,10 @@ Added in v1.20.0
 
 ```ts
 export declare const filter: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -1405,8 +1403,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterCause: {
-  <E>(f: (cause: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => boolean): Fx<R, E, A>
+  <E>(f: (cause: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => boolean): Fx<A, E, R>
 }
 ```
 
@@ -1418,10 +1416,10 @@ Added in v1.20.0
 
 ```ts
 export declare const filterCauseEffect: {
-  <E, R2, E2>(
+  <E, E2, R2>(
     f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E2, A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): Fx<A, E2, R | R2>
 }
 ```
 
@@ -1433,8 +1431,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -1446,8 +1444,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterError: {
-  <E>(f: (e: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (e: E) => boolean): Fx<R, E, A>
+  <E>(f: (e: E) => boolean): <R, A>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (e: E) => boolean): Fx<A, E, R>
 }
 ```
 
@@ -1459,8 +1457,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterErrorEffect: {
-  <E, R2, E2>(f: (e: E) => Effect.Effect<boolean, E2, R2>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E2, A>
+  <E, E2, R2>(f: (e: E) => Effect.Effect<boolean, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<boolean, E2, R2>): Fx<A, E2, R | R2>
 }
 ```
 
@@ -1472,8 +1470,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMap: {
-  <A, B>(f: (a: A) => Option.Option<B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>
+  <A, B>(f: (a: A) => Option.Option<B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, f: (a: A) => Option.Option<B>): Fx<B, E, R>
 }
 ```
 
@@ -1485,8 +1483,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapCause: {
-  <E, E2>(f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
+  <E, E2>(f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<A, E2, R>
 }
 ```
 
@@ -1498,13 +1496,13 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapCauseEffect: {
-  <R2, E2, E3>(
+  <E3, E2, R2>(
     f: (cause: Cause.Cause<E2>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E3 | E2, R2 | R>
+  <A, E, R, E3, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (cause: Cause.Cause<E>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>
-  ): Fx<R | R2, E2 | E3, A>
+  ): Fx<A, E3 | E2, R | R2>
 }
 ```
 
@@ -1516,8 +1514,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): Fx<R | R2, E | E2, B>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): Fx<B, E | E2, R | R2>
 }
 ```
 
@@ -1529,8 +1527,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapError: {
-  <E, E2>(f: (e: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => Option.Option<E2>): Fx<R, E2, A>
+  <E, E2>(f: (e: E) => Option.Option<E2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (e: E) => Option.Option<E2>): Fx<A, E2, R>
 }
 ```
 
@@ -1542,10 +1540,10 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapErrorEffect: {
-  <E, R2, E2, E3>(
+  <E, E3, E2, R2>(
     f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>): Fx<R | R2, E2 | E3, A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E3 | E2, R2 | R>
+  <A, E, R, E3, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>): Fx<A, E3 | E2, R | R2>
 }
 ```
 
@@ -1557,8 +1555,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Fx<R, E, C>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <E, R>(fx: Fx<A, E, R>) => Fx<C, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Fx<C, E, R>
 }
 ```
 
@@ -1570,15 +1568,15 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopCause: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
-  ): Fx<R, C, A>
+  ): Fx<A, C, R>
 }
 ```
 
@@ -1590,15 +1588,15 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopCauseEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 }
 ```
 
@@ -1610,15 +1608,15 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopEffect: {
-  <R2, E2, B, A, C>(
+  <B, E2, R2, A, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): Fx<R | R2, E | E2, C>
+  ): Fx<C, E | E2, R | R2>
 }
 ```
 
@@ -1630,11 +1628,11 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopError: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [Option.Option<C>, B]): Fx<R, C, A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (b: B, e: E) => readonly [Option.Option<C>, B]): Fx<A, C, R>
 }
 ```
 
@@ -1646,15 +1644,15 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopErrorEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 }
 ```
 
@@ -1666,10 +1664,10 @@ Added in v1.20.0
 
 ```ts
 export declare const findFirst: {
-  <A, B extends A>(refinement: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<B, E, R>
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<A, E, R>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, refinement: Predicate.Refinement<A, B>): Effect.Effect<B, E, R>
-  <R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<A, E, R>
+  <A, B extends A>(refinement: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<B, E, R>
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, refinement: Predicate.Refinement<A, B>): Effect.Effect<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, predicate: Predicate.Predicate<A>): Effect.Effect<A, E, R>
 }
 ```
 
@@ -1680,7 +1678,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const first: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<A, E, R>
+export declare const first: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<A, E, R>
 ```
 
 Added in v1.20.0
@@ -1691,15 +1689,15 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1711,15 +1709,15 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1731,17 +1729,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapCauseConcurrently: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1753,17 +1751,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapCauseWithStrategy: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1775,17 +1773,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapConcurrently: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1797,17 +1795,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapConcurrentlyEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1819,15 +1817,15 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1839,15 +1837,15 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1859,17 +1857,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapErrorConcurrently: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1881,17 +1879,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapErrorWithStrategy: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1903,17 +1901,17 @@ Added in v1.20.0
 
 ```ts
 export declare const flatMapWithStrategy: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     strategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     strategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -1924,7 +1922,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const flip: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, A, E>
+export declare const flip: <A, E, R>(fx: Fx<A, E, R>) => Fx<E, A, R>
 ```
 
 Added in v1.20.0
@@ -1934,7 +1932,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fork: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+export declare const fork: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -1944,7 +1942,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const forkDaemon: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+export declare const forkDaemon: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -1955,8 +1953,8 @@ Added in v1.20.0
 
 ```ts
 export declare const forkIn: {
-  (scope: Scope.Scope): <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
-  <R, E, A>(fx: Fx<R, E, A>, scope: Scope.Scope): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+  (scope: Scope.Scope): <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+  <A, E, R>(fx: Fx<A, E, R>, scope: Scope.Scope): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
 }
 ```
 
@@ -1967,8 +1965,8 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const forkScoped: <R, E, A>(
-  fx: Fx<R, E, A>
+export declare const forkScoped: <A, E, R>(
+  fx: Fx<A, E, R>
 ) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, Scope.Scope | R>
 ```
 
@@ -1979,7 +1977,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromArray: <const A extends readonly any[]>(array: A) => Fx<never, never, A[number]>
+export declare const fromArray: <const A extends readonly any[]>(array: A) => Fx<A[number], never, never>
 ```
 
 Added in v1.20.0
@@ -1989,7 +1987,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<never, never, A>
+export declare const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<A, never, never>
 ```
 
 Added in v1.20.0
@@ -1999,8 +1997,8 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
-export declare function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<I, never, A>
+export declare function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<A>
+export declare function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<A, never, I>
 ```
 
 Added in v1.20.0
@@ -2010,7 +2008,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromEffect: <R, E, A>(effect: Effect.Effect<A, E, R>) => Fx<R, E, A>
+export declare const fromEffect: <A, E, R>(effect: Effect.Effect<A, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -2020,9 +2018,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromFxEffect: <R, E, R2, E2, B>(
-  effect: Effect.Effect<Fx<R2, E2, B>, E, R>
-) => Fx<R | R2, E | E2, B>
+export declare const fromFxEffect: <B, E, R, E2, R2>(
+  effect: Effect.Effect<Fx<B, E2, R2>, E, R>
+) => Fx<B, E | E2, R | R2>
 ```
 
 Added in v1.20.0
@@ -2032,7 +2030,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromIterable: <A>(iterable: Iterable<A>) => Fx<never, never, A>
+export declare const fromIterable: <A>(iterable: Iterable<A>) => Fx<A, never, never>
 ```
 
 Added in v1.20.0
@@ -2042,7 +2040,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const fromNullable: <A>(value: void | A | null | undefined) => Fx<never, never, NonNullable<A>>
+export declare const fromNullable: <A>(value: void | A | null | undefined) => Fx<NonNullable<A>, never, never>
 ```
 
 Added in v1.20.0
@@ -2052,8 +2050,8 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function fromPubSub<A>(pubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
-export declare function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A>): Fx<I | Scope.Scope, never, A>
+export declare function fromPubSub<A>(pubSub: PubSub.PubSub<A>): Fx<A, never, Scope.Scope>
+export declare function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A>): Fx<A, never, I | Scope.Scope>
 ```
 
 Added in v1.20.0
@@ -2064,8 +2062,8 @@ Added in v1.20.0
 
 ```ts
 export declare const fromScheduled: {
-  <R2, I, O>(schedule: Schedule.Schedule<R2, I, O>): <R, E>(input: Effect.Effect<I, E, R>) => Fx<R2 | R, E, O>
-  <R, E, I, R2, O>(input: Effect.Effect<I, E, R>, schedule: Schedule.Schedule<R2, I, O>): Fx<R | R2, E, O>
+  <R2, I, O>(schedule: Schedule.Schedule<R2, I, O>): <E, R>(input: Effect.Effect<I, E, R>) => Fx<O, E, R2 | R>
+  <I, E, R, R2, O>(input: Effect.Effect<I, E, R>, schedule: Schedule.Schedule<R2, I, O>): Fx<O, E, R | R2>
 }
 ```
 
@@ -2079,9 +2077,9 @@ Added in v1.20.0
 export declare const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
-  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>,
+  Fx.Success<FX>,
   Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Fx.Success<FX>
+  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>
 >
 ```
 
@@ -2095,9 +2093,9 @@ Added in v1.20.0
 export declare const genScoped: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
-  Exclude<Effect.Effect.Context<Y["value"]>, Scope.Scope> | Exclude<Fx.Context<FX>, Scope.Scope>,
+  Fx.Success<FX>,
   Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Fx.Success<FX>
+  Exclude<Effect.Effect.Context<Y["value"]>, Scope.Scope> | Exclude<Fx.Context<FX>, Scope.Scope>
 >
 ```
 
@@ -2109,13 +2107,13 @@ Added in v1.20.0
 
 ```ts
 export declare const getOrElse: {
-  <A, R2 = never, E2 = never, B = never>(
-    orElse: () => Fx<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<Scope.Scope | R2 | R, E2 | E, A | B>
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    orElse: () => Fx<R2, E2, B>
-  ): Fx<Scope.Scope | R | R2, E | E2, A | B>
+  <A, B = never, E2 = never, R2 = never>(
+    orElse: () => Fx<B, E2, R2>
+  ): <E, R>(fx: Fx<Option.Option<A>, E, R>) => Fx<A | B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B = never, E2 = never, R2 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    orElse: () => Fx<B, E2, R2>
+  ): Fx<A | B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -2126,7 +2124,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+export declare const hold: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
 ```
 
 Added in v1.20.0
@@ -2136,7 +2134,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const if: { <R2, E2, B, R3, E3, C>(options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): <R, E>(bool: Fx<R, E, boolean>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>; <R, E, R2, E2, B, R3, E3, C>(bool: Fx<R, E, boolean>, options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C>; }): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>; }
+export declare const if: { <B, E2, R2, C, E3, R3>(options: { readonly onTrue: Fx<B, E2, R2>; readonly onFalse: Fx<C, E3, R3>; }): <E, R>(bool: Fx<boolean, E, R>) => Fx<B | C, E2 | E3 | E, Scope.Scope | R2 | R3 | R>; <B, E, R, E2, R2, C, E3, R3>(bool: Fx<boolean, E, R>, options: { readonly onTrue: Fx<B, E2, R2>; readonly onFalse: Fx<C, E3, R3>; }): Fx<B | C, E | E2 | E3, Scope.Scope | R | R2 | R3>; }
 ```
 
 Added in v1.20.0
@@ -2146,7 +2144,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+export declare const interruptible: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -2156,7 +2154,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function isFx<R, E, A>(u: unknown): u is Fx<R, E, A>
+export declare function isFx<A, E, R>(u: unknown): u is Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -2167,13 +2165,13 @@ Added in v1.20.0
 
 ```ts
 export declare const keyed: {
-  <A, B extends PropertyKey, R2, E2, C>(
-    options: KeyedOptions<A, B, R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, readonly A[]>) => Fx<R2 | R, E2 | E, readonly C[]>
-  <R, E, A, B extends PropertyKey, R2, E2, C>(
-    fx: Fx<R, E, readonly A[]>,
-    options: KeyedOptions<A, B, R2, E2, C>
-  ): Fx<R | R2, E | E2, readonly C[]>
+  <A, B extends PropertyKey, E2, R2, C>(
+    options: KeyedOptions<A, B, C, E2, R2>
+  ): <E, R>(fx: Fx<readonly A[], E, R>) => Fx<readonly C[], E2 | E, R2 | R>
+  <A, E, R, B extends PropertyKey, E2, R2, C>(
+    fx: Fx<readonly A[], E, R>,
+    options: KeyedOptions<A, B, C, E2, R2>
+  ): Fx<readonly C[], E | E2, R | R2>
 }
 ```
 
@@ -2185,8 +2183,8 @@ Added in v1.20.0
 
 ```ts
 export declare const locally: {
-  <A>(self: FiberRef.FiberRef<A>, value: A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, value: A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, value: A): <B, E, R>(fx: Fx<B, E, R>) => Fx<B, E, R>
+  <B, E, R, A>(use: Fx<B, E, R>, self: FiberRef.FiberRef<A>, value: A): Fx<B, E, R>
 }
 ```
 
@@ -2198,8 +2196,8 @@ Added in v1.20.0
 
 ```ts
 export declare const locallyWith: {
-  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <B, E, R>(fx: Fx<B, E, R>) => Fx<B, E, R>
+  <B, E, R, A>(use: Fx<B, E, R>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<B, E, R>
 }
 ```
 
@@ -2211,8 +2209,8 @@ Added in v1.20.0
 
 ```ts
 export declare const loop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <E, R>(fx: Fx<A, E, R>) => Fx<C, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<C, E, R>
 }
 ```
 
@@ -2227,12 +2225,12 @@ export declare const loopCause: {
   <B, E, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, C, R>
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): Fx<R, C, A>
+  ): Fx<A, C, R>
 }
 ```
 
@@ -2244,15 +2242,15 @@ Added in v1.20.0
 
 ```ts
 export declare const loopCauseEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 }
 ```
 
@@ -2264,15 +2262,15 @@ Added in v1.20.0
 
 ```ts
 export declare const loopEffect: {
-  <R2, E2, B, A, C>(
+  <B, E2, R2, A, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
-  ): Fx<R | R2, E | E2, C>
+  ): Fx<C, E | E2, R | R2>
 }
 ```
 
@@ -2284,8 +2282,8 @@ Added in v1.20.0
 
 ```ts
 export declare const loopError: {
-  <B, E, C>(seed: B, f: (b: B, e: E) => readonly [C, B]): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [C, B]): Fx<R, C, A>
+  <B, E, C>(seed: B, f: (b: B, e: E) => readonly [C, B]): <R, A>(fx: Fx<A, E, R>) => Fx<A, C, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (b: B, e: E) => readonly [C, B]): Fx<A, C, R>
 }
 ```
 
@@ -2297,15 +2295,15 @@ Added in v1.20.0
 
 ```ts
 export declare const loopErrorEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R2 | R>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 }
 ```
 
@@ -2317,9 +2315,9 @@ Added in v1.20.0
 
 ```ts
 export declare const make: {
-  <R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown, never, R>): Fx<R, E, A>
-  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown>): Fx<never, E, A>
-  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<unknown>): Fx<never, never, A>
+  <A, E, R>(run: (sink: Sink.Sink<A, E, never>) => Effect.Effect<unknown, never, R>): Fx<A, E, R>
+  <A, E>(run: (sink: Sink.Sink<A, E, never>) => Effect.Effect<unknown>): Fx<A, E, never>
+  <A>(run: (sink: Sink.Sink<A, never, never>) => Effect.Effect<unknown>): Fx<A, never, never>
 }
 ```
 
@@ -2331,8 +2329,8 @@ Added in v1.20.0
 
 ```ts
 export declare const map: {
-  <A, B>(f: (a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B>
+  <A, B>(f: (a: A) => B): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, f: (a: A) => B): Fx<B, E, R>
 }
 ```
 
@@ -2344,8 +2342,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapBoth: {
-  <E, E2, A, B>(f: (e: E) => E2, g: (a: A) => B): <R>(fx: Fx<R, E, A>) => Fx<R, E2, B>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, f: (e: E) => B, g: (a: A) => C): Fx<R, B, C>
+  <E, E2, A, B>(f: (e: E) => E2, g: (a: A) => B): <R>(fx: Fx<A, E, R>) => Fx<B, E2, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, f: (e: E) => B, g: (a: A) => C): Fx<C, B, R>
 }
 ```
 
@@ -2357,8 +2355,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapCause: {
-  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Fx<R, E2, A>
+  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Fx<A, E2, R>
 }
 ```
 
@@ -2370,13 +2368,13 @@ Added in v1.20.0
 
 ```ts
 export declare const mapCauseEffect: {
-  <R2, E2, E3>(
+  <E3, E2, R2>(
     f: (cause: Cause.Cause<E2>) => Effect.Effect<Cause.Cause<E3>, E3, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E3 | E2, R2 | R>
+  <A, E, R, E3, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (cause: Cause.Cause<E>) => Effect.Effect<Cause.Cause<E3>, E2, R2>
-  ): Fx<R | R2, E2 | E3, A>
+  ): Fx<A, E3 | E2, R | R2>
 }
 ```
 
@@ -2388,8 +2386,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<B, E2, R2>): Fx<R | R2, E | E2, B>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<B, E2, R2>): Fx<B, E | E2, R | R2>
 }
 ```
 
@@ -2401,8 +2399,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapError: {
-  <E, E2>(f: (e: E) => E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => E2): Fx<R, E2, A>
+  <E, E2>(f: (e: E) => E2): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (e: E) => E2): Fx<A, E2, R>
 }
 ```
 
@@ -2414,8 +2412,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapErrorEffect: {
-  <R2, E2, E3>(f: (e: E2) => Effect.Effect<E3, E3, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<E3, E2, R2>): Fx<R | R2, E2 | E3, A>
+  <E3, E2, R2>(f: (e: E2) => Effect.Effect<E3, E3, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E3 | E2, R2 | R>
+  <A, E, R, E3, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<E3, E2, R2>): Fx<A, E3 | E2, R | R2>
 }
 ```
 
@@ -2427,13 +2425,13 @@ Added in v1.20.0
 
 ```ts
 export declare const matchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2445,15 +2443,15 @@ Added in v1.20.0
 
 ```ts
 export declare const matchCauseConcurrently: {
-  <E, A, R2, E2, B, R3, E3, C>(
+  <E, A, B, E2, R2, C, E3, R3>(
     concurrency: number,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     concurrency: number,
-    opts: core.MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    opts: core.MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2465,14 +2463,14 @@ Added in v1.20.0
 
 ```ts
 export declare const matchCauseWithStrategy: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     flattenStrategy: FlattenStrategy,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2484,15 +2482,15 @@ Added in v1.20.0
 
 ```ts
 export declare const matchEither: {
-  <E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Either.Either<E1, A>>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>
-  <R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Either.Either<E1, A>>,
-    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>
+  <E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    onLeft: (e: RefSubject<E1, never, never>) => Fx<B, E2, R2>,
+    onRight: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
+  ): <E, R>(fx: Fx<Either.Either<E1, A>, E, R>) => Fx<B | C, E2 | E3 | E, Scope.Scope | R2 | R3 | R>
+  <R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Either.Either<E1, A>, E, R>,
+    onLeft: (e: RefSubject<E1, never, never>) => Fx<B, E2, R2>,
+    onRight: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2504,13 +2502,13 @@ Added in v1.20.0
 
 ```ts
 export declare const matchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2522,15 +2520,15 @@ Added in v1.20.0
 
 ```ts
 export declare const matchErrorConcurrently: {
-  <E, A, R2, E2, B, R3, E3, C>(
+  <E, A, B, E2, R2, C, E3, R3>(
     concurrency: number,
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     concurrency: number,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2542,18 +2540,18 @@ Added in v1.20.0
 
 ```ts
 export declare const matchErrorWithStrategy: {
-  <E, A, R2, E2, B, R3, E3, C>({
+  <E, A, B, E2, R2, C, E3, R3>({
     executionStrategy,
     onFailure,
     onSuccess
-  }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>): <R>(
-    fx: Fx<R, E, A>
-  ) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+  }: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>): <R>(
+    fx: Fx<A, E, R>
+  ) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     flattenStrategy: FlattenStrategy,
-    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2565,15 +2563,15 @@ Added in v1.20.0
 
 ```ts
 export declare const matchOption: {
-  <A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onNone: () => Fx<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3 | E, B | C>
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    onNone: () => Fx<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E | E2 | E3, B | C>
+  <A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    onNone: () => Fx<B, E2, R2>,
+    onSome: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
+  ): <E, R>(fx: Fx<Option.Option<A>, E, R>) => Fx<B | C, E2 | E3 | E, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    onNone: () => Fx<B, E2, R2>,
+    onSome: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -2585,8 +2583,8 @@ Added in v1.20.0
 
 ```ts
 export declare const merge: {
-  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(other: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, other: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 }
 ```
 
@@ -2599,7 +2597,7 @@ Added in v1.20.0
 ```ts
 export declare const mergeAll: <FX extends readonly Fx<any, any, any>[]>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -2610,8 +2608,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mergeFirst: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -2624,7 +2622,7 @@ Added in v1.20.0
 ```ts
 export declare const mergeOrdered: <FX extends readonly Fx<any, any, any>[]>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -2637,7 +2635,7 @@ Added in v1.20.0
 export declare const mergeOrderedConcurrently: <FX extends readonly Fx<any, any, any>[]>(
   fx: FX,
   concurrency: number
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -2648,8 +2646,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mergeRace: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 }
 ```
 
@@ -2662,7 +2660,7 @@ Added in v1.20.0
 ```ts
 export declare const mergeSwitch: <FX extends readonly Fx<any, any, any>[]>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -2677,11 +2675,11 @@ export declare const mergeWithStrategy: {
     strategy: MergeStrategy
   ): <FX extends readonly Fx<any, any, any>[]>(
     fx: FX
-  ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  ) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
   <const FX extends readonly Fx<any, any, any>[]>(
     fx: FX,
     stategy: MergeStrategy
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  ): Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 }
 ```
 
@@ -2693,15 +2691,15 @@ Added in v1.20.0
 
 ```ts
 export declare const middleware: {
-  <R, R3, E, A>(
+  <R, A, E, R3>(
     effect: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R3>,
-    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
-  ): <E, A>(fx: Fx<R, E, A>) => Fx<R3, E, A>
-  <R, E, A, R3>(
-    fx: Fx<R, E, A>,
+    sink?: ((sink: Sink.Sink<A, E, never>) => Sink.Sink<A, E, R>) | undefined
+  ): <A, E>(fx: Fx<A, E, R>) => Fx<A, E, R3>
+  <A, E, R, R3>(
+    fx: Fx<A, E, R>,
     effect: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R3>,
-    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
-  ): Fx<R3, E, A>
+    sink?: ((sink: Sink.Sink<A, E, never>) => Sink.Sink<A, E, R>) | undefined
+  ): Fx<A, E, R3>
 }
 ```
 
@@ -2712,7 +2710,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
+export declare const multicast: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
 ```
 
 Added in v1.20.0
@@ -2733,8 +2731,8 @@ Added in v1.20.0
 
 ```ts
 export declare const observe: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<void, E2 | E, R2 | R>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<B, E2, R2>): Effect.Effect<void, E | E2, R | R2>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<B, E2, R2>): Effect.Effect<void, E | E2, R | R2>
 }
 ```
 
@@ -2746,8 +2744,8 @@ Added in v1.20.0
 
 ```ts
 export declare const onError: {
-  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): Fx<R | R2, E, A>
+  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  <A, E, R, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
 }
 ```
 
@@ -2759,8 +2757,8 @@ Added in v1.20.0
 
 ```ts
 export declare const onExit: {
-  <R2>(f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): Fx<R | R2, E, A>
+  <R2>(f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  <A, E, R, R2>(fx: Fx<A, E, R>, f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
 }
 ```
 
@@ -2774,11 +2772,11 @@ Added in v1.20.0
 export declare const onInterrupt: {
   <R2>(
     f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<unknown, never, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  <A, E, R, R2>(
+    fx: Fx<A, E, R>,
     f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<unknown, never, R2>
-  ): Fx<R | R2, E, A>
+  ): Fx<A, E, R | R2>
 }
 ```
 
@@ -2790,8 +2788,8 @@ Added in v1.20.0
 
 ```ts
 export declare const orElse: {
-  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+  <E, B, E2, R2>(f: (error: E) => Fx<B, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (error: E) => Fx<B, E2, R2>): Fx<A | B, E2, R | R2>
 }
 ```
 
@@ -2803,8 +2801,8 @@ Added in v1.20.0
 
 ```ts
 export declare const orElseCause: {
-  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+  <E, B, E2, R2>(f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>): Fx<A | B, E2, R | R2>
 }
 ```
 
@@ -2816,8 +2814,8 @@ Added in v1.20.0
 
 ```ts
 export declare const padWith: {
-  <B, C>(start: Iterable<B>, end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | C | A>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, start: Iterable<B>, end: Iterable<C>): Fx<R, E, A | B | C>
+  <B, C>(start: Iterable<B>, end: Iterable<C>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | C | A, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, start: Iterable<B>, end: Iterable<C>): Fx<A | B | C, E, R>
 }
 ```
 
@@ -2831,11 +2829,11 @@ Added in v1.20.0
 export declare const partitionMap: {
   <A, B, C>(
     f: (a: A) => Either.Either<B, C>
-  ): <R, E>(fx: Fx<R, E, A>) => readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Either.Either<B, C>
-  ): readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
+  ): readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
 }
 ```
 
@@ -2847,8 +2845,8 @@ Added in v1.20.0
 
 ```ts
 export declare const periodic: {
-  (period: Duration.DurationInput): <R, E, A>(iterator: Effect.Effect<A, E, R>) => Fx<R, E, A>
-  <R, E, A>(iterator: Effect.Effect<A, E, R>, period: Duration.DurationInput): Fx<R, E, A>
+  (period: Duration.DurationInput): <A, E, R>(iterator: Effect.Effect<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(iterator: Effect.Effect<A, E, R>, period: Duration.DurationInput): Fx<A, E, R>
 }
 ```
 
@@ -2860,8 +2858,8 @@ Added in v1.20.0
 
 ```ts
 export declare const prepend: {
-  <B>(start: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
-  <R, E, A, B>(fx: Fx<R, E, A>, start: B): Fx<R, E, A | B>
+  <B>(start: B): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, start: B): Fx<A | B, E, R>
 }
 ```
 
@@ -2873,8 +2871,8 @@ Added in v1.20.0
 
 ```ts
 export declare const prependAll: {
-  <B>(start: Iterable<B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, B | A>
-  <R, E, A, B>(fx: Fx<R, E, A>, start: Iterable<B>): Fx<R, E, A | B>
+  <B>(start: Iterable<B>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, start: Iterable<B>): Fx<A | B, E, R>
 }
 ```
 
@@ -2886,19 +2884,19 @@ Added in v1.20.0
 
 ```ts
 export declare const provide: {
-  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R2, E2, S>(layer: Layer.Layer<S, E2, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
-  <R2 = never, E2 = never, S = never>(
+  <R2>(context: Ctx.Context<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <R2>(runtime: Runtime.Runtime<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <S, E2, R2>(layer: Layer.Layer<S, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | Exclude<R, S>>
+  <S, E2 = never, R2 = never>(
     provide: Layer.Layer<S, E2, R2> | Ctx.Context<S> | Runtime.Runtime<S>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<S, E2, R2>): Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2 = never, E2 = never, S = never>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | Exclude<R, S>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, context: Ctx.Context<R2>): Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, runtime: Runtime.Runtime<R2>): Fx<A, E, Exclude<R, R2>>
+  <A, E, R, S, E2, R2>(fx: Fx<A, E, R>, layer: Layer.Layer<S, E2, R2>): Fx<A, E | E2, R2 | Exclude<R, S>>
+  <A, E, R, S, E2 = never, R2 = never>(
+    fx: Fx<A, E, R>,
     provide: Layer.Layer<S, E2, R2> | Ctx.Context<S> | Runtime.Runtime<S>
-  ): Fx<R2 | Exclude<R, S>, E | E2, A>
+  ): Fx<A, E | E2, R2 | Exclude<R, S>>
 }
 ```
 
@@ -2910,8 +2908,8 @@ Added in v1.20.0
 
 ```ts
 export declare const provideContext: {
-  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Ctx.Context<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, context: Ctx.Context<R2>): Fx<A, E, Exclude<R, R2>>
 }
 ```
 
@@ -2923,8 +2921,8 @@ Added in v1.20.0
 
 ```ts
 export declare const provideLayer: {
-  <R2, E2, S>(layer: Layer.Layer<S, E2, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E2 | E, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<S, E2, R2>): Fx<R2 | Exclude<R, S>, E | E2, A>
+  <E2, R2, S>(layer: Layer.Layer<S, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | Exclude<R, S>>
+  <A, E, R, E2, R2, S>(fx: Fx<A, E, R>, layer: Layer.Layer<S, E2, R2>): Fx<A, E | E2, R2 | Exclude<R, S>>
 }
 ```
 
@@ -2936,8 +2934,8 @@ Added in v1.20.0
 
 ```ts
 export declare const provideRuntime: {
-  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(runtime: Runtime.Runtime<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, runtime: Runtime.Runtime<R2>): Fx<A, E, Exclude<R, R2>>
 }
 ```
 
@@ -2949,8 +2947,8 @@ Added in v1.20.0
 
 ```ts
 export declare const provideService: {
-  <I, S>(service: Ctx.Tag<I, S>, instance: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, service: Ctx.Tag<I, S>, instance: S): Fx<Exclude<R, I>, E, A>
+  <I, S>(service: Ctx.Tag<I, S>, instance: S): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, I>>
+  <A, E, R, I, S>(fx: Fx<A, E, R>, service: Ctx.Tag<I, S>, instance: S): Fx<A, E, Exclude<R, I>>
 }
 ```
 
@@ -2962,15 +2960,15 @@ Added in v1.20.0
 
 ```ts
 export declare const provideServiceEffect: {
-  <I, S, R2, E2>(
+  <I, S, E2, R2>(
     service: Ctx.Tag<I, S>,
     instance: Effect.Effect<S, E2, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E2 | E, A>
-  <R, E, A, I, S, R2, E2>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | Exclude<R, I>>
+  <A, E, R, I, S, E2, R2>(
+    fx: Fx<A, E, R>,
     service: Ctx.Tag<I, S>,
     instance: Effect.Effect<S, E2, R2>
-  ): Fx<R2 | Exclude<R, I>, E | E2, A>
+  ): Fx<A, E | E2, R2 | Exclude<R, I>>
 }
 ```
 
@@ -2982,8 +2980,8 @@ Added in v1.20.0
 
 ```ts
 export declare const race: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, B | A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<B | A, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 }
 ```
 
@@ -2996,7 +2994,7 @@ Added in v1.20.0
 ```ts
 export declare const raceAll: <const FX extends readonly Fx<any, any, any>[]>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -3007,8 +3005,8 @@ Added in v1.20.0
 
 ```ts
 export declare const reduce: {
-  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<B, E, R>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<B, E, R>
+  <A, B>(seed: B, f: (acc: B, a: A) => B): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<B, E, R>
 }
 ```
 
@@ -3020,8 +3018,8 @@ Added in v1.20.0
 
 ```ts
 export declare const replay: {
-  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<Scope.Scope | R, E, A>
+  (capacity: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, capacity: number): Fx<A, E, Scope.Scope | R>
 }
 ```
 
@@ -3033,8 +3031,8 @@ Added in v1.20.0
 
 ```ts
 export declare const sample: {
-  <R, E, B>(sampled: Fx<R, E, B>): <R2, E2, A>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>): Fx<R | R2, E | E2, B>
+  <B, E, R>(sampled: Fx<B, E, R>): <E2, R2, A>(fx: Fx<A, E2, R2>) => Fx<B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, sampled: Fx<B, E2, R2>): Fx<B, E | E2, R | R2>
 }
 ```
 
@@ -3046,8 +3044,8 @@ Added in v1.20.0
 
 ```ts
 export declare const scan: {
-  <B, A>(seed: B, f: (b: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Fx<R, E, B>
+  <B, A>(seed: B, f: (b: B, a: A) => B): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, seed: B, f: (b: B, a: A) => B): Fx<B, E, R>
 }
 ```
 
@@ -3059,8 +3057,8 @@ Added in v1.20.0
 
 ```ts
 export declare const schedule: {
-  <R2, O>(schedule: Schedule.Schedule<R2, unknown, O>): <R, E, A>(input: Effect.Effect<A, E, R>) => Fx<R2 | R, E, A>
-  <R, E, A, R2, O>(input: Effect.Effect<A, E, R>, schedule: Schedule.Schedule<R2, unknown, O>): Fx<R | R2, E, A>
+  <R2, O>(schedule: Schedule.Schedule<R2, unknown, O>): <A, E, R>(input: Effect.Effect<A, E, R>) => Fx<A, E, R2 | R>
+  <A, E, R, R2, O>(input: Effect.Effect<A, E, R>, schedule: Schedule.Schedule<R2, unknown, O>): Fx<A, E, R | R2>
 }
 ```
 
@@ -3071,7 +3069,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A>
+export declare const scoped: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, Scope.Scope>>
 ```
 
 Added in v1.20.0
@@ -3082,8 +3080,8 @@ Added in v1.20.0
 
 ```ts
 export declare const share: {
-  <R2, E2, A>(subject: Subject.Subject<R2, E2, A>): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, subject: Subject.Subject<R2, E, A>): Fx<Scope.Scope | R | R2, E, A>
+  <E2, R2, A>(subject: Subject.Subject<A, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R2 | R>
+  <A, E, R, R2>(fx: Fx<A, E, R>, subject: Subject.Subject<A, E, R2>): Fx<A, E, Scope.Scope | R | R2>
 }
 ```
 
@@ -3095,8 +3093,8 @@ Added in v1.20.0
 
 ```ts
 export declare const since: {
-  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<Scope.Scope | R | R2, E | E2, A>
+  <B, E2, R2>(window: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, window: Fx<B, E2, R2>): Fx<A, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -3107,7 +3105,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+export declare const skipRepeats: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -3118,8 +3116,8 @@ Added in v1.20.0
 
 ```ts
 export declare const skipRepeatsWith: {
-  <A>(eq: Equivalence.Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, eq: Equivalence.Equivalence<A>): Fx<R, E, A>
+  <A>(eq: Equivalence.Equivalence<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, eq: Equivalence.Equivalence<A>): Fx<A, E, R>
 }
 ```
 
@@ -3131,8 +3129,8 @@ Added in v1.20.0
 
 ```ts
 export declare const slice: {
-  (drop: number, take: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, drop: number, take: number): Fx<R, E, A>
+  (drop: number, take: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, drop: number, take: number): Fx<A, E, R>
 }
 ```
 
@@ -3144,8 +3142,8 @@ Added in v1.20.0
 
 ```ts
 export declare const snapshot: {
-  <R, E, B, A, C>(sampled: Fx<R, E, B>, g: (a: A, b: B) => C): <R2, E2>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, C>
-  <R, E, A, R2, E2, B, C>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>, f: (a: A, b: B) => C): Fx<R | R2, E | E2, C>
+  <B, E, R, A, C>(sampled: Fx<B, E, R>, g: (a: A, b: B) => C): <E2, R2>(fx: Fx<A, E2, R2>) => Fx<C, E | E2, R | R2>
+  <A, E, R, B, E2, R2, C>(fx: Fx<A, E, R>, sampled: Fx<B, E2, R2>, f: (a: A, b: B) => C): Fx<C, E | E2, R | R2>
 }
 ```
 
@@ -3157,15 +3155,15 @@ Added in v1.20.0
 
 ```ts
 export declare const snapshotEffect: {
-  <R2, E2, B, A, R3, E3, C>(
-    sampled: Fx<R2, E2, B>,
+  <B, E2, R2, A, C, E3, R3>(
+    sampled: Fx<B, E2, R2>,
     g: (a: A, b: B) => Effect.Effect<C, E3, R3>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R3 | R, E2 | E3 | E, C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    sampled: Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E2 | E3 | E, R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    sampled: Fx<B, E2, R2>,
     f: (a: A, b: B) => Effect.Effect<C, E3, R3>
-  ): Fx<R | R2 | R3, E | E2 | E3, C>
+  ): Fx<C, E | E2 | E3, R | R2 | R3>
 }
 ```
 
@@ -3178,7 +3176,7 @@ Added in v1.20.0
 ```ts
 export declare const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
   fx: FX
-) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+) => Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[string]>, Fx.Context<FX[string]>>
 ```
 
 Added in v1.20.0
@@ -3188,7 +3186,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const succeed: <A>(value: A) => Fx<never, never, A>
+export declare const succeed: <A>(value: A) => Fx<A, never, never>
 ```
 
 Added in v1.20.0
@@ -3198,7 +3196,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A>
+export declare const suspend: <A, E, R>(f: () => Fx<A, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -3209,15 +3207,15 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -3229,15 +3227,15 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMapCause: {
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
 }
 ```
 
@@ -3249,15 +3247,15 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -3269,15 +3267,15 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2, B | A>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<B | A, E2, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E2, A | B>
+  ): Fx<A | B, E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -3289,13 +3287,13 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMatchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -3307,13 +3305,13 @@ Added in v1.20.0
 
 ```ts
 export declare const switchMatchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R3 | R, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
@@ -3324,7 +3322,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const sync: <A>(f: () => A) => Fx<never, never, A>
+export declare const sync: <A>(f: () => A) => Fx<A, never, never>
 ```
 
 Added in v1.20.0
@@ -3335,8 +3333,8 @@ Added in v1.20.0
 
 ```ts
 export declare const take: {
-  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
+  (n: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, n: number): Fx<A, E, R>
 }
 ```
 
@@ -3348,8 +3346,8 @@ Added in v1.20.0
 
 ```ts
 export declare const takeUntiEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -3361,10 +3359,10 @@ Added in v1.20.0
 
 ```ts
 export declare const takeUntil: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -3376,10 +3374,10 @@ Added in v1.20.0
 
 ```ts
 export declare const takeWhile: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 }
 ```
 
@@ -3391,8 +3389,8 @@ Added in v1.20.0
 
 ```ts
 export declare const takeWhileEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -3404,8 +3402,8 @@ Added in v1.20.0
 
 ```ts
 export declare const tap: {
-  <A>(f: (a: A) => unknown): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (a: A) => unknown): Fx<R, E, A>
+  <A>(f: (a: A) => unknown): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (a: A) => unknown): Fx<A, E, R>
 }
 ```
 
@@ -3417,8 +3415,8 @@ Added in v1.20.0
 
 ```ts
 export declare const tapEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Fx<A, E | E2, R | R2>
 }
 ```
 
@@ -3430,8 +3428,8 @@ Added in v1.20.0
 
 ```ts
 export declare const throttle: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, Scope.Scope | R>
 }
 ```
 
@@ -3443,8 +3441,8 @@ Added in v1.20.0
 
 ```ts
 export declare const throttleLatest: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<Scope.Scope | R, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, Scope.Scope | R>
 }
 ```
 
@@ -3458,8 +3456,8 @@ Added in v1.20.0
 export declare const toEnqueue: {
   <R2 = never, A = never>(
     queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>
-  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<void, E, R2 | R>
-  <R, E, A, R2 = never>(fx: Fx<R, E, A>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<void, E, R | R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E, R2 | R>
+  <A, E, R, R2 = never>(fx: Fx<A, E, R>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<void, E, R | R2>
 }
 ```
 
@@ -3470,7 +3468,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<readonly A[], E, R>
+export declare const toReadonlyArray: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<readonly A[], E, R>
 ```
 
 Added in v1.20.0
@@ -3482,7 +3480,7 @@ Added in v1.20.0
 ```ts
 export declare const tuple: <const FX extends readonly Fx<any, any, any>[]>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+) => Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 ```
 
 Added in v1.20.0
@@ -3492,7 +3490,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const uninterruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
+export declare const uninterruptible: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
 ```
 
 Added in v1.20.0
@@ -3503,8 +3501,8 @@ Added in v1.20.0
 
 ```ts
 export declare const until: {
-  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R2 | R, E2 | E, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<Scope.Scope | R | R2, E | E2, A>
+  <B, E2, R2>(window: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E, Scope.Scope | R2 | R>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, window: Fx<B, E2, R2>): Fx<A, E | E2, Scope.Scope | R | R2>
 }
 ```
 
@@ -3519,11 +3517,11 @@ export declare const when: {
   <B, C>(options: {
     readonly onTrue: B
     readonly onFalse: C
-  }): <R, E>(bool: Fx<R, E, boolean>) => Fx<Scope.Scope | R, E, B | C>
-  <R, E, B, C>(
-    bool: Fx<R, E, boolean>,
+  }): <E, R>(bool: Fx<boolean, E, R>) => Fx<B | C, E, Scope.Scope | R>
+  <B, E, R, C>(
+    bool: Fx<boolean, E, R>,
     options: { readonly onTrue: B; readonly onFalse: C }
-  ): Fx<Scope.Scope | R, E, B | C>
+  ): Fx<B | C, E, Scope.Scope | R>
 }
 ```
 
@@ -3535,8 +3533,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withConcurrency: {
-  (concurrency: number | "unbounded"): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, concurrency: number | "unbounded"): Fx<R, E, A>
+  (concurrency: number | "unbounded"): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, concurrency: number | "unbounded"): Fx<A, E, R>
 }
 ```
 
@@ -3548,8 +3546,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withConfigProvider: {
-  (configProvider: ConfigProvider.ConfigProvider): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, configProvider: ConfigProvider.ConfigProvider): Fx<R, E, A>
+  (configProvider: ConfigProvider.ConfigProvider): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, configProvider: ConfigProvider.ConfigProvider): Fx<A, E, R>
 }
 ```
 
@@ -3560,9 +3558,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const withEmitter: <E, A, R = never, E2 = never>(
-  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<unknown, E2, R>
-) => Fx<Scope.Scope | R, E | E2, A>
+export declare const withEmitter: <A, E = never, E2 = never, R = never>(
+  f: (emitter: Emitter.Emitter<A, E>) => Effect.Effect<unknown, E2, R>
+) => Fx<A, E | E2, Scope.Scope | R>
 ```
 
 Added in v1.20.0
@@ -3573,13 +3571,13 @@ Added in v1.20.0
 
 ```ts
 export declare const withKey: {
-  <A, B extends PropertyKey, R2, E2, C>(
-    options: WithKeyOptions<A, B, R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R2 | R, E2 | E, C>
-  <R, E, A, B extends PropertyKey, R2, E2, C>(
-    fx: Fx<R, E, A>,
-    options: WithKeyOptions<A, B, R2, E2, C>
-  ): Fx<R | R2, E | E2, C>
+  <A, B extends PropertyKey, E2, R2, C>(
+    options: WithKeyOptions<A, B, C, E2, R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E2 | E, R2 | R>
+  <A, E, R, B extends PropertyKey, E2, R2, C>(
+    fx: Fx<A, E, R>,
+    options: WithKeyOptions<A, B, C, E2, R2>
+  ): Fx<C, E | E2, R | R2>
 }
 ```
 
@@ -3591,8 +3589,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withLogSpan: {
-  (span: string): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>
+  (span: string): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, span: string): Fx<A, E, R>
 }
 ```
 
@@ -3604,8 +3602,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withMaxOpsBeforeYield: {
-  (maxOps: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, maxOps: number): Fx<R, E, A>
+  (maxOps: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, maxOps: number): Fx<A, E, R>
 }
 ```
 
@@ -3617,8 +3615,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withParentSpan: {
-  (parentSpan: Tracer.ParentSpan): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, parentSpan: Tracer.ParentSpan): Fx<R, E, A>
+  (parentSpan: Tracer.ParentSpan): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, parentSpan: Tracer.ParentSpan): Fx<A, E, R>
 }
 ```
 
@@ -3630,8 +3628,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withRequestBatching: {
-  (requestBatching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestBatching: boolean): Fx<R, E, A>
+  (requestBatching: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, requestBatching: boolean): Fx<A, E, R>
 }
 ```
 
@@ -3643,8 +3641,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withRequestCache: {
-  (cache: Request.Cache): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, cache: Request.Cache): Fx<R, E, A>
+  (cache: Request.Cache): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, cache: Request.Cache): Fx<A, E, R>
 }
 ```
 
@@ -3656,8 +3654,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withRequestCaching: {
-  (requestCaching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestCaching: boolean): Fx<R, E, A>
+  (requestCaching: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, requestCaching: boolean): Fx<A, E, R>
 }
 ```
 
@@ -3678,9 +3676,9 @@ export declare const withSpan: {
       readonly root?: boolean
       readonly context?: Ctx.Context<never>
     }
-  ): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(
-    self: Fx<R, E, A>,
+  ): <A, E, R>(self: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(
+    self: Fx<A, E, R>,
     name: string,
     options?: {
       readonly attributes?: Record<string, unknown>
@@ -3689,7 +3687,7 @@ export declare const withSpan: {
       readonly root?: boolean
       readonly context?: Ctx.Context<never>
     }
-  ): Fx<R, E, A>
+  ): Fx<A, E, R>
 }
 ```
 
@@ -3701,8 +3699,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withTracer: {
-  (tracer: Tracer.Tracer): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, tracer: Tracer.Tracer): Fx<R, E, A>
+  (tracer: Tracer.Tracer): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, tracer: Tracer.Tracer): Fx<A, E, R>
 }
 ```
 
@@ -3714,8 +3712,8 @@ Added in v1.20.0
 
 ```ts
 export declare const withTracerTiming: {
-  (enabled: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, enabled: boolean): Fx<R, E, A>
+  (enabled: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, enabled: boolean): Fx<A, E, R>
 }
 ```
 

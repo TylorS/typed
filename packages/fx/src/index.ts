@@ -1,5 +1,5 @@
 /**
- * Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
+ * Fx<A, E, R> is a representation of an `Effect`-ful workflow that exists over
  * the time dimension. It operates within a context `R`, can fail with an `E`,
  * and succeed with an `A`.
  *

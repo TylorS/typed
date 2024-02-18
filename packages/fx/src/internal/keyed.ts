@@ -8,7 +8,7 @@ import { diffIterator } from "./diff.js"
 import { withDebounceFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
 
-export function keyed<R, E, A, B extends PropertyKey, C, E2, R2>(
+export function keyed<A, E, R, B extends PropertyKey, C, E2, R2>(
   fx: Fx<ReadonlyArray<A>, E, R>,
   options: KeyedOptions<A, B, C, E2, R2>
 ): Fx<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope> {
@@ -22,7 +22,7 @@ type StateContext<A, C> = {
 
 const StateContext = Context.GenericTag<StateContext<any, any>>("@services/StateContext")
 
-class Keyed<R, E, A, B extends PropertyKey, C, E2, R2> extends FxBase<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope>
+class Keyed<A, E, R, B extends PropertyKey, C, E2, R2> extends FxBase<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope>
   implements Fx<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope>
 {
   constructor(
@@ -51,7 +51,7 @@ function emptyKeyedState<A, B extends PropertyKey, C>(): KeyedState<A, B, C> {
   }
 }
 
-function runKeyed<R, E, A, B extends PropertyKey, C, E2, R2, R3>(
+function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
   fx: Fx<ReadonlyArray<A>, E, R>,
   options: KeyedOptions<A, B, C, E2, R2>,
   sink: Sink.Sink<ReadonlyArray<C>, E | E2, R3>,

@@ -67,7 +67,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
+export type Guard<in I, out O, out E = never, out R = never> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
 ```
 
 Added in v1.18.0
@@ -81,7 +81,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Context<T> = T extends Guard<infer _I, infer R, infer _E, infer _O> ? R : never
+export type Context<T> = T extends Guard<infer _I, infer _O, infer _E, infer R> ? R : never
 ```
 
 Added in v1.18.0
@@ -91,7 +91,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Error<T> = T extends Guard<infer _I, infer _R, infer E, infer _O> ? E : never
+export type Error<T> = T extends Guard<infer _I, infer _O, infer E, infer _R> ? E : never
 ```
 
 Added in v1.18.0
@@ -111,7 +111,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export type Output<T> = T extends Guard<infer _I, infer _R, infer _E, infer O> ? O : never
+export type Output<T> = T extends Guard<infer _I, infer O, infer _E, infer _R> ? O : never
 ```
 
 Added in v1.18.0
@@ -123,7 +123,7 @@ Added in v1.18.0
 ```ts
 export declare function any<const GS extends Readonly<Record<string, Guard<any, any, any, any>>>>(
   guards: GS
-): Guard<AnyInput<GS>, Guard.Context<GS[keyof GS]>, Guard.Context<GS[keyof GS]>, AnyOutput<GS>>
+): Guard<AnyInput<GS>, AnyOutput<GS>, Guard.Error<GS[keyof GS]>, Guard.Context<GS[keyof GS]>>
 ```
 
 Added in v1.18.0
@@ -134,8 +134,8 @@ Added in v1.18.0
 
 ```ts
 export declare const compose: {
-  <O, R2, E2, B>(output: Guard<O, R2, E2, B>): <I, R, E>(input: Guard<I, R, E, O>) => Guard<I, R2 | R, E2 | E, B>
-  <I, R, E, O, R2, E2, B>(input: Guard<I, R, E, O>, output: Guard<O, R2, E2, B>): Guard<I, R | R2, E | E2, B>
+  <O, B, E2, R2>(output: Guard<O, B, E2, R2>): <I, R, E>(input: Guard<I, O, E, R>) => Guard<I, B, E2 | E, R2 | R>
+  <I, O, E, R, B, E2, R2>(input: Guard<I, O, E, R>, output: Guard<O, B, E2, R2>): Guard<I, B, E | E2, R | R2>
 }
 ```
 
@@ -147,10 +147,10 @@ Added in v1.18.0
 
 ```ts
 export declare const filter: {
-  <O, O2 extends O>(predicate: (o: O) => o is O2): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, O2>
-  <O>(predicate: (o: O) => boolean): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, O>
-  <I, R, E, O, O2 extends O>(guard: Guard<I, R, E, O>, predicate: (o: O) => o is O2): Guard<I, R, E, O2>
-  <I, R, E, O>(guard: Guard<I, R, E, O>, predicate: (o: O) => boolean): Guard<I, R, E, O>
+  <O, O2 extends O>(predicate: (o: O) => o is O2): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E, R>
+  <O>(predicate: (o: O) => boolean): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E, R>
+  <I, O, E, R, O2 extends O>(guard: Guard<I, O, E, R>, predicate: (o: O) => o is O2): Guard<I, O, E, R>
+  <I, O, E, R>(guard: Guard<I, O, E, R>, predicate: (o: O) => boolean): Guard<I, O, E, R>
 }
 ```
 
@@ -162,8 +162,8 @@ Added in v1.18.0
 
 ```ts
 export declare const filterMap: {
-  <O, B>(f: (o: O) => Option.Option<B>): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, B>
-  <I, R, E, O, B>(guard: Guard<I, R, E, O>, f: (o: O) => Option.Option<B>): Guard<I, R, E, B>
+  <O, B>(f: (o: O) => Option.Option<B>): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E, R>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, f: (o: O) => Option.Option<B>): Guard<I, B, E, R>
 }
 ```
 
@@ -174,8 +174,8 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, never, never, B>
-export declare function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A>
+export declare function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, B>
+export declare function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, A>
 ```
 
 Added in v1.20.0
@@ -186,8 +186,8 @@ Added in v1.20.0
 
 ```ts
 export declare const map: {
-  <O, B>(f: (o: O) => B): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, B>
-  <I, R, E, O, B>(guard: Guard<I, R, E, O>, f: (o: O) => B): Guard<I, R, E, B>
+  <O, B>(f: (o: O) => B): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E, R>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, f: (o: O) => B): Guard<I, B, E, R>
 }
 ```
 
@@ -199,10 +199,10 @@ Added in v1.18.0
 
 ```ts
 export declare const mapEffect: {
-  <O, R2, E2, B>(
+  <O, B, E2, R2>(
     f: (o: O) => Effect.Effect<B, E2, R2>
-  ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R2 | R, E2 | E, B>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, B>
+  ): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E2 | E, R2 | R>
+  <I, O, E, R, B, E2, R2>(guard: Guard<I, O, E, R>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, B, E | E2, R | R2>
 }
 ```
 
@@ -214,10 +214,10 @@ Added in v1.18.0
 
 ```ts
 export declare const tap: {
-  <O, R2, E2, B>(
+  <O, B, E2, R2>(
     f: (o: O) => Effect.Effect<B, E2, R2>
-  ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R2 | R, E2 | E, O>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, O>
+  ): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E2 | E, R2 | R>
+  <I, O, E, R, B, E2, R2>(guard: Guard<I, O, E, R>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, O, E | E2, R | R2>
 }
 ```
 

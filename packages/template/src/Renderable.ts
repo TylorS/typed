@@ -13,11 +13,11 @@ import type { RenderEvent } from "./RenderEvent.js"
 export type Renderable<R = never, E = never> =
   | Renderable.Value
   | Placeholder<any, E, R>
-  | { readonly [key: string]: Renderable<R, E> | Placeholder<any, E, R> | unknown } // TODO: Should we manage data attributes this way?
+  | { readonly [key: string]: Renderable<E, R> | Placeholder<any, E, R> | unknown } // TODO: Should we manage data attributes this way?
   | Placeholder<any, E, R>
   | Effect<any, E, R>
   | Fx<any, E, R>
-  | ReadonlyArray<Renderable<R, E>>
+  | ReadonlyArray<Renderable<E, R>>
 
 /**
  * @since 1.0.0

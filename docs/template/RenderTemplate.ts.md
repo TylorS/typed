@@ -40,7 +40,7 @@ export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
-  ): Fx.Fx<Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>
+  ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope | Placeholder.Context<Values[number]>>
 }
 ```
 
@@ -54,7 +54,7 @@ Added in v1.0.0
 export declare function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Fx.Fx<RenderTemplate | Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>
+): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, RenderTemplate | Scope | Placeholder.Context<Values[number]>>
 ```
 
 Added in v1.0.0

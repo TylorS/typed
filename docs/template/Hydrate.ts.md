@@ -26,8 +26,8 @@ Added in v1.0.0
 
 ```ts
 export declare function hydrate<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
-): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>>
+  rendered: Fx.Fx<T, E, R>
+): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement>
 ```
 
 Added in v1.0.0
@@ -37,7 +37,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function hydrateLayer<R, E, T extends RenderEvent | null>(rendered: Fx.Fx<R, E, T>)
+export declare function hydrateLayer<R, E, T extends RenderEvent | null>(rendered: Fx.Fx<T, E, R>)
 ```
 
 Added in v1.0.0

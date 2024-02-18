@@ -339,7 +339,7 @@ export function adjustTime(input: Duration.DurationInput = 1) {
   )
 }
 
-export function tupleSink<A extends ReadonlyArray<any>, E, R, R2, E2, B>(
+export function tupleSink<A extends ReadonlyArray<any>, E, R, B, E2, R2>(
   sink: Sink.Sink<A, E, R>,
   f: (sink: (index: number, value: A[number]) => Effect.Effect<unknown, never, R>) => Effect.Effect<B, E2, R2>,
   expected: number
@@ -417,7 +417,7 @@ export class RingBuffer<A> {
     }
   }
 
-  forEach<R2, E2, B>(
+  forEach<B, E2, R2>(
     f: (a: A, i: number) => Effect.Effect<B, E2, R2>
   ) {
     switch (this._size) {

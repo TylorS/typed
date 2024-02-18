@@ -33,7 +33,7 @@ An Effect which can be used to pull values of a Stream.
 **Signature**
 
 ```ts
-export interface Pull<out R, out E, out A> extends Effect.Effect<Chunk.Chunk<A>, Option.Option<E>, R> {}
+export interface Pull<out A, out E = never, out R = never> extends Effect.Effect<Chunk.Chunk<A>, Option.Option<E>, R> {}
 ```
 
 Added in v1.18.0
@@ -47,14 +47,14 @@ using Effect.repeat.
 
 ```ts
 export declare const repeat: {
-  <R2, R3, E, A>(
+  <R2, A, E, R3>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R2 | R3 | R>
-  <R, E, A, R2, R3>(
-    pull: Pull<R, E, A>,
+    sink: Sink<A, E, R3>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
+  <A, E, R, R2, R3>(
+    pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 }
 ```
@@ -70,14 +70,14 @@ using Effect.schedule.
 
 ```ts
 export declare const schedule: {
-  <R2, R3, E, A>(
+  <R2, A, E, R3>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R2 | R3 | R>
-  <R, E, A, R2, R3>(
-    pull: Pull<R, E, A>,
+    sink: Sink<A, E, R3>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
+  <A, E, R, R2, R3>(
+    pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 }
 ```

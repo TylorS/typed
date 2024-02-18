@@ -640,7 +640,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
     })
   }
 
-function getEventHandler<R, E>(
+function getEventHandler<E, R>(
   renderable: any,
   ctx: Context.Context<any> | Context.Context<never>,
   onCause: (cause: Cause<E>) => Effect.Effect<unknown>
@@ -686,7 +686,7 @@ function handlePart<R, E, R2>(
   }
 }
 
-function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<any, E, R> {
+function unwrapRenderable<E, R>(renderable: unknown): Fx.Fx<any, E, R> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {
@@ -698,7 +698,7 @@ function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<any, E, R> {
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
-        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<R, E>))
+        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<E, R>))
       } else return Fx.succeed(renderable as any)
     }
     default:

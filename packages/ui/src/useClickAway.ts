@@ -25,7 +25,7 @@ export function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<an
 /**
  * @since 1.0.0
  */
-export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
+export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, B, E2, R2>(
   refs: Refs,
   f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<B, E2, R2>
 ): Fx.Fx<B, E2, Document | R2 | Scope.Scope> {

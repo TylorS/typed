@@ -26,17 +26,17 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface RouteMatcher<R, E, A> {
+export interface RouteMatcher<A, E, R> {
   readonly match: {
-    <const P extends string, R2, E2, B>(
+    <const P extends string, B, E2, R2>(
       route: Route.Route<P> | P,
-      f: (ref: RefSubject.RefSubject<never, never, Path.ParamsOf<P>>) => Fx.Fx<R2, E2, B>
+      f: (ref: RefSubject.RefSubject<Path.ParamsOf<P>>) => Fx.Fx<B, E2, R2>
     ): RouteMatcher<R | Exclude<R2, Scope.Scope>, E | E2, A | B>
 
-    <const P extends string, R2, E2, B, R3, E3, C>(
+    <const P extends string, B, E2, R2, C, E3, R3>(
       route: Route.Route<P> | P,
-      guard: Guard.Guard<Path.ParamsOf<P>, R2, E2, B>,
-      f: (ref: RefSubject.RefSubject<never, never, B>) => Fx.Fx<R3, E3, C>
+      guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
+      f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
     ): RouteMatcher<R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>, E | E2 | E3, A | C>
   }
 
@@ -44,30 +44,30 @@ export interface RouteMatcher<R, E, A> {
     <const P extends string, B>(
       route: Route.Route<P> | P,
       f: (params: Path.ParamsOf<P>) => B
-    ): RouteMatcher<R, E, A | B>
+    ): RouteMatcher<A | B, E, R>
 
-    <const P extends string, R2, E2, B, R3, E3, C>(
+    <const P extends string, B, E2, R2, C, E3, R3>(
       route: Route.Route<P> | P,
-      guard: Guard.Guard<Path.ParamsOf<P>, R2, E2, B>,
+      guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
       f: (b: B) => C
-    ): RouteMatcher<R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>, E | E2 | E3, A | C>
+    ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
   }
 
-  readonly notFound: <R2, E2, B>(
-    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<R2, E2, B>
+  readonly notFound: <B, E2, R2>(
+    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2>
   ) => Fx.Fx<
-    Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope,
+    A | B,
     Exclude<E | E2, Navigation.RedirectError>,
-    A | B
+    Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope
   >
 
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
     ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
   ) => Fx.Fx<
-    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope,
+    A,
     Exclude<E, Navigation.RedirectError>,
-    A
+    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope
   >
 }
 ```

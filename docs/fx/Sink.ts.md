@@ -69,8 +69,8 @@ Transform the input value of a Sink.
 
 ```ts
 export declare const map: {
-  <B, A>(f: (b: B) => A): <R, E>(sink: Sink<R, E, A>) => Sink<R, E, B>
-  <R, E, A, B>(sink: Sink<R, E, A>, f: (b: B) => A): Sink<R, E, B>
+  <B, A>(f: (b: B) => A): <E, R>(sink: Sink<A, E, R>) => Sink<B, E, R>
+  <A, E, R, B>(sink: Sink<A, E, R>, f: (b: B) => A): Sink<B, E, R>
 }
 ```
 
@@ -86,7 +86,7 @@ Useful for operators the end the stream early.
 **Signature**
 
 ```ts
-export interface WithEarlyExit<R, E, A> extends Sink<R, E, A> {
+export interface WithEarlyExit<A, E = never, R = never> extends Sink<A, E, R> {
   readonly earlyExit: Effect.Effect<void>
 }
 ```
@@ -122,7 +122,7 @@ Sink is a data structure which can be used to consume values from a stream.
 **Signature**
 
 ```ts
-export interface Sink<out R, in E, in A> {
+export interface Sink<in A, in E = never, out R = never> {
   onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R>
   onSuccess(value: A): Effect.Effect<unknown, never, R>
 }
@@ -139,9 +139,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface Tagged<I, E, A> extends Sink<I, E, A> {
-  readonly tag: C.Tagged<I, Sink<never, E, A>>
-  readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<I, never, R>
+export interface Tagged<A, E, I> extends Sink<A, E, I> {
+  readonly tag: C.Tagged<I, Sink<A, E>>
+  readonly make: <R>(sink: Sink<A, E, R>) => Layer.Layer<I, never, R>
 }
 ```
 
@@ -152,7 +152,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Context<T> = T extends Sink<infer R, infer _E, infer _A> ? R : never
+export type Context<T> = T extends Sink<infer _A, infer _E, infer R> ? R : never
 ```
 
 Added in v1.20.0
@@ -162,7 +162,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Error<T> = T extends Sink<infer _R, infer E, infer _A> ? E : never
+export type Error<T> = T extends Sink<infer _A, infer E, infer _R> ? E : never
 ```
 
 Added in v1.20.0
@@ -172,7 +172,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Success<T> = T extends Sink<infer _R, infer _E, infer A> ? A : never
+export type Success<T> = T extends Sink<infer A, infer _E, infer _R> ? A : never
 ```
 
 Added in v1.20.0
@@ -193,8 +193,8 @@ Added in v1.20.0
 
 ```ts
 export declare const dropAfter: {
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(sink: Sink<R, E, A>) => Sink<R, E, A>
-  <R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A>
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(sink: Sink<A, E, R>) => Sink<A, E, R>
+  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
 }
 ```
 
@@ -206,13 +206,13 @@ Added in v1.20.0
 
 ```ts
 export declare const dropAfterEffect: {
-  <A, R2, E2>(
+  <A, E2, R2>(
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(
-    sink: Sink<R, E | E2, A>,
+  ): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): Sink<R | R2, E | E2, A>
+  ): Sink<A, E | E2, R | R2>
 }
 ```
 
@@ -224,8 +224,8 @@ Added in v1.20.0
 
 ```ts
 export declare const dropWhile: {
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(sink: Sink<R, E, A>) => Sink<R, E, A>
-  <R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A>
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(sink: Sink<A, E, R>) => Sink<A, E, R>
+  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
 }
 ```
 
@@ -237,13 +237,13 @@ Added in v1.20.0
 
 ```ts
 export declare const dropWhileEffect: {
-  <A, R2, E2>(
+  <A, E2, R2>(
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(
-    sink: Sink<R, E | E2, A>,
+  ): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): Sink<R | R2, E | E2, A>
+  ): Sink<A, E | E2, R | R2>
 }
 ```
 
@@ -254,7 +254,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function filter<R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A>
+export declare function filter<A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
 ```
 
 Added in v1.20.0
@@ -265,8 +265,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A>(sink: Sink<R, E, A>, f: (a: A) => Effect.Effect<boolean, E, R>): Sink<R, E, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R>(sink: Sink<A, E, R>, f: (a: A) => Effect.Effect<boolean, E, R>): Sink<A, E, R>
 }
 ```
 
@@ -277,7 +277,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function filterMap<R, E, A, B>(sink: Sink<R, E, B>, f: (a: A) => Option.Option<B>): Sink<R, E, A>
+export declare function filterMap<A, E, R, B>(sink: Sink<B, E, R>, f: (a: A) => Option.Option<B>): Sink<A, E, R>
 ```
 
 Added in v1.20.0
@@ -288,13 +288,13 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapEffect: {
-  <B, R2, E2, A>(
+  <B, A, E2, R2>(
     f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
-  ): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(
-    sink: Sink<R, E | E2, A>,
+  ): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<B, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
-  ): Sink<R | R2, E | E2, B>
+  ): Sink<B, E | E2, R | R2>
 }
 ```
 
@@ -306,8 +306,8 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(sink: Sink<R, E, C>) => Sink<R, E, A>
-  <R, E, A, B, C>(sink: Sink<R, E, C>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Sink<R, E, A>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <E, R>(sink: Sink<C, E, R>) => Sink<A, E, R>
+  <A, E, R, B, C>(sink: Sink<C, E, R>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Sink<A, E, R>
 }
 ```
 
@@ -322,12 +322,12 @@ export declare const filterMapLoopCause: {
   <B, A, C>(
     seed: B,
     f: (acc: B, a: Cause.Cause<A>) => readonly [Option.Option<Cause.Cause<C>>, B]
-  ): <R, E>(sink: Sink<R, C, A>) => Sink<R, E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, C, A>,
+  ): <E, R>(sink: Sink<A, C, R>) => Sink<A, E, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
-  ): Sink<R, E, A>
+  ): Sink<A, E, R>
 }
 ```
 
@@ -338,11 +338,11 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function filterMapLoopCauseEffect<R, E, A, B, R2, E2, C>(
-  sink: Sink<R, E2 | C, A>,
+export declare function filterMapLoopCauseEffect<A, E, R, B, E2, R2, C>(
+  sink: Sink<A, E2 | C, R>,
   seed: B,
   f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-): Sink<R | R2, E, A>
+): Sink<A, E, R | R2>
 ```
 
 Added in v1.20.0
@@ -353,15 +353,15 @@ Added in v1.20.0
 
 ```ts
 export declare const filterMapLoopEffect: {
-  <B, A, R2, E2, C>(
+  <B, A, E2, R2, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): <R, E>(sink: Sink<R, E, C>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, B, R2, C>(
-    sink: Sink<R, E, C>,
+  ): <E, R>(sink: Sink<C, E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R, B, R2, C>(
+    sink: Sink<C, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R2>
-  ): Sink<R | R2, E, A>
+  ): Sink<A, E, R | R2>
 }
 ```
 
@@ -373,8 +373,8 @@ Added in v1.20.0
 
 ```ts
 export declare const fromTag: {
-  <S, R2, E2, B>(f: (s: S) => Sink<R2, E2, B>): <I>(tag: C.Tag<I, S>) => Sink<R2 | I, E2, B>
-  <I, S, R2, E2, B>(tag: C.Tag<I, S>, f: (s: S) => Sink<R2, E2, B>): Sink<I | R2, E2, B>
+  <S, B, E2, R2>(f: (s: S) => Sink<B, E2, R2>): <I>(tag: C.Tag<I, S>) => Sink<B, E2, R2 | I>
+  <I, S, B, E2, R2>(tag: C.Tag<I, S>, f: (s: S) => Sink<B, E2, R2>): Sink<B, E2, I | R2>
 }
 ```
 
@@ -385,7 +385,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function ignoreInterrupt<R, E, A>(sink: Sink<R, E, A>): Sink<R, E, A>
+export declare function ignoreInterrupt<A, E, R>(sink: Sink<A, E, R>): Sink<A, E, R>
 ```
 
 Added in v1.20.0
@@ -396,8 +396,8 @@ Added in v1.20.0
 
 ```ts
 export declare const loop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(sink: Sink<R, E, C>) => Sink<R, E, A>
-  <R, E, A, B, C>(sink: Sink<R, E, C>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Sink<R, E, A>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <E, R>(sink: Sink<C, E, R>) => Sink<A, E, R>
+  <A, E, R, B, C>(sink: Sink<C, E, R>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Sink<A, E, R>
 }
 ```
 
@@ -412,12 +412,12 @@ export declare const loopCause: {
   <B, A, C>(
     seed: B,
     f: (acc: B, a: Cause.Cause<A>) => readonly [Cause.Cause<C>, B]
-  ): <R, E>(sink: Sink<R, C, A>) => Sink<R, E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, C, A>,
+  ): <E, R>(sink: Sink<A, C, R>) => Sink<A, E, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): Sink<R, E, A>
+  ): Sink<A, E, R>
 }
 ```
 
@@ -429,15 +429,15 @@ Added in v1.20.0
 
 ```ts
 export declare const loopCauseEffect: {
-  <B, A, R2, E2, C>(
+  <B, A, E2, R2, C>(
     seed: B,
     f: (acc: B, a: Cause.Cause<A>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): <R, E>(sink: Sink<R, C | E, A>) => Sink<R, C | E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, E | C, A>,
+  ): <E, R>(sink: Sink<A, C | E, R>) => Sink<A, C | E, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, E | C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E, R>
-  ): Sink<R, E | C, A>
+  ): Sink<A, E | C, R>
 }
 ```
 
@@ -449,15 +449,15 @@ Added in v1.20.0
 
 ```ts
 export declare const loopEffect: {
-  <B, A, R2, E2, C>(
+  <B, A, E2, R2, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
-  ): <R, E>(sink: Sink<R, E, C>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, E, C>,
+  ): <E, R>(sink: Sink<C, E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R, B, C>(
+    sink: Sink<C, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
-  ): Sink<R, E, A>
+  ): Sink<A, E, R>
 }
 ```
 
@@ -471,7 +471,7 @@ Added in v1.20.0
 export declare function make<E, R, A, R2>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<unknown, never, R>,
   onSuccess: (value: A) => Effect.Effect<unknown, never, R2>
-): Sink<R | R2, E, A>
+): Sink<A, E, R | R2>
 ```
 
 Added in v1.20.0
@@ -482,8 +482,8 @@ Added in v1.20.0
 
 ```ts
 export declare const mapEffect: {
-  <B, R2, E2, A>(f: (b: B) => Effect.Effect<A, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, B>
-  <R, E, A, R2, E2, B>(sink: Sink<R, E | E2, A>, f: (b: B) => Effect.Effect<A, E2, R2>): Sink<R | R2, E | E2, B>
+  <B, A, E2, R2>(f: (b: B) => Effect.Effect<A, E2, R2>): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<B, E2 | E, R2 | R>
+  <A, E, R, B, E2, R2>(sink: Sink<A, E | E2, R>, f: (b: B) => Effect.Effect<A, E2, R2>): Sink<B, E | E2, R | R2>
 }
 ```
 
@@ -495,8 +495,8 @@ Added in v1.20.0
 
 ```ts
 export declare const provide: {
-  <R2>(ctx: C.Context<R2>): <R, E, A>(sink: Sink<R, E, A>) => Sink<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(sink: Sink<R, E, A>, ctx: C.Context<R2>): Sink<Exclude<R, R2>, E, A>
+  <R2>(ctx: C.Context<R2>): <A, E, R>(sink: Sink<A, E, R>) => Sink<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(sink: Sink<A, E, R>, ctx: C.Context<R2>): Sink<A, E, Exclude<R, R2>>
 }
 ```
 
@@ -508,8 +508,8 @@ Added in v1.20.0
 
 ```ts
 export declare const setSpan: {
-  (span: Tracer.Span): <R, E, A>(sink: Sink<R, E, A>) => Sink<R, E, A>
-  <R, E, A>(self: Sink<R, E, A>, span: Tracer.Span): Sink<R, E, A>
+  (span: Tracer.Span): <A, E, R>(sink: Sink<A, E, R>) => Sink<A, E, R>
+  <A, E, R>(self: Sink<A, E, R>, span: Tracer.Span): Sink<A, E, R>
 }
 ```
 
@@ -521,14 +521,14 @@ Added in v1.20.0
 
 ```ts
 export declare const slice: {
-  <R, E, A, R2>(
+  <A, E, R, R2>(
     bounds: Bounds,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
-  ): (sink: Sink<R, E, A>) => Effect.Effect<void, never, R | R2>
-  <R, E, A, R2>(
-    sink: Sink<R, E, A>,
+    f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, never, R2>
+  ): (sink: Sink<A, E, R>) => Effect.Effect<void, never, R | R2>
+  <A, E, R, R2>(
+    sink: Sink<A, E, R>,
     bounds: Bounds,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
+    f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, never, R2>
   ): Effect.Effect<void, never, R | R2>
 }
 ```
@@ -541,8 +541,8 @@ Added in v1.20.0
 
 ```ts
 export declare function tagged<E, A>(): {
-  <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
+  <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<A, E, C.IdentifierOf<I>>
+  <const I>(identifier: I): Sink.Tagged<A, E, C.IdentifierOf<I>>
 }
 ```
 
@@ -554,14 +554,14 @@ Added in v1.20.0
 
 ```ts
 export declare const takeWhile: {
-  <R, E, A, R2, B>(
+  <A, E, R, B, R2>(
     predicate: Predicate.Predicate<A>,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
-  ): (sink: Sink<R, E, A>) => Effect.Effect<void, never, R | R2>
-  <R, E, A, R2, B>(
-    sink: Sink<R, E, A>,
+    f: (sink: Sink<A, E, R>) => Effect.Effect<B, E, R2>
+  ): (sink: Sink<A, E, R>) => Effect.Effect<void, never, R | R2>
+  <A, E, R, B, R2>(
+    sink: Sink<A, E, R>,
     predicate: Predicate.Predicate<A>,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
+    f: (sink: Sink<A, E, R>) => Effect.Effect<B, E, R2>
   ): Effect.Effect<void, never, R | R2>
 }
 ```
@@ -574,14 +574,14 @@ Added in v1.20.0
 
 ```ts
 export declare const takeWhileEffect: {
-  <R, E, A, R2, E2, R3, E3, B>(
+  <A, E, R, E2, R2, R3, E3, B>(
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
-  ): <R, E>(sink: Sink<R, E, A>) => Effect.Effect<void, never, R3 | R>
-  <R, E, A, R2, E2, R3, E3, B>(
-    sink: Sink<R, E | E2 | E3, A>,
+    f: (sink: Sink<A, E, R | R2>) => Effect.Effect<B, E3, R3>
+  ): <E, R>(sink: Sink<A, E, R>) => Effect.Effect<void, never, R3 | R>
+  <A, E, R, E2, R2, R3, E3, B>(
+    sink: Sink<A, E | E2 | E3, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
+    f: (sink: Sink<A, E, R | R2>) => Effect.Effect<B, E3, R3>
   ): Effect.Effect<void, never, R | R3>
 }
 ```
@@ -594,8 +594,8 @@ Added in v1.20.0
 
 ```ts
 export declare const tapEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <R, E>(sink: Sink<R, E2 | E, A>) => Sink<R2 | R, E2 | E, A>
-  <R, E, A, R2, E2>(sink: Sink<R, E | E2, A>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Sink<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <E, R>(sink: Sink<A, E2 | E, R>) => Sink<A, E2 | E, R2 | R>
+  <A, E, R, E2, R2>(sink: Sink<A, E | E2, R>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Sink<A, E | E2, R | R2>
 }
 ```
 
@@ -606,9 +606,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function withEarlyExit<R, E, A, R2, B>(
-  sink: Sink<R, E, A>,
-  f: (sink: WithEarlyExit<R, E, A>) => Effect.Effect<B, E, R2>
+export declare function withEarlyExit<A, E, R, B, R2>(
+  sink: Sink<A, E, R>,
+  f: (sink: WithEarlyExit<A, E, R>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2>
 ```
 

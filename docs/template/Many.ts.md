@@ -25,11 +25,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function many<R, E, A, B extends PropertyKey, R2, E2>(
-  values: Fx.Fx<R, E, ReadonlyArray<A>>,
+export declare function many<A, E, R, B extends PropertyKey, R2, E2>(
+  values: Fx.Fx<ReadonlyArray<A>, E, R>,
   getKey: (a: NoInfer<A>) => B,
-  f: (a: RefSubject.RefSubject<never, never, NoInfer<A>>, key: B) => Fx.Fx<R2, E2, RenderEvent>
-): Fx.Fx<R | R2 | Scope.Scope | RenderContext, E | E2, RenderEvent | ReadonlyArray<RenderEvent>>
+  f: (a: RefSubject.RefSubject<NoInfer<A>>, key: B) => Fx.Fx<RenderEvent, E2, R2>
+): Fx.Fx<RenderEvent | ReadonlyArray<RenderEvent>, E | E2, R | R2 | Scope.Scope | RenderContext>
 ```
 
 Added in v1.0.0
@@ -53,15 +53,15 @@ export declare const manyAsyncData: {
     matchers: {
       NoData: () => NoData
       Loading: (todo: TODO) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
+      Failure: (data: RefSubject.Computed<E1, never, never>, computed: TODO) => Failure
+      Success: (value: RefSubject.Computed<A, never, never>, computed: TODO) => Success
     }
-  ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>
+  ): <E, R>(
+    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>
   ) => Fx.Fx<
-    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>,
+    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>,
     E | Fx.Fx.Error<NoData> | Fx.Fx.Error<Loading> | Fx.Fx.Error<Failure> | Fx.Fx.Error<Success>,
-    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>
+    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>
   >
   <
     R,
@@ -74,18 +74,18 @@ export declare const manyAsyncData: {
     Failure extends Fx.Fx<any, any, any>,
     Success extends Fx.Fx<any, any, any>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<readonly A[], E1>>,
+    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>,
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: TODO) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
+      Failure: (data: RefSubject.Computed<E1, never, never>, computed: TODO) => Failure
+      Success: (value: RefSubject.Computed<A, never, never>, computed: TODO) => Success
     }
   ): Fx.Fx<
-    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>,
+    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>,
     E | Fx.Fx.Error<NoData> | Fx.Fx.Error<Loading> | Fx.Fx.Error<Failure> | Fx.Fx.Error<Success>,
-    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>
+    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>
   >
 }
 ```

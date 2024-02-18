@@ -36,8 +36,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function htmlResponse<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>,
+export declare function htmlResponse<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>,
   options?: HttpServer.response.Options
 ): Effect.Effect<HttpServer.response.ServerResponse, E, RenderContext.RenderContext | Exclude<R, RenderTemplate>>
 ```

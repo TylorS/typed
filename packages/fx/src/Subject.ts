@@ -241,11 +241,11 @@ export function make<A, E>(replay?: number): Effect.Effect<Subject<A, E>, never,
 /**
  * @since 1.20.0
  */
-export function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<A, E, R>): Subject<A, E, I | R> {
+export function fromTag<I, S, A, E, R>(tag: C.Tag<I, S>, f: (s: S) => Subject<A, E, R>): Subject<A, E, I | R> {
   return new FromTag(tag, f)
 }
 
-class FromTag<I, S, R, E, A> extends FxBase<A, E, I | R | Scope.Scope> implements Subject<A, E, I | R> {
+class FromTag<I, S, A, E, R> extends FxBase<A, E, I | R | Scope.Scope> implements Subject<A, E, I | R> {
   private get: Effect.Effect<Subject<A, E, R>, never, I>
 
   readonly subscriberCount: Effect.Effect<number, never, I | R>
@@ -285,7 +285,7 @@ export function tagged<A, E = never>(): {
 const isDataFirst = (args: IArguments): boolean =>
   args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], TypeId)
 
-class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, never, E, A> implements Subject.Tagged<A, E, I> {
+class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, A, E, never> implements Subject.Tagged<A, E, I> {
   readonly provide: Subject.Tagged<A, E, I>["provide"]
 
   constructor(readonly tag: C.Tagged<I, Subject<A, E>>) {
@@ -293,7 +293,7 @@ class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, never, E, A> impleme
 
     this.provide = dual(
       isDataFirst,
-      <R2, E2, B>(fxOrEffect: Fx<B, E2, R2> | Effect.Effect<B, E2, R2>, replay?: number) => {
+      <B, E2, R2>(fxOrEffect: Fx<B, E2, R2> | Effect.Effect<B, E2, R2>, replay?: number) => {
         if (TypeId in fxOrEffect) return provide(fxOrEffect as Fx<B, E2, Exclude<R2, I>>, this.make(replay))
         else return Effect.provide(fxOrEffect as Effect.Effect<B, E2, R2>, this.make(replay))
       }

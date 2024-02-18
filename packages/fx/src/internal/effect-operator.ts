@@ -13,22 +13,22 @@ export type EffectOperator =
   | FilterEffect<any, any, any>
   | FilterMapEffect<any, any, any, any>
 
-export interface MapEffect<A, R2, E2, B> {
+export interface MapEffect<A, B, E2, R2> {
   readonly _tag: "MapEffect"
   readonly f: (a: A) => Effect.Effect<B, E2, R2>
 }
 
-export const MapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): MapEffect<A, R2, E2, B> => ({
+export const MapEffect = <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): MapEffect<A, B, E2, R2> => ({
   _tag: "MapEffect",
   f
 })
 
-export interface TapEffect<A, R2, E2, B> {
+export interface TapEffect<A, B, E2, R2> {
   readonly _tag: "TapEffect"
   readonly f: (a: A) => Effect.Effect<B, E2, R2>
 }
 
-export const TapEffect = <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): TapEffect<A, R2, E2, B> => ({
+export const TapEffect = <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): TapEffect<A, B, E2, R2> => ({
   _tag: "TapEffect",
   f
 })
@@ -43,14 +43,14 @@ export const FilterEffect = <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, 
   f
 })
 
-export interface FilterMapEffect<A, R2, E2, B> {
+export interface FilterMapEffect<A, B, E2, R2> {
   readonly _tag: "FilterMapEffect"
   readonly f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
 }
 
-export const FilterMapEffect = <A, R2, E2, B>(
+export const FilterMapEffect = <A, B, E2, R2>(
   f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
-): FilterMapEffect<A, R2, E2, B> => ({ _tag: "FilterMapEffect", f })
+): FilterMapEffect<A, B, E2, R2> => ({ _tag: "FilterMapEffect", f })
 
 type EffectOperatorFusionMap = {
   readonly [K in EffectOperator["_tag"]]: {
@@ -253,7 +253,7 @@ export function compileCauseEffectOperatorSink<R>(
   })
 }
 
-export function compileEffectLoop<B, A, R2, E2, C>(
+export function compileEffectLoop<B, A, C, E2, R2>(
   operator: EffectOperator,
   loop: (b: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
 ): (b: B, i: any) => Effect.Effect<Option.Option<readonly [C, B]>, E2, R2> {

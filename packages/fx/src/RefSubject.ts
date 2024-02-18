@@ -412,7 +412,7 @@ class DerivedImpl<A, E, R, R2> extends RefSubjectImpl<A, E, R, R2> implements Re
  * @since 1.20.0
  */
 export const set: {
-  <A>(value: A): <R, E>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E, R>
+  <A>(value: A): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E, R>
   <A, E, R>(ref: RefSubject<A, E, R>, a: A): Effect.Effect<A, E, R>
 } = dual(2, function set<A, E, R>(ref: RefSubject<A, E, R>, a: A): Effect.Effect<A, E, R> {
   return ref.runUpdates((ref) => ref.set(a))
@@ -467,7 +467,7 @@ function getSetDelete<A, E, R, R2>(ref: RefSubjectCore<A, E, R, R2>): GetSetDele
 export const updateEffect: {
   <A, E2, R2>(
     f: (value: A) => Effect.Effect<A, E2, R2>
-  ): <R, E>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E | E2, R | R2>
+  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E | E2, R | R2>
   <A, E, R, E2, R2>(
     ref: RefSubject<A, E, R>,
     f: (value: A) => Effect.Effect<A, E2, R2>
@@ -483,7 +483,7 @@ export const updateEffect: {
  * @since 1.20.0
  */
 export const update: {
-  <A>(f: (value: A) => A): <R, E>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E, R>
+  <A>(f: (value: A) => A): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E, R>
   <A, E, R>(ref: RefSubject<A, E, R>, f: (value: A) => A): Effect.Effect<A, E, R>
 } = dual(2, function update<A, E, R>(ref: RefSubject<A, E, R>, f: (value: A) => A) {
   return updateEffect(ref, (value) => Effect.succeed(f(value)))
@@ -495,7 +495,7 @@ export const update: {
 export const modifyEffect: {
   <A, B, E2, R2>(
     f: (value: A) => Effect.Effect<readonly [B, A], E2, R2>
-  ): <R, E>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E | E2, R | R2>
+  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E | E2, R | R2>
   <A, E, R, B, E2, R2>(
     ref: RefSubject<A, E, R>,
     f: (value: A) => Effect.Effect<readonly [B, A], E2, R2>
@@ -517,7 +517,7 @@ export const modifyEffect: {
  * @since 1.20.0
  */
 export const modify: {
-  <A, B>(f: (value: A) => readonly [B, A]): <R, E>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E, R>
+  <A, B>(f: (value: A) => readonly [B, A]): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E, R>
   <A, E, R, B>(ref: RefSubject<A, E, R>, f: (value: A) => readonly [B, A]): Effect.Effect<B, E, R>
 } = dual(2, function modify<A, E, R, B>(ref: RefSubject<A, E, R>, f: (value: A) => readonly [B, A]) {
   return modifyEffect(ref, (value) => Effect.succeed(f(value)))
@@ -812,8 +812,8 @@ export const mapEffect: {
   <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>
   ): {
-    <R, E>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Computed<B, E | E2, R | R2>
-    <R, E>(ref: Filtered<A, E, R>): Filtered<B, E | E2, R | R2>
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Computed<B, E | E2, R | R2>
+    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E | E2, R | R2>
     <R0, E0, R, E, E2, R2, C>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
       f: (a: A) => Effect.Effect<C, E2, R2>
@@ -851,10 +851,10 @@ export const mapEffect: {
  */
 export const map: {
   <A, B>(f: (a: A) => B): {
-    <R, E>(ref: RefSubject<A, E, R>): Computed<B, E, R>
-    <R, E>(ref: Computed<A, E, R>): Computed<B, E, R>
+    <E, R>(ref: RefSubject<A, E, R>): Computed<B, E, R>
+    <E, R>(ref: Computed<A, E, R>): Computed<B, E, R>
 
-    <R, E>(ref: Filtered<A, E, R>): Filtered<B, E, R>
+    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E, R>
 
     <R0, E0, R, E, E2, R2>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
@@ -888,9 +888,9 @@ export const filterMapEffect: {
   <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
   ): {
-    <R, E>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Filtered<B, E | E2, R | R2>
-    <R, E>(ref: Filtered<A, E, R>): Filtered<B, E | E2, R | R2>
-    <R0, E0, R, E, B, E2, R2>(
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Filtered<B, E | E2, R | R2>
+    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E | E2, R | R2>
+    <R0, E0, B, E, R, E2, R2>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
       f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
     ): Filtered<B, E0 | E | E2, R0 | R2>
@@ -916,8 +916,8 @@ export const filterMapEffect: {
  */
 export const filterMap: {
   <A, B>(f: (a: A) => Option.Option<B>): {
-    <R, E>(ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>): Filtered<B, E, R>
-    <R0, E0, R, E, B, E2, R2>(
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>): Filtered<B, E, R>
+    <R0, E0, B, E, R, E2, R2>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
       f: (a: A) => Option.Option<B>
     ): Filtered<B, E0 | E | E2, R0 | R2>
@@ -987,7 +987,7 @@ export const filterEffect: {
  */
 export const filter: {
   <A>(f: (a: A) => boolean): {
-    <R, E>(ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>): Filtered<A, E, R>
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>): Filtered<A, E, R>
     <R0, E0, R, E, E2, R2>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
       f: (a: A) => boolean
@@ -1093,8 +1093,8 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
  */
 export const skipRepeatsWith: {
   <A>(eq: Equivalence.Equivalence<A>): {
-    <R, E>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Computed<A, E, R>
-    <R, E>(ref: Filtered<A, E, R>): Filtered<A, E, R>
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Computed<A, E, R>
+    <E, R>(ref: Filtered<A, E, R>): Filtered<A, E, R>
   }
 
   <A, E, R>(
@@ -2088,7 +2088,7 @@ class RefSubjectProvide<A, E, R, R2, S> extends FxEffectBase<
  * Set the value to true
  * @since 1.18.0
  */
-export const asTrue: <R, E>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <R, E>(
+export const asTrue: <E, R>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <E, R>(
   ref: RefSubject<boolean, E, R>
 ) => set(ref, true)
 
@@ -2096,7 +2096,7 @@ export const asTrue: <R, E>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boo
  * Set the value to false
  * @since 1.18.0
  */
-export const asFalse: <R, E>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <R, E>(
+export const asFalse: <E, R>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <E, R>(
   ref: RefSubject<boolean, E, R>
 ) => set(ref, false)
 
@@ -2104,7 +2104,7 @@ export const asFalse: <R, E>(ref: RefSubject<boolean, E, R>) => Effect.Effect<bo
  * Toggle the boolean value between true and false
  * @since 1.18.0
  */
-export const toggle: <R, E>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <R, E>(
+export const toggle: <E, R>(ref: RefSubject<boolean, E, R>) => Effect.Effect<boolean, E, R> = <E, R>(
   ref: RefSubject<boolean, E, R>
 ) => update(ref, Boolean.not)
 
@@ -2114,7 +2114,7 @@ const add = (x: number): number => x + 1
  * Set the value to true
  * @since 1.18.0
  */
-export const increment: <R, E>(ref: RefSubject<number, E, R>) => Effect.Effect<number, E, R> = <R, E>(
+export const increment: <E, R>(ref: RefSubject<number, E, R>) => Effect.Effect<number, E, R> = <E, R>(
   ref: RefSubject<number, E, R>
 ) => update(ref, add)
 
@@ -2124,7 +2124,7 @@ const sub = (x: number): number => x - 1
  * Set the value to false
  * @since 1.18.0
  */
-export const decrement: <R, E>(ref: RefSubject<number, E, R>) => Effect.Effect<number, E, R> = <R, E>(
+export const decrement: <E, R>(ref: RefSubject<number, E, R>) => Effect.Effect<number, E, R> = <E, R>(
   ref: RefSubject<number, E, R>
 ) => update(ref, sub)
 

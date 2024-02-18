@@ -169,7 +169,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CanGoBack: RefSubject.Computed<Navigation, never, boolean>
+export declare const CanGoBack: RefSubject.Computed<boolean, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -179,7 +179,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CanGoForward: RefSubject.Computed<Navigation, never, boolean>
+export declare const CanGoForward: RefSubject.Computed<boolean, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -199,7 +199,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentEntries: RefSubject.Computed<Navigation, never, readonly Destination[]>
+export declare const CurrentEntries: RefSubject.Computed<readonly Destination[], never, Navigation>
 ```
 
 Added in v1.0.0
@@ -209,7 +209,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentEntry: RefSubject.Computed<Navigation, never, Destination>
+export declare const CurrentEntry: RefSubject.Computed<Destination, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -219,7 +219,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentPath: RefSubject.Computed<Navigation, never, string>
+export declare const CurrentPath: RefSubject.Computed<string, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -476,15 +476,15 @@ export interface Navigation {
 
   readonly base: string
 
-  readonly currentEntry: RefSubject.Computed<never, never, Destination>
+  readonly currentEntry: RefSubject.Computed<Destination>
 
-  readonly entries: RefSubject.Computed<never, never, ReadonlyArray<Destination>>
+  readonly entries: RefSubject.Computed<ReadonlyArray<Destination>>
 
-  readonly transition: RefSubject.Computed<never, never, Option.Option<Transition>>
+  readonly transition: RefSubject.Computed<Option.Option<Transition>>
 
-  readonly canGoBack: RefSubject.Computed<never, never, boolean>
+  readonly canGoBack: RefSubject.Computed<boolean>
 
-  readonly canGoForward: RefSubject.Computed<never, never, boolean>
+  readonly canGoForward: RefSubject.Computed<boolean>
 
   readonly navigate: (url: string | URL, options?: NavigateOptions) => Effect.Effect<Destination, NavigationError>
 

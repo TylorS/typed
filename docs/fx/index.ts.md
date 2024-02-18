@@ -6,7 +6,7 @@ parent: "@typed/fx"
 
 ## index overview
 
-Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
+Fx<A, E, R> is a representation of an `Effect`-ful workflow that exists over
 the time dimension. It operates within a context `R`, can fail with an `E`,
 and succeed with an `A`.
 
@@ -97,7 +97,7 @@ Added in v1.18.0
 
 ## From "./Fx.js"
 
-Fx<R, E, A> is a representation of an `Effect`-ful workflow that exists over
+Fx<A, E, R> is a representation of an `Effect`-ful workflow that exists over
 the time dimension. It operates within a context `R`, can fail with an `E`,
 and succeed with an `A`.
 

@@ -32,8 +32,8 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface AsGuard<I, R, E, A> {
-  readonly asGuard: () => Guard<I, R, E, A>
+export interface AsGuard<I, A, E = never, R = never> {
+  readonly asGuard: () => Guard<I, A, E, R>
 }
 ```
 
@@ -48,7 +48,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface Variance<R, E, I, O> {
+export interface Variance<I, O, E, R> {
   readonly _R: (_: never) => R
   readonly _E: (_: never) => E
   readonly _I: (_: I) => unknown
@@ -83,24 +83,24 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface TypeMatcher<out R, out E, in out I, out O> {
+export interface TypeMatcher<I, O = never, E = never, R = never> {
   readonly _tag: "TypeMatcher"
 
-  readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
+  readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
   readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ) => TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
   readonly to: <R2 = never, E2 = never, A = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ) => TypeMatcher<R | R2, E | E2, I, O | B>
+  ) => TypeMatcher<I, O | B, E | E2, R | R2>
 
   readonly run: <R2 = never, E2 = never>(
-    input: Fx.Fx<R2, E2, I>
-  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>>
+    input: Fx.Fx<I, E2, R2>
+  ) => Fx.Fx<Option.Option<O>, E | E2, R | R2 | Scope.Scope>
 }
 ```
 
@@ -111,26 +111,26 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface ValueMatcher<out R, out E, in out I, out O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
+export interface ValueMatcher<I, O = never, E = never, R = never> extends Fx.Fx<Option.Option<O>, E, R | Scope.Scope> {
   readonly _tag: "ValueMatcher"
 
-  readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
+  readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
-  readonly value: Fx.Fx<R, E, I>
+  readonly value: Fx.Fx<I, E, R>
 
-  readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ) => ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
+  readonly when: <A, E2, R2, R3 = never, E3 = never, B = never>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ) => ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
-  readonly to: <R2, E2, A, B>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+  readonly to: <A, E2, R2, B>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ) => ValueMatcher<R | R2, E | E2, I, O | B>
+  ) => ValueMatcher<I, O | B, E | E2, R | R2>
 
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
-    f: () => Fx.Fx<R2, E2, B>
-  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, O | B>
+    f: () => Fx.Fx<B, E2, R2>
+  ) => Fx.Fx<O | B, E | E2, R | R2 | Scope.Scope>
 }
 ```
 
@@ -141,7 +141,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const type: <I>() => TypeMatcher<never, never, I, never>
+export declare const type: <I>() => TypeMatcher<I, never, never, never>
 ```
 
 Added in v1.18.0
@@ -151,7 +151,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const value: <R, E, I>(input: Fx.Fx<R, E, I>) => ValueMatcher<R, E, I, never>
+export declare const value: <I, E = never, R = never>(input: Fx.Fx<I, E, R>) => ValueMatcher<I, never, E, R>
 ```
 
 Added in v1.18.0

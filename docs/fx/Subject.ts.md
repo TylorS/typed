@@ -35,7 +35,9 @@ Subject is an Fx type which can also be imperatively pushed into.
 **Signature**
 
 ```ts
-export interface Subject<out R, in out E, in out A> extends Push<R, E, A, R | Scope.Scope, E, A>, Pipeable.Pipeable {
+export interface Subject<in out A, in out E = never, out R = never>
+  extends Push<A, E, R, A, E, R | Scope.Scope>,
+    Pipeable.Pipeable {
   readonly subscriberCount: Effect.Effect<number, never, R>
   readonly interrupt: Effect.Effect<void, never, R>
 }
@@ -52,8 +54,8 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface Tagged<I, E, A> extends Subject<I, E, A> {
-  readonly tag: C.Tagged<I, Subject<never, E, A>>
+export interface Tagged<A, E, I> extends Subject<A, E, I> {
+  readonly tag: C.Tagged<I, Subject<A, E>>
 
   readonly make: (replay?: number) => Layer.Layer<I>
   readonly provide: Provide<I>
@@ -74,13 +76,13 @@ export type Provide<I> = <
 ) => Args extends readonly [infer _ extends number]
   ? <T extends Fx<any, any, any> | Effect.Effect<any, any, any>>(
       fxOrEffect: T
-    ) => [T] extends [Fx<infer R2, infer E2, infer B>]
-      ? Fx<Exclude<R2, I>, E2, B>
+    ) => [T] extends [Fx<infer B, infer E2, infer R2>]
+      ? Fx<B, E2, Exclude<R2, I>>
       : [T] extends [Effect.Effect<infer B, infer E2, infer R2>]
         ? Effect.Effect<B, E2, Exclude<R2, I>>
         : never
-  : Args extends readonly [Fx<infer R2, infer E2, infer B>]
-    ? Fx<Exclude<R2, I>, E2, B>
+  : Args extends readonly [Fx<infer B, infer E2, infer R2>]
+    ? Fx<B, E2, Exclude<R2, I>>
     : Args extends readonly [Effect.Effect<infer B, infer E2, infer R2>]
       ? Effect.Effect<B, E2, Exclude<R2, I>>
       : never
@@ -93,7 +95,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<R, E, A>): Subject<I | R, E, A>
+export declare function fromTag<I, S, A, E, R>(tag: C.Tag<I, S>, f: (s: S) => Subject<A, E, R>): Subject<A, E, I | R>
 ```
 
 Added in v1.20.0
@@ -103,7 +105,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function make<E, A>(replay?: number): Effect.Effect<Subject<never, E, A>, never, Scope.Scope>
+export declare function make<A, E>(replay?: number): Effect.Effect<Subject<A, E>, never, Scope.Scope>
 ```
 
 Added in v1.20.0
@@ -113,9 +115,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function tagged<E, A>(): {
-  <const I extends C.IdentifierFactory<any>>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>
+export declare function tagged<A, E = never>(): {
+  <const I extends C.IdentifierFactory<any>>(identifier: I): Subject.Tagged<A, E, C.IdentifierOf<I>>
+  <const I>(identifier: I): Subject.Tagged<A, E, C.IdentifierOf<I>>
 }
 ```
 
@@ -126,7 +128,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A>
+export declare function unsafeMake<A, E = never>(replay: number = 0): Subject<A, E>
 ```
 
 Added in v1.20.0

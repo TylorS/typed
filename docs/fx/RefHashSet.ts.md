@@ -43,8 +43,8 @@ Add a value to the current state of a RefHashSet.
 
 ```ts
 export declare const add: {
-  <A>(value: A): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<HashSet.HashSet<A>, E, R>
-  <R, E, A>(ref: RefHashSet<R, E, A>, value: A): Effect.Effect<HashSet.HashSet<A>, E, R>
+  <A>(value: A): <E, R>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  <A, E, R>(ref: RefHashSet<A, E, R>, value: A): Effect.Effect<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -58,8 +58,8 @@ Append an iterable of values to the current state of a RefHashSet.
 
 ```ts
 export declare const appendAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefHashSet<R, E, A>) => Effect.Effect<HashSet.HashSet<A>, E, R>
-  <R, E, A>(ref: RefHashSet<R, E, A>, value: Iterable<A>): Effect.Effect<HashSet.HashSet<A>, E, R>
+  <A>(value: Iterable<A>): <E, R>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  <A, E, R>(ref: RefHashSet<A, E, R>, value: Iterable<A>): Effect.Effect<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -73,8 +73,8 @@ Map (Endomorphic) the values of a RefHashSet.
 
 ```ts
 export declare const map: {
-  <A>(f: (a: A) => A): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, f: (a: A) => A): RefSubject.Computed<R, E, HashSet.HashSet<A>>
+  <A>(f: (a: A) => A): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
+  <A, E, R>(ref: RefHashSet<A, E, R>, f: (a: A) => A): RefSubject.Computed<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -90,8 +90,8 @@ Filter the values of a RefHashSet using a predicate creating a Computed value.
 
 ```ts
 export declare const filterValues: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, HashSet.HashSet<A>>
-  <R, E, A>(ref: RefHashSet<R, E, A>, predicate: (a: A) => boolean): RefSubject.Computed<R, E, HashSet.HashSet<A>>
+  <A>(predicate: (a: A) => boolean): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
+  <A, E, R>(ref: RefHashSet<A, E, R>, predicate: (a: A) => boolean): RefSubject.Computed<HashSet.HashSet<A>, E, R>
 }
 ```
 
@@ -105,8 +105,8 @@ Map the values with their indexes of a RefHashSet.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, readonly B[]>
-  <R, E, A, B>(ref: RefHashSet<R, E, A>, f: (a: A) => B): RefSubject.Computed<R, E, readonly B[]>
+  <A, B>(f: (a: A) => B): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<readonly B[], E, R>
+  <A, E, R, B>(ref: RefHashSet<A, E, R>, f: (a: A) => B): RefSubject.Computed<readonly B[], E, R>
 }
 ```
 
@@ -122,11 +122,11 @@ Partition the values of a RefHashSet using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, readonly [readonly B[], HashSet.HashSet<A>]>
-  <R, E, A>(
-    ref: RefHashSet<R, E, A>,
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<readonly [readonly B[], HashSet.HashSet<A>], E, R>
+  <A, E, R>(
+    ref: RefHashSet<A, E, R>,
     predicate: (a: A) => boolean
-  ): RefSubject.Computed<never, E, readonly [HashSet.HashSet<A>, HashSet.HashSet<A>]>
+  ): RefSubject.Computed<readonly [readonly A[], HashSet.HashSet<A>], E, never>
 }
 ```
 
@@ -140,8 +140,8 @@ Reduce the values of a RefHashSet to a single value.
 
 ```ts
 export declare const reduce: {
-  <A, B>(b: B, f: (b: B, a: A) => B): <R, E>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, B>
-  <R, E, A, B>(ref: RefHashSet<R, E, A>, b: B, f: (b: B, a: A) => B): RefSubject.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A) => B): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<B, E, R>
+  <A, E, R, B>(ref: RefHashSet<A, E, R>, b: B, f: (b: B, a: A) => B): RefSubject.Computed<B, E, R>
 }
 ```
 
@@ -154,7 +154,7 @@ Get the current length of a RefHashSet.
 **Signature**
 
 ```ts
-export declare const size: <R, E, A>(ref: RefHashSet<R, E, A>) => RefSubject.Computed<R, E, number>
+export declare const size: <A, E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<number, E, R>
 ```
 
 Added in v1.18.0
@@ -187,7 +187,8 @@ A RefHashSet is a RefSubject that is specialized over an HashSet of values.
 **Signature**
 
 ```ts
-export interface RefHashSet<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, HashSet.HashSet<A>> {}
+export interface RefHashSet<in out A, in out E = never, out R = never>
+  extends RefSubject.RefSubject<HashSet.HashSet<A>, E, R> {}
 ```
 
 Added in v1.18.0
@@ -199,9 +200,9 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare function make<R, E, A>(
-  initial: Effect.Effect<HashSet.HashSet<A>, E, R> | Fx.Fx<R, E, HashSet.HashSet<A>>
-): Effect.Effect<RefHashSet<never, E, A>, never, R | Scope.Scope>
+export declare function make<A, E, R>(
+  initial: Effect.Effect<HashSet.HashSet<A>, E, R> | Fx.Fx<HashSet.HashSet<A>, E, R>
+): Effect.Effect<RefHashSet<A, E>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0

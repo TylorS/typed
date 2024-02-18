@@ -96,13 +96,13 @@ export interface Model<Refs extends Readonly<Record<string, ModelRef<any, any> |
    */
   readonly provide: (
     state: Model.State<this>
-  ) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, Model.Identifier<this>> | Scope>
+  ) => <B, E, R>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, Model.Identifier<this>> | Scope>
 
   /**
    * Construct a Layer to provide a Model to an Effect
    * @since 1.0.0
    */
-  readonly layer: <R, E>(
+  readonly layer: <E, R>(
     effect: Effect.Effect<Model.State<this>, E, R>
   ) => Layer.Layer<Model.Identifier<this>, E, Exclude<R, Scope>>
 }

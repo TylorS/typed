@@ -50,7 +50,7 @@ export const tagged: <A>() => {
  * @category combinators
  */
 export const add: {
-  <A>(value: A): <R, E>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  <A>(value: A): <E, R>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
   <A, E, R>(ref: RefHashSet<A, E, R>, value: A): Effect.Effect<HashSet.HashSet<A>, E, R>
 } = dual(2, function add<A, E, R>(ref: RefHashSet<A, E, R>, value: A) {
   return RefSubject.update(ref, HashSet.add(value))
@@ -64,7 +64,7 @@ export const add: {
 export const appendAll: {
   <A>(
     value: Iterable<A>
-  ): <R, E>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => Effect.Effect<HashSet.HashSet<A>, E, R>
   <A, E, R>(ref: RefHashSet<A, E, R>, value: Iterable<A>): Effect.Effect<HashSet.HashSet<A>, E, R>
 } = dual(2, function appendAll<A, E, R>(ref: RefHashSet<A, E, R>, value: Iterable<A>) {
   return RefSubject.update(ref, (set) =>
@@ -83,7 +83,7 @@ export const appendAll: {
 export const filterValues: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
   <A, E, R>(
     ref: RefHashSet<A, E, R>,
     predicate: (a: A) => boolean
@@ -108,7 +108,7 @@ export const size = <A, E, R>(ref: RefHashSet<A, E, R>): RefSubject.Computed<num
 export const map: {
   <A>(
     f: (a: A) => A
-  ): <R, E>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<HashSet.HashSet<A>, E, R>
   <A, E, R>(
     ref: RefHashSet<A, E, R>,
     f: (a: A) => A
@@ -125,7 +125,7 @@ export const map: {
 export const mapValues: {
   <A, B>(
     f: (a: A) => B
-  ): <R, E>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
   <A, E, R, B>(
     ref: RefHashSet<A, E, R>,
     f: (a: A) => B
@@ -145,7 +145,7 @@ export const mapValues: {
 export const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(
+  ): <E, R>(
     ref: RefHashSet<A, E, R>
   ) => RefSubject.Computed<readonly [ReadonlyArray<B>, HashSet.HashSet<A>], E, R>
   <A, E, R>(ref: RefHashSet<A, E, R>, predicate: (a: A) => boolean): RefSubject.Computed<
@@ -165,7 +165,7 @@ export const reduce: {
   <A, B>(
     b: B,
     f: (b: B, a: A) => B
-  ): <R, E>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<B, E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<B, E, R>
   <A, E, R, B>(
     ref: RefHashSet<A, E, R>,
     b: B,

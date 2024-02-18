@@ -136,7 +136,7 @@ export interface Provision<I, S> {
    * Provide a service to an Effect using a service Effect
    * @since 1.0.0
    */
-  readonly provideEffect: <R2, E2>(
+  readonly provideEffect: <E2, R2>(
     effect: Effect.Effect<S, E2, R2>
   ) => <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E | E2, R2 | Exclude<R, I>>
 
@@ -152,7 +152,7 @@ export interface Provision<I, S> {
    * Create a Layer from the service that is scoped.
    * @since 1.0.0
    */
-  readonly scoped: <R, E>(effect: Effect.Effect<S, E, R>) => Layer.Layer<I, E, Exclude<R, Scope>>
+  readonly scoped: <E, R>(effect: Effect.Effect<S, E, R>) => Layer.Layer<I, E, Exclude<R, Scope>>
 }
 ```
 

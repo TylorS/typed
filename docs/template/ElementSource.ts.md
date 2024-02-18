@@ -106,7 +106,7 @@ Added in v1.0.0
 
 ```ts
 export declare function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: RefSubject.Filtered<never, never, T>
+  rootElement: RefSubject.Filtered<T>
 ): ElementSource<T, EventMap>
 ```
 
@@ -123,12 +123,12 @@ export interface ElementSource<
 > extends Versioned.Versioned<
     never,
     never,
-    Scope.Scope,
-    never,
     Rendered.Elements<T>,
     never,
+    Scope.Scope,
+    Rendered.Elements<T>,
     NoSuchElementException,
-    Rendered.Elements<T>
+    never
   > {
   readonly selector: Selector
 
@@ -142,12 +142,12 @@ export interface ElementSource<
     ): ElementSource<Target, EventMap>
   }
 
-  readonly elements: RefSubject.Filtered<never, never, Rendered.Elements<T>>
+  readonly elements: RefSubject.Filtered<Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+  ) => Fx.Fx<EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>, never, Scope.Scope>
 
   readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<void, NoSuchElementException>
 }

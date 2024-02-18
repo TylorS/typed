@@ -69,8 +69,8 @@ export interface TestRender<E> {
   readonly window: Window & GlobalThis
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
-  readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
-  readonly lastError: RefSubject.Filtered<never, never, E>
+  readonly errors: RefSubject.Computed<ReadonlyArray<E>>
+  readonly lastError: RefSubject.Filtered<E>
   readonly interrupt: Effect.Effect<void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
@@ -113,7 +113,7 @@ Added in v1.0.0
 
 ```ts
 export declare function testHydrate<R, E, Elements>(
-  fx: Fx.Fx<R, E, RenderEvent>,
+  fx: Fx.Fx<RenderEvent, E, R>,
   f: (rendered: Rendered, window: Window & GlobalThis) => Elements,
   options?: HappyDOMOptions & {
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
@@ -128,8 +128,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function testRender<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>,
+export declare function testRender<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>,
   options?: HappyDOMOptions & {
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
   }

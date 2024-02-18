@@ -161,7 +161,7 @@ export type MakeForm<
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
-  <R, E>(
+  <E, R>(
     fx: RefSubject.RefSubject<O, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>] ? Form.Derived<R, never, R2>
@@ -170,7 +170,7 @@ export type MakeForm<
     R | Scope.Scope
   >
 
-  <R, E>(
+  <E, R>(
     fx: Fx<O, E, R> | Effect.Effect<O, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
@@ -187,7 +187,7 @@ export type MakeInputForm<
   I extends AnyObject,
   O extends AnyObjectWithKeys<keyof I>
 > = {
-  <R, E>(
+  <E, R>(
     fx: RefSubject.RefSubject<I, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>] ? Form.Derived<R, _, R2>
@@ -196,7 +196,7 @@ export type MakeInputForm<
     R | Scope.Scope
   >
 
-  <R, E>(
+  <E, R>(
     fx: Fx<I, E, R> | Effect.Effect<I, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
@@ -284,7 +284,7 @@ export function deriveInput<
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>
 >(schema: S.Schema<O, I, R0>): MakeInputForm<R0, I, O> {
-  return <R, E>(input: RefSubject.RefSubject<I, E, R> | Fx<I, E, R> | Effect.Effect<I, E, R>) =>
+  return <E, R>(input: RefSubject.RefSubject<I, E, R> | Fx<I, E, R> | Effect.Effect<I, E, R>) =>
     Effect.map(deriveMakeInputEntries(input, schema.ast), (entries) => {
       const form = (Form as any)(entries)
 

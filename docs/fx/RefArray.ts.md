@@ -65,8 +65,8 @@ Append a value to the current state of a RefArray.
 
 ```ts
 export declare const append: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<readonly A[], E, R>
+  <A>(value: A): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, value: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -80,8 +80,8 @@ Append an iterable of values to the current state of a RefArray.
 
 ```ts
 export declare const appendAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
+  <A>(value: Iterable<A>): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -96,7 +96,7 @@ Remove any duplicate values from a RefArray.
 ```ts
 export declare const dedupeWith: <A>(
   valueEq: Equivalence<A>
-) => <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
+) => <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
 ```
 
 Added in v1.18.0
@@ -109,8 +109,8 @@ Drop the first `n` values from a RefArray.
 
 ```ts
 export declare const drop: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
+  (n: number): <A, E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -124,8 +124,8 @@ Drop the last `n` values from a RefArray.
 
 ```ts
 export declare const dropRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
+  (n: number): <A, E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -139,8 +139,8 @@ Drop values from a RefArray while a predicate is true.
 
 ```ts
 export declare const dropWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
+  <A>(predicate: (a: A) => boolean): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -154,8 +154,8 @@ Insert a value at a particular index of a RefArray.
 
 ```ts
 export declare const insertAt: {
-  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<readonly A[], E, R>
+  <A>(index: number, a: A): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, index: number, a: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -169,8 +169,8 @@ Map (Endomorphic) the values of a RefArray.
 
 ```ts
 export declare const map: {
-  <A>(f: (a: A, index: number) => A): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A, index: number) => A): RefSubject.Computed<R, E, readonly A[]>
+  <A>(f: (a: A, index: number) => A): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, f: (a: A, index: number) => A): RefSubject.Computed<readonly A[], E, R>
 }
 ```
 
@@ -184,8 +184,8 @@ Modify the value at a particular index of a RefArray.
 
 ```ts
 export declare const modifyAt: {
-  <A>(index: number, f: (a: A) => A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, f: (a: A) => A): Effect.Effect<readonly A[], E, R>
+  <A>(index: number, f: (a: A) => A): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, index: number, f: (a: A) => A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -199,8 +199,8 @@ Prepend a value to the current state of a RefArray.
 
 ```ts
 export declare const prepend: {
-  <A>(value: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, value: A): Effect.Effect<readonly A[], E, R>
+  <A>(value: A): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, value: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -214,8 +214,8 @@ Prepend an iterable of values to the current state of a RefArray.
 
 ```ts
 export declare const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
+  <A>(value: Iterable<A>): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, value: Iterable<A>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -229,8 +229,8 @@ Replace a value at a particular index of a RefArray.
 
 ```ts
 export declare const replaceAt: {
-  <A>(index: number, a: A): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number, a: A): Effect.Effect<readonly A[], E, R>
+  <A>(index: number, a: A): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, index: number, a: A): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -244,8 +244,8 @@ Rotate the values of a RefArray by `n` places. Helpful for things like carousels
 
 ```ts
 export declare const rotate: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
+  (n: number): <A, E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -259,8 +259,8 @@ Sort the values of a RefArray using a provided Order.
 
 ```ts
 export declare const sortBy: {
-  <A>(orders: Iterable<Order.Order<A>>): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, orders: Iterable<Order.Order<A>>): Effect.Effect<readonly A[], E, R>
+  <A>(orders: Iterable<Order.Order<A>>): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, orders: Iterable<Order.Order<A>>): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -274,8 +274,8 @@ Take the first `n` values from a RefArray.
 
 ```ts
 export declare const take: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
+  (n: number): <A, E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -289,8 +289,8 @@ Take the last `n` values from a RefArray.
 
 ```ts
 export declare const takeRight: {
-  (n: number): <R, E, A>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, n: number): Effect.Effect<readonly A[], E, R>
+  (n: number): <A, E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, n: number): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -304,8 +304,8 @@ Take values from a RefArray while a predicate is true.
 
 ```ts
 export declare const takeWhile: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => Effect.Effect<readonly A[], E, R>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
+  <A>(predicate: (a: A) => boolean): <E, R>(ref: RefArray<A, E, R>) => Effect.Effect<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, predicate: (a: unknown) => boolean): Effect.Effect<readonly A[], E, R>
 }
 ```
 
@@ -321,8 +321,8 @@ Filter the values of a RefArray using a predicate creating a Computed value.
 
 ```ts
 export declare const filterValues: {
-  <A>(predicate: (a: A) => boolean): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly A[]>
-  <R, E, A>(ref: RefArray<R, E, A>, predicate: (a: A) => boolean): RefSubject.Computed<R, E, readonly A[]>
+  <A>(predicate: (a: A) => boolean): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<readonly A[], E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, predicate: (a: A) => boolean): RefSubject.Computed<readonly A[], E, R>
 }
 ```
 
@@ -336,8 +336,8 @@ Group the values of a RefArray by a key.
 
 ```ts
 export declare const groupBy: {
-  <A>(f: (a: A) => string): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, Record<string, readonly A[]>>
-  <R, E, A>(ref: RefArray<R, E, A>, f: (a: A) => string): RefSubject.Computed<R, E, Record<string, readonly A[]>>
+  <A>(f: (a: A) => string): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<R, E, Record<string, readonly A[]>>
+  <A, E, R>(ref: RefArray<A, E, R>, f: (a: A) => string): RefSubject.Computed<R, E, Record<string, readonly A[]>>
 }
 ```
 
@@ -350,7 +350,7 @@ Check to see if a RefArray is empty.
 **Signature**
 
 ```ts
-export declare const isEmpty: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, boolean>
+export declare const isEmpty: <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<boolean, E, R>
 ```
 
 Added in v1.18.0
@@ -362,7 +362,7 @@ Check to see if a RefArray is non-empty.
 **Signature**
 
 ```ts
-export declare const isNonEmpty: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, boolean>
+export declare const isNonEmpty: <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<boolean, E, R>
 ```
 
 Added in v1.18.0
@@ -374,7 +374,7 @@ Get the current length of a RefArray.
 **Signature**
 
 ```ts
-export declare const length: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, number>
+export declare const length: <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<number, E, R>
 ```
 
 Added in v1.18.0
@@ -387,8 +387,8 @@ Map the values with their indexes of a RefArray.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly B[]>
-  <R, E, A, B>(ref: RefArray<R, E, A>, f: (a: A, index: number) => B): RefSubject.Computed<R, E, readonly B[]>
+  <A, B>(f: (a: A, index: number) => B): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<readonly B[], E, R>
+  <A, E, R, B>(ref: RefArray<A, E, R>, f: (a: A, index: number) => B): RefSubject.Computed<readonly B[], E, R>
 }
 ```
 
@@ -404,9 +404,9 @@ Partition the values of a RefArray using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, readonly [readonly B[], readonly A[]]>
-  <R, E, A>(
-    ref: RefArray<R, E, A>,
+  ): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<R, E, readonly [readonly B[], readonly A[]]>
+  <A, E, R>(
+    ref: RefArray<A, E, R>,
     predicate: (a: A) => boolean
   ): RefSubject.Computed<never, E, readonly [readonly A[], readonly A[]]>
 }
@@ -422,8 +422,8 @@ Reduce the values of a RefArray to a single value.
 
 ```ts
 export declare const reduce: {
-  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, B>
-  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<B, E, R>
+  <A, E, R, B>(ref: RefArray<A, E, R>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<B, E, R>
 }
 ```
 
@@ -437,8 +437,8 @@ Reduce the values of a RefArray to a single value in reverse order.
 
 ```ts
 export declare const reduceRight: {
-  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <R, E>(ref: RefArray<R, E, A>) => RefSubject.Computed<R, E, B>
-  <R, E, A, B>(ref: RefArray<R, E, A>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<R, E, B>
+  <A, B>(b: B, f: (b: B, a: A, index: number) => B): <E, R>(ref: RefArray<A, E, R>) => RefSubject.Computed<B, E, R>
+  <A, E, R, B>(ref: RefArray<A, E, R>, b: B, f: (b: B, a: A, index: number) => B): RefSubject.Computed<B, E, R>
 }
 ```
 
@@ -453,14 +453,14 @@ Construct a new RefArray with the given initial value.
 **Signature**
 
 ```ts
-export declare function make<R, E, A>(
+export declare function make<A, E, R>(
   initial: Effect.Effect<ReadonlyArray<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
-export declare function make<R, E, A>(
-  initial: Fx.Fx<R, E, ReadonlyArray<A>>,
+): Effect.Effect<RefArray<A, E>, never, R | Scope.Scope>
+export declare function make<A, E, R>(
+  initial: Fx.Fx<ReadonlyArray<A>, E, R>,
   eq?: Equivalence<A>
-): Effect.Effect<RefArray<never, E, A>, never, R | Scope.Scope>
+): Effect.Effect<RefArray<A, E>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -475,16 +475,16 @@ Construct a Tagged RefArray
 export declare function tagged<A>(): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
-  ): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<A>>
+  ): RefSubject.RefSubject.Tagged<ReadonlyArray<A>, never, C.IdentifierOf<I>>
 
-  <const I>(identifier: I): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<A>>
+  <const I>(identifier: I): RefSubject.RefSubject.Tagged<ReadonlyArray<A>, never, C.IdentifierOf<I>>
 }
 export declare function tagged<E, A>(): {
   <const I extends C.IdentifierConstructor<any>>(
     identifier: (id: typeof C.id) => I
-  ): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, E, ReadonlyArray<A>>
+  ): RefSubject.RefSubject.Tagged<ReadonlyArray<A>, E, C.IdentifierOf<I>>
 
-  <const I>(identifier: I): RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, E, ReadonlyArray<A>>
+  <const I>(identifier: I): RefSubject.RefSubject.Tagged<ReadonlyArray<A>, E, C.IdentifierOf<I>>
 }
 ```
 
@@ -500,8 +500,8 @@ Get a value contained a particular index of a RefArray.
 
 ```ts
 export declare const getIndex: {
-  (index: number): <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
-  <R, E, A>(ref: RefArray<R, E, A>, index: number): RefSubject.Filtered<R, E, A>
+  (index: number): <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Filtered<A, E, R>
+  <A, E, R>(ref: RefArray<A, E, R>, index: number): RefSubject.Filtered<A, E, R>
 }
 ```
 
@@ -516,7 +516,8 @@ A RefArray is a RefSubject that is specialized over an array of values.
 **Signature**
 
 ```ts
-export interface RefArray<out R, in out E, in out A> extends RefSubject.RefSubject<R, E, ReadonlyArray<A>> {}
+export interface RefArray<in out A, in out E = never, out R = never>
+  extends RefSubject.RefSubject<ReadonlyArray<A>, E, R> {}
 ```
 
 Added in v1.18.0
@@ -528,7 +529,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const head: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
+export declare const head: <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Filtered<A, E, R>
 ```
 
 Added in v1.18.0
@@ -538,7 +539,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const last: <R, E, A>(ref: RefArray<R, E, A>) => RefSubject.Filtered<R, E, A>
+export declare const last: <A, E, R>(ref: RefArray<A, E, R>) => RefSubject.Filtered<A, E, R>
 ```
 
 Added in v1.18.0

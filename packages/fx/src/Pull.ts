@@ -19,28 +19,27 @@ import type { Sink } from "./Sink.js"
  * An Effect which can be used to pull values of a Stream.
  * @since 1.18.0
  */
-export interface Pull<out R, out E, out A> extends Effect.Effect<Chunk.Chunk<A>, Option.Option<E>, R> {}
+export interface Pull<out A, out E = never, out R = never> extends Effect.Effect<Chunk.Chunk<A>, Option.Option<E>, R> {}
 
-function schedulePull<R, E, A, R2, R3>(
-  pull: Pull<R, E, A>,
+function schedulePull<A, E, R, R2, R3>(
+  pull: Pull<A, E, R>,
   f: (effect: Effect.Effect<unknown, never, R | R3>) => Effect.Effect<unknown, never, R2>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R2> {
   return Effect.asyncEffect<void, never, never, void, never, R2>((resume) =>
-    pull.pipe(
-      Effect.matchCauseEffect({
-        onFailure: (cause: Cause.Cause<Option.Option<E>>) =>
-          Cause.failureOrCause(cause).pipe(
-            Either.match({
-              onLeft: Option.match({
-                onNone: () => Effect.sync(() => resume(Effect.unit)),
-                onSome: (e: E) => sink.onFailure(Cause.fail(e))
-              }),
-              onRight: sink.onFailure
-            })
-          ),
-        onSuccess: (chunk) => Effect.forEach(chunk, sink.onSuccess)
-      }),
+    Effect.matchCauseEffect(pull, {
+      onFailure: (cause: Cause.Cause<Option.Option<E>>) =>
+        Cause.failureOrCause(cause).pipe(
+          Either.match({
+            onLeft: Option.match({
+              onNone: () => Effect.sync(() => resume(Effect.unit)),
+              onSome: (e: E) => sink.onFailure(Cause.fail(e))
+            }),
+            onRight: sink.onFailure
+          })
+        ),
+      onSuccess: (chunk: Chunk.Chunk<A>) => Effect.forEach(chunk, sink.onSuccess, { discard: true })
+    }).pipe(
       f,
       Effect.flatMap(() => Effect.sync(() => resume(Effect.unit)))
     )
@@ -53,18 +52,18 @@ function schedulePull<R, E, A, R2, R3>(
  * @since 1.18.0
  */
 export const schedule: {
-  <R2, R3, E, A>(
+  <R2, A, E, R3>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<A, E, R3>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
 
-  <R, E, A, R2, R3>(
-    pull: Pull<R, E, A>,
+  <A, E, R, R2, R3>(
+    pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
-} = dual(3, function schedule<R, E, A, R2, R3>(
-  pull: Pull<R, E, A>,
+} = dual(3, function schedule<A, E, R, R2, R3>(
+  pull: Pull<A, E, R>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {
@@ -77,18 +76,18 @@ export const schedule: {
  * @since 1.18.0
  */
 export const repeat: {
-  <R2, R3, E, A>(
+  <R2, A, E, R3>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<A, E, R3>
-  ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
 
-  <R, E, A, R2, R3>(
-    pull: Pull<R, E, A>,
+  <A, E, R, R2, R3>(
+    pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
-} = dual(3, function repeat<R, E, A, R2, R3>(
-  pull: Pull<R, E, A>,
+} = dual(3, function repeat<A, E, R, R2, R3>(
+  pull: Pull<A, E, R>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {

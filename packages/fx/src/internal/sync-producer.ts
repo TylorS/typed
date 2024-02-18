@@ -70,7 +70,7 @@ export function runReduce<A, B>(
   })
 }
 
-export function runReduceEffect<A, R2, E2, B>(
+export function runReduceEffect<A, B, E2, R2>(
   producer: SyncProducer<A>,
   initial: B,
   f: (b: B, a: any) => Effect.Effect<B, E2, R2>
@@ -121,7 +121,7 @@ export const syncOnce = <A>(f: () => A): Effect.Effect<A> => {
   return Effect.sync(get)
 }
 
-export const effectOnce = <R, E, A>(f: () => Effect.Effect<A, E, R>): Effect.Effect<A, E, R> => {
+export const effectOnce = <A, E, R>(f: () => Effect.Effect<A, E, R>): Effect.Effect<A, E, R> => {
   let memoized: Option.Option<A> = Option.none()
 
   return Effect.suspend(() => {
@@ -133,7 +133,7 @@ export const effectOnce = <R, E, A>(f: () => Effect.Effect<A, E, R>): Effect.Eff
   })
 }
 
-export function runEffect<A, R2, E2, B>(
+export function runEffect<A, B, E2, R2>(
   producer: SyncProducer<A>,
   f: (a: A) => Effect.Effect<B, E2, R2>
 ): Effect.Effect<void, E2, R2> {

@@ -45,7 +45,7 @@ Run an Effect using the IdleScheduler.
 **Signature**
 
 ```ts
-export declare const withIdleScheduler: <R, E, B>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R>
+export declare const withIdleScheduler: <B, E, R>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R>
 ```
 
 Added in v1.18.0
@@ -151,12 +151,12 @@ Dequeue values and perform an Effect while the event loop is not busy with any o
 **Signature**
 
 ```ts
-export declare function dequeueWhileIdle<A, R2, E2, B>(
+export declare function dequeueWhileIdle<A, B, E2, R2>(
   dequeue: Queue.Dequeue<A>,
   f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
 ): Effect.Effect<void, E2, R2 | Scope.Scope>
-export declare function dequeueWhileIdle<I, A, R2, E2, B>(
+export declare function dequeueWhileIdle<I, A, B, E2, R2>(
   dequeue: Context.Dequeue<I, A>,
   f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions

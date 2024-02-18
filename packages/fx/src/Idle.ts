@@ -112,7 +112,7 @@ export const defaultIdleScheduler: IdleScheduler = globalValue(
  * @since 1.18.0
  * @category combinators
  */
-export const withIdleScheduler: <R, E, B>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R> = Effect
+export const withIdleScheduler: <B, E, R>(self: Effect.Effect<B, E, R>) => Effect.Effect<B, E, R> = Effect
   .withScheduler(defaultIdleScheduler)
 
 /**
@@ -173,13 +173,13 @@ export const whileIdle = <R, E, R2, E2>(
  * Dequeue values and perform an Effect while the event loop is not busy with any other work.
  * @since 1.18.0
  */
-export function dequeueWhileIdle<A, R2, E2, B>(
+export function dequeueWhileIdle<A, B, E2, R2>(
   dequeue: Queue.Dequeue<A>,
   f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
 ): Effect.Effect<void, E2, R2 | Scope.Scope>
 
-export function dequeueWhileIdle<I, A, R2, E2, B>(
+export function dequeueWhileIdle<I, A, B, E2, R2>(
   dequeue: Context.Dequeue<I, A>,
   f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions
@@ -191,7 +191,7 @@ export function dequeueWhileIdle<I = never, A = unknown, R2 = never, E2 = never,
   options?: IdleRequestOptions
 ): Effect.Effect<void, E2, I | R2 | Scope.Scope>
 
-export function dequeueWhileIdle<I, A, R2, E2, B>(
+export function dequeueWhileIdle<I, A, B, E2, R2>(
   dequeue: Context.Dequeue<I, A> | Queue.Dequeue<A>,
   f: (a: A) => Effect.Effect<B, E2, R2>,
   options?: IdleRequestOptions

@@ -36,9 +36,9 @@ Added in v1.0.0
 
 ```ts
 export declare const CurrentParams: RefSubject.Filtered<
-  CurrentRoute<string> | Navigation,
+  Readonly<Record<string, string>>,
   never,
-  Readonly<Record<string, string>>
+  CurrentRoute<string> | Navigation
 >
 ```
 
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentSearchParams: RefSubject.Computed<Navigation, never, Readonly<Record<string, string>>>
+export declare const CurrentSearchParams: RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -82,7 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentState: RefSubject.Computed<Navigation, never, unknown>
+export declare const CurrentState: RefSubject.Computed<unknown, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -105,7 +105,7 @@ Added in v1.0.0
 export declare function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): RefSubject.Computed<Navigation | CurrentRoute, never, boolean>
+): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -144,7 +144,7 @@ Added in v1.0.0
 export declare function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): RefSubject.Filtered<Navigation | CurrentRoute, never, string>
+): RefSubject.Filtered<string, never, Navigation | CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -167,8 +167,8 @@ Added in v1.0.0
 export declare const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
-  ): <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
-  <R, E, A, P extends string>(
+  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
+  <A, E, R, P extends string>(
     effect: Effect.Effect<A, E, R>,
     route: Route.Route<P>
   ): Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>

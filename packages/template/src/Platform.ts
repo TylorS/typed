@@ -20,7 +20,7 @@ const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
 /**
  * @since 1.0.0
  */
-export function htmlResponse<R, E>(
+export function htmlResponse<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>,
   options?: HttpServer.response.Options
 ): Effect.Effect<HttpServer.response.ServerResponse, E, RenderContext.RenderContext | Exclude<R, RenderTemplate>> {

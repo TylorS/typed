@@ -27,7 +27,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export interface Emitter<in E, in A> {
+export interface Emitter<in A, in E> {
   readonly succeed: (value: A) => Promise<Exit.Exit<unknown>>
   readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<unknown>>
   readonly fail: (error: E) => Promise<Exit.Exit<unknown>>
@@ -43,9 +43,9 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function withEmitter<R, E, A, R2, B>(
-  sink: Sink.Sink<R, E, A>,
-  f: (emitter: Emitter<E, A>) => Effect.Effect<B, E, R2>
+export declare function withEmitter<A, E, R, R2, B>(
+  sink: Sink.Sink<A, E, R>,
+  f: (emitter: Emitter<A, E>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2 | Scope.Scope>
 ```
 

@@ -34,8 +34,8 @@ A reference to a rendered element.
 
 ```ts
 export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, Scope.Scope, never, T, never, NoSuchElementException, T> {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
+  extends Versioned<never, never, T, never, Scope.Scope, T, NoSuchElementException, never> {
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<Option.Option<T>>
 
   readonly query: ElementSource<T>["query"]
   readonly events: ElementSource<T>["events"]

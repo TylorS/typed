@@ -77,7 +77,6 @@ type RenderChunkMap = {
 const renderChunkMap: RenderChunkMap = {
   text: (chunk, index) => new TextRenderChunk(index, chunk.value),
   part: (chunk, index, values, onChunk) =>
-    // @ts-expect-error
     new PartRenderChunk(
       index,
       chunk,
@@ -85,7 +84,6 @@ const renderChunkMap: RenderChunkMap = {
       values[chunk.node.index]
     ),
   "sparse-part": (chunk, index, values, onChunk) =>
-    // @ts-expect-error
     new SparsePartRenderChunk(
       index,
       chunk,

@@ -25,7 +25,7 @@ export interface Emitter<in A, in E> {
 /**
  * @since 1.20.0
  */
-export function withEmitter<R, E, A, R2, B>(
+export function withEmitter<A, E, R, R2, B>(
   sink: Sink.Sink<A, E, R>,
   f: (emitter: Emitter<A, E>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2 | Scope.Scope> {

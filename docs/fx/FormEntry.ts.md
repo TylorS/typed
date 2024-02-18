@@ -31,10 +31,10 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<R, E | ParseError, I> {
+export interface FormEntry<out R, in out E, in out I, in out O> extends RefSubject.RefSubject<I, E | ParseError, R> {
   readonly name: PropertyKey
   readonly schema: Schema.Schema<O, I, R>
-  readonly decoded: RefSubject.Computed<R, E | ParseError, O>
+  readonly decoded: RefSubject.Computed<O, E | ParseError, R>
 }
 ```
 
@@ -75,11 +75,11 @@ Added in v1.18.0
 
 ```ts
 export type MakeFormEntry<R0, I, O> = {
-  <R, E>(
-    ref: RefSubject.RefSubject<R, E, O>
+  <E, R>(
+    ref: RefSubject.RefSubject<O, E, R>
   ): Effect.Effect<FormEntry.Derived<never, R, E, I, O>, never, R0 | R | Scope.Scope>
-  <R, E>(fx: Fx.Fx<R, E, O>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
-  <R, E>(effect: Effect.Effect<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
+  <E, R>(fx: Fx.Fx<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
+  <E, R>(effect: Effect.Effect<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
 }
 ```
 
@@ -93,9 +93,9 @@ MakeRefSubject is a RefSubject factory function dervied from a Schema.
 
 ```ts
 export type MakeInputFormEntry<R0, I, O> = {
-  <R, E>(ref: RefSubject.RefSubject<R, E, I>): Effect.Effect<FormEntry.Derived<R0, R, E, I, O>, never, R | Scope.Scope>
-  <R, E>(fx: Fx.Fx<R, E, I>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
-  <R, E>(effect: Effect.Effect<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
+  <E, R>(ref: RefSubject.RefSubject<I, E, R>): Effect.Effect<FormEntry.Derived<R0, R, E, I, O>, never, R | Scope.Scope>
+  <E, R>(fx: Fx.Fx<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
+  <E, R>(effect: Effect.Effect<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
 }
 ```
 

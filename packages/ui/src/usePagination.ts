@@ -43,7 +43,7 @@ export interface Viewing {
 /**
  * @since 1.0.0
  */
-export function usePagination<R, E, A>(
+export function usePagination<A, E, R>(
   items: RefSubject.Computed<ReadonlyArray<A>, E, R>,
   options: PaginationOptions = {}
 ): Effect.Effect<Pagination<E, A>, never, R | Scope.Scope> {

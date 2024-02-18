@@ -32,13 +32,13 @@ export declare function Link<
   { onClick, relative, replace, state, to, ...props }: Props,
   ...children: Children
 ): Fx.Fx<
+  RenderEvent,
+  Placeholder.Error<Props[keyof Props] | Children[number]>,
   | Navigation.Navigation
   | CurrentRoute
   | RenderTemplate
   | Scope.Scope
-  | Placeholder.Context<Props[keyof Props] | Children[number]>,
-  Placeholder.Error<Props[keyof Props] | Children[number]>,
-  RenderEvent
+  | Placeholder.Context<Props[keyof Props] | Children[number]>
 >
 ```
 

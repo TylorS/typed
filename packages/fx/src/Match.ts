@@ -154,7 +154,7 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  run<R2, E2>(input: Fx.Fx<I, E2, R2>): Fx.Fx<Option.Option<O>, E | E2, R | R2 | Scope.Scope> {
+  run<E2, R2>(input: Fx.Fx<I, E2, R2>): Fx.Fx<Option.Option<O>, E | E2, R | R2 | Scope.Scope> {
     const { cases } = this
 
     return Fx.make<Option.Option<O>, E | E2, R | R2 | Scope.Scope>((sink) =>

@@ -37,8 +37,8 @@ Added in v1.0.0
 
 ```ts
 export declare function render<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
-): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>>
+  rendered: Fx.Fx<T, E, R>
+): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement>
 ```
 
 Added in v1.0.0
@@ -49,7 +49,7 @@ Added in v1.0.0
 
 ```ts
 export declare function renderLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
+  rendered: Fx.Fx<T, E, R>
 ): Layer.Layer<never, never, Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>>
 ```
 

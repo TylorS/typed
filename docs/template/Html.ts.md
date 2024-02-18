@@ -25,9 +25,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderToHtml<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>
-): Fx.Fx<Exclude<R, RenderTemplate> | RenderContext, E, string>
+export declare function renderToHtml<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
+): Fx.Fx<string, E, Exclude<R, RenderTemplate> | RenderContext>
 ```
 
 Added in v1.0.0
@@ -37,8 +37,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderToHtmlString<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>
+export declare function renderToHtmlString<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
 ): Effect.Effect<string, E, Exclude<R, RenderTemplate> | RenderContext>
 ```
 

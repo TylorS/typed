@@ -43,11 +43,11 @@ export const runAsyncData: {
   <R2, A, E>(
     effect: Effect.Effect<A, E, R2>
   ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
-  <R, E, A, R2>(
+  <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>
   ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
-} = dual(2, function runAsyncData<R, E, A, R2>(
+} = dual(2, function runAsyncData<A, E, R, R2>(
   ref: RefAsyncData<A, E, R>,
   effect: Effect.Effect<A, E, R2>
 ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2> {
@@ -68,24 +68,24 @@ export const runAsyncData: {
  * @since 1.20.0
  */
 export const matchAsyncData: {
-  <E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+  <E1, A, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
     matchers: {
       readonly NoData: Fx.Fx<B, E2, R2>
       readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
       readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
       readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
     }
-  ): <R, E>(
+  ): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>
   ) => Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
 
-  <R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>, matchers: {
+  <R, E, E1, A, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>, matchers: {
     readonly NoData: Fx.Fx<B, E2, R2>
     readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
     readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
     readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
   }): Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
-} = dual(2, function matchAsyncData<R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+} = dual(2, function matchAsyncData<R, E, E1, A, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
   fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>,
   matchers: {
     readonly NoData: Fx.Fx<B, E2, R2>
@@ -152,7 +152,7 @@ export const matchAsyncData: {
  * @since 1.20.0
  */
 export const matchAsyncDataArray: {
-  <E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+  <E1, A, K extends PropertyKey, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
     getKey: (a: A) => K,
     matchers: {
       readonly NoData: Fx.Fx<B, E2, R2>
@@ -160,11 +160,11 @@ export const matchAsyncDataArray: {
       readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
       readonly Success: (value: RefSubject.RefSubject<A>, key: K) => Fx.Fx<F, E5, R5>
     }
-  ): <R, E>(
+  ): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
   ) => Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
 
-  <R, E, E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+  <R, E, E1, A, K extends PropertyKey, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
     fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => K,
     matchers: {
@@ -176,7 +176,7 @@ export const matchAsyncDataArray: {
   ): Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
 } = dual(
   3,
-  function matchAsyncDataArray<R, E, E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
+  function matchAsyncDataArray<R, E, E1, A, K extends PropertyKey, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
     fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => K,
     matchers: {
@@ -207,11 +207,11 @@ export const runIfNoData: {
   <R2, A, E>(
     effect: Effect.Effect<A, E, R2>
   ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
-  <R, E, A, R2>(
+  <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>
   ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
-} = dual(2, function runIfNoData<R, E, A, R2>(
+} = dual(2, function runIfNoData<A, E, R, R2>(
   ref: RefAsyncData<A, E, R>,
   effect: Effect.Effect<A, E, R2>
 ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2> {
@@ -230,12 +230,12 @@ export const runIfExpired: {
     options: { readonly ttl: Duration.DurationInput; readonly now?: number }
   ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
 
-  <R, E, A, R2>(
+  <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>,
     options: { readonly ttl: Duration.DurationInput; readonly now?: number }
   ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
-} = dual(3, function runIfExpired<R, E, A, R2>(
+} = dual(3, function runIfExpired<A, E, R, R2>(
   ref: RefAsyncData<A, E, R>,
   effect: Effect.Effect<A, E, R2>,
   { now, ttl }: { readonly ttl: Duration.DurationInput; readonly now?: number }
@@ -311,7 +311,7 @@ export const asSink = <A, E, R>(ref: RefAsyncData<A, E, R>): Sink.Sink<A, E, R> 
  * Map the input value using an Effect
  * @since 1.20.0
  */
-export const mapInputEffect = <R, E, A, R2, B>(
+export const mapInputEffect = <A, E, R, R2, B>(
   ref: RefAsyncData<A, E, R>,
   f: (b: B) => Effect.Effect<A, E, R2>
 ): Sink.Sink<B, E, R | R2> => Sink.mapEffect(asSink(ref), f)
@@ -320,7 +320,7 @@ export const mapInputEffect = <R, E, A, R2, B>(
  * Map the input value
  * @since 1.20.0
  */
-export const mapInput = <R, E, A, B>(
+export const mapInput = <A, E, R, B>(
   ref: RefAsyncData<A, E, R>,
   f: (b: B) => A
 ): Sink.Sink<B, E, R> => Sink.map(asSink(ref), f)
@@ -377,7 +377,7 @@ export const succeed: {
   <A>(
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.SuccessOptions>
-  ): <R, E>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  ): <E, R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 
   <A, E, R>(
     ref: RefAsyncData<A, E, R>,
@@ -401,7 +401,7 @@ export const optimistic: {
   <A>(
     value: A,
     options?: AsyncData.OptionalPartial<AsyncData.OptimisticOptions>
-  ): <R, E>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  ): <E, R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 
   <A, E, R>(
     ref: RefAsyncData<A, E, R>,

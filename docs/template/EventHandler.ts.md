@@ -35,7 +35,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Context<T> = T extends EventHandler<infer R, infer _E, infer _Ev> ? R : never
+export type Context<T> = T extends EventHandler<infer _Ev, infer _E, infer R> ? R : never
 ```
 
 Added in v1.0.0
@@ -45,7 +45,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Error<T> = T extends EventHandler<infer _R, infer E, infer _Ev> ? E : never
+export type Error<T> = T extends EventHandler<infer _Ev, infer E, infer _R> ? E : never
 ```
 
 Added in v1.0.0
@@ -55,7 +55,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface EventHandler<R, E, Ev extends Event = Event> extends Placeholder<R, E, null> {
+export interface EventHandler<Ev extends Event = Event, E = never, R = never> extends Placeholder<never, E, R> {
   readonly [EventHandlerTypeId]: EventHandlerTypeId
   readonly handler: (event: Ev) => Effect<unknown, E, R>
   readonly options: AddEventListenerOptions | undefined
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type EventOf<T> = T extends EventHandler<infer _R, infer _E, infer Ev> ? Ev : never
+export type EventOf<T> = T extends EventHandler<infer Ev, infer _E, infer _R> ? Ev : never
 ```
 
 Added in v1.0.0
@@ -112,7 +112,7 @@ Added in v1.0.0
 export declare function make<R, E, Ev extends Event>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
-): EventHandler<R, E, Ev>
+): EventHandler<Ev, E, R>
 ```
 
 Added in v1.0.0
@@ -125,7 +125,7 @@ Added in v1.0.0
 export declare function preventDefault<R, E, Ev extends Event>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
-): EventHandler<R, E, Ev>
+): EventHandler<Ev, E, R>
 ```
 
 Added in v1.0.0
@@ -138,7 +138,7 @@ Added in v1.0.0
 export declare function stopImmediatePropagation<R, E, Ev extends Event>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
-): EventHandler<R, E, Ev>
+): EventHandler<Ev, E, R>
 ```
 
 Added in v1.0.0
@@ -151,7 +151,7 @@ Added in v1.0.0
 export declare function stopPropagation<R, E, Ev extends Event>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
-): EventHandler<R, E, Ev>
+): EventHandler<Ev, E, R>
 ```
 
 Added in v1.0.0

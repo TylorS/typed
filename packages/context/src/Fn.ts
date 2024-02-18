@@ -57,11 +57,11 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
   readonly provideImplementation: {
     <T2 extends EffectFn.Extendable<T>>(
       implementation: T2
-    ): <R, E, A>(
+    ): <A, E, R>(
       effect: Effect.Effect<A, E, R>
     ) => Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>>
 
-    <R, E, A, T2 extends EffectFn.Extendable<T>>(
+    <A, E, R, T2 extends EffectFn.Extendable<T>>(
       effect: Effect.Effect<A, E, R>,
       implementation: T2
     ): Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>>
@@ -104,7 +104,7 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
     implement,
     provideImplementation: dual(
       2,
-      <R, E, A, T2 extends EffectFn.Extendable<S>>(
+      <A, E, R, T2 extends EffectFn.Extendable<S>>(
         effect: Effect.Effect<A, E, R>,
         implementation: T2
       ): Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>> =>

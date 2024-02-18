@@ -67,7 +67,7 @@ export const tagged: <A>() => {
  * @category combinators
  */
 export const prepend: {
-  <A>(value: A): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <A>(value: A): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(ref: RefChunk<A, E, R>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function prepend<A, E, R>(ref: RefChunk<A, E, R>, value: A) {
   return RefSubject.update(ref, Chunk.prepend(value))
@@ -79,7 +79,7 @@ export const prepend: {
  * @category combinators
  */
 export const prependAll: {
-  <A>(value: Iterable<A>): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <A>(value: Iterable<A>): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(ref: RefChunk<A, E, R>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(
   2,
@@ -94,7 +94,7 @@ export const prependAll: {
  * @category combinators
  */
 export const append: {
-  <A>(value: A): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  <A>(value: A): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(ref: RefChunk<A, E, R>, value: A): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function append<A, E, R>(ref: RefChunk<A, E, R>, value: A) {
   return RefSubject.update(ref, Chunk.append(value))
@@ -108,7 +108,7 @@ export const append: {
 export const appendAll: {
   <A>(
     value: Iterable<A>
-  ): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(ref: RefChunk<A, E, R>, value: Iterable<A>): Effect.Effect<Chunk.Chunk<A>, E, R>
 } = dual(2, function appendAll<A, E, R>(ref: RefChunk<A, E, R>, value: Iterable<A>) {
   return RefSubject.update(ref, Chunk.appendAll(Chunk.fromIterable(value)))
@@ -146,7 +146,7 @@ export const dropRight: {
 export const dropWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     predicate: (a: A) => boolean
@@ -166,7 +166,7 @@ export const dropWhile: {
 export const filterValues: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefChunk<A, E, R>) => RefSubject.Computed<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     predicate: (a: A) => boolean
@@ -220,7 +220,7 @@ export const size = <A, E, R>(ref: RefChunk<A, E, R>): RefSubject.Computed<numbe
 export const map: {
   <A>(
     f: (a: A, index: number) => A
-  ): <R, E>(ref: RefChunk<A, E, R>) => RefSubject.Computed<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     f: (a: A, index: number) => A
@@ -237,7 +237,7 @@ export const map: {
 export const mapValues: {
   <A, B>(
     f: (a: A, index: number) => B
-  ): <R, E>(ref: RefChunk<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
   <A, E, R, B>(
     ref: RefChunk<A, E, R>,
     f: (a: A, index: number) => B
@@ -258,7 +258,7 @@ export const modifyAt: {
   <A>(
     index: number,
     f: (a: A) => A
-  ): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     index: number,
@@ -276,7 +276,7 @@ export const modifyAt: {
 export const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <R, E>(
+  ): <E, R>(
     ref: RefChunk<A, E, R>
   ) => RefSubject.Computed<readonly [ReadonlyArray<B>, Chunk.Chunk<A>], E, R>
   <A, E, R>(ref: RefChunk<A, E, R>, predicate: (a: A) => boolean): RefSubject.Computed<
@@ -296,7 +296,7 @@ export const reduce: {
   <A, B>(
     b: B,
     f: (b: B, a: A, index: number) => B
-  ): <R, E>(ref: RefChunk<A, E, R>) => RefSubject.Computed<B, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<B, E, R>
   <A, E, R, B>(
     ref: RefChunk<A, E, R>,
     b: B,
@@ -318,7 +318,7 @@ export const reduceRight: {
   <A, B>(
     b: B,
     f: (b: B, a: A, index: number) => B
-  ): <R, E>(ref: RefChunk<A, E, R>) => RefSubject.Computed<B, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<B, E, R>
   <A, E, R, B>(
     ref: RefChunk<A, E, R>,
     b: B,
@@ -344,7 +344,7 @@ export const replaceAt: {
   <A>(
     index: number,
     a: A
-  ): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     index: number,
@@ -386,7 +386,7 @@ export const takeRight: {
 export const takeWhile: {
   <A>(
     predicate: (a: A) => boolean
-  ): <R, E>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => Effect.Effect<Chunk.Chunk<A>, E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     predicate: (a: A) => boolean

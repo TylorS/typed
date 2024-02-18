@@ -35,9 +35,9 @@ export interface Ref<I, A> extends Tag<I, R.Ref<A>> {
 
   // Provision
 
-  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I>>
+  readonly provide: (a: A) => <B, E, R>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I>>
 
-  readonly layer: <R2, E2>(
+  readonly layer: <E2, R2>(
     effect: Effect.Effect<A, E2, R2>
   ) => Layer.Layer<I, E2, R2>
 }

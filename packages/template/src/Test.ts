@@ -54,7 +54,7 @@ export interface TestRender<E> {
 /**
  * @since 1.0.0
  */
-export function testRender<R, E>(
+export function testRender<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>,
   options?:
     & HappyDOMOptions

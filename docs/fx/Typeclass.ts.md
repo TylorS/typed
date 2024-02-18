@@ -610,7 +610,7 @@ TypeLambda for an Fx
 
 ```ts
 export interface FxTypeLambda extends HKT.TypeLambda {
-  readonly type: Fx.Fx<this["Out2"], this["Out1"], this["Target"]>
+  readonly type: Fx.Fx<this["Target"], this["Out1"], this["Out2"]>
 }
 ```
 

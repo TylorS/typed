@@ -84,7 +84,7 @@ export interface Route<P extends string> extends Pipeable.Pipeable {
     params?: FromPathParams
   ) => Route<Path.PathJoin<readonly [P, P2]>>
 
-  readonly asGuard: () => Guard.Guard<string, never, never, Path.ParamsOf<P>>
+  readonly asGuard: () => Guard.Guard<string, Path.ParamsOf<P>>
 }
 ```
 
@@ -121,7 +121,7 @@ Added in v1.0.0
 ```ts
 export declare function any<Routes extends Readonly<Record<string, Route<any>>>>(
   routes: Routes
-): Guard.Guard<string, never, never, AnyOutput<Routes>>
+): Guard.Guard<string, AnyOutput<Routes>>
 ```
 
 Added in v1.0.0
@@ -131,7 +131,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function asGuard<P extends string>(route: Route<P>): Guard.Guard<string, never, never, Path.ParamsOf<P>>
+export declare function asGuard<P extends string>(route: Route<P>): Guard.Guard<string, Path.ParamsOf<P>>
 ```
 
 Added in v1.0.0
@@ -150,11 +150,11 @@ export declare const filter: {
     route: Route<P>
   ) => Guard.Guard<
     string,
-    never,
-    never,
     {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }
+    },
+    never,
+    never
   >
   <P extends string>(
     route: Route<P>,
@@ -163,11 +163,11 @@ export declare const filter: {
     }) => boolean
   ): Guard.Guard<
     string,
-    never,
-    never,
     {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }
+    },
+    never,
+    never
   >
 }
 ```
@@ -184,13 +184,13 @@ export declare const filterMap: {
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Option.Option<B>
-  ): (route: Route<P>) => Guard.Guard<string, never, never, B>
+  ): (route: Route<P>) => Guard.Guard<string, B, never, never>
   <P extends string, B>(
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Option.Option<B>
-  ): Guard.Guard<string, never, never, B>
+  ): Guard.Guard<string, B, never, never>
 }
 ```
 
@@ -216,13 +216,13 @@ export declare const map: {
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => B
-  ): (route: Route<P>) => Guard.Guard<string, never, never, B>
+  ): (route: Route<P>) => Guard.Guard<string, B, never, never>
   <P extends string, B>(
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => B
-  ): Guard.Guard<string, never, never, B>
+  ): Guard.Guard<string, B, never, never>
 }
 ```
 
@@ -234,17 +234,17 @@ Added in v1.0.0
 
 ```ts
 export declare const mapEffect: {
-  <P extends string, R2, E2, B>(
+  <P extends string, B, E2, R2>(
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Effect.Effect<B, E2, R2>
-  ): (route: Route<P>) => Guard.Guard<string, R2, E2, B>
-  <P extends string, R2, E2, B>(
+  ): (route: Route<P>) => Guard.Guard<string, B, E2, R2>
+  <P extends string, B, E2, R2>(
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Effect.Effect<B, E2, R2>
-  ): Guard.Guard<string, R2, E2, B>
+  ): Guard.Guard<string, B, E2, R2>
 }
 ```
 
@@ -256,7 +256,7 @@ Added in v1.0.0
 
 ```ts
 export declare const tap: {
-  <P extends string, R2, E2, B>(
+  <P extends string, B, E2, R2>(
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Effect.Effect<B, E2, R2>
@@ -264,24 +264,24 @@ export declare const tap: {
     route: Route<P>
   ) => Guard.Guard<
     string,
-    R2,
-    E2,
     {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }
+    },
+    E2,
+    R2
   >
-  <P extends string, R2, E2, B>(
+  <P extends string, B, E2, R2>(
     route: Route<P>,
     f: (params: {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
     }) => Effect.Effect<B, E2, R2>
   ): Guard.Guard<
     string,
-    R2,
-    E2,
     {
       readonly [K in keyof Path.PartsToParams<Path.PathToParts<P>, {}>]: Path.PartsToParams<Path.PathToParts<P>, {}>[K]
-    }
+    },
+    E2,
+    R2
   >
 }
 ```

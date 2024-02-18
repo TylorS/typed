@@ -25,10 +25,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
+export declare function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, B, E2, R2>(
   refs: Refs,
   f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<B, E2, R2>
-): Fx.Fx<Document | R2 | Scope.Scope, E2, B>
+): Fx.Fx<B, E2, Document | R2 | Scope.Scope>
 ```
 
 Added in v1.0.0

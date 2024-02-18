@@ -144,9 +144,9 @@ export type HyperscriptForTagName<TagName extends keyof TypedPropertiesMap> = <
   properties: Props,
   ...children: Children
 ) => Fx<
-  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>,
+  RenderEvent,
   Placeholder.Error<Props[keyof Props] | Children[number]>,
-  RenderEvent
+  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>
 >
 ```
 
@@ -558,9 +558,9 @@ export declare function h<
   properties: Props,
   ...children: Children
 ): Fx<
-  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>,
+  RenderEvent,
   Placeholder.Error<Props[keyof Props] | Children[number]>,
-  RenderEvent
+  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>
 >
 ```
 

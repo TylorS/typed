@@ -302,7 +302,7 @@ export const Applicative: App.Applicative<FxTypeLambda> = {
  * @category Filterable
  */
 export const Filterable: Filter.Filterable<FxTypeLambda> = {
-  partitionMap: dual(2, <R, E, A, B, C>(self: Fx.Fx<A, E, R>, f: (a: A) => Either<B, C>) => {
+  partitionMap: dual(2, <A, E, R, B, C>(self: Fx.Fx<A, E, R>, f: (a: A) => Either<B, C>) => {
     const m = multicast(Fx.map(self, f))
 
     return [

@@ -97,7 +97,7 @@ Added in v1.18.0
 
 ```ts
 export interface Base<out R, out E, in out I, in out O, in out Entries extends Form.AnyEntries>
-  extends Versioned.Versioned<R, never, R | Scope.Scope, E | ParseError, I, R, E | ParseError, I> {
+  extends Versioned.Versioned<R, never, I, E | ParseError, R | Scope.Scope, I, E | ParseError, R> {
   readonly [FormTypeId]: FormTypeId
 
   readonly entries: Entries
@@ -106,7 +106,7 @@ export interface Base<out R, out E, in out I, in out O, in out Entries extends F
 
   readonly get: <K extends keyof Entries>(key: K) => Entries[K]
 
-  readonly decoded: RefSubject.Computed<R, E | ParseError, O>
+  readonly decoded: RefSubject.Computed<O, E | ParseError, R>
 }
 ```
 
@@ -273,8 +273,8 @@ Added in v1.18.0
 
 ```ts
 export type MakeForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = {
-  <R, E>(
-    fx: RefSubject.RefSubject<R, E, O>
+  <E, R>(
+    fx: RefSubject.RefSubject<O, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>]
       ? Form.Derived<R, never, R2>
@@ -283,8 +283,8 @@ export type MakeForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<keyof 
     R | Scope.Scope
   >
 
-  <R, E>(
-    fx: Fx<R, E, O> | Effect.Effect<O, E, R>
+  <E, R>(
+    fx: Fx<O, E, R> | Effect.Effect<O, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,
@@ -301,8 +301,8 @@ Added in v1.18.0
 
 ```ts
 export type MakeInputForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<keyof I>> = {
-  <R, E>(
-    fx: RefSubject.RefSubject<R, E, I>
+  <E, R>(
+    fx: RefSubject.RefSubject<I, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>]
       ? Form.Derived<R, _, R2>
@@ -311,8 +311,8 @@ export type MakeInputForm<R0, I extends AnyObject, O extends AnyObjectWithKeys<k
     R | Scope.Scope
   >
 
-  <R, E>(
-    fx: Fx<R, E, I> | Effect.Effect<I, E, R>
+  <E, R>(
+    fx: Fx<I, E, R> | Effect.Effect<I, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,

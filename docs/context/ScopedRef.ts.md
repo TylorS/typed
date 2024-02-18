@@ -52,11 +52,11 @@ export interface ScopedRef<I, A> extends Tag<I, S.ScopedRef<A>> {
 
   // ScopedRef Operators
   readonly get: Effect.Effect<A, never, I>
-  readonly set: <R, E>(acquire: Effect.Effect<A, E, R>) => Effect.Effect<void, E, R | I>
+  readonly set: <E, R>(acquire: Effect.Effect<A, E, R>) => Effect.Effect<void, E, R | I>
 
   // Provision
-  readonly provide: (a: A) => <R, E, B>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I> | Scope>
-  readonly layer: <R2, E2>(effect: Effect.Effect<A, E2, R2>) => Layer.Layer<I, E2, Exclude<R2, Scope>>
+  readonly provide: (a: A) => <B, E, R>(effect: Effect.Effect<B, E, R>) => Effect.Effect<B, E, Exclude<R, I> | Scope>
+  readonly layer: <E2, R2>(effect: Effect.Effect<A, E2, R2>) => Layer.Layer<I, E2, Exclude<R2, Scope>>
 }
 ```
 

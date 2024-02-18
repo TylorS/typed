@@ -69,13 +69,13 @@ export const CurrentParams: RefSubject.Filtered<Readonly<Record<string, string>>
 export const withCurrentRoute: {
   <P extends string>(
     route: Route.Route<P>
-  ): <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
+  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 
-  <R, E, A, P extends string>(
+  <A, E, R, P extends string>(
     effect: Effect.Effect<A, E, R>,
     route: Route.Route<P>
   ): Effect.Effect<A, E, Exclude<R, CurrentRoute>>
-} = dual(2, <R, E, A, P extends string>(
+} = dual(2, <A, E, R, P extends string>(
   effect: Effect.Effect<A, E, R>,
   route: Route.Route<P>
 ): Effect.Effect<A, E, Exclude<R, CurrentRoute>> =>

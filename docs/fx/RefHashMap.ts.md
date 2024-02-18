@@ -53,8 +53,8 @@ Map the values within the HashMap
 
 ```ts
 export declare const map: {
-  <K, V>(f: (v: V, k: K) => V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V>(f: (v: V, k: K) => V): <E, R>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -71,8 +71,8 @@ export declare const modify: {
   <K, V>(
     key: K,
     f: (v: V) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, f: (v: V) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  ): <E, R>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, f: (v: V) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -89,9 +89,9 @@ export declare const modifyAt: {
   <K, V>(
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(
-    self: RefHashMap<R, E, K, V>,
+  ): <E, R>(self: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(
+    self: RefHashMap<K, V, E, R>,
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
   ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
@@ -112,9 +112,9 @@ export declare const modifyHash: {
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(
-    self: RefHashMap<R, E, K, V>,
+  ): <E, R>(self: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(
+    self: RefHashMap<K, V, E, R>,
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
@@ -132,8 +132,8 @@ Remove a value at key from the HashMap
 
 ```ts
 export declare const remove: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -147,8 +147,8 @@ Remove a value at key from the HashMap
 
 ```ts
 export declare const removeMany: {
-  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -162,8 +162,8 @@ Set a value at a particular key in the HashMap
 
 ```ts
 export declare const set: {
-  <K, V>(key: K, value: V): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V>(key: K, value: V): <E, R>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
 }
 ```
 
@@ -178,9 +178,9 @@ Create a projection of available values
 **Signature**
 
 ```ts
-export declare function compact<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, Option<V>>
-): RefSubject.Computed<R, E, HashMap.HashMap<K, V>>
+export declare function compact<K, V, E, R>(
+  refHashMap: RefHashMap<K, Option<V>, E, R>
+): RefSubject.Computed<HashMap.HashMap<K, V>, E, R>
 ```
 
 Added in v1.18.0
@@ -193,8 +193,8 @@ Check if a key is available withing a HashMap
 
 ```ts
 export declare const has: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Computed<R, E, boolean>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<boolean, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): RefSubject.Computed<boolean, E, R>
 }
 ```
 
@@ -208,8 +208,8 @@ Check if a key is available withing a HashMap
 
 ```ts
 export declare const hasHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Computed<R, E, boolean>
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<boolean, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, hash: number): RefSubject.Computed<boolean, E, R>
 }
 ```
 
@@ -222,7 +222,7 @@ Check if HashMap is empty
 **Signature**
 
 ```ts
-export declare function isEmpty<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, boolean>
+export declare function isEmpty<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<boolean, E, R>
 ```
 
 Added in v1.18.0
@@ -234,9 +234,9 @@ Get the keys as a HashSet
 **Signature**
 
 ```ts
-export declare function keySet<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, V>
-): RefSubject.Computed<R, E, HashSet.HashSet<K>>
+export declare function keySet<K, V, E, R>(
+  refHashMap: RefHashMap<K, V, E, R>
+): RefSubject.Computed<HashSet.HashSet<K>, E, R>
 ```
 
 Added in v1.18.0
@@ -248,7 +248,7 @@ Get the keys as an Iterable
 **Signature**
 
 ```ts
-export declare function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<K>>
+export declare function keys<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<Iterable<K>, E, R>
 ```
 
 Added in v1.18.0
@@ -264,12 +264,12 @@ export declare const reduce: {
   <K, V, B>(
     seed: B,
     f: (acc: B, a: V, k: K) => B
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, B>
-  <R, E, K, V, B>(
-    refHashMap: RefHashMap<R, E, K, V>,
+  ): <E, R>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<B, E, R>
+  <K, V, E, R, B>(
+    refHashMap: RefHashMap<K, V, E, R>,
     seed: B,
     f: (acc: B, a: V, k: K) => B
-  ): RefSubject.Computed<R, E, B>
+  ): RefSubject.Computed<B, E, R>
 }
 ```
 
@@ -282,7 +282,7 @@ Check the size of the HashMap
 **Signature**
 
 ```ts
-export declare function size<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, number>
+export declare function size<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<number, E, R>
 ```
 
 Added in v1.18.0
@@ -294,7 +294,7 @@ Get the values as an Iterable
 **Signature**
 
 ```ts
-export declare function values<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<V>>
+export declare function values<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<Iterable<V>, E, R>
 ```
 
 Added in v1.18.0
@@ -306,9 +306,9 @@ Get the values as an HashSet
 **Signature**
 
 ```ts
-export declare function valuesSet<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, V>
-): RefSubject.Computed<R, E, HashSet.HashSet<V>>
+export declare function valuesSet<K, V, E, R>(
+  refHashMap: RefHashMap<K, V, E, R>
+): RefSubject.Computed<HashSet.HashSet<V>, E, R>
 ```
 
 Added in v1.18.0
@@ -322,12 +322,12 @@ Construct a new RefHashMap with the given initial value.
 **Signature**
 
 ```ts
-export declare function make<R, E, K, V>(
+export declare function make<K, V, E, R>(
   initial: Effect.Effect<HashMap.HashMap<K, V>, E, R>
-): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
-export declare function make<R, E, K, V>(
-  initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
+): Effect.Effect<RefHashMap<K, V, E>, never, R | Scope.Scope>
+export declare function make<K, V, E, R>(
+  initial: Fx.Fx<HashMap.HashMap<K, V>, E, R>
+): Effect.Effect<RefHashMap<K, V, E>, never, R | Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -339,9 +339,7 @@ This function creates a new RefHashMap from a given HashMap.
 **Signature**
 
 ```ts
-export declare function of<K, V>(
-  map: HashMap.HashMap<K, V>
-): Effect.Effect<RefHashMap<never, never, K, V>, never, Scope.Scope>
+export declare function of<K, V>(map: HashMap.HashMap<K, V>): Effect.Effect<RefHashMap<K, V>, never, Scope.Scope>
 ```
 
 Added in v1.18.0
@@ -371,8 +369,8 @@ Added in v1.18.0
 
 ```ts
 export declare const get: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Filtered<R, E, V>
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Filtered<R, E, V>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): RefSubject.Filtered<R, E, V>
 }
 ```
 
@@ -384,8 +382,8 @@ Added in v1.18.0
 
 ```ts
 export declare const getHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Filtered<R, E, V>
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Filtered<R, E, V>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, hash: number): RefSubject.Filtered<R, E, V>
 }
 ```
 
@@ -400,8 +398,8 @@ A RefHashMap is a RefSubject that is specialized over a HashMap of values.
 **Signature**
 
 ```ts
-export interface RefHashMap<out R, in out E, in out K, in out V>
-  extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>> {}
+export interface RefHashMap<in out K, in out V, in out E = never, out R = never>
+  extends RefSubject.RefSubject<HashMap.HashMap<K, V>, E, R> {}
 ```
 
 Added in v1.18.0

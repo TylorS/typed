@@ -96,7 +96,7 @@ export function target<T extends HTMLElement>() {
  * @since 1.0.0
  */
 export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
-  return <R, E>(
+  return <E, R>(
     handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<KeyboardEvent, E, R> =>

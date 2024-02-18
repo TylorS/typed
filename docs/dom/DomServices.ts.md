@@ -89,7 +89,7 @@ Provide DOM services to an Effect
 export declare const provideDomServices: (
   window: Window & GlobalThis,
   params?: DomServicesElementParams
-) => <R, E, A>(effect: Effect.Effect<A, E, DomServices | R>) => Effect.Effect<A, E, Exclude<R, DomServices>>
+) => <A, E, R>(effect: Effect.Effect<A, E, DomServices | R>) => Effect.Effect<A, E, Exclude<R, DomServices>>
 ```
 
 Added in v8.19.0

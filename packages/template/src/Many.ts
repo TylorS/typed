@@ -20,7 +20,7 @@ import { HtmlRenderEvent, type RenderEvent } from "./RenderEvent.js"
 /**
  * @since 1.0.0
  */
-export function many<R, E, A, B extends PropertyKey, R2, E2>(
+export function many<A, E, R, B extends PropertyKey, R2, E2>(
   values: Fx.Fx<ReadonlyArray<A>, E, R>,
   getKey: (a: NoInfer<A>) => B,
   f: (a: RefSubject.RefSubject<NoInfer<A>>, key: B) => Fx.Fx<RenderEvent, E2, R2>
@@ -90,7 +90,7 @@ export const manyAsyncData: {
       Failure: (data: RefSubject.Computed<E1>, computed: TODO) => Failure
       Success: (value: RefSubject.Computed<A>, computed: TODO) => Success
     }
-  ): <R, E>(
+  ): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
   ) => Fx.Fx<
     Fx.Fx.Success<NoData | Loading | Failure | Success>,

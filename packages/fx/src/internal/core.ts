@@ -1477,7 +1477,7 @@ class DropAfterEffect<A, E, R, R2, E2> extends FxBase<A, E | E2, R | R2> {
   }
 }
 
-export function during<A, E, R, R2, E2, R3, E3, B>(
+export function during<A, E, R, B, E2, R2, E3, R3>(
   fx: Fx<A, E, R>,
   window: Fx<Fx<B, E3, R3>, E2, R2>
 ): Fx<A, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
@@ -1498,7 +1498,7 @@ export function until<A, E, R, B, E2, R2>(
   return During.make(fx, succeed(window))
 }
 
-class During<A, E, R, R2, E2, R3, E3, B> extends FxBase<A, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
+class During<A, E, R, B, E2, R2, E3, R3> extends FxBase<A, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
   constructor(readonly i0: Fx<A, E, R>, readonly i1: Fx<Fx<B, E3, R3>, E2, R2>) {
     super()
   }
@@ -1537,7 +1537,7 @@ class During<A, E, R, R2, E2, R3, E3, B> extends FxBase<A, E | E2 | E3, R | R2 |
     )
   }
 
-  static make<A, E, R, R2, E2, R3, E3, B>(
+  static make<A, E, R, B, E2, R2, E3, R3>(
     fx: Fx<A, E, R>,
     window: Fx<Fx<B, E3, R3>, E2, R2>
   ): Fx<A, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
@@ -1772,7 +1772,7 @@ export function provideContext<A, E, R, R2>(
   return ProvideFx.make(fx, Provide.ProvideContext(context))
 }
 
-export function provideLayer<A, E, R, R2, E2, S>(
+export function provideLayer<A, E, R, S, E2, R2>(
   fx: Fx<A, E, R>,
   layer: Layer.Layer<S, E2, R2>
 ): Fx<A, E | E2, R2 | Exclude<R, S>> {
@@ -1811,8 +1811,8 @@ export function provide<A, E, R, R2 = never, E2 = never, S = never>(
   else return provideRuntime(fx, provide as Runtime.Runtime<S>)
 }
 
-class ProvideFx<A, E, R, R2, E2, S> extends FxBase<A, E | E2, R2 | Exclude<R, S>> {
-  constructor(readonly i0: Fx<A, E, R>, readonly i1: Provide.Provide<R2, E2, S>) {
+class ProvideFx<A, E, R, S, E2, R2> extends FxBase<A, E | E2, R2 | Exclude<R, S>> {
+  constructor(readonly i0: Fx<A, E, R>, readonly i1: Provide.Provide<S, E2, R2>) {
     super()
   }
 
@@ -1828,9 +1828,9 @@ class ProvideFx<A, E, R, R2, E2, S> extends FxBase<A, E | E2, R2 | Exclude<R, S>
     )
   }
 
-  static make<A, E, R, R2, E2, S>(
+  static make<A, E, R, S, E2, R2>(
     fx: Fx<A, E, R>,
-    provide: Provide.Provide<R2, E2, S>
+    provide: Provide.Provide<S, E2, R2>
   ): Fx<A, E | E2, Exclude<R, S> | R2> {
     if (isEmpty(fx) || isNever(fx)) return fx
     else if (isProvideFx(fx)) {

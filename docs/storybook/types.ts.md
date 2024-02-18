@@ -183,7 +183,7 @@ Added in v1.0.0
 export type TypedComponent<Props = any, R = any, E = any> = (
   props: Props,
   ...children: ReadonlyArray<Renderable<CoreDomServices, E>>
-) => Fx<R | CoreDomServices, E, RenderEvent>
+) => Fx<RenderEvent, E, R | CoreDomServices>
 ```
 
 Added in v1.0.0
@@ -195,7 +195,7 @@ Added in v1.0.0
 ```ts
 export interface TypedRenderer extends WebRenderer {
   component: TypedComponent
-  storyResult: Fx<CoreDomServices, any, RenderEvent>
+  storyResult: Fx<RenderEvent, any, CoreDomServices>
 }
 ```
 

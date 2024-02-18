@@ -50,11 +50,11 @@ export interface FormEntryOptions<R, I, O> {
  * @since 1.18.0
  */
 export type MakeFormEntry<R0, I, O> = {
-  <R, E>(
+  <E, R>(
     ref: RefSubject.RefSubject<O, E, R>
   ): Effect.Effect<FormEntry.Derived<never, R, E, I, O>, never, R0 | R | Scope.Scope>
-  <R, E>(fx: Fx.Fx<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
-  <R, E>(effect: Effect.Effect<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
+  <E, R>(fx: Fx.Fx<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
+  <E, R>(effect: Effect.Effect<O, E, R>): Effect.Effect<FormEntry<never, E, I, O>, never, R0 | R | Scope.Scope>
 }
 
 /**
@@ -62,11 +62,11 @@ export type MakeFormEntry<R0, I, O> = {
  * @since 1.20.0
  */
 export type MakeInputFormEntry<R0, I, O> = {
-  <R, E>(
+  <E, R>(
     ref: RefSubject.RefSubject<I, E, R>
   ): Effect.Effect<FormEntry.Derived<R0, R, E, I, O>, never, R | Scope.Scope>
-  <R, E>(fx: Fx.Fx<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
-  <R, E>(effect: Effect.Effect<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
+  <E, R>(fx: Fx.Fx<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
+  <E, R>(effect: Effect.Effect<I, E, R>): Effect.Effect<FormEntry<R0, E, I, O>, never, R | Scope.Scope>
 }
 
 /**
@@ -182,7 +182,7 @@ class FromEntryImpl<R, E, I, O> extends FxEffectBase<I, E | ParseError, R | Scop
     return this.ref
   }
 
-  runUpdates<R2, E2, B>(
+  runUpdates<B, E2, R2>(
     f: (ref: RefSubject.GetSetDelete<I, E | ParseError, R>) => Effect.Effect<B, E2, R2>
   ): Effect.Effect<B, E2, R | R2> {
     return this.ref.runUpdates(f)

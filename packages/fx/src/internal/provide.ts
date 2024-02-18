@@ -6,12 +6,12 @@ import * as Runtime from "effect/Runtime"
 import * as RuntimeFlags from "effect/RuntimeFlags"
 import type * as Scope from "effect/Scope"
 
-export type Provide<R, E, A> =
+export type Provide<A, E, R> =
   | ProvideContext<A>
-  | ProvideLayer<R, E, A>
+  | ProvideLayer<A, E, R>
   | ProvideRuntime<A>
   | ProvideService<A, any>
-  | ProvideServiceEffect<R, E, A, any>
+  | ProvideServiceEffect<A, any, E, R>
 
 export interface ProvideContext<A> {
   readonly _tag: "ProvideContext"
@@ -23,12 +23,12 @@ export const ProvideContext = <A>(i0: Context.Context<A>): ProvideContext<A> => 
   i0
 })
 
-export interface ProvideLayer<R, E, A> {
+export interface ProvideLayer<A, E, R> {
   readonly _tag: "ProvideLayer"
   readonly i0: Layer.Layer<A, E, R>
 }
 
-export const ProvideLayer = <R, E, A>(i0: Layer.Layer<A, E, R>): ProvideLayer<R, E, A> => ({
+export const ProvideLayer = <A, E, R>(i0: Layer.Layer<A, E, R>): ProvideLayer<A, E, R> => ({
   _tag: "ProvideLayer",
   i0
 })
@@ -45,16 +45,16 @@ export const ProvideService = <I, S>(i0: Context.Tag<I, S>, i1: S): ProvideServi
   i1
 })
 
-export interface ProvideServiceEffect<R, E, I, S> {
+export interface ProvideServiceEffect<I, S, E, R> {
   readonly _tag: "ProvideServiceEffect"
   readonly i0: Context.Tag<I, S>
   readonly i1: Effect.Effect<S, E, R>
 }
 
-export const ProvideServiceEffect = <R, E, I, S>(
+export const ProvideServiceEffect = <I, S, E, R>(
   i0: Context.Tag<I, S>,
   i1: Effect.Effect<S, E, R>
-): ProvideServiceEffect<R, E, I, S> => ({
+): ProvideServiceEffect<I, S, E, R> => ({
   _tag: "ProvideServiceEffect",
   i0,
   i1
@@ -70,8 +70,8 @@ export const ProvideRuntime = <A>(i0: Runtime.Runtime<A>): ProvideRuntime<A> => 
   i0
 })
 
-export function matchProvide<R = never, E = never, A = never, B = never>(
-  self: Provide<R, E, A>,
+export function matchProvide<A, E, R, B>(
+  self: Provide<A, E, R>,
   matchers: {
     readonly ProvideContext: (i0: Context.Context<A>) => B
     readonly ProvideRuntime: (i0: Runtime.Runtime<A>) => B
@@ -83,21 +83,21 @@ export function matchProvide<R = never, E = never, A = never, B = never>(
   return matchers[self._tag](self.i0 as any, (self as any).i1)
 }
 
-export function merge<R = never, E = never, A = never, R2 = never, E2 = never, B = never>(
-  self: Provide<R, E, A>,
-  that: Provide<R2, E2, B>
-): Provide<Exclude<R, B> | R2, E | E2, A | B> {
+export function merge<A, E, R, B, E2, R2>(
+  self: Provide<A, E, R>,
+  that: Provide<B, E2, R2>
+): Provide<A | B, E | E2, Exclude<R, B> | R2> {
   return ProvideLayer(Layer.provideMerge(toLayer(self), toLayer(that)))
 }
 
-export function buildWithScope<R, E, A>(
-  provide: Provide<R, E, A>,
+export function buildWithScope<A, E, R>(
+  provide: Provide<A, E, R>,
   scope: Scope.Scope
 ) {
   return Layer.buildWithScope(toLayer(provide), scope)
 }
 
-export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<A, E, R> {
+export function toLayer<A, E, R>(provide: Provide<A, E, R>): Layer.Layer<A, E, R> {
   switch (provide._tag) {
     case "ProvideContext":
       return Layer.succeedContext(provide.i0)
@@ -112,9 +112,9 @@ export function toLayer<R, E, A>(provide: Provide<R, E, A>): Layer.Layer<A, E, R
   }
 }
 
-export function provideToEffect<R, E, A, R2 = never, E2 = never, S = never>(
+export function provideToEffect<A, E, R, R2 = never, E2 = never, S = never>(
   effect: Effect.Effect<A, E, R>,
-  provide: Provide<R2, E2, S>
+  provide: Provide<S, E, R2>
 ): Effect.Effect<A, E | E2, Exclude<R, S> | R2> {
   return Effect.provide(effect, toLayer(provide))
 }

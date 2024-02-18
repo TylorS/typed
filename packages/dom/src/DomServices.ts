@@ -108,7 +108,7 @@ export type DomServicesElementParams = {
  * @category context
  */
 export const provideDomServices = (window: Window & GlobalThis, params?: DomServicesElementParams) =>
-<R, E, A>(
+<A, E, R>(
   effect: Effect.Effect<A, E, R | DomServices>
 ): Effect.Effect<A, E, Exclude<R, DomServices>> =>
   Effect.provide(
