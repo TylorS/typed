@@ -118,7 +118,11 @@ export declare function testHydrate<R, E, Elements>(
   options?: HappyDOMOptions & {
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
   }
-)
+): Effect.Effect<
+  TestHydrate<E, Elements>,
+  E,
+  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+>
 ```
 
 Added in v1.0.0
@@ -136,7 +140,7 @@ export declare function testRender<E, R>(
 ): Effect.Effect<
   TestRender<E>,
   never,
-  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>
+  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
 >
 ```
 

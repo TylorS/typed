@@ -13,6 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
+  - [RouteGuard (interface)](#routeguard-interface)
   - [RouteMatcher (interface)](#routematcher-interface)
   - [empty](#empty)
   - [{](#)
@@ -21,12 +22,28 @@ Added in v1.0.0
 
 # utils
 
+## RouteGuard (interface)
+
+**Signature**
+
+```ts
+export interface RouteGuard<P extends string, A, O, E = never, R = never, E2 = never, R2 = never> {
+  readonly route: Route.Route<P>
+  readonly guard: Guard.Guard<string, A, E, R>
+  readonly match: (ref: RefSubject.RefSubject<A>) => Fx.Fx<O, E2, R2>
+}
+```
+
+Added in v1.0.0
+
 ## RouteMatcher (interface)
 
 **Signature**
 
 ```ts
 export interface RouteMatcher<A, E, R> {
+  readonly guards: ReadonlyArray<RouteGuard<any, any, A, E, R, E, R>>
+
   readonly match: {
     <const P extends string, B, E2, R2>(
       route: Route.Route<P> | P,

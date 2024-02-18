@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { PathInput } from "@effect/platform/Http/Router"
 import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import * as HttpServer from "@effect/platform/HttpServer"
@@ -9,11 +13,17 @@ import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { Scope } from "effect"
 import { Data, Effect, Option, ReadonlyArray } from "effect"
 
+/**
+ * @since 1.0.0
+ */
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
-  readonly path: string
-  readonly guards: ReadonlyArray<RouteGuard<any, any, any, any, any, any, any>>
+  readonly request: HttpServer.request.ServerRequest
+  readonly guards: ReadonlyArray.NonEmptyReadonlyArray<RouteGuard<any, any, any, any, any, any, any>>
 }> {}
 
+/**
+ * @since 1.0.0
+ */
 export function toHttpRouter<E, R>(
   matcher: RouteMatcher<RenderEvent, E, R>
 ): HttpServer.router.Router<
@@ -39,8 +49,8 @@ export function toHttpRouter<E, R>(
             return yield* _(htmlResponse(renderable))
           }
         }
-
-        return yield* _(Effect.fail(new GuardsNotMatched({ path, guards })))
+        const request = yield* _(HttpServer.request.ServerRequest)
+        return yield* _(Effect.fail(new GuardsNotMatched({ request, guards })))
       })
     )
   }

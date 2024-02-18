@@ -66,6 +66,9 @@ export interface RouteMatcher<A, E, R> {
   >
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface RouteGuard<P extends string, A, O, E = never, R = never, E2 = never, R2 = never> {
   readonly route: Route.Route<P>
   readonly guard: Guard.Guard<string, A, E, R>

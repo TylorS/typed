@@ -16,6 +16,7 @@ Added in v1.0.0
   - [ToRendered (type alias)](#torendered-type-alias)
   - [render](#render)
   - [renderLayer](#renderlayer)
+  - [renderToLayer](#rendertolayer)
 
 ---
 
@@ -38,7 +39,7 @@ Added in v1.0.0
 ```ts
 export declare function render<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<T, E, R>
-): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement>
+): Fx.Fx<ToRendered<T>, E, R | RenderTemplate | RenderContext.RenderContext | RootElement>
 ```
 
 Added in v1.0.0
@@ -48,9 +49,28 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<T, E, R>
-): Layer.Layer<never, never, Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>>
+export declare const renderLayer: (
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+) => Layer.Layer<RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+```
+
+Added in v1.0.0
+
+## renderToLayer
+
+**Signature**
+
+```ts
+export declare function renderToLayer<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<T, E, R>,
+  window: Window & GlobalThis = globalThis.window,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+): Layer.Layer<
+  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
+  never,
+  Exclude<Exclude<R, Scope.Scope>, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+>
 ```
 
 Added in v1.0.0

@@ -15,6 +15,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [hydrate](#hydrate)
   - [hydrateLayer](#hydratelayer)
+  - [hydrateToLayer](#hydratetolayer)
 
 ---
 
@@ -27,7 +28,7 @@ Added in v1.0.0
 ```ts
 export declare function hydrate<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<T, E, R>
-): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement>
+): Fx.Fx<ToRendered<T>, E, R | RenderTemplate | RenderContext.RenderContext | RootElement>
 ```
 
 Added in v1.0.0
@@ -37,7 +38,22 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function hydrateLayer<R, E, T extends RenderEvent | null>(rendered: Fx.Fx<T, E, R>)
+export declare const hydrateLayer: (
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+) => Layer.Layer<RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+```
+
+Added in v1.0.0
+
+## hydrateToLayer
+
+**Signature**
+
+```ts
+export declare function hydrateToLayer<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<T, E, R>
+): Layer.Layer<never, never, R | RenderTemplate | RenderContext.RenderContext | RootElement>
 ```
 
 Added in v1.0.0
