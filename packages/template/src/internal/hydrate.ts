@@ -126,7 +126,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         )
       })
     )
-  };
+  }
 }
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {

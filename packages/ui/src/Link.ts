@@ -36,11 +36,15 @@ export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
 export function Link<Props extends LinkProps, Children extends ReadonlyArray<Renderable<any, any>> = readonly []>(
   { onClick, relative, replace, state, to, ...props }: Props,
   ...children: Children
-): Fx.Fx<RenderEvent, Placeholder.Error<Props[keyof Props] | Children[number]>, | Navigation.Navigation
-| CurrentRoute
-| RenderTemplate
-| Scope.Scope
-| Placeholder.Context<Props[keyof Props] | Children[number]>> {
+): Fx.Fx<
+  RenderEvent,
+  Placeholder.Error<Props[keyof Props] | Children[number]>,
+  | Navigation.Navigation
+  | CurrentRoute
+  | RenderTemplate
+  | Scope.Scope
+  | Placeholder.Context<Props[keyof Props] | Children[number]>
+> {
   return Fx.gen(function*(_) {
     const onClickHandler = getEventHandler(onClick)
     const toRef = yield* _(Placeholder.asRef(to))

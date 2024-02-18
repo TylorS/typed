@@ -40,7 +40,7 @@ export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any
       Fx.compact(Fx.snapshot(events, elements, containsRefs)),
       f
     )
-  }));
+  }))
 }
 
 const containsRefs = (

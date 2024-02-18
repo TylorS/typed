@@ -23,13 +23,17 @@ export function h<
   tagName: TagName,
   properties: Props,
   ...children: Children
-): Fx<RenderEvent, Placeholder.Error<
-  Props[keyof Props] | Children[number]
->, | Scope.Scope
-| RenderTemplate
-| Placeholder.Context<
-  Props[keyof Props] | Children[number]
->> {
+): Fx<
+  RenderEvent,
+  Placeholder.Error<
+    Props[keyof Props] | Children[number]
+  >,
+  | Scope.Scope
+  | RenderTemplate
+  | Placeholder.Context<
+    Props[keyof Props] | Children[number]
+  >
+> {
   return fromFxEffect(
     RenderTemplate.with((render) => render(getTemplateStringsArrayFor(tagName), [properties, children]))
   )
@@ -63,7 +67,11 @@ export type HyperscriptForTagName<TagName extends keyof TypedPropertiesMap> = <
 >(
   properties: Props,
   ...children: Children
-) => Fx<RenderEvent, Placeholder.Error<Props[keyof Props] | Children[number]>, Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>>
+) => Fx<
+  RenderEvent,
+  Placeholder.Error<Props[keyof Props] | Children[number]>,
+  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>
+>
 
 /**
  * @since 1.0.0
@@ -77,15 +85,19 @@ export function createHyperscript<const TagName extends keyof TypedPropertiesMap
   >(
     properties: Props,
     ...children: Children
-  ): Fx<RenderEvent, Placeholder.Error<
-    Props[keyof Props] | Children[number]
-  >, | Scope.Scope
-  | RenderTemplate
-  | Placeholder.Context<
-    Props[keyof Props] | Children[number]
-  >> => {
+  ): Fx<
+    RenderEvent,
+    Placeholder.Error<
+      Props[keyof Props] | Children[number]
+    >,
+    | Scope.Scope
+    | RenderTemplate
+    | Placeholder.Context<
+      Props[keyof Props] | Children[number]
+    >
+  > => {
     return h(tagName, properties, ...children)
-  };
+  }
 }
 
 /**

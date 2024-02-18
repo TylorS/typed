@@ -303,5 +303,5 @@ async function testHtmlChunks(
 }
 
 function stripDataTyped(s: string): string {
-  return s.replace(/data-typed="[^"]+"/g, "data-typed=\"...\"");
+  return s.replace(/data-typed="[^"]+"/g, "data-typed=\"...\"")
 }
