@@ -22,8 +22,8 @@ import { cancelNavigation, Navigation, redirectToPath } from "./Navigation.js"
 /**
  * @since 1.0.0
  */
-export interface BlockNavigation extends RefSubject.Computed<never, never, Option.Option<Blocking>> {
-  readonly isBlocking: RefSubject.Computed<never, never, boolean>
+export interface BlockNavigation extends RefSubject.Computed<Option.Option<Blocking>> {
+  readonly isBlocking: RefSubject.Computed<boolean>
 }
 
 /**

@@ -22,15 +22,15 @@ export interface Navigation {
 
   readonly base: string
 
-  readonly currentEntry: RefSubject.Computed<never, never, Destination>
+  readonly currentEntry: RefSubject.Computed<Destination>
 
-  readonly entries: RefSubject.Computed<never, never, ReadonlyArray<Destination>>
+  readonly entries: RefSubject.Computed<ReadonlyArray<Destination>>
 
-  readonly transition: RefSubject.Computed<never, never, Option.Option<Transition>>
+  readonly transition: RefSubject.Computed<Option.Option<Transition>>
 
-  readonly canGoBack: RefSubject.Computed<never, never, boolean>
+  readonly canGoBack: RefSubject.Computed<boolean>
 
-  readonly canGoForward: RefSubject.Computed<never, never, boolean>
+  readonly canGoForward: RefSubject.Computed<boolean>
 
   readonly navigate: (
     url: string | URL,
@@ -446,7 +446,7 @@ export const reload: (
 /**
  * @since 1.0.0
  */
-export const CurrentEntry: RefSubject.Computed<Navigation, never, Destination> = RefSubject.computedFromTag(
+export const CurrentEntry: RefSubject.Computed<Destination, never, Navigation> = RefSubject.computedFromTag(
   Navigation,
   (nav) => nav.currentEntry
 )
@@ -461,7 +461,7 @@ export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" 
 /**
  * @since 1.0.0
  */
-export const CurrentPath: RefSubject.Computed<Navigation, never, string> = RefSubject.map(
+export const CurrentPath: RefSubject.Computed<string, never, Navigation> = RefSubject.map(
   CurrentEntry,
   (d) => getCurrentPathFromUrl(d.url)
 )
@@ -469,7 +469,7 @@ export const CurrentPath: RefSubject.Computed<Navigation, never, string> = RefSu
 /**
  * @since 1.0.0
  */
-export const CurrentEntries: RefSubject.Computed<Navigation, never, ReadonlyArray<Destination>> = RefSubject
+export const CurrentEntries: RefSubject.Computed<ReadonlyArray<Destination>, never, Navigation> = RefSubject
   .computedFromTag(
     Navigation,
     (n) => n.entries
@@ -478,7 +478,7 @@ export const CurrentEntries: RefSubject.Computed<Navigation, never, ReadonlyArra
 /**
  * @since 1.0.0
  */
-export const CanGoForward: RefSubject.Computed<Navigation, never, boolean> = RefSubject.computedFromTag(
+export const CanGoForward: RefSubject.Computed<boolean, never, Navigation> = RefSubject.computedFromTag(
   Navigation,
   (n) => n.canGoForward
 )
@@ -486,7 +486,7 @@ export const CanGoForward: RefSubject.Computed<Navigation, never, boolean> = Ref
 /**
  * @since 1.0.0
  */
-export const CanGoBack: RefSubject.Computed<Navigation, never, boolean> = RefSubject.computedFromTag(
+export const CanGoBack: RefSubject.Computed<boolean, never, Navigation> = RefSubject.computedFromTag(
   Navigation,
   (n) => n.canGoBack
 )

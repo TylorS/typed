@@ -44,33 +44,15 @@ export const getUrl = (origin: string, urlOrPath: string | URL): URL => {
 }
 
 export type ModelAndIntent = {
-  readonly state: RefSubject.RefSubject<never, never, NavigationState>
-  readonly canGoBack: RefSubject.Computed<
-    never,
-    never,
-    boolean
-  >
-  readonly canGoForward: RefSubject.Computed<
-    never,
-    never,
-    boolean
-  >
+  readonly state: RefSubject.RefSubject<NavigationState>
+  readonly canGoBack: RefSubject.Computed<boolean>
+  readonly canGoForward: RefSubject.Computed<boolean>
   readonly beforeHandlers: RefSubject.RefSubject<
-    never,
-    never,
     Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>
   >
-  readonly handlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>
-  >
+  readonly handlers: RefSubject.RefSubject<Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>>
 
-  readonly formDataHandlers: RefSubject.RefSubject<
-    never,
-    never,
-    Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>
-  >
+  readonly formDataHandlers: RefSubject.RefSubject<Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>>
 
   readonly commit: Commit
 }
