@@ -630,6 +630,8 @@ function isPastTTL(timestamp: number, ttl: Duration.DurationInput, now: number):
   return now - timestamp >= millis
 }
 
+const optionDataEqual = Option.getEquivalence(dataEqual)
+
 /**
  * Checks if two AsyncData are equal, disregarding the timestamps associated with them. Useful for testing
  * without needing to manage timestamps.
@@ -641,9 +643,9 @@ export function dataEqual<A, E>(first: AsyncData<A, E>, second: AsyncData<A, E>)
     NoData: () => isNoData(second),
     Loading: (l) => isLoading(second) && Equal.equals(l.progress, second.progress),
     Failure: (_, f1) =>
-      isFailure(second) && Equal.equals(f1.cause, second.cause) && Equal.equals(f1.refreshing, second.refreshing),
+      isFailure(second) && Equal.equals(f1.cause, second.cause) && optionDataEqual(f1.refreshing, second.refreshing),
     Success: (_, s1) =>
-      isSuccess(second) && Equal.equals(s1.value, second.value) && Equal.equals(s1.refreshing, second.refreshing),
+      isSuccess(second) && Equal.equals(s1.value, second.value) && optionDataEqual(s1.refreshing, second.refreshing),
     Optimistic: (_, o1) =>
       isOptimistic(second) && Equal.equals(o1.value, second.value) && dataEqual(o1.previous, second.previous)
   })
