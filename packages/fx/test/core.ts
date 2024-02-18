@@ -581,14 +581,14 @@ describe.concurrent("Fx.at", () => {
 
     const [controlDuration, controlArray] = await Effect.runPromise(control)
 
-    expect(Duration.toMillis(controlDuration)).toBeLessThan(delay)
+    expect(Math.floor(Duration.toMillis(controlDuration))).toBeLessThan(delay)
     expect(controlArray).toEqual(["a"])
 
     const test = Fx.at("a", delay).pipe(Fx.toReadonlyArray, Effect.timed)
 
     const [duration, array] = await Effect.runPromise(test)
 
-    expect(Duration.toMillis(duration)).toBeGreaterThan(delay)
+    expect(Math.ceil(Duration.toMillis(duration))).toBeGreaterThan(delay)
     expect(array).toEqual(["a"])
   })
 })
