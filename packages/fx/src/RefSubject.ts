@@ -259,7 +259,9 @@ export function fromRefSubject<A, E, R>(
 
 function persistCore<A, E, R, R2>(ref: RefSubject<A, E, R>, core: RefSubjectCore<A, E, R, R2>) {
   // Log any errors that fail to persist, but don't fail the consumer
-  return Effect.ignoreLogged(Effect.provide(Effect.flatMap(core.deferredRef, (value) => set(ref, value)), core.context))
+  return Effect.ignoreLogged(
+    Effect.provide(Effect.flatMap(core.deferredRef, (value) => set(ref, value)), core.runtime)
+  )
 }
 
 /**
@@ -317,8 +319,6 @@ const withScopeAndFiberId = <A, E, R>(
   strategy: ExecutionStrategy.ExecutionStrategy
 ) => Effect.fiberIdWith((id) => withScope((scope) => f(scope, id), strategy))
 
-const emptyContext = C.empty()
-
 /**
  * @since 1.20.0
  */
@@ -332,8 +332,8 @@ export function unsafeMake<E, A>(
   }
 ): Effect.Effect<RefSubject<A, E>> {
   const { id, initial, options, scope } = params
-  return Effect.suspend(() => {
-    const core = unsafeMakeCore(initial, id, emptyContext, scope, options)
+  return Effect.flatMap(Effect.runtime(), (runtime) => {
+    const core = unsafeMakeCore(initial, id, runtime, scope, options)
 
     // Sometimes we might be instantiating directly from a known value
     // Here we seed the value and ensure the subject has it as well for re-broadcasting
@@ -364,8 +364,8 @@ class RefSubjectImpl<A, E, R, R2> extends FxEffectBase<A, E, Exclude<R, R2> | Sc
     super()
 
     this.version = Effect.sync(() => core.deferredRef.version)
-    this.interrupt = Effect.provide(interruptCore(core), core.context)
-    this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.context)
+    this.interrupt = Effect.provide(interruptCore(core), core.runtime)
+    this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.runtime)
     this.getSetDelete = getSetDelete(core)
 
     this.runUpdates = this.runUpdates.bind(this)
@@ -376,7 +376,7 @@ class RefSubjectImpl<A, E, R, R2> extends FxEffectBase<A, E, Exclude<R, R2> | Sc
   run<R3>(sink: Sink.Sink<A, E, R3>): Effect.Effect<unknown, never, Exclude<R, R2> | R3 | Scope.Scope> {
     return Effect.matchCauseEffect(getOrInitializeCore(this.core, true), {
       onFailure: (cause) => sink.onFailure(cause),
-      onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.context)
+      onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.runtime)
     })
   }
 
@@ -593,7 +593,7 @@ class RefSubjectCore<A, E, R, R2> {
   constructor(
     readonly initial: Effect.Effect<A, E, R>,
     readonly subject: Subject.Subject<A, E, R>,
-    readonly context: C.Context<R2>,
+    readonly runtime: Runtime.Runtime<R2>,
     readonly scope: Scope.CloseableScope,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
     readonly semaphore: Effect.Semaphore
@@ -606,12 +606,12 @@ function makeCore<A, E, R>(
   initial: Effect.Effect<A, E, R>,
   options?: RefSubjectOptions<A>
 ) {
-  return Effect.context<R | Scope.Scope>().pipe(
-    Effect.bindTo("ctx"),
+  return Effect.runtime<R | Scope.Scope>().pipe(
+    Effect.bindTo("runtime"),
     Effect.let("executionStrategy", () => options?.executionStrategy ?? ExecutionStrategy.parallel),
     Effect.bind(
       "scope",
-      ({ ctx, executionStrategy }) => Scope.fork(C.get(ctx, Scope.Scope), executionStrategy)
+      ({ executionStrategy, runtime }) => Scope.fork(C.get(runtime.context, Scope.Scope), executionStrategy)
     ),
     Effect.bind(
       "deferredRef",
@@ -619,11 +619,11 @@ function makeCore<A, E, R>(
     ),
     Effect.let("subject", () => Subject.unsafeMake<A, E>(Math.max(1, options?.replay ?? 1))),
     Effect.tap(({ scope, subject }) => Scope.addFinalizer(scope, subject.interrupt)),
-    Effect.map(({ ctx, deferredRef, scope, subject }) =>
+    Effect.map(({ deferredRef, runtime, scope, subject }) =>
       new RefSubjectCore(
         initial,
         subject,
-        ctx,
+        runtime,
         scope,
         deferredRef,
         Effect.unsafeMakeSemaphore(1)
@@ -635,14 +635,14 @@ function makeCore<A, E, R>(
 function unsafeMakeCore<A, E, R>(
   initial: Effect.Effect<A, E, R>,
   id: FiberId.FiberId,
-  ctx: C.Context<R>,
+  runtime: Runtime.Runtime<R>,
   scope: Scope.CloseableScope,
   options?: RefSubjectOptions<A>
 ) {
   return new RefSubjectCore(
     initial,
     Subject.unsafeMake<A, E>(Math.max(1, options?.replay ?? 1)),
-    ctx,
+    runtime,
     scope,
     DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals)),
     Effect.unsafeMakeSemaphore(1)
@@ -667,7 +667,7 @@ function initializeCoreEffect<A, E, R, R2>(
   lock: boolean
 ): Effect.Effect<Fiber.Fiber<A, E>, never, Exclude<R, R2>> {
   const initialize = Effect.onExit(
-    Effect.provide(core.initial, core.context),
+    Effect.provide(core.initial, core.runtime),
     (exit) =>
       Effect.sync(() => {
         core._fiber = undefined
@@ -774,7 +774,7 @@ function deleteCore<A, E, R, R2>(
     }
 
     return core.subject.subscriberCount.pipe(
-      Effect.provide(core.context),
+      Effect.provide(core.runtime),
       Effect.flatMap(
         (count: number) => count > 0 && !core._fiber ? initializeCore(core, false) : Effect.unit
       ),
@@ -799,9 +799,9 @@ function sendEvent<A, E, R, R2>(
   exit: Exit.Exit<A, E>
 ): Effect.Effect<unknown, never, Exclude<R, R2>> {
   if (Exit.isSuccess(exit)) {
-    return Effect.provide(core.subject.onSuccess(exit.value), core.context)
+    return Effect.provide(core.subject.onSuccess(exit.value), core.runtime)
   } else {
-    return Effect.provide(core.subject.onFailure(exit.cause), core.context)
+    return Effect.provide(core.subject.onFailure(exit.cause), core.runtime)
   }
 }
 
