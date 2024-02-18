@@ -10,7 +10,7 @@ import { indexRefCounter2 } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
-import { Either, ExecutionStrategy, Exit } from "effect"
+import { Either, ExecutionStrategy, Exit, Runtime } from "effect"
 import * as Scope from "effect/Scope"
 import type { Template } from "../Template.js"
 import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRootElement } from "./errors.js"
@@ -43,9 +43,10 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
   ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>> => {
     return Fx.make((sink) =>
       Effect.gen(function*(_) {
-        const context = yield* _(Effect.context<Scope.Scope>())
-        const hydrateCtx = unsafeGet(context, HydrateContext)
-        const parentScope = unsafeGet(context, Scope.Scope)
+        const runtime = yield* _(Effect.runtime<Placeholder.Context<Values[number]> | Scope.Scope>())
+        const runFork = Runtime.runFork(runtime)
+        const hydrateCtx = unsafeGet(runtime.context, HydrateContext)
+        const parentScope = unsafeGet(runtime.context, Scope.Scope)
         const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
 
         // If we're not longer hydrating, just render normally
@@ -78,7 +79,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
         const refCounter = yield* _(indexRefCounter2())
         const ctx: RenderPartContext = {
-          context,
+          context: runtime.context,
           document,
           eventSource: makeEventSource(),
           expected: 0,
@@ -105,7 +106,9 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
         // Fork any effects necessary
         if (effects.length > 0) {
-          yield* _(Effect.forkAll(effects))
+          for (let i = 0; i < effects.length; i++) {
+            runFork(effects[i], { scope })
+          }
         }
 
         // Set the element when it is ready

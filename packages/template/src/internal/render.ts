@@ -3,7 +3,7 @@ import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
-import { Effect, ExecutionStrategy, Exit } from "effect"
+import { Effect, ExecutionStrategy, Exit, Runtime } from "effect"
 import type { Cause } from "effect/Cause"
 import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
@@ -574,13 +574,14 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
       sink
     ) => {
       return Effect.gen(function*(_) {
-        const context = yield* _(Effect.context<Scope.Scope | Placeholder.Context<Values[number]>>())
-        const parentScope = Context.get(context, Scope.Scope)
+        const runtime = yield* _(Effect.runtime<Scope.Scope | Placeholder.Context<Values[number]>>())
+        const runFork = Runtime.runFork(runtime)
+        const parentScope = Context.get(runtime.context, Scope.Scope)
         const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
         const refCounter = yield* _(indexRefCounter2())
         const content = document.importNode(entry.content, true)
         const ctx: RenderPartContext = {
-          context,
+          context: runtime.context,
           document,
           eventSource: makeEventSource(),
           expected: 0,
@@ -606,10 +607,8 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
 
         // Fork any effects necessary
         if (effects.length > 0) {
-          for (const eff of effects) {
-            yield* _(
-              Effect.forkIn(Effect.catchAllCause(eff, ctx.onCause), scope)
-            )
+          for (let i = 0; i < effects.length; ++i) {
+            runFork(effects[i], { scope })
           }
         }
 
