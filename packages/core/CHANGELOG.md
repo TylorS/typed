@@ -1,5 +1,17 @@
 # @typed/core
 
+## 3.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`ff2c311`](https://github.com/TylorS/typed/commit/ff2c311c4144d2378a4bde7065b4e382ad183114), [`5747fb9`](https://github.com/TylorS/typed/commit/5747fb9741b48dc17bdaf176effb4dc358616d10)]:
+  - @typed/template@0.8.0
+  - @typed/router@0.26.0
+  - @typed/fx@1.24.1
+  - @typed/ui@0.8.0
+  - @typed/navigation@0.12.1
+  - @typed/route@3.2.2
+
 ## 3.2.1
 
 ### Patch Changes

@@ -1,5 +1,27 @@
 # @typed/ui
 
+## 0.8.0
+
+### Minor Changes
+
+- [`ff2c311`](https://github.com/TylorS/typed/commit/ff2c311c4144d2378a4bde7065b4e382ad183114) Thanks [@TylorS](https://github.com/TylorS)! - Add support in @typed/ui/Platform for converting RouteMatcher to @effect/platform's HttpServer.router.Router.
+
+  This also required changing the signature's of `@typed/template`'s `render`/`hydrate`/`renderToHtml` signatures to not exclude `RenderTemplate`
+  from its context. This necessitated adding `renderLayer`, `hydrateLayer`, and `serverLayer`/`staticLayer` to be able to provide `RenderTemplate` in
+  a standalone context, and also better supports re-using the `RenderContext` between different requests during SSR.
+
+  Since the recommended way to create a long-lived application, such as a UI application, in Effect is with `Layer.launch`, `renderToLayer` and `hydrateToLayer`
+  have been added as APIs for quickly setting up a render with the appropriate resources. See `examples/counter` or `examples/todomvc` for examples of this.
+
+### Patch Changes
+
+- Updated dependencies [[`ff2c311`](https://github.com/TylorS/typed/commit/ff2c311c4144d2378a4bde7065b4e382ad183114), [`5747fb9`](https://github.com/TylorS/typed/commit/5747fb9741b48dc17bdaf176effb4dc358616d10)]:
+  - @typed/template@0.8.0
+  - @typed/router@0.26.0
+  - @typed/fx@1.24.1
+  - @typed/navigation@0.12.1
+  - @typed/route@3.2.2
+
 ## 0.7.0
 
 ### Minor Changes
