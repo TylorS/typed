@@ -1,5 +1,14 @@
 # @typed/dom
 
+## 12.0.1
+
+### Patch Changes
+
+- [`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c) Thanks [@TylorS](https://github.com/TylorS)! - refactor: more type-parameter switching
+
+- Updated dependencies [[`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c)]:
+  - @typed/context@0.24.1
+
 ## 12.0.0
 
 ### Minor Changes

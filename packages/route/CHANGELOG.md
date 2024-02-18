@@ -1,5 +1,14 @@
 # @typed/route
 
+## 3.2.1
+
+### Patch Changes
+
+- [`1f7ea9f`](https://github.com/TylorS/typed/commit/1f7ea9fd3aa1c0fa708c5f6460cd8965c754a46a) Thanks [@TylorS](https://github.com/TylorS)! - fix: update route with new Guard type param order
+
+- Updated dependencies [[`c900700`](https://github.com/TylorS/typed/commit/c90070011834374ec3f6afed187ebc20b282a409), [`a55d04a`](https://github.com/TylorS/typed/commit/a55d04a6d7ea943b611f0958eebb78dc42aa5528), [`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c)]:
+  - @typed/fx@1.24.0
+
 ## 3.2.0
 
 ### Minor Changes
