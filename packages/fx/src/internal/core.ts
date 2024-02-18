@@ -1266,8 +1266,9 @@ function runOrdered<
   return Effect.suspend(
     () => {
       const buffers = withBuffers(fx.length, sink)
-      return Effect.all(
-        fx.map((fx, i) =>
+      return Effect.forEach(
+        fx,
+        (fx, i) =>
           Effect.flatMap(
             fx.run(
               Sink.make(
@@ -1276,10 +1277,10 @@ function runOrdered<
               )
             ),
             () => buffers.onEnd(i)
-          )
-        ),
+          ),
         {
-          concurrency
+          concurrency,
+          discard: true
         }
       )
     }

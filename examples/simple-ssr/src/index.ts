@@ -2,7 +2,7 @@ import * as Server from "@effect/platform-node/Http/Server"
 import * as NodeContext from "@effect/platform-node/NodeContext"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as HttpServer from "@effect/platform/HttpServer"
-import { html, RenderContext } from "@typed/template"
+import { html, staticLayer } from "@typed/template"
 import { htmlResponse } from "@typed/template/Platform"
 import { Effect, Layer } from "effect"
 import { createServer } from "node:http"
@@ -25,7 +25,7 @@ const server = HttpServer.router.empty.pipe(
 const HttpLive = server.pipe(
   Layer.provide(Server.layer(() => createServer(), { port: 3000 })),
   Layer.provide(NodeContext.layer),
-  Layer.provide(RenderContext.server)
+  Layer.provide(staticLayer)
 )
 
 HttpLive.pipe(

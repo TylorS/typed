@@ -23,7 +23,7 @@ const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
 export function htmlResponse<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>,
   options?: HttpServer.response.Options
-): Effect.Effect<HttpServer.response.ServerResponse, E, RenderContext.RenderContext | Exclude<R, RenderTemplate>> {
+): Effect.Effect<HttpServer.response.ServerResponse, E, R | RenderTemplate | RenderContext.RenderContext> {
   return Effect.contextWithEffect((ctx) =>
     HttpServer.response.stream(
       Stream.provideContext(Stream.encodeText(toStream(renderToHtml(fx))), ctx),

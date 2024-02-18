@@ -16,15 +16,12 @@ import * as Option from "effect/Option"
 import type { CurrentRoute } from "./CurrentRoute.js"
 import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
 
-// TODO: Form component
-// TODO: view transitions - opt-in via link/form component
-// TODO: scroll restoration
-// TODO: Utilize scroll events on Window to capture scroll positions and elements
-
 /**
  * @since 1.0.0
  */
 export interface RouteMatcher<A, E, R> {
+  readonly guards: ReadonlyArray<RouteGuard<any, any, A, E, R, E, R>>
+
   readonly match: {
     <const P extends string, B, E2, R2>(
       route: Route.Route<P> | P,
@@ -69,14 +66,14 @@ export interface RouteMatcher<A, E, R> {
   >
 }
 
-interface RouteGuard {
-  readonly route: Route.Route<any>
-  readonly guard: Guard.Guard<string, any, any, any>
-  readonly match: (ref: RefSubject.RefSubject<any>) => Fx.Fx<any, any, any>
+export interface RouteGuard<P extends string, A, O, E = never, R = never, E2 = never, R2 = never> {
+  readonly route: Route.Route<P>
+  readonly guard: Guard.Guard<string, A, E, R>
+  readonly match: (ref: RefSubject.RefSubject<A>) => Fx.Fx<O, E2, R2>
 }
 
 class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
-  constructor(readonly guards: ReadonlyArray<RouteGuard>) {
+  constructor(readonly guards: ReadonlyArray<RouteGuard<any, any, any, any, any, any, any>>) {
     this.match = this.match.bind(this)
     this.to = this.to.bind(this)
     this.notFound = this.notFound.bind(this)

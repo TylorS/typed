@@ -2,15 +2,16 @@
  * @since 1.0.0
  */
 import type { Document } from "@typed/dom/Document"
-import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServices"
-import type { GlobalThis } from "@typed/dom/GlobalThis"
-import type { Window } from "@typed/dom/Window"
+import { type DomServices, domServices, type DomServicesElementParams } from "@typed/dom/DomServices"
+import { GlobalThis } from "@typed/dom/GlobalThis"
+import { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
 import { type Rendered } from "@typed/wire"
+import { Layer } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
@@ -18,11 +19,11 @@ import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
-import { renderToHtmlString } from "./Html.js"
-import { hydrate } from "./Hydrate.js"
+import { renderToHtmlString, serverLayer } from "./Html.js"
+import { hydrate, hydrateLayer } from "./Hydrate.js"
 import { adjustTime, isCommentWithValue } from "./internal/utils.js"
-import { render } from "./Render.js"
-import * as RenderContext from "./RenderContext.js"
+import { render, renderLayer } from "./Render.js"
+import type * as RenderContext from "./RenderContext.js"
 import type { RenderEvent } from "./RenderEvent.js"
 import type { RenderTemplate } from "./RenderTemplate.js"
 
@@ -62,7 +63,7 @@ export function testRender<E, R>(
 ): Effect.Effect<
   TestRender<E>,
   never,
-  Scope.Scope | Exclude<Exclude<R, RenderTemplate>, RenderContext.RenderContext | CurrentEnvironment | DomServices>
+  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
 > {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
@@ -83,7 +84,7 @@ export function testRender<E, R>(
           (rendered) => ElementRef.set(elementRef, rendered)
         )),
       Effect.forkScoped,
-      Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
+      Effect.provide(renderLayer(window, { skipRenderScheduling: true }))
     )
 
     const test: TestRender<E> = {
@@ -192,14 +193,23 @@ export function testHydrate<R, E, Elements>(
   options?:
     & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
-) {
+): Effect.Effect<
+  TestHydrate<E, Elements>,
+  E,
+  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+> {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
     const { body } = window.document
 
     const html = yield* _(
       renderToHtmlString(fx),
-      Effect.provide(RenderContext.server)
+      Effect.provide(serverLayer.pipe(
+        // Add DomServices to the layer for the types
+        Layer.provideMerge(domServices()),
+        Layer.provideMerge(Window.layer(window)),
+        Layer.provideMerge(GlobalThis.layer(window))
+      ))
     )
 
     body.innerHTML = html
@@ -233,8 +243,8 @@ export function testHydrate<R, E, Elements>(
             ),
           (rendered) => ElementRef.set(elementRef, rendered)
         )),
-      Effect.forkScoped,
-      Effect.provide(RenderContext.dom(window, { skipRenderScheduling: true }))
+      Effect.provide(hydrateLayer(window, { skipRenderScheduling: true })),
+      Effect.forkScoped
     )
 
     const test: TestHydrate<E, Elements> = {

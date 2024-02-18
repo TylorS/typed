@@ -2,10 +2,12 @@
  * @since 1.0.0
  */
 
+import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
 import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import { join } from "effect/ReadonlyArray"
 import type * as Scope from "effect/Scope"
@@ -18,7 +20,7 @@ import { partNodeToPart } from "./internal/server.js"
 import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
 import type { Renderable } from "./Renderable.js"
-import { RenderContext } from "./RenderContext.js"
+import * as RenderContext from "./RenderContext.js"
 import { HtmlRenderEvent, isRenderEvent } from "./RenderEvent.js"
 import type { RenderEvent } from "./RenderEvent.js"
 import { RenderTemplate } from "./RenderTemplate.js"
@@ -30,13 +32,30 @@ const [padStart, padEnd] = [[TYPED_START], [TYPED_END]] as const
 /**
  * @since 1.0.0
  */
+export const serverLayer: Layer.Layer<RenderContext.RenderContext | RenderTemplate | CurrentEnvironment> = Layer
+  .provideMerge(
+    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtml)),
+    RenderContext.server
+  )
+
+/**
+ * @since 1.0.0
+ */
+export const staticLayer: Layer.Layer<RenderContext.RenderContext | RenderTemplate | CurrentEnvironment> = Layer
+  .provideMerge(
+    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtml)),
+    RenderContext.static
+  )
+
+/**
+ * @since 1.0.0
+ */
 export function renderToHtml<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>
-): Fx.Fx<string, E, Exclude<R, RenderTemplate> | RenderContext> {
+): Fx.Fx<string, E, R | RenderTemplate | RenderContext.RenderContext> {
   return Fx.fromFxEffect(
-    RenderContext.with((ctx) =>
+    RenderContext.RenderContext.with((ctx) =>
       fx.pipe(
-        Fx.provide(RenderTemplate.layer(renderHtml(ctx))),
         Fx.map(toHtml),
         (x) => ctx.environment === "static" ? x : Fx.padWith(x, padStart, padEnd)
       )
@@ -49,11 +68,11 @@ export function renderToHtml<E, R>(
  */
 export function renderToHtmlString<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>
-): Effect.Effect<string, E, Exclude<R, RenderTemplate> | RenderContext> {
+): Effect.Effect<string, E, R | RenderTemplate | RenderContext.RenderContext> {
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }
 
-function renderHtml(ctx: RenderContext) {
+function renderHtml(ctx: RenderContext.RenderContext) {
   return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
@@ -227,7 +246,7 @@ function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>): Fx.Fx<A, E, R> {
 
 function getServerEntry(
   templateStrings: TemplateStringsArray,
-  templateCache: RenderContext["templateCache"],
+  templateCache: RenderContext.RenderContext["templateCache"],
   isStatic: boolean
 ): ServerEntry {
   const cached = templateCache.get(templateStrings)

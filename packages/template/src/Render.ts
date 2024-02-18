@@ -4,13 +4,17 @@
 
 import * as Context from "@typed/context"
 import { Document } from "@typed/dom/Document"
+import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServices"
+import type { GlobalThis } from "@typed/dom/GlobalThis"
 import { RootElement } from "@typed/dom/RootElement"
+import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import { type Rendered } from "@typed/wire"
-import type { Layer, Scope } from "effect"
+import type { Scope } from "effect"
+import { Layer } from "effect"
 import * as Effect from "effect/Effect"
 import { attachRoot, renderTemplate } from "./internal/render.js"
-import { RenderContext } from "./RenderContext.js"
+import * as RenderContext from "./RenderContext.js"
 import { type RenderEvent } from "./RenderEvent.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
@@ -22,29 +26,62 @@ export type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered
 /**
  * @since 1.0.0
  */
+export const renderLayer = (
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+): Layer.Layer<
+  | RenderTemplate
+  | RenderContext.RenderContext
+  | CurrentEnvironment
+  | DomServices
+> =>
+  Layer.provideMerge(
+    RenderTemplate.layer(Effect.contextWith((context: Context.Context<Document | RenderContext.RenderContext>) => {
+      const [document, ctx] = Context.getMany(
+        context,
+        Document,
+        RenderContext.RenderContext
+      )
+
+      return renderTemplate(document, ctx)
+    })),
+    RenderContext.dom(window, options)
+  )
+
+/**
+ * @since 1.0.0
+ */
 export function render<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<T, E, R>
-): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement> {
+): Fx.Fx<ToRendered<T>, E, R | RenderTemplate | RenderContext.RenderContext | RootElement> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
-    const [document, ctx, { rootElement }] = Context.getMany(context, Document, RenderContext, RootElement)
-
-    return Fx.provideService(
-      Fx.mapEffect(rendered, (what) => attachRoot(ctx.renderCache, rootElement, what)),
-      RenderTemplate,
-      renderTemplate(document, ctx)
+    const [ctx, { rootElement }] = Context.getMany(
+      context,
+      RenderContext.RenderContext,
+      RootElement
     )
+
+    return Fx.mapEffect(rendered, (what) => attachRoot(ctx.renderCache, rootElement, what))
   }))
 }
 
 /**
  * @since 1.0.0
  */
-export function renderLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<T, E, R>
+export function renderToLayer<R, E, T extends RenderEvent | null>(
+  rendered: Fx.Fx<T, E, R>,
+  window: Window & GlobalThis = globalThis.window,
+  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
 ): Layer.Layer<
+  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
   never,
-  never,
-  Document | RenderContext | RootElement | Exclude<Exclude<R, RenderTemplate>, Scope.Scope>
+  Exclude<
+    Exclude<R, Scope.Scope>,
+    RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices
+  >
 > {
-  return Fx.drainLayer(Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(e))))
+  return Layer.provideMerge(
+    Fx.drainLayer(Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(e)))),
+    renderLayer(window, options)
+  )
 }

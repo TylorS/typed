@@ -5,15 +5,11 @@
 
 import type { RenderContext } from "@storybook/types"
 
-import { domServices } from "@typed/dom/DomServices"
-import { GlobalThis } from "@typed/dom/GlobalThis"
-import { Window } from "@typed/dom/Window"
-import { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import { getRandomValues } from "@typed/id"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
-import { RenderContext as TemplateContext, renderLayer } from "@typed/template"
+import { renderToLayer } from "@typed/template"
 import { Cause, Effect, FiberId, Layer } from "effect"
 import type { TypedRenderer } from "./types"
 
@@ -35,27 +31,19 @@ export async function renderToCanvas(
       showError({ title: `Cause`, description: Cause.pretty(cause) })
     })
 
-  const program = storyFn(storyContext).pipe(
-    Fx.switchMapCause(
-      (cause) =>
-        Fx.mergeFirst(
-          Fx.never,
-          Fx.fromEffect(onCause(cause))
-        )
-    ),
-    renderLayer,
+  const renderable = Fx.switchMapCause(
+    storyFn(storyContext),
+    (cause) =>
+      Fx.mergeFirst(
+        Fx.never,
+        Fx.fromEffect(onCause(cause))
+      )
+  )
+
+  const program = renderToLayer(renderable, window, { rootElement }).pipe(
     Layer.provideMerge(Router.server("/")),
     Layer.provideMerge(Navigation.initialMemory({ url: "/" })),
-    Layer.provideMerge(
-      TemplateContext.RenderContext.scoped(
-        Effect.scopeWith((scope) => Effect.sync(() => TemplateContext.unsafeMake({ environment: "dom", scope }, true)))
-      )
-    ),
-    Layer.provideMerge(domServices({ rootElement })),
-    Layer.provideMerge(Window.layer(window)),
-    Layer.provideMerge(GlobalThis.layer(window)),
     Layer.provideMerge(getRandomValues),
-    Layer.provideMerge(CurrentEnvironment.layer("dom")),
     Layer.launch,
     Effect.catchAllCause(onCause)
   )
