@@ -21,13 +21,13 @@ import { HtmlRenderEvent, type RenderEvent } from "./RenderEvent.js"
  * @since 1.0.0
  */
 export function many<R, E, A, B extends PropertyKey, R2, E2>(
-  values: Fx.Fx<R, E, ReadonlyArray<A>>,
+  values: Fx.Fx<ReadonlyArray<A>, E, R>,
   getKey: (a: NoInfer<A>) => B,
-  f: (a: RefSubject.RefSubject<never, never, NoInfer<A>>, key: B) => Fx.Fx<R2, E2, RenderEvent>
-): Fx.Fx<R | R2 | Scope.Scope | RenderContext, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> {
+  f: (a: RefSubject.RefSubject<NoInfer<A>>, key: B) => Fx.Fx<RenderEvent, E2, R2>
+): Fx.Fx<RenderEvent | ReadonlyArray<RenderEvent>, E | E2, R | R2 | Scope.Scope | RenderContext> {
   return Fx.fromFxEffect(
     Effect.contextWith(
-      (context): Fx.Fx<R | R2 | RenderContext | Scope.Scope, E | E2, RenderEvent | ReadonlyArray<RenderEvent>> => {
+      (context): Fx.Fx<RenderEvent | ReadonlyArray<RenderEvent>, E | E2, R | R2 | RenderContext | Scope.Scope> => {
         const ctx = get(context, RenderContext)
         const hydrateContext = getOption(context, HydrateContext)
 
@@ -87,15 +87,15 @@ export const manyAsyncData: {
     matchers: {
       NoData: () => NoData
       Loading: (todo: TODO) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
+      Failure: (data: RefSubject.Computed<E1>, computed: TODO) => Failure
+      Success: (value: RefSubject.Computed<A>, computed: TODO) => Success
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
   ) => Fx.Fx<
-    R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
+    Fx.Fx.Success<NoData | Loading | Failure | Success>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
-    Fx.Fx.Success<NoData | Loading | Failure | Success>
+    R | Fx.Fx.Context<NoData | Loading | Failure | Success>
   >
 
   <
@@ -109,18 +109,18 @@ export const manyAsyncData: {
     Failure extends Fx.Fx<any, any, any>,
     Success extends Fx.Fx<any, any, any>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: TODO) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, computed: TODO) => Success
+      Failure: (data: RefSubject.Computed<E1>, computed: TODO) => Failure
+      Success: (value: RefSubject.Computed<A>, computed: TODO) => Success
     }
   ): Fx.Fx<
-    R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
+    Fx.Fx.Success<NoData | Loading | Failure | Success>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
-    Fx.Fx.Success<NoData | Loading | Failure | Success>
+    R | Fx.Fx.Context<NoData | Loading | Failure | Success>
   >
 } = dual(
   3,
@@ -130,23 +130,23 @@ export const manyAsyncData: {
     E1,
     A,
     B extends PropertyKey,
-    NoData extends Fx.Fx<any, any, RenderEvent>,
-    Loading extends Fx.Fx<any, any, RenderEvent>,
-    Failure extends Fx.Fx<any, any, RenderEvent>,
-    Success extends Fx.Fx<any, any, RenderEvent>
+    NoData extends Fx.Fx<RenderEvent, any, any>,
+    Loading extends Fx.Fx<RenderEvent, any, any>,
+    Failure extends Fx.Fx<RenderEvent, any, any>,
+    Success extends Fx.Fx<RenderEvent, any, any>
   >(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => B,
     matchers: {
       NoData: NoData
-      Loading: (data: RefSubject.Filtered<never, never, Progress>) => Loading
-      Failure: (data: RefSubject.Computed<never, never, E1>) => Failure
-      Success: (value: RefSubject.Computed<never, never, A>, key: B) => Success
+      Loading: (data: RefSubject.Filtered<Progress>) => Loading
+      Failure: (data: RefSubject.Computed<E1>) => Failure
+      Success: (value: RefSubject.Computed<A>, key: B) => Success
     }
   ): Fx.Fx<
-    R | Fx.Fx.Context<NoData | Loading | Failure | Success>,
+    RenderEvent | ReadonlyArray<RenderEvent>,
     E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
-    RenderEvent | ReadonlyArray<RenderEvent>
+    R | Fx.Fx.Context<NoData | Loading | Failure | Success>
   > => {
     return RefAsyncData.matchAsyncData(fx, {
       NoData: matchers.NoData,

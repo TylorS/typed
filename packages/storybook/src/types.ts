@@ -73,7 +73,7 @@ export type StorybookConfig = Types.Simplify<
  */
 export interface TypedRenderer extends WebRenderer {
   component: TypedComponent
-  storyResult: Fx<CoreDomServices, any, RenderEvent>
+  storyResult: Fx<RenderEvent, any, CoreDomServices>
 }
 
 export type {
@@ -89,7 +89,7 @@ export type {
 export type TypedComponent<Props = any, R = any, E = any> = (
   props: Props,
   ...children: ReadonlyArray<Renderable<CoreDomServices, E>>
-) => Fx<R | CoreDomServices, E, RenderEvent>
+) => Fx<RenderEvent, E, R | CoreDomServices>
 
 /**
  * @since 1.0.0

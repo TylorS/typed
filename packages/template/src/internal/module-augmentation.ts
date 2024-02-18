@@ -1,44 +1,44 @@
 import type { Placeholder } from "../Placeholder.js"
 
 declare global {
-  export interface String extends Placeholder<never, never, string> {}
+  export interface String extends Placeholder<string> {}
 
-  export interface Number extends Placeholder<never, never, number> {}
+  export interface Number extends Placeholder<number> {}
 
-  export interface Boolean extends Placeholder<never, never, boolean> {}
+  export interface Boolean extends Placeholder<boolean> {}
 
-  export interface Symbol extends Placeholder<never, never, symbol> {}
+  export interface Symbol extends Placeholder<symbol> {}
 
-  export interface BigInt extends Placeholder<never, never, bigint> {}
+  export interface BigInt extends Placeholder<bigint> {}
 
   export interface Array<T> extends
     Placeholder<
-      Placeholder.Context<T>,
+      Array<Placeholder.Success<T>>,
       Placeholder.Error<T>,
-      Array<Placeholder.Success<T>>
+      Placeholder.Context<T>
     >
   {}
 
   export interface ReadonlyArray<T> extends
     Placeholder<
-      Placeholder.Context<T>,
+      ReadonlyArray<Placeholder.Success<T>>,
       Placeholder.Error<T>,
-      ReadonlyArray<Placeholder.Success<T>>
+      Placeholder.Context<T>
     >
   {}
 
   // DOM types
-  export interface Node extends Placeholder<never, never, Node> {}
+  export interface Node extends Placeholder<Node> {}
 
-  export interface DocumentFragment extends Placeholder<never, never, DocumentFragment> {}
+  export interface DocumentFragment extends Placeholder<DocumentFragment> {}
 
-  export interface Element extends Placeholder<never, never, Element> {}
+  export interface Element extends Placeholder<Element> {}
 
-  export interface HTMLElement extends Placeholder<never, never, HTMLElement> {}
+  export interface HTMLElement extends Placeholder<HTMLElement> {}
 
-  export interface SVGElement extends Placeholder<never, never, SVGElement> {}
+  export interface SVGElement extends Placeholder<SVGElement> {}
 }
 
 declare module "@typed/fx/Fx" {
-  export interface Fx<R, E, A> extends Placeholder<R, E, A> {}
+  export interface Fx<A, E, R> extends Placeholder<A, E, R> {}
 }

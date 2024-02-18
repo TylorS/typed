@@ -40,11 +40,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
   return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
-  ): Fx.Fx<
-    Scope.Scope | Placeholder.Context<Values[number]>,
-    Placeholder.Error<Values[number]>,
-    RenderEvent
-  > => {
+  ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>> => {
     return Fx.make((sink) =>
       Effect.gen(function*(_) {
         const context = yield* _(Effect.context<Scope.Scope>())
@@ -130,7 +126,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         )
       })
     )
-  }
+  };
 }
 
 export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {

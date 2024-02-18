@@ -295,7 +295,7 @@ export class EventPartImpl implements EventPart {
     readonly index: number,
     readonly source: ElementSource<any>,
     readonly onCause: <E>(cause: Cause<E>) => Effect.Effect<unknown>,
-    readonly addEventListener: <Ev extends Event>(handler: EventHandler<never, never, Ev>) => void
+    readonly addEventListener: <Ev extends Event>(handler: EventHandler<Ev>) => void
   ) {
   }
 }

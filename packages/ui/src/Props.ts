@@ -56,11 +56,7 @@ export type PropsOf<Attrs extends Record<string, any>> = {
  */
 export type EventsOf<El, EventMap extends {} = DefaultEventMap<El>> = {
   readonly [K in keyof EventMap as K extends string ? `on${Capitalize<K>}` : never]?:
-    | EventHandler.EventHandler<
-      any,
-      any,
-      EventWithCurrentTarget<El, Extract<EventMap[K], Event>>
-    >
+    | EventHandler.EventHandler<EventWithCurrentTarget<El, Extract<EventMap[K], Event>>, any, any>
     | Effect.Effect<unknown, any, any>
     | null
     | undefined
@@ -84,8 +80,8 @@ export type DataProps = {
  * @since 1.0.0
  */
 export function getEventHandler<R, E, Ev extends Event = Event>(
-  handler: EventHandler.EventHandler<R, E, Ev> | Effect.Effect<unknown, E, R> | null | undefined
-): EventHandler.EventHandler<R, E, Ev> | null {
+  handler: EventHandler.EventHandler<Ev, E, R> | Effect.Effect<unknown, E, R> | null | undefined
+): EventHandler.EventHandler<Ev, E, R> | null {
   if (!handler) return null
 
   if (Effect.isEffect(handler)) {

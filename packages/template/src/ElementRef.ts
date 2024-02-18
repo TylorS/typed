@@ -24,9 +24,9 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * @since 1.0.0
  */
 export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, Scope.Scope, never, T, never, NoSuchElementException, T>
+  extends Versioned<never, never, T, never, Scope.Scope, T, NoSuchElementException, never>
 {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<Option.Option<T>>
 
   readonly query: ElementSource<T>["query"]
   readonly events: ElementSource<T>["events"]
@@ -57,10 +57,10 @@ export function of<T extends Rendered>(rendered: T): Effect.Effect<ElementRef<T>
 }
 
 // @ts-expect-error does not implement Placeholder
-class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never, T, never, NoSuchElementException, T>
+class ElementRefImpl<T extends Rendered> extends FxEffectBase<T, never, Scope.Scope, T, NoSuchElementException, never>
   implements ElementRef<T>
 {
-  readonly [ElementRefTypeId]: RefSubject.RefSubject<never, never, Option.Option<T>>
+  readonly [ElementRefTypeId]: RefSubject.RefSubject<Option.Option<T>>
 
   private source: ElementSource<
     T,
@@ -73,7 +73,7 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never
   readonly version: ElementRef<T>["version"]
   readonly dispatchEvent: ElementRef<T>["dispatchEvent"]
 
-  constructor(readonly ref: RefSubject.RefSubject<never, never, Option.Option<T>>) {
+  constructor(readonly ref: RefSubject.RefSubject<Option.Option<T>>) {
     super()
     this[ElementRefTypeId] = ref
     this.source = ElementSource(RefSubject.compact(ref))
@@ -84,7 +84,7 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<Scope.Scope, never
     this.version = ref.version
   }
 
-  toFx(): Fx<Scope.Scope, never, T> {
+  toFx(): Fx<T, never, Scope.Scope> {
     return compact(this.ref)
   }
 

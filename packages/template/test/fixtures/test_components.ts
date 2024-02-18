@@ -5,7 +5,7 @@ import type { RenderEvent, RenderTemplate } from "@typed/template"
 import * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
 
-export const counter: Fx.Fx<Scope.Scope | RenderTemplate, never, RenderEvent> = Fx.gen(
+export const counter: Fx.Fx<RenderEvent, never, Scope.Scope | RenderTemplate> = Fx.gen(
   function*($) {
     const count = yield* $(RefSubject.make(Effect.succeed(0)))
     const increment = RefSubject.update(count, (n) => n + 1)

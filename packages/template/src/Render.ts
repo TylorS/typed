@@ -23,8 +23,8 @@ export type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered
  * @since 1.0.0
  */
 export function render<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
-): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>> {
+  rendered: Fx.Fx<T, E, R>
+): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
     const [document, ctx, { rootElement }] = Context.getMany(context, Document, RenderContext, RootElement)
 
@@ -40,7 +40,7 @@ export function render<R, E, T extends RenderEvent | null>(
  * @since 1.0.0
  */
 export function renderLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
+  rendered: Fx.Fx<T, E, R>
 ): Layer.Layer<
   never,
   never,

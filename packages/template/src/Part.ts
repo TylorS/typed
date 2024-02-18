@@ -80,7 +80,7 @@ export interface EventPart {
   readonly value: null
   readonly index: number
   readonly onCause: (cause: Cause<unknown>) => Effect<unknown>
-  readonly addEventListener: (handler: EventHandler<never, never, Event>) => void
+  readonly addEventListener: (handler: EventHandler<Event>) => void
 }
 
 /**

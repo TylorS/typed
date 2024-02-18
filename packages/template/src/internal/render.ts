@@ -570,7 +570,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
       return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
     }
 
-    return Fx.make<Scope.Scope | Placeholder.Context<Values[number]>, Placeholder.Error<Values[number]>, RenderEvent>((
+    return Fx.make<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>>((
       sink
     ) => {
       return Effect.gen(function*(_) {
@@ -650,10 +650,10 @@ function getEventHandler<R, E>(
       return EventHandler.make(
         (ev) =>
           Effect.provide(
-            Effect.catchAllCause((renderable as EventHandler.EventHandler<R, E>).handler(ev), onCause),
+            Effect.catchAllCause((renderable as EventHandler.EventHandler<Event, E, R>).handler(ev), onCause),
             ctx as any
           ),
-        (renderable as EventHandler.EventHandler<R, E>).options
+        (renderable as EventHandler.EventHandler<Event, E, R>).options
       )
     } else if (Effect.EffectTypeId in renderable) {
       return EventHandler.make(() => Effect.provide(Effect.catchAllCause(renderable, onCause), ctx))
@@ -665,7 +665,7 @@ function getEventHandler<R, E>(
 
 function handlePart<R, E, R2>(
   renderable: unknown,
-  sink: Sink.Sink<R2, any, any>
+  sink: Sink.Sink<any, any, R2>
 ): Effect.Effect<any, never, R | R2 | Scope.Scope> {
   switch (typeof renderable) {
     case "undefined":
@@ -676,7 +676,7 @@ function handlePart<R, E, R2>(
           ? sink.onSuccess(null)
           : Fx.tuple(renderable.map(unwrapRenderable)).run(sink) as any
       } else if (TypeId in renderable) {
-        return (renderable as Fx.Fx<R | R2, any, any>).run(sink)
+        return (renderable as Fx.Fx<any, any, R | R2>).run(sink)
       } else if (Effect.EffectTypeId in renderable) {
         return Effect.matchCauseEffect(renderable as Effect.Effect<any, E, R>, sink)
       } else return sink.onSuccess(renderable)
@@ -686,7 +686,7 @@ function handlePart<R, E, R2>(
   }
 }
 
-function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<R, E, any> {
+function unwrapRenderable<R, E>(renderable: unknown): Fx.Fx<any, E, R> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {

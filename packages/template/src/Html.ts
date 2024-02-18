@@ -31,8 +31,8 @@ const [padStart, padEnd] = [[TYPED_START], [TYPED_END]] as const
  * @since 1.0.0
  */
 export function renderToHtml<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>
-): Fx.Fx<Exclude<R, RenderTemplate> | RenderContext, E, string> {
+  fx: Fx.Fx<RenderEvent, E, R>
+): Fx.Fx<string, E, Exclude<R, RenderTemplate> | RenderContext> {
   return Fx.fromFxEffect(
     RenderContext.with((ctx) =>
       fx.pipe(
@@ -48,7 +48,7 @@ export function renderToHtml<R, E>(
  * @since 1.0.0
  */
 export function renderToHtmlString<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>
+  fx: Fx.Fx<RenderEvent, E, R>
 ): Effect.Effect<string, E, Exclude<R, RenderTemplate> | RenderContext> {
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }
@@ -58,9 +58,9 @@ function renderHtml(ctx: RenderContext) {
     templateStrings: TemplateStringsArray,
     values: Values
   ): Fx.Fx<
-    Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>,
+    RenderEvent,
     Placeholder.Error<Values[number]>,
-    RenderEvent
+    Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>
   > => {
     const isStatic = ctx.environment === "static"
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
@@ -86,17 +86,17 @@ function renderChunk<R, E>(
   chunk: HtmlChunk,
   values: ReadonlyArray<Renderable<any, any>>,
   isStatic: boolean
-): Fx.Fx<R, E, RenderEvent> {
+): Fx.Fx<RenderEvent, E, R> {
   if (chunk._tag === "text") {
     return Fx.succeed(HtmlRenderEvent(chunk.value))
   } else if (chunk._tag === "part") {
     return renderPart<R, E>(chunk, values, isStatic)
   } else {
-    return renderSparsePart<R, E>(chunk, values) as Fx.Fx<R, E, RenderEvent>
+    return renderSparsePart<R, E>(chunk, values) as Fx.Fx<RenderEvent, E, R>
   }
 }
 
-function renderNode<R, E>(renderable: Renderable<any, any>, isStatic: boolean): Fx.Fx<R, E, RenderEvent> {
+function renderNode<R, E>(renderable: Renderable<any, any>, isStatic: boolean): Fx.Fx<RenderEvent, E, R> {
   switch (typeof renderable) {
     case "string":
     case "number":
@@ -135,13 +135,13 @@ function renderPart<R, E>(
   chunk: PartChunk,
   values: ReadonlyArray<Renderable<any, any>>,
   isStatic: boolean
-): Fx.Fx<R, E, RenderEvent> {
+): Fx.Fx<RenderEvent, E, R> {
   const { node, render } = chunk
   const renderable: Renderable<any, any> = values[node.index]
 
   // Refs and events are not rendered into HTML
-  if (isDirective<R, E>(renderable)) {
-    return Fx.make((sink: Sink.Sink<never, E, RenderEvent>) => {
+  if (isDirective<E, R>(renderable)) {
+    return Fx.make<RenderEvent, E, R>((sink: Sink.Sink<RenderEvent, E>) => {
       const part = partNodeToPart(
         node,
         (value) => sink.onSuccess(HtmlRenderEvent(render(value)))
@@ -183,7 +183,7 @@ function renderPart<R, E>(
 function renderSparsePart<R, E>(
   chunk: SparsePartChunk,
   values: ReadonlyArray<Renderable<any, any>>
-): Fx.Fx<R, E, RenderEvent> {
+): Fx.Fx<RenderEvent, E, R> {
   const { node, render } = chunk
 
   return Fx.map(
@@ -194,8 +194,8 @@ function renderSparsePart<R, E>(
 
           const renderable: Renderable<any, any> = (values as any)[node.index]
 
-          if (isDirective<R, E>(renderable)) {
-            return Fx.make<R, E, unknown>((sink: Sink.Sink<never, E, unknown>) =>
+          if (isDirective<E, R>(renderable)) {
+            return Fx.make<unknown, E, R>((sink: Sink.Sink<unknown, E>) =>
               Effect.catchAllCause(
                 renderable(partNodeToPart(node, (value) => sink.onSuccess(value))),
                 sink.onFailure
@@ -212,8 +212,8 @@ function renderSparsePart<R, E>(
   )
 }
 
-function takeOneIfNotRenderEvent<R, E, A>(fx: Fx.Fx<R, E, A>): Fx.Fx<R, E, A> {
-  return Fx.make<R, E, A>((sink) =>
+function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>): Fx.Fx<A, E, R> {
+  return Fx.make<A, E, R>((sink) =>
     Sink.withEarlyExit(sink, (sink) =>
       fx.run(
         Sink.make(
@@ -249,7 +249,7 @@ function getServerEntry(
   }
 }
 
-function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<R, E, any> {
+function unwrapRenderable<R, E>(renderable: Renderable<any, any>): Fx.Fx<any, E, R> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {

@@ -8,7 +8,7 @@ export function addEventListeners<T extends EventTarget, Events extends Readonly
   target: T,
   ...events: Events
 ) {
-  return Fx.withEmitter<never, EventWithCurrentTarget<T, DefaultEventMap<T>[Events[number]]>, Scope.Scope>(
+  return Fx.withEmitter<EventWithCurrentTarget<T, DefaultEventMap<T>[Events[number]]>, never, never, Scope.Scope>(
     (emitter) => {
       events.forEach((event) => target.addEventListener(event as string, emitter.succeed as any))
 

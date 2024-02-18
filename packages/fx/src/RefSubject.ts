@@ -266,17 +266,17 @@ function persistCore<A, E, R, R2>(ref: RefSubject<A, E, R>, core: RefSubjectCore
  * @since 1.20.0
  */
 export const make: {
-  <A, E, R>(
+  <A, E = never, R = never>(
     ref: RefSubject<A, E, R>,
     options?: RefSubjectOptions<A>
   ): Effect.Effect<RefSubject.Derived<A, E, R>, never, R | Scope.Scope>
 
-  <A, E, R>(
+  <A, E = never, R = never>(
     fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R>,
     options?: RefSubjectOptions<A>
   ): Effect.Effect<RefSubject<A, E>, never, R | Scope.Scope>
 
-  <A, E, R>(
+  <A, E = never, R = never>(
     fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R> | RefSubject<A, E, R>,
     options?: RefSubjectOptions<A>
   ): Effect.Effect<RefSubject<A, E> | RefSubject.Derived<A, E, R>, never, R | Scope.Scope>
@@ -2003,32 +2003,32 @@ class FilteredFromTag<I, S, A, E, R> extends FxEffectBase<
  */
 export const provide: {
   <S>(context: C.Context<S> | Runtime.Runtime<S>): {
-    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<Exclude<R, S>, E, A>
-    <A, E, R>(computed: Computed<A, E, R>): Computed<Exclude<R, S>, E, A>
+    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<A, E, Exclude<R, S>>
+    <A, E, R>(computed: Computed<A, E, R>): Computed<A, E, Exclude<R, S>>
     <A, E, R>(ref: RefSubject<A, E, R>): RefSubject<A, E, Exclude<R, S>>
   }
 
   <R2, S>(layer: Layer.Layer<S, never, R2>): {
-    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<Exclude<R, S> | R2, E, A>
-    <A, E, R>(computed: Computed<A, E, R>): Computed<Exclude<R, S> | R2, E, A>
+    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<A, E, Exclude<R, S> | R2>
+    <A, E, R>(computed: Computed<A, E, R>): Computed<A, E, Exclude<R, S> | R2>
     <A, E, R>(ref: RefSubject<A, E, R>): RefSubject<A, E, Exclude<R, S> | R2>
   }
 
   <A, E, R, S>(
     filtered: Filtered<A, E, R>,
     context: C.Context<S> | Runtime.Runtime<S>
-  ): Filtered<Exclude<R, S>, E, A>
+  ): Filtered<A, E, Exclude<R, S>>
   <A, E, R, S>(
     computed: Computed<A, E, R>,
     context: C.Context<S> | Runtime.Runtime<S>
-  ): Computed<Exclude<R, S>, E, A>
+  ): Computed<A, E, Exclude<R, S>>
   <A, E, R, S>(
     ref: RefSubject<A, E, R>,
     context: C.Context<S> | Runtime.Runtime<S>
   ): RefSubject<A, E, Exclude<R, S>>
 
-  <A, E, R, R2, S>(filtered: Filtered<A, E, R>, layer: Layer.Layer<S, never, R2>): Filtered<Exclude<R, S> | R2, E, A>
-  <A, E, R, R2, S>(computed: Computed<A, E, R>, layer: Layer.Layer<S, never, R2>): Computed<Exclude<R, S> | R2, E, A>
+  <A, E, R, R2, S>(filtered: Filtered<A, E, R>, layer: Layer.Layer<S, never, R2>): Filtered<A, E, Exclude<R, S> | R2>
+  <A, E, R, R2, S>(computed: Computed<A, E, R>, layer: Layer.Layer<S, never, R2>): Computed<A, E, Exclude<R, S> | R2>
   <A, E, R, R2, S>(ref: RefSubject<A, E, R>, layer: Layer.Layer<S, never, R2>): RefSubject<A, E, Exclude<R, S> | R2>
 } = dual(2, function provide<A, E, R, R2 = never, S = never>(
   ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>,

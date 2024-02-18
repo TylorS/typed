@@ -29,12 +29,12 @@ export interface ElementSource<
   Versioned.Versioned<
     never,
     never,
-    Scope.Scope,
-    never,
     Rendered.Elements<T>,
     never,
+    Scope.Scope,
+    Rendered.Elements<T>,
     NoSuchElementException,
-    Rendered.Elements<T>
+    never
   >
 {
   readonly selector: Selector
@@ -49,12 +49,12 @@ export interface ElementSource<
     ): ElementSource<Target, EventMap>
   }
 
-  readonly elements: RefSubject.Filtered<never, never, Rendered.Elements<T>>
+  readonly elements: RefSubject.Filtered<Rendered.Elements<T>>
 
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>>
+  ) => Fx.Fx<EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>, never, Scope.Scope>
 
   readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<void, NoSuchElementException>
 }
@@ -63,7 +63,7 @@ export interface ElementSource<
  * @since 1.0.0
  */
 export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: RefSubject.Filtered<never, never, T>
+  rootElement: RefSubject.Filtered<T>
 ): ElementSource<T, EventMap> {
   return new ElementSourceImpl<T, EventMap>(rootElement) as any
 }
@@ -165,7 +165,7 @@ function makeEventStream<Ev extends Event>(
   eventName: string,
   options: EventListenerOptions = {}
 ) {
-  return function(element: Rendered): Fx.Fx<never, never, Ev> {
+  return function(element: Rendered): Fx.Fx<Ev> {
     const { capture } = options
     const cssSelector = cssSelectors.join(" ")
     const lastTwoCssSelectors = cssSelectors.slice(-2).join("")
@@ -174,7 +174,7 @@ function makeEventStream<Ev extends Event>(
     const event$ = Fx.mergeAll(
       elements.map((element) =>
         Fx.filter(
-          Fx.make<never, never, Ev>((sink) =>
+          Fx.make<Ev>((sink) =>
             Effect.scoped(Effect.zipRight(
               addEventListener(element, {
                 eventName,
@@ -203,14 +203,14 @@ function makeElementEventStream<Ev extends Event>(
   eventName: string,
   options: EventListenerOptions = {}
 ) {
-  return function(rendered: Rendered): Fx.Fx<never, never, Ev> {
+  return function(rendered: Rendered): Fx.Fx<Ev> {
     const { capture } = options
     const elements = getElements(rendered)
 
     const event$ = Fx.mergeAll(
       elements.map((element) =>
         Fx.filter(
-          Fx.make<never, never, Ev>((sink) =>
+          Fx.make<Ev>((sink) =>
             Effect.scoped(Effect.zipRight(
               addEventListener(element, {
                 eventName,
@@ -295,17 +295,17 @@ function isElement(element: RenderedWithoutArray): element is Element {
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends FxEffectBase<Scope.Scope, never, Rendered.Elements<T>, never, NoSuchElementException, Rendered.Elements<T>>
+> extends FxEffectBase<Rendered.Elements<T>, never, Scope.Scope, Rendered.Elements<T>, NoSuchElementException, never>
   implements ElementSource<T, EventMap>
 {
-  private bubbleMap = new Map<any, Fx.Fx<Scope.Scope, never, any>>()
-  private captureMap = new Map<any, Fx.Fx<Scope.Scope, never, any>>()
+  private bubbleMap = new Map<any, Fx.Fx<any, never, Scope.Scope>>()
+  private captureMap = new Map<any, Fx.Fx<any, never, Scope.Scope>>()
 
   readonly elements: ElementSource<T, EventMap>["elements"]
   readonly version: ElementSource<T, EventMap>["version"]
 
   constructor(
-    readonly rootElement: RefSubject.Filtered<never, never, T>,
+    readonly rootElement: RefSubject.Filtered<T>,
     readonly selector: Selector = CssSelectors([])
   ) {
     super()
@@ -330,7 +330,7 @@ export class ElementSourceImpl<
     return this.elements
   }
 
-  toFx(): Fx.Fx<Scope.Scope, never, Rendered.Elements<T>> {
+  toFx(): Fx.Fx<Rendered.Elements<T>, never, Scope.Scope> {
     return this.elements
   }
 
@@ -353,7 +353,7 @@ export class ElementSourceImpl<
   events<Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ): Fx.Fx<Scope.Scope, never, EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>> {
+  ): Fx.Fx<EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>, never, Scope.Scope> {
     const capture = options?.capture === true
     const map = capture ? this.captureMap : this.bubbleMap
 

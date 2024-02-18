@@ -21,7 +21,7 @@ export type PlaceholderTypeId = typeof PlaceholderTypeId
 /**
  * @since 1.0.0
  */
-export interface Placeholder<out R = never, out E = never, out A = unknown> {
+export interface Placeholder<A = unknown, E = never, R = never> {
   readonly [PlaceholderTypeId]: {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => E
@@ -37,32 +37,32 @@ export namespace Placeholder {
    * @since 1.0.0
    */
   export type Any<A = any> =
-    | Placeholder<any, any, A>
-    | Placeholder<any, never, A>
-    | Placeholder<never, never, A>
-    | Placeholder<never, any, A>
+    | Placeholder<A, any, any>
+    | Placeholder<A, never, any>
+    | Placeholder<A>
+    | Placeholder<A, any>
 
   /**
    * @since 1.0.0
    */
-  export type Context<T> = [T] extends [never] ? never : T extends Placeholder<infer R, infer _E, infer _A> ? R : never
+  export type Context<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer _E, infer R> ? R : never
   /**
    * @since 1.0.0
    */
-  export type Error<T> = [T] extends [never] ? never : T extends Placeholder<infer _R, infer E, infer _A> ? E : never
+  export type Error<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer E, infer _R> ? E : never
   /**
    * @since 1.0.0
    */
-  export type Success<T> = [T] extends [never] ? never : T extends Placeholder<infer _R, infer _E, infer A> ? A : never
+  export type Success<T> = [T] extends [never] ? never : T extends Placeholder<infer A, infer _E, infer _R> ? A : never
 
   /**
    * @since 1.0.0
    */
-  export function asRef<R = never, E = never, A = never>(
-    placeholder: Placeholder<R, E, A> | Fx<R, E, A> | Effect.Effect<A, E, R> | A
-  ): Effect.Effect<RefSubject.RefSubject<never, E, A>, never, R | Scope.Scope> {
-    if (isFx<R, E, A>(placeholder) || Effect.isEffect(placeholder)) {
-      return RefSubject.make(placeholder as Fx<R, E, A>)
+  export function asRef<A = never, E = never, R = never>(
+    placeholder: Placeholder<A, E, R> | Fx<A, E, R> | Effect.Effect<A, E, R> | A
+  ): Effect.Effect<RefSubject.RefSubject<A, E>, never, R | Scope.Scope> {
+    if (isFx<A, E, R>(placeholder) || Effect.isEffect(placeholder)) {
+      return RefSubject.make(placeholder as Fx<A, E, R>)
     } else {
       return RefSubject.of<A, E>(placeholder as A)
     }

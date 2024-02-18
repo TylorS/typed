@@ -20,8 +20,8 @@ import { RenderTemplate } from "./RenderTemplate.js"
  * @since 1.0.0
  */
 export function hydrate<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
-): Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>> {
+  rendered: Fx.Fx<T, E, R>
+): Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement> {
   return Fx.fromFxEffect(Effect.contextWith((context) => {
     const [document, renderContext, { rootElement }] = Context.getMany(context, Document, RenderContext, RootElement)
     const ctx: HydrateContext = {
@@ -40,14 +40,14 @@ export function hydrate<R, E, T extends RenderEvent | null>(
       Fx.mapEffect(rendered, (what) => attachRoot(renderContext.renderCache, rootElement, what)),
       layer
     )
-  })) as Fx.Fx<Exclude<R, RenderTemplate> | Document | RenderContext | RootElement, E, ToRendered<T>>
+  })) as Fx.Fx<ToRendered<T>, E, Exclude<R, RenderTemplate> | Document | RenderContext | RootElement>
 }
 
 /**
  * @since 1.0.0
  */
 export function hydrateLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<R, E, T>
+  rendered: Fx.Fx<T, E, R>
 ) {
   return Fx.drainLayer(Fx.switchMapCause(hydrate(rendered), (cause) => Fx.fromEffect(Effect.logError(cause))))
 }

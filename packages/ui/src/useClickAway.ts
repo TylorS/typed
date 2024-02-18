@@ -28,11 +28,11 @@ export function useClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<an
 export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any>>, R2, E2, B>(
   refs: Refs,
   f: (event: EventWithCurrentTarget<Document, MouseEvent | TouchEvent>) => Effect.Effect<B, E2, R2>
-): Fx.Fx<Document | R2 | Scope.Scope, E2, B> {
+): Fx.Fx<B, E2, Document | R2 | Scope.Scope> {
   return Fx.fromFxEffect(Document.with((document) => {
     const events = addEventListeners(document, "click", "touchend", "contextmenu")
     const elements = Fx.map(
-      Fx.tuple(refs as ReadonlyArray<Fx.Fx<Scope.Scope, never, Rendered>>),
+      Fx.tuple(refs as ReadonlyArray<Fx.Fx<Rendered, never, Scope.Scope>>),
       (els) => els.flatMap(getElements)
     )
 
@@ -40,7 +40,7 @@ export function onClickAway<Refs extends ReadonlyArray<ElementRef.ElementRef<any
       Fx.compact(Fx.snapshot(events, elements, containsRefs)),
       f
     )
-  }))
+  }));
 }
 
 const containsRefs = (

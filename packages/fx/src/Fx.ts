@@ -281,7 +281,7 @@ export type FxFork = <R>(
  * @since 1.20.0
  */
 export const make: {
-  <A, E, R>(run: (sink: Sink.Sink<A, E, R>) => Effect.Effect<unknown, never, R>): Fx<A, E, R>
+  <A, E, R>(run: (sink: Sink.Sink<A, E>) => Effect.Effect<unknown, never, R>): Fx<A, E, R>
   <A, E>(run: (sink: Sink.Sink<A, E>) => Effect.Effect<unknown>): Fx<A, E>
   <A>(run: (sink: Sink.Sink<A>) => Effect.Effect<unknown>): Fx<A>
 } = core.make
@@ -2008,12 +2008,12 @@ export interface KeyedOptions<A, B, C, E2, R2> {
  */
 export const keyed: {
   <A, B extends PropertyKey, E2, R2, C>(
-    options: KeyedOptions<A, B, E2, R2, C>
+    options: KeyedOptions<A, B, C, E2, R2>
   ): <E, R>(fx: Fx<ReadonlyArray<A>, E, R>) => Fx<ReadonlyArray<C>, E | E2, R | R2>
 
   <A, E, R, B extends PropertyKey, E2, R2, C>(
     fx: Fx<ReadonlyArray<A>, E, R>,
-    options: KeyedOptions<A, B, E2, R2, C>
+    options: KeyedOptions<A, B, C, E2, R2>
   ): Fx<ReadonlyArray<C>, E | E2, R | R2>
 } = dual(2, coreKeyed.keyed)
 

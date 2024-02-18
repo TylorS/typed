@@ -7,7 +7,7 @@ import type { EventHandler } from "../EventHandler.js"
 
 type EventName = string
 
-type Handler<Ev extends Event> = EventHandler<never, never, Ev>
+type Handler<Ev extends Event> = EventHandler<Ev>
 
 export interface EventSource {
   readonly addEventListener: <Ev extends Event>(

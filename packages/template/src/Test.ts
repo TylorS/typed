@@ -42,8 +42,8 @@ export interface TestRender<E> {
   readonly window: Window & GlobalThis
   readonly document: Document
   readonly elementRef: ElementRef.ElementRef
-  readonly errors: RefSubject.Computed<never, never, ReadonlyArray<E>>
-  readonly lastError: RefSubject.Filtered<never, never, E>
+  readonly errors: RefSubject.Computed<ReadonlyArray<E>>
+  readonly lastError: RefSubject.Filtered<E>
   readonly interrupt: Effect.Effect<void>
   readonly makeEvent: (type: string, eventInitDict?: EventInit) => Event
   readonly makeCustomEvent: <A>(type: string, eventInitDict?: CustomEventInit<A>) => CustomEvent<A>
@@ -55,7 +55,7 @@ export interface TestRender<E> {
  * @since 1.0.0
  */
 export function testRender<R, E>(
-  fx: Fx.Fx<R, E, RenderEvent>,
+  fx: Fx.Fx<RenderEvent, E, R>,
   options?:
     & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
@@ -67,7 +67,7 @@ export function testRender<R, E>(
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
     const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
+    const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
       fx,
       render,
@@ -187,7 +187,7 @@ export interface TestHydrate<E, Elements> extends TestRender<E> {
  * @since 1.0.0
  */
 export function testHydrate<R, E, Elements>(
-  fx: Fx.Fx<R, E, RenderEvent>,
+  fx: Fx.Fx<RenderEvent, E, R>,
   f: (rendered: Rendered, window: Window & GlobalThis) => Elements,
   options?:
     & HappyDOMOptions
@@ -218,7 +218,7 @@ export function testHydrate<R, E, Elements>(
     const elements = f(rendered.length === 1 ? rendered[0] : rendered, window)
 
     const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefSubject.make<never, never, ReadonlyArray<E>>(Effect.succeed([])))
+    const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
       fx,
       hydrate,

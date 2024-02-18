@@ -18,12 +18,12 @@ export type PaginationOptions = {
  * @since 1.0.0
  */
 export interface Pagination<E, A> {
-  readonly page: RefSubject.Computed<never, never, number>
-  readonly pageSize: RefSubject.Computed<never, never, number>
-  readonly canGoBack: RefSubject.Computed<never, never, boolean>
-  readonly canGoForward: RefSubject.Computed<never, E, boolean>
-  readonly paginated: RefSubject.Computed<never, E, ReadonlyArray<A>>
-  readonly viewing: RefSubject.Computed<never, E, Viewing>
+  readonly page: RefSubject.Computed<number>
+  readonly pageSize: RefSubject.Computed<number>
+  readonly canGoBack: RefSubject.Computed<boolean>
+  readonly canGoForward: RefSubject.Computed<boolean, E>
+  readonly paginated: RefSubject.Computed<ReadonlyArray<A>, E>
+  readonly viewing: RefSubject.Computed<Viewing, E>
 
   readonly goBack: Effect.Effect<number>
   readonly goForward: Effect.Effect<number, E>
@@ -44,19 +44,19 @@ export interface Viewing {
  * @since 1.0.0
  */
 export function usePagination<R, E, A>(
-  items: RefSubject.Computed<R, E, ReadonlyArray<A>>,
+  items: RefSubject.Computed<ReadonlyArray<A>, E, R>,
   options: PaginationOptions = {}
 ): Effect.Effect<Pagination<E, A>, never, R | Scope.Scope> {
   return Effect.gen(function*(_) {
     const ctx = yield* _(Effect.context<R>())
-    const page: RefSubject.RefSubject<never, never, number> = yield* _(RefSubject.of(options.initialPage ?? 0))
-    const pageSize: RefSubject.RefSubject<never, never, number> = yield* _(RefSubject.of(options.initialPageSize ?? 10))
-    const canGoBack: RefSubject.Computed<never, never, boolean> = RefSubject.map(page, (x) => x > 0)
-    const combined: RefSubject.Computed<never, E, readonly [number, number, ReadonlyArray<A>]> = RefSubject.provide(
+    const page: RefSubject.RefSubject<number> = yield* _(RefSubject.of(options.initialPage ?? 0))
+    const pageSize: RefSubject.RefSubject<number> = yield* _(RefSubject.of(options.initialPageSize ?? 10))
+    const canGoBack: RefSubject.Computed<boolean> = RefSubject.map(page, (x) => x > 0)
+    const combined: RefSubject.Computed<readonly [number, number, ReadonlyArray<A>], E> = RefSubject.provide(
       RefSubject.tuple([page, pageSize, items] as const),
       ctx
     )
-    const canGoForward: RefSubject.Computed<never, E, boolean> = RefSubject.map(
+    const canGoForward: RefSubject.Computed<boolean, E> = RefSubject.map(
       combined,
       ([page, pageSize, results]) => page < Math.ceil(results.length / pageSize - 1)
     )
@@ -84,7 +84,7 @@ export function usePagination<R, E, A>(
     const goToStart: Effect.Effect<number> = RefSubject.set(page, 0)
     const goToEnd: Effect.Effect<number, E> = RefSubject.updateEffect(page, () => getTotalPages)
 
-    const paginated: RefSubject.Computed<never, E, ReadonlyArray<A>> = RefSubject.map(
+    const paginated: RefSubject.Computed<ReadonlyArray<A>, E> = RefSubject.map(
       combined,
       ([page, pageSize, results]) => {
         const start = page * pageSize
@@ -94,7 +94,7 @@ export function usePagination<R, E, A>(
       }
     )
 
-    const viewing: RefSubject.Computed<never, E, Viewing> = RefSubject.map(combined, ([page, pageSize, results]) => {
+    const viewing: RefSubject.Computed<Viewing, E> = RefSubject.map(combined, ([page, pageSize, results]) => {
       const start = page * pageSize
       const end = start + pageSize
       const total = results.length

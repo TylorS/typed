@@ -59,7 +59,7 @@ function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
 /**
  * @since 1.0.0
  */
-export const CurrentParams: RefSubject.Filtered<Navigation | CurrentRoute, never, Readonly<Record<string, string>>> =
+export const CurrentParams: RefSubject.Filtered<Readonly<Record<string, string>>, never, Navigation | CurrentRoute> =
   RefSubject
     .filterMapEffect(CurrentPath, (path) => CurrentRoute.with(({ route }) => route.match(path)))
 
@@ -111,7 +111,7 @@ const makeHref_ = <P extends string, P2 extends string>(
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): RefSubject.Filtered<Navigation | CurrentRoute, never, string> {
+): RefSubject.Filtered<string, never, Navigation | CurrentRoute> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return RefSubject.filterMapEffect(
@@ -143,7 +143,7 @@ const isActive_ = <P extends string, P2 extends string>(
 export function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
   ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
-): RefSubject.Computed<Navigation | CurrentRoute, never, boolean> {
+): RefSubject.Computed<boolean, never, Navigation | CurrentRoute> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return RefSubject.mapEffect(
@@ -181,7 +181,7 @@ const getSearchParams = (destination: Destination): Readonly<Record<string, stri
 /**
  * @since 1.0.0
  */
-export const CurrentSearchParams: RefSubject.Computed<Navigation, never, Readonly<Record<string, string>>> = RefSubject
+export const CurrentSearchParams: RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation> = RefSubject
   .map(CurrentEntry, getSearchParams)
 
 /**

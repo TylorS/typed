@@ -273,7 +273,7 @@ function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
 }
 
 async function testHtmlChunks(
-  template: Fx.Fx<RenderTemplate | RenderContext.RenderContext | Scope, never, RenderEvent>,
+  template: Fx.Fx<RenderEvent, never, RenderTemplate | RenderContext.RenderContext | Scope>,
   expected: Array<string>
 ): Promise<void> {
   const actual = await template.pipe(
