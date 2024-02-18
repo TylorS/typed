@@ -1,5 +1,21 @@
 # @typed/navigation
 
+## 0.12.0
+
+### Minor Changes
+
+- [`c900700`](https://github.com/TylorS/typed/commit/c90070011834374ec3f6afed187ebc20b282a409) Thanks [@TylorS](https://github.com/TylorS)! - Finish swapping type-parameter orders
+
+- [`dd24aac`](https://github.com/TylorS/typed/commit/dd24aac740336c158a8be2d0deeb7c1280ca5b2e) Thanks [@TylorS](https://github.com/TylorS)! - Swap all type-params
+
+### Patch Changes
+
+- Updated dependencies [[`c900700`](https://github.com/TylorS/typed/commit/c90070011834374ec3f6afed187ebc20b282a409), [`a55d04a`](https://github.com/TylorS/typed/commit/a55d04a6d7ea943b611f0958eebb78dc42aa5528), [`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c)]:
+  - @typed/fx@1.24.0
+  - @typed/context@0.24.1
+  - @typed/dom@12.0.1
+  - @typed/id@0.6.1
+
 ## 0.11.0
 
 ### Minor Changes

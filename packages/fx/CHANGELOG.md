@@ -1,5 +1,20 @@
 # @typed/fx
 
+## 1.24.0
+
+### Minor Changes
+
+- [`c900700`](https://github.com/TylorS/typed/commit/c90070011834374ec3f6afed187ebc20b282a409) Thanks [@TylorS](https://github.com/TylorS)! - Finish swapping type-parameter orders
+
+- [`a55d04a`](https://github.com/TylorS/typed/commit/a55d04a6d7ea943b611f0958eebb78dc42aa5528) Thanks [@TylorS](https://github.com/TylorS)! - Swap type-parameter order for all types
+
+### Patch Changes
+
+- [`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c) Thanks [@TylorS](https://github.com/TylorS)! - refactor: more type-parameter switching
+
+- Updated dependencies [[`3b3ab28`](https://github.com/TylorS/typed/commit/3b3ab28620b5b01233964daa709d019161269a3c)]:
+  - @typed/context@0.24.1
+
 ## 1.23.0
 
 ### Minor Changes
