@@ -47,7 +47,7 @@ export const matchSyncProducer = <A, R>(
 
 export function runSink<A, R, E>(
   producer: SyncProducer<A>,
-  sink: Sink<R, E, A>
+  sink: Sink<A, E, R>
 ): Effect.Effect<unknown, never, R> {
   return matchSyncProducer(producer, {
     Success: (a) => sink.onSuccess(a),
@@ -83,7 +83,7 @@ export function runReduceEffect<A, R2, E2, B>(
   })
 }
 
-function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): Effect.Effect<unknown, never, R2> {
+function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<A, never, R2>): Effect.Effect<unknown, never, R2> {
   if (array.length === 0) return Effect.unit
   else if (array.length === 1) return sink.onSuccess(array[0])
   else {
@@ -96,7 +96,7 @@ function arrayToSink<A, R2>(array: ReadonlyArray<A>, sink: Sink<R2, never, A>): 
   }
 }
 
-function iterableToSink<A, R2>(array: Iterable<A>, sink: Sink<R2, never, A>): Effect.Effect<unknown, never, R2> {
+function iterableToSink<A, R2>(array: Iterable<A>, sink: Sink<A, never, R2>): Effect.Effect<unknown, never, R2> {
   let effect: Effect.Effect<any, never, R2> = Effect.unit
 
   for (const item of array) {

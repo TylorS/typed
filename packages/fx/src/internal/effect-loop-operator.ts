@@ -35,7 +35,7 @@ export function FilterMapLoopEffectOperator<const B, A, R, E, C>(
   return { _tag: "FilterMapLoopEffect", seed, f }
 }
 
-export function compileLoopEffectOperatorSink<R>(operator: EffectLoopOperator, sink: Sink.Sink<R, any, any>) {
+export function compileLoopEffectOperatorSink<R>(operator: EffectLoopOperator, sink: Sink.Sink<any, any, R>) {
   return matchEffectLoopOperator(operator, {
     LoopEffect: (op) => Sink.loopEffect(sink, op.seed, op.f),
     FilterMapLoopEffect: (op) => Sink.filterMapLoopEffect(sink, op.seed, op.f)
@@ -457,8 +457,8 @@ export function matchEffectLoopOperator<A, B, R, E, C, D>(
 
 export function compileCauseLoopEffectOperatorSinkCause<R>(
   operator: EffectLoopOperator,
-  sink: Sink.Sink<R, any, any>
-): Sink.Sink<R, any, any> {
+  sink: Sink.Sink<any, any, R>
+): Sink.Sink<any, any, R> {
   return matchEffectLoopOperator(operator, {
     LoopEffect: (op) => Sink.loopCauseEffect(sink, op.seed, op.f),
     FilterMapLoopEffect: (op) => Sink.filterMapLoopCauseEffect(sink, op.seed, op.f)

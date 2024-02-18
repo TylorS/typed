@@ -26,7 +26,9 @@ import { TypeId } from "./TypeId.js"
  * Subject is an Fx type which can also be imperatively pushed into.
  * @since 1.20.0
  */
-export interface Subject<out R, in out E, in out A> extends Push<R, E, A, R | Scope.Scope, E, A>, Pipeable.Pipeable {
+export interface Subject<in out A, in out E = never, out R = never>
+  extends Push<A, E, R, A, E, R | Scope.Scope>, Pipeable.Pipeable
+{
   readonly subscriberCount: Effect.Effect<number, never, R>
   readonly interrupt: Effect.Effect<void, never, R>
 }
@@ -38,8 +40,8 @@ export namespace Subject {
   /**
    * @since 1.20.0
    */
-  export interface Tagged<I, E, A> extends Subject<I, E, A> {
-    readonly tag: C.Tagged<I, Subject<never, E, A>>
+  export interface Tagged<A, E, I> extends Subject<A, E, I> {
+    readonly tag: C.Tagged<I, Subject<A, E>>
 
     readonly make: (replay?: number) => Layer.Layer<I>
     readonly provide: Provide<I>
@@ -62,10 +64,10 @@ export namespace Subject {
     ...args: Args
   ) => Args extends readonly [infer _ extends number] ? <T extends Fx<any, any, any> | Effect.Effect<any, any, any>>(
       fxOrEffect: T
-    ) => [T] extends [Fx<infer R2, infer E2, infer B>] ? Fx<Exclude<R2, I>, E2, B>
+    ) => [T] extends [Fx<infer B, infer E2, infer R2>] ? Fx<B, E2, Exclude<R2, I>>
       : [T] extends [Effect.Effect<infer B, infer E2, infer R2>] ? Effect.Effect<B, E2, Exclude<R2, I>>
       : never
-    : Args extends readonly [Fx<infer R2, infer E2, infer B>] ? Fx<Exclude<R2, I>, E2, B>
+    : Args extends readonly [Fx<infer B, infer E2, infer R2>] ? Fx<B, E2, Exclude<R2, I>>
     : Args extends readonly [Effect.Effect<infer B, infer E2, infer R2>] ? Effect.Effect<B, E2, Exclude<R2, I>>
     : never
 }
@@ -75,8 +77,8 @@ const DISCARD = { discard: true } as const
 /**
  * @internal
  */
-export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subject<never, E, A> {
-  protected sinks: Set<readonly [Sink<any, E, A>, Context.Context<any>]> = new Set()
+export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subject<A, E> {
+  protected sinks: Set<readonly [Sink<A, E, any>, Context.Context<any>]> = new Set()
   protected scopes: Set<Scope.CloseableScope> = new Set()
 
   constructor() {
@@ -85,7 +87,7 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
     this.onSuccess = this.onSuccess.bind(this)
   }
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
+  run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
     return this.addSink(sink, awaitScopeClose)
   }
 
@@ -110,7 +112,7 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
   )
 
   protected addSink<R, R2, B>(
-    sink: Sink<R, E, A>,
+    sink: Sink<A, E, R>,
     f: (scope: Scope.Scope) => Effect.Effect<B, never, R2>
   ): Effect.Effect<B, never, R2 | Scope.Scope> {
     return withScope(
@@ -156,7 +158,7 @@ export class SubjectImpl<E, A> extends FxBase<Scope.Scope, E, A> implements Subj
 /**
  * @internal
  */
-export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<never, E, A> {
+export class HoldSubjectImpl<A, E> extends SubjectImpl<A, E> implements Subject<A, E> {
   private lastValue: MutableRef.MutableRef<Option.Option<A>> = MutableRef.make(Option.none())
 
   // Emit an event to all sinks
@@ -167,7 +169,7 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
       return this.onEvent(a)
     })
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
+  run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
     return this.addSink(sink, (scope) =>
       Option.match(MutableRef.get(this.lastValue), {
         onNone: () => awaitScopeClose(scope),
@@ -186,7 +188,7 @@ export class HoldSubjectImpl<E, A> extends SubjectImpl<E, A> implements Subject<
 /**
  * @internal
  */
-export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
+export class ReplaySubjectImpl<A, E> extends SubjectImpl<A, E> {
   constructor(readonly buffer: RingBuffer<A>) {
     super()
   }
@@ -199,7 +201,7 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
       return this.onEvent(a)
     })
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
+  run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
     return this.addSink(
       sink,
       (scope) => Effect.zipRight(this.buffer.forEach((a) => sink.onSuccess(a)), awaitScopeClose(scope))
@@ -217,39 +219,39 @@ export class ReplaySubjectImpl<E, A> extends SubjectImpl<E, A> {
 /**
  * @since 1.20.0
  */
-export function unsafeMake<E, A>(replay: number = 0): Subject<never, E, A> {
+export function unsafeMake<A, E = never>(replay: number = 0): Subject<A, E> {
   replay = Math.max(0, replay)
 
   if (replay === 0) {
-    return new SubjectImpl<E, A>()
+    return new SubjectImpl<A, E>()
   } else if (replay === 1) {
-    return new HoldSubjectImpl<E, A>()
+    return new HoldSubjectImpl<A, E>()
   } else {
-    return new ReplaySubjectImpl<E, A>(new RingBuffer(replay))
+    return new ReplaySubjectImpl<A, E>(new RingBuffer(replay))
   }
 }
 
 /**
  * @since 1.20.0
  */
-export function make<E, A>(replay?: number): Effect.Effect<Subject<never, E, A>, never, Scope.Scope> {
+export function make<A, E>(replay?: number): Effect.Effect<Subject<A, E>, never, Scope.Scope> {
   return Effect.acquireRelease(Effect.sync(() => unsafeMake(replay)), (subject) => subject.interrupt)
 }
 
 /**
  * @since 1.20.0
  */
-export function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<R, E, A>): Subject<I | R, E, A> {
+export function fromTag<I, S, R, E, A>(tag: C.Tag<I, S>, f: (s: S) => Subject<A, E, R>): Subject<A, E, I | R> {
   return new FromTag(tag, f)
 }
 
-class FromTag<I, S, R, E, A> extends FxBase<I | R | Scope.Scope, E, A> implements Subject<I | R, E, A> {
-  private get: Effect.Effect<Subject<R, E, A>, never, I>
+class FromTag<I, S, R, E, A> extends FxBase<A, E, I | R | Scope.Scope> implements Subject<A, E, I | R> {
+  private get: Effect.Effect<Subject<A, E, R>, never, I>
 
   readonly subscriberCount: Effect.Effect<number, never, I | R>
   readonly interrupt: Effect.Effect<void, never, I | R>
 
-  constructor(readonly tag: C.Tag<I, S>, readonly f: (s: S) => Subject<R, E, A>) {
+  constructor(readonly tag: C.Tag<I, S>, readonly f: (s: S) => Subject<A, E, R>) {
     super()
 
     this.get = Effect.map(tag, f)
@@ -257,7 +259,7 @@ class FromTag<I, S, R, E, A> extends FxBase<I | R | Scope.Scope, E, A> implement
     this.interrupt = Effect.flatMap(this.get, (subject) => subject.interrupt)
   }
 
-  run<R2>(sink: Sink<R2, E, A>): Effect.Effect<unknown, never, I | R | R2 | Scope.Scope> {
+  run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, I | R | R2 | Scope.Scope> {
     return Effect.flatMap(this.get, (subject) => subject.run(sink))
   }
 
@@ -273,26 +275,26 @@ class FromTag<I, S, R, E, A> extends FxBase<I | R | Scope.Scope, E, A> implement
 /**
  * @since 1.20.0
  */
-export function tagged<E, A>(): {
-  <const I extends C.IdentifierFactory<any>>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Subject.Tagged<C.IdentifierOf<I>, E, A>
+export function tagged<A, E = never>(): {
+  <const I extends C.IdentifierFactory<any>>(identifier: I): Subject.Tagged<A, E, C.IdentifierOf<I>>
+  <const I>(identifier: I): Subject.Tagged<A, E, C.IdentifierOf<I>>
 } {
-  return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Subject<never, E, A>>(identifier))
+  return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Subject<A, E>>(identifier))
 }
 
 const isDataFirst = (args: IArguments): boolean =>
   args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], TypeId)
 
-class TaggedImpl<I, E, A> extends FromTag<I, Subject<never, E, A>, never, E, A> implements Subject.Tagged<I, E, A> {
-  readonly provide: Subject.Tagged<I, E, A>["provide"]
+class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, never, E, A> implements Subject.Tagged<A, E, I> {
+  readonly provide: Subject.Tagged<A, E, I>["provide"]
 
-  constructor(readonly tag: C.Tagged<I, Subject<never, E, A>>) {
+  constructor(readonly tag: C.Tagged<I, Subject<A, E>>) {
     super(tag, identity)
 
     this.provide = dual(
       isDataFirst,
-      <R2, E2, B>(fxOrEffect: Fx<R2, E2, B> | Effect.Effect<B, E2, R2>, replay?: number) => {
-        if (TypeId in fxOrEffect) return provide(fxOrEffect as Fx<Exclude<R2, I>, E2, B>, this.make(replay))
+      <R2, E2, B>(fxOrEffect: Fx<B, E2, R2> | Effect.Effect<B, E2, R2>, replay?: number) => {
+        if (TypeId in fxOrEffect) return provide(fxOrEffect as Fx<B, E2, Exclude<R2, I>>, this.make(replay))
         else return Effect.provide(fxOrEffect as Effect.Effect<B, E2, R2>, this.make(replay))
       }
     )

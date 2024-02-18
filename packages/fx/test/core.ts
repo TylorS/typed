@@ -88,7 +88,7 @@ describe.concurrent(__filename, () => {
   it.concurrent("mergeBuffer keeps the ordering of concurrent streams", async () => {
     const test = Fx.mergeOrdered([
       Fx.fromEffect(Effect.succeed(1)),
-      Fx.make<never, never, number>((sink) =>
+      Fx.make<number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(Effect.sleep(100))
           yield* _(sink.onSuccess(2))
@@ -475,7 +475,7 @@ describe.concurrent(__filename, () => {
 
   describe.concurrent("Fx.make", () => {
     it.concurrent("produces events from a Sink", async () => {
-      const test = Fx.make<never, never, number>((sink) =>
+      const test = Fx.make<number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(sink.onSuccess(1))
           yield* _(sink.onSuccess(2))
@@ -489,7 +489,7 @@ describe.concurrent(__filename, () => {
     })
 
     it.concurrent("produces errors from a Sink", async () => {
-      const test = Fx.make<never, number, never>((sink) =>
+      const test = Fx.make<never, number>((sink) =>
         Effect.gen(function*(_) {
           yield* _(sink.onFailure(Cause.fail(1)))
           yield* _(sink.onFailure(Cause.fail(2)))
@@ -505,7 +505,7 @@ describe.concurrent(__filename, () => {
 
   describe.concurrent("Fx.withEmitter", () => {
     it.concurrent("produces events from an Emitter", async () => {
-      const test = Fx.withEmitter<never, number>((emitter) =>
+      const test = Fx.withEmitter<number>((emitter) =>
         Effect.sync(() => {
           emitter.succeed(1)
           emitter.succeed(2)
@@ -520,7 +520,7 @@ describe.concurrent(__filename, () => {
     })
 
     it.concurrent("produces errors from an Emitter", async () => {
-      const test = Fx.withEmitter<number, never>((emitter) =>
+      const test = Fx.withEmitter<never, number>((emitter) =>
         Effect.sync(() => {
           emitter.fail(1)
           emitter.fail(2)
@@ -1042,7 +1042,7 @@ describe.concurrent("Fx.if", () => {
 
 describe.concurrent("Fx.partitionMap", () => {
   it.concurrent("partitions values into successes and failures", async () => {
-    const [oddsFx, evensFx] = Fx.withEmitter<never, number>((emitter) =>
+    const [oddsFx, evensFx] = Fx.withEmitter<number>((emitter) =>
       Effect.sync(() => {
         emitter.succeed(1)
         emitter.succeed(2)

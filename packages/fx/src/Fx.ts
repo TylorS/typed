@@ -49,13 +49,13 @@ import { TypeId } from "./TypeId.js"
  * Fx is a push-based reactive primitive built atop of Effect.
  * @since 1.20.0
  */
-export interface Fx<out R, out E, out A> extends Pipeable.Pipeable {
-  readonly [TypeId]: Fx.Variance<R, E, A>
+export interface Fx<out A, out E = never, out R = never> extends Pipeable.Pipeable {
+  readonly [TypeId]: Fx.Variance<A, E, R>
 
   /**
    * @since 1.20.0
    */
-  run<R2 = never>(sink: Sink.Sink<R2, E, A>): Effect.Effect<unknown, never, R | R2>
+  run<R2 = never>(sink: Sink.Sink<A, E, R2>): Effect.Effect<unknown, never, R | R2>
 }
 
 /**
@@ -65,7 +65,7 @@ export namespace Fx {
   /**
    * @since 1.20.0
    */
-  export interface Variance<R, E, A> {
+  export interface Variance<A, E, R> {
     readonly _R: Types.Covariant<R>
     readonly _E: Types.Covariant<E>
     readonly _A: Types.Covariant<A>
@@ -74,22 +74,22 @@ export namespace Fx {
   /**
    * @since 1.20.0
    */
-  export type Context<T> = T extends Fx<infer R, infer _E, infer _A> ? R : never
+  export type Context<T> = T extends Fx<infer _A, infer _E, infer R> ? R : never
 
   /**
    * @since 1.20.0
    */
-  export type Error<T> = T extends Fx<infer _R, infer E, infer _A> ? E : never
+  export type Error<T> = T extends Fx<infer _A, infer E, infer _R> ? E : never
 
   /**
    * @since 1.20.0
    */
-  export type Success<T> = T extends Fx<infer _R, infer _E, infer A> ? A : never
+  export type Success<T> = T extends Fx<infer A, infer _E, infer _R> ? A : never
 
   /**
    * @since 1.20.0
    */
-  export type Unify<T> = T extends Fx<infer R, infer E, infer A> | infer _ ? Fx<R, E, A> : never
+  export type Unify<T> = T extends Fx<infer A, infer E, infer R> | infer _ ? Fx<A, E, R> : never
 }
 
 /**
@@ -115,7 +115,7 @@ export type Unify<T> = Fx.Unify<T>
 /**
  * @since 1.20.0
  */
-export function isFx<R, E, A>(u: unknown): u is Fx<R, E, A> {
+export function isFx<A, E, R>(u: unknown): u is Fx<A, E, R> {
   return u === null ? false : hasProperty(u, TypeId)
 }
 
@@ -264,7 +264,7 @@ export const Ordered: (concurrency: number) => Ordered = strategies.Ordered
  * @since 1.20.0
  * @category models
  */
-export type ScopedFork = <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<Fiber.Fiber<A, E>, never, R>
+export type ScopedFork = <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<Fiber.Fiber<A, E>, never, R>
 
 /**
  * Type-alias for Effect.forkIn(scope) which runs the Effect runtime
@@ -281,35 +281,35 @@ export type FxFork = <R>(
  * @since 1.20.0
  */
 export const make: {
-  <R, E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown, never, R>): Fx<R, E, A>
-  <E, A>(run: (sink: Sink.Sink<never, E, A>) => Effect.Effect<unknown>): Fx<never, E, A>
-  <A>(run: (sink: Sink.Sink<never, never, A>) => Effect.Effect<unknown>): Fx<never, never, A>
+  <A, E, R>(run: (sink: Sink.Sink<A, E, R>) => Effect.Effect<unknown, never, R>): Fx<A, E, R>
+  <A, E>(run: (sink: Sink.Sink<A, E>) => Effect.Effect<unknown>): Fx<A, E>
+  <A>(run: (sink: Sink.Sink<A>) => Effect.Effect<unknown>): Fx<A>
 } = core.make
 
 /**
  * @since 1.20.0
  */
-export const succeed: <A>(value: A) => Fx<never, never, A> = core.succeed
+export const succeed: <A>(value: A) => Fx<A> = core.succeed
 
 /**
  * @since 1.20.0
  */
-export const sync: <A>(f: () => A) => Fx<never, never, A> = core.fromSync
+export const sync: <A>(f: () => A) => Fx<A> = core.fromSync
 
 /**
  * @since 1.20.0
  */
-export const fromArray: <const A extends ReadonlyArray<any>>(array: A) => Fx<never, never, A[number]> = core.fromArray
+export const fromArray: <const A extends ReadonlyArray<any>>(array: A) => Fx<A[number]> = core.fromArray
 
 /**
  * @since 1.20.0
  */
-export const fromIterable: <A>(iterable: Iterable<A>) => Fx<never, never, A> = core.fromIterable
+export const fromIterable: <A>(iterable: Iterable<A>) => Fx<A> = core.fromIterable
 
 /**
  * @since 1.20.0
  */
-export const fromEffect: <R, E, A>(effect: Effect.Effect<A, E, R>) => Fx<R, E, A> = core.fromEffect
+export const fromEffect: <A, E, R>(effect: Effect.Effect<A, E, R>) => Fx<A, E, R> = core.fromEffect
 
 /**
  * @since 1.20.0
@@ -317,12 +317,12 @@ export const fromEffect: <R, E, A>(effect: Effect.Effect<A, E, R>) => Fx<R, E, A
 export const fromScheduled: {
   <R2, I, O>(
     schedule: Schedule.Schedule<R2, I, O>
-  ): <R, E>(input: Effect.Effect<I, E, R>) => Fx<R | R2, E, O>
+  ): <E, R>(input: Effect.Effect<I, E, R>) => Fx<O, E, R | R2>
 
-  <R, E, I, R2, O>(
+  <I, E, R, R2, O>(
     input: Effect.Effect<I, E, R>,
     schedule: Schedule.Schedule<R2, I, O>
-  ): Fx<R | R2, E, O>
+  ): Fx<O, E, R | R2>
 } = dual(2, core.fromScheduled)
 
 /**
@@ -331,294 +331,294 @@ export const fromScheduled: {
 export const schedule: {
   <R2, O>(
     schedule: Schedule.Schedule<R2, unknown, O>
-  ): <R, E, A>(input: Effect.Effect<A, E, R>) => Fx<R | R2, E, A>
+  ): <A, E, R>(input: Effect.Effect<A, E, R>) => Fx<A, E, R | R2>
 
-  <R, E, A, R2, O>(
+  <A, E, R, R2, O>(
     input: Effect.Effect<A, E, R>,
     schedule: Schedule.Schedule<R2, unknown, O>
-  ): Fx<R | R2, E, A>
+  ): Fx<A, E, R | R2>
 } = dual(2, core.schedule)
 
 /**
  * @since 1.20.0
  */
 export const periodic: {
-  (period: Duration.DurationInput): <R, E, A>(iterator: Effect.Effect<A, E, R>) => Fx<R, E, A>
-  <R, E, A>(iterator: Effect.Effect<A, E, R>, period: Duration.DurationInput): Fx<R, E, A>
-} = dual(2, <R, E, A>(
+  (period: Duration.DurationInput): <A, E, R>(iterator: Effect.Effect<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(iterator: Effect.Effect<A, E, R>, period: Duration.DurationInput): Fx<A, E, R>
+} = dual(2, <A, E, R>(
   iterator: Effect.Effect<A, E, R>,
   period: Duration.DurationInput
-): Fx<R, E, A> => continueWith(fromEffect(iterator), () => schedule(iterator, Schedule.spaced(period))))
+): Fx<A, E, R> => continueWith(fromEffect(iterator), () => schedule(iterator, Schedule.spaced(period))))
 
 /**
  * @since 1.20.0
  */
-export const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E, never> = core.failCause
+export const failCause: <E>(cause: Cause.Cause<E>) => Fx<never, E> = core.failCause
 
 /**
  * @since 1.20.0
  */
-export const fail: <E>(error: E) => Fx<never, E, never> = core.fail
+export const fail: <E>(error: E) => Fx<never, E> = core.fail
 
 /**
  * @since 1.20.0
  */
-export const die: (error: unknown) => Fx<never, never, never> = core.die
+export const die: (error: unknown) => Fx<never> = core.die
 
 /**
  * @since 1.20.0
  */
 export const map: {
-  <A, B>(f: (a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => B): Fx<R, E, B>
+  <A, B>(f: (a: A) => B): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, f: (a: A) => B): Fx<B, E, R>
 } = dual(2, core.map)
 
 /**
  * @since 1.20.0
  */
 export const filter: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.filter)
 
 /**
  * @since 1.20.0
  */
 export const filterMap: {
-  <A, B>(f: (a: A) => Option.Option<B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, f: (a: A) => Option.Option<B>): Fx<R, E, B>
+  <A, B>(f: (a: A) => Option.Option<B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, f: (a: A) => Option.Option<B>): Fx<B, E, R>
 } = dual(2, core.filterMap)
 
 /**
  * @since 1.20.0
  */
-export const compact = <R, E, A>(fx: Fx<R, E, Option.Option<A>>): Fx<R, E, A> => filterMap(fx, identity)
+export const compact = <A, E, R>(fx: Fx<Option.Option<A>, E, R>): Fx<A, E, R> => filterMap(fx, identity)
 
 /**
  * @since 1.20.0
  */
 export const mapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<B, E2, R2>): Fx<R | R2, E | E2, B>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<B, E2, R2>): Fx<B, E | E2, R | R2>
 } = dual(2, core.mapEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapEffect: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): Fx<R | R2, E | E2, B>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>): Fx<B, E | E2, R | R2>
 } = dual(2, core.filterMapEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.filterEffect)
 
 /**
  * @since 1.20.0
  */
 export const tapEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.tapEffect)
 
 /**
  * @since 1.20.0
  */
 export const tap: {
-  <A>(f: (a: A) => unknown): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (a: A) => unknown): Fx<R, E, A>
+  <A>(f: (a: A) => unknown): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (a: A) => unknown): Fx<A, E, R>
 } = dual(2, (fx, f) => tapEffect(fx, (a) => Effect.sync(() => f(a))))
 
 /**
  * @since 1.20.0
  */
 export const loop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<R, E, C>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <E, R>(fx: Fx<A, E, R>) => Fx<C, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Fx<C, E, R>
 } = dual(3, core.loop)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Fx<R, E, C>
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <E, R>(fx: Fx<A, E, R>) => Fx<C, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Fx<C, E, R>
 } = dual(3, core.filterMapLoop)
 
 /**
  * @since 1.20.0
  */
 export const loopEffect: {
-  <R2, E2, B, A, C>(
+  <B, E2, R2, A, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, C>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E | E2, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>
-  ): Fx<R | R2, E | E2, C>
+  ): Fx<C, E | E2, R | R2>
 } = dual(3, core.loopEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoopEffect: {
-  <R2, E2, B, A, C>(
+  <B, E2, R2, A, C>(
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, C>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E | E2, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): Fx<R | R2, E | E2, C>
+  ): Fx<C, E | E2, R | R2>
 } = dual(3, core.filterMapLoopEffect)
 
 /**
  * @since 1.20.0
  */
 export const observe: {
-  <A, R2, E2, B>(f: (a: A) => Effect.Effect<B, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<void, E | E2, R | R2>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<B, E2, R2>): Effect.Effect<void, E | E2, R | R2>
+  <A, B, E2, R2>(f: (a: A) => Effect.Effect<B, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<B, E2, R2>): Effect.Effect<void, E | E2, R | R2>
 } = dual(2, core.observe)
 
 /**
  * @since 1.20.0
  */
-export const drain: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<void, E, R> = core.drain
+export const drain: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E, R> = core.drain
 
 /**
  * @since 1.20.0
  */
 export const reduce: {
-  <A, B>(seed: B, f: (acc: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<B, E, R>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<B, E, R>
+  <A, B>(seed: B, f: (acc: B, a: A) => B): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, seed: B, f: (acc: B, a: A) => B): Effect.Effect<B, E, R>
 } = dual(3, core.reduce)
 
 /**
  * @since 1.20.0
  */
-export const toReadonlyArray: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<ReadonlyArray<A>, E, R> = core.toReadonlyArray
+export const toReadonlyArray: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<ReadonlyArray<A>, E, R> = core.toReadonlyArray
 
 /**
  * @since 1.20.0
  */
 export const slice: {
-  (drop: number, take: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, drop: number, take: number): Fx<R, E, A>
+  (drop: number, take: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, drop: number, take: number): Fx<A, E, R>
 } = dual(3, core.slice)
 
 /**
  * @since 1.20.0
  */
 export const take: {
-  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
+  (n: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, n: number): Fx<A, E, R>
 } = dual(2, core.take)
 
 /**
  * @since 1.20.0
  */
 export const drop: {
-  (n: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, n: number): Fx<R, E, A>
+  (n: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, n: number): Fx<A, E, R>
 } = dual(2, core.drop)
 
 /**
  * @since 1.20.0
  */
-export const skipRepeats: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = core.skipRepeats
+export const skipRepeats: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R> = core.skipRepeats
 
 /**
  * @since 1.20.0
  */
 export const skipRepeatsWith: {
-  <A>(eq: Equivalence.Equivalence<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, eq: Equivalence.Equivalence<A>): Fx<R, E, A>
+  <A>(eq: Equivalence.Equivalence<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, eq: Equivalence.Equivalence<A>): Fx<A, E, R>
 } = dual(2, core.skipRepeatsWith)
 
 /**
  * @since 1.20.0
  */
-export const empty: Fx<never, never, never> = core.empty
+export const empty: Fx<never> = core.empty
 
 /**
  * @since 1.20.0
  */
-export const never: Fx<never, never, never> = core.never
+export const never: Fx<never> = core.never
 
 /**
  * @since 1.20.0
  */
 export const padWith: {
-  <B, C>(start: Iterable<B>, end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B | C>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, start: Iterable<B>, end: Iterable<C>): Fx<R, E, A | B | C>
+  <B, C>(start: Iterable<B>, end: Iterable<C>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B | C, E, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, start: Iterable<B>, end: Iterable<C>): Fx<A | B | C, E, R>
 } = dual(3, core.padWith)
 
 /**
  * @since 1.20.0
  */
 export const prependAll: {
-  <B>(start: Iterable<B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
-  <R, E, A, B>(fx: Fx<R, E, A>, start: Iterable<B>): Fx<R, E, A | B>
+  <B>(start: Iterable<B>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, start: Iterable<B>): Fx<A | B, E, R>
 } = dual(2, core.prependAll)
 
 /**
  * @since 1.20.0
  */
 export const appendAll: {
-  <C>(end: Iterable<C>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | C>
-  <R, E, A, C>(fx: Fx<R, E, A>, end: Iterable<C>): Fx<R, E, A | C>
+  <C>(end: Iterable<C>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | C, E, R>
+  <A, E, R, C>(fx: Fx<A, E, R>, end: Iterable<C>): Fx<A | C, E, R>
 } = dual(2, core.appendAll)
 
 /**
  * @since 1.20.0
  */
 export const prepend: {
-  <B>(start: B): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
-  <R, E, A, B>(fx: Fx<R, E, A>, start: B): Fx<R, E, A | B>
+  <B>(start: B): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, start: B): Fx<A | B, E, R>
 } = dual(2, core.prepend)
 
 /**
  * @since 1.20.0
  */
 export const append: {
-  <C>(end: C): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A | C>
-  <R, E, A, C>(fx: Fx<R, E, A>, end: C): Fx<R, E, A | C>
+  <C>(end: C): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | C, E, R>
+  <A, E, R, C>(fx: Fx<A, E, R>, end: C): Fx<A | C, E, R>
 } = dual(2, core.append)
 
 /**
  * @since 1.20.0
  */
 export const scan: {
-  <B, A>(seed: B, f: (b: B, a: A) => B): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <R, E, A, B>(fx: Fx<R, E, A>, seed: B, f: (b: B, a: A) => B): Fx<R, E, B>
+  <B, A>(seed: B, f: (b: B, a: A) => B): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A, E, R, B>(fx: Fx<A, E, R>, seed: B, f: (b: B, a: A) => B): Fx<B, E, R>
 } = dual(3, core.scan)
 
 /**
  * @since 1.20.0
  */
 export const flatMapWithStrategy: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     strategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     strategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(4, core.flatMapWithStrategy)
 
 const isDataFirstFx = (args: IArguments) => isFx(args[0])
@@ -627,215 +627,215 @@ const isDataFirstFx = (args: IArguments) => isFx(args[0])
  * @since 1.20.0
  */
 export const flatMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMap)
 
 /**
  * @since 1.20.0
  */
 export const flatMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapEffect)
 
 /**
  * @since 1.20.0
  */
 export const switchMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.switchMap)
 
 /**
  * @since 1.20.0
  */
 export const switchMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.switchMapEffect)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMap)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapEffect)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapLatest: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapLatest)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapLatestEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapLatestEffect)
 
 /**
  * @since 1.20.0
  */
 export const flatMapConcurrently: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapConcurrently)
 
 /**
  * @since 1.20.0
  */
 export const flatMapConcurrentlyEffect: {
-  <A, R2, E2, B>(
+  <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>,
     capacity: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E | E2, B>
+  ): Fx<B, E | E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapConcurrentlyEffect)
 
 /**
  * @since 1.20.0
  */
 export const concatMap: {
-  <A, R2, E2, B>(
-    f: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2>(
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (a: A) => Fx<R2, E2, B>,
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<B, E | E2, Scope.Scope | R | R2>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (a: A) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<Scope.Scope | R | R2, E | E2, B>
+  ): Fx<B, E | E2, Scope.Scope | R | R2>
 } = dual(isDataFirstFx, core.concatMap)
 
 /**
  * @since 1.20.0
  */
-export const fromFxEffect: <R, E, R2, E2, B>(effect: Effect.Effect<Fx<R2, E2, B>, E, R>) => Fx<R | R2, E | E2, B> =
+export const fromFxEffect: <B, E, R, E2, R2>(effect: Effect.Effect<Fx<B, E2, R2>, E, R>) => Fx<B, E | E2, R | R2> =
   core.fromFxEffect
 
 /**
  * @since 1.20.0
  */
 export const continueWith: {
-  <R2, E2, B>(f: () => Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: () => Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(f: () => Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: () => Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 } = dual(2, core.continueWith)
 
 /**
  * @since 1.20.0
  */
 export const orElseCause: {
-  <E, R2, E2, B>(f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+  <E, B, E2, R2>(f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>): Fx<A | B, E2, R | R2>
 } = dual(2, core.orElseCause)
 
 /**
  * @since 1.20.0
  */
 export const orElse: {
-  <E, R2, E2, B>(f: (error: E) => Fx<R2, E2, B>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, f: (error: E) => Fx<R2, E2, B>): Fx<R | R2, E2, A | B>
+  <E, B, E2, R2>(f: (error: E) => Fx<B, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, f: (error: E) => Fx<B, E2, R2>): Fx<A | B, E2, R | R2>
 } = dual(2, core.orElse)
 
 /**
  * @since 1.20.0
  */
-export const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A> = core.suspend
+export const suspend: <A, E, R>(f: () => Fx<A, E, R>) => Fx<A, E, R> = core.suspend
 
 /**
  * @since 1.20.0
@@ -843,20 +843,20 @@ export const suspend: <R, E, A>(f: () => Fx<R, E, A>) => Fx<R, E, A> = core.susp
 export const mergeWithStrategy: {
   (strategy: MergeStrategy): <FX extends ReadonlyArray<Fx<any, any, any>>>(
     fx: FX
-  ) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  ) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 
   <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fx: FX,
     stategy: MergeStrategy
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>>
+  ): Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
 } = dual(2, core.mergeWithStrategy)
 
 /**
  * @since 1.20.0
  */
 export const merge: {
-  <R2, E2, B>(other: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, other: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(other: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, other: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 } = dual(
   2,
   core.merge
@@ -867,14 +867,14 @@ export const merge: {
  */
 export const mergeAll: <FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> = core.mergeAll
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.mergeAll
 
 /**
  * @since 1.20.0
  */
 export const mergeOrdered: <FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> = core.mergeOrdered
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.mergeOrdered
 
 /**
  * @since 1.20.0
@@ -882,148 +882,148 @@ export const mergeOrdered: <FX extends ReadonlyArray<Fx<any, any, any>>>(
 export const mergeOrderedConcurrently: <FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX,
   concurrency: number
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> = core.mergeOrderedConcurrently
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.mergeOrderedConcurrently
 
 /**
  * @since 1.20.0
  */
 export const mergeSwitch: <FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> = core.mergeSwitch
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.mergeSwitch
 
 /**
  * @since 1.20.0
  */
 export const takeWhile: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.takeWhile)
 
 /**
  * @since 1.20.0
  */
 export const takeUntil: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.takeUntil)
 
 /**
  * @since 1.20.0
  */
 export const dropWhile: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.dropWhile)
 
 /**
  * @since 1.20.0
  */
 export const dropUntil: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A | B>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, A | B>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<A | B, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<A | B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.dropUntil)
 
 /**
  * @since 1.20.0
  */
 export const dropAfter: {
-  <A, B extends A>(f: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, Exclude<A, B>>
-  <A>(f: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, f: Predicate.Refinement<A, B>): Fx<R, E, Exclude<A, B>>
-  <R, E, A>(fx: Fx<R, E, A>, f: Predicate.Predicate<A>): Fx<R, E, A>
+  <A, B extends A>(f: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Fx<Exclude<A, B>, E, R>
+  <A>(f: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, f: Predicate.Refinement<A, B>): Fx<Exclude<A, B>, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: Predicate.Predicate<A>): Fx<A, E, R>
 } = dual(2, core.dropAfter)
 
 /**
  * @since 1.20.0
  */
 export const takeWhileEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.takeWhileEffect)
 
 /**
  * @since 1.20.0
  */
 export const takeUntiEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.takeUntilEffect)
 
 /**
  * @since 1.20.0
  */
 export const dropWhileEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.dropWhileEffect)
 
 /**
  * @since 1.20.0
  */
 export const dropUntilEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.dropUntilEffect)
 
 /**
  * @since 1.20.0
  */
 export const dropAfterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E | E2, A>
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (a: A) => Effect.Effect<boolean, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.dropAfterEffect)
 
 /**
  * @since 1.20.0
  */
 export const during: {
-  <R2, E2, A, R3, E3, B>(
-    window: Fx<R2, E2, Fx<R3, E3, B>>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, A>
-  <R, E, A, R2, E2, R3, E3, B>(
-    fx: Fx<R, E, A>,
-    window: Fx<R2, E2, Fx<R3, E3, B>>
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, A>
+  <E2, R2, A, R3, E3, B>(
+    window: Fx<Fx<B, E3, R3>, E2, R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, E2, R2, R3, E3, B>(
+    fx: Fx<A, E, R>,
+    window: Fx<Fx<B, E3, R3>, E2, R2>
+  ): Fx<A, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.during)
 
 /**
  * @since 1.20.0
  */
 export const since: {
-  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<R | R2 | Scope.Scope, E | E2, A>
+  <B, E2, R2>(window: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2 | Scope.Scope>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, window: Fx<B, E2, R2>): Fx<A, E | E2, R | R2 | Scope.Scope>
 } = dual(2, core.since)
 
 /**
  * @since 1.20.0
  */
 export const until: {
-  <R2, E2, B>(window: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E | E2, A>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, window: Fx<R2, E2, B>): Fx<R | R2 | Scope.Scope, E | E2, A>
+  <B, E2, R2>(window: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R | R2 | Scope.Scope>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, window: Fx<B, E2, R2>): Fx<A, E | E2, R | R2 | Scope.Scope>
 } = dual(2, core.until)
 
 /**
  * @since 1.20.0
  */
 export const middleware: {
-  <R, R3, E, A>(
+  <R, A, E, R3>(
     effect: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R3>,
-    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
-  ): <E, A>(fx: Fx<R, E, A>) => Fx<R3, E, A>
+    sink?: ((sink: Sink.Sink<A, E>) => Sink.Sink<A, E, R>) | undefined
+  ): <A, E>(fx: Fx<A, E, R>) => Fx<A, E, R3>
 
-  <R, E, A, R3>(
-    fx: Fx<R, E, A>,
+  <A, E, R, R3>(
+    fx: Fx<A, E, R>,
     effect: (effect: Effect.Effect<unknown, never, R>) => Effect.Effect<unknown, never, R3>,
-    sink?: ((sink: Sink.Sink<never, E, A>) => Sink.Sink<R, E, A>) | undefined
-  ): Fx<R3, E, A>
+    sink?: ((sink: Sink.Sink<A, E>) => Sink.Sink<A, E, R>) | undefined
+  ): Fx<A, E, R3>
 } = dual(isDataFirstFx, core.middleware)
 
 /**
@@ -1032,12 +1032,12 @@ export const middleware: {
 export const onExit: {
   <R2>(
     f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
 
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
+  <A, E, R, R2>(
+    fx: Fx<A, E, R>,
     f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
-  ): Fx<R | R2, E, A>
+  ): Fx<A, E, R | R2>
 } = dual(2, core.onExit)
 
 /**
@@ -1046,161 +1046,161 @@ export const onExit: {
 export const onInterrupt: {
   <R2>(
     f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<unknown, never, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  <A, E, R, R2>(
+    fx: Fx<A, E, R>,
     f: (interruptors: HashSet.HashSet<FiberId.FiberId>) => Effect.Effect<unknown, never, R2>
-  ): Fx<R | R2, E, A>
+  ): Fx<A, E, R | R2>
 } = dual(2, core.onInterrupt)
 
 /**
  * @since 1.20.0
  */
 export const onError: {
-  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): Fx<R | R2, E, A>
+  <R2>(f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  <A, E, R, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<never>) => Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
 } = dual(2, core.onError)
 
 /**
  * @since 1.20.0
  */
-export const scoped: <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, Scope.Scope>, E, A> = core.scoped
+export const scoped: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, Scope.Scope>> = core.scoped
 
 /**
  * @since 1.20.0
  */
 export const annotateLogs: {
-  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+  (key: string | Record<string, unknown>, value?: unknown): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, key: string | Record<string, unknown>, value?: unknown): Fx<A, E, R>
 } = dual(isDataFirstFx, core.annotateLogs)
 
 /**
  * @since 1.20.0
  */
 export const annotateSpans: {
-  (key: string | Record<string, unknown>, value?: unknown): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, key: string | Record<string, unknown>, value?: unknown): Fx<R, E, A>
+  (key: string | Record<string, unknown>, value?: unknown): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, key: string | Record<string, unknown>, value?: unknown): Fx<A, E, R>
 } = dual(isDataFirstFx, core.annotateSpans)
 
 /**
  * @since 1.20.0
  */
-export const interruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = core.interruptible
+export const interruptible: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R> = core.interruptible
 
 /**
  * @since 1.20.0
  */
-export const uninterruptible: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A> = core.uninterruptible
+export const uninterruptible: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R> = core.uninterruptible
 
 /**
  * @since 1.20.0
  */
 export const locally: {
-  <A>(self: FiberRef.FiberRef<A>, value: A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, value: A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, value: A): <B, E, R>(fx: Fx<B, E, R>) => Fx<B, E, R>
+  <B, E, R, A>(use: Fx<B, E, R>, self: FiberRef.FiberRef<A>, value: A): Fx<B, E, R>
 } = dual(3, core.locally)
 
 /**
  * @since 1.20.0
  */
 export const locallyWith: {
-  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <R, E, B>(fx: Fx<R, E, B>) => Fx<R, E, B>
-  <R, E, B, A>(use: Fx<R, E, B>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<R, E, B>
+  <A>(self: FiberRef.FiberRef<A>, f: (a: A) => A): <B, E, R>(fx: Fx<B, E, R>) => Fx<B, E, R>
+  <B, E, R, A>(use: Fx<B, E, R>, self: FiberRef.FiberRef<A>, f: (a: A) => A): Fx<B, E, R>
 } = dual(3, core.locallyWith)
 
 /**
  * @since 1.20.0
  */
 export const withTracerTiming: {
-  (enabled: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, enabled: boolean): Fx<R, E, A>
+  (enabled: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, enabled: boolean): Fx<A, E, R>
 } = dual(2, core.withTracerTiming)
 
 /**
  * @since 1.20.0
  */
 export const withConcurrency: {
-  (concurrency: number | "unbounded"): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, concurrency: number | "unbounded"): Fx<R, E, A>
+  (concurrency: number | "unbounded"): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, concurrency: number | "unbounded"): Fx<A, E, R>
 } = dual(2, core.withConcurrency)
 
 /**
  * @since 1.20.0
  */
 export const withConfigProvider: {
-  (configProvider: ConfigProvider.ConfigProvider): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, configProvider: ConfigProvider.ConfigProvider): Fx<R, E, A>
+  (configProvider: ConfigProvider.ConfigProvider): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, configProvider: ConfigProvider.ConfigProvider): Fx<A, E, R>
 } = dual(2, core.withConfigProvider)
 
 /**
  * @since 1.20.0
  */
 export const withLogSpan: {
-  (span: string): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, span: string): Fx<R, E, A>
+  (span: string): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, span: string): Fx<A, E, R>
 } = dual(2, core.withLogSpan)
 
 /**
  * @since 1.20.0
  */
 export const withMaxOpsBeforeYield: {
-  (maxOps: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, maxOps: number): Fx<R, E, A>
+  (maxOps: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, maxOps: number): Fx<A, E, R>
 } = dual(2, core.withMaxOpsBeforeYield)
 
 /**
  * @since 1.20.0
  */
 export const withParentSpan: {
-  (parentSpan: Tracer.ParentSpan): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, parentSpan: Tracer.ParentSpan): Fx<R, E, A>
+  (parentSpan: Tracer.ParentSpan): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, parentSpan: Tracer.ParentSpan): Fx<A, E, R>
 } = dual(2, core.withParentSpan)
 
 /**
  * @since 1.20.0
  */
 export const withRequestBatching: {
-  (requestBatching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestBatching: boolean): Fx<R, E, A>
+  (requestBatching: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, requestBatching: boolean): Fx<A, E, R>
 } = dual(2, core.withRequestBatching)
 
 /**
  * @since 1.20.0
  */
 export const withRequestCache: {
-  (cache: Request.Cache): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, cache: Request.Cache): Fx<R, E, A>
+  (cache: Request.Cache): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, cache: Request.Cache): Fx<A, E, R>
 } = dual(2, core.withRequestCache)
 
 /**
  * @since 1.20.0
  */
 export const withRequestCaching: {
-  (requestCaching: boolean): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, requestCaching: boolean): Fx<R, E, A>
+  (requestCaching: boolean): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, requestCaching: boolean): Fx<A, E, R>
 } = dual(2, core.withRequestCaching)
 
 /**
  * @since 1.20.0
  */
 export const withTracer: {
-  (tracer: Tracer.Tracer): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, tracer: Tracer.Tracer): Fx<R, E, A>
+  (tracer: Tracer.Tracer): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, tracer: Tracer.Tracer): Fx<A, E, R>
 } = dual(2, core.withTracer)
 
 /**
  * @since 1.20.0
  */
 export const acquireUseRelease: {
-  <A, R2, E2, B, R3, E3, C>(
-    use: (a: A) => Fx<R2, E2, B>,
+  <A, B, E2, R2, C, E3, R3>(
+    use: (a: A) => Fx<B, E2, R2>,
     release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
-  ): <R, E>(acquire: Effect.Effect<A, E, R>) => Fx<R | R2 | R3, E | E2 | E3, B>
-  <R, E, A, R2, E2, B, R3, E3, C>(
+  ): <E, R>(acquire: Effect.Effect<A, E, R>) => Fx<B, E | E2 | E3, R | R2 | R3>
+  <A, E, R, B, E2, R2, C, E3, R3>(
     acquire: Effect.Effect<A, E, R>,
-    use: (a: A) => Fx<R2, E2, B>,
+    use: (a: A) => Fx<B, E2, R2>,
     release: (a: A, exit: Exit.Exit<unknown, unknown>) => Effect.Effect<C, E3, R3>
-  ): Fx<R | R2 | R3, E | E2 | E3, B>
+  ): Fx<B, E | E2 | E3, R | R2 | R3>
 } = dual(3, core.acquireUseRelease)
 
 /**
@@ -1213,226 +1213,226 @@ export const withSpan: {
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
     readonly context?: Ctx.Context<never>
-  }): <R, E, A>(self: Fx<R, E, A>) => Fx<R, E, A>
+  }): <A, E, R>(self: Fx<A, E, R>) => Fx<A, E, R>
 
-  <R, E, A>(self: Fx<R, E, A>, name: string, options?: {
+  <A, E, R>(self: Fx<A, E, R>, name: string, options?: {
     readonly attributes?: Record<string, unknown>
     readonly links?: ReadonlyArray<Tracer.SpanLink>
     readonly parent?: Tracer.ParentSpan
     readonly root?: boolean
     readonly context?: Ctx.Context<never>
-  }): Fx<R, E, A>
+  }): Fx<A, E, R>
 } = dual(3, core.withSpan)
 
 /**
  * @since 1.20.0
  */
 export const provideContext: {
-  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(context: Ctx.Context<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, context: Ctx.Context<R2>): Fx<A, E, Exclude<R, R2>>
 } = dual(2, core.provideContext)
 
 /**
  * @since 1.20.0
  */
 export const provideLayer: {
-  <R2, E2, S>(layer: Layer.Layer<S, E2, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<S, E2, R2>): Fx<R2 | Exclude<R, S>, E | E2, A>
+  <E2, R2, S>(layer: Layer.Layer<S, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R2 | Exclude<R, S>>
+  <A, E, R, E2, R2, S>(fx: Fx<A, E, R>, layer: Layer.Layer<S, E2, R2>): Fx<A, E | E2, R2 | Exclude<R, S>>
 } = dual(2, core.provideLayer)
 
 /**
  * @since 1.20.0
  */
 export const provideRuntime: {
-  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
+  <R2>(runtime: Runtime.Runtime<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, runtime: Runtime.Runtime<R2>): Fx<A, E, Exclude<R, R2>>
 } = dual(2, core.provideRuntime)
 
 /**
  * @since 1.20.0
  */
 export const provideService: {
-  <I, S>(service: Ctx.Tag<I, S>, instance: S): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, I>, E, A>
-  <R, E, A, I, S>(fx: Fx<R, E, A>, service: Ctx.Tag<I, S>, instance: S): Fx<Exclude<R, I>, E, A>
+  <I, S>(service: Ctx.Tag<I, S>, instance: S): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, I>>
+  <A, E, R, I, S>(fx: Fx<A, E, R>, service: Ctx.Tag<I, S>, instance: S): Fx<A, E, Exclude<R, I>>
 } = dual(3, core.provideService)
 
 /**
  * @since 1.20.0
  */
 export const provideServiceEffect: {
-  <I, S, R2, E2>(
+  <I, S, E2, R2>(
     service: Ctx.Tag<I, S>,
     instance: Effect.Effect<S, E2, R2>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, I>, E | E2, A>
-  <R, E, A, I, S, R2, E2>(
-    fx: Fx<R, E, A>,
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R2 | Exclude<R, I>>
+  <A, E, R, I, S, E2, R2>(
+    fx: Fx<A, E, R>,
     service: Ctx.Tag<I, S>,
     instance: Effect.Effect<S, E2, R2>
-  ): Fx<R2 | Exclude<R, I>, E | E2, A>
+  ): Fx<A, E | E2, R2 | Exclude<R, I>>
 } = dual(3, core.provideServiceEffect)
 
 /**
  * @since 1.20.0
  */
 export const provide: {
-  <R2>(context: Ctx.Context<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R2>(runtime: Runtime.Runtime<R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<Exclude<R, R2>, E, A>
-  <R2, E2, S>(layer: Layer.Layer<S, E2, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R2 = never, E2 = never, S = never>(
+  <R2>(context: Ctx.Context<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <R2>(runtime: Runtime.Runtime<R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Exclude<R, R2>>
+  <S, E2, R2>(layer: Layer.Layer<S, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R2 | Exclude<R, S>>
+  <S, E2 = never, R2 = never>(
     provide: Layer.Layer<S, E2, R2> | Ctx.Context<S> | Runtime.Runtime<S>
-  ): <R, E, A>(fx: Fx<R, E, A>) => Fx<R2 | Exclude<R, S>, E | E2, A>
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E | E2, R2 | Exclude<R, S>>
 
-  <R, E, A, R2>(fx: Fx<R, E, A>, context: Ctx.Context<R2>): Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, runtime: Runtime.Runtime<R2>): Fx<Exclude<R, R2>, E, A>
-  <R, E, A, R2, E2, S>(fx: Fx<R, E, A>, layer: Layer.Layer<S, E2, R2>): Fx<R2 | Exclude<R, S>, E | E2, A>
-  <R, E, A, R2 = never, E2 = never, S = never>(
-    fx: Fx<R, E, A>,
+  <A, E, R, R2>(fx: Fx<A, E, R>, context: Ctx.Context<R2>): Fx<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(fx: Fx<A, E, R>, runtime: Runtime.Runtime<R2>): Fx<A, E, Exclude<R, R2>>
+  <A, E, R, S, E2, R2>(fx: Fx<A, E, R>, layer: Layer.Layer<S, E2, R2>): Fx<A, E | E2, R2 | Exclude<R, S>>
+  <A, E, R, S, E2 = never, R2 = never>(
+    fx: Fx<A, E, R>,
     provide: Layer.Layer<S, E2, R2> | Ctx.Context<S> | Runtime.Runtime<S>
-  ): Fx<R2 | Exclude<R, S>, E | E2, A>
+  ): Fx<A, E | E2, R2 | Exclude<R, S>>
 } = dual(2, core.provide)
 
 /**
  * @since 1.20.0
  */
 export const share: {
-  <R2, E2, A>(subject: Subject.Subject<R2, E2, A>): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E, A>
-  <R, E, A, R2>(fx: Fx<R, E, A>, subject: Subject.Subject<R2, E, A>): Fx<R | R2 | Scope.Scope, E, A>
+  <E2, R2, A>(subject: Subject.Subject<A, E2, R2>): <E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | R2 | Scope.Scope>
+  <A, E, R, R2>(fx: Fx<A, E, R>, subject: Subject.Subject<A, E, R2>): Fx<A, E, R | R2 | Scope.Scope>
 } = dual(2, coreShare.share)
 
 /**
  * @since 1.20.0
  */
-export const multicast: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A> = coreShare.multicast
+export const multicast: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R> = coreShare.multicast
 
 /**
  * @since 1.20.0
  */
-export const hold: <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A> = coreShare.hold
+export const hold: <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R> = coreShare.hold
 
 /**
  * @since 1.20.0
  */
 export const replay: {
-  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<Scope.Scope | R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<Scope.Scope | R, E, A>
+  (capacity: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, capacity: number): Fx<A, E, Scope.Scope | R>
 } = dual(2, coreShare.replay)
 
 /**
  * @since 1.20.0
  */
 export const mapCause: {
-  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Fx<R, E2, A>
+  <E, E2>(f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Cause.Cause<E2>): Fx<A, E2, R>
 } = dual(2, core.mapCause)
 
 /**
  * @since 1.20.0
  */
 export const mapError: {
-  <E, E2>(f: (e: E) => E2): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => E2): Fx<R, E2, A>
+  <E, E2>(f: (e: E) => E2): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (e: E) => E2): Fx<A, E2, R>
 } = dual(2, core.mapError)
 
 /**
  * @since 1.20.0
  */
 export const mapBoth: {
-  <E, E2, A, B>(f: (e: E) => E2, g: (a: A) => B): <R>(fx: Fx<R, E, A>) => Fx<R, E2, B>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, f: (e: E) => B, g: (a: A) => C): Fx<R, B, C>
+  <E, E2, A, B>(f: (e: E) => E2, g: (a: A) => B): <R>(fx: Fx<A, E, R>) => Fx<B, E2, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, f: (e: E) => B, g: (a: A) => C): Fx<C, B, R>
 } = dual(3, core.mapBoth)
 
 /**
  * @since 1.20.0
  */
 export const filterCause: {
-  <E>(f: (cause: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => boolean): Fx<R, E, A>
+  <E>(f: (cause: Cause.Cause<E>) => boolean): <R, A>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => boolean): Fx<A, E, R>
 } = dual(2, core.filterCause)
 
 /**
  * @since 1.20.0
  */
 export const filterError: {
-  <E>(f: (e: E) => boolean): <R, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, f: (e: E) => boolean): Fx<R, E, A>
+  <E>(f: (e: E) => boolean): <R, A>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, f: (e: E) => boolean): Fx<A, E, R>
 } = dual(2, core.filterError)
 
 /**
  * @since 1.20.0
  */
 export const filterMapCause: {
-  <E, E2>(f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<R, E2, A>
+  <E, E2>(f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Option.Option<Cause.Cause<E2>>): Fx<A, E2, R>
 } = dual(2, core.filterMapCause)
 
 /**
  * @since 1.20.0
  */
 export const filterMapError: {
-  <E, E2>(f: (e: E) => Option.Option<E2>): <R, A>(fx: Fx<R, E, A>) => Fx<R, E2, A>
-  <R, E, A, E2>(fx: Fx<R, E, A>, f: (e: E) => Option.Option<E2>): Fx<R, E2, A>
+  <E, E2>(f: (e: E) => Option.Option<E2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R>
+  <A, E, R, E2>(fx: Fx<A, E, R>, f: (e: E) => Option.Option<E2>): Fx<A, E2, R>
 } = dual(2, core.filterMapError)
 
 /**
  * @since 1.20.0
  */
 export const mapCauseEffect: {
-  <R2, E2, E3>(f: (cause: Cause.Cause<E2>) => Effect.Effect<Cause.Cause<E3>, E3, R2>): <R, E, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(
-    fx: Fx<R, E, A>,
+  <E3, E2, R2>(f: (cause: Cause.Cause<E2>) => Effect.Effect<Cause.Cause<E3>, E3, R2>): <A, E, R>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2 | E3, R | R2>
+  <A, E, R, E3, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (cause: Cause.Cause<E>) => Effect.Effect<Cause.Cause<E3>, E2, R2>
-  ): Fx<R | R2, E2 | E3, A>
+  ): Fx<A, E2 | E3, R | R2>
 } = dual(2, core.mapCauseEffect)
 
 /**
  * @since 1.20.0
  */
 export const mapErrorEffect: {
-  <R2, E2, E3>(f: (e: E2) => Effect.Effect<E3, E3, R2>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<E3, E2, R2>): Fx<R | R2, E2 | E3, A>
+  <E3, E2, R2>(f: (e: E2) => Effect.Effect<E3, E3, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E2 | E3, R | R2>
+  <A, E, R, E3, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<E3, E2, R2>): Fx<A, E2 | E3, R | R2>
 } = dual(2, core.mapErrorEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterCauseEffect: {
-  <E, R2, E2>(f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): <R, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E2, A>
+  <E, E2, R2>(f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): <R, A>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (cause: Cause.Cause<E>) => Effect.Effect<boolean, E2, R2>): Fx<A, E2, R | R2>
 } = dual(2, core.filterCauseEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterErrorEffect: {
-  <E, R2, E2>(f: (e: E) => Effect.Effect<boolean, E2, R2>): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2, A>
-  <R, E, A, R2, E2>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<boolean, E2, R2>): Fx<R | R2, E2, A>
+  <E, E2, R2>(f: (e: E) => Effect.Effect<boolean, E2, R2>): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2, R | R2>
+  <A, E, R, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<boolean, E2, R2>): Fx<A, E2, R | R2>
 } = dual(2, core.filterErrorEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapCauseEffect: {
-  <R2, E2, E3>(f: (cause: Cause.Cause<E2>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>): <R, E, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(
-    fx: Fx<R, E, A>,
+  <E3, E2, R2>(f: (cause: Cause.Cause<E2>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>): <A, E, R>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2 | E3, R | R2>
+  <A, E, R, E3, E2, R2>(
+    fx: Fx<A, E, R>,
     f: (cause: Cause.Cause<E>) => Effect.Effect<Option.Option<Cause.Cause<E3>>, E2, R2>
-  ): Fx<R | R2, E2 | E3, A>
+  ): Fx<A, E2 | E3, R | R2>
 } = dual(2, core.filterMapCauseEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapErrorEffect: {
-  <E, R2, E2, E3>(
+  <E, E3, E2, R2>(
     f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | E3, A>
-  <R, E, A, R2, E2, E3>(fx: Fx<R, E, A>, f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>): Fx<R | R2, E2 | E3, A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | E3, R | R2>
+  <A, E, R, E3, E2, R2>(fx: Fx<A, E, R>, f: (e: E) => Effect.Effect<Option.Option<E3>, E2, R2>): Fx<A, E2 | E3, R | R2>
 } = dual(2, core.filterMapErrorEffect)
 
 /**
@@ -1442,318 +1442,318 @@ export const loopCause: {
   <B, E, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, C, R>
 
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): Fx<R, C, A>
+  ): Fx<A, C, R>
 } = dual(3, core.loopCause)
 
 /**
  * @since 1.20.0
  */
 export const loopError: {
-  <B, E, C>(seed: B, f: (b: B, e: E) => readonly [C, B]): <R, A>(fx: Fx<R, E, A>) => Fx<R, C, A>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [C, B]): Fx<R, C, A>
+  <B, E, C>(seed: B, f: (b: B, e: E) => readonly [C, B]): <R, A>(fx: Fx<A, E, R>) => Fx<A, C, R>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (b: B, e: E) => readonly [C, B]): Fx<A, C, R>
 } = dual(3, core.loopError)
 
 /**
  * @since 1.20.0
  */
 export const loopCauseEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 } = dual(3, core.loopCauseEffect)
 
 /**
  * @since 1.20.0
  */
 export const loopErrorEffect: {
-  <B, E, R2, E2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>): <R, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  <B, E, E2, R2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>): <R, A>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [C, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 } = dual(3, core.loopErrorEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoopCause: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | C, A>
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
-  ): Fx<R, C, A>
+  ): Fx<A, C, R>
 } = dual(3, core.filterMapLoopCause)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoopError: {
-  <B, E, R2, E2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <R, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2 | C, A>
-  <R, E, A, B, C>(fx: Fx<R, E, A>, seed: B, f: (b: B, e: E) => readonly [Option.Option<C>, B]): Fx<R, C, A>
+  <B, E, E2, R2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <R, A>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, C>(fx: Fx<A, E, R>, seed: B, f: (b: B, e: E) => readonly [Option.Option<C>, B]): Fx<A, C, R>
 } = dual(3, core.filterMapLoopError)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoopCauseEffect: {
-  <B, E, R2, E2, C>(
+  <B, E, E2, R2, C>(
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, cause: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 } = dual(3, core.filterMapLoopCauseEffect)
 
 /**
  * @since 1.20.0
  */
 export const filterMapLoopErrorEffect: {
-  <B, E, R2, E2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <R, A>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2, E2 | C, A>
-  <R, E, A, R2, E2, B, C>(
-    fx: Fx<R, E, A>,
+  <B, E, E2, R2, C>(seed: B, f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <R, A>(
+    fx: Fx<A, E, R>
+  ) => Fx<A, E2 | C, R | R2>
+  <A, E, R, B, E2, R2, C>(
+    fx: Fx<A, E, R>,
     seed: B,
     f: (b: B, e: E) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>
-  ): Fx<R | R2, E2 | C, A>
+  ): Fx<A, E2 | C, R | R2>
 } = dual(3, core.filterMapLoopErrorEffect)
 
 /**
  * @since 1.20.0
  */
 export const flatMapCauseWithStrategy: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapCauseWithStrategy)
 
 /**
  * @since 1.20.0
  */
 export const flatMapErrorWithStrategy: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     flattenStrategy: FlattenStrategy,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapErrorWithStrategy)
 
 /**
  * @since 1.20.0
  */
 export const switchMapCause: {
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.switchMapCause)
 
 /**
  * @since 1.20.0
  */
 export const switchMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.switchMapError)
 
 /**
  * @since 1.20.0
  */
 export const flatMapCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapCause)
 
 /**
  * @since 1.20.0
  */
 export const flatMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapError)
 
 /**
  * @since 1.20.0
  */
 export const flatMapCauseConcurrently: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapCauseConcurrently)
 
 /**
  * @since 1.20.0
  */
 export const flatMapErrorConcurrently: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     concurrency: number,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.flatMapErrorConcurrently)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapCause)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapError)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapLatestCause: {
-  <E, R2, E2, B>(
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (cause: Cause.Cause<E>) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (cause: Cause.Cause<E>) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapLatestCause)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMapLatestError: {
-  <E, R2, E2, B>(
-    f: (e: E) => Fx<R2, E2, B>,
+  <E, B, E2, R2>(
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): <R, A>(fx: Fx<R, E, A>) => Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): <R, A>(fx: Fx<A, E, R>) => Fx<A | B, E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2, E2, B>(
-    fx: Fx<R, E, A>,
-    f: (e: E) => Fx<R2, E2, B>,
+  <A, E, R, B, E2, R2>(
+    fx: Fx<A, E, R>,
+    f: (e: E) => Fx<B, E2, R2>,
     executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
-  ): Fx<R | R2 | Scope.Scope, E2, A | B>
+  ): Fx<A | B, E2, R | R2 | Scope.Scope>
 } = dual(isDataFirstFx, core.exhaustMapLatestError)
 
 /**
  * @since 1.20.0
  */
-export type MatchCauseOptions<E, A, R2, E2, B, R3, E3, C> = {
-  readonly onFailure: (cause: Cause.Cause<E>) => Fx<R2, E2, B>
-  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+export type MatchCauseOptions<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (cause: Cause.Cause<E>) => Fx<B, E2, R2>
+  readonly onSuccess: (a: A) => Fx<C, E3, R3>
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
 }
 
 /**
  * @since 1.20.0
  */
-export type MatchErrorOptions<E, A, R2, E2, B, R3, E3, C> = {
-  readonly onFailure: (e: E) => Fx<R2, E2, B>
-  readonly onSuccess: (a: A) => Fx<R3, E3, C>
+export type MatchErrorOptions<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (e: E) => Fx<B, E2, R2>
+  readonly onSuccess: (a: A) => Fx<C, E3, R3>
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
 }
 
@@ -1761,192 +1761,192 @@ export type MatchErrorOptions<E, A, R2, E2, B, R3, E3, C> = {
  * @since 1.20.0
  */
 export const matchCauseWithStrategy: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     flattenStrategy: FlattenStrategy,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(3, core.matchCauseWithStrategy)
 
 /**
  * @since 1.20.0
  */
 export const matchErrorWithStrategy: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+  <E, A, B, E2, R2, C, E3, R3>(
+    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     flattenStrategy: FlattenStrategy,
-    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    { executionStrategy, onFailure, onSuccess }: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(3, core.matchErrorWithStrategy)
 
 /**
  * @since 1.20.0
  */
 export const matchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(2, core.matchCause)
 
 /**
  * @since 1.20.0
  */
 export const matchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.matchError)
 
 /**
  * @since 1.20.0
  */
 export const matchCauseConcurrently: {
-  <E, A, R2, E2, B, R3, E3, C>(
+  <E, A, B, E2, R2, C, E3, R3>(
     concurrency: number,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     concurrency: number,
-    opts: core.MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+    opts: core.MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(3, core.matchCauseConcurrently)
 
 /**
  * @since 1.20.0
  */
 export const matchErrorConcurrently: {
-  <E, A, R2, E2, B, R3, E3, C>(
+  <E, A, B, E2, R2, C, E3, R3>(
     concurrency: number,
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
     concurrency: number,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(3, core.matchErrorConcurrently)
 
 /**
  * @since 1.20.0
  */
 export const switchMatchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(2, core.switchMatchCause)
 
 /**
  * @since 1.20.0
  */
 export const switchMatchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.switchMatchError)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMatchCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(2, core.exhaustMatchCause)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMatchError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.exhaustMatchError)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMatchLatestCause: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: MatchCauseOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<Scope.Scope | R | R2 | R3, E2 | E3, B | C>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 } = dual(2, core.exhaustMatchLatestCause)
 
 /**
  * @since 1.20.0
  */
 export const exhaustMatchLatestError: {
-  <E, A, R2, E2, B, R3, E3, C>(
-    opts: MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): <R>(fx: Fx<R, E, A>) => Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    opts: core.MatchErrorOptions<E, A, R2, E2, B, R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E2 | E3, B | C>
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.exhaustMatchLatestError)
 
 /**
  * @since 1.20.0
  */
-export const exit: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Exit.Exit<A, E>> = core.exit
+export const exit: <A, E, R>(fx: Fx<A, E, R>) => Fx<Exit.Exit<A, E>, never, R> = core.exit
 
 /**
  * @since 1.20.0
  */
-export const either: <R, E, A>(fx: Fx<R, E, A>) => Fx<R, never, Either.Either<E, A>> = core.either
+export const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<E, A>, never, R> = core.either
 
 /**
  * @since 1.20.0
  */
 export const tuple: <const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }> = core.tuple
+) => Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.tuple
 
 /**
  * @since 1.20.0
  */
 export const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
   fx: FX
-) => Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }> = core.struct
+) => Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[string]>, Fx.Context<FX[string]>> = core.struct
 
 /**
  * @since 1.20.0
@@ -1954,10 +1954,10 @@ export const struct: <const FX extends Readonly<Record<string, Fx<any, any, any>
 export const all: {
   <const FX extends ReadonlyArray<Fx<any, any, any>>>(
     fx: FX
-  ): Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  ): Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
   <const FX extends Readonly<Record<string, Fx<any, any, any>>>>(
     fx: FX
-  ): Fx<Fx.Context<FX[string]>, Fx.Error<FX[string]>, { readonly [K in keyof FX]: Fx.Success<FX[K]> }>
+  ): Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[string]>, Fx.Context<FX[string]>>
 } = core.all
 
 /**
@@ -1966,40 +1966,40 @@ export const all: {
 export const toEnqueue: {
   <R2 = never, A = never>(
     queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>
-  ): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<void, E, R | R2>
-  <R, E, A, R2 = never>(fx: Fx<R, E, A>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<void, E, R | R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<void, E, R | R2>
+  <A, E, R, R2 = never>(fx: Fx<A, E, R>, queue: Ctx.Enqueue<R2, A> | Queue.Enqueue<A>): Effect.Effect<void, E, R | R2>
 } = dual(2, core.toEnqueue)
 
 /**
  * @since 1.20.0
  */
 export const debounce: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | Scope.Scope, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, R | Scope.Scope>
 } = dual(2, core.debounce)
 
 /**
  * @since 1.20.0
  */
 export const throttle: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | Scope.Scope, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, R | Scope.Scope>
 } = dual(2, core.throttle)
 
 /**
  * @since 1.20.0
  */
 export const throttleLatest: {
-  (delay: Duration.DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | Scope.Scope, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: Duration.DurationInput): Fx<R | Scope.Scope, E, A>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, R | Scope.Scope>
 } = dual(2, core.throttleLatest)
 
 /**
  * @since 1.20.0
  */
-export interface KeyedOptions<A, B, R2, E2, C> {
+export interface KeyedOptions<A, B, C, E2, R2> {
   readonly getKey: (a: A) => B
-  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly onValue: (ref: RefSubject<A>, key: B) => Fx<C, E2, R2>
   readonly debounce?: Duration.DurationInput
 }
 
@@ -2007,36 +2007,36 @@ export interface KeyedOptions<A, B, R2, E2, C> {
  * @since 1.20.0
  */
 export const keyed: {
-  <A, B extends PropertyKey, R2, E2, C>(
-    options: KeyedOptions<A, B, R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, ReadonlyArray<A>>) => Fx<R | R2, E | E2, ReadonlyArray<C>>
+  <A, B extends PropertyKey, E2, R2, C>(
+    options: KeyedOptions<A, B, E2, R2, C>
+  ): <E, R>(fx: Fx<ReadonlyArray<A>, E, R>) => Fx<ReadonlyArray<C>, E | E2, R | R2>
 
-  <R, E, A, B extends PropertyKey, R2, E2, C>(
-    fx: Fx<R, E, ReadonlyArray<A>>,
-    options: KeyedOptions<A, B, R2, E2, C>
-  ): Fx<R | R2, E | E2, ReadonlyArray<C>>
+  <A, E, R, B extends PropertyKey, E2, R2, C>(
+    fx: Fx<ReadonlyArray<A>, E, R>,
+    options: KeyedOptions<A, B, E2, R2, C>
+  ): Fx<ReadonlyArray<C>, E | E2, R | R2>
 } = dual(2, coreKeyed.keyed)
 
 /**
  * @since 1.20.0
  */
-export interface WithKeyOptions<A, B, R2, E2, C> {
+export interface WithKeyOptions<A, B, C, E2, R2> {
   readonly getKey: (a: A) => B
-  readonly onValue: (ref: RefSubject<never, never, A>, key: B) => Fx<R2, E2, C>
+  readonly onValue: (ref: RefSubject<A>, key: B) => Fx<C, E2, R2>
 }
 
 /**
  * @since 1.20.0
  */
 export const withKey: {
-  <A, B extends PropertyKey, R2, E2, C>(
-    options: WithKeyOptions<A, B, R2, E2, C>
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, C>
+  <A, B extends PropertyKey, E2, R2, C>(
+    options: WithKeyOptions<A, B, C, E2, R2>
+  ): <E, R>(fx: Fx<A, E, R>) => Fx<C, E | E2, R | R2>
 
-  <R, E, A, B extends PropertyKey, R2, E2, C>(
-    fx: Fx<R, E, A>,
-    options: WithKeyOptions<A, B, R2, E2, C>
-  ): Fx<R | R2, E | E2, C>
+  <A, E, R, B extends PropertyKey, E2, R2, C>(
+    fx: Fx<A, E, R>,
+    options: WithKeyOptions<A, B, C, E2, R2>
+  ): Fx<C, E | E2, R | R2>
 } = dual(2, coreWithKey.withKey)
 
 const getTag = (a: { readonly _tag: string }): string => a._tag
@@ -2052,29 +2052,31 @@ const getTag = (a: { readonly _tag: string }): string => a._tag
 export const matchTags: {
   <A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
     matchers: Matchers
-  ): <R, E>(fx: Fx<R, E, A>) => Fx<
-    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+  ): <E, R>(
+    fx: Fx<A, E, R>
+  ) => Fx<
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>,
     E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
-    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>
   >
 
-  <R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
-    fx: Fx<R, E, A>,
+  <A extends { readonly _tag: string }, E, R, Matchers extends DefaultMatchersFrom<A>>(
+    fx: Fx<A, E, R>,
     matchers: Matchers
   ): Fx<
-    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>,
     E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
-    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>
   >
 } = dual(
   2,
-  function matchTags<R, E, A extends { readonly _tag: string }, Matchers extends DefaultMatchersFrom<A>>(
-    fx: Fx<R, E, A>,
+  function matchTags<A extends { readonly _tag: string }, E, R, Matchers extends DefaultMatchersFrom<A>>(
+    fx: Fx<A, E, R>,
     matchers: Matchers
   ): Fx<
-    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>,
+    Fx.Success<ReturnType<Matchers[keyof Matchers]>>,
     E | Fx.Error<ReturnType<Matchers[keyof Matchers]>>,
-    Fx.Success<ReturnType<Matchers[keyof Matchers]>>
+    R | Fx.Context<ReturnType<Matchers[keyof Matchers]>>
   > {
     return withKey(fx, {
       getKey: getTag,
@@ -2088,7 +2090,7 @@ export const matchTags: {
  */
 export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
   readonly [Tag in A["_tag"]]: (
-    value: RefSubject<never, never, Extract<A, { readonly _tag: Tag }>>
+    value: RefSubject<Extract<A, { readonly _tag: Tag }>>
   ) => Fx<any, any, any>
 }
 
@@ -2096,23 +2098,23 @@ export type DefaultMatchersFrom<A extends { readonly _tag: string }> = {
  * @since 1.20.0
  */
 export const matchOption: {
-  <A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onNone: () => Fx<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
+  <A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    onNone: () => Fx<B, E2, R2>,
+    onSome: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): <E, R>(fx: Fx<Option.Option<A>, E, R>) => Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    onNone: () => Fx<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
+  <A, E, R, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    onNone: () => Fx<B, E2, R2>,
+    onSome: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(
   3,
-  function matchOption<R, E, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    onNone: () => Fx<R2, E2, B>,
-    onSome: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C> {
+  function matchOption<A, E, R, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    onNone: () => Fx<B, E2, R2>,
+    onSome: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
     return matchTags(fx, {
       None: onNone,
       Some: (some) => onSome(transform(some, (s) => s.value, (value) => Option.some(value) as Option.Some<A>))
@@ -2124,21 +2126,21 @@ export const matchOption: {
  * @since 1.20.0
  */
 export const getOrElse: {
-  <A, R2 = never, E2 = never, B = never>(
-    orElse: () => Fx<R2, E2, B>
-  ): <R, E>(fx: Fx<R, E, Option.Option<A>>) => Fx<R | R2 | Scope.Scope, E | E2, A | B>
+  <A, B = never, E2 = never, R2 = never>(
+    orElse: () => Fx<B, E2, R2>
+  ): <E, R>(fx: Fx<Option.Option<A>, E, R>) => Fx<A | B, E | E2, R | R2 | Scope.Scope>
 
-  <R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    orElse: () => Fx<R2, E2, B>
-  ): Fx<R | R2 | Scope.Scope, E | E2, A | B>
+  <A, E, R, B = never, E2 = never, R2 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    orElse: () => Fx<B, E2, R2>
+  ): Fx<A | B, E | E2, R | R2 | Scope.Scope>
 } = dual(
   2,
-  function getOrElse<R, E, A, R2 = never, E2 = never, B = never>(
-    fx: Fx<R, E, Option.Option<A>>,
-    orElse: () => Fx<R2, E2, B>
-  ): Fx<R | R2 | Scope.Scope, E | E2, A | B> {
-    return matchOption(fx, orElse, identity)
+  function getOrElse<A, E, R, B = never, E2 = never, R2 = never>(
+    fx: Fx<Option.Option<A>, E, R>,
+    orElse: () => Fx<B, E2, R2>
+  ): Fx<A | B, E | E2, R | R2 | Scope.Scope> {
+    return matchOption(fx, () => orElse(), (ref) => ref)
   }
 )
 
@@ -2146,23 +2148,23 @@ export const getOrElse: {
  * @since 1.20.0
  */
 export const matchEither: {
-  <E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): <R, E>(fx: Fx<R, E, Either.Either<E1, A>>) => Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
+  <E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
+    onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): <E, R>(fx: Fx<Either.Either<E1, A>, E, R>) => Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 
-  <R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Either.Either<E1, A>>,
-    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
+  <R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Either.Either<E1, A>, E, R>,
+    onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
+    onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(
   3,
-  function matchEither<R, E, E1, A, R2 = never, E2 = never, B = never, R3 = never, E3 = never, C = never>(
-    fx: Fx<R, E, Either.Either<E1, A>>,
-    onLeft: (e: RefSubject<never, never, E1>) => Fx<R2, E2, B>,
-    onRight: (a: RefSubject<never, never, A>) => Fx<R3, E3, C>
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C> {
+  function matchEither<R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
+    fx: Fx<Either.Either<E1, A>, E, R>,
+    onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
+    onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
+  ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
     return matchTags(fx, {
       Left: (left) => onLeft(transform(left, (a) => a.left, (a) => Either.left(a) as Either.Left<E1, A>)),
       Right: (right) => onRight(transform(right, (s) => s.right, (value) => Either.right(value) as Either.Right<E1, A>))
@@ -2174,12 +2176,11 @@ export const matchEither: {
  * @since 1.20.0
  */
 export const at: {
-  (duration: Duration.DurationInput): <A>(value: A) => Fx<never, never, A>
-  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A>
+  (duration: Duration.DurationInput): <A>(value: A) => Fx<A>
+  <A>(value: A, duration: Duration.DurationInput): Fx<A>
 } = dual(
   2,
-  <A>(value: A, duration: Duration.DurationInput): Fx<never, never, A> =>
-    fromEffect(Effect.delay(Effect.succeed(value), duration))
+  <A>(value: A, duration: Duration.DurationInput): Fx<A> => fromEffect(Effect.delay(Effect.succeed(value), duration))
 )
 
 /**
@@ -2194,37 +2195,37 @@ export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(
 /**
  * @since 1.20.0
  */
-export const fork = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R> =>
+export const fork = <A, E, R>(fx: Fx<A, E, R>): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R> =>
   Effect.fork(drain(fx))
 
 /**
  * @since 1.20.0
  */
-export const forkScoped = <R, E, A>(
-  fx: Fx<R, E, A>
+export const forkScoped = <A, E, R>(
+  fx: Fx<A, E, R>
 ): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R | Scope.Scope> => Effect.forkScoped(drain(fx))
 
 /**
  * @since 1.20.0
  */
-export const forkDaemon = <R, E, A>(fx: Fx<R, E, A>): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R> =>
+export const forkDaemon = <A, E, R>(fx: Fx<A, E, R>): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R> =>
   Effect.forkDaemon(drain(fx))
 
 /**
  * @since 1.20.0
  */
 export const forkIn: {
-  (scope: Scope.Scope): <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
-  <R, E, A>(fx: Fx<R, E, A>, scope: Scope.Scope): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
-} = dual(2, <R, E, A>(
-  fx: Fx<R, E, A>,
+  (scope: Scope.Scope): <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+  <A, E, R>(fx: Fx<A, E, R>, scope: Scope.Scope): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R>
+} = dual(2, <A, E, R>(
+  fx: Fx<A, E, R>,
   scope: Scope.Scope
 ): Effect.Effect<Fiber.RuntimeFiber<void, E>, never, R> => Effect.forkIn(drain(fx), scope))
 
 /**
  * @since 1.20.0
  */
-export const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<never, never, A> = core.fromAsyncIterable
+export const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<A> = core.fromAsyncIterable
 
 /**
  * @since 1.20.0
@@ -2232,15 +2233,15 @@ export const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<never, nev
 export const partitionMap: {
   <A, B, C>(
     f: (a: A) => Either.Either<B, C>
-  ): <R, E>(fx: Fx<R, E, A>) => readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
-  <R, E, A, B, C>(
-    fx: Fx<R, E, A>,
+  ): <E, R>(fx: Fx<A, E, R>) => readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
+  <A, E, R, B, C>(
+    fx: Fx<A, E, R>,
     f: (a: A) => Either.Either<B, C>
-  ): readonly [Fx<Scope.Scope | R, E, B>, Fx<Scope.Scope | R, E, C>]
-} = dual(2, function partitionMap<R, E, A, B, C>(
-  fx: Fx<R, E, A>,
+  ): readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
+} = dual(2, function partitionMap<A, E, R, B, C>(
+  fx: Fx<A, E, R>,
   f: (a: A) => Either.Either<B, C>
-): readonly [Fx<R | Scope.Scope, E, B>, Fx<R | Scope.Scope, E, C>] {
+): readonly [Fx<B, E, R | Scope.Scope>, Fx<C, E, R | Scope.Scope>] {
   const source = coreShare.multicast(core.map(fx, f))
 
   return [
@@ -2255,9 +2256,9 @@ export const partitionMap: {
 export const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
-  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>,
+  Fx.Success<FX>,
   Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Fx.Success<FX>
+  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>
 > = core.gen
 
 /**
@@ -2266,40 +2267,40 @@ export const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any,
 export const genScoped: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
-  Exclude<Effect.Effect.Context<Y["value"]> | Fx.Context<FX>, Scope.Scope>,
+  Fx.Success<FX>,
   Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Fx.Success<FX>
+  Exclude<Effect.Effect.Context<Y["value"]> | Fx.Context<FX>, Scope.Scope>
 > = core.genScoped
 
 /**
  * @since 1.20.0
  */
 export const findFirst: {
-  <A, B extends A>(refinement: Predicate.Refinement<A, B>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<B, E, R>
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(fx: Fx<R, E, A>) => Effect.Effect<A, E, R>
-  <R, E, A, B extends A>(fx: Fx<R, E, A>, refinement: Predicate.Refinement<A, B>): Effect.Effect<B, E, R>
-  <R, E, A>(fx: Fx<R, E, A>, predicate: Predicate.Predicate<A>): Effect.Effect<A, E, R>
+  <A, B extends A>(refinement: Predicate.Refinement<A, B>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<B, E, R>
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(fx: Fx<A, E, R>) => Effect.Effect<A, E, R>
+  <A, E, R, B extends A>(fx: Fx<A, E, R>, refinement: Predicate.Refinement<A, B>): Effect.Effect<B, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, predicate: Predicate.Predicate<A>): Effect.Effect<A, E, R>
 } = dual(2, core.findFirst)
 
 /**
  * @since 1.20.0
  */
-export const first: <R, E, A>(fx: Fx<R, E, A>) => Effect.Effect<A, E, R> = core.first
+export const first: <A, E, R>(fx: Fx<A, E, R>) => Effect.Effect<A, E, R> = core.first
 
 /**
  * @since 1.20.0
  */
 export const mergeFirst: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A, E | E2, R | R2>
 } = dual(2, core.mergeFirst)
 
 /**
  * @since 1.20.0
  */
 export const mergeRace: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 } = dual(2, core.mergeRace)
 
 /**
@@ -2307,54 +2308,54 @@ export const mergeRace: {
  */
 export const raceAll: <const FX extends ReadonlyArray<Fx<any, any, any>>>(
   fx: FX
-) => Fx<Fx.Context<FX[number]>, Fx.Error<FX[number]>, Fx.Success<FX[number]>> = core.raceAll
+) => Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Context<FX[number]>> = core.raceAll
 
 /**
  * @since 1.20.0
  */
 export const race: {
-  <R2, E2, B>(that: Fx<R2, E2, B>): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | R2, E | E2, A | B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, that: Fx<R2, E2, B>): Fx<R | R2, E | E2, A | B>
+  <B, E2, R2>(that: Fx<B, E2, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A | B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, that: Fx<B, E2, R2>): Fx<A | B, E | E2, R | R2>
 } = dual(2, core.race)
 
 /**
  * @since 1.20.0
  */
 export const snapshot: {
-  <R, E, B, A, C>(sampled: Fx<R, E, B>, g: (a: A, b: B) => C): <R2, E2>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, C>
-  <R, E, A, R2, E2, B, C>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>, f: (a: A, b: B) => C): Fx<R | R2, E | E2, C>
+  <B, E, R, A, C>(sampled: Fx<B, E, R>, g: (a: A, b: B) => C): <E2, R2>(fx: Fx<A, E2, R2>) => Fx<C, E | E2, R | R2>
+  <A, E, R, B, E2, R2, C>(fx: Fx<A, E, R>, sampled: Fx<B, E2, R2>, f: (a: A, b: B) => C): Fx<C, E | E2, R | R2>
 } = dual(3, core.snapshot)
 
 /**
  * @since 1.20.0
  */
 export const sample: {
-  <R, E, B>(sampled: Fx<R, E, B>): <R2, E2, A>(fx: Fx<R2, E2, A>) => Fx<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(fx: Fx<R, E, A>, sampled: Fx<R2, E2, B>): Fx<R | R2, E | E2, B>
+  <B, E, R>(sampled: Fx<B, E, R>): <E2, R2, A>(fx: Fx<A, E2, R2>) => Fx<B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(fx: Fx<A, E, R>, sampled: Fx<B, E2, R2>): Fx<B, E | E2, R | R2>
 } = dual(2, core.sample)
 
 /**
  * @since 1.20.0
  */
 export const snapshotEffect: {
-  <R2, E2, B, A, R3, E3, C>(sampled: Fx<R2, E2, B>, g: (a: A, b: B) => Effect.Effect<C, E3, R3>): <R, E>(
-    fx: Fx<R, E, A>
-  ) => Fx<R | R2 | R3, E | E2 | E3, C>
-  <R, E, A, R2, E2, B, R3, E3, C>(
-    fx: Fx<R, E, A>,
-    sampled: Fx<R2, E2, B>,
+  <B, E2, R2, A, C, E3, R3>(sampled: Fx<B, E2, R2>, g: (a: A, b: B) => Effect.Effect<C, E3, R3>): <E, R>(
+    fx: Fx<A, E, R>
+  ) => Fx<C, E | E2 | E3, R | R2 | R3>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    sampled: Fx<B, E2, R2>,
     f: (a: A, b: B) => Effect.Effect<C, E3, R3>
-  ): Fx<R | R2 | R3, E | E2 | E3, C>
+  ): Fx<C, E | E2 | E3, R | R2 | R3>
 } = dual(3, core.snapshotEffect)
 
 const if_: {
-  <R2, E2, B, R3, E3, C>(options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }): <R, E>(
-    bool: Fx<R, E, boolean>
-  ) => Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
-  <R, E, R2, E2, B, R3, E3, C>(
-    bool: Fx<R, E, boolean>,
-    options: { readonly onTrue: Fx<R2, E2, B>; readonly onFalse: Fx<R3, E3, C> }
-  ): Fx<R | R2 | R3 | Scope.Scope, E | E2 | E3, B | C>
+  <B, E2, R2, C, E3, R3>(options: { readonly onTrue: Fx<B, E2, R2>; readonly onFalse: Fx<C, E3, R3> }): <E, R>(
+    bool: Fx<boolean, E, R>
+  ) => Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
+  <B, E, R, E2, R2, C, E3, R3>(
+    bool: Fx<boolean, E, R>,
+    options: { readonly onTrue: Fx<B, E2, R2>; readonly onFalse: Fx<C, E3, R3> }
+  ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.if)
 
 export {
@@ -2370,19 +2371,19 @@ export {
 export const when: {
   <B, C>(
     options: { readonly onTrue: B; readonly onFalse: C }
-  ): <R, E>(bool: Fx<R, E, boolean>) => Fx<R | Scope.Scope, E, B | C>
-  <R, E, B, C>(
-    bool: Fx<R, E, boolean>,
+  ): <E, R>(bool: Fx<boolean, E, R>) => Fx<B | C, E, R | Scope.Scope>
+  <B, E, R, C>(
+    bool: Fx<boolean, E, R>,
     options: { readonly onTrue: B; readonly onFalse: C }
-  ): Fx<R | Scope.Scope, E, B | C>
+  ): Fx<B | C, E, R | Scope.Scope>
 } = dual(2, core.when)
 
 /**
  * @since 1.20.0
  */
-export const withEmitter = <E, A, R = never, E2 = never>(
-  f: (emitter: Emitter.Emitter<E, A>) => Effect.Effect<unknown, E2, R>
-): Fx<R | Scope.Scope, E | E2, A> => core.make<R | Scope.Scope, E | E2, A>((sink) => Emitter.withEmitter(sink, f))
+export const withEmitter = <A, E = never, E2 = never, R = never>(
+  f: (emitter: Emitter.Emitter<A, E>) => Effect.Effect<unknown, E2, R>
+): Fx<A, E | E2, R | Scope.Scope> => core.make<A, E | E2, R | Scope.Scope>((sink) => Emitter.withEmitter(sink, f))
 
 /**
  * Create an Fx which will wait a specified duration of time where no
@@ -2390,9 +2391,9 @@ export const withEmitter = <E, A, R = never, E2 = never>(
  * @since 1.18.0
  */
 export const delay: {
-  (delay: DurationInput): <R, E, A>(fx: Fx<R, E, A>) => Fx<R | Scope.Scope, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R | Scope.Scope, E, A>
-} = dual(2, function<R, E, A>(fx: Fx<R, E, A>, delay: DurationInput): Fx<R | Scope.Scope, E, A> {
+  (delay: DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
+  <A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, R | Scope.Scope>
+} = dual(2, function<A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, R | Scope.Scope> {
   return core.flatMap(fx, (a) => core.fromEffect(Effect.delay(Effect.succeed(a), delay)))
 })
 
@@ -2400,20 +2401,20 @@ export const delay: {
  * @since 1.20.0
  */
 export const ensuring: {
-  <R2>(finalizer: Effect.Effect<unknown, never, R2>): <R, E, A>(self: Fx<R, E, A>) => Fx<R | R2, E, A>
-  <R, E, A, R2>(self: Fx<R, E, A>, finalizer: Effect.Effect<unknown, never, R2>): Fx<R | R2, E, A>
-} = dual(2, function<R, E, A, R2>(
-  self: Fx<R, E, A>,
+  <R2>(finalizer: Effect.Effect<unknown, never, R2>): <A, E, R>(self: Fx<A, E, R>) => Fx<A, E, R | R2>
+  <A, E, R, R2>(self: Fx<A, E, R>, finalizer: Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
+} = dual(2, function<A, E, R, R2>(
+  self: Fx<A, E, R>,
   finalizer: Effect.Effect<unknown, never, R2>
-): Fx<R | R2, E, A> {
+): Fx<A, E, R | R2> {
   return core.middleware(self, (effect) => Effect.ensuring(effect, finalizer))
 })
 
 /**
  * @since 1.20.0
  */
-export const flip = <R, E, A>(fx: Fx<R, E, A>): Fx<R, A, E> =>
-  core.make<R, A, E>((sink) =>
+export const flip = <A, E, R>(fx: Fx<A, E, R>): Fx<E, A, R> =>
+  core.make<E, A, R>((sink) =>
     fx.run(Sink.make(
       (cause) =>
         Either.match(Cause.failureOrCause(cause), {
@@ -2427,7 +2428,7 @@ export const flip = <R, E, A>(fx: Fx<R, E, A>): Fx<R, A, E> =>
 /**
  * @since 1.20.0
  */
-export const fromNullable = <A>(value: A | null | undefined | void): Fx<never, never, NonNullable<A>> => {
+export const fromNullable = <A>(value: A | null | undefined | void): Fx<NonNullable<A>> => {
   if (value === null || value === undefined) {
     return core.empty
   } else {
@@ -2438,9 +2439,9 @@ export const fromNullable = <A>(value: A | null | undefined | void): Fx<never, n
 /**
  * @since 1.20.0
  */
-export function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<never, never, A>
-export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<I, never, A>
-export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A> | Queue.Dequeue<A>): Fx<I, never, A> {
+export function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<A>
+export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<A, never, I>
+export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A> | Queue.Dequeue<A>): Fx<A, never, I> {
   return core.make((sink) =>
     Effect.gen(function*(_) {
       while (yield* _(dequeueIsActive(dequeue))) {
@@ -2466,9 +2467,9 @@ export function dequeueIsActive<I, A>(
 /**
  * @since 1.20.0
  */
-export function fromPubSub<A>(pubSub: PubSub.PubSub<A>): Fx<Scope.Scope, never, A>
-export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A>): Fx<I | Scope.Scope, never, A>
-export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A> | PubSub.PubSub<A>): Fx<I | Scope.Scope, never, A> {
+export function fromPubSub<A>(pubSub: PubSub.PubSub<A>): Fx<A, never, Scope.Scope>
+export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A>): Fx<A, never, I | Scope.Scope>
+export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A> | PubSub.PubSub<A>): Fx<A, never, I | Scope.Scope> {
   return core.acquireUseRelease(
     pubSub.subscribe,
     (q) => fromDequeue(q),
@@ -2479,20 +2480,20 @@ export function fromPubSub<I, A>(pubSub: Ctx.PubSub<I, A> | PubSub.PubSub<A>): F
 /**
  * @since 1.20.0
  */
-export abstract class FxEffectBase<R, E, A, R2, E2, B> extends protos.FxEffectBase<R, E, A, R2, E2, B> {
-  private _fx: Fx<R, E, A> | undefined
+export abstract class FxEffectBase<A, E, R, B, E2, R2> extends protos.FxEffectBase<A, E, R, B, E2, R2> {
+  private _fx: Fx<A, E, R> | undefined
 
   /**
    * @since 1.20.0
    */
-  run<R3>(sink: Sink.Sink<R3, E, A>): Effect.Effect<void, never, R | R3> {
+  run<R3>(sink: Sink.Sink<A, E, R3>): Effect.Effect<void, never, R | R3> {
     return (this._fx ||= this.toFx()).run(sink)
   }
 
   /**
    * @since 1.20.0
    */
-  abstract toFx(): Fx<R, E, A>
+  abstract toFx(): Fx<A, E, R>
 
   /**
    * @since 1.20.0

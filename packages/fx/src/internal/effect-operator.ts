@@ -190,8 +190,8 @@ export function matchEffectOperator<A, B, C, D>(
 
 export function compileEffectOperatorSink<R>(
   operator: EffectOperator,
-  sink: Sink.Sink<R, any, any>
-): Sink.Sink<R, any, any> {
+  sink: Sink.Sink<any, any, R>
+): Sink.Sink<any, any, R> {
   return matchEffectOperator(operator, {
     MapEffect: (op) => Sink.mapEffect(sink, op.f),
     FilterEffect: (op) => Sink.filterEffect(sink, op.f),
@@ -202,8 +202,8 @@ export function compileEffectOperatorSink<R>(
 
 export function compileCauseEffectOperatorSink<R>(
   operator: EffectOperator,
-  sink: Sink.Sink<R, any, any>
-): Sink.Sink<R, any, any> {
+  sink: Sink.Sink<any, any, R>
+): Sink.Sink<any, any, R> {
   return matchEffectOperator(operator, {
     MapEffect: (op) =>
       Sink.make(

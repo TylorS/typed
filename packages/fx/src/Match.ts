@@ -33,49 +33,49 @@ export type MatcherTypeId = typeof MatcherTypeId
 /**
  * @since 1.18.0
  */
-export interface TypeMatcher<out R, out E, in out I, out O> {
+export interface TypeMatcher<I, O = never, E = never, R = never> {
   readonly _tag: "TypeMatcher"
 
-  readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
+  readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
   readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ) => TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ) => TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
   readonly to: <R2 = never, E2 = never, A = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ) => TypeMatcher<R | R2, E | E2, I, O | B>
+  ) => TypeMatcher<I, O | B, E | E2, R | R2>
 
   readonly run: <R2 = never, E2 = never>(
-    input: Fx.Fx<R2, E2, I>
-  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>>
+    input: Fx.Fx<I, E2, R2>
+  ) => Fx.Fx<Option.Option<O>, E | E2, R | R2 | Scope.Scope>
 }
 
 /**
  * @since 1.18.0
  */
-export interface ValueMatcher<out R, out E, in out I, out O> extends Fx.Fx<R | Scope.Scope, E, Option.Option<O>> {
+export interface ValueMatcher<I, O = never, E = never, R = never> extends Fx.Fx<Option.Option<O>, E, R | Scope.Scope> {
   readonly _tag: "ValueMatcher"
 
-  readonly [MatcherTypeId]: Matcher.Variance<R, E, I, O>
+  readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
-  readonly value: Fx.Fx<R, E, I>
+  readonly value: Fx.Fx<I, E, R>
 
-  readonly when: <R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ) => ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B>
+  readonly when: <A, E2, R2, R3 = never, E3 = never, B = never>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ) => ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
-  readonly to: <R2, E2, A, B>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+  readonly to: <A, E2, R2, B>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ) => ValueMatcher<R | R2, E | E2, I, O | B>
+  ) => ValueMatcher<I, O | B, E | E2, R | R2>
 
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
-    f: () => Fx.Fx<R2, E2, B>
-  ) => Fx.Fx<R | R2 | Scope.Scope, E | E2, O | B>
+    f: () => Fx.Fx<B, E2, R2>
+  ) => Fx.Fx<O | B, E | E2, R | R2 | Scope.Scope>
 }
 
 /**
@@ -85,7 +85,7 @@ export namespace Matcher {
   /**
    * @since 1.18.0
    */
-  export interface Variance<R, E, I, O> {
+  export interface Variance<I, O, E, R> {
     readonly _R: (_: never) => R
     readonly _E: (_: never) => E
     readonly _I: (_: I) => unknown
@@ -96,13 +96,12 @@ export namespace Matcher {
 /**
  * @since 1.18.0
  */
-export const type = <I>(): TypeMatcher<never, never, I, never> =>
-  new TypeMatcherImpl<never, never, I, never>(Chunk.empty())
+export const type = <I>(): TypeMatcher<I> => new TypeMatcherImpl<I, never, never, never>(Chunk.empty())
 
 /**
  * @since 1.18.0
  */
-export const value = <R, E, I>(input: Fx.Fx<R, E, I>): ValueMatcher<R, E, I, never> =>
+export const value = <I, E = never, R = never>(input: Fx.Fx<I, E, R>): ValueMatcher<I, never, E, R> =>
   new ValueMatcherImpl(input, type<I>())
 
 // Internals
@@ -117,48 +116,48 @@ const variance: Matcher.Variance<any, any, any, any> = {
 class When<R, E, I, A, O> {
   constructor(
     readonly guard: (input: I) => Effect.Effect<Option.Option<A>, E, R>,
-    readonly onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R, E, O>
+    readonly onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<O, E, R>
   ) {}
 }
 
 class Matched<R, E, I, A, O> {
   constructor(
     readonly when: When<R, E, I, A, O>,
-    readonly ref: RefSubject.RefSubject<never, never, A>,
+    readonly ref: RefSubject.RefSubject<A>,
     readonly fiber: Fiber.Fiber<unknown>,
     readonly interrupt: Effect.Effect<void>
   ) {}
 }
 
-class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
+class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
   readonly _tag = "TypeMatcher"
-  readonly [MatcherTypeId]: TypeMatcher<R, E, I, O>[MatcherTypeId] = variance as any
+  readonly [MatcherTypeId]: TypeMatcher<I, O, E, R>[MatcherTypeId] = variance as any
 
   constructor(readonly cases: Chunk.Chunk<When<any, any, I, any, any>>) {
     this.when = this.when.bind(this)
     this.run = this.run.bind(this)
   }
 
-  when<R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ): TypeMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
-    return new TypeMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
-      Chunk.append(this.cases, new When<R2 | R3, E2 | E3, I, A, B>(getGuard(guard), onMatch))
+  when<A, E2, R2, R3 = never, E3 = never, B = never>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ): TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3> {
+    return new TypeMatcherImpl<I, O | B, E | E2 | E3, R | R2 | R3>(
+      Chunk.append(this.cases, new When<R | R2 | R3, E | E2 | E3, I, A, O | B>(getGuard(guard), onMatch))
     )
   }
 
-  to<R2, E2, A, B>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+  to<A, E2, R2, B>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ): TypeMatcher<R | R2, E | E2, I, O | B> {
+  ): TypeMatcher<I, O | B, E | E2, R | R2> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  run<R2, E2>(input: Fx.Fx<R2, E2, I>): Fx.Fx<R | R2 | Scope.Scope, E | E2, Option.Option<O>> {
+  run<R2, E2>(input: Fx.Fx<I, E2, R2>): Fx.Fx<Option.Option<O>, E | E2, R | R2 | Scope.Scope> {
     const { cases } = this
 
-    return Fx.make<R | R2 | Scope.Scope, E | E2, Option.Option<O>>((sink) =>
+    return Fx.make<Option.Option<O>, E | E2, R | R2 | Scope.Scope>((sink) =>
       withScopedFork(
         (fork, parentScope) => {
           let previous: Matched<any, any, I, any, O>
@@ -182,7 +181,7 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
                 // Track if the case is ended
                 const hasEnded = MutableRef.make(false)
                 // Used to signal when the case has ended
-                const endSignal = Subject.unsafeMake<never, void>(0)
+                const endSignal = Subject.unsafeMake<void>(0)
 
                 // Run the case
                 const fiber = yield* _(
@@ -279,51 +278,51 @@ class TypeMatcherImpl<R, E, I, O> implements TypeMatcher<R, E, I, O> {
   }
 }
 
-class ValueMatcherImpl<R, E, I, O> extends FxBase<R | Scope.Scope, E, Option.Option<O>>
-  implements ValueMatcher<R, E, I, O>
+class ValueMatcherImpl<I, O, E, R> extends FxBase<Option.Option<O>, E, R | Scope.Scope>
+  implements ValueMatcher<I, O, E, R>
 {
   readonly _tag = "ValueMatcher"
-  readonly [MatcherTypeId]: ValueMatcher<R, E, I, O>[MatcherTypeId] = variance
+  readonly [MatcherTypeId]: ValueMatcher<I, O, E, R>[MatcherTypeId] = variance
 
-  constructor(readonly value: Fx.Fx<R, E, I>, readonly matcher: TypeMatcher<R, E, I, O>) {
+  constructor(readonly value: Fx.Fx<I, E, R>, readonly matcher: TypeMatcher<I, O, E, R>) {
     super()
     this.when = this.when.bind(this)
     this.to = this.to.bind(this)
     this.getOrElse = this.getOrElse.bind(this)
   }
 
-  run<R2>(sink: Sink.Sink<R2, E, Option.Option<O>>) {
+  run<R2>(sink: Sink.Sink<Option.Option<O>, E, R2>) {
     return this.matcher.run(this.value).run(sink)
   }
 
-  when<R2, E2, A, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
-    onMatch: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R3, E3, B>
-  ): ValueMatcher<R | R2 | R3, E | E2 | E3, I, O | B> {
-    return new ValueMatcherImpl<R | R2 | R3, E | E2 | E3, I, O | B>(
+  when<A, E2, R2, R3 = never, E3 = never, B = never>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
+  ): ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3> {
+    return new ValueMatcherImpl<I, O | B, E | E2 | E3, R | R2 | R3>(
       this.value,
       this.matcher.when(guard, onMatch)
     )
   }
 
-  to<R2, E2, A, B>(
-    guard: Guard<I, R2, E2, A> | AsGuard<I, R2, E2, A>,
+  to<A, E2, R2, B>(
+    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
     onMatch: B
-  ): ValueMatcher<R | R2, E | E2, I, O | B> {
+  ): ValueMatcher<I, O | B, E | E2, R | R2> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
 
-  getOrElse: ValueMatcher<R, E, I, O>["getOrElse"] = (f) => Fx.getOrElse(this.matcher.run(this.value), f)
+  getOrElse: ValueMatcher<I, O, E, R>["getOrElse"] = (f) => Fx.getOrElse(this.matcher.run(this.value), f)
 }
 
 /**
  * @since 1.18.0
  */
-export interface AsGuard<I, R, E, A> {
-  readonly asGuard: () => Guard<I, R, E, A>
+export interface AsGuard<I, A, E = never, R = never> {
+  readonly asGuard: () => Guard<I, A, E, R>
 }
 
-function getGuard<I, R, E, A>(guard: Guard<I, R, E, A> | AsGuard<I, R, E, A>): Guard<I, R, E, A> {
+function getGuard<I, A, E = never, R = never>(guard: Guard<I, A, E, R> | AsGuard<I, A, E, R>): Guard<I, A, E, R> {
   if (typeof guard === "function") return guard
   return guard.asGuard()
 }

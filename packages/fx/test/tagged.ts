@@ -52,7 +52,7 @@ describe.concurrent("Context", () => {
 
   describe.concurrent("Subject.tagged", () => {
     it.concurrent("allows broadcasting values to subscribers via the Context", async () => {
-      const subject = Subject.tagged<never, number>()("Test")
+      const subject = Subject.tagged<number>()("Test")
       const sut = Fx.toReadonlyArray(Fx.take(subject, 3))
 
       const test = Effect.gen(function*(_) {
@@ -75,7 +75,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows configuring replays of last value", async () => {
-      const subject = Subject.tagged<never, number>()("Test")
+      const subject = Subject.tagged<number>()("Test")
       const sut = Fx.toReadonlyArray(subject)
 
       const test = Effect.gen(function*(_) {
@@ -106,7 +106,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows configuring replays of last n values", async () => {
-      const subject = Subject.tagged<never, number>()("Test")
+      const subject = Subject.tagged<number>()("Test")
       const fx = Fx.toReadonlyArray(subject)
 
       const test = Effect.gen(function*(_) {

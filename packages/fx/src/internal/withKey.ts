@@ -9,28 +9,28 @@ import * as Sink from "../Sink.js"
 import { withSwitchFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
 
-export function withKey<R, E, A, B extends PropertyKey, R2, E2, C>(
-  fx: Fx<R, E, A>,
-  options: WithKeyOptions<A, B, R2, E2, C>
-): Fx<R | R2 | Scope.Scope, E | E2, C> {
+export function withKey<A, E, R, B extends PropertyKey, C, E2, R2>(
+  fx: Fx<A, E, R>,
+  options: WithKeyOptions<A, B, C, E2, R2>
+): Fx<C, E | E2, R | R2 | Scope.Scope> {
   return new WithKey(fx, options)
 }
 
-class WithKey<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | Scope.Scope, E | E2, C> {
-  constructor(readonly fx: Fx<R, E, A>, readonly options: WithKeyOptions<A, B, R2, E2, C>) {
+class WithKey<A, E, R, B extends PropertyKey, C, E2, R2> extends FxBase<C, E | E2, R | R2 | Scope.Scope> {
+  constructor(readonly fx: Fx<A, E, R>, readonly options: WithKeyOptions<A, B, C, E2, R2>) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, C>) {
+  run<R3>(sink: Sink.Sink<C, E | E2, R3>) {
     return runWithKey(this.fx, this.options, sink)
   }
 }
 
-function runWithKey<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
-  fx: Fx<R, E, A>,
-  options: WithKeyOptions<A, B, R2, E2, C>,
-  sink: Sink.Sink<R3, E | E2, C>
-) {
+function runWithKey<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
+  fx: Fx<A, E, R>,
+  options: WithKeyOptions<A, B, C, E2, R2>,
+  sink: Sink.Sink<C, E | E2, R3>
+): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
   return withSwitchFork((fork) => {
     let previous: Option.Option<WithKeyState<A, B>> = Option.none()
 
@@ -78,5 +78,5 @@ function runWithKey<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
 type WithKeyState<A, B> = {
   value: A
   key: B
-  ref: RefSubject.RefSubject<never, never, A>
+  ref: RefSubject.RefSubject<A>
 }

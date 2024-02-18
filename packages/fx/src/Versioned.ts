@@ -25,8 +25,8 @@ import type { Sink } from "./Sink.js"
 /**
  * @since 1.0.0
  */
-export interface Versioned<out R1, out E1, out R2, out E2, out A2, out R3, out E3, out A3>
-  extends Fx<R2, E2, A2>, Effect.Effect<A3, E3, R3>
+export interface Versioned<out R1, out E1, out A2, out E2, out R2, out A3, out E3, out R3>
+  extends Fx<A2, E2, R2>, Effect.Effect<A3, E3, R3>
 {
   readonly version: Effect.Effect<number, E1, R1>
 }
@@ -41,7 +41,7 @@ export namespace Versioned {
    */
   export type Unify<T> = T extends
     Versioned<infer R1, infer E1, infer R2, infer E2, infer A2, infer R3, infer E3, infer A3> | infer _
-    ? Versioned<R1, E1, R2, E2, A2, R3, E3, A3>
+    ? Versioned<R1, E1, A2, E2, R2, A3, E3, R3>
     : never
 
   /**
@@ -58,26 +58,26 @@ export namespace Versioned {
 /**
  * @since 1.0.0
  */
-export function make<R1, E1, R2, E2, A2, R3, E3, A3>(
+export function make<R1, E1, A2, E2, R2, A3, E3, R3>(
   version: Effect.Effect<number, E1, R1>,
-  fx: Fx<R2, E2, A2>,
+  fx: Fx<A2, E2, R2>,
   effect: Effect.Effect<A3, E3, R3>
-): Versioned<R1, E1, R2, E2, A2, R3, E3, A3> {
+): Versioned<R1, E1, A2, E2, R2, A3, E3, R3> {
   return new VersionedImpl(version, fx, effect)
 }
 
-class VersionedImpl<R1, E1, R2, E2, A2, R3, E3, A3> extends FxEffectBase<R2, E2, A2, R3, E3, A3>
-  implements Versioned<R1, E1, R2, E2, A2, R3, E3, A3>
+class VersionedImpl<R1, E1, A2, E2, R2, A3, E3, R3> extends FxEffectBase<A2, E2, R2, A3, E3, R3>
+  implements Versioned<R1, E1, A2, E2, R2, A3, E3, R3>
 {
   constructor(
     readonly version: Effect.Effect<number, E1, R1>,
-    readonly fx: Fx<R2, E2, A2>,
+    readonly fx: Fx<A2, E2, R2>,
     readonly effect: Effect.Effect<A3, E3, R3>
   ) {
     super()
   }
 
-  run<R3>(sink: Sink<R3, E2, A2>): Effect.Effect<unknown, never, R2 | R3> {
+  run<R3>(sink: Sink<A2, E2, R3>): Effect.Effect<unknown, never, R2 | R3> {
     return this.fx.run(sink)
   }
 
@@ -89,11 +89,11 @@ class VersionedImpl<R1, E1, R2, E2, A2, R3, E3, A3> extends FxEffectBase<R2, E2,
 /**
  * @since 1.0.0
  */
-export function transform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
-  input: Versioned<R0, E0, R, E, A, R2, E2, B>,
-  transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
+export function transform<R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4>(
+  input: Versioned<R0, E0, A, E, R, B, E2, R2>,
+  transformFx: (fx: Fx<A, E, R>) => Fx<C, E3, R3>,
   transformGet: (effect: Effect.Effect<B, E2, R2>) => Effect.Effect<D, E4, R4>
-): Versioned<never, never, R3, E3, C, R0 | R4, E0 | E4, D> {
+): Versioned<never, never, C, E3, R3, D, E0 | E4, R0 | R4> {
   if (isVersionedTransform(input)) {
     return new VersionedTransform(
       input.input,
@@ -108,17 +108,17 @@ export function transform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
 /**
  * @internal
  */
-export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>
-  extends FxEffectBase<R3, E3, C, R0 | R4, E0 | E4, D>
-  implements Versioned<never, never, R3, E3, C, R0 | R4, E0 | E4, D>
+export class VersionedTransform<R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4>
+  extends FxEffectBase<C, E3, R3, D, E0 | E4, R0 | R4>
+  implements Versioned<never, never, C, E3, R3, D, E0 | E4, R0 | R4>
 {
   protected _version = -1
   protected _currentValue: Option.Option<D> = Option.none()
-  protected _fx: Fx<R3, E3, C>
+  protected _fx: Fx<C, E3, R3>
 
   constructor(
-    readonly input: Versioned<R0, E0, R, E, A, R2, E2, B>,
-    readonly _transformFx: (fx: Fx<R, E, A>) => Fx<R3, E3, C>,
+    readonly input: Versioned<R0, E0, A, E, R, B, E2, R2>,
+    readonly _transformFx: (fx: Fx<A, E, R>) => Fx<C, E3, R3>,
     readonly _transformEffect: (effect: Effect.Effect<B, E2, R2>) => Effect.Effect<D, E4, R4>
   ) {
     super()
@@ -128,7 +128,7 @@ export class VersionedTransform<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D
 
   readonly version = Effect.sync(() => this._version)
 
-  run<R5>(sink: Sink<R5, E3, C>): Effect.Effect<unknown, never, R3 | R5> {
+  run<R5>(sink: Sink<C, E3, R5>): Effect.Effect<unknown, never, R3 | R5> {
     return this._fx.run(sink)
   }
 
@@ -166,29 +166,29 @@ function isVersionedTransform(
  * @category combinators
  */
 export const map: {
-  <R, E, A, C, B, D>(
+  <A, E, R, C, B, D>(
     options: {
       onFx: (a: A) => C
       onEffect: (b: B) => D
     }
   ): <R0, E0, R2, E2>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-  ) => Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D>
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+  ) => Versioned<never, never, C, E, R, D, E0 | E2, R0 | R2>
 
-  <R0, E0, R, E, A, R2, E2, B, C, D>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  <R0, E0, A, E, R, B, E2, R2, C, D>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     options: {
       onFx: (a: A) => C
       onEffect: (b: B) => D
     }
-  ): Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D>
-} = dual(2, function map<R0, E0, R, E, A, R2, E2, B, C, D>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  ): Versioned<never, never, C, E, R, D, E0 | E2, R0 | R2>
+} = dual(2, function map<R0, E0, A, E, R, B, E2, R2, C, D>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
   options: {
     onFx: (a: A) => C
     onEffect: (b: B) => D
   }
-): Versioned<never, never, R, E, C, R0 | R2, E0 | E2, D> {
+): Versioned<never, never, C, E, R, D, E0 | E2, R0 | R2> {
   return transform(versioned, (fx) => core.map(fx, options.onFx), Effect.map(options.onEffect))
 })
 
@@ -198,23 +198,23 @@ export const map: {
  * @category combinators
  */
 export const mapEffect: {
-  <A, R3, E3, C, B, R4, E4, D>(
+  <A, C, E3, R3, B, D, E4, R4>(
     options: { onFx: (a: A) => Effect.Effect<C, E3, R3>; onEffect: (b: B) => Effect.Effect<D, E4, R4> }
   ): <R0, E0, R, E, R2, E2>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-  ) => Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D>
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+  ) => Versioned<never, never, C, E | E3, R | R3, D, E0 | E2 | E4, R0 | R2 | R4>
 
-  <R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  <R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     options: { onFx: (a: A) => Effect.Effect<C, E3, R3>; onEffect: (b: B) => Effect.Effect<D, E4, R4> }
-  ): Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D>
-} = dual(2, function mapEffect<R0, E0, R, E, A, R2, E2, B, R3, E3, C, R4, E4, D>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  ): Versioned<never, never, C, E | E3, R | R3, D, E0 | E2 | E4, R0 | R2 | R4>
+} = dual(2, function mapEffect<R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
   options: {
     onFx: (a: A) => Effect.Effect<C, E3, R3>
     onEffect: (b: B) => Effect.Effect<D, E4, R4>
   }
-): Versioned<never, never, R | R3, E | E3, C, R0 | R2 | R4, E0 | E2 | E4, D> {
+): Versioned<never, never, C, E | E3, R | R3, D, E0 | E2 | E4, R0 | R2 | R4> {
   return transform(versioned, (fx) => core.mapEffect(fx, options.onFx), Effect.flatMap(options.onEffect))
 })
 
@@ -226,18 +226,18 @@ export function tuple<const VS extends ReadonlyArray<Versioned<any, any, any, an
 ): Versioned<
   Versioned.VersionContext<VS[number]>,
   Versioned.VersionError<VS[number]>,
-  Fx.Context<VS[number]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> },
   Fx.Error<VS[number]>,
+  Fx.Context<VS[number]>,
   { readonly [K in keyof VS]: Fx.Success<VS[K]> },
-  Effect.Effect.Context<VS[number]>,
   Effect.Effect.Error<VS[number]>,
-  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+  Effect.Effect.Context<VS[number]>
 > {
   return make(
     Effect.map(Effect.all(versioneds.map((v) => v.version)), (versions) => versions.reduce(sum, 0)),
     core.tuple(versioneds),
     Effect.all(versioneds, { concurrency: "unbounded" }) as any
-  )
+  ) as any
 }
 
 /**
@@ -248,12 +248,12 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
 ): Versioned<
   Versioned.VersionContext<VS[keyof VS]>,
   Versioned.VersionError<VS[keyof VS]>,
-  Fx.Context<VS[keyof VS]>,
-  Fx.Error<VS[keyof VS]>,
   { readonly [K in keyof VS]: Fx.Success<VS[K]> },
-  Effect.Effect.Context<VS[keyof VS]>,
+  Fx.Error<VS[keyof VS]>,
+  Fx.Context<VS[keyof VS]>,
+  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> },
   Effect.Effect.Error<VS[keyof VS]>,
-  { readonly [K in keyof VS]: Effect.Effect.Success<VS[K]> }
+  Effect.Effect.Context<VS[keyof VS]>
 > {
   return make(
     Effect.map(Effect.all(Object.values(versioneds).map((v) => v.version)), (versions) => versions.reduce(sum, 0)),
@@ -266,32 +266,32 @@ export function struct<const VS extends Readonly<Record<string, Versioned<any, a
  * @since 1.0.0
  */
 export const provide: {
-  <S>(ctx: Context.Context<S> | Runtime.Runtime<S>): <R0, E0, R, E, A, R2, E2, B>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-  ) => Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
+  <S>(ctx: Context.Context<S> | Runtime.Runtime<S>): <R0, E0, A, E, R, B, E2, R2>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+  ) => Versioned<Exclude<R0, S>, E0, A, E, Exclude<R, S>, B, E2, Exclude<R2, S>>
 
-  <R3, S>(layer: Layer.Layer<S, never, R3>): <R0, E0, R, E, A, R2, E2, B>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-  ) => Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
+  <R3, S>(layer: Layer.Layer<S, never, R3>): <R0, E0, A, E, R, B, E2, R2>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+  ) => Versioned<R3 | Exclude<R0, S>, E0, A, E, R3 | Exclude<R, S>, B, E2, R3 | Exclude<R2, S>>
 
-  <R0, E0, R, E, A, R2, E2, B, S>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  <R0, E0, A, E, R, B, E2, R2, S>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     context: Context.Context<S> | Runtime.Runtime<S>
-  ): Versioned<Exclude<R0, S>, E0, Exclude<R, S>, E, A, Exclude<R2, S>, E2, B>
+  ): Versioned<Exclude<R0, S>, E0, A, E, Exclude<R, S>, B, E2, Exclude<R2, S>>
 
-  <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  <R0, E0, A, E, R, B, E2, R2, R3 = never, S = never>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     context: Layer.Layer<S, never, R3>
-  ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
+  ): Versioned<R3 | Exclude<R0, S>, E0, A, E, R3 | Exclude<R, S>, B, E2, R3 | Exclude<R2, S>>
 
-  <R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
-    versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  <R0, E0, A, E, R, B, E2, R2, R3 = never, S = never>(
+    versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<S, never, R3>
-  ): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B>
-} = dual(2, function provide<R0, E0, R, E, A, R2, E2, B, R3 = never, S = never>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+  ): Versioned<R3 | Exclude<R0, S>, E0, A, E, R3 | Exclude<R, S>, B, E2, R3 | Exclude<R2, S>>
+} = dual(2, function provide<R0, E0, A, E, R, B, E2, R2, R3 = never, S = never>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
   context: Context.Context<S> | Runtime.Runtime<S> | Layer.Layer<S, never, R3>
-): Versioned<R3 | Exclude<R0, S>, E0, R3 | Exclude<R, S>, E, A, R3 | Exclude<R2, S>, E2, B> {
+): Versioned<R3 | Exclude<R0, S>, E0, A, E, R3 | Exclude<R, S>, B, E2, R3 | Exclude<R2, S>> {
   return make(
     Effect.provide(versioned.version, context as Layer.Layer<S, never, R3>),
     core.provide(versioned, context),
@@ -302,16 +302,16 @@ export const provide: {
 /**
  * @since 1.0.0
  */
-export function of<A>(value: A): Versioned<never, never, never, never, A, never, never, A> {
+export function of<A>(value: A): Versioned<never, never, A, never, never, A, never, never> {
   return make(Effect.succeed(1), core.succeed(value), Effect.succeed(value))
 }
 
 /**
  * @since 1.0.0
  */
-export function hold<R0, E0, R, E, A, R2, E2, B>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+export function hold<R0, E0, A, E, R, B, E2, R2>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+): Versioned<R0, E0, A, E, R | Scope.Scope, B, E2, R2> {
   return make(
     versioned.version,
     coreShare.hold(versioned),
@@ -322,9 +322,9 @@ export function hold<R0, E0, R, E, A, R2, E2, B>(
 /**
  * @since 1.0.0
  */
-export function multicast<R0, E0, R, E, A, R2, E2, B>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>
-): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+export function multicast<R0, E0, A, E, R, B, E2, R2>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
+): Versioned<R0, E0, A, E, R | Scope.Scope, B, E2, R2> {
   return make(
     versioned.version,
     coreShare.multicast(versioned),
@@ -335,10 +335,10 @@ export function multicast<R0, E0, R, E, A, R2, E2, B>(
 /**
  * @since 1.0.0
  */
-export function replay<R0, E0, R, E, A, R2, E2, B>(
-  versioned: Versioned<R0, E0, R, E, A, R2, E2, B>,
+export function replay<R0, E0, A, E, R, B, E2, R2>(
+  versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
   bufferSize: number
-): Versioned<R0, E0, R | Scope.Scope, E, A, R2, E2, B> {
+): Versioned<R0, E0, A, E, R | Scope.Scope, B, E2, R2> {
   return make(
     versioned.version,
     coreShare.replay(versioned, bufferSize),

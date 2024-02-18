@@ -10,7 +10,7 @@ import * as Option from "effect/Option"
 /**
  * @since 1.18.0
  */
-export type Guard<in I, out R, out E, out O> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
+export type Guard<in I, out O, out E = never, out R = never> = (input: I) => Effect.Effect<Option.Option<O>, E, R>
 
 /**
  * @since 1.18.0
@@ -23,27 +23,27 @@ export namespace Guard {
   /**
    * @since 1.18.0
    */
-  export type Context<T> = T extends Guard<infer _I, infer R, infer _E, infer _O> ? R : never
+  export type Context<T> = T extends Guard<infer _I, infer _O, infer _E, infer R> ? R : never
   /**
    * @since 1.18.0
    */
-  export type Error<T> = T extends Guard<infer _I, infer _R, infer E, infer _O> ? E : never
+  export type Error<T> = T extends Guard<infer _I, infer _O, infer E, infer _R> ? E : never
   /**
    * @since 1.18.0
    */
-  export type Output<T> = T extends Guard<infer _I, infer _R, infer _E, infer O> ? O : never
+  export type Output<T> = T extends Guard<infer _I, infer O, infer _E, infer _R> ? O : never
 }
 
 /**
  * @since 1.18.0
  */
 export const compose: {
-  <O, R2, E2, B>(output: Guard<O, R2, E2, B>): <I, R, E>(input: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, B>
-  <I, R, E, O, R2, E2, B>(input: Guard<I, R, E, O>, output: Guard<O, R2, E2, B>): Guard<I, R | R2, E | E2, B>
-} = dual(2, function flatMap<I, R, E, O, R2, E2, B>(
-  input: Guard<I, R, E, O>,
-  output: Guard<O, R2, E2, B>
-): Guard<I, R | R2, E | E2, B> {
+  <O, B, E2, R2>(output: Guard<O, B, E2, R2>): <I, R, E>(input: Guard<I, O, E, R>) => Guard<I, B, E | E2, R | R2>
+  <I, O, E, R, B, E2, R2>(input: Guard<I, O, E, R>, output: Guard<O, B, E2, R2>): Guard<I, B, E | E2, R | R2>
+} = dual(2, function flatMap<I, O, E, R, B, E2, R2>(
+  input: Guard<I, O, E, R>,
+  output: Guard<O, B, E2, R2>
+): Guard<I, B, E | E2, R | R2> {
   return (i) =>
     Effect.flatMap(
       input(i),
@@ -58,14 +58,14 @@ export const compose: {
  * @since 1.18.0
  */
 export const mapEffect: {
-  <O, R2, E2, B>(
+  <O, B, E2, R2>(
     f: (o: O) => Effect.Effect<B, E2, R2>
-  ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, B>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, B>
-} = dual(2, function mapEffect<I, R, E, O, R2, E2, B>(
-  guard: Guard<I, R, E, O>,
+  ): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E | E2, R | R2>
+  <I, O, E, R, B, E2, R2>(guard: Guard<I, O, E, R>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, B, E | E2, R | R2>
+} = dual(2, function mapEffect<I, O, E, R, B, E2, R2>(
+  guard: Guard<I, O, E, R>,
   f: (o: O) => Effect.Effect<B, E2, R2>
-): Guard<I, R | R2, E | E2, B> {
+): Guard<I, B, E | E2, R | R2> {
   return compose(guard, (o) => Effect.asSome(f(o)))
 })
 
@@ -73,12 +73,12 @@ export const mapEffect: {
  * @since 1.18.0
  */
 export const map: {
-  <O, B>(f: (o: O) => B): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, B>
-  <I, R, E, O, B>(guard: Guard<I, R, E, O>, f: (o: O) => B): Guard<I, R, E, B>
-} = dual(2, function map<I, R, E, O, B>(
-  guard: Guard<I, R, E, O>,
+  <O, B>(f: (o: O) => B): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E, R>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, f: (o: O) => B): Guard<I, B, E, R>
+} = dual(2, function map<I, O, E, R, B>(
+  guard: Guard<I, O, E, R>,
   f: (o: O) => B
-): Guard<I, R, E, B> {
+): Guard<I, B, E, R> {
   return mapEffect(guard, (o) => Effect.sync(() => f(o)))
 })
 
@@ -86,14 +86,14 @@ export const map: {
  * @since 1.18.0
  */
 export const tap: {
-  <O, R2, E2, B>(
+  <O, B, E2, R2>(
     f: (o: O) => Effect.Effect<B, E2, R2>
-  ): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R | R2, E | E2, O>
-  <I, R, E, O, R2, E2, B>(guard: Guard<I, R, E, O>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, R | R2, E | E2, O>
-} = dual(2, function tap<I, R, E, O, R2, E2, B>(
-  guard: Guard<I, R, E, O>,
+  ): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E | E2, R | R2>
+  <I, O, E, R, B, E2, R2>(guard: Guard<I, O, E, R>, f: (o: O) => Effect.Effect<B, E2, R2>): Guard<I, O, E | E2, R | R2>
+} = dual(2, function tap<I, O, E, R, B, E2, R2>(
+  guard: Guard<I, O, E, R>,
   f: (o: O) => Effect.Effect<B, E2, R2>
-): Guard<I, R | R2, E | E2, O> {
+): Guard<I, O, E | E2, R | R2> {
   return compose(guard, (o) => Effect.as(f(o), Option.some(o)))
 })
 
@@ -101,11 +101,11 @@ export const tap: {
  * @since 1.18.0
  */
 export const filterMap: {
-  <O, B>(f: (o: O) => Option.Option<B>): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, B>
-  <I, R, E, O, B>(guard: Guard<I, R, E, O>, f: (o: O) => Option.Option<B>): Guard<I, R, E, B>
+  <O, B>(f: (o: O) => Option.Option<B>): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, B, E, R>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, f: (o: O) => Option.Option<B>): Guard<I, B, E, R>
 } = dual(
   2,
-  <I, R, E, O, B>(guard: Guard<I, R, E, O>, f: (o: O) => Option.Option<B>): Guard<I, R, E, B> => (i) =>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, f: (o: O) => Option.Option<B>): Guard<I, B, E, R> => (i) =>
     Effect.map(guard(i), Option.filterMap(f))
 )
 
@@ -113,13 +113,13 @@ export const filterMap: {
  * @since 1.18.0
  */
 export const filter: {
-  <O, O2 extends O>(predicate: (o: O) => o is O2): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, O2>
-  <O>(predicate: (o: O) => boolean): <I, R, E>(guard: Guard<I, R, E, O>) => Guard<I, R, E, O>
-  <I, R, E, O, O2 extends O>(guard: Guard<I, R, E, O>, predicate: (o: O) => o is O2): Guard<I, R, E, O2>
-  <I, R, E, O>(guard: Guard<I, R, E, O>, predicate: (o: O) => boolean): Guard<I, R, E, O>
+  <O, O2 extends O>(predicate: (o: O) => o is O2): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E, R>
+  <O>(predicate: (o: O) => boolean): <I, R, E>(guard: Guard<I, O, E, R>) => Guard<I, O, E, R>
+  <I, O, E, R, O2 extends O>(guard: Guard<I, O, E, R>, predicate: (o: O) => o is O2): Guard<I, O, E, R>
+  <I, O, E, R>(guard: Guard<I, O, E, R>, predicate: (o: O) => boolean): Guard<I, O, E, R>
 } = dual(
   2,
-  <I, R, E, O>(guard: Guard<I, R, E, O>, predicate: (o: O) => boolean): Guard<I, R, E, O> => (i) =>
+  <I, O, E, R>(guard: Guard<I, O, E, R>, predicate: (o: O) => boolean): Guard<I, O, E, R> => (i) =>
     Effect.map(guard(i), Option.filter(predicate))
 )
 
@@ -128,7 +128,7 @@ export const filter: {
  */
 export function any<const GS extends Readonly<Record<string, Guard<any, any, any, any>>>>(
   guards: GS
-): Guard<AnyInput<GS>, Guard.Context<GS[keyof GS]>, Guard.Context<GS[keyof GS]>, AnyOutput<GS>> {
+): Guard<AnyInput<GS>, AnyOutput<GS>, Guard.Error<GS[keyof GS]>, Guard.Context<GS[keyof GS]>> {
   const entries = Object.entries(guards)
   return (i: AnyInput<GS>) =>
     Effect.gen(function*(_) {
@@ -163,8 +163,8 @@ export type AnyOutput<GS extends Readonly<Record<string, Guard<any, any, any, an
 /**
  * @since 1.20.0
  */
-export function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, never, never, B>
-export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A>
-export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, never, never, A> {
+export function liftPredicate<A, B extends A>(predicate: Predicate.Refinement<A, B>): Guard<A, B>
+export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, A>
+export function liftPredicate<A>(predicate: Predicate.Predicate<A>): Guard<A, A> {
   return (a) => Effect.sync(() => (predicate(a) ? Option.some(a) : Option.none()))
 }

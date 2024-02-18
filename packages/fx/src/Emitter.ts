@@ -14,7 +14,7 @@ import * as Sink from "./Sink.js"
 /**
  * @since 1.20.0
  */
-export interface Emitter<in E, in A> {
+export interface Emitter<in A, in E> {
   readonly succeed: (value: A) => Promise<Exit.Exit<unknown>>
   readonly failCause: (cause: Cause.Cause<E>) => Promise<Exit.Exit<unknown>>
   readonly fail: (error: E) => Promise<Exit.Exit<unknown>>
@@ -26,8 +26,8 @@ export interface Emitter<in E, in A> {
  * @since 1.20.0
  */
 export function withEmitter<R, E, A, R2, B>(
-  sink: Sink.Sink<R, E, A>,
-  f: (emitter: Emitter<E, A>) => Effect.Effect<B, E, R2>
+  sink: Sink.Sink<A, E, R>,
+  f: (emitter: Emitter<A, E>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2 | Scope.Scope> {
   return withScope(
     (scope) =>
@@ -41,7 +41,7 @@ export function withEmitter<R, E, A, R2, B>(
                 const fiber = runFork(effect, { scope })
                 fiber.addObserver(resolve)
               })
-            const emitter: Emitter<E, A> = {
+            const emitter: Emitter<A, E> = {
               succeed: (value) => run(sink.onSuccess(value)),
               failCause: (cause) => run(sink.onFailure(cause)),
               fail: (error) => run(sink.onFailure(Cause.fail(error))),

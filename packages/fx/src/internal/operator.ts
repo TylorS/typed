@@ -68,7 +68,7 @@ export function fuseOperators(first: Operator, second: Operator): Operator {
   })
 }
 
-export function compileOperatorSink<R, R2>(operator: Operator, sink: Sink<R, any, any>): Sink<R | R2, any, any> {
+export function compileOperatorSink<R, R2>(operator: Operator, sink: Sink<any, any, R>): Sink<any, any, R | R2> {
   return matchOperator(operator, {
     SyncOperator: (op) => SyncOp.compileSyncOperatorSink(op, sink),
     EffectOperator: (op) => EffectOp.compileEffectOperatorSink(op, sink),
@@ -77,7 +77,7 @@ export function compileOperatorSink<R, R2>(operator: Operator, sink: Sink<R, any
   })
 }
 
-export function compileOperatorSinkCause<R, R2>(operator: Operator, sink: Sink<R, any, any>): Sink<R | R2, any, any> {
+export function compileOperatorSinkCause<R, R2>(operator: Operator, sink: Sink<any, any, R>): Sink<any, any, R | R2> {
   return matchOperator(operator, {
     SyncOperator: (op) => SyncOp.compileCauseSyncOperatorSink(op, sink),
     EffectOperator: (op) => EffectOp.compileCauseEffectOperatorSink(op, sink),

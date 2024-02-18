@@ -17,7 +17,7 @@ import { type Bounds } from "./internal/bounds.js"
  * Sink is a data structure which can be used to consume values from a stream.
  * @since 1.20.0
  */
-export interface Sink<out R, in E, in A> {
+export interface Sink<in A, in E = never, out R = never> {
   onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R>
   onSuccess(value: A): Effect.Effect<unknown, never, R>
 }
@@ -29,24 +29,24 @@ export namespace Sink {
   /**
    * @since 1.20.0
    */
-  export type Context<T> = T extends Sink<infer R, infer _E, infer _A> ? R : never
+  export type Context<T> = T extends Sink<infer _A, infer _E, infer R> ? R : never
 
   /**
    * @since 1.20.0
    */
-  export type Error<T> = T extends Sink<infer _R, infer E, infer _A> ? E : never
+  export type Error<T> = T extends Sink<infer _A, infer E, infer _R> ? E : never
 
   /**
    * @since 1.20.0
    */
-  export type Success<T> = T extends Sink<infer _R, infer _E, infer A> ? A : never
+  export type Success<T> = T extends Sink<infer A, infer _E, infer _R> ? A : never
 
   /**
    * @since 1.20.0
    */
-  export interface Tagged<I, E, A> extends Sink<I, E, A> {
-    readonly tag: C.Tagged<I, Sink<never, E, A>>
-    readonly make: <R>(sink: Sink<R, E, A>) => Layer.Layer<I, never, R>
+  export interface Tagged<A, E, I> extends Sink<A, E, I> {
+    readonly tag: C.Tagged<I, Sink<A, E>>
+    readonly make: <R>(sink: Sink<A, E, R>) => Layer.Layer<I, never, R>
   }
 }
 
@@ -71,7 +71,7 @@ export type Success<T> = Sink.Success<T>
 export function make<E, R, A, R2>(
   onFailure: (cause: Cause.Cause<E>) => Effect.Effect<unknown, never, R>,
   onSuccess: (value: A) => Effect.Effect<unknown, never, R2>
-): Sink<R | R2, E, A> {
+): Sink<A, E, R | R2> {
   return {
     onFailure,
     onSuccess
@@ -84,19 +84,19 @@ export function make<E, R, A, R2>(
  * @since 1.18.0
  * @category models
  */
-export interface WithEarlyExit<R, E, A> extends Sink<R, E, A> {
+export interface WithEarlyExit<A, E = never, R = never> extends Sink<A, E, R> {
   readonly earlyExit: Effect.Effect<void>
 }
 
 /**
  * @since 1.20.0
  */
-export function withEarlyExit<R, E, A, R2, B>(
-  sink: Sink<R, E, A>,
-  f: (sink: WithEarlyExit<R, E, A>) => Effect.Effect<B, E, R2>
+export function withEarlyExit<A, E, R, B, R2>(
+  sink: Sink<A, E, R>,
+  f: (sink: WithEarlyExit<A, E, R>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2> {
   return Effect.asyncEffect<void, never, never, void, never, R | R2>((resume) => {
-    const earlyExit: WithEarlyExit<R, E, A> = {
+    const earlyExit: WithEarlyExit<A, E, R> = {
       ...sink,
       earlyExit: Effect.sync(() => resume(Effect.unit))
     }
@@ -114,18 +114,18 @@ export function withEarlyExit<R, E, A, R2, B>(
  * @category combinators
  */
 export const map: {
-  <B, A>(f: (b: B) => A): <R, E>(sink: Sink<R, E, A>) => Sink<R, E, B>
-  <R, E, A, B>(sink: Sink<R, E, A>, f: (b: B) => A): Sink<R, E, B>
-} = dual(2, function map<R, E, A, B>(
-  sink: Sink<R, E, A>,
+  <B, A>(f: (b: B) => A): <E, R>(sink: Sink<A, E, R>) => Sink<B, E, R>
+  <A, E, R, B>(sink: Sink<A, E, R>, f: (b: B) => A): Sink<B, E, R>
+} = dual(2, function map<A, E, R, B>(
+  sink: Sink<A, E, R>,
   f: (b: B) => A
-): Sink<R, E, B> {
+): Sink<B, E, R> {
   return new MapSink(sink, f)
 })
 
-class MapSink<R, E, A, B> implements Sink<R, E, A> {
+class MapSink<A, E, R, B> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, B>,
+    readonly sink: Sink<B, E, R>,
     readonly f: (a: A) => B
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -144,13 +144,13 @@ class MapSink<R, E, A, B> implements Sink<R, E, A> {
 /**
  * @since 1.20.0
  */
-export function filter<R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A> {
+export function filter<A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R> {
   return new FilterSink(sink, predicate)
 }
 
-class FilterSink<R, E, A> implements Sink<R, E, A> {
+class FilterSink<A, E, R> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, A>,
+    readonly sink: Sink<A, E, R>,
     readonly predicate: Predicate.Predicate<A>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -170,13 +170,13 @@ class FilterSink<R, E, A> implements Sink<R, E, A> {
 /**
  * @since 1.20.0
  */
-export function filterMap<R, E, A, B>(sink: Sink<R, E, B>, f: (a: A) => Option.Option<B>): Sink<R, E, A> {
+export function filterMap<A, E, R, B>(sink: Sink<B, E, R>, f: (a: A) => Option.Option<B>): Sink<A, E, R> {
   return new FilterMapSink(sink, f)
 }
 
-class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
+class FilterMapSink<A, E, R, B> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, B>,
+    readonly sink: Sink<B, E, R>,
     readonly f: (a: A) => Option.Option<B>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -198,20 +198,20 @@ class FilterMapSink<R, E, A, B> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const mapEffect: {
-  <B, R2, E2, A>(f: (b: B) => Effect.Effect<A, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, B>
-  <R, E, A, R2, E2, B>(sink: Sink<R, E | E2, A>, f: (b: B) => Effect.Effect<A, E2, R2>): Sink<R | R2, E | E2, B>
-} = dual(2, function mapEffect<R, E, A, R2, E2, B>(
-  sink: Sink<R, E | E2, A>,
+  <B, A, E2, R2>(f: (b: B) => Effect.Effect<A, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<B, E | E2, R | R2>
+  <A, E, R, B, E2, R2>(sink: Sink<A, E | E2, R>, f: (b: B) => Effect.Effect<A, E2, R2>): Sink<B, E | E2, R | R2>
+} = dual(2, function mapEffect<A, E, R, B, E2, R2>(
+  sink: Sink<A, E | E2, R>,
   f: (b: B) => Effect.Effect<A, E2, R2>
-): Sink<R | R2, E | E2, B> {
+): Sink<B, E | E2, R | R2> {
   return new MapEffectSink(sink, f)
 })
 
-class MapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
+class MapEffectSink<A, E, R, B, E2, R2> implements Sink<B, E2, R | R2> {
   constructor(
-    readonly sink: Sink<R, E | E2, A>,
+    readonly sink: Sink<A, E | E2, R>,
     readonly f: (b: B) => Effect.Effect<A, E2, R2>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -231,24 +231,24 @@ class MapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
  * @since 1.20.0
  */
 export const filterMapEffect: {
-  <B, R2, E2, A>(f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, B>
+  <B, A, E2, R2>(f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<B, E | E2, R | R2>
 
-  <R, E, A, R2, E2, B>(
-    sink: Sink<R, E | E2, A>,
+  <A, E, R, B, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
-  ): Sink<R | R2, E | E2, B>
-} = dual(2, function filterMapEffect<R, E, A, R2, E2, B>(
-  sink: Sink<R, E | E2, A>,
+  ): Sink<B, E | E2, R | R2>
+} = dual(2, function filterMapEffect<A, E, R, B, E2, R2>(
+  sink: Sink<A, E | E2, R>,
   f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
-): Sink<R | R2, E | E2, B> {
+): Sink<B, E | E2, R | R2> {
   return new FilterMapEffectSink(sink, f)
 })
 
-class FilterMapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
+class FilterMapEffectSink<A, E, R, B, E2, R2> implements Sink<B, E2, R | R2> {
   constructor(
-    readonly sink: Sink<R, E | E2, A>,
+    readonly sink: Sink<A, E | E2, R>,
     readonly f: (b: B) => Effect.Effect<Option.Option<A>, E2, R2>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -274,20 +274,20 @@ class FilterMapEffectSink<R, E, A, R2, E2, B> implements Sink<R | R2, E2, B> {
  * @since 1.20.0
  */
 export const filterEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A>(sink: Sink<R, E, A>, f: (a: A) => Effect.Effect<boolean, E, R>): Sink<R, E, A>
-} = dual(2, function filterEffect<R, E, A, R2>(
-  sink: Sink<R, E, A>,
+  <A, E2, R2>(f: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R>(sink: Sink<A, E, R>, f: (a: A) => Effect.Effect<boolean, E, R>): Sink<A, E, R>
+} = dual(2, function filterEffect<A, E, R, R2>(
+  sink: Sink<A, E, R>,
   f: (a: A) => Effect.Effect<boolean, E, R2>
-): Sink<R | R2, E, A> {
-  return new FilterEffectSink<R | R2, E, A>(sink, f)
+): Sink<A, E, R | R2> {
+  return new FilterEffectSink<A, E, R | R2>(sink, f)
 })
 
-class FilterEffectSink<R, E, A> implements Sink<R, E, A> {
+class FilterEffectSink<A, E, R> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, A>,
+    readonly sink: Sink<A, E, R>,
     readonly f: (a: A) => Effect.Effect<boolean, E, R>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -313,20 +313,20 @@ class FilterEffectSink<R, E, A> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const tapEffect: {
-  <A, R2, E2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(sink: Sink<R, E | E2, A>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Sink<R | R2, E | E2, A>
-} = dual(2, function tapEffect<R, E, A, R2, E2>(
-  sink: Sink<R, E | E2, A>,
+  <A, E2, R2>(f: (a: A) => Effect.Effect<unknown, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(sink: Sink<A, E | E2, R>, f: (a: A) => Effect.Effect<unknown, E2, R2>): Sink<A, E | E2, R | R2>
+} = dual(2, function tapEffect<A, E, R, E2, R2>(
+  sink: Sink<A, E | E2, R>,
   f: (a: A) => Effect.Effect<unknown, E2, R2>
-): Sink<R | R2, E | E2, A> {
+): Sink<A, E | E2, R | R2> {
   return new TapEffectSink(sink, f)
 })
 
-class TapEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
+class TapEffectSink<A, E, R, E2, R2> implements Sink<A, E, R | R2> {
   constructor(
-    readonly sink: Sink<R, E | E2, A>,
+    readonly sink: Sink<A, E | E2, R>,
     readonly f: (a: A) => Effect.Effect<unknown, E2, R2>
   ) {
     this.onFailure = this.onFailure.bind(this)
@@ -349,21 +349,21 @@ class TapEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
  * @since 1.20.0
  */
 export const loop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <R, E>(
-    sink: Sink<R, E, C>
-  ) => Sink<R, E, A>
-  <R, E, A, B, C>(sink: Sink<R, E, C>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Sink<R, E, A>
-} = dual(3, function loop<R, E, A, B, C>(
-  sink: Sink<R, E, C>,
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [C, B]): <E, R>(
+    sink: Sink<C, E, R>
+  ) => Sink<A, E, R>
+  <A, E, R, B, C>(sink: Sink<C, E, R>, seed: B, f: (acc: B, a: A) => readonly [C, B]): Sink<A, E, R>
+} = dual(3, function loop<A, E, R, B, C>(
+  sink: Sink<C, E, R>,
   seed: B,
   f: (acc: B, a: A) => readonly [C, B]
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return new LoopSink(sink, seed, f)
 })
 
-class LoopSink<R, E, A, B, C> implements Sink<R, E, A> {
+class LoopSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, C>,
+    readonly sink: Sink<C, E, R>,
     private seed: B,
     readonly f: (acc: B, a: A) => readonly [C, B]
   ) {
@@ -386,25 +386,25 @@ class LoopSink<R, E, A, B, C> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const loopCause: {
-  <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Cause.Cause<C>, B]): <R, E>(
-    sink: Sink<R, C, A>
-  ) => Sink<R, E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, C, A>,
+  <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Cause.Cause<C>, B]): <E, R>(
+    sink: Sink<A, C, R>
+  ) => Sink<A, E, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-  ): Sink<R, E, A>
-} = dual(3, function loopCause<R, E, A, B, C>(
-  sink: Sink<R, C, A>,
+  ): Sink<A, E, R>
+} = dual(3, function loopCause<A, E, R, B, C>(
+  sink: Sink<A, C, R>,
   seed: B,
   f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return new LoopCauseSink(sink, seed, f)
 })
 
-class LoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
+class LoopCauseSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, C, A>,
+    readonly sink: Sink<A, C, R>,
     private seed: B,
     readonly f: (acc: B, a: Cause.Cause<E>) => readonly [Cause.Cause<C>, B]
   ) {
@@ -427,21 +427,21 @@ class LoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const filterMapLoop: {
-  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <R, E>(
-    sink: Sink<R, E, C>
-  ) => Sink<R, E, A>
-  <R, E, A, B, C>(sink: Sink<R, E, C>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Sink<R, E, A>
-} = dual(3, function filterMapLoop<R, E, A, B, C>(
-  sink: Sink<R, E, C>,
+  <B, A, C>(seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): <E, R>(
+    sink: Sink<C, E, R>
+  ) => Sink<A, E, R>
+  <A, E, R, B, C>(sink: Sink<C, E, R>, seed: B, f: (acc: B, a: A) => readonly [Option.Option<C>, B]): Sink<A, E, R>
+} = dual(3, function filterMapLoop<A, E, R, B, C>(
+  sink: Sink<C, E, R>,
   seed: B,
   f: (acc: B, a: A) => readonly [Option.Option<C>, B]
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return new FilterMapLoopSink(sink, seed, f)
 })
 
-class FilterMapLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
+class FilterMapLoopSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, C>,
+    readonly sink: Sink<C, E, R>,
     private seed: B,
     readonly f: (acc: B, a: A) => readonly [Option.Option<C>, B]
   ) {
@@ -465,25 +465,25 @@ class FilterMapLoopSink<R, E, A, B, C> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const filterMapLoopCause: {
-  <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Option.Option<Cause.Cause<C>>, B]): <R, E>(
-    sink: Sink<R, C, A>
-  ) => Sink<R, E, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, C, A>,
+  <B, A, C>(seed: B, f: (acc: B, a: Cause.Cause<A>) => readonly [Option.Option<Cause.Cause<C>>, B]): <E, R>(
+    sink: Sink<A, C, R>
+  ) => Sink<A, E, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
-  ): Sink<R, E, A>
-} = dual(3, function filterMapLoopCause<R, E, A, B, C>(
-  sink: Sink<R, C, A>,
+  ): Sink<A, E, R>
+} = dual(3, function filterMapLoopCause<A, E, R, B, C>(
+  sink: Sink<A, C, R>,
   seed: B,
   f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return new FilterMapLoopCauseSink(sink, seed, f)
 })
 
-class FilterMapLoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
+class FilterMapLoopCauseSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, C, A>,
+    readonly sink: Sink<A, C, R>,
     private seed: B,
     readonly f: (acc: B, a: Cause.Cause<E>) => readonly [Option.Option<Cause.Cause<C>>, B]
   ) {
@@ -507,25 +507,25 @@ class FilterMapLoopCauseSink<R, E, A, B, C> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const loopEffect: {
-  <B, A, R2, E2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>): <R, E>(
-    sink: Sink<R, E, C>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, E, C>,
+  <B, A, E2, R2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E2, R2>): <E, R>(
+    sink: Sink<C, E, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R, B, C>(
+    sink: Sink<C, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
-  ): Sink<R, E, A>
-} = dual(3, function loopEffect<R, E, A, B, C>(
-  sink: Sink<R, E, C>,
+  ): Sink<A, E, R>
+} = dual(3, function loopEffect<A, E, R, B, C>(
+  sink: Sink<C, E, R>,
   seed: B,
   f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return new LoopEffectSink(sink, seed, f)
 })
 
-class LoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
+class LoopEffectSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E, C>,
+    readonly sink: Sink<C, E, R>,
     private seed: B,
     readonly f: (acc: B, a: A) => Effect.Effect<readonly [C, B], E, R>
   ) {
@@ -552,25 +552,25 @@ class LoopEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const filterMapLoopEffect: {
-  <B, A, R2, E2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <R, E>(
-    sink: Sink<R, E, C>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A, B, R2, C>(
-    sink: Sink<R, E, C>,
+  <B, A, E2, R2, C>(seed: B, f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E2, R2>): <E, R>(
+    sink: Sink<C, E, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R, B, R2, C>(
+    sink: Sink<C, E, R>,
     seed: B,
     f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R2>
-  ): Sink<R | R2, E, A>
-} = dual(3, function filterMapLoopEffect<R, E, A, B, R2, C>(
-  sink: Sink<R, E, C>,
+  ): Sink<A, E, R | R2>
+} = dual(3, function filterMapLoopEffect<A, E, R, B, R2, C>(
+  sink: Sink<C, E, R>,
   seed: B,
   f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R2>
-): Sink<R | R2, E, A> {
+): Sink<A, E, R | R2> {
   return new FilterMapLoopEffectSink(sink, seed, f)
 })
 
-class FilterMapLoopEffectSink<R, E, A, B, R2, C> implements Sink<R | R2, E, A> {
+class FilterMapLoopEffectSink<A, E, R, B, R2, C> implements Sink<A, E, R | R2> {
   constructor(
-    readonly sink: Sink<R, E, C>,
+    readonly sink: Sink<C, E, R>,
     private seed: B,
     readonly f: (acc: B, a: A) => Effect.Effect<readonly [Option.Option<C>, B], E, R2>
   ) {
@@ -598,28 +598,28 @@ class FilterMapLoopEffectSink<R, E, A, B, R2, C> implements Sink<R | R2, E, A> {
  * @since 1.20.0
  */
 export const loopCauseEffect: {
-  <B, A, R2, E2, C>(
+  <B, A, E2, R2, C>(
     seed: B,
     f: (acc: B, a: Cause.Cause<A>) => Effect.Effect<readonly [Cause.Cause<C>, B], E2, R2>
-  ): <R, E>(
-    sink: Sink<R, E | C, A>
-  ) => Sink<R, E | C, A>
-  <R, E, A, B, C>(
-    sink: Sink<R, E | C, A>,
+  ): <E, R>(
+    sink: Sink<A, E | C, R>
+  ) => Sink<A, E | C, R>
+  <A, E, R, B, C>(
+    sink: Sink<A, E | C, R>,
     seed: B,
     f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E, R>
-  ): Sink<R, E | C, A>
-} = dual(3, function loopCauseEffect<R, E, A, B, C>(
-  sink: Sink<R, E | C, A>,
+  ): Sink<A, E | C, R>
+} = dual(3, function loopCauseEffect<A, E, R, B, C>(
+  sink: Sink<A, E | C, R>,
   seed: B,
   f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E, R>
-): Sink<R, E | C, A> {
+): Sink<A, E | C, R> {
   return new LoopCauseEffectSink(sink, seed, f)
 })
 
-class LoopCauseEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
+class LoopCauseEffectSink<A, E, R, B, C> implements Sink<A, E, R> {
   constructor(
-    readonly sink: Sink<R, E | C, A>,
+    readonly sink: Sink<A, E | C, R>,
     private seed: B,
     readonly f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Cause.Cause<C>, B], E, R>
   ) {
@@ -645,17 +645,17 @@ class LoopCauseEffectSink<R, E, A, B, C> implements Sink<R, E, A> {
 /**
  * @since 1.20.0
  */
-export function filterMapLoopCauseEffect<R, E, A, B, R2, E2, C>(
-  sink: Sink<R, E2 | C, A>,
+export function filterMapLoopCauseEffect<A, E, R, B, E2, R2, C>(
+  sink: Sink<A, E2 | C, R>,
   seed: B,
   f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
-): Sink<R | R2, E, A> {
+): Sink<A, E, R | R2> {
   return new FilterMapLoopCauseEffectSink(sink, seed, f)
 }
 
-class FilterMapLoopCauseEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2, E, A> {
+class FilterMapLoopCauseEffectSink<A, E, R, B, E2, R2, C> implements Sink<A, E, R | R2> {
   constructor(
-    readonly sink: Sink<R, E2 | C, A>,
+    readonly sink: Sink<A, E2 | C, R>,
     private seed: B,
     readonly f: (acc: B, a: Cause.Cause<E>) => Effect.Effect<readonly [Option.Option<Cause.Cause<C>>, B], E2, R2>
   ) {
@@ -683,28 +683,28 @@ class FilterMapLoopCauseEffectSink<R, E, A, B, R2, E2, C> implements Sink<R | R2
  * @since 1.20.0
  */
 export const slice: {
-  <R, E, A, R2>(bounds: Bounds, f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>): (
-    sink: Sink<R, E, A>
+  <A, E, R, R2>(bounds: Bounds, f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, never, R2>): (
+    sink: Sink<A, E, R>
   ) => Effect.Effect<void, never, R | R2>
-  <R, E, A, R2>(
-    sink: Sink<R, E, A>,
+  <A, E, R, R2>(
+    sink: Sink<A, E, R>,
     bounds: Bounds,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
+    f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, never, R2>
   ): Effect.Effect<void, never, R | R2>
-} = dual(3, function slice<R, E, A, R2>(
-  sink: Sink<R, E, A>,
+} = dual(3, function slice<A, E, R, R2>(
+  sink: Sink<A, E, R>,
   bounds: Bounds,
-  f: (sink: Sink<R, E, A>) => Effect.Effect<unknown, never, R2>
+  f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, never, R2>
 ): Effect.Effect<void, never, R | R2> {
   return withEarlyExit(sink, (s) => f(new SliceSink(s, bounds)))
 })
 
-class SliceSink<R, E, A> implements Sink<R, E, A> {
+class SliceSink<A, E, R> implements Sink<A, E, R> {
   private drop: number
   private take: number
 
   constructor(
-    readonly sink: WithEarlyExit<R, E, A>,
+    readonly sink: WithEarlyExit<A, E, R>,
     readonly bounds: Bounds
   ) {
     this.drop = this.bounds.min
@@ -734,27 +734,27 @@ class SliceSink<R, E, A> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const takeWhile: {
-  <R, E, A, R2, B>(predicate: Predicate.Predicate<A>, f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>): (
-    sink: Sink<R, E, A>
+  <A, E, R, B, R2>(predicate: Predicate.Predicate<A>, f: (sink: Sink<A, E, R>) => Effect.Effect<B, E, R2>): (
+    sink: Sink<A, E, R>
   ) => Effect.Effect<void, never, R | R2>
-  <R, E, A, R2, B>(
-    sink: Sink<R, E, A>,
+  <A, E, R, B, R2>(
+    sink: Sink<A, E, R>,
     predicate: Predicate.Predicate<A>,
-    f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
+    f: (sink: Sink<A, E, R>) => Effect.Effect<B, E, R2>
   ): Effect.Effect<void, never, R | R2>
-} = dual(3, function takeWhile<R, E, A, R2, B>(
-  sink: Sink<R, E, A>,
+} = dual(3, function takeWhile<A, E, R, B, R2>(
+  sink: Sink<A, E, R>,
   predicate: Predicate.Predicate<A>,
-  f: (sink: Sink<R, E, A>) => Effect.Effect<B, E, R2>
+  f: (sink: Sink<A, E, R>) => Effect.Effect<B, E, R2>
 ) {
   return withEarlyExit(sink, (s) => f(new TakeWhileSink(s, predicate)))
 })
 
-class TakeWhileSink<R, E, A> implements Sink<R, E, A> {
+class TakeWhileSink<A, E, R> implements Sink<A, E, R> {
   private take: boolean
 
   constructor(
-    readonly sink: WithEarlyExit<R, E, A>,
+    readonly sink: WithEarlyExit<A, E, R>,
     readonly predicate: Predicate.Predicate<A>
   ) {
     this.take = true
@@ -779,14 +779,14 @@ class TakeWhileSink<R, E, A> implements Sink<R, E, A> {
  * @since 1.20.0
  */
 export const dropWhile: {
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(
-    sink: Sink<R, E, A>
-  ) => Sink<R, E, A>
-  <R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A>
-} = dual(2, function dropWhile<R, E, A>(
-  sink: Sink<R, E, A>,
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(
+    sink: Sink<A, E, R>
+  ) => Sink<A, E, R>
+  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
+} = dual(2, function dropWhile<A, E, R>(
+  sink: Sink<A, E, R>,
   predicate: Predicate.Predicate<A>
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return filterMapLoop(sink, true, (drop: boolean, a: A) => {
     const drop2 = drop && predicate(a)
     return [drop2 ? Option.none() : Option.some(a), drop2]
@@ -797,12 +797,12 @@ export const dropWhile: {
  * @since 1.20.0
  */
 export const dropAfter: {
-  <A>(predicate: Predicate.Predicate<A>): <R, E>(
-    sink: Sink<R, E, A>
-  ) => Sink<R, E, A>
-  <R, E, A>(sink: Sink<R, E, A>, predicate: Predicate.Predicate<A>): Sink<R, E, A>
-} = dual(2, function dropAfter<R, E, A>(
-  sink: Sink<R, E, A>,
+  <A>(predicate: Predicate.Predicate<A>): <E, R>(
+    sink: Sink<A, E, R>
+  ) => Sink<A, E, R>
+  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
+} = dual(2, function dropAfter<A, E, R>(
+  sink: Sink<A, E, R>,
   predicate: Predicate.Predicate<A>
 ) {
   return filterMapLoop(sink, false, (drop: boolean, a: A) => {
@@ -817,30 +817,30 @@ export const dropAfter: {
  * @since 1.20.0
  */
 export const takeWhileEffect: {
-  <R, E, A, R2, E2, R3, E3, B>(
+  <A, E, R, E2, R2, R3, E3, B>(
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
-  ): <R, E>(
-    sink: Sink<R, E, A>
+    f: (sink: Sink<A, E, R | R2>) => Effect.Effect<B, E3, R3>
+  ): <E, R>(
+    sink: Sink<A, E, R>
   ) => Effect.Effect<void, never, R | R3>
-  <R, E, A, R2, E2, R3, E3, B>(
-    sink: Sink<R, E | E2 | E3, A>,
+  <A, E, R, E2, R2, R3, E3, B>(
+    sink: Sink<A, E | E2 | E3, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
-    f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
+    f: (sink: Sink<A, E, R | R2>) => Effect.Effect<B, E3, R3>
   ): Effect.Effect<void, never, R | R3>
-} = dual(3, function takeWhileEffect<R, E, A, R2, E2, R3, E3, B>(
-  sink: Sink<R, E | E2 | E3, A>,
+} = dual(3, function takeWhileEffect<A, E, R, E2, R2, R3, E3, B>(
+  sink: Sink<A, E | E2 | E3, R>,
   predicate: (a: A) => Effect.Effect<boolean, E2, R2>,
-  f: (sink: Sink<R | R2, E, A>) => Effect.Effect<B, E3, R3>
+  f: (sink: Sink<A, E, R | R2>) => Effect.Effect<B, E3, R3>
 ) {
   return withEarlyExit(sink, (s) => f(new TakeWhileEffectSink(s, predicate)))
 })
 
-class TakeWhileEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
+class TakeWhileEffectSink<A, E, R, E2, R2> implements Sink<A, E, R | R2> {
   private take: boolean
 
   constructor(
-    readonly sink: WithEarlyExit<R, E | E2, A>,
+    readonly sink: WithEarlyExit<A, E | E2, R>,
     readonly predicate: (a: A) => Effect.Effect<boolean, E2, R2>
   ) {
     this.take = true
@@ -869,18 +869,18 @@ class TakeWhileEffectSink<R, E, A, R2, E2> implements Sink<R | R2, E, A> {
  * @since 1.20.0
  */
 export const dropWhileEffect: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(
-    sink: Sink<R, E | E2, A>,
+  <A, E2, R2>(predicate: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): Sink<R | R2, E | E2, A>
-} = dual(2, function dropWhileEffect<R, E, A, R2, E2>(
-  sink: Sink<R, E | E2, A>,
+  ): Sink<A, E | E2, R | R2>
+} = dual(2, function dropWhileEffect<A, E, R, E2, R2>(
+  sink: Sink<A, E | E2, R>,
   predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-): Sink<R | R2, E | E2, A> {
-  return filterMapLoopEffect<R, E | E2, A, boolean, R2, A>(sink, true, (drop: boolean, a: A) => {
+): Sink<A, E | E2, R | R2> {
+  return filterMapLoopEffect<A, E | E2, R, boolean, R2, A>(sink, true, (drop: boolean, a: A) => {
     if (drop === false) return Effect.succeed([Option.some(a), drop as boolean] as const)
 
     return Effect.map(predicate(a), (b) => [b ? Option.none<A>() : Option.some(a), b] as const)
@@ -891,18 +891,18 @@ export const dropWhileEffect: {
  * @since 1.20.0
  */
 export const dropAfterEffect: {
-  <A, R2, E2>(predicate: (a: A) => Effect.Effect<boolean, E2, R2>): <R, E>(
-    sink: Sink<R, E | E2, A>
-  ) => Sink<R | R2, E | E2, A>
-  <R, E, A, R2, E2>(
-    sink: Sink<R, E | E2, A>,
+  <A, E2, R2>(predicate: (a: A) => Effect.Effect<boolean, E2, R2>): <E, R>(
+    sink: Sink<A, E | E2, R>
+  ) => Sink<A, E | E2, R | R2>
+  <A, E, R, E2, R2>(
+    sink: Sink<A, E | E2, R>,
     predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-  ): Sink<R | R2, E | E2, A>
-} = dual(2, function dropAfterEffect<R, E, A, R2, E2>(
-  sink: Sink<R, E | E2, A>,
+  ): Sink<A, E | E2, R | R2>
+} = dual(2, function dropAfterEffect<A, E, R, E2, R2>(
+  sink: Sink<A, E | E2, R>,
   predicate: (a: A) => Effect.Effect<boolean, E2, R2>
-): Sink<R | R2, E | E2, A> {
-  return filterMapLoopEffect<R, E | E2, A, boolean, R2, A>(sink, false, (drop: boolean, a: A) => {
+): Sink<A, E | E2, R | R2> {
+  return filterMapLoopEffect<A, E | E2, R, boolean, R2, A>(sink, false, (drop: boolean, a: A) => {
     if (drop === true) return Effect.succeed([Option.none(), drop as boolean] as const)
 
     return Effect.map(predicate(a), (b) => [Option.some(a), b] as const)
@@ -913,12 +913,12 @@ export const dropAfterEffect: {
  * @since 1.20.0
  */
 export const provide: {
-  <R2>(ctx: C.Context<R2>): <R, E, A>(sink: Sink<R, E, A>) => Sink<Exclude<R, R2>, E, A>
-  <R, E, A, R2>(sink: Sink<R, E, A>, ctx: C.Context<R2>): Sink<Exclude<R, R2>, E, A>
-} = dual(2, function provide<R, E, A, R2>(
-  sink: Sink<R, E, A>,
+  <R2>(ctx: C.Context<R2>): <A, E, R>(sink: Sink<A, E, R>) => Sink<A, E, Exclude<R, R2>>
+  <A, E, R, R2>(sink: Sink<A, E, R>, ctx: C.Context<R2>): Sink<A, E, Exclude<R, R2>>
+} = dual(2, function provide<A, E, R, R2>(
+  sink: Sink<A, E, R>,
   ctx: C.Context<R2>
-): Sink<Exclude<R, R2>, E, A> {
+): Sink<A, E, Exclude<R, R2>> {
   return make(
     (cause) => Effect.provide(sink.onFailure(cause), ctx),
     (a) => Effect.provide(sink.onSuccess(a), ctx)
@@ -929,12 +929,12 @@ export const provide: {
  * @since 1.20.0
  */
 export const setSpan: {
-  (span: Tracer.Span): <R, E, A>(sink: Sink<R, E, A>) => Sink<R, E, A>
-  <R, E, A>(self: Sink<R, E, A>, span: Tracer.Span): Sink<R, E, A>
-} = dual(2, function setSpan<R, E, A>(
-  self: Sink<R, E, A>,
+  (span: Tracer.Span): <A, E, R>(sink: Sink<A, E, R>) => Sink<A, E, R>
+  <A, E, R>(self: Sink<A, E, R>, span: Tracer.Span): Sink<A, E, R>
+} = dual(2, function setSpan<A, E, R>(
+  self: Sink<A, E, R>,
   span: Tracer.Span
-): Sink<R, E, A> {
+): Sink<A, E, R> {
   return make(
     (cause) =>
       addEvent(self.onFailure(cause), "fx.failure", span, {
@@ -947,7 +947,7 @@ export const setSpan: {
   )
 })
 
-const addEvent = <R, E, A>(
+const addEvent = <A, E, R>(
   effect: Effect.Effect<A, E, R>,
   name: string,
   span: Tracer.Span,
@@ -964,14 +964,14 @@ const addEvent = <R, E, A>(
  * @since 1.20.0
  */
 export function tagged<E, A>(): {
-  <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
-  <const I>(identifier: I): Sink.Tagged<C.IdentifierOf<I>, E, A>
+  <const I extends C.IdentifierFactory<any>>(identifier: I): Sink.Tagged<A, E, C.IdentifierOf<I>>
+  <const I>(identifier: I): Sink.Tagged<A, E, C.IdentifierOf<I>>
 } {
-  return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Sink<never, E, A>>(identifier))
+  return <const I>(identifier: I) => new TaggedImpl(C.Tagged<I, Sink<A, E>>(identifier))
 }
 
-class TaggedImpl<I, E, A> implements Sink.Tagged<I, E, A> {
-  constructor(readonly tag: C.Tagged<I, Sink<never, E, A>>) {}
+class TaggedImpl<A, E, I> implements Sink.Tagged<A, E, I> {
+  constructor(readonly tag: C.Tagged<I, Sink<A, E>>) {}
 
   onSuccess(value: A): Effect.Effect<unknown, never, I> {
     return this.tag.withEffect((sink) => sink.onSuccess(value))
@@ -981,7 +981,7 @@ class TaggedImpl<I, E, A> implements Sink.Tagged<I, E, A> {
     return this.tag.withEffect((sink) => sink.onFailure(cause))
   }
 
-  make: <R>(sink: Sink<R, E, A>) => Layer.Layer<I, never, R> = <R>(sink: Sink<R, E, A>) =>
+  make: <R>(sink: Sink<A, E, R>) => Layer.Layer<I, never, R> = <R>(sink: Sink<A, E, R>) =>
     Layer.flatMap(Layer.context<R>(), (ctx) => this.tag.layer(provide(sink, ctx)))
 }
 
@@ -989,19 +989,19 @@ class TaggedImpl<I, E, A> implements Sink.Tagged<I, E, A> {
  * @since 1.20.0
  */
 export const fromTag: {
-  <S, R2, E2, B>(f: (s: S) => Sink<R2, E2, B>): <I>(tag: C.Tag<I, S>) => Sink<I | R2, E2, B>
-  <I, S, R2, E2, B>(tag: C.Tag<I, S>, f: (s: S) => Sink<R2, E2, B>): Sink<I | R2, E2, B>
-} = dual(2, function fromTag<I, S, R2, E2, B>(
+  <S, B, E2, R2>(f: (s: S) => Sink<B, E2, R2>): <I>(tag: C.Tag<I, S>) => Sink<B, E2, I | R2>
+  <I, S, B, E2, R2>(tag: C.Tag<I, S>, f: (s: S) => Sink<B, E2, R2>): Sink<B, E2, I | R2>
+} = dual(2, function fromTag<I, S, B, E2, R2>(
   tag: C.Tag<I, S>,
-  f: (s: S) => Sink<R2, E2, B>
-): Sink<I | R2, E2, B> {
+  f: (s: S) => Sink<B, E2, R2>
+): Sink<B, E2, I | R2> {
   return new FromTag(tag, f)
 })
 
-class FromTag<I, S, R2, E2, B> implements Sink<I | R2, E2, B> {
-  readonly get: Effect.Effect<Sink<R2, E2, B>, never, I>
+class FromTag<I, S, B, E2, R2> implements Sink<B, E2, I | R2> {
+  readonly get: Effect.Effect<Sink<B, E2, R2>, never, I>
 
-  constructor(readonly tag: C.Tag<I, S>, readonly f: (s: S) => Sink<R2, E2, B>) {
+  constructor(readonly tag: C.Tag<I, S>, readonly f: (s: S) => Sink<B, E2, R2>) {
     this.get = Effect.map(tag, f)
   }
 
@@ -1017,7 +1017,7 @@ class FromTag<I, S, R2, E2, B> implements Sink<I | R2, E2, B> {
 /**
  * @since 1.20.0
  */
-export function ignoreInterrupt<R, E, A>(sink: Sink<R, E, A>): Sink<R, E, A> {
+export function ignoreInterrupt<A, E, R>(sink: Sink<A, E, R>): Sink<A, E, R> {
   return make(
     (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),
     sink.onSuccess

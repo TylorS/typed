@@ -8,10 +8,10 @@ import { diffIterator } from "./diff.js"
 import { withDebounceFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
 
-export function keyed<R, E, A, B extends PropertyKey, R2, E2, C>(
-  fx: Fx<R, E, ReadonlyArray<A>>,
-  options: KeyedOptions<A, B, R2, E2, C>
-): Fx<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>> {
+export function keyed<R, E, A, B extends PropertyKey, C, E2, R2>(
+  fx: Fx<ReadonlyArray<A>, E, R>,
+  options: KeyedOptions<A, B, C, E2, R2>
+): Fx<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope> {
   return new Keyed(fx, options)
 }
 
@@ -22,17 +22,17 @@ type StateContext<A, C> = {
 
 const StateContext = Context.GenericTag<StateContext<any, any>>("@services/StateContext")
 
-class Keyed<R, E, A, B extends PropertyKey, R2, E2, C> extends FxBase<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
-  implements Fx<R | R2 | Scope.Scope, E | E2, ReadonlyArray<C>>
+class Keyed<R, E, A, B extends PropertyKey, C, E2, R2> extends FxBase<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope>
+  implements Fx<ReadonlyArray<C>, E | E2, R | R2 | Scope.Scope>
 {
   constructor(
-    readonly fx: Fx<R, E, ReadonlyArray<A>>,
-    readonly options: KeyedOptions<A, B, R2, E2, C>
+    readonly fx: Fx<ReadonlyArray<A>, E, R>,
+    readonly options: KeyedOptions<A, B, C, E2, R2>
   ) {
     super()
   }
 
-  run<R3>(sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>) {
+  run<R3>(sink: Sink.Sink<ReadonlyArray<C>, E | E2, R3>) {
     return Effect.fiberIdWith((id) => runKeyed(this.fx, this.options, sink, id))
   }
 }
@@ -51,12 +51,12 @@ function emptyKeyedState<A, B extends PropertyKey, C>(): KeyedState<A, B, C> {
   }
 }
 
-function runKeyed<R, E, A, B extends PropertyKey, R2, E2, C, R3>(
-  fx: Fx<R, E, ReadonlyArray<A>>,
-  options: KeyedOptions<A, B, R2, E2, C>,
-  sink: Sink.Sink<R3, E | E2, ReadonlyArray<C>>,
+function runKeyed<R, E, A, B extends PropertyKey, C, E2, R2, R3>(
+  fx: Fx<ReadonlyArray<A>, E, R>,
+  options: KeyedOptions<A, B, C, E2, R2>,
+  sink: Sink.Sink<ReadonlyArray<C>, E | E2, R3>,
   id: FiberId.FiberId
-) {
+): Effect.Effect<unknown, never, Scope.Scope | R | R2 | R3> {
   return withDebounceFork(
     (forkDebounce, parentScope) => {
       const state = emptyKeyedState<A, B, C>()
@@ -126,7 +126,7 @@ class KeyedEntry<A, C> {
     public value: A,
     public index: number,
     public output: Option.Option<C>,
-    public readonly ref: RefSubject.RefSubject<never, never, A>,
+    public readonly ref: RefSubject.RefSubject<A>,
     public readonly interrupt: Effect.Effect<void>
   ) {}
 }
@@ -158,14 +158,14 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   patch: Add<A, B>,
   id: FiberId.FiberId,
   parentScope: Scope.Scope,
-  options: KeyedOptions<A, B, R2, E2, C>,
-  sink: Sink.Sink<R2 | R3, E | E2, ReadonlyArray<C>>,
+  options: KeyedOptions<A, B, C, E2, R2>,
+  sink: Sink.Sink<ReadonlyArray<C>, E | E2, R2 | R3>,
   scheduleNextEmit: Effect.Effect<D, never, R3>
 ) {
   return Effect.gen(function*(_) {
     const value = values[patch.index]
     const childScope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
-    const ref: RefSubject.RefSubject<never, never, A> = yield* _(RefSubject.unsafeMake<never, A>({
+    const ref: RefSubject.RefSubject<A> = yield* _(RefSubject.unsafeMake<never, A>({
       initial: Effect.sync(() => entry.value),
       initialValue: value,
       scope: childScope,

@@ -16,7 +16,7 @@ import * as TestClock from "effect/TestClock"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
-export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
+export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
   const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
   const finished = new Set<number>()
   let currentIndex = 0
@@ -62,7 +62,7 @@ export function withBuffers<R, E, A>(size: number, sink: Sink.Sink<R, E, A>) {
   } as const
 }
 
-export const withScope = <R, E, A>(
+export const withScope = <A, E, R>(
   f: (scope: Scope.CloseableScope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<A, E, R | Scope.Scope> =>
@@ -77,7 +77,7 @@ export const getExitEquivalence = <E, A>(A: Equivalence.Equivalence<A>) =>
     }
   })
 
-export function withScopedFork<R, E, A>(
+export function withScopedFork<A, E, R>(
   f: (fork: ScopedFork, scope: Scope.CloseableScope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ): Effect.Effect<A, E, R | Scope.Scope> {
@@ -85,8 +85,8 @@ export function withScopedFork<R, E, A>(
 }
 
 export function makeForkInScope(scope: Scope.Scope) {
-  return <R, E, A>(effect: Effect.Effect<A, E, R>) =>
-    matchEffectPrimitive<R, E, A, Effect.Effect<Fiber.Fiber<A, E>, never, R>>(effect, {
+  return <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    matchEffectPrimitive<A, E, R, Effect.Effect<Fiber.Fiber<A, E>, never, R>>(effect, {
       Success: (a) => Effect.succeed(Fiber.succeed(a)),
       Failure: (cause) => Effect.succeed(Fiber.failCause(cause)),
       Sync: (f) =>
@@ -105,7 +105,7 @@ export function makeForkInScope(scope: Scope.Scope) {
     })
 }
 
-export function withSwitchFork<R, E, A>(
+export function withSwitchFork<A, E, R>(
   f: (fork: FxFork, scope: Scope.CloseableScope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
@@ -119,7 +119,7 @@ export function withSwitchFork<R, E, A>(
   )
 }
 
-export function runSwitchFork<R, E, A>(
+export function runSwitchFork<A, E, R>(
   ref: SynchronizedRef.SynchronizedRef<Fiber.Fiber<unknown>>,
   fork: ScopedFork,
   scope: Scope.CloseableScope,
@@ -142,7 +142,7 @@ export function runSwitchFork<R, E, A>(
   )
 }
 
-export function withExhaustFork<R, E, A>(
+export function withExhaustFork<A, E, R>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
@@ -170,7 +170,7 @@ export function withExhaustFork<R, E, A>(
   }, executionStrategy)
 }
 
-export function withExhaustLatestFork<R, E, A>(
+export function withExhaustLatestFork<A, E, R>(
   f: (exhaustLatestFork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) {
@@ -225,7 +225,7 @@ export function withExhaustLatestFork<R, E, A>(
     ), executionStrategy)
 }
 
-export function withUnboundedFork<R, E, A>(
+export function withUnboundedFork<A, E, R>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>
 ) {
   return Effect.scopeWith((scope) =>
@@ -241,7 +241,7 @@ export function withUnboundedFork<R, E, A>(
 }
 
 export function withBoundedFork(capacity: number) {
-  return <R, E, A>(
+  return <A, E, R>(
     f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>,
     executionStrategy: ExecutionStrategy.ExecutionStrategy
   ) => {
@@ -271,7 +271,7 @@ export function withBoundedFork(capacity: number) {
 
 export function withFlattenStrategy(
   strategy: FlattenStrategy
-): <R, E, A>(
+): <A, E, R>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>,
   executionStrategy: ExecutionStrategy.ExecutionStrategy
 ) => Effect.Effect<void, E, R | Scope.Scope> {
@@ -289,7 +289,7 @@ export function withFlattenStrategy(
   }
 }
 
-export function matchEffectPrimitive<R, E, A, Z>(
+export function matchEffectPrimitive<A, E, R, Z>(
   effect: Effect.Effect<A, E, R>,
   matchers: {
     Success: (a: A) => Z
@@ -339,8 +339,8 @@ export function adjustTime(input: Duration.DurationInput = 1) {
   )
 }
 
-export function tupleSink<R, E, A extends ReadonlyArray<any>, R2, E2, B>(
-  sink: Sink.Sink<R, E, A>,
+export function tupleSink<A extends ReadonlyArray<any>, E, R, R2, E2, B>(
+  sink: Sink.Sink<A, E, R>,
   f: (sink: (index: number, value: A[number]) => Effect.Effect<unknown, never, R>) => Effect.Effect<B, E2, R2>,
   expected: number
 ) {
@@ -361,7 +361,7 @@ export function tupleSink<R, E, A extends ReadonlyArray<any>, R2, E2, B>(
   })
 }
 
-export function withDebounceFork<R, E, A>(
+export function withDebounceFork<A, E, R>(
   f: (fork: FxFork, scope: Scope.Scope) => Effect.Effect<A, E, R>,
   duration: Duration.DurationInput
 ): Effect.Effect<unknown, E, R | Scope.Scope> {
@@ -455,7 +455,7 @@ export function awaitScopeClose(scope: Scope.Scope) {
   )
 }
 
-export class MulticastEffect<R, E, A> extends Effectable.Class<A, E, R> {
+export class MulticastEffect<A, E, R> extends Effectable.Class<A, E, R> {
   private _fiber: Fiber.Fiber<A, E> | null = null
 
   constructor(

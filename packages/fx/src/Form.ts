@@ -56,7 +56,7 @@ export namespace Form {
    * @since 1.18.0
    */
   export interface Base<out R, out E, in out I, in out O, in out Entries extends Form.AnyEntries>
-    extends Versioned.Versioned<R, never, R | Scope.Scope, E | ParseError, I, R, E | ParseError, I>
+    extends Versioned.Versioned<R, never, I, E | ParseError, R | Scope.Scope, I, E | ParseError, R>
   {
     readonly [FormTypeId]: FormTypeId
 
@@ -71,9 +71,9 @@ export namespace Form {
     readonly get: <K extends keyof Entries>(key: K) => Entries[K]
 
     readonly decoded: RefSubject.Computed<
-      R,
+      O,
       E | ParseError,
-      O
+      R
     >
   }
 
@@ -162,7 +162,7 @@ export type MakeForm<
   O extends AnyObjectWithKeys<keyof I>
 > = {
   <R, E>(
-    fx: RefSubject.RefSubject<R, E, O>
+    fx: RefSubject.RefSubject<O, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R, never, E, I, O>] extends [Form.Derived<infer R, never, infer R2>] ? Form.Derived<R, never, R2>
       : never,
@@ -171,7 +171,7 @@ export type MakeForm<
   >
 
   <R, E>(
-    fx: Fx<R, E, O> | Effect.Effect<O, E, R>
+    fx: Fx<O, E, R> | Effect.Effect<O, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,
@@ -188,7 +188,7 @@ export type MakeInputForm<
   O extends AnyObjectWithKeys<keyof I>
 > = {
   <R, E>(
-    fx: RefSubject.RefSubject<R, E, I>
+    fx: RefSubject.RefSubject<I, E, R>
   ): Effect.Effect<
     [DerivedFromIO<R0 | R, never, E, I, O>] extends [Form.Derived<infer R, infer _, infer R2>] ? Form.Derived<R, _, R2>
       : never,
@@ -197,7 +197,7 @@ export type MakeInputForm<
   >
 
   <R, E>(
-    fx: Fx<R, E, I> | Effect.Effect<I, E, R>
+    fx: Fx<I, E, R> | Effect.Effect<I, E, R>
   ): Effect.Effect<
     [FormFromIO<R0, E, I, O>] extends [Form<infer R1, infer R2>] ? Form<R1, R2> : never,
     never,
@@ -284,7 +284,7 @@ export function deriveInput<
   I extends Partial<Readonly<Record<PropertyKey, any>>>,
   O extends Partial<AnyObjectWithKeys<keyof I>>
 >(schema: S.Schema<O, I, R0>): MakeInputForm<R0, I, O> {
-  return <R, E>(input: RefSubject.RefSubject<R, E, I> | Fx<R, E, I> | Effect.Effect<I, E, R>) =>
+  return <R, E>(input: RefSubject.RefSubject<I, E, R> | Fx<I, E, R> | Effect.Effect<I, E, R>) =>
     Effect.map(deriveMakeInputEntries(input, schema.ast), (entries) => {
       const form = (Form as any)(entries)
 
@@ -309,15 +309,15 @@ function isParseError(u: unknown): u is ParseError {
 const parseOptions: ParseOptions = { errors: "all", onExcessProperty: "ignore" }
 
 class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
-  Form.Context<Entries> | Scope.Scope,
-  Form.Error<Entries> | ParseError,
   Form.Input<Entries>,
-  Form.Context<Entries>,
   Form.Error<Entries> | ParseError,
-  Form.Input<Entries>
+  Form.Context<Entries> | Scope.Scope,
+  Form.Input<Entries>,
+  Form.Error<Entries> | ParseError,
+  Form.Context<Entries>
 > implements Form<Form.Context<Entries>, Entries> {
   readonly [FormTypeId]: FormTypeId = FormTypeId
-  private _fx: Fx<Scope.Scope, ParseError | Form.Error<Entries>, Form.Input<Entries>>
+  private _fx: Fx<Form.Input<Entries>, ParseError | Form.Error<Entries>, Scope.Scope>
   readonly version: Effect.Effect<number>
 
   constructor(readonly entries: Entries) {
@@ -332,7 +332,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
 
     this._fx = hold(
       core.skipRepeatsWith(
-        core.struct(this.entries as any) as Fx<never, Form.Error<Entries> | ParseError, Form.Input<Entries>>,
+        core.struct(this.entries as any) as Fx<Form.Input<Entries>, Form.Error<Entries> | ParseError>,
         make(S.from(this.schema))
       )
     )
@@ -343,7 +343,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
   schema: Form<Form.Context<Entries>, Entries>["schema"]
 
   run<R3>(
-    sink: Sink.Sink<R3, Form.Error<Entries> | ParseError, Form.Input<Entries>>
+    sink: Sink.Sink<Form.Input<Entries>, Form.Error<Entries> | ParseError, R3>
   ): Effect.Effect<unknown, never, R3 | Scope.Scope> {
     return this._fx.run(sink)
   }
@@ -389,7 +389,7 @@ const deriveMakeEntries = <
   I extends Readonly<Record<PropertyKey, any>>,
   O extends Readonly<Record<keyof I, any>>
 >(
-  input: RefSubject.RefSubject<R, E, O> | Fx<R, E, O> | Effect.Effect<O, E, R>,
+  input: RefSubject.RefSubject<O, E, R> | Fx<O, E, R> | Effect.Effect<O, E, R>,
   ast: AST.AST
 ): Effect.Effect<DeriveEntries<R, E, I, O>, never, R | Scope.Scope> =>
   Effect.suspend(() => {
@@ -418,7 +418,7 @@ const deriveMakeEntries = <
                 FormEntry.derive<any, any, any>({
                   name: prop.name,
                   schema: S.make(ast)
-                })(nested as Fx<R, E, any>)
+                })(nested as Fx<any, E, R>)
               )
             }
           }
@@ -439,7 +439,7 @@ const deriveMakeInputEntries = <
   I extends Readonly<Record<PropertyKey, any>>,
   O extends Readonly<Record<keyof I, any>>
 >(
-  input: RefSubject.RefSubject<R, E, I> | Fx<R, E, I> | Effect.Effect<I, E, R>,
+  input: RefSubject.RefSubject<I, E, R> | Fx<I, E, R> | Effect.Effect<I, E, R>,
   ast: AST.AST
 ): Effect.Effect<DeriveEntries<R, E, I, O>, never, R | Scope.Scope> =>
   Effect.suspend(() => {
@@ -468,7 +468,7 @@ const deriveMakeInputEntries = <
                 FormEntry.deriveInput<any, any, any>({
                   name: prop.name,
                   schema: S.make(ast)
-                })(nested as Fx<R, E, any>)
+                })(nested as Fx<any, E, R>)
               )
             }
           }
@@ -483,12 +483,12 @@ const deriveMakeInputEntries = <
     }
   })
 
-const propOf = <R, E, O>(
+const propOf = <O, E, R>(
   input:
-    | RefSubject.RefSubject<R, E, O>
-    | RefSubject.Computed<R, E, O>
-    | RefSubject.Filtered<R, E, O>
-    | Fx<R, E, O>
+    | RefSubject.RefSubject<O, E, R>
+    | RefSubject.Computed<O, E, R>
+    | RefSubject.Filtered<O, E, R>
+    | Fx<O, E, R>
     | Effect.Effect<O, E, R>,
   key: keyof O
 ) => {

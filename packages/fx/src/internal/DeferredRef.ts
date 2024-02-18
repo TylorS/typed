@@ -5,7 +5,7 @@ import * as Exit from "effect/Exit"
 import * as Option from "effect/Option"
 import { EffectBase } from "./protos.js"
 
-export class DeferredRef<E, A> extends EffectBase<never, E, A> {
+export class DeferredRef<E, A> extends EffectBase<A, E, never> {
   // Keep track of the latest value emitted by the stream
   public current!: Option.Option<Exit.Exit<A, E>>
   public version!: number

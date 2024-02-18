@@ -24,7 +24,7 @@ export interface Pull<out R, out E, out A> extends Effect.Effect<Chunk.Chunk<A>,
 function schedulePull<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
   f: (effect: Effect.Effect<unknown, never, R | R3>) => Effect.Effect<unknown, never, R2>,
-  sink: Sink<R3, E, A>
+  sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R2> {
   return Effect.asyncEffect<void, never, never, void, never, R2>((resume) =>
     pull.pipe(
@@ -55,18 +55,18 @@ function schedulePull<R, E, A, R2, R3>(
 export const schedule: {
   <R2, R3, E, A>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function schedule<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
-  sink: Sink<R3, E, A>
+  sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.schedule(schedule), sink)
 })
@@ -79,18 +79,18 @@ export const schedule: {
 export const repeat: {
   <R2, R3, E, A>(
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): <R>(pull: Pull<R, E, A>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <R, E, A, R2, R3>(
     pull: Pull<R, E, A>,
     schedule: Schedule.Schedule<R2, unknown, unknown>,
-    sink: Sink<R3, E, A>
+    sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function repeat<R, E, A, R2, R3>(
   pull: Pull<R, E, A>,
   schedule: Schedule.Schedule<R2, unknown, unknown>,
-  sink: Sink<R3, E, A>
+  sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.repeat(schedule), sink)
 })

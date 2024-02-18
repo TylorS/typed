@@ -216,14 +216,14 @@ export function fuseLoopOperators<A, B, C, D, E>(
   })
 }
 
-export function compileLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sink.Sink<R, any, any>) {
+export function compileLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sink.Sink<any, any, R>) {
   return matchSyncLoopOperator(operator, {
     Loop: (op) => Sink.loop(sink, op.seed, op.f),
     FilterMapLoop: (op) => Sink.filterMapLoop(sink, op.seed, op.f)
   })
 }
 
-export function compileCauseLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sink.Sink<R, any, any>) {
+export function compileCauseLoopOperatorSink<R>(operator: SyncLoopOperator, sink: Sink.Sink<any, any, R>) {
   return matchSyncLoopOperator(operator, {
     Loop: (op) => Sink.loopCause(sink, op.seed, op.f),
     FilterMapLoop: (op) => Sink.filterMapLoopCause(sink, op.seed, op.f)

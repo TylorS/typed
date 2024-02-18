@@ -10,10 +10,10 @@ import * as Subject from "../Subject.js"
 import { withScopedFork } from "./helpers.js"
 import { FxBase } from "./protos.js"
 
-export function share<R, E, A, R2>(
-  fx: Fx<R, E, A>,
-  subject: Subject.Subject<R2, E, A>
-): Fx<R | R2 | Scope.Scope, E, A> {
+export function share<A, E, R, R2>(
+  fx: Fx<A, E, R>,
+  subject: Subject.Subject<A, E, R2>
+): Fx<A, E, R | R2 | Scope.Scope> {
   return new Share(fx, subject)
 }
 
@@ -29,18 +29,18 @@ class RefCounter {
   }
 }
 
-export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
+export class Share<A, E, R, R2> extends FxBase<A, E, R | R2 | Scope.Scope> {
   _FxFiber: MutableRef.MutableRef<Option.Option<Fiber.Fiber<unknown>>> = MutableRef.make(Option.none())
   _RefCount = new RefCounter()
 
   constructor(
-    readonly i0: Fx<R, E, A>,
-    readonly i1: Subject.Subject<R2, E, A>
+    readonly i0: Fx<A, E, R>,
+    readonly i1: Subject.Subject<A, E, R2>
   ) {
     super()
   }
 
-  run<R3>(sink: Sink<R3, E, A>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
+  run<R3>(sink: Sink<A, E, R3>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope> {
     return withScopedFork(
       (fork) =>
         Effect.flatMap(
@@ -89,24 +89,24 @@ export class Share<R, E, A, R2> extends FxBase<R | R2 | Scope.Scope, E, A> {
   }
 }
 
-export function multicast<R, E, A>(
-  fx: Fx<R, E, A>
-): Fx<R | Scope.Scope, E, A> {
-  return new Share(fx, Subject.unsafeMake<E, A>(0))
+export function multicast<A, E, R>(
+  fx: Fx<A, E, R>
+): Fx<A, E, R | Scope.Scope> {
+  return new Share(fx, Subject.unsafeMake<A, E>(0))
 }
 
-export function hold<R, E, A>(
-  fx: Fx<R, E, A>
-): Fx<R | Scope.Scope, E, A> {
-  return new Share(fx, Subject.unsafeMake<E, A>(1))
+export function hold<A, E, R>(
+  fx: Fx<A, E, R>
+): Fx<A, E, R | Scope.Scope> {
+  return new Share(fx, Subject.unsafeMake<A, E>(1))
 }
 
 export const replay: {
-  (capacity: number): <R, E, A>(fx: Fx<R, E, A>) => Fx<R, E, A>
-  <R, E, A>(fx: Fx<R, E, A>, capacity: number): Fx<R, E, A>
-} = dual(2, function replay<R, E, A>(
-  fx: Fx<R, E, A>,
+  (capacity: number): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R>
+  <A, E, R>(fx: Fx<A, E, R>, capacity: number): Fx<A, E, R>
+} = dual(2, function replay<A, E, R>(
+  fx: Fx<A, E, R>,
   capacity: number
-): Fx<R | Scope.Scope, E, A> {
-  return new Share(fx, Subject.unsafeMake<E, A>(capacity))
+): Fx<A, E, R | Scope.Scope> {
+  return new Share(fx, Subject.unsafeMake<A, E>(capacity))
 })

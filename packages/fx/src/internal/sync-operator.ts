@@ -80,8 +80,8 @@ export function matchSyncOperator<A>(operator: SyncOperator, matchers: {
 
 export function compileSyncOperatorSink<R>(
   operator: SyncOperator,
-  sink: Sink.Sink<R, any, any>
-): Sink.Sink<R, any, any> {
+  sink: Sink.Sink<any, any, R>
+): Sink.Sink<any, any, R> {
   return matchSyncOperator(operator, {
     Map: (op) => Sink.map(sink, op.f),
     Filter: (op) => Sink.filter(sink, op.f),
@@ -91,8 +91,8 @@ export function compileSyncOperatorSink<R>(
 
 export function compileCauseSyncOperatorSink<R>(
   operator: SyncOperator,
-  sink: Sink.Sink<R, any, any>
-): Sink.Sink<R, any, any> {
+  sink: Sink.Sink<any, any, R>
+): Sink.Sink<any, any, R> {
   return matchSyncOperator(operator, {
     Map: (op) => Sink.make((a) => sink.onFailure(op.f(a)), sink.onSuccess),
     Filter: (op) => Sink.make((a) => op.f(a) ? sink.onFailure(a) : Effect.unit, sink.onSuccess),

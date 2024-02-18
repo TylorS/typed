@@ -20,7 +20,7 @@ import { RefSubjectTypeId } from "./TypeId.js"
 /**
  * @since 1.20.0
  */
-export function asyncDataRequest<A, E, R>(effect: Effect.Effect<A, E, R>): Fx.Fx<R, never, AsyncData.AsyncData<A, E>> {
+export function asyncDataRequest<A, E, R>(effect: Effect.Effect<A, E, R>): Fx.Fx<AsyncData.AsyncData<A, E>, never, R> {
   return Fx.make((sink) =>
     Effect.flatMap(
       Effect.zipRight(sink.onSuccess(AsyncData.loading()), Effect.exit(effect)),
@@ -32,7 +32,9 @@ export function asyncDataRequest<A, E, R>(effect: Effect.Effect<A, E, R>): Fx.Fx
 /**
  * @since 1.20.0
  */
-export interface RefAsyncData<A, E, R> extends RefSubject.RefSubject<R, never, AsyncData.AsyncData<A, E>> {}
+export interface RefAsyncData<A, E = never, R = never>
+  extends RefSubject.RefSubject<AsyncData.AsyncData<A, E>, never, R>
+{}
 
 /**
  * @since 1.20.0
@@ -68,50 +70,50 @@ export const runAsyncData: {
 export const matchAsyncData: {
   <E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
     matchers: {
-      readonly NoData: Fx.Fx<R2, E2, B>
-      readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
-      readonly Success: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R5, E5, F>
+      readonly NoData: Fx.Fx<B, E2, R2>
+      readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<A, E1>>
-  ) => Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
+    fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>
+  ) => Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
 
-  <R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(fx: Fx.Fx<R, E, AsyncData.AsyncData<A, E1>>, matchers: {
-    readonly NoData: Fx.Fx<R2, E2, B>
-    readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-    readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
-    readonly Success: (value: RefSubject.RefSubject<never, never, A>) => Fx.Fx<R5, E5, F>
-  }): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F>
+  <R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>, matchers: {
+    readonly NoData: Fx.Fx<B, E2, R2>
+    readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
+    readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+    readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
+  }): Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
 } = dual(2, function matchAsyncData<R, E, E1, A, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
-  fx: Fx.Fx<R, E, AsyncData.AsyncData<A, E1>>,
+  fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>,
   matchers: {
-    readonly NoData: Fx.Fx<R2, E2, B>
-    readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
+    readonly NoData: Fx.Fx<B, E2, R2>
+    readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
     readonly Failure: (
-      error: RefSubject.Computed<never, never, E1>,
-      failure: RefSubject.RefSubject<never, never, AsyncData.Failure<E1>>
-    ) => Fx.Fx<R4, E4, D>
+      error: RefSubject.Computed<E1>,
+      failure: RefSubject.RefSubject<AsyncData.Failure<E1>>
+    ) => Fx.Fx<D, E4, R4>
     readonly Success: (
-      value: RefSubject.RefSubject<never, never, A>,
-      data: RefSubject.RefSubject<never, never, AsyncData.Success<A> | AsyncData.Optimistic<A, E1>>
-    ) => Fx.Fx<R5, E5, F>
+      value: RefSubject.RefSubject<A>,
+      data: RefSubject.RefSubject<AsyncData.Success<A> | AsyncData.Optimistic<A, E1>>
+    ) => Fx.Fx<F, E5, R5>
   }
-): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F> {
+): Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5> {
   return Fx.withKey(
     fx,
     {
       getKey: (a: AsyncData.AsyncData<A, E1>) => a._tag === "Optimistic" ? "Success" : a._tag,
-      onValue: (ref, key): Fx.Fx<R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | F> => {
+      onValue: (ref, key): Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5> => {
         switch (key) {
           case "NoData":
             return matchers.NoData
           case "Loading":
             return matchers.Loading(
-              RefSubject.filterMap(ref as RefSubject.RefSubject<never, never, AsyncData.Loading>, (l) => l.progress)
+              RefSubject.filterMap(ref as RefSubject.RefSubject<AsyncData.Loading>, (l) => l.progress)
             )
           case "Failure": {
-            const failure = ref as RefSubject.RefSubject<never, never, AsyncData.Failure<E1>>
+            const failure = ref as RefSubject.RefSubject<AsyncData.Failure<E1>>
             return matchers.Failure(
               RefSubject.mapEffect(
                 failure,
@@ -125,11 +127,7 @@ export const matchAsyncData: {
             )
           }
           case "Success": {
-            const success = ref as RefSubject.RefSubject<
-              never,
-              never,
-              AsyncData.Success<A> | AsyncData.Optimistic<A, E1>
-            >
+            const success = ref as RefSubject.RefSubject<AsyncData.Success<A> | AsyncData.Optimistic<A, E1>>
 
             return matchers.Success(
               RefSubject.transformOrFail(
@@ -157,40 +155,40 @@ export const matchAsyncDataArray: {
   <E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
     getKey: (a: A) => K,
     matchers: {
-      readonly NoData: Fx.Fx<R2, E2, B>
-      readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
-      readonly Success: (value: RefSubject.RefSubject<never, never, A>, key: K) => Fx.Fx<R5, E5, F>
+      readonly NoData: Fx.Fx<B, E2, R2>
+      readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>, key: K) => Fx.Fx<F, E5, R5>
     }
   ): <R, E>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>
-  ) => Fx.Fx<Scope.Scope | R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | ReadonlyArray<F>>
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
+  ) => Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
 
   <R, E, E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => K,
     matchers: {
-      readonly NoData: Fx.Fx<R2, E2, B>
-      readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
-      readonly Failure: (error: RefSubject.Computed<never, never, E1>) => Fx.Fx<R4, E4, D>
-      readonly Success: (value: RefSubject.RefSubject<never, never, A>, key: K) => Fx.Fx<R5, E5, F>
+      readonly NoData: Fx.Fx<B, E2, R2>
+      readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>, key: K) => Fx.Fx<F, E5, R5>
     }
-  ): Fx.Fx<Scope.Scope | R | R2 | R3 | R4 | R5, E | E2 | E3 | E4 | E5, B | C | D | ReadonlyArray<F>>
+  ): Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
 } = dual(
   3,
   function matchAsyncDataArray<R, E, E1, A, K extends PropertyKey, R2, E2, B, R3, E3, C, R4, E4, D, R5, E5, F>(
-    fx: Fx.Fx<R, E, AsyncData.AsyncData<ReadonlyArray<A>, E1>>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => K,
     matchers: {
-      readonly NoData: Fx.Fx<R2, E2, B>
-      readonly Loading: (progress: RefSubject.Filtered<never, never, Progress>) => Fx.Fx<R3, E3, C>
+      readonly NoData: Fx.Fx<B, E2, R2>
+      readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
       readonly Failure: (
-        error: RefSubject.Computed<never, never, E1>
-      ) => Fx.Fx<R4, E4, D>
+        error: RefSubject.Computed<E1>
+      ) => Fx.Fx<D, E4, R4>
       readonly Success: (
-        value: RefSubject.RefSubject<never, never, A>,
+        value: RefSubject.RefSubject<A>,
         key: K
-      ) => Fx.Fx<R5, E5, F>
+      ) => Fx.Fx<F, E5, R5>
     }
   ) {
     return matchAsyncData(fx, {
@@ -303,7 +301,7 @@ export const stopLoading: <A, E, R>(
  * @since 1.20.0
  * @category conversions
  */
-export const asSink = <A, E, R>(ref: RefAsyncData<A, E, R>): Sink.Sink<R, E, A> =>
+export const asSink = <A, E, R>(ref: RefAsyncData<A, E, R>): Sink.Sink<A, E, R> =>
   Sink.make(
     (cause) => RefSubject.set(ref, AsyncData.failCause(cause)),
     (a) => RefSubject.set(ref, AsyncData.success(a))
@@ -316,7 +314,7 @@ export const asSink = <A, E, R>(ref: RefAsyncData<A, E, R>): Sink.Sink<R, E, A> 
 export const mapInputEffect = <R, E, A, R2, B>(
   ref: RefAsyncData<A, E, R>,
   f: (b: B) => Effect.Effect<A, E, R2>
-): Sink.Sink<R | R2, E, B> => Sink.mapEffect(asSink(ref), f)
+): Sink.Sink<B, E, R | R2> => Sink.mapEffect(asSink(ref), f)
 
 /**
  * Map the input value
@@ -325,7 +323,7 @@ export const mapInputEffect = <R, E, A, R2, B>(
 export const mapInput = <R, E, A, B>(
   ref: RefAsyncData<A, E, R>,
   f: (b: B) => A
-): Sink.Sink<R, E, B> => Sink.map(asSink(ref), f)
+): Sink.Sink<B, E, R> => Sink.map(asSink(ref), f)
 
 const isRefFirst = (args: IArguments) => args.length === 3 || RefSubjectTypeId in args[0]
 
@@ -438,12 +436,12 @@ export const done: {
  * @since 1.20.0
  * @category Filtered
  */
-export const getFailure = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filtered<R, never, E> =>
+export const getFailure = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filtered<E, never, R> =>
   RefSubject.filterMap(ref, AsyncData.getFailure)
 
 /**
  * @since 1.20.0
  * @category Filtered
  */
-export const getSuccess = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filtered<R, never, A> =>
+export const getSuccess = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filtered<A, never, R> =>
   RefSubject.filterMap(ref, AsyncData.getSuccess)

@@ -17,8 +17,8 @@ import * as RefSubject from "./RefSubject.js"
  * @since 1.18.0
  * @category models
  */
-export interface RefHashMap<out R, in out E, in out K, in out V>
-  extends RefSubject.RefSubject<R, E, HashMap.HashMap<K, V>>
+export interface RefHashMap<in out K, in out V, in out E = never, out R = never>
+  extends RefSubject.RefSubject<HashMap.HashMap<K, V>, E, R>
 {}
 
 /**
@@ -26,16 +26,16 @@ export interface RefHashMap<out R, in out E, in out K, in out V>
  * @since 1.18.0
  * @category constructors
  */
-export function make<R, E, K, V>(
+export function make<K, V, E, R>(
   initial: Effect.Effect<HashMap.HashMap<K, V>, E, R>
-): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
-export function make<R, E, K, V>(
-  initial: Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope>
+): Effect.Effect<RefHashMap<K, V, E>, never, R | Scope.Scope>
+export function make<K, V, E, R>(
+  initial: Fx.Fx<HashMap.HashMap<K, V>, E, R>
+): Effect.Effect<RefHashMap<K, V, E>, never, R | Scope.Scope>
 
-export function make<R, E, K, V>(
-  initial: Effect.Effect<HashMap.HashMap<K, V>, E, R> | Fx.Fx<R, E, HashMap.HashMap<K, V>>
-): Effect.Effect<RefHashMap<never, E, K, V>, never, R | Scope.Scope> {
+export function make<K, V, E, R>(
+  initial: Effect.Effect<HashMap.HashMap<K, V>, E, R> | Fx.Fx<HashMap.HashMap<K, V>, E, R>
+): Effect.Effect<RefHashMap<K, V, E>, never, R | Scope.Scope> {
   return RefSubject.make(initial)
 }
 
@@ -59,7 +59,7 @@ export const tagged: <K, V>() => {
  */
 export function of<K, V>(
   map: HashMap.HashMap<K, V>
-): Effect.Effect<RefHashMap<never, never, K, V>, never, Scope.Scope> {
+): Effect.Effect<RefHashMap<K, V>, never, Scope.Scope> {
   return make(Effect.succeed(map))
 }
 
@@ -69,9 +69,9 @@ export function of<K, V>(
  * @category computed
  */
 export const has: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Computed<R, E, boolean>
-} = dual(2, function has<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Computed<R, E, boolean> {
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<boolean, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): RefSubject.Computed<boolean, E, R>
+} = dual(2, function has<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): RefSubject.Computed<boolean, E, R> {
   return RefSubject.map(refHashMap, HashMap.has(key))
 })
 
@@ -81,15 +81,15 @@ export const has: {
  * @category computed
  */
 export const hasHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, boolean>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Computed<R, E, boolean>
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<boolean, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, hash: number): RefSubject.Computed<boolean, E, R>
 } = dual(
   3,
-  function hasHash<R, E, K, V>(
-    refHashMap: RefHashMap<R, E, K, V>,
+  function hasHash<K, V, E, R>(
+    refHashMap: RefHashMap<K, V, E, R>,
     key: K,
     hash: number
-  ): RefSubject.Computed<R, E, boolean> {
+  ): RefSubject.Computed<boolean, E, R> {
     return RefSubject.map(refHashMap, HashMap.hasHash(key, hash))
   }
 )
@@ -99,7 +99,7 @@ export const hasHash: {
  * @since 1.18.0
  * @category computed
  */
-export function isEmpty<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, boolean> {
+export function isEmpty<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<boolean, E, R> {
   return RefSubject.map(refHashMap, HashMap.isEmpty)
 }
 
@@ -108,7 +108,7 @@ export function isEmpty<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubj
  * @since 1.18.0
  * @category computed
  */
-export function keySet<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, HashSet.HashSet<K>> {
+export function keySet<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<HashSet.HashSet<K>, E, R> {
   return RefSubject.map(refHashMap, HashMap.keySet)
 }
 
@@ -117,7 +117,7 @@ export function keySet<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubje
  * @since 1.18.0
  * @category computed
  */
-export function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<K>> {
+export function keys<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<Iterable<K>, E, R> {
   return RefSubject.map(refHashMap, HashMap.keys)
 }
 
@@ -129,10 +129,10 @@ export function keys<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject
 export const map: {
   <K, V>(
     f: (v: V, k: K) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(2, function map<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, V>,
+  ): <R, E>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, f: (v: V, k: K) => V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+} = dual(2, function map<K, V, E, R>(
+  refHashMap: RefHashMap<K, V, E, R>,
   f: (v: V, k: K) => V
 ): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.update(refHashMap, HashMap.map(f))
@@ -147,14 +147,14 @@ export const modify: {
   <K, V>(
     key: K,
     f: (v: V) => V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(
-    refHashMap: RefHashMap<R, E, K, V>,
+  ): <R, E>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(
+    refHashMap: RefHashMap<K, V, E, R>,
     key: K,
     f: (v: V) => V
   ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(3, function map<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, V>,
+} = dual(3, function map<K, V, E, R>(
+  refHashMap: RefHashMap<K, V, E, R>,
   key: K,
   f: (v: V) => V
 ): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
@@ -170,14 +170,14 @@ export const modifyAt: {
   <K, V>(
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(
-    self: RefHashMap<R, E, K, V>,
+  ): <R, E>(self: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(
+    self: RefHashMap<K, V, E, R>,
     key: K,
     f: HashMap.HashMap.UpdateFn<V>
   ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(3, function modifyAt<R, E, K, V>(
-  self: RefHashMap<R, E, K, V>,
+} = dual(3, function modifyAt<K, V, E, R>(
+  self: RefHashMap<K, V, E, R>,
   key: K,
   f: HashMap.HashMap.UpdateFn<V>
 ): Effect.Effect<HashMap.HashMap<K, V>, E, R> {
@@ -194,15 +194,15 @@ export const modifyHash: {
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
-  ): <R, E>(self: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(
-    self: RefHashMap<R, E, K, V>,
+  ): <R, E>(self: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(
+    self: RefHashMap<K, V, E, R>,
     key: K,
     hash: number,
     f: HashMap.HashMap.UpdateFn<V>
   ): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(4, function modifyAt<R, E, K, V>(
-  self: RefHashMap<R, E, K, V>,
+} = dual(4, function modifyAt<K, V, E, R>(
+  self: RefHashMap<K, V, E, R>,
   key: K,
   hash: number,
   f: HashMap.HashMap.UpdateFn<V>
@@ -219,17 +219,17 @@ export const reduce: {
   <K, V, B>(
     seed: B,
     f: (acc: B, a: V, k: K) => B
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Computed<R, E, B>
-  <R, E, K, V, B>(
-    refHashMap: RefHashMap<R, E, K, V>,
+  ): <R, E>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Computed<B, E, R>
+  <K, V, E, R, B>(
+    refHashMap: RefHashMap<K, V, E, R>,
     seed: B,
     f: (acc: B, a: V, k: K) => B
-  ): RefSubject.Computed<R, E, B>
-} = dual(3, function reduce<R, E, K, V, B>(
-  refHashMap: RefHashMap<R, E, K, V>,
+  ): RefSubject.Computed<B, E, R>
+} = dual(3, function reduce<K, V, E, R, B>(
+  refHashMap: RefHashMap<K, V, E, R>,
   seed: B,
   f: (acc: B, a: V, k: K) => B
-): RefSubject.Computed<R, E, B> {
+): RefSubject.Computed<B, E, R> {
   return RefSubject.map(refHashMap, HashMap.reduce(seed, f))
 })
 
@@ -239,9 +239,9 @@ export const reduce: {
  * @category combinators
  */
 export const remove: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(2, function remove<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K) {
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+} = dual(2, function remove<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K) {
   return RefSubject.update(refHashMap, HashMap.remove(key))
 })
 
@@ -251,9 +251,9 @@ export const remove: {
  * @category combinators
  */
 export const removeMany: {
-  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(2, function removeMany<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: Iterable<K>) {
+  <K>(key: Iterable<K>): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: Iterable<K>): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+} = dual(2, function removeMany<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: Iterable<K>) {
   return RefSubject.update(refHashMap, HashMap.removeMany(key))
 })
 
@@ -266,9 +266,9 @@ export const set: {
   <K, V>(
     key: K,
     value: V
-  ): <R, E>(refHashMap: RefHashMap<R, E, K, V>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
-} = dual(3, function set<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, value: V) {
+  ): <R, E>(refHashMap: RefHashMap<K, V, E, R>) => Effect.Effect<HashMap.HashMap<K, V>, E, R>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, value: V): Effect.Effect<HashMap.HashMap<K, V>, E, R>
+} = dual(3, function set<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, value: V) {
   return RefSubject.update(refHashMap, HashMap.set(key, value))
 })
 
@@ -277,7 +277,7 @@ export const set: {
  * @since 1.18.0
  * @category computed
  */
-export function size<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, number> {
+export function size<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<number, E, R> {
   return RefSubject.map(refHashMap, HashMap.size)
 }
 
@@ -286,7 +286,7 @@ export function size<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject
  * @since 1.18.0
  * @category computed
  */
-export function values<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubject.Computed<R, E, Iterable<V>> {
+export function values<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>): RefSubject.Computed<Iterable<V>, E, R> {
   return RefSubject.map(refHashMap, HashMap.values)
 }
 
@@ -295,9 +295,9 @@ export function values<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>): RefSubje
  * @since 1.18.0
  * @category computed
  */
-export function valuesSet<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, V>
-): RefSubject.Computed<R, E, HashSet.HashSet<V>> {
+export function valuesSet<K, V, E, R>(
+  refHashMap: RefHashMap<K, V, E, R>
+): RefSubject.Computed<HashSet.HashSet<V>, E, R> {
   return RefSubject.map(values(refHashMap), HashSet.fromIterable)
 }
 
@@ -306,9 +306,9 @@ export function valuesSet<R, E, K, V>(
  * @since 1.18.0
  * @category computed
  */
-export function compact<R, E, K, V>(
-  refHashMap: RefHashMap<R, E, K, Option<V>>
-): RefSubject.Computed<R, E, HashMap.HashMap<K, V>> {
+export function compact<K, V, E, R>(
+  refHashMap: RefHashMap<K, Option<V>, E, R>
+): RefSubject.Computed<HashMap.HashMap<K, V>, E, R> {
   return RefSubject.map(refHashMap, HashMap.compact)
 }
 
@@ -317,9 +317,9 @@ export function compact<R, E, K, V>(
  * @category filtered
  */
 export const get: {
-  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K): RefSubject.Filtered<R, E, V>
-} = dual(2, function get<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K) {
+  <K>(key: K): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Filtered<R, E, V>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K): RefSubject.Filtered<R, E, V>
+} = dual(2, function get<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K) {
   return RefSubject.filterMap(refHashMap, HashMap.get(key))
 })
 
@@ -328,8 +328,8 @@ export const get: {
  * @category filtered
  */
 export const getHash: {
-  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<R, E, K, V>) => RefSubject.Filtered<R, E, V>
-  <R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K, hash: number): RefSubject.Filtered<R, E, V>
-} = dual(2, function get<R, E, K, V>(refHashMap: RefHashMap<R, E, K, V>, key: K) {
+  <K>(key: K, hash: number): <R, E, V>(refHashMap: RefHashMap<K, V, E, R>) => RefSubject.Filtered<R, E, V>
+  <K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K, hash: number): RefSubject.Filtered<R, E, V>
+} = dual(2, function get<K, V, E, R>(refHashMap: RefHashMap<K, V, E, R>, key: K) {
   return RefSubject.filterMap(refHashMap, HashMap.get(key))
 })

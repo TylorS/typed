@@ -3,49 +3,49 @@ import * as Effect from "effect/Effect"
 import * as Schedule from "effect/Schedule"
 import type * as Sink from "../Sink.js"
 
-export type EffectProducer<R = any, E = any, A = any> =
-  | FromEffect<R, E, A>
-  | FromScheduled<R, E, any, A>
-  | Scheduled<R, E, A, any>
+export type EffectProducer<A = any, E = any, R = any> =
+  | FromEffect<A, E, R>
+  | FromScheduled<any, E, R, A>
+  | Scheduled<A, E, R, any>
 
-export interface FromEffect<R, E, A> {
+export interface FromEffect<A, E, R> {
   readonly _tag: "FromEffect"
   readonly source: Effect.Effect<A, E, R>
 }
 
-export function FromEffect<R, E, A>(source: Effect.Effect<A, E, R>): FromEffect<R, E, A> {
+export function FromEffect<A, E, R>(source: Effect.Effect<A, E, R>): FromEffect<A, E, R> {
   return { _tag: "FromEffect", source }
 }
 
-export interface FromScheduled<R, E, I, O> {
+export interface FromScheduled<I, E, R, O> {
   readonly _tag: "FromScheduled"
   readonly input: Effect.Effect<I, E, R>
   readonly schedule: Schedule.Schedule<R, I, O>
 }
 
-export function FromScheduled<R, E, R2, I, O>(
+export function FromScheduled<I, E, R, R2, O>(
   input: Effect.Effect<I, E, R>,
   schedule: Schedule.Schedule<R2, I, O>
-): FromScheduled<R | R2, E, I, O> {
+): FromScheduled<I, E, R | R2, O> {
   return { _tag: "FromScheduled", schedule, input }
 }
 
-export interface Scheduled<R, E, A, O> {
+export interface Scheduled<A, E, R, O> {
   readonly _tag: "Scheduled"
   readonly input: Effect.Effect<A, E, R>
   readonly schedule: Schedule.Schedule<R, unknown, O>
 }
 
-export function Scheduled<R, E, A, R2, O>(
+export function Scheduled<A, E, R, R2, O>(
   input: Effect.Effect<A, E, R>,
   schedule: Schedule.Schedule<R2, unknown, O>
-): Scheduled<R | R2, E, A, O> {
+): Scheduled<A, E, R | R2, O> {
   return { _tag: "Scheduled", schedule, input }
 }
 
-export function runSink<R, E, A, R2>(
-  producer: EffectProducer<R, E, A>,
-  sink: Sink.Sink<R2, E, A>
+export function runSink<A, E, R, R2>(
+  producer: EffectProducer<A, E, R>,
+  sink: Sink.Sink<A, E, R2>
 ): Effect.Effect<unknown, never, R | R2> {
   switch (producer._tag) {
     case "FromEffect":
@@ -57,9 +57,9 @@ export function runSink<R, E, A, R2>(
   }
 }
 
-function runFromScheduled<R, E, I, O, R2>(
-  scheduled: FromScheduled<R, E, I, O>,
-  sink: Sink.Sink<R2, E, O>
+function runFromScheduled<I, E, R, O, R2>(
+  scheduled: FromScheduled<I, E, R, O>,
+  sink: Sink.Sink<O, E, R2>
 ): Effect.Effect<unknown, never, R | R2> {
   return Effect.catchAllCause(
     Effect.flatMap(
@@ -70,9 +70,9 @@ function runFromScheduled<R, E, I, O, R2>(
   )
 }
 
-function runSchedule<R, E, A, O, R2>(
-  scheduled: Scheduled<R, E, A, O>,
-  sink: Sink.Sink<R2, E, A>
+function runSchedule<A, E, R, O, R2>(
+  scheduled: Scheduled<A, E, R, O>,
+  sink: Sink.Sink<A, E, R2>
 ): Effect.Effect<unknown, never, R | R2> {
   return Effect.catchAllCause(
     Effect.schedule(Effect.matchCauseEffect(scheduled.input, sink), scheduled.schedule),
@@ -80,8 +80,8 @@ function runSchedule<R, E, A, O, R2>(
   )
 }
 
-export function runEffect<R, E, A, R2, E2, B>(
-  producer: EffectProducer<R, E, A>,
+export function runEffect<A, E, R, B, E2, R2>(
+  producer: EffectProducer<A, E, R>,
   f: (a: A) => Effect.Effect<B, E2, R2>
 ): Effect.Effect<unknown, E | E2, R | R2> {
   switch (producer._tag) {
@@ -112,8 +112,8 @@ export function runEffect<R, E, A, R2, E2, B>(
   }
 }
 
-export function runReduceEffect<R, E, A, R2, E2, B>(
-  producer: EffectProducer<R, E, A>,
+export function runReduceEffect<A, E, R, B, E2, R2>(
+  producer: EffectProducer<A, E, R>,
   initial: B,
   f: (b: B, a: A) => Effect.Effect<B, E2, R2>
 ): Effect.Effect<B, E | E2, R | R2> {
