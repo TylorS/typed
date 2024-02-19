@@ -159,21 +159,29 @@ export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subj
  * @internal
  */
 export class HoldSubjectImpl<A, E> extends SubjectImpl<A, E> implements Subject<A, E> {
-  private lastValue: MutableRef.MutableRef<Option.Option<A>> = MutableRef.make(Option.none())
+  readonly lastValue: MutableRef.MutableRef<Option.Option<Exit.Exit<A, E>>> = MutableRef.make(Option.none())
 
   // Emit an event to all sinks
   onSuccess = (a: A) =>
     Effect.suspend(() => {
-      MutableRef.set(this.lastValue, Option.some(a))
+      MutableRef.set(this.lastValue, Option.some(Exit.succeed(a)))
 
       return this.onEvent(a)
     })
+
+  onFailure = (cause: Cause.Cause<E>): Effect.Effect<void, never, never> => {
+    return Effect.suspend(() => {
+      MutableRef.set(this.lastValue, Option.some(Exit.failCause(cause)))
+
+      return this.onCause(cause)
+    })
+  }
 
   run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, R2 | Scope.Scope> {
     return this.addSink(sink, (scope) =>
       Option.match(MutableRef.get(this.lastValue), {
         onNone: () => awaitScopeClose(scope),
-        onSome: (a) => Effect.zipRight(sink.onSuccess(a), awaitScopeClose(scope))
+        onSome: (exit) => Effect.zipRight(Exit.match(exit, sink), awaitScopeClose(scope))
       }))
   }
 

@@ -400,6 +400,32 @@ describe.concurrent(__filename, () => {
         await Effect.runPromise(Effect.scoped(test))
       })
     })
+
+    describe.concurrent("unsafe", () => {
+      it.concurrent("unsafeGetExit", async () => {
+        const test = Effect.gen(function*(_) {
+          // of() actually has a starting value by default
+          const ref = yield* _(RefSubject.of(0))
+
+          const exit = RefSubject.unsafeGetExit(ref)
+          expect(exit).toEqual(Exit.succeed(0))
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+
+      it.concurrent("unsafeGet", async () => {
+        const test = Effect.gen(function*(_) {
+          const ref = yield* _(RefSubject.make(Effect.succeed(0)))
+          // Effect/Fx-backed RefSubjects require being initialized
+          yield* _(ref)
+
+          expect(RefSubject.unsafeGet(ref)).toEqual(0)
+        }).pipe(Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
+    })
   })
 
   describe.concurrent("Subject", () => {

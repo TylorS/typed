@@ -7,6 +7,7 @@
 
 import type * as Context from "@typed/context"
 import type { Layer, Runtime, Scope } from "effect"
+import { Exit } from "effect"
 import * as Effect from "effect/Effect"
 import { dual, flow } from "effect/Function"
 import { sum } from "effect/Number"
@@ -112,9 +113,9 @@ export class VersionedTransform<R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4
   extends FxEffectBase<C, E3, R3, D, E0 | E4, R0 | R4>
   implements Versioned<never, never, C, E3, R3, D, E0 | E4, R0 | R4>
 {
-  protected _version = -1
-  protected _currentValue: Option.Option<D> = Option.none()
-  protected _fx: Fx<C, E3, R3>
+  public _version = -1
+  public _currentValue: Option.Option<Exit.Exit<D, E0 | E4>> = Option.none()
+  public _fx: Fx<C, E3, R3>
 
   constructor(
     readonly input: Versioned<R0, E0, A, E, R, B, E2, R2>,
@@ -135,18 +136,25 @@ export class VersionedTransform<R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4
   toEffect(): Effect.Effect<D, E0 | E4, R0 | R4> {
     const transformed = this._transformEffect(this.input as any as Effect.Effect<B, E2, R2>)
     const update = (v: number) =>
-      Effect.tap(
-        transformed,
-        (value) =>
+      Effect.tapErrorCause(
+        Effect.tap(
+          transformed,
+          (value) =>
+            Effect.sync(() => {
+              this._currentValue = Option.some(Exit.succeed(value))
+              this._version = v
+            })
+        ),
+        (cause) =>
           Effect.sync(() => {
-            this._currentValue = Option.some(value)
+            this._currentValue = Option.some(Exit.failCause(cause))
             this._version = v
           })
       )
 
     return new MulticastEffect(Effect.flatMap(this.input.version, (version) => {
       if (version === this._version && Option.isSome(this._currentValue)) {
-        return Effect.succeed(this._currentValue.value)
+        return this._currentValue.value
       }
 
       return update(version)
