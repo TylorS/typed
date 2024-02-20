@@ -1,5 +1,11 @@
 # @typed/fx
 
+## 1.25.0
+
+### Minor Changes
+
+- [#47](https://github.com/TylorS/typed/pull/47) [`212b234`](https://github.com/TylorS/typed/commit/212b2347237508539ff374e32e8d2a62d80fe823) Thanks [@TylorS](https://github.com/TylorS)! - RefSubject get/unsafeGet(Exit)
+
 ## 1.24.1
 
 ### Patch Changes
