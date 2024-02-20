@@ -6,6 +6,7 @@ import type { ParseOptions } from "@effect/schema/AST"
 import { type ParseError } from "@effect/schema/ParseResult"
 import type { Cause } from "effect/Cause"
 import * as Effect from "effect/Effect"
+import type { Exit } from "effect/Exit"
 import type * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import { FxEffectBase } from "./internal/protos.js"
@@ -187,6 +188,8 @@ class FromEntryImpl<R, E, I, O> extends FxEffectBase<I, E | ParseError, R | Scop
   ): Effect.Effect<B, E2, R | R2> {
     return this.ref.runUpdates(f)
   }
+
+  unsafeGet: () => Exit<I, E | ParseError> = () => this.ref.unsafeGet()
 
   onFailure(cause: Cause<E | ParseError>): Effect.Effect<unknown, never, R> {
     return this.ref.onFailure(cause)
