@@ -1,5 +1,12 @@
 # @typed/template
 
+## 0.8.1
+
+### Patch Changes
+
+- Updated dependencies [[`212b234`](https://github.com/TylorS/typed/commit/212b2347237508539ff374e32e8d2a62d80fe823)]:
+  - @typed/fx@1.25.0
+
 ## 0.8.0
 
 ### Minor Changes
