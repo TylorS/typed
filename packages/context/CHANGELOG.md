@@ -1,5 +1,11 @@
 # @typed/context
 
+## 0.25.0
+
+### Minor Changes
+
+- [`7d440f1`](https://github.com/TylorS/typed/commit/7d440f148b5fc09c62cbd35dbcd773cad6c5c43b) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade to Effect 2.4
+
 ## 0.24.1
 
 ### Patch Changes

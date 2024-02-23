@@ -1,5 +1,12 @@
 # @typed/dom
 
+## 13.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`7d440f1`](https://github.com/TylorS/typed/commit/7d440f148b5fc09c62cbd35dbcd773cad6c5c43b)]:
+  - @typed/context@0.25.0
+
 ## 12.0.1
 
 ### Patch Changes
