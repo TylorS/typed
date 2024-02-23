@@ -95,16 +95,16 @@ export function withEarlyExit<A, E, R, B, R2>(
   sink: Sink<A, E, R>,
   f: (sink: WithEarlyExit<A, E, R>) => Effect.Effect<B, E, R2>
 ): Effect.Effect<void, never, R | R2> {
-  return Effect.asyncEffect<void, never, never, void, never, R | R2>((resume) => {
+  return Effect.asyncEffect((resume: (effect: Effect.Effect<void>) => void) => {
     const earlyExit: WithEarlyExit<A, E, R> = {
       ...sink,
       earlyExit: Effect.sync(() => resume(Effect.unit))
     }
 
-    return Effect.matchCauseEffect(f(earlyExit), {
+    return Effect.asUnit(Effect.matchCauseEffect(f(earlyExit), {
       onFailure: (cause) => sink.onFailure(cause),
       onSuccess: () => earlyExit.earlyExit
-    })
+    }))
   })
 }
 

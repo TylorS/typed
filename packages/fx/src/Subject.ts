@@ -111,7 +111,7 @@ export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subj
     )
   )
 
-  protected addSink<R, R2, B>(
+  protected addSink<R, B, R2>(
     sink: Sink<A, E, R>,
     f: (scope: Scope.Scope) => Effect.Effect<B, never, R2>
   ): Effect.Effect<B, never, R2 | Scope.Scope> {

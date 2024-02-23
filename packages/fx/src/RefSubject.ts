@@ -5,7 +5,7 @@
 
 import * as C from "@typed/context"
 import type { Equivalence, FiberId, Runtime } from "effect"
-import { Fiber, MutableRef } from "effect"
+import { Fiber, MutableRef, Unify } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -581,7 +581,7 @@ export const runUpdates: {
             (initial) =>
               f(ref).pipe(
                 restore,
-                Effect.tapErrorCause(Effect.unifiedFn((cause) =>
+                Effect.tapErrorCause(Unify.unify((cause) =>
                   Cause.isInterruptedOnly(cause)
                     ? options.onInterrupt(initial)
                     : Effect.unit
@@ -595,7 +595,7 @@ export const runUpdates: {
         Effect.uninterruptibleMask((restore) =>
           f(ref).pipe(
             restore,
-            Effect.tapErrorCause(Effect.unifiedFn((cause) =>
+            Effect.tapErrorCause(Unify.unify((cause) =>
               Cause.isInterruptedOnly(cause)
                 ? Effect.flatMap(ref.get, options.onInterrupt)
                 : Effect.unit

@@ -316,12 +316,12 @@ export const fromEffect: <A, E, R>(effect: Effect.Effect<A, E, R>) => Fx<A, E, R
  */
 export const fromScheduled: {
   <R2, I, O>(
-    schedule: Schedule.Schedule<R2, I, O>
+    schedule: Schedule.Schedule<O, I, R2>
   ): <E, R>(input: Effect.Effect<I, E, R>) => Fx<O, E, R | R2>
 
   <I, E, R, R2, O>(
     input: Effect.Effect<I, E, R>,
-    schedule: Schedule.Schedule<R2, I, O>
+    schedule: Schedule.Schedule<O, I, R2>
   ): Fx<O, E, R | R2>
 } = dual(2, core.fromScheduled)
 
@@ -330,12 +330,12 @@ export const fromScheduled: {
  */
 export const schedule: {
   <R2, O>(
-    schedule: Schedule.Schedule<R2, unknown, O>
+    schedule: Schedule.Schedule<O, unknown, R2>
   ): <A, E, R>(input: Effect.Effect<A, E, R>) => Fx<A, E, R | R2>
 
   <A, E, R, R2, O>(
     input: Effect.Effect<A, E, R>,
-    schedule: Schedule.Schedule<R2, unknown, O>
+    schedule: Schedule.Schedule<O, unknown, R2>
   ): Fx<A, E, R | R2>
 } = dual(2, core.schedule)
 
@@ -1932,7 +1932,7 @@ export const exit: <A, E, R>(fx: Fx<A, E, R>) => Fx<Exit.Exit<A, E>, never, R> =
 /**
  * @since 1.20.0
  */
-export const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<E, A>, never, R> = core.either
+export const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<A, E>, never, R> = core.either
 
 /**
  * @since 1.20.0
@@ -2151,17 +2151,17 @@ export const matchEither: {
   <E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
     onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
     onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
-  ): <E, R>(fx: Fx<Either.Either<E1, A>, E, R>) => Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
+  ): <E, R>(fx: Fx<Either.Either<A, E1>, E, R>) => Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 
   <R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
-    fx: Fx<Either.Either<E1, A>, E, R>,
+    fx: Fx<Either.Either<A, E1>, E, R>,
     onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
     onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
   ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(
   3,
   function matchEither<R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
-    fx: Fx<Either.Either<E1, A>, E, R>,
+    fx: Fx<Either.Either<A, E1>, E, R>,
     onLeft: (e: RefSubject<E1>) => Fx<B, E2, R2>,
     onRight: (a: RefSubject<A>) => Fx<C, E3, R3>
   ): Fx<B | C, E | E2 | E3, R | R2 | R3 | Scope.Scope> {
@@ -2232,15 +2232,15 @@ export const fromAsyncIterable: <A>(iterable: AsyncIterable<A>) => Fx<A> = core.
  */
 export const partitionMap: {
   <A, B, C>(
-    f: (a: A) => Either.Either<B, C>
+    f: (a: A) => Either.Either<C, B>
   ): <E, R>(fx: Fx<A, E, R>) => readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
   <A, E, R, B, C>(
     fx: Fx<A, E, R>,
-    f: (a: A) => Either.Either<B, C>
+    f: (a: A) => Either.Either<C, B>
   ): readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
 } = dual(2, function partitionMap<A, E, R, B, C>(
   fx: Fx<A, E, R>,
-  f: (a: A) => Either.Either<B, C>
+  f: (a: A) => Either.Either<C, B>
 ): readonly [Fx<B, E, R | Scope.Scope>, Fx<C, E, R | Scope.Scope>] {
   const source = coreShare.multicast(core.map(fx, f))
 

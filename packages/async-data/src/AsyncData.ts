@@ -590,7 +590,7 @@ export function fromExit<A, E>(exit: Exit.Exit<A, E>): AsyncData<A, E> {
 /**
  * @since 1.0.0
  */
-export function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<A, E> {
+export function fromEither<A, E = never>(either: Either.Either<A, E>): AsyncData<A, E> {
   return Either.match(either, {
     onLeft: (e) => fail(e),
     onRight: (a) => success(a)

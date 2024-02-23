@@ -42,7 +42,7 @@
   "dependencies": {
     "@typed/fx": "workspace:*",
     "@typed/path": "workspace:*",
-    "effect": "^2.3.6",
+    "effect": "^2.4.0",
     "path-to-regexp": "^6.2.1"
   },
   "peerDependencies": {

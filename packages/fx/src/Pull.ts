@@ -26,7 +26,7 @@ function schedulePull<A, E, R, R2, R3>(
   f: (effect: Effect.Effect<unknown, never, R | R3>) => Effect.Effect<unknown, never, R2>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R2> {
-  return Effect.asyncEffect<void, never, never, void, never, R2>((resume) =>
+  return Effect.asyncEffect<void, never, never, R2, never, R2>((resume) =>
     Effect.matchCauseEffect(pull, {
       onFailure: (cause: Cause.Cause<Option.Option<E>>) =>
         Cause.failureOrCause(cause).pipe(
@@ -53,18 +53,18 @@ function schedulePull<A, E, R, R2, R3>(
  */
 export const schedule: {
   <R2, A, E, R3>(
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function schedule<A, E, R, R2, R3>(
   pull: Pull<A, E, R>,
-  schedule: Schedule.Schedule<R2, unknown, unknown>,
+  schedule: Schedule.Schedule<unknown, unknown, R2>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.schedule(schedule), sink)
@@ -77,18 +77,18 @@ export const schedule: {
  */
 export const repeat: {
   <R2, A, E, R3>(
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
 
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 } = dual(3, function repeat<A, E, R, R2, R3>(
   pull: Pull<A, E, R>,
-  schedule: Schedule.Schedule<R2, unknown, unknown>,
+  schedule: Schedule.Schedule<unknown, unknown, R2>,
   sink: Sink<A, E, R3>
 ): Effect.Effect<void, never, R | R2 | R3> {
   return schedulePull(pull, Effect.repeat(schedule), sink)

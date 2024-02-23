@@ -43,12 +43,12 @@ export function SliceOperator(bounds: Bounds): SliceOperator {
 export interface FilterMapSliceOperator<A, B, C> {
   readonly _tag: "FilterMapSlice"
   readonly seed: B
-  readonly f: (acc: B, a: A) => Either.Either<Option.Option<C>, readonly [Option.Option<C>, B]>
+  readonly f: (acc: B, a: A) => Either.Either<readonly [Option.Option<C>, B], Option.Option<C>>
 }
 
 export function FilterMapSliceOperator<const B, A, C>(
   seed: B,
-  f: (acc: B, a: A) => Either.Either<Option.Option<C>, readonly [Option.Option<C>, B]>
+  f: (acc: B, a: A) => Either.Either<readonly [Option.Option<C>, B], Option.Option<C>>
 ): FilterMapSliceOperator<A, B, C> {
   return { _tag: "FilterMapSlice", seed, f }
 }

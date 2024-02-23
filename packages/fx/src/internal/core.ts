@@ -1,16 +1,17 @@
 import * as Context from "@typed/context"
-import type {
-  ConfigProvider,
-  Duration,
-  Equivalence,
-  FiberId,
-  FiberRef,
-  HashSet,
-  Queue,
-  Request,
-  Runtime,
-  Schedule,
-  Scheduler
+import {
+  type ConfigProvider,
+  type Duration,
+  type Equivalence,
+  type FiberId,
+  type FiberRef,
+  type HashSet,
+  type Queue,
+  type Request,
+  type Runtime,
+  type Schedule,
+  type Scheduler,
+  Unify
 } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
@@ -138,12 +139,12 @@ export const fromEffect = <A, E, R>(effect: Effect.Effect<A, E, R>): Fx<A, E, R>
 
 export const fromScheduled = <R, E, I, R2, O>(
   input: Effect.Effect<I, E, R>,
-  schedule: Schedule.Schedule<R2, I, O>
+  schedule: Schedule.Schedule<O, I, R2>
 ): Fx<O, E, R | R2> => new ProducerEffect(EffectProducer.FromScheduled(input, schedule))
 
 export const schedule = <A, E, R, R2, O>(
   input: Effect.Effect<A, E, R>,
-  schedule: Schedule.Schedule<R2, unknown, O>
+  schedule: Schedule.Schedule<O, unknown, R2>
 ): Fx<A, E, R | R2> => new ProducerEffect(EffectProducer.Scheduled(input, schedule))
 
 class FailCause<E> extends FxBase<never, E, never> {
@@ -325,13 +326,13 @@ class Observe<A, E, R, B, E2, R2> extends EffectBase<void, E | E2, R | R2> {
               SyncProducer.effectOnce(() => SyncProducer.runEffect(fx.i0, (a) => f(op.f(a)))),
             Filter: (op) =>
               SyncProducer.effectOnce(() =>
-                SyncProducer.runEffect(fx.i0, Effect.unifiedFn((a) => op.f(a) ? f(a) : Effect.unit))
+                SyncProducer.runEffect(fx.i0, Unify.unify((a) => op.f(a) ? f(a) : Effect.unit))
               ),
             FilterMap: (op) =>
               SyncProducer.effectOnce(() =>
                 SyncProducer.runEffect(
                   fx.i0,
-                  Effect.unifiedFn((a) => Option.match(op.f(a), { onNone: () => Effect.unit, onSome: f }))
+                  Unify.unify((a) => Option.match(op.f(a), { onNone: () => Effect.unit, onSome: f }))
                 )
               )
           }),
@@ -341,12 +342,12 @@ class Observe<A, E, R, B, E2, R2> extends EffectBase<void, E | E2, R | R2> {
               SyncProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), f)),
             FilterMapEffect: (op) =>
               SyncProducer.runEffect(fx.i0, (a) =>
-                Effect.flatMap(op.f(a), Effect.unifiedFn(Option.match({ onNone: () => Effect.unit, onSome: f })))),
+                Effect.flatMap(op.f(a), Unify.unify(Option.match({ onNone: () => Effect.unit, onSome: f })))),
             FilterEffect: (op) =>
               SyncProducer.runEffect(
                 fx.i0,
-                Effect.unifiedFn((a) =>
-                  Effect.flatMap(op.f(a), Effect.unifiedFn((b) => b ? f(a) : Effect.unit))
+                Unify.unify((a) =>
+                  Effect.flatMap(op.f(a), Unify.unify((b) => b ? f(a) : Effect.unit))
                 )
               ),
             TapEffect: (op) => SyncProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), () => f(a)))
@@ -399,13 +400,13 @@ class Observe<A, E, R, B, E2, R2> extends EffectBase<void, E | E2, R | R2> {
               SyncProducer.effectOnce(() => EffectProducer.runEffect(fx.i0, (a) => f(op.f(a)))),
             Filter: (op) =>
               SyncProducer.effectOnce(() =>
-                EffectProducer.runEffect(fx.i0, Effect.unifiedFn((a) => op.f(a) ? f(a) : Effect.unit))
+                EffectProducer.runEffect(fx.i0, Unify.unify((a) => op.f(a) ? f(a) : Effect.unit))
               ),
             FilterMap: (op) =>
               SyncProducer.effectOnce(() =>
                 EffectProducer.runEffect(
                   fx.i0,
-                  Effect.unifiedFn((a) => Option.match(op.f(a), { onNone: () => Effect.unit, onSome: f }))
+                  Unify.unify((a) => Option.match(op.f(a), { onNone: () => Effect.unit, onSome: f }))
                 )
               )
           }),
@@ -415,12 +416,12 @@ class Observe<A, E, R, B, E2, R2> extends EffectBase<void, E | E2, R | R2> {
               EffectProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), f)),
             FilterMapEffect: (op) =>
               EffectProducer.runEffect(fx.i0, (a) =>
-                Effect.flatMap(op.f(a), Effect.unifiedFn(Option.match({ onNone: () => Effect.unit, onSome: f })))),
+                Effect.flatMap(op.f(a), Unify.unify(Option.match({ onNone: () => Effect.unit, onSome: f })))),
             FilterEffect: (op) =>
               EffectProducer.runEffect(
                 fx.i0,
-                Effect.unifiedFn((a) =>
-                  Effect.flatMap(op.f(a), Effect.unifiedFn((b) => b ? f(a) : Effect.unit))
+                Unify.unify((a) =>
+                  Effect.flatMap(op.f(a), Unify.unify((b) => b ? f(a) : Effect.unit))
                 )
               ),
             TapEffect: (op) => EffectProducer.runEffect(fx.i0, (a) => Effect.flatMap(op.f(a), () => f(a)))
@@ -1100,8 +1101,8 @@ class OrElse<
 
   run<R3>(sink: Sink.Sink<A | B, E | E2, R3>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.catchAll(
-      Effect.asyncEffect<unknown, E, never, void, never, R | R2 | R3>((resume) =>
-        Effect.zipRight(
+      Effect.asyncEffect<unknown, E, never, never, never, R | R2 | R3>((resume) =>
+        Effect.asUnit(Effect.zipRight(
           this.i0.run(
             Sink.make(
               (cause) =>
@@ -1113,7 +1114,7 @@ class OrElse<
             )
           ),
           Effect.sync(() => resume(Effect.unit))
-        )
+        ))
       ),
       (error: E) => this.i1(error).run(sink)
     )
@@ -2474,17 +2475,17 @@ class FromAsyncIterable<A> extends FxBase<A, never, never> {
   }
 
   run<R>(sink: Sink.Sink<A, never, R>): Effect.Effect<unknown, never, R> {
-    return Effect.asyncEffect((cb) => {
+    return Effect.asyncEffect<unknown, never, R, R, never, R>((cb) => {
       const iterator = this.i0[Symbol.asyncIterator]()
       const loop = (result: IteratorResult<A>): Effect.Effect<unknown, never, R> =>
         result.done
           ? Effect.sync(() => cb(Effect.unit))
           : Effect.zipRight(sink.onSuccess(result.value), Effect.flatMap(Effect.promise(() => iterator.next()), loop))
 
-      return Effect.flatMap(
+      return Effect.asUnit(Effect.flatMap(
         Effect.promise(() => iterator.next()),
         loop
-      )
+      ))
     })
   }
 }
@@ -2499,16 +2500,16 @@ export function first<A, E, R>(fx: Fx<A, E, R>): Effect.Effect<A, E, R> {
   return findFirst(fx, constTrue)
 }
 
-export function either<A, E, R>(fx: Fx<A, E, R>): Fx<Either.Either<E, A>, never, R> {
+export function either<A, E, R>(fx: Fx<A, E, R>): Fx<Either.Either<A, E>, never, R> {
   return new EitherFx(fx)
 }
 
-class EitherFx<A, E, R> extends FxBase<Either.Either<E, A>, never, R> {
+class EitherFx<A, E, R> extends FxBase<Either.Either<A, E>, never, R> {
   constructor(readonly i0: Fx<A, E, R>) {
     super()
   }
 
-  run<R2>(sink: Sink.Sink<Either.Either<E, A>, never, R2>): Effect.Effect<unknown, never, R | R2> {
+  run<R2>(sink: Sink.Sink<Either.Either<A, E>, never, R2>): Effect.Effect<unknown, never, R | R2> {
     return this.i0.run(
       Sink.make(
         (cause) =>

@@ -193,7 +193,7 @@ export function findTemplateResultPartChildNodes(
   childTemplate: Template,
   partIndex: number,
   manyIndex?: string
-): Either.Either<CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError, ParentChildNodes> {
+): Either.Either<ParentChildNodes, CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError> {
   const [, path] = parentTemplate.parts[partIndex]
   const parentNode = findPath(where, path) as HTMLElement
   const childNodesEither = findPartChildNodes(parentNode, childTemplate.hash, partIndex)
@@ -216,7 +216,7 @@ export function findTemplateResultPartChildNodes(
 export function findManyChildNodes(
   childNodes: Array<Node>,
   manyIndex: string
-): Either.Either<CouldNotFindManyCommentError, Array<Node>> {
+): Either.Either<Array<Node>, CouldNotFindManyCommentError> {
   const either = findManyComment(childNodes, manyIndex)
   if (Either.isLeft(either)) return Either.left(either.left)
 
@@ -228,7 +228,7 @@ export function findPartChildNodes(
   { childNodes }: ParentChildNodes,
   hash: string,
   partIndex: number
-): Either.Either<CouldNotFindRootElement | CouldNotFindCommentError, Array<Node>> {
+): Either.Either<Array<Node>, CouldNotFindRootElement | CouldNotFindCommentError> {
   const either = findPartComment(childNodes, partIndex)
   if (Either.isLeft(either)) return Either.left(either.left)
   const [comment, index] = either.right
@@ -260,7 +260,7 @@ export function findPartChildNodes(
 export function findPartComment(
   childNodes: ArrayLike<Node>,
   partIndex: number
-): Either.Either<CouldNotFindCommentError, readonly [Comment, number]> {
+): Either.Either<readonly [Comment, number], CouldNotFindCommentError> {
   const search = partIndex === -1 ? `typed-end` : `hole${partIndex}`
 
   for (let i = 0; i < childNodes.length; ++i) {
@@ -277,7 +277,7 @@ export function findPartComment(
 export function findManyComment(
   childNodes: ArrayLike<Node>,
   manyIndex: string
-): Either.Either<CouldNotFindManyCommentError, readonly [Comment, number]> {
+): Either.Either<readonly [Comment, number], CouldNotFindManyCommentError> {
   const search = `many${manyIndex}`
 
   for (let i = 0; i < childNodes.length; ++i) {
@@ -320,10 +320,7 @@ export function getHydrateEntry({
   parentTemplate: Template | null
   strings: TemplateStringsArray
   manyIndex?: string
-}): Either.Either<
-  CouldNotFindRootElement | CouldNotFindCommentError | CouldNotFindManyCommentError,
-  { readonly template: Template; readonly wire: Node | Array<Node>; readonly where: ParentChildNodes }
-> {
+}): Either.Either<{ readonly template: Template; readonly wire: Node | Array<Node>; readonly where: ParentChildNodes }, CouldNotFindRootElement | CouldNotFindCommentError | CouldNotFindManyCommentError> {
   const { template } = getBrowserEntry(document, renderContext, strings)
 
   if (parentTemplate) {

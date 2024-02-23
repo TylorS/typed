@@ -120,7 +120,7 @@ export function setupFromModelAndIntent(
   const runFormDataHandlers = (
     event: FormDataEvent
   ): Effect.Effect<
-    Either.Either<RedirectError | CancelNavigation, Option.Option<HttpClient.response.ClientResponse>>,
+    Either.Either<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>,
     NavigationError | HttpClient.error.HttpClientError,
     Scope.Scope | HttpClient.client.Client.Default
   > =>

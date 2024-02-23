@@ -20,12 +20,12 @@ export function FromEffect<A, E, R>(source: Effect.Effect<A, E, R>): FromEffect<
 export interface FromScheduled<I, E, R, O> {
   readonly _tag: "FromScheduled"
   readonly input: Effect.Effect<I, E, R>
-  readonly schedule: Schedule.Schedule<R, I, O>
+  readonly schedule: Schedule.Schedule<O, I, R>
 }
 
 export function FromScheduled<I, E, R, R2, O>(
   input: Effect.Effect<I, E, R>,
-  schedule: Schedule.Schedule<R2, I, O>
+  schedule: Schedule.Schedule<O, I, R2>
 ): FromScheduled<I, E, R | R2, O> {
   return { _tag: "FromScheduled", schedule, input }
 }
@@ -33,12 +33,12 @@ export function FromScheduled<I, E, R, R2, O>(
 export interface Scheduled<A, E, R, O> {
   readonly _tag: "Scheduled"
   readonly input: Effect.Effect<A, E, R>
-  readonly schedule: Schedule.Schedule<R, unknown, O>
+  readonly schedule: Schedule.Schedule<O, unknown, R>
 }
 
 export function Scheduled<A, E, R, R2, O>(
   input: Effect.Effect<A, E, R>,
-  schedule: Schedule.Schedule<R2, unknown, O>
+  schedule: Schedule.Schedule<O, unknown, R2>
 ): Scheduled<A, E, R | R2, O> {
   return { _tag: "Scheduled", schedule, input }
 }
@@ -91,10 +91,10 @@ export function runEffect<A, E, R, B, E2, R2>(
       return Effect.flatMap(
         producer.input,
         (i) =>
-          Effect.asyncEffect<unknown, E | E2, never, unknown, never, R | R2>((resume) => {
+          Effect.asyncEffect((resume) => {
             const onFailure = (cause: Cause.Cause<E | E2>) => Effect.succeed(resume(Effect.failCause(cause)))
 
-            return Effect.matchCauseEffect(
+            return Effect.asUnit(Effect.matchCauseEffect(
               Effect.scheduleFrom(
                 producer.input,
                 i,
@@ -104,7 +104,7 @@ export function runEffect<A, E, R, B, E2, R2>(
                 )
               ),
               { onFailure, onSuccess: () => Effect.succeed(resume(Effect.unit)) }
-            )
+            ))
           })
       )
     case "Scheduled":

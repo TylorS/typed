@@ -220,9 +220,9 @@ class RenderQueueImpl implements RenderQueue {
   })
 
   runAnimationFrame: Effect.Effect<void, never, Scope.Scope> = Effect.zipRight(
-    Effect.asyncOption<void>((cb) => {
+    Effect.async<void>((cb) => {
       const id = requestAnimationFrame(() => cb(Effect.unit))
-      return Option.some(Effect.sync(() => cancelAnimationFrame(id)))
+      return Effect.sync(() => cancelAnimationFrame(id))
     }),
     Effect.sync(() => {
       const iterator = this.queue.entries()

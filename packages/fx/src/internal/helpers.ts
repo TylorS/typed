@@ -1,5 +1,5 @@
 import { getOption } from "@typed/context"
-import { Equivalence } from "effect"
+import { Equivalence, Unify } from "effect"
 import type { Duration, Exit } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -327,7 +327,7 @@ export function matchEffectPrimitive<A, E, R, Z>(
 export function adjustTime(input: Duration.DurationInput = 1) {
   return Effect.flatMap(
     Effect.context<never>(),
-    Effect.unifiedFn((ctx) => {
+    Unify.unify((ctx) => {
       const testClock = getOption(ctx, TestClock.TestClock)
 
       if (Option.isSome(testClock)) {
@@ -450,7 +450,7 @@ export class RingBuffer<A> {
 }
 
 export function awaitScopeClose(scope: Scope.Scope) {
-  return Effect.asyncEffect<unknown, never, never, void, never, never>((cb) =>
+  return Effect.asyncEffect<unknown, never, never, never, never, never>((cb) =>
     Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
   )
 }
