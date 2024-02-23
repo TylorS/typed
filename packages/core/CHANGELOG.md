@@ -1,5 +1,22 @@
 # @typed/core
 
+## 3.2.4
+
+### Patch Changes
+
+- Updated dependencies [[`7d440f1`](https://github.com/TylorS/typed/commit/7d440f148b5fc09c62cbd35dbcd773cad6c5c43b)]:
+  - @typed/async-data@0.7.0
+  - @typed/navigation@0.13.0
+  - @typed/template@0.9.0
+  - @typed/context@0.25.0
+  - @typed/fx@1.26.0
+  - @typed/ui@0.9.0
+  - @typed/router@0.26.2
+  - @typed/dom@13.0.0
+  - @typed/environment@0.6.2
+  - @typed/id@0.6.2
+  - @typed/route@3.2.4
+
 ## 3.2.3
 
 ### Patch Changes

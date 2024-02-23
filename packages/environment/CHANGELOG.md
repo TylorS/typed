@@ -1,5 +1,12 @@
 # @typed/environment
 
+## 0.6.2
+
+### Patch Changes
+
+- Updated dependencies [[`7d440f1`](https://github.com/TylorS/typed/commit/7d440f148b5fc09c62cbd35dbcd773cad6c5c43b)]:
+  - @typed/context@0.25.0
+
 ## 0.6.1
 
 ### Patch Changes

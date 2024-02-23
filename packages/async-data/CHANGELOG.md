@@ -1,5 +1,11 @@
 # @typed/async-data
 
+## 0.7.0
+
+### Minor Changes
+
+- [`7d440f1`](https://github.com/TylorS/typed/commit/7d440f148b5fc09c62cbd35dbcd773cad6c5c43b) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade to Effect 2.4
+
 ## 0.6.0
 
 ### Minor Changes
