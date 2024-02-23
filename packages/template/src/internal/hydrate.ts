@@ -320,7 +320,10 @@ export function getHydrateEntry({
   parentTemplate: Template | null
   strings: TemplateStringsArray
   manyIndex?: string
-}): Either.Either<{ readonly template: Template; readonly wire: Node | Array<Node>; readonly where: ParentChildNodes }, CouldNotFindRootElement | CouldNotFindCommentError | CouldNotFindManyCommentError> {
+}): Either.Either<
+  { readonly template: Template; readonly wire: Node | Array<Node>; readonly where: ParentChildNodes },
+  CouldNotFindRootElement | CouldNotFindCommentError | CouldNotFindManyCommentError
+> {
   const { template } = getBrowserEntry(document, renderContext, strings)
 
   if (parentTemplate) {
