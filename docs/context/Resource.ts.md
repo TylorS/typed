@@ -35,9 +35,9 @@ export interface Resource<I, A, E> extends Tag<I, R.Resource<A, E>> {
 
   readonly refresh: Effect.Effect<void, E, I>
 
-  readonly auto: <R, R2, Out>(
+  readonly auto: <R, Out, R2 = never>(
     acquire: Effect.Effect<A, E, R>,
-    policy: Schedule.Schedule<R2, unknown, Out>
+    policy: Schedule.Schedule<Out, unknown, R2>
   ) => Layer.Layer<I, never, R | R2>
 
   readonly manual: <R>(acquire: Effect.Effect<A, E, R>) => Layer.Layer<I, never, R>

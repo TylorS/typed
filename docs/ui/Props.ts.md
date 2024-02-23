@@ -59,7 +59,10 @@ Added in v1.0.0
 
 ```ts
 export type DataProps = {
-  readonly data?: ReadonlyRecord.ReadonlyRecord<any> | Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any>> | undefined
+  readonly data?:
+    | ReadonlyRecord.ReadonlyRecord<any, any>
+    | Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any, any>>
+    | undefined
 }
 ```
 

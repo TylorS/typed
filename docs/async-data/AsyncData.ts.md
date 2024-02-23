@@ -503,7 +503,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromEither<E, A>(either: Either.Either<E, A>): AsyncData<A, E>
+export declare function fromEither<A, E = never>(either: Either.Either<A, E>): AsyncData<A, E>
 ```
 
 Added in v1.0.0

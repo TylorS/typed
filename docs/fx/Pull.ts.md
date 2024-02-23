@@ -48,12 +48,12 @@ using Effect.repeat.
 ```ts
 export declare const repeat: {
   <R2, A, E, R3>(
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 }
@@ -71,12 +71,12 @@ using Effect.schedule.
 ```ts
 export declare const schedule: {
   <R2, A, E, R3>(
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
-    schedule: Schedule.Schedule<R2, unknown, unknown>,
+    schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
   ): Effect.Effect<unknown, never, R | R2 | R3>
 }

@@ -56,6 +56,7 @@ Added in v1.20.0
   - [fromFx](#fromfx)
   - [fromRefSubject](#fromrefsubject)
   - [fromTag](#fromtag)
+  - [get](#get)
   - [increment](#increment)
   - [isComputed](#iscomputed)
   - [isDerived](#isderived)
@@ -81,6 +82,8 @@ Added in v1.20.0
   - [transform](#transform)
   - [transformOrFail](#transformorfail)
   - [tuple](#tuple)
+  - [unsafeGet](#unsafeget)
+  - [unsafeGetExit](#unsafegetexit)
   - [unsafeMake](#unsafemake)
   - [update](#update)
   - [updateEffect](#updateeffect)
@@ -99,6 +102,11 @@ A Computed is essentially a readonly RefSubject.
 export interface Computed<out A, out E = never, out R = never>
   extends Versioned.Versioned<R, E, A, E, R | Scope.Scope, A, E, R> {
   readonly [ComputedTypeId]: ComputedTypeId
+
+  /**
+   * @since 1.25.0
+   */
+  readonly unsafeGet: () => Exit.Exit<A, E>
 }
 ```
 
@@ -157,6 +165,11 @@ export interface Filtered<out A, out E = never, out R = never>
    * @since 1.20.0
    */
   asComputed(): Computed<Option.Option<A>, E, R>
+
+  /**
+   * @since 1.25.0
+   */
+  readonly unsafeGet: () => Exit.Exit<A, E | Cause.NoSuchElementException>
 }
 ```
 
@@ -273,6 +286,11 @@ export interface RefSubject<in out A, in out E = never, out R = never>
   readonly runUpdates: <B, E2, R2>(
     f: (ref: GetSetDelete<A, E, R>) => Effect.Effect<B, E2, R2>
   ) => Effect.Effect<B, E2, R | R2>
+
+  /**
+   * @since 1.25.0
+   */
+  readonly unsafeGet: () => Exit.Exit<A, E>
 }
 ```
 
@@ -663,6 +681,22 @@ export declare function fromTag<I, S, A, E, R>(
 ```
 
 Added in v1.20.0
+
+## get
+
+Get the current value of the RefSubject. If it has not been set yet, a Fiber will be used to wait for the value to be set.
+
+**Signature**
+
+```ts
+export declare const get: {
+  <A, E = never, R = never>(ref: RefSubject<A, E, R>): Effect.Effect<A, E, R>
+  <A, E = never, R = never>(ref: Computed<A, E, R>): Effect.Effect<A, E, R>
+  <A, E = never, R = never>(ref: Filtered<A, E, R>): Effect.Effect<A, E | Cause.NoSuchElementException, R>
+}
+```
+
+Added in v1.25.0
 
 ## increment
 
@@ -1062,6 +1096,33 @@ export declare function tuple<
 ```
 
 Added in v1.20.0
+
+## unsafeGet
+
+Synchronously get the current value of the RefSubject.
+
+**Signature**
+
+```ts
+export declare const unsafeGet: <A, E = never, R = never>(ref: RefSubject<A, E, R>) => A
+```
+
+Added in v1.25.0
+
+## unsafeGetExit
+
+Synchronously get the current Exit value of the RefSubject. If it has not been set yet, a Cause.NoSuchElementException will be thrown.
+
+Note: This is unimplemented for RefSubject.tagged and RefSubject.fromTag because they require the Effect context by definition.
+It will throw immediately.
+
+**Signature**
+
+```ts
+export declare const unsafeGetExit: <A, E = never, R = never>(ref: RefSubject<A, E, R>) => Exit.Exit<A, E>
+```
+
+Added in v1.25.0
 
 ## unsafeMake
 

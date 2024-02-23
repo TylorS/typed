@@ -1092,7 +1092,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<E, A>, never, R>
+export declare const either: <A, E, R>(fx: Fx<A, E, R>) => Fx<Either.Either<A, E>, never, R>
 ```
 
 Added in v1.20.0
@@ -2062,8 +2062,8 @@ Added in v1.20.0
 
 ```ts
 export declare const fromScheduled: {
-  <R2, I, O>(schedule: Schedule.Schedule<R2, I, O>): <E, R>(input: Effect.Effect<I, E, R>) => Fx<O, E, R2 | R>
-  <I, E, R, R2, O>(input: Effect.Effect<I, E, R>, schedule: Schedule.Schedule<R2, I, O>): Fx<O, E, R | R2>
+  <R2, I, O>(schedule: Schedule.Schedule<O, I, R2>): <E, R>(input: Effect.Effect<I, E, R>) => Fx<O, E, R2 | R>
+  <I, E, R, R2, O>(input: Effect.Effect<I, E, R>, schedule: Schedule.Schedule<O, I, R2>): Fx<O, E, R | R2>
 }
 ```
 
@@ -2485,9 +2485,9 @@ export declare const matchEither: {
   <E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
     onLeft: (e: RefSubject<E1, never, never>) => Fx<B, E2, R2>,
     onRight: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
-  ): <E, R>(fx: Fx<Either.Either<E1, A>, E, R>) => Fx<B | C, E2 | E3 | E, Scope.Scope | R2 | R3 | R>
+  ): <E, R>(fx: Fx<Either.Either<A, E1>, E, R>) => Fx<B | C, E2 | E3 | E, Scope.Scope | R2 | R3 | R>
   <R, E, E1, A, B = never, E2 = never, R2 = never, C = never, E3 = never, R3 = never>(
-    fx: Fx<Either.Either<E1, A>, E, R>,
+    fx: Fx<Either.Either<A, E1>, E, R>,
     onLeft: (e: RefSubject<E1, never, never>) => Fx<B, E2, R2>,
     onRight: (a: RefSubject<A, never, never>) => Fx<C, E3, R3>
   ): Fx<B | C, E | E2 | E3, Scope.Scope | R | R2 | R3>
@@ -2828,11 +2828,11 @@ Added in v1.20.0
 ```ts
 export declare const partitionMap: {
   <A, B, C>(
-    f: (a: A) => Either.Either<B, C>
+    f: (a: A) => Either.Either<C, B>
   ): <E, R>(fx: Fx<A, E, R>) => readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
   <A, E, R, B, C>(
     fx: Fx<A, E, R>,
-    f: (a: A) => Either.Either<B, C>
+    f: (a: A) => Either.Either<C, B>
   ): readonly [Fx<B, E, Scope.Scope | R>, Fx<C, E, Scope.Scope | R>]
 }
 ```
@@ -3057,8 +3057,8 @@ Added in v1.20.0
 
 ```ts
 export declare const schedule: {
-  <R2, O>(schedule: Schedule.Schedule<R2, unknown, O>): <A, E, R>(input: Effect.Effect<A, E, R>) => Fx<A, E, R2 | R>
-  <A, E, R, R2, O>(input: Effect.Effect<A, E, R>, schedule: Schedule.Schedule<R2, unknown, O>): Fx<A, E, R | R2>
+  <R2, O>(schedule: Schedule.Schedule<O, unknown, R2>): <A, E, R>(input: Effect.Effect<A, E, R>) => Fx<A, E, R2 | R>
+  <A, E, R, R2, O>(input: Effect.Effect<A, E, R>, schedule: Schedule.Schedule<O, unknown, R2>): Fx<A, E, R | R2>
 }
 ```
 
