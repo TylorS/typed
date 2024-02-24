@@ -1,5 +1,11 @@
 # @typed/guard
 
+## 0.1.1
+
+### Patch Changes
+
+- [`a2150dc`](https://github.com/TylorS/typed/commit/a2150dc232cc7c123a1e9e520267e29c74504501) Thanks [@TylorS](https://github.com/TylorS)! - Expand Guard combinators
+
 ## 0.1.0
 
 ### Minor Changes

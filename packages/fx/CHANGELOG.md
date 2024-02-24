@@ -1,5 +1,12 @@
 # @typed/fx
 
+## 1.27.1
+
+### Patch Changes
+
+- Updated dependencies [[`a2150dc`](https://github.com/TylorS/typed/commit/a2150dc232cc7c123a1e9e520267e29c74504501)]:
+  - @typed/guard@0.1.1
+
 ## 1.27.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @typed/navigation
 
+## 0.13.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/fx@1.27.1
+
 ## 0.13.1
 
 ### Patch Changes
