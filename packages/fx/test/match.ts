@@ -1,6 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
-import * as Guard from "@typed/fx/Guard"
 import * as Match from "@typed/fx/Match"
+import * as Guard from "@typed/guard"
 import { deepStrictEqual } from "assert"
 import { Effect, Option } from "effect"
 
