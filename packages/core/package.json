@@ -48,6 +48,7 @@
     "@typed/dom": "workspace:*",
     "@typed/environment": "workspace:*",
     "@typed/fx": "workspace:*",
+    "@typed/guard": "workspace:*",
     "@typed/id": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
