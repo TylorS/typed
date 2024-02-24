@@ -40,7 +40,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@typed/fx": "workspace:*",
+    "@typed/guard": "workspace:*",
     "@typed/path": "workspace:*",
     "effect": "^2.4.0",
     "path-to-regexp": "^6.2.1"

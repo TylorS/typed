@@ -26,6 +26,9 @@
       "path": "packages/fx"
     },
     {
+      "path": "packages/guard"
+    },
+    {
       "path": "packages/id"
     },
     {

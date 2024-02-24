@@ -2,16 +2,15 @@
  * @since 1.0.0
  */
 
-import * as Guard from "@typed/fx/Guard"
+import type * as Guard from "@typed/guard"
 import * as Path from "@typed/path"
 import { Effect, Option, Pipeable } from "effect"
-import { dual } from "effect/Function"
 import * as ptr from "path-to-regexp"
 
 /**
  * @since 1.0.0
  */
-export interface Route<P extends string> extends Pipeable.Pipeable {
+export interface Route<P extends string> extends Pipeable.Pipeable, Guard.AsGuard<string, Path.ParamsOf<P>> {
   readonly path: P
 
   readonly params: FromPathParams
@@ -26,8 +25,6 @@ export interface Route<P extends string> extends Pipeable.Pipeable {
     route: Route<P2>,
     params?: FromPathParams
   ) => Route<Path.PathJoin<readonly [P, P2]>>
-
-  readonly asGuard: () => Guard.Guard<string, Path.ParamsOf<P>>
 }
 
 /**
@@ -98,134 +95,3 @@ export interface FromPathParams {
   readonly make?: ptr.ParseOptions & ptr.TokensToFunctionOptions
   readonly match?: ptr.ParseOptions & ptr.TokensToRegexpOptions & ptr.RegexpToFunctionOptions
 }
-
-/**
- * @since 1.0.0
- */
-export function asGuard<P extends string>(route: Route<P>): Guard.Guard<string, Path.ParamsOf<P>> {
-  return route.asGuard()
-}
-
-/**
- * @since 1.0.0
- */
-export const mapEffect: {
-  <P extends string, B, E2, R2>(
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-  ): (route: Route<P>) => Guard.Guard<string, B, E2, R2>
-
-  <P extends string, B, E2, R2>(
-    route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-  ): Guard.Guard<string, B, E2, R2>
-} = dual(2, function mapEffect<P extends string, B, E2, R2>(
-  route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-): Guard.Guard<string, B, E2, R2> {
-  return Guard.mapEffect(asGuard(route), f)
-})
-
-/**
- * @since 1.0.0
- */
-export const map: {
-  <P extends string, B>(
-    f: (params: Path.ParamsOf<P>) => B
-  ): (route: Route<P>) => Guard.Guard<string, B>
-
-  <P extends string, B>(
-    route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => B
-  ): Guard.Guard<string, B>
-} = dual(2, function map<P extends string, B>(
-  route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => B
-): Guard.Guard<string, B> {
-  return Guard.map(asGuard(route), f)
-})
-
-/**
- * @since 1.0.0
- */
-export const filterMap: {
-  <P extends string, B>(
-    f: (params: Path.ParamsOf<P>) => Option.Option<B>
-  ): (route: Route<P>) => Guard.Guard<string, B>
-
-  <P extends string, B>(
-    route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => Option.Option<B>
-  ): Guard.Guard<string, B>
-} = dual(2, function filterMap<P extends string, B>(
-  route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => Option.Option<B>
-): Guard.Guard<string, B> {
-  return Guard.filterMap(asGuard(route), f)
-})
-
-/**
- * @since 1.0.0
- */
-export const filter: {
-  <P extends string>(
-    f: (params: Path.ParamsOf<P>) => boolean
-  ): (route: Route<P>) => Guard.Guard<string, Path.ParamsOf<P>>
-
-  <P extends string>(
-    route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => boolean
-  ): Guard.Guard<string, Path.ParamsOf<P>>
-} = dual(2, function filter<P extends string>(
-  route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => boolean
-): Guard.Guard<string, Path.ParamsOf<P>> {
-  return Guard.filter(asGuard(route), f)
-})
-
-/**
- * @since 1.0.0
- */
-export const tap: {
-  <P extends string, B, E2, R2>(
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-  ): (route: Route<P>) => Guard.Guard<string, Path.ParamsOf<P>, E2, R2>
-
-  <P extends string, B, E2, R2>(
-    route: Route<P>,
-    f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-  ): Guard.Guard<string, Path.ParamsOf<P>, E2, R2>
-} = dual(2, function tap<P extends string, B, E2, R2>(
-  route: Route<P>,
-  f: (params: Path.ParamsOf<P>) => Effect.Effect<B, E2, R2>
-): Guard.Guard<string, Path.ParamsOf<P>, E2, R2> {
-  return Guard.tap(asGuard(route), f)
-})
-
-/**
- * @since 1.0.0
- */
-export function any<Routes extends Readonly<Record<string, Route<any>>>>(
-  routes: Routes
-): Guard.Guard<string, AnyOutput<Routes>> {
-  const entries = Object.entries(routes)
-
-  return (input) =>
-    Effect.sync(() => {
-      for (const [_tag, route] of entries) {
-        const match = route.match(input)
-        if (Option.isSome(match)) return Option.some({ _tag, ...match.value } as AnyOutput<Routes>)
-      }
-      return Option.none()
-    })
-}
-
-/**
- * @since 1.0.0
- */
-export type AnyOutput<Routes extends Readonly<Record<string, Route<any>>>> = [
-  {
-    [K in keyof Routes]: [{ readonly _tag: K } & Route.ParamsOf<Routes[K]>] extends [infer R]
-      ? { readonly [K in keyof R]: R[K] }
-      : never
-  }[keyof Routes]
-] extends [infer R] ? R : never

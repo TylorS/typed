@@ -4,9 +4,9 @@
 
 import { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
-import * as Guard from "@typed/fx/Guard"
 import * as Match from "@typed/fx/Match"
 import * as RefSubject from "@typed/fx/RefSubject"
+import * as Guard from "@typed/guard"
 import * as Navigation from "@typed/navigation"
 import type * as Path from "@typed/path"
 import * as Route from "@typed/route"
@@ -186,9 +186,9 @@ function getGuard<const P extends string, B, E2, R2>(
   guard?: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>
 ) {
   if (guard) {
-    return Guard.compose(Route.asGuard(getRoute(path)), guard)
+    return Guard.compose(getRoute(path), guard)
   } else {
-    return Route.asGuard(getRoute(path))
+    return getRoute(path).asGuard()
   }
 }
 

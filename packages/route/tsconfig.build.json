@@ -11,7 +11,7 @@
   ],
   "references": [
     {
-      "path": "../fx"
+      "path": "../guard"
     },
     {
       "path": "../path"

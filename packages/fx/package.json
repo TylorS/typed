@@ -50,6 +50,7 @@
     "@effect/typeclass": "0.23.0",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
+    "@typed/guard": "workspace:*",
     "effect": "^2.4.0",
     "fast-deep-equal": "^3.1.3"
   },

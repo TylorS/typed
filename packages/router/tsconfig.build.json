@@ -25,6 +25,9 @@
       "path": "../fx"
     },
     {
+      "path": "../guard"
+    },
+    {
       "path": "../navigation"
     },
     {

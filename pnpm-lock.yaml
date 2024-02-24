@@ -486,6 +486,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
+      '@typed/guard':
+        specifier: workspace:*
+        version: link:../guard/dist
       effect:
         specifier: ^2.4.0
         version: 2.4.0
@@ -505,6 +508,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
+    publishDirectory: dist
+
+  packages/guard:
     publishDirectory: dist
 
   packages/id:
@@ -564,9 +570,9 @@ importers:
 
   packages/route:
     dependencies:
-      '@typed/fx':
+      '@typed/guard':
         specifier: workspace:*
-        version: link:../fx/dist
+        version: link:../guard/dist
       '@typed/path':
         specifier: workspace:*
         version: link:../path/dist
@@ -592,6 +598,9 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../fx/dist
+      '@typed/guard':
+        specifier: workspace:*
+        version: link:../guard/dist
       '@typed/navigation':
         specifier: workspace:*
         version: link:../navigation/dist

@@ -13,13 +13,13 @@
   ],
   "references": [
     {
-      "path": "../core"
-    },
-    {
       "path": "../async-data"
     },
     {
       "path": "../context"
+    },
+    {
+      "path": "../core"
     },
     {
       "path": "../decoder"

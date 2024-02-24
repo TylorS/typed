@@ -2,6 +2,7 @@
  * @since 1.18.0
  */
 
+import { getGuard, type GuardInput } from "@typed/guard"
 import * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
@@ -14,7 +15,6 @@ import * as Option from "effect/Option"
 import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
 import * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
-import type { Guard } from "./Guard.js"
 import { withScopedFork } from "./internal/helpers.js"
 import { FxBase } from "./internal/protos.js"
 import * as RefSubject from "./RefSubject.js"
@@ -39,12 +39,12 @@ export interface TypeMatcher<I, O = never, E = never, R = never> {
   readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
   readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ) => TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
   readonly to: <R2 = never, E2 = never, A = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: B
   ) => TypeMatcher<I, O | B, E | E2, R | R2>
 
@@ -64,12 +64,12 @@ export interface ValueMatcher<I, O = never, E = never, R = never> extends Fx.Fx<
   readonly value: Fx.Fx<I, E, R>
 
   readonly when: <A, E2, R2, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ) => ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
   readonly to: <A, E2, R2, B>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: B
   ) => ValueMatcher<I, O | B, E | E2, R | R2>
 
@@ -139,7 +139,7 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
   }
 
   when<A, E2, R2, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ): TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3> {
     return new TypeMatcherImpl<I, O | B, E | E2 | E3, R | R2 | R3>(
@@ -148,7 +148,7 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
   }
 
   to<A, E2, R2, B>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: B
   ): TypeMatcher<I, O | B, E | E2, R | R2> {
     return this.when(guard, () => Fx.succeed(onMatch))
@@ -296,7 +296,7 @@ class ValueMatcherImpl<I, O, E, R> extends FxBase<Option.Option<O>, E, R | Scope
   }
 
   when<A, E2, R2, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ): ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3> {
     return new ValueMatcherImpl<I, O | B, E | E2 | E3, R | R2 | R3>(
@@ -306,23 +306,11 @@ class ValueMatcherImpl<I, O, E, R> extends FxBase<Option.Option<O>, E, R | Scope
   }
 
   to<A, E2, R2, B>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: B
   ): ValueMatcher<I, O | B, E | E2, R | R2> {
     return this.when(guard, () => Fx.succeed(onMatch))
   }
 
   getOrElse: ValueMatcher<I, O, E, R>["getOrElse"] = (f) => Fx.getOrElse(this.matcher.run(this.value), f)
-}
-
-/**
- * @since 1.18.0
- */
-export interface AsGuard<I, A, E = never, R = never> {
-  readonly asGuard: () => Guard<I, A, E, R>
-}
-
-function getGuard<I, A, E = never, R = never>(guard: Guard<I, A, E, R> | AsGuard<I, A, E, R>): Guard<I, A, E, R> {
-  if (typeof guard === "function") return guard
-  return guard.asGuard()
 }

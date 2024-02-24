@@ -1,6 +1,6 @@
 {
-  "name": "@typed/router",
-  "version": "0.26.2",
+  "name": "@typed/guard",
+  "version": "0.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -39,15 +39,7 @@
   "author": "Typed contributors",
   "license": "MIT",
   "sideEffects": [],
-  "dependencies": {
-    "@typed/context": "workspace:*",
-    "@typed/dom": "workspace:*",
-    "@typed/environment": "workspace:*",
-    "@typed/fx": "workspace:*",
-    "@typed/guard": "workspace:*",
-    "@typed/navigation": "workspace:*",
-    "@typed/path": "workspace:*",
-    "@typed/route": "workspace:*",
-    "effect": "^2.4.0"
-  }
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {}
 }

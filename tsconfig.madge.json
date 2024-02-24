@@ -103,6 +103,18 @@
       "@typed/fx/examples/*": [
         "packages/fx/build/examples/*"
       ],
+      "@typed/guard": [
+        "packages/guard/build/esm/index.js"
+      ],
+      "@typed/guard/*": [
+        "packages/guard/build/esm/*"
+      ],
+      "@typed/guard/test/*": [
+        "packages/guard/build/test/*"
+      ],
+      "@typed/guard/examples/*": [
+        "packages/guard/build/examples/*"
+      ],
       "@typed/id": [
         "packages/id/build/esm/index.js"
       ],
@@ -238,6 +250,9 @@
     "packages/fx/build/esm/**/*",
     "packages/fx/build/test/**/*",
     "packages/fx/build/examples/**/*",
+    "packages/guard/build/esm/**/*",
+    "packages/guard/build/test/**/*",
+    "packages/guard/build/examples/**/*",
     "packages/id/build/esm/**/*",
     "packages/id/build/test/**/*",
     "packages/id/build/examples/**/*",

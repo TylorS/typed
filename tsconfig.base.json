@@ -103,6 +103,18 @@
       "@typed/fx/examples/*": [
         "packages/fx/examples/*"
       ],
+      "@typed/guard": [
+        "packages/guard/src/index.ts"
+      ],
+      "@typed/guard/*": [
+        "packages/guard/src/*"
+      ],
+      "@typed/guard/test/*": [
+        "packages/guard/test/*"
+      ],
+      "@typed/guard/examples/*": [
+        "packages/guard/examples/*"
+      ],
       "@typed/id": [
         "packages/id/src/index.ts"
       ],
