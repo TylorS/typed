@@ -1,5 +1,22 @@
 # @typed/router
 
+## 0.27.0
+
+### Minor Changes
+
+- [`4e9e4da`](https://github.com/TylorS/typed/commit/4e9e4dab5e348fa927995b98f1403454f4ba49d4) Thanks [@TylorS](https://github.com/TylorS)! - Extract @typed/fx/Guard to @typed/guard for reuse in @typed/route.
+
+  - Removes the need for @typed/route to have a dependency on @typed/fx.
+  - Removes duplicated combinators from @typed/route that can now live in @typed/guard.
+
+### Patch Changes
+
+- Updated dependencies [[`4e9e4da`](https://github.com/TylorS/typed/commit/4e9e4dab5e348fa927995b98f1403454f4ba49d4)]:
+  - @typed/guard@0.1.0
+  - @typed/route@3.3.0
+  - @typed/fx@1.27.0
+  - @typed/navigation@0.13.1
+
 ## 0.26.2
 
 ### Patch Changes
