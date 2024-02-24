@@ -1,6 +1,6 @@
 ---
 title: Typeclass.ts
-nav_order: 20
+nav_order: 19
 parent: "@typed/fx"
 ---
 

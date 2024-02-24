@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 8
+nav_order: 7
 parent: "@typed/fx"
 ---
 
@@ -26,7 +26,6 @@ Added in v1.18.0
   - [From "./Form.js"](#from-formjs)
   - [From "./FormEntry.js"](#from-formentryjs)
   - [From "./Fx.js"](#from-fxjs)
-  - [From "./Guard.js"](#from-guardjs)
   - [From "./Idle.js"](#from-idlejs)
   - [From "./Match.js"](#from-matchjs)
   - [From "./Pull.js"](#from-pulljs)
@@ -109,18 +108,6 @@ produce exactly 1 error or event.
 
 ```ts
 export * from "./Fx.js"
-```
-
-Added in v1.18.0
-
-## From "./Guard.js"
-
-[Guard documentation](https://tylors.github.io/typed/fx/Guard.ts.html)
-
-**Signature**
-
-```ts
-export * as Guard from "./Guard.js"
 ```
 
 Added in v1.18.0

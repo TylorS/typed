@@ -2,7 +2,7 @@
 title: "@typed/storybook"
 has_children: true
 permalink: /docs/storybook
-nav_order: 15
+nav_order: 16
 ---
 
 # @typed/storybook

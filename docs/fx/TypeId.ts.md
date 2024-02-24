@@ -1,6 +1,6 @@
 ---
 title: TypeId.ts
-nav_order: 21
+nav_order: 20
 parent: "@typed/fx"
 ---
 

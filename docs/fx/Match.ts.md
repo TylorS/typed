@@ -1,6 +1,6 @@
 ---
 title: Match.ts
-nav_order: 9
+nav_order: 8
 parent: "@typed/fx"
 ---
 
@@ -13,7 +13,6 @@ Added in v1.18.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [AsGuard (interface)](#asguard-interface)
   - [Matcher (namespace)](#matcher-namespace)
     - [Variance (interface)](#variance-interface)
   - [MatcherTypeId](#matchertypeid)
@@ -26,18 +25,6 @@ Added in v1.18.0
 ---
 
 # utils
-
-## AsGuard (interface)
-
-**Signature**
-
-```ts
-export interface AsGuard<I, A, E = never, R = never> {
-  readonly asGuard: () => Guard<I, A, E, R>
-}
-```
-
-Added in v1.18.0
 
 ## Matcher (namespace)
 
@@ -89,12 +76,12 @@ export interface TypeMatcher<I, O = never, E = never, R = never> {
   readonly [MatcherTypeId]: Matcher.Variance<I, O, E, R>
 
   readonly when: <R2 = never, E2 = never, A = never, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ) => TypeMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
   readonly to: <R2 = never, E2 = never, A = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: B
   ) => TypeMatcher<I, O | B, E | E2, R | R2>
 
@@ -119,14 +106,11 @@ export interface ValueMatcher<I, O = never, E = never, R = never> extends Fx.Fx<
   readonly value: Fx.Fx<I, E, R>
 
   readonly when: <A, E2, R2, R3 = never, E3 = never, B = never>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
+    guard: GuardInput<I, A, E2, R2>,
     onMatch: (value: RefSubject.RefSubject<A>) => Fx.Fx<B, E3, R3>
   ) => ValueMatcher<I, O | B, E | E2 | E3, R | R2 | R3>
 
-  readonly to: <A, E2, R2, B>(
-    guard: Guard<I, A, E2, R2> | AsGuard<I, A, E2, R2>,
-    onMatch: B
-  ) => ValueMatcher<I, O | B, E | E2, R | R2>
+  readonly to: <A, E2, R2, B>(guard: GuardInput<I, A, E2, R2>, onMatch: B) => ValueMatcher<I, O | B, E | E2, R | R2>
 
   readonly getOrElse: <R2 = never, E2 = never, B = never>(
     f: () => Fx.Fx<B, E2, R2>
