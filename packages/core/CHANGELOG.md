@@ -1,5 +1,20 @@
 # @typed/core
 
+## 3.2.5
+
+### Patch Changes
+
+- [`024b4bc`](https://github.com/TylorS/typed/commit/024b4bc4a7fdf93110bd23a03bec1525a8f4a743) Thanks [@TylorS](https://github.com/TylorS)! - Update Guard module to use @typed/guard
+
+- Updated dependencies [[`4e9e4da`](https://github.com/TylorS/typed/commit/4e9e4dab5e348fa927995b98f1403454f4ba49d4)]:
+  - @typed/router@0.27.0
+  - @typed/guard@0.1.0
+  - @typed/route@3.3.0
+  - @typed/fx@1.27.0
+  - @typed/ui@0.9.1
+  - @typed/navigation@0.13.1
+  - @typed/template@0.9.1
+
 ## 3.2.4
 
 ### Patch Changes
