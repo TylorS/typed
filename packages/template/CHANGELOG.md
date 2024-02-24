@@ -1,5 +1,12 @@
 # @typed/template
 
+## 0.9.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/fx@1.27.1
+
 ## 0.9.1
 
 ### Patch Changes
