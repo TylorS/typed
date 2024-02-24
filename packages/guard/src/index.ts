@@ -2,6 +2,9 @@
  * @since 1.0.0
  */
 
+import type { ParseOptions } from "@effect/schema/AST"
+import type * as ParseResult from "@effect/schema/ParseResult"
+import * as Schema from "@effect/schema/Schema"
 import type { Cause, Context, Layer, Predicate, Runtime } from "effect"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
@@ -318,4 +321,142 @@ export const provideServiceEffect: {
 ): Guard<I, O, E | E2, Exclude<R, Id> | R2> {
   const g = getGuard(guard)
   return (i) => Effect.provideServiceEffect(g(i), tag, service)
+})
+
+const parseOptions: ParseOptions = { errors: "all", onExcessProperty: "ignore" }
+
+/**
+ * @since 1.0.0
+ */
+export function fromSchemaDecode<A, I, R>(schema: Schema.Schema<A, I, R>): Guard<I, A, ParseResult.ParseError, R> {
+  const decode_ = Schema.decode(schema)
+  return (i: I) => Effect.asSome(decode_(i, parseOptions))
+}
+
+/**
+ * @since 1.0.0
+ */
+export function fromSchemaEncode<A, I, R>(schema: Schema.Schema<A, I, R>): Guard<A, I, ParseResult.ParseError, R> {
+  const encode_ = Schema.encode(schema)
+  return (a: A) => Effect.asSome(encode_(a, parseOptions))
+}
+
+/**
+ * @since 1.0.0
+ */
+export const decode: {
+  <A, O, R2>(
+    schema: Schema.Schema<A, O, R2>
+  ): <I, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, A, ParseResult.ParseError | E, R | R2>
+
+  <I, O, E, R, A, R2>(
+    guard: GuardInput<I, O, E, R>,
+    schema: Schema.Schema<A, O, R2>
+  ): Guard<I, A, ParseResult.ParseError | E, R | R2>
+} = dual(2, function decode<I, O, E, R, A, R2>(
+  guard: GuardInput<I, O, E, R>,
+  schema: Schema.Schema<A, O, R2>
+): Guard<I, A, E | ParseResult.ParseError, R | R2> {
+  return compose(guard, fromSchemaDecode(schema))
+})
+
+/**
+ * @since 1.0.0
+ */
+export const encode: {
+  <O, A, R2>(
+    schema: Schema.Schema<O, A, R2>
+  ): <I, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, A, ParseResult.ParseError | E, R | R2>
+
+  <I, O, E, R, A, R2>(
+    guard: GuardInput<I, O, E, R>,
+    schema: Schema.Schema<O, A, R2>
+  ): Guard<I, A, ParseResult.ParseError | E, R | R2>
+} = dual(2, function encode<I, O, E, R, A, R2>(
+  guard: GuardInput<I, O, E, R>,
+  schema: Schema.Schema<O, A, R2>
+): Guard<I, A, E | ParseResult.ParseError, R | R2> {
+  return compose(guard, fromSchemaEncode(schema))
+})
+
+/**
+ * @since 1.0.0
+ */
+const let_: {
+  <K extends PropertyKey, B>(
+    key: K,
+    value: B
+  ): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { [k in K]: B }, E, R>
+
+  <I, O, E, R, K extends PropertyKey, B>(
+    guard: Guard<I, O, E, R>,
+    key: K,
+    value: B
+  ): Guard<I, O & { [k in K]: B }, E, R>
+} = dual(3, function attachProperty<I, O, E, R, K extends PropertyKey, B>(
+  guard: Guard<I, O, E, R>,
+  key: K,
+  value: B
+): Guard<I, O & { [k in K]: B }, E, R> {
+  return map(guard, (a) => ({ ...a, [key]: value } as O & { [k in K]: B }))
+})
+
+export {
+  /**
+   * @since 1.0.0
+   */
+  let_ as let
+}
+
+/**
+ * @since 1.0.0
+ */
+export const addTag: {
+  <B>(
+    value: B
+  ): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
+
+  <I, O, E, R, B>(
+    guard: Guard<I, O, E, R>,
+    value: B
+  ): Guard<I, O & { readonly _tag: B }, E, R>
+} = dual(2, function attachProperty<I, O, E, R, B>(
+  guard: Guard<I, O, E, R>,
+  value: B
+): Guard<I, O & { readonly _tag: B }, E, R> {
+  return map(guard, (a) => ({ ...a, _tag: value } as O & { readonly _tag: B }))
+})
+/**
+ * @since 1.0.0
+ */
+export const bindTo: {
+  <K extends PropertyKey>(key: K): <I, O, E, R>(guard: GuardInput<I, O, E, R>) => Guard<I, { [k in K]: O }, E, R>
+  <I, O, E, R, K extends PropertyKey>(guard: GuardInput<I, O, E, R>, key: K): Guard<I, { [k in K]: O }, E, R>
+} = dual(2, <I, O, E, R, K extends PropertyKey>(
+  guard: GuardInput<I, O, E, R>,
+  key: K
+): Guard<I, { [k in K]: O }, E, R> => map(guard, (a) => ({ [key]: a } as { [k in K]: O })))
+
+/**
+ * @since 1.0.0
+ */
+export const bind: {
+  <I, O, E, R, K extends PropertyKey, B, E2, R2>(
+    key: K,
+    f: GuardInput<O, B, E2, R2>
+  ): (guard: GuardInput<I, O, E, R>) => Guard<I, O & { [k in K]: B }, E | E2, R | R2>
+
+  <I, O, E, R, K extends PropertyKey, B, E2, R2>(
+    guard: GuardInput<I, O, E, R>,
+    key: K,
+    f: GuardInput<O, B, E2, R2>
+  ): Guard<I, O & { [k in K]: B }, E | E2, R | R2>
+} = dual(3, function bind<I, O, E, R, K extends PropertyKey, B, E2, R2>(
+  guard: GuardInput<I, O, E, R>,
+  key: K,
+  f: GuardInput<O, B, E2, R2>
+): Guard<I, O & { [k in K]: B }, E | E2, R | R2> {
+  const f_ = bindTo(f, key)
+
+  return compose(guard, (o) => Effect.map(f_(o), Option.map((b) => ({ ...o, ...b }))))
 })

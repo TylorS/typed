@@ -23,13 +23,21 @@ Added in v1.0.0
     - [Input (type alias)](#input-type-alias)
     - [Output (type alias)](#output-type-alias)
   - [GuardInput (type alias)](#guardinput-type-alias)
+  - [addTag](#addtag)
   - [any](#any)
+  - [bind](#bind)
+  - [bindTo](#bindto)
   - [catchAll](#catchall)
   - [catchAllCause](#catchallcause)
   - [compose](#compose)
+  - [decode](#decode)
+  - [encode](#encode)
   - [filter](#filter)
   - [filterMap](#filtermap)
+  - [fromSchemaDecode](#fromschemadecode)
+  - [fromSchemaEncode](#fromschemaencode)
   - [getGuard](#getguard)
+  - [let](#let)
   - [liftPredicate](#liftpredicate)
   - [map](#map)
   - [mapEffect](#mapeffect)
@@ -166,6 +174,19 @@ export type GuardInput<I, O, E = never, R = never> = Guard<I, O, E, R> | AsGuard
 
 Added in v1.0.0
 
+## addTag
+
+**Signature**
+
+```ts
+export declare const addTag: {
+  <B>(value: B): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
+  <I, O, E, R, B>(guard: Guard<I, O, E, R>, value: B): Guard<I, O & { readonly _tag: B }, E, R>
+}
+```
+
+Added in v1.0.0
+
 ## any
 
 **Signature**
@@ -174,6 +195,39 @@ Added in v1.0.0
 export declare function any<const GS extends Readonly<Record<string, GuardInput<any, any, any, any>>>>(
   guards: GS
 ): Guard<AnyInput<GS>, AnyOutput<GS>, Guard.Error<GS[keyof GS]>, Guard.Context<GS[keyof GS]>>
+```
+
+Added in v1.0.0
+
+## bind
+
+**Signature**
+
+```ts
+export declare const bind: {
+  <I, O, E, R, K extends PropertyKey, B, E2, R2>(
+    key: K,
+    f: GuardInput<O, B, E2, R2>
+  ): (guard: GuardInput<I, O, E, R>) => Guard<I, O & { [k in K]: B }, E | E2, R | R2>
+  <I, O, E, R, K extends PropertyKey, B, E2, R2>(
+    guard: GuardInput<I, O, E, R>,
+    key: K,
+    f: GuardInput<O, B, E2, R2>
+  ): Guard<I, O & { [k in K]: B }, E | E2, R | R2>
+}
+```
+
+Added in v1.0.0
+
+## bindTo
+
+**Signature**
+
+```ts
+export declare const bindTo: {
+  <K extends PropertyKey>(key: K): <I, O, E, R>(guard: GuardInput<I, O, E, R>) => Guard<I, { [k in K]: O }, E, R>
+  <I, O, E, R, K extends PropertyKey>(guard: GuardInput<I, O, E, R>, key: K): Guard<I, { [k in K]: O }, E, R>
+}
 ```
 
 Added in v1.0.0
@@ -229,6 +283,42 @@ export declare const compose: {
 
 Added in v1.0.0
 
+## decode
+
+**Signature**
+
+```ts
+export declare const decode: {
+  <A, O, R2>(
+    schema: Schema.Schema<A, O, R2>
+  ): <I, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, A, E | ParseResult.ParseError, R2 | R>
+  <I, O, E, R, A, R2>(
+    guard: GuardInput<I, O, E, R>,
+    schema: Schema.Schema<A, O, R2>
+  ): Guard<I, A, E | ParseResult.ParseError, R | R2>
+}
+```
+
+Added in v1.0.0
+
+## encode
+
+**Signature**
+
+```ts
+export declare const encode: {
+  <O, A, R2>(
+    schema: Schema.Schema<O, A, R2>
+  ): <I, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, A, ParseResult.ParseError | E, R2 | R>
+  <I, O, E, R, A, R2>(
+    guard: GuardInput<I, O, E, R>,
+    schema: Schema.Schema<O, A, R2>
+  ): Guard<I, A, ParseResult.ParseError | E, R | R2>
+}
+```
+
+Added in v1.0.0
+
 ## filter
 
 **Signature**
@@ -257,12 +347,56 @@ export declare const filterMap: {
 
 Added in v1.0.0
 
+## fromSchemaDecode
+
+**Signature**
+
+```ts
+export declare function fromSchemaDecode<A, I, R>(
+  schema: Schema.Schema<A, I, R>
+): Guard<I, A, ParseResult.ParseError, R>
+```
+
+Added in v1.0.0
+
+## fromSchemaEncode
+
+**Signature**
+
+```ts
+export declare function fromSchemaEncode<A, I, R>(
+  schema: Schema.Schema<A, I, R>
+): Guard<A, I, ParseResult.ParseError, R>
+```
+
+Added in v1.0.0
+
 ## getGuard
 
 **Signature**
 
 ```ts
 export declare const getGuard: <I, O, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, O, E, R>
+```
+
+Added in v1.0.0
+
+## let
+
+**Signature**
+
+```ts
+export declare const let: {
+  <K extends PropertyKey, B>(
+    key: K,
+    value: B
+  ): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { [k in K]: B }, E, R>
+  <I, O, E, R, K extends PropertyKey, B>(
+    guard: Guard<I, O, E, R>,
+    key: K,
+    value: B
+  ): Guard<I, O & { [k in K]: B }, E, R>
+}
 ```
 
 Added in v1.0.0

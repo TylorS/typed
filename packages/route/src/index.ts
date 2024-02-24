@@ -55,15 +55,17 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
       : Option.some({ ...match.params } as unknown as Path.ParamsOf<P>)
   }
 
+  let guard_: Guard.Guard<string, Path.ParamsOf<P>> | undefined
+
   return {
     match,
     path,
     params,
     make: ptr.compile(path, params.make) as Route<P>["make"],
     concat: (route, overrides) =>
-      fromPath(Path.pathJoin(path, route.path), overrides ?? mergeRouteOptions(params, route.params)),
+      fromPath(Path.pathJoin(path, route.path), overrides ?? mergeFromPathParams(params, route.params)),
     asGuard() {
-      return (path: string) => Effect.sync(() => match(path))
+      return guard_ || (guard_ = (path: string) => Effect.succeed(match(path)))
     },
     pipe(this: Route<P>) {
       return Pipeable.pipeArguments(this, arguments)
@@ -71,7 +73,7 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
   } as const
 }
 
-function mergeRouteOptions(options1: FromPathParams | undefined, options2: FromPathParams | undefined) {
+function mergeFromPathParams(options1: FromPathParams | undefined, options2: FromPathParams | undefined) {
   if (options1 === undefined) {
     return options2
   } else if (options2 === undefined) {

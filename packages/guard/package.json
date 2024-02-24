@@ -39,7 +39,8 @@
   "author": "Typed contributors",
   "license": "MIT",
   "sideEffects": [],
-  "dependencies": {},
-  "peerDependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@effect/schema": "0.63.0",
+    "effect": "^2.4.0"
+  }
 }
