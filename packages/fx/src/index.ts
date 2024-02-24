@@ -40,12 +40,6 @@ export * as Form from "./Form.js"
 export * as FormEntry from "./FormEntry.js"
 
 /**
- * [Guard documentation](https://tylors.github.io/typed/fx/Guard.ts.html)
- * @since 1.18.0
- */
-export * as Guard from "./Guard.js"
-
-/**
  * [Idle documentation](https://tylors.github.io/typed/fx/Idle.ts.html)
  * @since 1.18.0
  */
