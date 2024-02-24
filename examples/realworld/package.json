@@ -1,0 +1,49 @@
+{
+  "name": "@typed/example-realworld",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "build": "vite --config ./vite.config.mts build src",
+    "preview": "vite --config ./vite.config.mts preview src",
+    "start": "vite --config ./vite.config.mts serve src"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "dependencies": {
+    "@effect/platform": "^0.46.1",
+    "@effect/platform-node": "^0.44.9",
+    "@effect/schema": "0.63.0",
+    "@sqlfx/pg": "^0.45.0",
+    "@sqlfx/sql": "^0.45.0",
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/navigation": "workspace:*",
+    "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/template": "workspace:*",
+    "@typed/ui": "workspace:*",
+    "effect": "2.4.0",
+    "postgres": "^3.4.3"
+  },
+  "devDependencies": {
+    "@giacomorebonato/vavite": "^0.0.4",
+    "mock-storage": "^1.1.0",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "terser": "^5.28.1",
+    "tsx": "^4.7.1",
+    "vite": "^5.1.4",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-html": "^3.2.2",
+    "vite-plugin-top-level-await": "^1.4.1",
+    "vite-tsconfig-paths": "^4.3.1"
+  }
+}

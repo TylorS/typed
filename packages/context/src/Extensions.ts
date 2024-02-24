@@ -42,6 +42,14 @@ export function Tagged<S>(id?: unknown) {
 }
 
 /**
+ * @since 1.0.0
+ */
+export namespace Tagged {
+  export type Service<T> = T extends Actions<any, infer S> ? S : T extends Provision<any, infer S> ? S : never
+  export type Identifier<T> = T extends Actions<infer I, any> ? I : T extends Provision<infer I, any> ? I : never
+}
+
+/**
  * Create a Tagged service that can be utilized from the Effect Context.
  * @since 1.0.0
  * @category constructors

@@ -236,6 +236,85 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1(typescript@5.3.3)(vite@5.1.4)
 
+  examples/realworld:
+    dependencies:
+      '@effect/platform':
+        specifier: ^0.46.1
+        version: 0.46.2(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/platform-node':
+        specifier: ^0.44.9
+        version: 0.44.10(@effect/platform@0.46.2)(effect@2.4.0)
+      '@effect/schema':
+        specifier: 0.63.0
+        version: 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      '@sqlfx/pg':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
+      '@sqlfx/sql':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../../packages/context/dist
+      '@typed/dom':
+        specifier: workspace:*
+        version: link:../../packages/dom/dist
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../../packages/fx/dist
+      '@typed/navigation':
+        specifier: workspace:*
+        version: link:../../packages/navigation/dist
+      '@typed/route':
+        specifier: workspace:*
+        version: link:../../packages/route/dist
+      '@typed/router':
+        specifier: workspace:*
+        version: link:../../packages/router/dist
+      '@typed/template':
+        specifier: workspace:*
+        version: link:../../packages/template/dist
+      '@typed/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui/dist
+      effect:
+        specifier: 2.4.0
+        version: 2.4.0
+      postgres:
+        specifier: ^3.4.3
+        version: 3.4.3
+    devDependencies:
+      '@giacomorebonato/vavite':
+        specifier: ^0.0.4
+        version: 0.0.4(vite@5.1.4)
+      mock-storage:
+        specifier: ^1.1.0
+        version: 1.1.0
+      rollup-plugin-visualizer:
+        specifier: ^5.12.0
+        version: 5.12.0
+      terser:
+        specifier: ^5.28.1
+        version: 5.28.1
+      tsx:
+        specifier: ^4.7.1
+        version: 4.7.1
+      vite:
+        specifier: ^5.1.4
+        version: 5.1.4(@types/node@20.11.24)(terser@5.28.1)
+      vite-plugin-compression:
+        specifier: ^0.5.1
+        version: 0.5.1(vite@5.1.4)
+      vite-plugin-html:
+        specifier: ^3.2.2
+        version: 3.2.2(vite@5.1.4)
+      vite-plugin-top-level-await:
+        specifier: ^1.4.1
+        version: 1.4.1(vite@5.1.4)
+      vite-tsconfig-paths:
+        specifier: ^4.3.1
+        version: 4.3.1(typescript@5.3.3)(vite@5.1.4)
+
   examples/simple-ssr:
     dependencies:
       '@effect/platform':
@@ -2471,7 +2550,7 @@ packages:
       '@effect/platform': ^0.46.2
       effect: ^2.4.0
     dependencies:
-      '@effect/platform': 0.46.2(@effect/schema@0.63.1)(effect@2.4.0)
+      '@effect/platform': 0.46.2(@effect/schema@0.63.0)(effect@2.4.0)
       effect: 2.4.0
       multipasta: 0.1.21
 
@@ -2481,10 +2560,22 @@ packages:
       '@effect/platform': ^0.46.2
       effect: ^2.4.0
     dependencies:
-      '@effect/platform': 0.46.2(@effect/schema@0.63.1)(effect@2.4.0)
+      '@effect/platform': 0.46.2(@effect/schema@0.63.0)(effect@2.4.0)
       '@effect/platform-node-shared': 0.2.2(@effect/platform@0.46.2)(effect@2.4.0)
       effect: 2.4.0
       mime: 3.0.0
+
+  /@effect/platform@0.46.2(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-DR/YBFxT7Ds7+U2/DeDupOqzYe6/3OJfRfDa5Ugne2Z/IHSxjYQ8nHxka4p4s19/SqWmT3ESWGyyK50rm1p5hQ==}
+    peerDependencies:
+      '@effect/schema': ^0.63.1
+      effect: ^2.4.0
+    dependencies:
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      effect: 2.4.0
+      find-my-way-ts: 0.1.1
+      multipasta: 0.1.21
+      path-browserify: 1.0.1
 
   /@effect/platform@0.46.2(@effect/schema@0.63.1)(effect@2.4.0):
     resolution: {integrity: sha512-DR/YBFxT7Ds7+U2/DeDupOqzYe6/3OJfRfDa5Ugne2Z/IHSxjYQ8nHxka4p4s19/SqWmT3ESWGyyK50rm1p5hQ==}
@@ -2497,6 +2588,7 @@ packages:
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
+    dev: false
 
   /@effect/schema@0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0):
     resolution: {integrity: sha512-cfEyHLXPdzSKzJU/yYrPjFd0iVHPydh+NT0sgTe4bzXbcvOsKZuvQ86cAAwXN7lxY0N5cPes9ACxUxTdkEaNlw==}
@@ -2508,6 +2600,15 @@ packages:
       fast-check: 3.15.0
     dev: true
 
+  /@effect/schema@0.63.0(effect@2.4.0)(fast-check@3.15.1):
+    resolution: {integrity: sha512-z+QTqCUexkh/qyEz5WMHVV/dDLr5jN2eOMUsXzgxzmtBFiBy1L8xunbt+/JgGBhPLOBqLzDysLlnL56edzTNzQ==}
+    peerDependencies:
+      effect: ^2.4.0
+      fast-check: ^3.13.2
+    dependencies:
+      effect: 2.4.0
+      fast-check: 3.15.1
+
   /@effect/schema@0.63.1(effect@2.4.0)(fast-check@3.15.1):
     resolution: {integrity: sha512-Vs7g72qbPTLWXZ4jcaPzprfbY1ODZxwqfOTrMhwvSUc6kgt1i2KP88LxFy7dFLJasx3CYPz8MTvP0x8mbBCftw==}
     peerDependencies:
@@ -2516,6 +2617,7 @@ packages:
     dependencies:
       effect: 2.4.0
       fast-check: 3.15.1
+    dev: false
 
   /@effect/typeclass@0.23.0(effect@2.4.0):
     resolution: {integrity: sha512-AqQh9ZkHEx0RP8PBccXxSAe+yDenXcVivzFcgeboW7dRw9Rp6GCKDssEoNySh3kC0uAXweVh2Ycz8Ynbax22Ug==}
@@ -4195,6 +4297,28 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
+  /@sqlfx/pg@0.45.0(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-OhuCNfLcUlDnuOWtRSY8BVQcs9NhCmku8jeZLwaz0BUeve5sHYkxkLqIX8IVZKAPVpCmovUY7Ow06b8mnZ+n+A==}
+    peerDependencies:
+      effect: ^2.4.0
+    dependencies:
+      '@sqlfx/sql': 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
+      effect: 2.4.0
+      postgres: 3.4.3
+    transitivePeerDependencies:
+      - '@effect/schema'
+    dev: false
+
+  /@sqlfx/sql@0.45.0(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-sBgGpAGd8TYcK1tf+Anq0bERgVxZxJ0mWyreGmAFlkSVhMQCLMYFCnRKlTN+kxLZng8o4l2kkeZESmlqBJNYqQ==}
+    peerDependencies:
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
+    dependencies:
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      effect: 2.4.0
+    dev: false
+
   /@storybook/addon-actions@7.6.17:
     resolution: {integrity: sha512-TBphs4v6LRfyTpFo/WINF0TkMaE3rrNog7wW5mbz6n0j8o53kDN4o9ZEcygSL5zQX43CAaghQTeDCss7ueG7ZQ==}
     dependencies:
@@ -5308,7 +5432,7 @@ packages:
   /@types/node-fetch@2.6.11:
     resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
     dependencies:
-      '@types/node': 18.19.21
+      '@types/node': 20.11.24
       form-data: 4.0.0
 
   /@types/node@12.20.55:
@@ -10703,6 +10827,11 @@ packages:
       nanoid: 3.3.7
       picocolors: 1.0.0
       source-map-js: 1.0.2
+
+  /postgres@3.4.3:
+    resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
+    engines: {node: '>=12'}
+    dev: false
 
   /precinct@8.3.1:
     resolution: {integrity: sha512-pVppfMWLp2wF68rwHqBIpPBYY8Kd12lDhk8LVQzOwqllifVR15qNFyod43YLyFpurKRZQKnE7E4pofAagDOm2Q==}

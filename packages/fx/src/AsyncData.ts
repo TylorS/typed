@@ -445,3 +445,9 @@ export const getFailure = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filt
  */
 export const getSuccess = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Filtered<A, never, R> =>
   RefSubject.filterMap(ref, AsyncData.getSuccess)
+
+/**
+ * @since 1.20.0
+ */
+export const isSuccess = <A, E, R>(ref: RefAsyncData<A, E, R>): RefSubject.Computed<boolean, never, R> =>
+  RefSubject.map(ref, AsyncData.isSuccess)
