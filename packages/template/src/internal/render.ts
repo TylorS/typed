@@ -208,6 +208,7 @@ const RenderPartMap: RenderPartMap = {
   },
   "node": (templatePart, node, ctx) => {
     const makeHydrateContext = ctx.makeHydrateContext
+    const renderable = ctx.values[templatePart.index]
     const part = makeRenderNodePart(
       templatePart.index,
       node as HTMLElement | SVGElement,
@@ -216,10 +217,19 @@ const RenderPartMap: RenderPartMap = {
       !!makeHydrateContext
     )
 
+    if (isDirective(renderable)) {
+      const effect = Effect.zipRight(renderable(part), ctx.refCounter.release(templatePart.index))
+      if (makeHydrateContext) {
+        return Effect.provideService(effect, HydrateContext, makeHydrateContext(templatePart.index))
+      } else {
+        return effect
+      }
+    }
+
     ctx.expected++
 
     const handle = handlePart(
-      ctx.values[templatePart.index],
+      renderable,
       Sink.make(ctx.onCause, (value) => Effect.zipRight(part.update(value), ctx.refCounter.release(templatePart.index)))
     )
 
@@ -492,6 +502,7 @@ const RenderPartMap: RenderPartMap = {
     return effects
   },
   "text-part": (templatePart, node, ctx) => {
+    const renderable = ctx.values[templatePart.index]
     const part = TextPartImpl.browser(
       ctx.document,
       templatePart.index,
@@ -499,10 +510,14 @@ const RenderPartMap: RenderPartMap = {
       ctx.renderContext
     )
 
+    if (isDirective(renderable)) {
+      return Effect.zipRight(renderable(part), ctx.refCounter.release(templatePart.index))
+    }
+
     ctx.expected++
 
     return handlePart(
-      ctx.values[templatePart.index],
+      renderable,
       Sink.make(
         ctx.onCause,
         (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
@@ -735,6 +750,8 @@ function removeChildren(where: HTMLElement, previous: Rendered) {
 }
 
 function replaceChildren(where: HTMLElement, wire: Rendered) {
+  console.log("replaceChildren", wire)
+
   where.replaceChildren(...getNodes(wire))
 }
 

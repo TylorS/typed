@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "build/test",
+    "declarationDir": "build/test-dts",
+    "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
+    "rootDir": "test",
+    "types": [
+      "vitest/globals"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "test/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    }
+  ]
+}

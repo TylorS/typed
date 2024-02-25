@@ -1,0 +1,36 @@
+{
+  "name": "@typed/example-counter",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "build": "vite --config ./vite.config.ts build src",
+    "preview": "vite --config ./vite.config.ts preview src",
+    "start": "vite --config ./vite.config.ts serve src"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "dependencies": {
+    "@typed/context": "workspace:*",
+    "@typed/dom": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "2.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.58",
+    "@types/react-dom": "^18.2.19",
+    "vite": "^5.1.4",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-tsconfig-paths": "^4.3.1"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/tsbuildinfo/tsconfig.tsbuildinfo",
+    "jsx": "react-jsx"
+  },
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    },
+    {
+      "path": "./tsconfig.examples.json"
+    }
+  ]
+}

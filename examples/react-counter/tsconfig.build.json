@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "../../tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
+    "rootDir": "src",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/index.tsx"
+  ],
+  "references": [
+    {
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/dom"
+    },
+    {
+      "path": "../../packages/fx"
+    },
+    {
+      "path": "../../packages/template"
+    }
+  ]
+}
