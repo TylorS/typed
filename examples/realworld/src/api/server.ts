@@ -1,7 +1,7 @@
+import * as App from "@/application"
+import { JwtToken } from "@/domain"
 import { Effect, Secret } from "effect"
 import { RouterBuilder } from "effect-http"
-import * as App from "../application/services"
-import { JwtToken } from "../domain"
 import { RealworldApiSpec } from "./spec"
 
 export const RealworldApiServer = RouterBuilder.make(RealworldApiSpec, { enableDocs: true }).pipe(

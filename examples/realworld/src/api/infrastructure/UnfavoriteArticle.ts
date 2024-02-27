@@ -1,0 +1,10 @@
+import { UnfavoriteArticle } from "@/application"
+import type * as Context from "@typed/context"
+import { Effect } from "effect"
+
+// eslint-disable-next-line require-yield
+export const UnfavoriteArticleLive = UnfavoriteArticle.layer(Effect.gen(function*(_) {
+  const create: Context.Tagged.Service<typeof UnfavoriteArticle> = () => Effect.dieMessage("Not implemented")
+
+  return create
+}))

@@ -1,6 +1,6 @@
 import { html } from "@typed/template"
 import { Link } from "@typed/ui"
-import { homeRoute, loginRoute, registerRoute } from "../routes"
+import { homeRoute, loginRoute, registerRoute } from "@/routes"
 import { NavLink } from "./NavLink"
 
 export const UnauthenticatedHeader = html`<nav class="navbar navbar-light">

@@ -1,8 +1,8 @@
+import type { ArticleSlug, JwtToken } from "@/domain"
+import { Article } from "@/domain"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
-import type { ArticleSlug, JwtToken } from "../../domain"
-import { Article } from "../../domain"
 
 export const UpdateArticleInput = Article.pipe(
   Schema.pick("title", "description", "body", "tagList")

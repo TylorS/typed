@@ -136,7 +136,7 @@ describe.concurrent("Context", () => {
     })
 
     it.concurrent("allows input values to be mapped over", async () => {
-      const subject = Subject.tagged<never, number>()((_) => class TestSubject extends _("Test") {})
+      const subject = Subject.tagged<number>()((_) => class TestSubject extends _("Test") {})
       const effect = Fx.toReadonlyArray(subject)
       const sink = subject.pipe(Sink.map((s: string) => s.length))
 

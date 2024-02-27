@@ -1,7 +1,7 @@
+import { CurrentUserImage, CurrentUsername } from "@/application/CurrentUser"
+import { editorRoute, homeRoute, profileRoute, settingsRoute } from "@/routes"
 import * as Fx from "@typed/fx"
 import { html } from "@typed/template"
-import { CurrentUserImage, CurrentUsername } from "../../application/services/CurrentUser"
-import { editorRoute, homeRoute, profileRoute, settingsRoute } from "../routes"
 import { NavLink } from "./NavLink"
 
 export const AuthenticatedHeader = html`

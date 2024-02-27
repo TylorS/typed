@@ -1,7 +1,7 @@
+import { type Article } from "@/domain"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
-import { type Article } from "../../domain"
 
 export const GetFeedInput = Schema.struct({
   limit: Schema.optional(Schema.number, { exact: true, nullable: true, as: "Option" }),

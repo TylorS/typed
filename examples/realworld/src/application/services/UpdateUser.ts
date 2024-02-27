@@ -1,8 +1,8 @@
+import { Bio, Email, ImageUrl } from "@/domain/User"
+import type { JwtToken, User } from "@/domain/User"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
-import { Bio, Email, ImageUrl } from "../../domain/User"
-import type { JwtToken, User } from "../../domain/User"
 
 export const UpdateUserInput = Schema.struct({
   email: Email,

@@ -247,12 +247,18 @@ importers:
       '@effect/schema':
         specifier: 0.63.0
         version: 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      '@electric-sql/pglite':
+        specifier: 0.0.1-alpha.2
+        version: 0.0.1-alpha.2
       '@sqlfx/pg':
         specifier: ^0.45.0
         version: 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
       '@sqlfx/sql':
         specifier: ^0.45.0
         version: 0.45.0(@effect/schema@0.63.0)(effect@2.4.0)
+      '@typed/async-data':
+        specifier: workspace:*
+        version: link:../../packages/async-data/dist
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
@@ -262,9 +268,15 @@ importers:
       '@typed/fx':
         specifier: workspace:*
         version: link:../../packages/fx/dist
+      '@typed/guard':
+        specifier: workspace:*
+        version: link:../../packages/guard/dist
       '@typed/navigation':
         specifier: workspace:*
         version: link:../../packages/navigation/dist
+      '@typed/path':
+        specifier: workspace:*
+        version: link:../../packages/path/dist
       '@typed/route':
         specifier: workspace:*
         version: link:../../packages/route/dist
@@ -280,9 +292,21 @@ importers:
       effect:
         specifier: 2.4.0
         version: 2.4.0
+      effect-http:
+        specifier: ^0.55.1
+        version: 0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0)
+      effect-http-node:
+        specifier: ^0.3.1
+        version: 0.3.1(@effect/platform-node@0.44.9)(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0)
+      path-to-regexp:
+        specifier: ^6.2.1
+        version: 6.2.1
       postgres:
         specifier: ^3.4.3
         version: 3.4.3
+      ts-toolbelt:
+        specifier: ^9.6.0
+        version: 9.6.0
     devDependencies:
       '@giacomorebonato/vavite':
         specifier: ^0.0.4
@@ -2625,6 +2649,10 @@ packages:
       effect: ^2.4.0
     dependencies:
       effect: 2.4.0
+    dev: false
+
+  /@electric-sql/pglite@0.0.1-alpha.2:
+    resolution: {integrity: sha512-oXYIDWlsifzaOX6BbvIc5joMJpmys9S3z+1jQHJ/1K9Mas5jpbou3X0ACeT9YbwjSoBov6sze+k35AK+Mz3sxg==}
     dev: false
 
   /@emotion/use-insertion-effect-with-fallbacks@1.0.1(react@18.2.0):
@@ -7500,6 +7528,36 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
+  /effect-http-node@0.3.1(@effect/platform-node@0.44.9)(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0):
+    resolution: {integrity: sha512-dWEG/0oqLhb7KyioTx1xqb8/GjCnc/RGmOAbokgA4voLF6MqQXMJGMw2whusAR+apaPTNduvCgZBiZ0pO1XfXw==}
+    peerDependencies:
+      '@effect/platform': ^0.46.1
+      '@effect/platform-node': ^0.44.9
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
+      effect-http: ^0.55.1
+    dependencies:
+      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/platform-node': 0.44.9(@effect/platform@0.46.1)(effect@2.4.0)
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      effect: 2.4.0
+      effect-http: 0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0)
+      swagger-ui-dist: 5.11.8
+    dev: false
+
+  /effect-http@0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-mjvlwbnvx9zinEhyRhWxDwp/kEigR4Di2pTbBUy5Kssjp9Wy6pXQWPPz8UEHe7I6uPJ8EPGj2R91ICfkgEzZWA==}
+    peerDependencies:
+      '@effect/platform': ^0.46.1
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
+    dependencies:
+      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      effect: 2.4.0
+      schema-openapi: 0.31.2(@effect/schema@0.63.0)(effect@2.4.0)
+    dev: false
+
   /effect@2.0.0-next.62:
     resolution: {integrity: sha512-fJhLzf5oouL4WZP314ZJgZz5Bel7OHTY+YFxO06sW1mSvqJz0s28y7jDHr5zhtTNM1YRvzbeLYUYfNaJYKqx1A==}
     dev: true
@@ -11585,6 +11643,16 @@ packages:
     dependencies:
       loose-envify: 1.4.0
 
+  /schema-openapi@0.31.2(@effect/schema@0.63.0)(effect@2.4.0):
+    resolution: {integrity: sha512-l6xAEVm72rB+SadIMoEMqnm/jJ6VKbBn5xbNv/rO31rX/zg4JV3oKU3926Q2WMK0L5faB+eSc36lcNDTBTsgrg==}
+    peerDependencies:
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
+    dependencies:
+      '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
+      effect: 2.4.0
+    dev: false
+
   /semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
@@ -12106,6 +12174,10 @@ packages:
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  /swagger-ui-dist@5.11.8:
+    resolution: {integrity: sha512-IfPtCPdf6opT5HXrzHO4kjL1eco0/8xJCtcs7ilhKuzatrpF2j9s+3QbOag6G3mVFKf+g+Ca5UG9DquVUs2obA==}
+    dev: false
 
   /synchronous-promise@2.0.17:
     resolution: {integrity: sha512-AsS729u2RHUfEra9xJrE39peJcc2stq2+poBXX8bcM08Y6g9j/i/PUzwNQqkaJde7Ntg1TO7bSREbR5sdosQ+g==}

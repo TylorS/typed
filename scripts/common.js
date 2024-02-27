@@ -22,7 +22,7 @@ exports.readAllExampleNames = async function readAllExampleNames() {
   return dir
     .filter((_) => _.isDirectory())
     .map((_) => _.name)
-    .filter((_) => _ !== 'storybook')
+    .filter((_) => _ !== 'storybook' && _ !== 'realworld')
 }
 
 exports.readAllPackages = async function readAllPackages() { 

@@ -1,7 +1,7 @@
+import type { User } from "@/domain"
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import * as RefAsyncData from "@typed/fx/AsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { User } from "../../domain"
 
 export const CurrentUser = RefSubject.tagged<AsyncData.AsyncData<User>>()((_) =>
   class CurrentUser extends _("auth/CurrentUser") {}

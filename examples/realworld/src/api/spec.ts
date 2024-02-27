@@ -1,7 +1,7 @@
+import * as App from "@/application"
+import * as Domain from "@/domain"
 import { Schema } from "@effect/schema"
 import { Api } from "effect-http"
-import * as App from "../application/services"
-import * as Domain from "../domain"
 import * as Routes from "./routes"
 
 const jwtSecurityScheme = {

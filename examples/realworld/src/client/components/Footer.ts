@@ -1,6 +1,6 @@
 import { html } from "@typed/template"
 import { Link } from "@typed/ui"
-import { homeRoute } from "../routes"
+import { homeRoute } from "@/routes"
 
 export const Footer = html`<footer>
   <div class="container">

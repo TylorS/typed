@@ -93,7 +93,7 @@ type ParseSegments_<T extends ReadonlyArray<string>, Count extends number> = T e
   T extends readonly [infer Head] ? [ParseSegment<Head, Count>]
   : []
 
-type ParseSegment<T, Count extends number> = [ParseExactSegment<T, Count>] extends [never] ?
+export type ParseSegment<T, Count extends number> = [ParseExactSegment<T, Count>] extends [never] ?
   ParseSegmentWithImplicitPrefixAndSuffix<T, Count>
   : ParseExactSegment<T, Count>
 

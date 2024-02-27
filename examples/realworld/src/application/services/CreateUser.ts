@@ -1,9 +1,9 @@
+import { Password } from "@/domain"
+import { Email, Username } from "@/domain/User"
+import type { User } from "@/domain/User"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
-import { Password } from "../../domain"
-import { Email, Username } from "../../domain/User"
-import type { User } from "../../domain/User"
 import type { ExistingEmailError } from "./errors"
 
 export const CreateUserInput = Schema.struct({

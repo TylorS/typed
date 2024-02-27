@@ -54,18 +54,6 @@
     },
     {
       "path": "packages/wire"
-    },
-    {
-      "path": "examples/counter"
-    },
-    {
-      "path": "examples/fx-tracing"
-    },
-    {
-      "path": "examples/simple-ssr"
-    },
-    {
-      "path": "examples/todomvc"
     }
   ]
 }

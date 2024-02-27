@@ -1,7 +1,7 @@
+import { type Article, ArticleTag, Username } from "@/domain"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
-import { type Article, ArticleTag, Username } from "../../domain"
 
 export const GetArticlesInput = Schema.struct({
   tag: Schema.optional(ArticleTag, { exact: true, nullable: true, as: "Option" }),

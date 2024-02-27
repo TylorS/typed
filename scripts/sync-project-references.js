@@ -9,7 +9,7 @@ main().catch((err) => {
 })
 
 async function main() {
-  const packages = [await readAllPackages(), await readAllExamples()].flat()
+  const packages = await readAllPackages()
 
   await Promise.all([
     updateRootReferences(packages),

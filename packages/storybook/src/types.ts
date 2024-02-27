@@ -124,7 +124,7 @@ export type StoryObj<Args, T extends Meta<any> = never> = Types.Simplify<
     "render"
   >
   & {
-    readonly render: (
+    render: (
       args: Args,
       ctx: Types.Simplify<StoryContext<typeof args> & { readonly component: T["component"] }>
     ) => TypedRenderer["storyResult"]

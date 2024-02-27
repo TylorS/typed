@@ -1,6 +1,6 @@
+import type { Email, JwtToken, User, Username } from "@/domain"
 import * as Data from "effect/Data"
 import type { Option } from "effect/Option"
-import type { Email, JwtToken, User, Username } from "../../domain"
 
 export class InvalidTokenError extends Data.TaggedError("InvalidTokenError") {
   constructor(readonly token: JwtToken) {

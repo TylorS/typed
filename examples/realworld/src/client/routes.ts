@@ -1,6 +1,6 @@
+import { ArticleSlug, Username } from "@/domain"
 import * as Schema from "@effect/schema/Schema"
 import * as Route from "@typed/route"
-import { ArticleSlug, Username } from "../domain"
 
 export const homeRoute = Route.fromPath("/", { match: { end: true } }) // Ensure only matches exact path
 
