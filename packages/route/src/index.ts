@@ -10,7 +10,7 @@ import * as ptr from "path-to-regexp"
 /**
  * @since 1.0.0
  */
-export interface Route<P extends string> extends Pipeable.Pipeable, Guard.AsGuard<string, Path.ParamsOf<P>> {
+export interface Route<in out P extends string> extends Pipeable.Pipeable, Guard.AsGuard<string, Path.ParamsOf<P>> {
   readonly path: P
 
   readonly params: FromPathParams
@@ -24,7 +24,7 @@ export interface Route<P extends string> extends Pipeable.Pipeable, Guard.AsGuar
   readonly concat: <P2 extends string>(
     route: Route<P2>,
     params?: FromPathParams
-  ) => Route<Path.PathJoin<readonly [P, P2]>>
+  ) => Route<Path.PathJoin<[P, P2]>>
 }
 
 /**
@@ -57,20 +57,25 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
 
   let guard_: Guard.Guard<string, Path.ParamsOf<P>> | undefined
 
-  return {
+  const route = {
     match,
     path,
     params,
     make: ptr.compile(path, params.make) as Route<P>["make"],
-    concat: (route, overrides) =>
-      fromPath(Path.pathJoin(path, route.path), overrides ?? mergeFromPathParams(params, route.params)),
+    concat: <P2 extends string>(route: Route<P2>, overrides?: FromPathParams) =>
+      fromPath<Path.PathJoin<[P, P2]>>(
+        Path.pathJoin(path, route.path),
+        overrides ?? mergeFromPathParams(params, route.params)
+      ),
     asGuard() {
       return guard_ || (guard_ = (path: string) => Effect.succeed(match(path)))
     },
     pipe(this: Route<P>) {
       return Pipeable.pipeArguments(this, arguments)
     }
-  } as const
+  } as Route<P>
+
+  return route
 }
 
 function mergeFromPathParams(options1: FromPathParams | undefined, options2: FromPathParams | undefined) {

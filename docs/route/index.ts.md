@@ -42,7 +42,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Route<P extends string> extends Pipeable.Pipeable, Guard.AsGuard<string, Path.ParamsOf<P>> {
+export interface Route<in out P extends string> extends Pipeable.Pipeable, Guard.AsGuard<string, Path.ParamsOf<P>> {
   readonly path: P
 
   readonly params: FromPathParams
@@ -53,10 +53,7 @@ export interface Route<P extends string> extends Pipeable.Pipeable, Guard.AsGuar
     ...params: [keyof Params] extends [never] ? readonly [{}?] : readonly [Params]
   ) => Path.Interpolate<P, Params>
 
-  readonly concat: <P2 extends string>(
-    route: Route<P2>,
-    params?: FromPathParams
-  ) => Route<Path.PathJoin<readonly [P, P2]>>
+  readonly concat: <P2 extends string>(route: Route<P2>, params?: FromPathParams) => Route<Path.PathJoin<[P, P2]>>
 }
 ```
 
