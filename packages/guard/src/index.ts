@@ -175,11 +175,11 @@ export const filter: {
 export function any<const GS extends Readonly<Record<string, GuardInput<any, any, any, any>>>>(
   guards: GS
 ): Guard<AnyInput<GS>, AnyOutput<GS>, Guard.Error<GS[keyof GS]>, Guard.Context<GS[keyof GS]>> {
-  const entries = Object.entries(guards)
+  const entries = Object.entries(guards).map(([k, v]) => [k, getGuard(v)] as const)
   return (i: AnyInput<GS>) =>
     Effect.gen(function*(_) {
       for (const [_tag, guard] of entries) {
-        const match = yield* _(getGuard(guard)(i))
+        const match = yield* _(guard(i))
         if (Option.isSome(match)) {
           return Option.some({ _tag, value: match.value } as AnyOutput<GS>)
         }
