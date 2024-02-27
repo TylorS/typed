@@ -19,7 +19,7 @@ import { UnfollowUserLive } from "./UnfollowUser"
 import { UpdateArticleLive } from "./UpdateArticle"
 import { UpdateUserLive } from "./UpdateUser"
 
-export const ApiLive = Layer.mergeAll(
+export const ClientLive = Layer.mergeAll(
   AddCommentLive,
   CreateArticleLive,
   CreateUserLive,

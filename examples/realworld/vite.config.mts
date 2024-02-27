@@ -1,8 +1,8 @@
-import { visualizer } from "rollup-plugin-visualizer"
+import { join } from "path"
 import { defineConfig } from "vite"
 import compression from "vite-plugin-compression"
-import { createHtmlPlugin } from "vite-plugin-html"
 import topLevelAwait from "vite-plugin-top-level-await"
+import tsconfigPaths from "vite-tsconfig-paths"
 
 const exclusions = ["fx", "router", "template", "ui"].flatMap((pkg) => [
   `@typed/${pkg}`,
@@ -17,20 +17,18 @@ export default defineConfig({
     minify: true,
     cssMinify: true,
     manifest: true,
-    sourcemap: true
+    sourcemap: true,
+    ssr: true,
+    ssrManifest: true,
+    rollupOptions: {
+      input: {
+        server: "src/server.ts"
+      }
+    }
   },
   plugins: [
     topLevelAwait({}),
-    createHtmlPlugin({
-      minify: true,
-      entry: "index.ts",
-      template: "index.html",
-      viteNext: true
-    }),
-    compression(),
-    visualizer({
-      gzipSize: true,
-      brotliSize: true
-    })
+    tsconfigPaths({ projects: [join(import.meta.dirname, "./tsconfig.build.json")] }),
+    compression()
   ]
 })

@@ -750,8 +750,6 @@ function removeChildren(where: HTMLElement, previous: Rendered) {
 }
 
 function replaceChildren(where: HTMLElement, wire: Rendered) {
-  console.log("replaceChildren", wire)
-
   where.replaceChildren(...getNodes(wire))
 }
 

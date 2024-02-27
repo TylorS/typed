@@ -7,15 +7,14 @@
     "declarationDir": "build/dts",
     "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
     "rootDir": "src",
-    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./src/*"
+        "./examples/realworld/src/*"
       ]
     }
   },
   "include": [
-    "src/**/*.ts"
+    "src"
   ],
   "references": [
     {

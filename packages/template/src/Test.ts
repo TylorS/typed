@@ -21,7 +21,7 @@ import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
 import { renderToHtmlString, serverLayer } from "./Html.js"
 import { hydrate, hydrateLayer } from "./Hydrate.js"
-import { adjustTime, isCommentWithValue } from "./internal/utils.js"
+import { adjustTime } from "./internal/utils.js"
 import { render, renderLayer } from "./Render.js"
 import type * as RenderContext from "./RenderContext.js"
 import type { RenderEvent } from "./RenderEvent.js"
@@ -215,18 +215,7 @@ export function testHydrate<R, E, Elements>(
     body.innerHTML = html
 
     const rendered = Array.from(body.childNodes)
-
-    // Remove the typed-start
-    if (isCommentWithValue(rendered[0], "typed-start")) {
-      rendered.shift()
-    }
-    // Remove the typed-end
-    if (isCommentWithValue(rendered[rendered.length - 1], "typed-end")) {
-      rendered.pop()
-    }
-
     const elements = f(rendered.length === 1 ? rendered[0] : rendered, window)
-
     const elementRef = yield* _(ElementRef.make())
     const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(

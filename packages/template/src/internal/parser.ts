@@ -346,7 +346,7 @@ class ParserImpl implements Parser {
     const attributes = this.parseAttributes()
 
     this.path.push()
-    const children = this.parseTextChildren()
+    const children = this.parseTextChildren(tagName)
     this.path.pop()
 
     return new Template.TextOnlyElement(tagName, attributes, children || [])
@@ -516,11 +516,11 @@ class ParserImpl implements Parser {
     }
   }
 
-  private parseTextChildren(): Array<Template.Text> | null {
-    return this.parseArray(() => this.parseTextChild())
+  private parseTextChildren(tagName: string): Array<Template.Text> | null {
+    return this.parseArray(() => this.parseTextChild(tagName))
   }
 
-  private parseTextChild(): LoopDecision<Array<Template.Text>> {
+  private parseTextChild(tagName: string): LoopDecision<Array<Template.Text>> {
     const [parsed, matched] = this.parseTextUntilMany(textChildMatches)
     const text = parsed.trim()
 
@@ -533,7 +533,12 @@ class ParserImpl implements Parser {
 
         return text === "" ? Continue([part]) : Continue([new Template.TextNode(text), part])
       }
-      case "elementClose":
+      case "elementClose": {
+        this.consumeClosingTag(tagName)
+        return Break(
+          text ? [new Template.TextNode(text)] : undefined
+        )
+      }
       case "elementOpen": // In this case we make the assumption that you forgot to close this element
         return Break(
           text ? [new Template.TextNode(text)] : undefined

@@ -262,9 +262,15 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
+      '@typed/core':
+        specifier: workspace:*
+        version: link:../../packages/core/dist
       '@typed/dom':
         specifier: workspace:*
         version: link:../../packages/dom/dist
+      '@typed/environment':
+        specifier: workspace:*
+        version: link:../../packages/environment/dist
       '@typed/fx':
         specifier: workspace:*
         version: link:../../packages/fx/dist

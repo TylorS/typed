@@ -53,7 +53,6 @@ export async function renderToCanvas(
   showMain()
 
   return () => {
-    console.log("interrupting")
     return Effect.runFork(fiber.interruptAsFork(FiberId.none))
   }
 }

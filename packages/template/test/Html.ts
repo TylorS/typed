@@ -283,15 +283,13 @@ async function testHtmlChunks(
   template: Fx.Fx<RenderEvent, never, RenderTemplate | RenderContext.RenderContext | Scope>,
   expected: Array<string>
 ): Promise<void> {
-  const actual = (
-    await template.pipe(
-      renderToHtml,
-      Fx.map((s) => pipe(s, stripDataTyped, (x) => x.trim())),
-      Fx.toReadonlyArray,
-      provideResources,
-      Effect.runPromise
-    )
-  ).slice(1, -1) // Remove TYPED_START + TYPED_END from actual
+  const actual = await template.pipe(
+    renderToHtml,
+    Fx.map((s) => pipe(s, stripDataTyped, (x) => x.trim())),
+    Fx.toReadonlyArray,
+    provideResources,
+    Effect.runPromise
+  )
 
   try {
     deepStrictEqual(actual, expected)

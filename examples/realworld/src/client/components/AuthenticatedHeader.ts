@@ -1,5 +1,5 @@
-import { CurrentUserImage, CurrentUsername } from "@/application/CurrentUser"
-import { editorRoute, homeRoute, profileRoute, settingsRoute } from "@/routes"
+import { CurrentUserImage, CurrentUsername } from "@/application"
+import { editorRoute, homeRoute, profileRoute, settingsRoute } from "@/client/routes"
 import * as Fx from "@typed/fx"
 import { html } from "@typed/template"
 import { NavLink } from "./NavLink"

@@ -17,7 +17,7 @@ import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChu
 import { templateToHtmlChunks } from "./HtmlChunk.js"
 import { parse } from "./internal/parser.js"
 import { partNodeToPart } from "./internal/server.js"
-import { TEXT_START, TYPED_END, TYPED_HOLE, TYPED_START } from "./Meta.js"
+import { TEXT_START, TYPED_HOLE } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
 import type { Renderable } from "./Renderable.js"
 import * as RenderContext from "./RenderContext.js"
@@ -26,8 +26,6 @@ import type { RenderEvent } from "./RenderEvent.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
 const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
-
-const [padStart, padEnd] = [[TYPED_START], [TYPED_END]] as const
 
 /**
  * @since 1.0.0
@@ -53,14 +51,7 @@ export const staticLayer: Layer.Layer<RenderContext.RenderContext | RenderTempla
 export function renderToHtml<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>
 ): Fx.Fx<string, E, R | RenderTemplate | RenderContext.RenderContext> {
-  return Fx.fromFxEffect(
-    RenderContext.RenderContext.with((ctx) =>
-      fx.pipe(
-        Fx.map(toHtml),
-        (x) => ctx.environment === "static" ? x : Fx.padWith(x, padStart, padEnd)
-      )
-    )
-  )
+  return Fx.map(fx, toHtml)
 }
 
 /**
@@ -83,6 +74,7 @@ function renderHtml(ctx: RenderContext.RenderContext) {
   > => {
     const isStatic = ctx.environment === "static"
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
+
     if (values.length === 0) {
       return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value))
     } else {
@@ -253,7 +245,6 @@ function getServerEntry(
 
   if (cached === undefined || cached._tag === "Browser") {
     const template = parse(templateStrings)
-
     const entry: ServerEntry = {
       _tag: "Server",
       template,
