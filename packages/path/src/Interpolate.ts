@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import type { S } from "ts-toolbelt"
+import type { A, S } from "ts-toolbelt"
 import type {
   ModifierNode,
   NamedParamNode,
@@ -25,12 +25,13 @@ import type { PathJoin } from "./PathJoin.js"
  * Interpolate a path with parameters
  * @since 1.0.0
  */
-export type Interpolate<P extends string, Params extends ParamsOf<P>> = PathJoin<
-  InterpolateParts<
-    ParseSegments<PathToSegments<P>>,
-    Params
+export type Interpolate<P extends string, Params extends ParamsOf<P>> = A.Equals<P, string> extends 1 ? string :
+  PathJoin<
+    InterpolateParts<
+      ParseSegments<PathToSegments<P>>,
+      Params
+    >
   >
->
 
 type InterpolateParts<
   T extends ReadonlyArray<any>,

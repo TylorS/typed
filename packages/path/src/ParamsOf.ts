@@ -4,6 +4,7 @@
  * @since 1.0.0
  */
 
+import type { A } from "ts-toolbelt"
 import type {
   Modifier,
   ModifierNode,
@@ -24,7 +25,7 @@ import type {
  * Extract the parameters from a path
  * @since 1.0.0
  */
-export type ParamsOf<T extends string> = ToParams<ParseSegments<PathToSegments<T>>>
+export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {} : ToParams<ParseSegments<PathToSegments<T>>>
 
 type ToParams<T extends ReadonlyArray<any>, Params = {}> = [
   // @ts-expect-error Type potentially infinite

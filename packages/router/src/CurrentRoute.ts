@@ -49,7 +49,7 @@ export function layer<const P extends string>(
   route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): Layer.Layer<CurrentRoute> {
-  return CurrentRoute.layer(make(route as Route.Route<string>, parent))
+  return CurrentRoute.layer(make(route, parent) as any as CurrentRoute)
 }
 
 function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
@@ -59,9 +59,12 @@ function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
 /**
  * @since 1.0.0
  */
-export const CurrentParams: RefSubject.Filtered<Readonly<Record<string, string>>, never, Navigation | CurrentRoute> =
-  RefSubject
-    .filterMapEffect(CurrentPath, (path) => CurrentRoute.with(({ route }) => route.match(path)))
+export const CurrentParams: RefSubject.Filtered<
+  Readonly<Record<string, string | ReadonlyArray<string>>>,
+  never,
+  Navigation | CurrentRoute
+> = RefSubject
+  .filterMapEffect(CurrentPath, (path) => CurrentRoute.with(({ route }) => route.match(path)))
 
 /**
  * @since 1.0.0
@@ -82,7 +85,7 @@ export const withCurrentRoute: {
   Effect.contextWithEffect((ctx) => {
     const parent = Context.getOption(ctx, CurrentRoute)
 
-    if (Option.isNone(parent)) return pipe(effect, CurrentRoute.provide(make(route) as CurrentRoute))
+    if (Option.isNone(parent)) return pipe(effect, CurrentRoute.provide(make(route) as any as CurrentRoute))
 
     return pipe(
       effect,

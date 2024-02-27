@@ -186,9 +186,9 @@ function getGuard<const P extends string, B, E2, R2>(
   guard?: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>
 ) {
   if (guard) {
-    return Guard.compose(getRoute(path), guard)
+    return Guard.compose(path, guard)
   } else {
-    return getRoute(path).asGuard()
+    return path.asGuard()
   }
 }
 
