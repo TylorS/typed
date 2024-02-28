@@ -65,7 +65,6 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
             if (Option.isSome(match)) {
               yield* _(
                 Effect.logDebug(`Matched guard for path`),
-                Effect.annotateSpans("route.params", match.value),
                 Effect.annotateLogs("route.params", match.value)
               )
 
@@ -73,14 +72,7 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
               const renderable = guard.match(RefSubject.take(ref, 1))
               const template = Fx.unify(options?.layout ? options.layout(renderable) : renderable).pipe(
                 Fx.withSpan("render_template"),
-                Fx.continueWith(() =>
-                  Fx.make<never>(() =>
-                    Effect.logDebug(`Rendered Tempate`).pipe(
-                      Effect.annotateSpans("route.params", match.value),
-                      Effect.annotateLogs("route.params", match.value)
-                    )
-                  )
-                ),
+                Fx.onExit(() => Effect.annotateLogs(Effect.logDebug(`Rendered Tempate`), "route.params", match.value)),
                 Fx.annotateSpans("route.params", match.value),
                 Fx.annotateLogs("route.params", match.value)
               )
