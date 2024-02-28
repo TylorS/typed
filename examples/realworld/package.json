@@ -41,12 +41,14 @@
     "effect-http": "^0.55.1",
     "effect-http-node": "^0.3.1",
     "effect-log": "^0.30.2",
+    "jsonwebtoken": "^9.0.2",
     "path-to-regexp": "^6.2.1",
     "postgres": "^3.4.3",
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
     "@giacomorebonato/vavite": "^0.0.4",
+    "@types/jsonwebtoken": "^9.0.6",
     "mock-storage": "^1.1.0",
     "rollup-plugin-visualizer": "^5.12.0",
     "terser": "^5.28.1",

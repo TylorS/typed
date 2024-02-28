@@ -1,10 +1,28 @@
-import { UpdateUser } from "@/services"
-import type * as Context from "@typed/context"
-import { Effect } from "effect"
+import { UpdateUser, UpdateUserFailedError } from "@/services"
+import { Clock, Effect, Option } from "effect"
+import { makeJwtUser } from "./common/MakeJwt"
+import { DbServices } from "./db/Db"
 
-// eslint-disable-next-line require-yield
-export const UpdateUserLive = UpdateUser.layer(Effect.gen(function*(_) {
-  const create: Context.Tagged.Service<typeof UpdateUser> = () => Effect.dieMessage("Not implemented")
+export const UpdateUserLive = UpdateUser.implement((input, token) =>
+  Effect.gen(function*(_) {
+    const Db = yield* _(DbServices)
+    const timestamp = new Date(yield* _(Clock.currentTimeMillis))
+    const dbUser = yield* _(Db.getUserByEmail(input.email), Effect.flatten)
+    const updatedDbUser = yield* _(Db.updateUser({
+      ...dbUser,
+      bio: Option.some(input.bio),
+      image: input.image,
+      updated_at: timestamp
+    }))
 
-  return create
-}))
+    return yield* _(makeJwtUser(Db, updatedDbUser, token))
+  }).pipe(
+    Effect.catchAll((e) =>
+      Effect.gen(function*(_) {
+        yield* _(Effect.logError(e))
+
+        return yield* _(Effect.fail(new UpdateUserFailedError()))
+      })
+    )
+  )
+)

@@ -1,10 +1,17 @@
-import { GetCurrentUser } from "@/services"
-import type * as Context from "@typed/context"
-import { Effect } from "effect"
+import { GetCurrentUser, InvalidTokenError } from "@/services"
+import { Effect, Secret } from "effect"
+import { makeJwtUser } from "./common/MakeJwt"
+import { DbServices } from "./db/Db"
 
-// eslint-disable-next-line require-yield
-export const GetCurrentUserLive = GetCurrentUser.layer(Effect.gen(function*(_) {
-  const create: Context.Tagged.Service<typeof GetCurrentUser> = () => Effect.dieMessage("Not implemented")
+export const GetCurrentUserLive = GetCurrentUser.implement((token) =>
+  Effect.gen(function*(_) {
+    const Db = yield* _(DbServices)
+    const jwt = yield* _(Db.getJwt(Secret.value(token)), Effect.flatten)
+    const dbUser = yield* _(Db.getUserByEmail(jwt.user_email), Effect.flatten)
 
-  return create
-}))
+    return yield* _(makeJwtUser(Db, dbUser, token))
+  }).pipe(
+    Effect.tapError((error) => Effect.logError(error)),
+    Effect.catchAll(() => Effect.fail(new InvalidTokenError(token)))
+  )
+)

@@ -1,8 +1,9 @@
 import { Layer } from "effect"
 import { AddCommentLive } from "./AddComment"
+import { MakeJwt } from "./common/MakeJwt"
 import { CreateArticleLive } from "./CreateArticle"
 import { CreateUserLive } from "./CreateUser"
-import { DbLive } from "./db/Db"
+import { DbLive, DbServices } from "./db/Db"
 import { DeleteArticleLive } from "./DeleteArticle"
 import { DeleteCommentLive } from "./DeleteComment"
 import { FavoriteArticleLive } from "./FavoriteArticle"
@@ -41,5 +42,11 @@ export const ApiLive = Layer.mergeAll(
   UpdateArticleLive,
   UpdateUserLive
 ).pipe(
+  Layer.provideMerge(
+    Layer.mergeAll(
+      DbServices.Live,
+      MakeJwt.Live
+    )
+  ),
   Layer.provideMerge(DbLive)
 )

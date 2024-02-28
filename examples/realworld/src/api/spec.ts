@@ -245,7 +245,7 @@ export const TagsGroup = Api.apiGroup("Tags").pipe(
   })
 )
 
-export const RealworldApiSpec = Api.api({ title: "Realworld" }).pipe(
+export const RealworldApiSpec = Api.api({ title: "Realworld", servers: ["http://localhost:3000/api"] }).pipe(
   Api.addGroup(UsersGroup),
   Api.addGroup(ProfilesGroup),
   Api.addGroup(ArticlesGroup),

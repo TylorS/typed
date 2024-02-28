@@ -7,7 +7,7 @@ export default Effect.flatMap(
     Effect.gen(function*(_) {
       yield* _(sql`CREATE TABLE IF NOT EXISTS users(
   email TEXT PRIMARY KEY NOT NULL UNIQUE,
-  username text NOT NULL,
+  username text NOT NULL UNIQUE,
   password TEXT NOT NULL,
   bio text,
   image text,
