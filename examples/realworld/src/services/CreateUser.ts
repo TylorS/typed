@@ -15,6 +15,6 @@ export type CreateUserInput = Schema.Schema.To<typeof CreateUserInput>
 
 export const CreateUser = Context.Fn<
   (input: CreateUserInput) => Effect<User, ExistingEmailError>
->()((_) => class CreateUser extends _("auth/CreateUser") {})
+>()((_) => class CreateUser extends _("users/CreateUser") {})
 
 export type CreateUser = Context.Fn.Identifier<typeof CreateUser>

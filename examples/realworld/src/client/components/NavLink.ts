@@ -16,9 +16,9 @@ export function NavLink<
   ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [Params]
 ) {
   return Fx.gen(function*(_) {
-    const paramsRef: Fx.RefSubject.RefSubject<ParamsOf<P>> = yield* _(Placeholder.asRef(params as ParamsOf<P>))
+    const paramsRef: Fx.RefSubject.RefSubject<ParamsOf<P>> = yield* _(Placeholder.asRef((params || {}) as ParamsOf<P>))
     const isActive = Fx.switchMap(paramsRef, (params) => Router.isActive(route, params))
-    const to = Fx.map(paramsRef, route.make)
+    const to = Fx.map(paramsRef, (p) => route.make(p))
 
     return Link(
       {

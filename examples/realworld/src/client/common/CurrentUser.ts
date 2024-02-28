@@ -4,7 +4,7 @@ import * as RefAsyncData from "@typed/fx/AsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"
 
 export const CurrentUser = RefSubject.tagged<AsyncData.AsyncData<User>>()((_) =>
-  class CurrentUser extends _("auth/CurrentUser") {}
+  class CurrentUser extends _("users/CurrentUser") {}
 )
 export type CurrentUser = RefSubject.Context<typeof CurrentUser>
 

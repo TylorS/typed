@@ -13,7 +13,7 @@ export const UpdateUserInput = Schema.struct({
 export type UpdateUserInput = Schema.Schema.To<typeof UpdateUserInput>
 
 export const UpdateUser = Context.Fn<(input: UpdateUserInput, token: JwtToken) => Effect<User>>()((_) =>
-  class UpdateUser extends _("auth/UpdateUser") {}
+  class UpdateUser extends _("users/UpdateUser") {}
 )
 
 export type UpdateUser = Context.Fn.Identifier<typeof UpdateUser>
