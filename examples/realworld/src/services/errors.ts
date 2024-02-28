@@ -1,4 +1,4 @@
-import type { Email, JwtToken, User, Username } from "@/domain"
+import type { Email, JwtToken, User, Username } from "@/model"
 import * as Data from "effect/Data"
 import type { Option } from "effect/Option"
 

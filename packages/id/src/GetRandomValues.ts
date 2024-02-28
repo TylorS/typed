@@ -27,7 +27,7 @@ export const webCrypto = (crypto: Crypto): Layer.Layer<GetRandomValues> =>
   GetRandomValues.implement((length) => Effect.sync(() => getRandomValuesWeb(crypto, length)))
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-const getRandomValuesNode = (crypto: typeof import("node:crypto"), length: number) => {
+export const getRandomValuesNode = (crypto: typeof import("node:crypto"), length: number) => {
   const bytes = crypto.randomBytes(length)
   const view = new Uint8Array(length)
   for (let i = 0; i < bytes.length; ++i) {

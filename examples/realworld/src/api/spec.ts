@@ -1,5 +1,5 @@
-import * as App from "@/application"
-import * as Domain from "@/domain"
+import * as Domain from "@/model"
+import * as App from "@/services"
 import { Schema } from "@effect/schema"
 import { Api } from "effect-http"
 import * as Routes from "./routes"

@@ -1,4 +1,4 @@
-import { FollowUser } from "@/application"
+import { FollowUser } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

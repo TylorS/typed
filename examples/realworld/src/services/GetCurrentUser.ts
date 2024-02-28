@@ -1,4 +1,4 @@
-import type { JwtToken, User } from "@/domain/User"
+import type { JwtToken, User } from "@/model/User"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
 

@@ -1,4 +1,4 @@
-import { type Article } from "@/domain"
+import { type Article } from "@/model"
 import * as Schema from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"

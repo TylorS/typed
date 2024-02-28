@@ -1,5 +1,5 @@
-import { CommentBody } from "@/domain"
-import type { ArticleSlug, Comment, JwtToken } from "@/domain"
+import { CommentBody } from "@/model"
+import type { ArticleSlug, Comment, JwtToken } from "@/model"
 import { Schema } from "@effect/schema"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"

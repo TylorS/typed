@@ -32,7 +32,7 @@ const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
  */
 export const serverLayer: Layer.Layer<RenderContext.RenderContext | RenderTemplate | CurrentEnvironment> = Layer
   .provideMerge(
-    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtml)),
+    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
     RenderContext.server
   )
 
@@ -41,7 +41,7 @@ export const serverLayer: Layer.Layer<RenderContext.RenderContext | RenderTempla
  */
 export const staticLayer: Layer.Layer<RenderContext.RenderContext | RenderTemplate | CurrentEnvironment> = Layer
   .provideMerge(
-    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtml)),
+    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
     RenderContext.static
   )
 
@@ -63,7 +63,10 @@ export function renderToHtmlString<E, R>(
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }
 
-function renderHtml(ctx: RenderContext.RenderContext) {
+/**
+ * @since 1.0.0
+ */
+export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
   return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values

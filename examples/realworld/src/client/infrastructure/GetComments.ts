@@ -1,4 +1,4 @@
-import { GetComments } from "@/application"
+import { GetComments } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

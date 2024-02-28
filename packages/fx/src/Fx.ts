@@ -89,7 +89,7 @@ export namespace Fx {
   /**
    * @since 1.20.0
    */
-  export type Unify<T> = T extends Fx<infer A, infer E, infer R> | infer _ ? Fx<A, E, R> : never
+  export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R> | infer _] ? Fx<A, E, R> : never
 }
 
 /**
@@ -111,6 +111,11 @@ export type Success<T> = Fx.Success<T>
  * @since 1.20.0
  */
 export type Unify<T> = Fx.Unify<T>
+
+/**
+ * @since 1.20.0
+ */
+export const unify = <T extends Fx<any, any, any>>(fx: T): Unify<T> => fx as any
 
 /**
  * @since 1.20.0

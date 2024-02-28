@@ -1,5 +1,5 @@
-import type { Username } from "@/domain"
-import type { Profile } from "@/domain/Profile"
+import type { Username } from "@/model"
+import type { Profile } from "@/model/Profile"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
 

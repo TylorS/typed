@@ -1,4 +1,4 @@
-import { CreateUser } from "@/application"
+import { CreateUser } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

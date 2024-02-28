@@ -133,7 +133,7 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
       let matcher: Match.ValueMatcher<string, A | B, E | E2, R | R2 | Navigation.Navigation | Scope.Scope> = Match
         .value(
           // Only if we're rendering in a DOM-based environment should we allow for routing to last indefinitely
-          env === "server" || env === "static" ? Fx.take(Navigation.CurrentPath, 1) : Navigation.CurrentPath
+          env === "dom" ? Navigation.CurrentPath : Fx.take(Navigation.CurrentPath, 1)
         )
 
       for (const { guard, match, route } of this.guards) {

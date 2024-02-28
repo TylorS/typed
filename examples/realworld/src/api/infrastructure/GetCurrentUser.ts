@@ -1,4 +1,4 @@
-import { GetCurrentUser } from "@/application"
+import { GetCurrentUser } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

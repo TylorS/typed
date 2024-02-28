@@ -1,4 +1,4 @@
-import { IsAuthenticated } from "@/application"
+import { IsAuthenticated } from "@/services"
 import * as Fx from "@typed/fx"
 import { AuthenticatedHeader } from "./AuthenticatedHeader"
 import { UnauthenticatedHeader } from "./UnauthenticatedHeader"

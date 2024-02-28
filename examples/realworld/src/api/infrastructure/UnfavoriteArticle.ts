@@ -1,4 +1,4 @@
-import { UnfavoriteArticle } from "@/application"
+import { UnfavoriteArticle } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

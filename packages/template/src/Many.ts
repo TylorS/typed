@@ -31,38 +31,38 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
         const ctx = get(context, RenderContext)
         const hydrateContext = getOption(context, HydrateContext)
 
+        if (ctx.environment === "dom") {
+          // If we're hydrating, attempt to provide the correct HydrateContext to rendering Fx
+          if (isSome(hydrateContext) && hydrateContext.value.hydrate) {
+            return Fx.keyed(values, {
+              getKey,
+              onValue: (ref, key) =>
+                Fx.provideService(f(ref, key), HydrateContext, { ...hydrateContext.value, manyIndex: key.toString() })
+            })
+          }
+
+          // In other environments we just used Fx.keyed to allow indefinite subscriptions to RefSubjects
+          return Fx.keyed(values, {
+            getKey,
+            onValue: f
+          })
+        }
+
         // When rendering HTML, we want to ensure that we order our HTML events in the same order
         // as the templates are defined which is why we use mergeOrdered. We also want to ensure that
         // our templates end, so we take only the first of our source values and also ensure that a subscription
         // to our RefSubjects only include its first event.
-        if (ctx.environment === "server" || ctx.environment === "static") {
-          return Fx.fromFxEffect(
-            Effect.map(Fx.first(values), (values) =>
-              Fx.mergeOrdered(
-                values.map((value) =>
-                  Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => {
-                    const key = getKey(value)
-                    return Fx.append(f(RefSubject.take(ref, 1), key), HtmlRenderEvent(MANY_HOLE(key)))
-                  }))
-                )
-              ))
-          )
-        }
-
-        // If we're hydrating, attempt to provide the correct HydrateContext to rendering Fx
-        if (isSome(hydrateContext) && hydrateContext.value.hydrate) {
-          return Fx.keyed(values, {
-            getKey,
-            onValue: (ref, key) =>
-              Fx.provideService(f(ref, key), HydrateContext, { ...hydrateContext.value, manyIndex: key.toString() })
-          })
-        }
-
-        // In other environments we just used Fx.keyed to allow indefinite subscriptions to RefSubjects
-        return Fx.keyed(values, {
-          getKey,
-          onValue: f
-        })
+        return Fx.fromFxEffect(
+          Effect.map(Fx.first(values), (values) =>
+            Fx.mergeOrdered(
+              values.map((value) =>
+                Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => {
+                  const key = getKey(value)
+                  return Fx.append(f(RefSubject.take(ref, 1), key), HtmlRenderEvent(MANY_HOLE(key)))
+                }))
+              )
+            ))
+        )
       }
     )
   )

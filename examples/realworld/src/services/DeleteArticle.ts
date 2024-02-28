@@ -1,4 +1,4 @@
-import type { Article, ArticleSlug, JwtToken } from "@/domain"
+import type { Article, ArticleSlug, JwtToken } from "@/model"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
 

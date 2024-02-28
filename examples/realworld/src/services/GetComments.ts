@@ -1,4 +1,4 @@
-import type { ArticleSlug, Comment } from "@/domain"
+import type { ArticleSlug, Comment } from "@/model"
 import * as Context from "@typed/context"
 import type { Effect } from "effect/Effect"
 

@@ -1,4 +1,4 @@
-import { GetProfile } from "@/application"
+import { GetProfile } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 

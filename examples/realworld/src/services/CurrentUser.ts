@@ -1,4 +1,4 @@
-import type { User } from "@/domain"
+import type { User } from "@/model"
 import type * as AsyncData from "@typed/async-data/AsyncData"
 import * as RefAsyncData from "@typed/fx/AsyncData"
 import * as RefSubject from "@typed/fx/RefSubject"

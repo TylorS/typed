@@ -1,4 +1,4 @@
-import { GetArticles } from "@/application"
+import { GetArticles } from "@/services"
 import type * as Context from "@typed/context"
 import { Effect } from "effect"
 
