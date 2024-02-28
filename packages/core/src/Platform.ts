@@ -57,24 +57,46 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
       path as PathInput,
       Effect.flatMap(HttpServer.request.ServerRequest, (request) =>
         Effect.gen(function*(_) {
+          yield* _(Effect.logDebug(`Attempting guards`))
+
           // Attempt to match a guard
           for (const guard of guards) {
             const match = yield* _(guard.guard(request.url))
             if (Option.isSome(match)) {
+              yield* _(
+                Effect.logDebug(`Matched guard for path`),
+                Effect.annotateSpans("route.params", match.value),
+                Effect.annotateLogs("route.params", match.value)
+              )
+
               const ref = yield* _(RefSubject.of(match.value))
               const renderable = guard.match(RefSubject.take(ref, 1))
-              const template = Fx.unify(options?.layout ? options.layout(renderable) : renderable)
-              return yield* _(htmlResponse(template), Effect.withSpan("render_template"))
+              const template = Fx.unify(options?.layout ? options.layout(renderable) : renderable).pipe(
+                Fx.withSpan("render_template"),
+                Fx.continueWith(() =>
+                  Fx.make<never>(() =>
+                    Effect.logDebug(`Rendered Tempate`).pipe(
+                      Effect.annotateSpans("route.params", match.value),
+                      Effect.annotateLogs("route.params", match.value)
+                    )
+                  )
+                ),
+                Fx.annotateSpans("route.params", match.value),
+                Fx.annotateLogs("route.params", match.value)
+              )
+
+              return yield* _(htmlResponse(template))
             }
           }
           return yield* _(Effect.fail(new GuardsNotMatched({ request, guards })))
         }).pipe(
-          Effect.withSpan("check_route_guards"),
           Effect.provide(Layer.mergeAll(
             Navigation.initialMemory({ url: request.url, base: options?.base }),
             CurrentRoute.layer(route as any)
           )),
-          Effect.annotateSpans("route.path", path)
+          Effect.withSpan("check_route_guards"),
+          Effect.annotateSpans("route.path", path),
+          Effect.annotateLogs("route.path", path)
         ))
     )
   }
