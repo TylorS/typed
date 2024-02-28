@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS tags(
   created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   expires_at timestamp NOT NULL,
   revoked boolean NOT NULL DEFAULT FALSE,
-  PRIMARY KEY (email, jwt)
+  PRIMARY KEY (user_email, jwt)
 );`)
 
       yield* _(sql`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username, deleted);`)
