@@ -64,15 +64,17 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
               const ref = yield* _(RefSubject.of(match.value))
               const renderable = guard.match(RefSubject.take(ref, 1))
               const template = Fx.unify(options?.layout ? options.layout(renderable) : renderable)
-              return yield* _(htmlResponse(template))
+              return yield* _(htmlResponse(template), Effect.withSpan("render_template"))
             }
           }
           return yield* _(Effect.fail(new GuardsNotMatched({ request, guards })))
         }).pipe(
+          Effect.withSpan("check_route_guards"),
           Effect.provide(Layer.mergeAll(
             Navigation.initialMemory({ url: request.url, base: options?.base }),
             CurrentRoute.layer(route as any)
-          ))
+          )),
+          Effect.annotateSpans("route.path", path)
         ))
     )
   }

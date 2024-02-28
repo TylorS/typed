@@ -1,19 +1,35 @@
 import { HttpServer } from "@effect/platform"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import { toHttpRouter } from "@typed/core/Platform"
-import { Effect } from "effect"
+import { Effect, Logger, LogLevel } from "effect"
 import { NodeServer } from "effect-http-node"
+import { PrettyLogger } from "effect-log"
+import * as Api from "./api"
 import { ApiLive } from "./api/infrastructure/Live"
-import { RealworldApiServer } from "./api/server"
-import { document } from "./client/document"
-import { router } from "./client/router"
+import * as Client from "./client/index"
 
 // TODO: Handle 404 + other Errors
 
-toHttpRouter(router, { layout: document }).pipe(
-  HttpServer.router.mountApp("/api", RealworldApiServer),
+// Workaround to enable serving documentation assets from /api/docs instead of /docs
+const temporaryDocsWorkaround = HttpServer.router.get(
+  "/docs/*",
+  Effect.flatMap(
+    HttpServer.request.ServerRequest,
+    (req) =>
+      HttpServer.response.empty({
+        status: 303,
+        headers: HttpServer.headers.unsafeFromRecord({ location: `/api${req.url}` })
+      })
+  )
+)
+
+toHttpRouter(Client.router, { layout: Client.document }).pipe(
+  HttpServer.router.mountApp("/api", Api.RealworldApiServer),
+  temporaryDocsWorkaround,
   HttpServer.middleware.logger,
   NodeServer.listen({ port: 3000 }),
   Effect.provide(ApiLive),
+  Effect.provide(PrettyLogger.layer()),
+  Logger.withMinimumLogLevel(LogLevel.Debug),
   runMain
 )

@@ -1,13 +1,11 @@
-import { router } from "@/client/router"
-import { homeRoute } from "@/client/routes"
-import { fromWindow } from "@typed/core"
+import * as CoreServices from "@typed/core/CoreServices"
 import { hydrateToLayer } from "@typed/template"
 import { Effect, Layer } from "effect"
-import { ClientLive } from "./client/infrastructure"
+import * as Client from "./client/index"
 
-hydrateToLayer(router.redirect(homeRoute)).pipe(
-  Layer.provide(ClientLive),
-  Layer.provide(fromWindow(window, { rootElement: document.getElementById("app")! })),
+hydrateToLayer(Client.router.redirect(Client.homeRoute)).pipe(
+  Layer.provide(Client.Live),
+  Layer.provide(CoreServices.fromWindow(window, { rootElement: document.getElementById("app")! })),
   Layer.launch,
   Effect.runFork
 )

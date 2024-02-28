@@ -2,8 +2,7 @@ import { Article, ArticleSlug, ArticleTag, Comment, Email, JwtToken, User } from
 import { Schema } from "@effect/schema"
 import * as Pg from "@sqlfx/pg"
 import * as Migrator from "@sqlfx/pg/Migrator"
-import { Config, Layer } from "effect"
-import { fileURLToPath } from "node:url"
+import { Config, Layer, Secret } from "effect"
 
 const timestampsAndDeleted = {
   created_at: Schema.DateFromString,
@@ -73,14 +72,18 @@ export const DbJwt = Schema.struct({
 })
 export type DbJwt = Schema.Schema.From<typeof DbJwt>
 
-const migrationsDirectory = `${fileURLToPath(import.meta.url)}/migrations`
+const PgLive = Pg.makeLayer({
+  username: Config.succeed("effect_pg_dev"),
+  password: Config.succeed(Secret.fromString("effect_pg_dev")),
+  database: Config.succeed("effect_pg_dev")
+})
 
-export const DbLive = Layer.provideMerge(
-  Migrator.makeLayer({
-    loader: Migrator.fromDisk(migrationsDirectory),
-    schemaDirectory: "src/api/infrastructure/migrations"
-  }),
-  Pg.makeLayer({
-    database: Config.succeed("effect_pg_dev")
-  })
+const migrations = import.meta.glob("./migrations/*")
+
+export const DbLive = Layer.mergeAll(
+  Layer.provide(
+    Migrator.makeLayer({ loader: Migrator.fromGlob(migrations) }),
+    PgLive
+  ),
+  PgLive
 )

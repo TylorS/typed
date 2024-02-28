@@ -5,7 +5,11 @@
     "rootDir": "examples",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "build/examples"
+    "outDir": "build/examples",
+    "types": [
+      "node",
+      "vite/client"
+    ]
   },
   "include": [
     "examples/**/*.ts"

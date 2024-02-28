@@ -40,6 +40,7 @@
     "effect": "2.4.0",
     "effect-http": "^0.55.1",
     "effect-http-node": "^0.3.1",
+    "effect-log": "^0.30.2",
     "path-to-regexp": "^6.2.1",
     "postgres": "^3.4.3",
     "ts-toolbelt": "^9.6.0"

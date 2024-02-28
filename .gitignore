@@ -12,3 +12,4 @@ dist/
 .idea/
 packages/*/docs
 examples/*/tempo-data
+examples/*/data

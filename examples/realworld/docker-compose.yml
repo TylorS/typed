@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: effect_pg_dev
+      POSTGRES_PASSWORD: effect_pg_dev
+      POSTGRES_DB: effect_pg_dev
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
