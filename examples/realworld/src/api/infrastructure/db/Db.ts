@@ -21,7 +21,7 @@ export const DbUser = User.pipe(
 export type DbUser = Schema.Schema.To<typeof DbUser>
 
 export const DbArticle = Article.pipe(
-  Schema.omit("author", "favorited", "favoritesCount", "tagList"),
+  Schema.omit("author", "favorited", "favoritesCount", "tagList", "createdAt", "updatedAt"),
   Schema.extend(Schema.struct({ author: Email, ...timestampsAndDeleted }))
 )
 
@@ -90,7 +90,20 @@ export const DbLive = Layer.mergeAll(
 )
 
 export const makeDbServices = Effect.gen(function*(_) {
+  const users = yield* _(makeUserServices)
+  const articles = yield* _(makeArticleServices)
+  const comments = yield* _(makeCommentServices)
+
+  return {
+    ...users,
+    ...articles,
+    ...comments
+  } as const
+})
+
+const makeUserServices = Effect.gen(function*(_) {
   const sql = yield* _(Pg.tag)
+
   const getUserByEmail = sql.resolverId("getUserByEmail", {
     id: Schema.string,
     result: DbUser,
@@ -160,6 +173,58 @@ export const makeDbServices = Effect.gen(function*(_) {
     getUserByUsername,
     saveJwt,
     updateUser
+  } as const
+})
+
+const makeArticleServices = Effect.gen(function*(_) {
+  const sql = yield* _(Pg.tag)
+
+  const createArticle = sql.resolver("createArticle", {
+    request: DbArticle,
+    result: DbArticle,
+    run: (article) =>
+      sql`
+    INSERT INTO articles
+    ${sql.insert(article)}
+    Returning *;
+  `
+  }).execute
+
+  const updateArticle = sql.schemaSingle(DbArticle, DbArticle, (article) =>
+    sql`
+    UPDATE articles
+    SET updated_at = ${article.updated_at},
+        deleted = ${article.deleted},
+        slug = ${article.slug},
+        title = ${article.title},
+        description = ${article.description},
+        body = ${article.body}
+        
+    WHERE slug = ${article.slug}
+    RETURNING *;
+  `)
+
+  return {
+    createArticle
+  } as const
+})
+
+const makeCommentServices = Effect.gen(function*(_) {
+  const sql = yield* _(Pg.tag)
+
+  const createComment = sql.resolver("createComment", {
+    request: DbArticle,
+    result: DbArticle,
+    run: (article) =>
+      sql`
+    INSERT INTO comments
+    ${sql.insert(article)}
+    Returning *;
+  `
+  }).execute
+
+  return {
+    createComment
   } as const
 })
 

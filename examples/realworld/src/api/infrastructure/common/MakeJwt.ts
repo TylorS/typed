@@ -4,6 +4,7 @@ import { JwtToken } from "@/model"
 import { Fn } from "@typed/context"
 import { Clock, Config, Effect, Secret } from "effect"
 import JWT from "jsonwebtoken"
+import { dbUserToUser } from "../db/conversions"
 
 const JwtSecret = Config.succeed("replace_me_with_a_real_secret")
 
@@ -34,13 +35,26 @@ export const makeJwtUser = (Db: DbServices, dbUser: DbUser, token?: JwtToken) =>
       }))
     }
 
-    const user: User = {
-      email: dbUser.email,
-      username: dbUser.username,
-      bio: dbUser.bio,
-      image: dbUser.image,
-      token
-    }
-
-    return user
+    return dbUserToUser(dbUser, token)
   })
+
+const VerifyJwt_ = Fn<(token: JwtToken) => Effect.Effect<User>>()((_) => class VerifyJwt extends _("VerifyJwt") {})
+
+export const VerifyJwt = Object.assign(VerifyJwt_, {
+  Live: VerifyJwt_.layer(Effect.gen(function*(_) {
+    const secret = yield* _(JwtSecret)
+    return (token: JwtToken) =>
+      Effect.sync(() => {
+        const { payload } = JWT.verify(Secret.value(token), secret, { complete: true })
+        const user = payload as JWT.JwtPayload
+
+        return {
+          email: user.email,
+          username: user.username,
+          bio: user.bio,
+          image: user.image,
+          token
+        }
+      })
+  }))
+})
