@@ -43,6 +43,6 @@
     "effect": "^2.4.0"
   },
   "peerDependencies": {
-    "effect": "^2.2.3"
+    "effect": "^2.4.0"
   }
 }
