@@ -1,5 +1,16 @@
 # @typed/storybook
 
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [[`96409d0`](https://github.com/TylorS/typed/commit/96409d01a3ac17ba041cad2a6c28482293362b5a)]:
+  - @typed/path@0.10.1
+  - @typed/core@3.2.9
+  - @typed/route@4.0.2
+  - @typed/router@0.27.4
+  - @typed/ui@0.9.5
+
 ## 0.4.3
 
 ### Patch Changes

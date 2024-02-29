@@ -1,5 +1,13 @@
 # @typed/ui
 
+## 0.9.5
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/route@4.0.2
+  - @typed/router@0.27.4
+
 ## 0.9.4
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @typed/route
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`96409d0`](https://github.com/TylorS/typed/commit/96409d01a3ac17ba041cad2a6c28482293362b5a)]:
+  - @typed/path@0.10.1
+
 ## 4.0.1
 
 ### Patch Changes

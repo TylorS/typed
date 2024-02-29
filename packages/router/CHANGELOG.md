@@ -1,5 +1,13 @@
 # @typed/router
 
+## 0.27.4
+
+### Patch Changes
+
+- Updated dependencies [[`96409d0`](https://github.com/TylorS/typed/commit/96409d01a3ac17ba041cad2a6c28482293362b5a)]:
+  - @typed/path@0.10.1
+  - @typed/route@4.0.2
+
 ## 0.27.3
 
 ### Patch Changes
