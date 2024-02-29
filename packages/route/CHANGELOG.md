@@ -1,5 +1,12 @@
 # @typed/route
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`2a84e8b`](https://github.com/TylorS/typed/commit/2a84e8befc18efb864ec270474e315a4b878be51)]:
+  - @typed/guard@0.1.2
+
 ## 4.0.0
 
 ### Minor Changes

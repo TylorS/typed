@@ -1,5 +1,16 @@
 # @typed/fx
 
+## 1.27.2
+
+### Patch Changes
+
+- [`5393bd7`](https://github.com/TylorS/typed/commit/5393bd7d6fe98d034ef7f1af18382c880d62d399) Thanks [@TylorS](https://github.com/TylorS)! - Add some missing operators
+
+- [`1b02026`](https://github.com/TylorS/typed/commit/1b02026c7e9a7ce555badb19e3ff54b93f477fdb) Thanks [@TylorS](https://github.com/TylorS)! - Change param order of RefSubject.tagged
+
+- Updated dependencies [[`2a84e8b`](https://github.com/TylorS/typed/commit/2a84e8befc18efb864ec270474e315a4b878be51)]:
+  - @typed/guard@0.1.2
+
 ## 1.27.1
 
 ### Patch Changes
