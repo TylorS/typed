@@ -1760,6 +1760,24 @@ export type MatchErrorOptions<E, A, B, E2, R2, C, E3, R3> = {
 /**
  * @since 1.20.0
  */
+export type MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<B, E2, R2>
+  readonly onSuccess: (a: A) => Effect.Effect<C, E3, R3>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+
+/**
+ * @since 1.20.0
+ */
+export type MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (e: E) => Effect.Effect<B, E2, R2>
+  readonly onSuccess: (a: A) => Effect.Effect<C, E3, R3>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+
+/**
+ * @since 1.20.0
+ */
 export const matchCauseWithStrategy: {
   <E, A, B, E2, R2, C, E3, R3>(
     opts: MatchCauseOptions<E, A, B, E2, R2, C, E3, R3>
@@ -1809,7 +1827,7 @@ export const matchError: {
   ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
   <A, E, R, B, E2, R2, C, E3, R3>(
     fx: Fx<A, E, R>,
-    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
   ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.matchError)
 
@@ -1858,6 +1876,23 @@ export const switchMatchCause: {
 } = dual(2, core.switchMatchCause)
 
 /**
+ * @since 2.0.0
+ */
+export const switchMatchCauseEffect: {
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+} = dual(2, (fx, opts) =>
+  switchMatchCause(fx, {
+    onFailure: (e) => core.fromEffect(opts.onFailure(e)),
+    onSuccess: (a) => core.fromEffect(opts.onSuccess(a))
+  }))
+
+/**
  * @since 1.20.0
  */
 export const switchMatchError: {
@@ -1866,9 +1901,26 @@ export const switchMatchError: {
   ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
   <A, E, R, B, E2, R2, C, E3, R3>(
     fx: Fx<A, E, R>,
-    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
   ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
 } = dual(2, core.switchMatchError)
+
+/**
+ * @since 2.0.0
+ */
+export const switchMatchErrorEffect: {
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, R | R2 | R3 | Scope.Scope>
+} = dual(2, (fx, opts) =>
+  switchMatchError(fx, {
+    onFailure: (e) => core.fromEffect(opts.onFailure(e)),
+    onSuccess: (a) => core.fromEffect(opts.onSuccess(a))
+  }))
 
 /**
  * @since 1.20.0
@@ -2499,4 +2551,18 @@ export abstract class FxEffectBase<A, E, R, B, E2, R2> extends protos.FxEffectBa
    * @since 1.20.0
    */
   abstract toEffect(): Effect.Effect<B, E2, R2>
+}
+
+/**
+ * @since 2.0.0
+ */
+export function promise<A>(f: (signal: AbortSignal) => Promise<A>) {
+  return fromEffect(Effect.promise(f))
+}
+
+/**
+ * @since 2.0.0
+ */
+export function promiseFx<A, E = never, R = never>(f: (signal: AbortSignal) => Promise<Fx<A, E, R>>) {
+  return fromFxEffect(Effect.promise(f))
 }
