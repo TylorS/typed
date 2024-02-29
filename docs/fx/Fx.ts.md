@@ -54,7 +54,9 @@ Added in v1.20.0
     - [toEffect (method)](#toeffect-method)
   - [KeyedOptions (interface)](#keyedoptions-interface)
   - [MatchCauseOptions (type alias)](#matchcauseoptions-type-alias)
+  - [MatchCauseOptionsEffect (type alias)](#matchcauseoptionseffect-type-alias)
   - [MatchErrorOptions (type alias)](#matcherroroptions-type-alias)
+  - [MatchErrorOptionsEffect (type alias)](#matcherroroptionseffect-type-alias)
   - [Success (type alias)](#success-type-alias-1)
   - [Unify (type alias)](#unify-type-alias-1)
   - [WithKeyOptions (interface)](#withkeyoptions-interface)
@@ -198,6 +200,8 @@ Added in v1.20.0
   - [periodic](#periodic)
   - [prepend](#prepend)
   - [prependAll](#prependall)
+  - [promise](#promise)
+  - [promiseFx](#promisefx)
   - [provide](#provide)
   - [provideContext](#providecontext)
   - [provideLayer](#providelayer)
@@ -227,7 +231,9 @@ Added in v1.20.0
   - [switchMapEffect](#switchmapeffect)
   - [switchMapError](#switchmaperror)
   - [switchMatchCause](#switchmatchcause)
+  - [switchMatchCauseEffect](#switchmatchcauseeffect)
   - [switchMatchError](#switchmatcherror)
+  - [switchMatchErrorEffect](#switchmatcherroreffect)
   - [sync](#sync)
   - [take](#take)
   - [takeUntiEffect](#takeuntieffect)
@@ -719,6 +725,20 @@ export type MatchCauseOptions<E, A, B, E2, R2, C, E3, R3> = {
 
 Added in v1.20.0
 
+## MatchCauseOptionsEffect (type alias)
+
+**Signature**
+
+```ts
+export type MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (cause: Cause.Cause<E>) => Effect.Effect<B, E2, R2>
+  readonly onSuccess: (a: A) => Effect.Effect<C, E3, R3>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+```
+
+Added in v1.20.0
+
 ## MatchErrorOptions (type alias)
 
 **Signature**
@@ -727,6 +747,20 @@ Added in v1.20.0
 export type MatchErrorOptions<E, A, B, E2, R2, C, E3, R3> = {
   readonly onFailure: (e: E) => Fx<B, E2, R2>
   readonly onSuccess: (a: A) => Fx<C, E3, R3>
+  readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
+}
+```
+
+Added in v1.20.0
+
+## MatchErrorOptionsEffect (type alias)
+
+**Signature**
+
+```ts
+export type MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3> = {
+  readonly onFailure: (e: E) => Effect.Effect<B, E2, R2>
+  readonly onSuccess: (a: A) => Effect.Effect<C, E3, R3>
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy | undefined
 }
 ```
@@ -2507,7 +2541,7 @@ export declare const matchError: {
   ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
   <A, E, R, B, E2, R2, C, E3, R3>(
     fx: Fx<A, E, R>,
-    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
   ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
@@ -2877,6 +2911,26 @@ export declare const prependAll: {
 ```
 
 Added in v1.20.0
+
+## promise
+
+**Signature**
+
+```ts
+export declare function promise<A>(f: (signal: AbortSignal) => Promise<A>)
+```
+
+Added in v2.0.0
+
+## promiseFx
+
+**Signature**
+
+```ts
+export declare function promiseFx<A, E = never, R = never>(f: (signal: AbortSignal) => Promise<Fx<A, E, R>>)
+```
+
+Added in v2.0.0
 
 ## provide
 
@@ -3299,6 +3353,24 @@ export declare const switchMatchCause: {
 
 Added in v1.20.0
 
+## switchMatchCauseEffect
+
+**Signature**
+
+```ts
+export declare const switchMatchCauseEffect: {
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchCauseOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
+}
+```
+
+Added in v2.0.0
+
 ## switchMatchError
 
 **Signature**
@@ -3310,12 +3382,30 @@ export declare const switchMatchError: {
   ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
   <A, E, R, B, E2, R2, C, E3, R3>(
     fx: Fx<A, E, R>,
-    opts: core.MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
+    opts: MatchErrorOptions<E, A, B, E2, R2, C, E3, R3>
   ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
 }
 ```
 
 Added in v1.20.0
+
+## switchMatchErrorEffect
+
+**Signature**
+
+```ts
+export declare const switchMatchErrorEffect: {
+  <E, A, B, E2, R2, C, E3, R3>(
+    opts: MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): <R>(fx: Fx<A, E, R>) => Fx<B | C, E2 | E3, Scope.Scope | R2 | R3 | R>
+  <A, E, R, B, E2, R2, C, E3, R3>(
+    fx: Fx<A, E, R>,
+    opts: MatchErrorOptionsEffect<E, A, B, E2, R2, C, E3, R3>
+  ): Fx<B | C, E2 | E3, Scope.Scope | R | R2 | R3>
+}
+```
+
+Added in v2.0.0
 
 ## sync
 

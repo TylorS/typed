@@ -109,7 +109,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make<R, E, Ev extends Event>(
+export declare function make<Ev extends Event, E = never, R = never>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R>

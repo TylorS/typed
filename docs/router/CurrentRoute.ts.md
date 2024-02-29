@@ -36,7 +36,7 @@ Added in v1.0.0
 
 ```ts
 export declare const CurrentParams: RefSubject.Filtered<
-  Readonly<Record<string, string>>,
+  Readonly<Record<string, string | readonly string[]>>,
   never,
   CurrentRoute<string> | Navigation
 >

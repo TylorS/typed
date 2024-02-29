@@ -14,6 +14,7 @@ import type {
   PrefixNode,
   QueryParamNode,
   QueryParamsNode,
+  SegmentAST,
   SuffixNode,
   TextNode,
   UnnamedParamNode
@@ -40,23 +41,36 @@ type InterpolateParts<
   readonly [K in keyof T]: InterpolatePart<T[K], Params>
 }
 
-type InterpolatePart<T, Params extends {}, IsOptional extends boolean = false, Prefix extends string = "/"> = T extends
-  ModifierNode<infer M, infer S> ? InterpolatePart<S, Params, M extends "+" ? false : true>
-  : T extends TextNode<infer T> ? T
-  : T extends NamedParamNode<infer N> ?
+type InterpolatePartMap<T, Params extends {}, IsOptional extends boolean, Prefix extends string> = {
+  Modifier: T extends ModifierNode<infer M, infer S> ? InterpolatePart<S, Params, M extends "+" ? false : true>
+    : never
+  Text: T extends TextNode<infer T> ? T : never
+  NamedParam: T extends NamedParamNode<infer N> ? N extends keyof Params ? EnsureIsString<Params[N], Prefix>
+    : IsOptional extends true ? ""
+    : string
+    : never
+  NamedParamWithRegex: T extends NamedParamNodeWithRegex<infer N, infer _> ?
     N extends keyof Params ? EnsureIsString<Params[N], Prefix> : IsOptional extends true ? "" : string
-  : T extends NamedParamNodeWithRegex<infer N, infer _> ?
-    N extends keyof Params ? EnsureIsString<Params[N], Prefix> : IsOptional extends true ? "" : string
-  : T extends UnnamedParamNode<infer I extends Extract<keyof Params, number>> ? EnsureIsString<Params[I], Prefix>
-  : T extends PrefixNode<infer P, infer S> ? // @ts-expect-error Type potentially infinite
-    S extends PrefixNode<infer P2, any> ? `${P}${InterpolatePart<S, Params, IsOptional, P2>}`
-    : `` extends InterpolatePart<S, Params, IsOptional, P> ? ``
+    : never
+  UnnamedParam: T extends UnnamedParamNode<infer I extends Extract<keyof Params, number>> ?
+    EnsureIsString<Params[I], Prefix>
+    : IsOptional extends true ? ""
+    : never
+  Prefix: T extends PrefixNode<infer P, infer S> ?
+    S extends PrefixNode<infer P2, infer _> ? `${P}${InterpolatePart<S, Params, IsOptional, P2>}` :
+    `` extends InterpolatePart<S, Params, IsOptional, P> ? ``
     : `${P}${InterpolatePart<S, Params, IsOptional, P>}`
-  : T extends SuffixNode<infer S, infer P> ?
-    `` extends InterpolatePart<S, Params, IsOptional> ? `` : `${InterpolatePart<S, Params, IsOptional>}${P}`
-  : T extends QueryParamsNode<infer Q> ? `?${InterpolateQueryParams<Q, Params>}`
-  : T extends QueryParamNode<infer K, infer V> ? `${K}=${InterpolatePart<V, Params>}`
-  : ""
+    : never
+  Suffix: T extends SuffixNode<infer S, infer P> ? `` extends InterpolatePart<S, Params, IsOptional> ? ``
+    : `${InterpolatePart<S, Params, IsOptional>}${P}`
+    : never
+  QueryParams: T extends QueryParamsNode<infer Q> ? `?${InterpolateQueryParams<Q, Params>}` : never
+  QueryParam: T extends QueryParamNode<infer K, infer V> ? `${K}=${InterpolatePart<V, Params>}` : never
+}
+
+type InterpolatePart<T, Params extends {}, IsOptional extends boolean = false, Prefix extends string = "/"> = T extends
+  SegmentAST | QueryParamNode<any, any> ? InterpolatePartMap<T, Params, IsOptional, Prefix>[T["_tag"]]
+  : never
 
 type InterpolateQueryParams<T extends ReadonlyArray<any>, Params extends {}> = S.Join<
   {

@@ -1022,7 +1022,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare function tagged<E, A>(
+export declare function tagged<A, E = never>(
   replay?: number
 ): {
   <const I extends C.IdentifierFactory<any>>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>

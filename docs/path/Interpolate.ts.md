@@ -28,9 +28,8 @@ Interpolate a path with parameters
 **Signature**
 
 ```ts
-export type Interpolate<P extends string, Params extends ParamsOf<P>> = PathJoin<
-  InterpolateParts<ParseSegments<PathToSegments<P>>, Params>
->
+export type Interpolate<P extends string, Params extends ParamsOf<P>> =
+  A.Equals<P, string> extends 1 ? string : PathJoin<InterpolateParts<ParseSegments<PathToSegments<P>>, Params>>
 ```
 
 Added in v1.0.0

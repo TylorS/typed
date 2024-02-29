@@ -28,7 +28,7 @@ Extract the parameters from a path
 **Signature**
 
 ```ts
-export type ParamsOf<T extends string> = ToParams<ParseSegments<PathToSegments<T>>>
+export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {} : ToParams<ParseSegments<PathToSegments<T>>>
 ```
 
 Added in v1.0.0

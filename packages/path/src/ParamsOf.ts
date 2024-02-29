@@ -25,20 +25,18 @@ import type {
  * Extract the parameters from a path
  * @since 1.0.0
  */
-export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {} : ToParams<ParseSegments<PathToSegments<T>>>
+export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {}
+  : ToParams<ParseSegments<PathToSegments<T>>>
 
 type ToParams<T extends ReadonlyArray<any>, Params = {}> = [
-  // @ts-expect-error Type potentially infinite
-  ListToIntersection<
+  UnionToIntersection<
     {
       [K in keyof T]: AstToParams<T[K], Params>
-    }
+    }[number]
   >
 ] extends [infer P] ? { readonly [K in keyof P]: P[K] } : never
 
-type ListToIntersection<T extends ReadonlyArray<any>> = T extends readonly [infer Head, ...infer Tail]
-  ? Head & ListToIntersection<Tail>
-  : unknown
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
 type AstToParams<T, Params = {}> = T extends ModifierNode<infer M, infer S> ? ModifyParams<M, AstToParams<S>> :
   T extends TextNode<infer _> ? {} :
