@@ -7,7 +7,7 @@ import * as Effect from "effect/Effect"
 describe.concurrent("Context", () => {
   describe.concurrent("RefSubject.tagged", () => {
     const initialValue = Math.random() * 100
-    const ref = RefSubject.tagged<never, number>()("Test")
+    const ref = RefSubject.tagged<number>()("Test")
 
     it.concurrent("should allow using a RefSubject from the context", async () => {
       const test = Effect.gen(function*(_) {

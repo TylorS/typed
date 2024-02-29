@@ -42,7 +42,7 @@ export const tagged: <A>() => {
   ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, HashSet.HashSet<A>>
 
   <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, HashSet.HashSet<A>>
-} = <A>() => RefSubject.tagged<never, HashSet.HashSet<A>>()
+} = <A>() => RefSubject.tagged<HashSet.HashSet<A>>()
 
 /**
  * Add a value to the current state of a RefHashSet.

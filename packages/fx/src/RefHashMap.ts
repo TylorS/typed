@@ -50,7 +50,7 @@ export const tagged: <K, V>() => {
   ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, HashMap.HashMap<K, V>>
 
   <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, HashMap.HashMap<K, V>>
-} = <E, A>() => RefSubject.tagged<never, HashMap.HashMap<E, A>>()
+} = <E, A>() => RefSubject.tagged<HashMap.HashMap<E, A>>()
 
 /**
  * This function creates a new RefHashMap from a given HashMap.

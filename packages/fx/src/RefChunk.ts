@@ -59,7 +59,7 @@ export const tagged: <A>() => {
   ): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, Chunk.Chunk<A>>
 
   <const I>(identifier: I): RefSubject.RefSubject.Tagged<IdentifierOf<I>, never, Chunk.Chunk<A>>
-} = <A>() => RefSubject.tagged<never, Chunk.Chunk<A>>()
+} = <A>() => RefSubject.tagged<Chunk.Chunk<A>>()
 
 /**
  * Prepend a value to the current state of a RefChunk.

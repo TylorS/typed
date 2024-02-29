@@ -145,7 +145,7 @@ describe.concurrent("Form", () => {
     })
 
     it("allows persisting form state to a RefSubject from the context", async () => {
-      const ref = RefSubject.tagged<never, FooOutput>()("TestRef")
+      const ref = RefSubject.tagged<FooOutput>()("TestRef")
 
       const test = Effect.gen(function*(_) {
         const form = yield* _(makeFooForm(ref))

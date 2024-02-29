@@ -84,7 +84,7 @@ export function tagged(): {
     | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, any, ReadonlyArray<any>>
     | RefSubject.RefSubject.Tagged<C.IdentifierOf<I>, never, ReadonlyArray<any>>
 } {
-  return RefSubject.tagged<any, ReadonlyArray<any>>()
+  return RefSubject.tagged<ReadonlyArray<any>>()
 }
 
 /**

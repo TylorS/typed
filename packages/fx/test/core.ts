@@ -349,7 +349,7 @@ describe.concurrent(__filename, () => {
 
     describe.concurrent("tagged", () => {
       it.concurrent("allows deferring provision via Effect context", async () => {
-        const ref = RefSubject.tagged<never, number>()("test")
+        const ref = RefSubject.tagged<number>()("test")
         const test = Effect.gen(function*(_) {
           expect(yield* _(ref)).toEqual(0)
 
@@ -370,7 +370,7 @@ describe.concurrent(__filename, () => {
       })
 
       it.concurrent("allows being initialized by an Fx", async () => {
-        const ref = RefSubject.tagged<never, string>()("test")
+        const ref = RefSubject.tagged<string>()("test")
         const test = Effect.gen(function*(_) {
           // Lazily initializes with the first value of the Fx
           expect(yield* _(ref)).toEqual("a")

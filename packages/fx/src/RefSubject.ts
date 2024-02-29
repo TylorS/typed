@@ -1802,7 +1802,7 @@ type RefSubjectStructFrom<
 /**
  * @since 1.20.0
  */
-export function tagged<E, A>(replay?: number): {
+export function tagged<A, E = never>(replay?: number): {
   <const I extends C.IdentifierFactory<any>>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
   <const I>(identifier: I): RefSubject.Tagged<C.IdentifierOf<I>, E, A>
 } {
