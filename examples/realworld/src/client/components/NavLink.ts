@@ -11,14 +11,14 @@ export function NavLink<
   P extends string,
   Params extends ParamsOf<P> | Placeholder.Any<ParamsOf<P>>
 >(
-  text: Content,
+  content: Content,
   route: Route<P>,
   ...[params]: [keyof ParamsOf<P>] extends [never] ? [{}?] : [Params]
 ) {
   return Fx.gen(function*(_) {
     const paramsRef: Fx.RefSubject.RefSubject<ParamsOf<P>> = yield* _(Placeholder.asRef((params || {}) as ParamsOf<P>))
     const isActive = Fx.switchMap(paramsRef, (params) => Router.isActive(route, params))
-    const to = Fx.map(paramsRef, (p) => route.make(p))
+    const to = Fx.map(paramsRef, route.make)
 
     return Link(
       {
@@ -28,7 +28,7 @@ export function NavLink<
           onTrue: "nav-link active"
         })
       },
-      text
+      content
     )
   })
 }

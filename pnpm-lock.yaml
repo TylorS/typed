@@ -300,10 +300,10 @@ importers:
         version: 2.4.0
       effect-http:
         specifier: ^0.55.1
-        version: 0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0)
+        version: 0.55.1(@effect/platform@0.46.2)(@effect/schema@0.63.0)(effect@2.4.0)
       effect-http-node:
         specifier: ^0.3.1
-        version: 0.3.1(@effect/platform-node@0.44.9)(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0)
+        version: 0.3.1(@effect/platform-node@0.44.10)(@effect/platform@0.46.2)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0)
       effect-log:
         specifier: ^0.30.2
         version: 0.30.2(effect@2.4.0)
@@ -5443,7 +5443,7 @@ packages:
   /@types/jsonwebtoken@9.0.6:
     resolution: {integrity: sha512-/5hndP5dCjloafCXns6SZyESp3Ldq7YjH3zwzwczYnjxIT0Fqzk5ROSYVGfFyczIue7IUEj8hkvLbPoLQ18vQw==}
     dependencies:
-      '@types/node': 20.11.20
+      '@types/node': 20.11.24
     dev: true
 
   /@types/lodash@4.14.202:
@@ -7559,7 +7559,7 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  /effect-http-node@0.3.1(@effect/platform-node@0.44.9)(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0):
+  /effect-http-node@0.3.1(@effect/platform-node@0.44.10)(@effect/platform@0.46.2)(@effect/schema@0.63.0)(effect-http@0.55.1)(effect@2.4.0):
     resolution: {integrity: sha512-dWEG/0oqLhb7KyioTx1xqb8/GjCnc/RGmOAbokgA4voLF6MqQXMJGMw2whusAR+apaPTNduvCgZBiZ0pO1XfXw==}
     peerDependencies:
       '@effect/platform': ^0.46.1
@@ -7568,22 +7568,22 @@ packages:
       effect: ^2.4.0
       effect-http: ^0.55.1
     dependencies:
-      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
-      '@effect/platform-node': 0.44.9(@effect/platform@0.46.1)(effect@2.4.0)
+      '@effect/platform': 0.46.2(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/platform-node': 0.44.10(@effect/platform@0.46.2)(effect@2.4.0)
       '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
       effect: 2.4.0
-      effect-http: 0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0)
+      effect-http: 0.55.1(@effect/platform@0.46.2)(@effect/schema@0.63.0)(effect@2.4.0)
       swagger-ui-dist: 5.11.8
     dev: false
 
-  /effect-http@0.55.1(@effect/platform@0.46.1)(@effect/schema@0.63.0)(effect@2.4.0):
+  /effect-http@0.55.1(@effect/platform@0.46.2)(@effect/schema@0.63.0)(effect@2.4.0):
     resolution: {integrity: sha512-mjvlwbnvx9zinEhyRhWxDwp/kEigR4Di2pTbBUy5Kssjp9Wy6pXQWPPz8UEHe7I6uPJ8EPGj2R91ICfkgEzZWA==}
     peerDependencies:
       '@effect/platform': ^0.46.1
       '@effect/schema': ^0.63.0
       effect: ^2.4.0
     dependencies:
-      '@effect/platform': 0.46.1(@effect/schema@0.63.0)(effect@2.4.0)
+      '@effect/platform': 0.46.2(@effect/schema@0.63.0)(effect@2.4.0)
       '@effect/schema': 0.63.0(effect@2.4.0)(fast-check@3.15.1)
       effect: 2.4.0
       schema-openapi: 0.31.2(@effect/schema@0.63.0)(effect@2.4.0)
