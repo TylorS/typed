@@ -1,5 +1,18 @@
 # @typed/core
 
+## 3.2.8
+
+### Patch Changes
+
+- Updated dependencies [[`5393bd7`](https://github.com/TylorS/typed/commit/5393bd7d6fe98d034ef7f1af18382c880d62d399), [`1b02026`](https://github.com/TylorS/typed/commit/1b02026c7e9a7ce555badb19e3ff54b93f477fdb), [`5d29269`](https://github.com/TylorS/typed/commit/5d2926994865aea5064c8a0ffdc1dadfd2369b3a), [`2a84e8b`](https://github.com/TylorS/typed/commit/2a84e8befc18efb864ec270474e315a4b878be51)]:
+  - @typed/fx@1.27.2
+  - @typed/template@0.9.3
+  - @typed/guard@0.1.2
+  - @typed/navigation@0.13.3
+  - @typed/router@0.27.3
+  - @typed/ui@0.9.4
+  - @typed/route@4.0.1
+
 ## 3.2.7
 
 ### Patch Changes

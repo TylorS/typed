@@ -1,5 +1,12 @@
 # @typed/navigation
 
+## 0.13.3
+
+### Patch Changes
+
+- Updated dependencies [[`5393bd7`](https://github.com/TylorS/typed/commit/5393bd7d6fe98d034ef7f1af18382c880d62d399), [`1b02026`](https://github.com/TylorS/typed/commit/1b02026c7e9a7ce555badb19e3ff54b93f477fdb)]:
+  - @typed/fx@1.27.2
+
 ## 0.13.2
 
 ### Patch Changes

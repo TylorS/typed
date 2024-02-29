@@ -1,5 +1,12 @@
 # @typed/guard
 
+## 0.1.2
+
+### Patch Changes
+
+- [`2a84e8b`](https://github.com/TylorS/typed/commit/2a84e8befc18efb864ec270474e315a4b878be51) Thanks [@TylorS](https://github.com/TylorS)! - Optimize multiple calls to the Guard produced by Guard.any({...})
+  by getting the Guard instance only once at the time of creation.
+
 ## 0.1.1
 
 ### Patch Changes
