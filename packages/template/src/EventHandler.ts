@@ -39,7 +39,7 @@ export type EventOf<T> = T extends EventHandler<infer Ev, infer _E, infer _R> ? 
 /**
  * @since 1.0.0
  */
-export function make<R, E, Ev extends Event>(
+export function make<Ev extends Event, E = never, R = never>(
   handler: (event: Ev) => Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R> {
