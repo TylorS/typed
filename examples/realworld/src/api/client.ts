@@ -1,6 +1,4 @@
-import { Client } from "effect-http"
-import { RealworldApiSpec } from "./spec"
+import { Client as HttpClient } from "effect-http"
+import { Spec } from "./spec"
 
-export const RealworldApiClient = Client.make(RealworldApiSpec, {
-  baseUrl: "https://conduit.productionready.io"
-})
+export const Client = HttpClient.make(Spec, { baseUrl: "https://localhost:3000/api" })

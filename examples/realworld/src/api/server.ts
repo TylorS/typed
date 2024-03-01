@@ -2,9 +2,9 @@ import { JwtToken } from "@/model"
 import * as Services from "@/services"
 import { Effect, Secret } from "effect"
 import { RouterBuilder } from "effect-http"
-import { RealworldApiSpec } from "./spec"
+import { Spec } from "./spec"
 
-export const RealworldApiServer = RouterBuilder.make(RealworldApiSpec, { enableDocs: true }).pipe(
+export const Server = RouterBuilder.make(Spec, { enableDocs: true }).pipe(
   RouterBuilder.handle("login", ({ body }) => Effect.bindTo(Services.Login.apply(body.user), "user")),
   RouterBuilder.handle(
     "getCurrentUser",
