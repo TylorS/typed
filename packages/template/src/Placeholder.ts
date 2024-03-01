@@ -45,15 +45,21 @@ export namespace Placeholder {
   /**
    * @since 1.0.0
    */
-  export type Context<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer _E, infer R> ? R : never
+  export type Context<T> = [T] extends [never] ? never
+    : [T] extends [Placeholder<infer _A, infer _E, infer R>] ? R
+    : never
   /**
    * @since 1.0.0
    */
-  export type Error<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer E, infer _R> ? E : never
+  export type Error<T> = [T] extends [never] ? never
+    : [T] extends [Placeholder<infer _A, infer E, infer _R>] ? E
+    : never
   /**
    * @since 1.0.0
    */
-  export type Success<T> = [T] extends [never] ? never : T extends Placeholder<infer A, infer _E, infer _R> ? A : never
+  export type Success<T> = [T] extends [never] ? never
+    : [T] extends [Placeholder<infer A, infer _E, infer _R>] ? A
+    : never
 
   /**
    * @since 1.0.0
