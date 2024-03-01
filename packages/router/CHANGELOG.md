@@ -1,5 +1,11 @@
 # @typed/router
 
+## 0.27.5
+
+### Patch Changes
+
+- [`9c9cfc8`](https://github.com/TylorS/typed/commit/9c9cfc86c3c7211d73e4b9a5976e74b581a99b66) Thanks [@TylorS](https://github.com/TylorS)! - Fix parameter order of RouteMatcher.match
+
 ## 0.27.4
 
 ### Patch Changes
