@@ -161,7 +161,7 @@ export function findRootChildNodes(where: HTMLElement): Array<Node> {
     }
   }
 
-  for (let i = length - 1; i >= start; i--) {
+  for (let i = length - 1; i >= Math.max(start, 0); i--) {
     const node = childNodes[i]
 
     if (node.nodeType === node.COMMENT_NODE && node.nodeValue === END) {

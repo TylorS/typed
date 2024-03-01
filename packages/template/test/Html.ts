@@ -270,7 +270,7 @@ describe("Html", () => {
       <script async defer type="module" src="./index.ts"></script>
     </body>
   </html>`,
-      [`<html data-typed="..."><head><title>@typed TodoMVC</title></head><meta charset="utf-8"/><meta name="description" content="@typed TodoMVC"/><meta name="viewport" content="width=device-width, initial-scale=1"/></html><body data-typed="..."><h1>Hello, world!</h1><script async defer type="module" src="./index.ts"></script></body>`]
+      ["<html data-typed=\"...\"><head><title>@typed TodoMVC</title><meta charset=\"utf-8\"/><meta name=\"description\" content=\"@typed TodoMVC\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body><h1>Hello, world!</h1><script async defer type=\"module\" src=\"./index.ts\"></script></body></html>"]
     )
   })
 })

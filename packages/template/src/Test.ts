@@ -224,11 +224,14 @@ export function testHydrate<R, E, Elements>(
       (x) =>
         x.run(Sink.make(
           (cause) =>
-            Cause.failureOrCause(cause).pipe(
-              Either.match({
-                onLeft: (error) => RefArray.append(errors, error),
-                onRight: (cause) => errors.onFailure(cause)
-              })
+            Effect.zipRight(
+              Effect.logError(cause),
+              Cause.failureOrCause(cause).pipe(
+                Either.match({
+                  onLeft: (error) => RefArray.append(errors, error),
+                  onRight: (cause) => errors.onFailure(cause)
+                })
+              )
             ),
           (rendered) => ElementRef.set(elementRef, rendered)
         )),

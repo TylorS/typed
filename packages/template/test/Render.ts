@@ -43,7 +43,7 @@ describe("Render", () => {
 
   test("renders a nested templates", () =>
     Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">Hello, world!</div>`))
+      const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">${html`Hello, world!`}</div>`))
       const rendered = yield* _(elementRef)
 
       ok(rendered instanceof window.HTMLDivElement)

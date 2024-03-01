@@ -287,10 +287,11 @@ class ParserImpl implements Parser {
       this._skipWhitespace = false
       return [this.addPartWithPrevious(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
-      return this._skipWhitespace ? [] : [new Template.TextNode(next.match[1])]
+      return this._skipWhitespace ? [] : (this.path.inc(), [new Template.TextNode(next.match[1])])
     } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
       return parseTextAndParts(next.match[1], (i) => this.addPartWithPrevious(new Template.NodePart(i)))
     } else {
+      this.path.inc()
       return [new Template.TextNode(this.nextChar())]
     }
   }
