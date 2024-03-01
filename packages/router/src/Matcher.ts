@@ -26,13 +26,13 @@ export interface RouteMatcher<A, E, R> {
     <const P extends string, B, E2, R2>(
       route: Route.Route<P> | P,
       f: (ref: RefSubject.RefSubject<Path.ParamsOf<P>>) => Fx.Fx<B, E2, R2>
-    ): RouteMatcher<R | Exclude<R2, Scope.Scope>, E | E2, A | B>
+    ): RouteMatcher<A | B, E | E2, R | Exclude<R2, Scope.Scope>>
 
     <const P extends string, B, E2, R2, C, E3, R3>(
       route: Route.Route<P> | P,
       guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
       f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
-    ): RouteMatcher<R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>, E | E2 | E3, A | C>
+    ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
   }
 
   readonly to: {
