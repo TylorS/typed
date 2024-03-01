@@ -1,5 +1,13 @@
 # @typed/ui
 
+## 0.9.6
+
+### Patch Changes
+
+- Updated dependencies [[`9793c9c`](https://github.com/TylorS/typed/commit/9793c9c50cef11ae6d89085719a1c0c34acbc12a), [`9c9cfc8`](https://github.com/TylorS/typed/commit/9c9cfc86c3c7211d73e4b9a5976e74b581a99b66)]:
+  - @typed/template@0.9.4
+  - @typed/router@0.27.5
+
 ## 0.9.5
 
 ### Patch Changes

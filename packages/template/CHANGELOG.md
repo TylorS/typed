@@ -1,5 +1,11 @@
 # @typed/template
 
+## 0.9.4
+
+### Patch Changes
+
+- [`9793c9c`](https://github.com/TylorS/typed/commit/9793c9c50cef11ae6d89085719a1c0c34acbc12a) Thanks [@TylorS](https://github.com/TylorS)! - Better inference for placeholders
+
 ## 0.9.3
 
 ### Patch Changes
