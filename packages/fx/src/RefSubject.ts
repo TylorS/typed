@@ -284,7 +284,7 @@ export function fromRefSubject<A, E, R>(
 function persistCore<A, E, R, R2>(ref: RefSubject<A, E, R>, core: RefSubjectCore<A, E, R, R2>) {
   // Log any errors that fail to persist, but don't fail the consumer
   return Effect.ignoreLogged(
-    Effect.provide(Effect.flatMap(core.deferredRef, (value) => set(ref, value)), core.runtime)
+    Effect.provide(Effect.flatMap(core.deferredRef, (value) => set(ref, value)), core.runtime.context)
   )
 }
 
@@ -388,8 +388,8 @@ class RefSubjectImpl<A, E, R, R2> extends FxEffectBase<A, E, Exclude<R, R2> | Sc
     super()
 
     this.version = Effect.sync(() => core.deferredRef.version)
-    this.interrupt = Effect.provide(interruptCore(core), core.runtime)
-    this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.runtime)
+    this.interrupt = Effect.provide(interruptCore(core), core.runtime.context)
+    this.subscriberCount = Effect.provide(core.subject.subscriberCount, core.runtime.context)
     this.getSetDelete = getSetDelete(core)
 
     this.runUpdates = this.runUpdates.bind(this)
@@ -400,7 +400,7 @@ class RefSubjectImpl<A, E, R, R2> extends FxEffectBase<A, E, Exclude<R, R2> | Sc
   run<R3>(sink: Sink.Sink<A, E, R3>): Effect.Effect<unknown, never, Exclude<R, R2> | R3 | Scope.Scope> {
     return Effect.matchCauseEffect(getOrInitializeCore(this.core, true), {
       onFailure: (cause) => sink.onFailure(cause),
-      onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.runtime)
+      onSuccess: () => Effect.provide(this.core.subject.run(sink), this.core.runtime.context)
     })
   }
 
@@ -694,7 +694,7 @@ function initializeCoreEffect<A, E, R, R2>(
   lock: boolean
 ): Effect.Effect<Fiber.Fiber<A, E>, never, Exclude<R, R2>> {
   const initialize = Effect.onExit(
-    Effect.provide(core.initial, core.runtime),
+    Effect.provide(core.initial, core.runtime.context),
     (exit) =>
       Effect.sync(() => {
         core._fiber = undefined
@@ -801,7 +801,7 @@ function deleteCore<A, E, R, R2>(
     }
 
     return core.subject.subscriberCount.pipe(
-      Effect.provide(core.runtime),
+      Effect.provide(core.runtime.context),
       Effect.flatMap(
         (count: number) => count > 0 && !core._fiber ? initializeCore(core, false) : Effect.unit
       ),
@@ -826,9 +826,9 @@ function sendEvent<A, E, R, R2>(
   exit: Exit.Exit<A, E>
 ): Effect.Effect<unknown, never, Exclude<R, R2>> {
   if (Exit.isSuccess(exit)) {
-    return Effect.provide(core.subject.onSuccess(exit.value), core.runtime)
+    return Effect.provide(core.subject.onSuccess(exit.value), core.runtime.context)
   } else {
-    return Effect.provide(core.subject.onFailure(exit.cause), core.runtime)
+    return Effect.provide(core.subject.onFailure(exit.cause), core.runtime.context)
   }
 }
 
