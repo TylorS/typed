@@ -22,7 +22,7 @@
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "2.4.0",
+    "effect": "2.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

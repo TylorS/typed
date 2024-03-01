@@ -10,22 +10,8 @@ import * as Client from "./client/index"
 
 // TODO: Handle 404 + other Errors
 
-// Workaround to enable serving documentation assets from /api/docs instead of /docs
-const temporaryDocsWorkaround = HttpServer.router.get(
-  "/docs/*",
-  Effect.flatMap(
-    HttpServer.request.ServerRequest,
-    (req) =>
-      HttpServer.response.empty({
-        status: 303,
-        headers: HttpServer.headers.unsafeFromRecord({ location: `/api${req.url}` })
-      })
-  )
-)
-
 toHttpRouter(Client.router, { layout: Client.document }).pipe(
   HttpServer.router.mountApp("/api", Api.RealworldApiServer),
-  temporaryDocsWorkaround,
   HttpServer.middleware.logger,
   NodeServer.listen({ port: 3000 }),
   Effect.provide(ApiLive),
