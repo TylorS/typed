@@ -77,7 +77,7 @@ const RenderPartMap: RenderPartMap = {
     const element = node as HTMLElement | SVGElement
     const attr = createAttribute(document, element, templatePart.name)
     const renderable = values[templatePart.index]
-    let isSet = true
+    let isSet = false
     const setValue = (value: string | null | undefined) => {
       if (isNullOrUndefined(value)) {
         element.removeAttribute(templatePart.name)
@@ -903,7 +903,7 @@ function matchSettablePart(
   return matchRenderable(renderable, {
     Fx: (fx) => {
       expect()
-      return Fx.observe(fx, (a) => schedule(() => setValue(a)))
+      return Fx.observe(fx, (a) => Effect.uninterruptible(schedule(() => setValue(a))))
     },
     Effect: (effect) => {
       expect()
