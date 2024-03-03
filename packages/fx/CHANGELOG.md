@@ -1,5 +1,16 @@
 # @typed/fx
 
+## 1.27.3
+
+### Patch Changes
+
+- [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05) Thanks [@TylorS](https://github.com/TylorS)! - Better interpolation reliability
+
+- Updated dependencies [[`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05)]:
+  - @typed/async-data@0.7.1
+  - @typed/context@0.25.1
+  - @typed/guard@0.1.3
+
 ## 1.27.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @typed/guard
 
+## 0.1.3
+
+### Patch Changes
+
+- [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05) Thanks [@TylorS](https://github.com/TylorS)! - Better interpolation reliability
+
 ## 0.1.2
 
 ### Patch Changes

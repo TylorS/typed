@@ -1,5 +1,27 @@
 # @typed/core
 
+## 3.2.11
+
+### Patch Changes
+
+- [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05) Thanks [@TylorS](https://github.com/TylorS)! - Better interpolation reliability
+
+- Updated dependencies [[`6d69d94`](https://github.com/TylorS/typed/commit/6d69d940643adb3b371890db139f5b2457b59a06), [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05)]:
+  - @typed/environment@0.6.3
+  - @typed/template@0.9.5
+  - @typed/router@0.27.6
+  - @typed/async-data@0.7.1
+  - @typed/navigation@0.13.4
+  - @typed/context@0.25.1
+  - @typed/decoder@0.16.1
+  - @typed/guard@0.1.3
+  - @typed/route@4.0.3
+  - @typed/path@0.10.2
+  - @typed/dom@13.0.1
+  - @typed/fx@1.27.3
+  - @typed/id@0.6.3
+  - @typed/ui@0.9.7
+
 ## 3.2.10
 
 ### Patch Changes

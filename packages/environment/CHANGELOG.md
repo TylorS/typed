@@ -1,5 +1,16 @@
 # @typed/environment
 
+## 0.6.3
+
+### Patch Changes
+
+- [`6d69d94`](https://github.com/TylorS/typed/commit/6d69d940643adb3b371890db139f5b2457b59a06) Thanks [@TylorS](https://github.com/TylorS)! - Make "test" a modifier of the environment rather than an individual environment
+
+- [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05) Thanks [@TylorS](https://github.com/TylorS)! - Better interpolation reliability
+
+- Updated dependencies [[`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05)]:
+  - @typed/context@0.25.1
+
 ## 0.6.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@typed/navigation",
-  "version": "0.13.3",
+  "version": "0.13.4",
   "description": "",
   "publishConfig": {
     "access": "public",
