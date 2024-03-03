@@ -174,7 +174,7 @@ Check if a node is a DocumentFragment
 **Signature**
 
 ```ts
-export declare function isDocumentFragment(node: Rendered): node is Node
+export declare function isDocumentFragment(node: Rendered): node is DocumentFragment
 ```
 
 Added in v1.0.0

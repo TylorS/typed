@@ -16,6 +16,7 @@ Added in v1.0.0
   - [GetRandomValues](#getrandomvalues)
   - [GetRandomValues (type alias)](#getrandomvalues-type-alias)
   - [getRandomValues](#getrandomvalues-1)
+  - [getRandomValuesNode](#getrandomvaluesnode)
   - [nodeCrypto](#nodecrypto)
   - [pseudoRandom](#pseudorandom)
   - [webCrypto](#webcrypto)
@@ -50,6 +51,16 @@ Added in v1.0.0
 
 ```ts
 export declare const getRandomValues: Layer.Layer<GetRandomValues, never, never>
+```
+
+Added in v1.0.0
+
+## getRandomValuesNode
+
+**Signature**
+
+```ts
+export declare const getRandomValuesNode: (crypto: typeof  length: number) => Uint8Array
 ```
 
 Added in v1.0.0

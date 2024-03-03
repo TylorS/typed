@@ -12,7 +12,13 @@ export type Environment =
   | Environment.Value
   | `test:${Environment.Value}`
 
+/**
+ * @since 1.0.0
+ */
 export namespace Environment {
+  /**
+   * @since 1.0.0
+   */
   export type Value =
     | "dom"
     | "server"
@@ -30,6 +36,9 @@ class EnvironmentValueImpl<T extends Environment.Value> extends String {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export type EnvironmentValue<T extends Environment.Value> = T & {
   readonly test: `test:${T}`
 }

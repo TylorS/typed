@@ -61,7 +61,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Context<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer _E, infer R> ? R : never
+export type Context<T> = [T] extends [never]
+  ? never
+  : [T] extends [Placeholder<infer _A, infer _E, infer R>]
+    ? R
+    : never
 ```
 
 Added in v1.0.0
@@ -71,7 +75,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Error<T> = [T] extends [never] ? never : T extends Placeholder<infer _A, infer E, infer _R> ? E : never
+export type Error<T> = [T] extends [never] ? never : [T] extends [Placeholder<infer _A, infer E, infer _R>] ? E : never
 ```
 
 Added in v1.0.0
@@ -81,7 +85,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Success<T> = [T] extends [never] ? never : T extends Placeholder<infer A, infer _E, infer _R> ? A : never
+export type Success<T> = [T] extends [never]
+  ? never
+  : [T] extends [Placeholder<infer A, infer _E, infer _R>]
+    ? A
+    : never
 ```
 
 Added in v1.0.0

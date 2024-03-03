@@ -41,20 +41,20 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface RouteMatcher<A, E, R> {
-  readonly guards: ReadonlyArray<RouteGuard<any, any, A, E, R, E, R>>
+export interface RouteMatcher<out A, out E, out R> {
+  readonly guards: ReadonlyArray<RouteGuard<string, any, A, E, R, E, R>>
 
   readonly match: {
     <const P extends string, B, E2, R2>(
       route: Route.Route<P> | P,
       f: (ref: RefSubject.RefSubject<Path.ParamsOf<P>>) => Fx.Fx<B, E2, R2>
-    ): RouteMatcher<R | Exclude<R2, Scope.Scope>, E | E2, A | B>
+    ): RouteMatcher<A | B, E | E2, R | Exclude<R2, Scope.Scope>>
 
     <const P extends string, B, E2, R2, C, E3, R3>(
       route: Route.Route<P> | P,
       guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
       f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
-    ): RouteMatcher<R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>, E | E2 | E3, A | C>
+    ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
   }
 
   readonly to: {
@@ -80,7 +80,7 @@ export interface RouteMatcher<A, E, R> {
 
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
-    ...[params]: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
+    ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
   ) => Fx.Fx<
     A,
     Exclude<E, Navigation.RedirectError>,

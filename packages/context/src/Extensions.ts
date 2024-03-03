@@ -45,7 +45,13 @@ export function Tagged<S>(id?: unknown) {
  * @since 1.0.0
  */
 export namespace Tagged {
+  /**
+   * @since 1.0.0
+   */
   export type Service<T> = T extends Actions<any, infer S> ? S : T extends Provision<any, infer S> ? S : never
+  /**
+   * @since 1.0.0
+   */
   export type Identifier<T> = T extends Actions<infer I, any> ? I : T extends Provision<infer I, any> ? I : never
 }
 

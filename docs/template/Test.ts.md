@@ -136,7 +136,7 @@ export declare function testRender<E, R>(
   fx: Fx.Fx<RenderEvent, E, R>,
   options?: HappyDOMOptions & {
     readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K]
-  }
+  } & { renderTimeout?: DurationInput }
 ): Effect.Effect<
   TestRender<E>,
   never,

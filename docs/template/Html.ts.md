@@ -13,6 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
+  - [renderHtmlTemplate](#renderhtmltemplate)
   - [renderToHtml](#rendertohtml)
   - [renderToHtmlString](#rendertohtmlstring)
   - [serverLayer](#serverlayer)
@@ -21,6 +22,16 @@ Added in v1.0.0
 ---
 
 # utils
+
+## renderHtmlTemplate
+
+**Signature**
+
+```ts
+export declare function renderHtmlTemplate(ctx: RenderContext.RenderContext)
+```
+
+Added in v1.0.0
 
 ## renderToHtml
 

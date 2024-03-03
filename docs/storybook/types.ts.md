@@ -126,7 +126,7 @@ Added in v1.0.0
 ```ts
 export type StoryObj<Args, T extends Meta<any> = never> = Types.Simplify<
   Omit<StoryAnnotations<TypedRenderer, Args, Omit<Args, keyof T["args"]>>, "render"> & {
-    readonly render: (
+    render: (
       args: Args,
       ctx: Types.Simplify<StoryContext<typeof args> & { readonly component: T["component"] }>
     ) => TypedRenderer["storyResult"]

@@ -30,6 +30,7 @@ Added in v1.20.0
   - [done](#done)
   - [fail](#fail)
   - [failCause](#failcause)
+  - [isSuccess](#issuccess)
   - [mapInput](#mapinput)
   - [mapInputEffect](#mapinputeffect)
   - [matchAsyncData](#matchasyncdata)
@@ -224,6 +225,16 @@ export declare const failCause: {
     options?: AsyncData.OptionalPartial<AsyncData.FailureOptions>
   ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 }
+```
+
+Added in v1.20.0
+
+## isSuccess
+
+**Signature**
+
+```ts
+export declare const isSuccess: <A, E, R>(ref: RefAsyncData<A, E, R>) => RefSubject.Computed<boolean, never, R>
 ```
 
 Added in v1.20.0

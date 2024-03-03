@@ -351,7 +351,14 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Context<T> = T extends RefSubject<infer _A, infer _E, infer R> ? R : never
+export type Context<T> =
+  T extends RefSubject<infer _A, infer _E, infer R>
+    ? R
+    : T extends Computed<infer _A, infer _E, infer R>
+      ? R
+      : T extends Filtered<infer _A, infer _E, infer R>
+        ? R
+        : never
 ```
 
 Added in v1.20.0
@@ -361,7 +368,14 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Error<T> = T extends RefSubject<infer _A, infer E, infer _R> ? E : never
+export type Error<T> =
+  T extends RefSubject<infer _A, infer E, infer _R>
+    ? E
+    : T extends Computed<infer _A, infer E, infer _R>
+      ? E
+      : T extends Filtered<infer _A, infer E, infer _R>
+        ? E
+        : never
 ```
 
 Added in v1.20.0
@@ -381,7 +395,14 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Success<T> = T extends RefSubject<infer A, infer _E, infer _R> ? A : never
+export type Success<T> =
+  T extends RefSubject<infer A, infer _E, infer _R>
+    ? A
+    : T extends Computed<infer A, infer _E, infer _R>
+      ? A
+      : T extends Filtered<infer A, infer _E, infer _R>
+        ? A
+        : never
 ```
 
 Added in v1.20.0
@@ -783,17 +804,13 @@ Added in v1.20.0
 
 ```ts
 export declare const map: {
-  <A, B>(
-    f: (a: A) => B
-  ): {
-    <E, R>(ref: RefSubject<A, E, R>): Computed<B, E, R>
-    <E, R>(ref: Computed<A, E, R>): Computed<B, E, R>
-    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E, R>
-    <R0, E0, R, E, E2, R2>(
-      versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
-      f: (a: A) => B
-    ): Computed<B, E0 | E | E2, R0 | R2>
-  }
+  <T extends RefSubject.Any | Computed.Any | Filtered.Any, B>(
+    f: (a: RefSubject.Success<T>) => B
+  ): (
+    ref: T
+  ) => T extends Filtered.Any
+    ? Filtered<B, RefSubject.Error<T>, RefSubject.Context<T>>
+    : Computed<B, RefSubject.Error<T>, RefSubject.Context<T>>
   <A, E, R, B>(ref: RefSubject<A, E, R> | Computed<A, E, R>, f: (a: A) => B): Computed<B, E, R>
   <A, E, R, B>(filtered: Filtered<A, E, R>, f: (a: A) => B): Filtered<B, E, R>
   <R0, E0, A, E, R, B, E2, R2>(
@@ -813,16 +830,13 @@ Added in v1.20.0
 
 ```ts
 export declare const mapEffect: {
-  <A, B, E2, R2>(
-    f: (a: A) => Effect.Effect<B, E2, R2>
-  ): {
-    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Computed<B, E2 | E, R2 | R>
-    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E2 | E, R2 | R>
-    <R0, E0, R, E, E2, R2, C>(
-      versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
-      f: (a: A) => Effect.Effect<C, E2, R2>
-    ): Computed<C, E0 | E | E2, R0 | R | R2>
-  }
+  <T extends RefSubject.Any | Computed.Any | Filtered.Any, B, E2, R2>(
+    f: (a: RefSubject.Success<T>) => Effect.Effect<B, E2, R2>
+  ): (
+    ref: T
+  ) => T extends Filtered.Any
+    ? Filtered<B, E2 | RefSubject.Error<T>, R2 | RefSubject.Context<T>>
+    : Computed<B, E2 | RefSubject.Error<T>, R2 | RefSubject.Context<T>>
   <A, E, R, B, E2, R2>(
     ref: RefSubject<A, E, R> | Computed<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>

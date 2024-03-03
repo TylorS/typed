@@ -19,6 +19,9 @@ Added in v1.0.0
   - [CurrentEnvironment (type alias)](#currentenvironment-type-alias)
   - [Environment](#environment)
   - [Environment (type alias)](#environment-type-alias)
+  - [Environment (namespace)](#environment-namespace)
+    - [Value (type alias)](#value-type-alias)
+  - [EnvironmentValue (type alias)](#environmentvalue-type-alias)
   - [isDom](#isdom)
   - [isServer](#isserver)
   - [isServiceWorker](#isserviceworker)
@@ -56,12 +59,11 @@ Added in v1.0.0
 
 ```ts
 export declare const Environment: {
-  readonly dom: "dom"
-  readonly server: "server"
-  readonly serviceWorker: "serviceWorker"
-  readonly static: "static"
-  readonly test: "test"
-  readonly webWorker: "webWorker"
+  dom: EnvironmentValue<"dom">
+  server: EnvironmentValue<"server">
+  serviceWorker: EnvironmentValue<"serviceWorker">
+  static: EnvironmentValue<"static">
+  webWorker: EnvironmentValue<"webWorker">
 }
 ```
 
@@ -72,7 +74,33 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Environment = "dom" | "server" | "serviceWorker" | "static" | "test" | "webWorker"
+export type Environment = Environment.Value | `test:${Environment.Value}`
+```
+
+Added in v1.0.0
+
+## Environment (namespace)
+
+Added in v1.0.0
+
+### Value (type alias)
+
+**Signature**
+
+```ts
+export type Value = "dom" | "server" | "serviceWorker" | "static" | "webWorker"
+```
+
+Added in v1.0.0
+
+## EnvironmentValue (type alias)
+
+**Signature**
+
+```ts
+export type EnvironmentValue<T extends Environment.Value> = T & {
+  readonly test: `test:${T}`
+}
 ```
 
 Added in v1.0.0

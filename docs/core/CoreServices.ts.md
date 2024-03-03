@@ -18,6 +18,10 @@ Added in v1.0.0
   - [CoreDomServices (type alias)](#coredomservices-type-alias)
   - [CoreServices (type alias)](#coreservices-type-alias)
   - [fromWindow](#fromwindow)
+  - [hydrateFromWindow](#hydratefromwindow)
+  - [server](#server)
+  - [static](#static)
+  - [static\_](#static_)
 
 ---
 
@@ -46,21 +50,67 @@ export type CoreServices =
   | Navigation.Navigation
   | Router.CurrentRoute
   | RenderContext.RenderContext
+  | RenderTemplate
 ```
 
 Added in v1.0.0
 
 ## fromWindow
 
-Construct CoreServices from a browser's Window object
-
 **Signature**
 
 ```ts
 export declare function fromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams & {
+    readonly skipRenderScheduling?: boolean
+  }
 ): Layer.Layer<CoreDomServices>
+```
+
+Added in v1.0.0
+
+## hydrateFromWindow
+
+**Signature**
+
+```ts
+export declare function hydrateFromWindow(
+  window: Window & GlobalThis,
+  options?: DomServicesElementParams & {
+    readonly skipRenderScheduling?: boolean
+  }
+): Layer.Layer<CoreDomServices>
+```
+
+Added in v1.0.0
+
+## server
+
+**Signature**
+
+```ts
+export declare function server(options: Navigation.InitialMemoryOptions): Layer.Layer<CoreServices>
+```
+
+Added in v1.0.0
+
+## static
+
+**Signature**
+
+```ts
+export declare const static: typeof static_
+```
+
+Added in v1.0.0
+
+## static\_
+
+**Signature**
+
+```ts
+function static_(options: Navigation.InitialMemoryOptions): Layer.Layer<CoreServices>
 ```
 
 Added in v1.0.0

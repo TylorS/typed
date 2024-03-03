@@ -50,6 +50,7 @@ export function fromWindow(
     Router.browser
   ).pipe(Layer.provideMerge(renderLayer(window, options)))
 }
+
 /**
  * @since 1.0.0
  */
@@ -97,6 +98,8 @@ function static_(
 }
 
 export {
-  /** */
+  /**
+   * @since 1.0.0
+   */
   static_ as static
 }

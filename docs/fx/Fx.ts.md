@@ -247,6 +247,7 @@ Added in v1.20.0
   - [toEnqueue](#toenqueue)
   - [toReadonlyArray](#toreadonlyarray)
   - [tuple](#tuple)
+  - [unify](#unify)
   - [uninterruptible](#uninterruptible)
   - [until](#until)
   - [when](#when)
@@ -652,7 +653,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Unify<T> = T extends Fx<infer A, infer E, infer R> | infer _ ? Fx<A, E, R> : never
+export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R> | infer _] ? Fx<A, E, R> : never
 ```
 
 Added in v1.20.0
@@ -3571,6 +3572,16 @@ Added in v1.20.0
 export declare const tuple: <const FX extends readonly Fx<any, any, any>[]>(
   fx: FX
 ) => Fx<{ readonly [K in keyof FX]: Fx.Success<FX[K]> }, Fx.Error<FX[number]>, Fx.Context<FX[number]>>
+```
+
+Added in v1.20.0
+
+## unify
+
+**Signature**
+
+```ts
+export declare const unify: <T extends Fx<any, any, any>>(fx: T) => Fx.Unify<T>
 ```
 
 Added in v1.20.0

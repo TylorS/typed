@@ -546,7 +546,8 @@ Added in v1.0.0
 export declare class Template { constructor(
     readonly nodes: ReadonlyArray<Node>,
     readonly hash: string,
-    // Parts are a array of Parts to the respective path from the root node to access it during
+    // Parts are a array of Parts to the respective path from the root node to access it prior to rendering
+    /// any nodes/elements into the template.
     readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: Chunk<number>]>
   ) }
 ```

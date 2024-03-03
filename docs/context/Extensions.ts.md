@@ -25,6 +25,9 @@ Added in v1.0.0
   - [Provision](#provision)
   - [Provision (interface)](#provision-interface)
   - [Tagged](#tagged)
+  - [Tagged (namespace)](#tagged-namespace)
+    - [Identifier (type alias)](#identifier-type-alias)
+    - [Service (type alias)](#service-type-alias)
   - [withProvision](#withprovision)
 
 ---
@@ -174,6 +177,30 @@ export declare function Tagged<S>(): {
   <const I extends IdentifierFactory<any>>(id: I): Tagged<IdentifierOf<I>, S>
   <const I>(id: I | string): Tagged<IdentifierOf<I>, S>
 }
+```
+
+Added in v1.0.0
+
+## Tagged (namespace)
+
+Added in v1.0.0
+
+### Identifier (type alias)
+
+**Signature**
+
+```ts
+export type Identifier<T> = T extends Actions<infer I, any> ? I : T extends Provision<infer I, any> ? I : never
+```
+
+Added in v1.0.0
+
+### Service (type alias)
+
+**Signature**
+
+```ts
+export type Service<T> = T extends Actions<any, infer S> ? S : T extends Provision<any, infer S> ? S : never
 ```
 
 Added in v1.0.0
