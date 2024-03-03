@@ -31,7 +31,7 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
         const ctx = get(context, RenderContext)
         const hydrateContext = getOption(context, HydrateContext)
 
-        if (ctx.environment === "dom") {
+        if (ctx.environment === "dom" || ctx.environment === "test:dom") {
           // If we're hydrating, attempt to provide the correct HydrateContext to rendering Fx
           if (isSome(hydrateContext) && hydrateContext.value.hydrate) {
             return Fx.keyed(values, {

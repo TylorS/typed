@@ -9,24 +9,45 @@ import type * as Effect from "effect/Effect"
  * @since 1.0.0
  */
 export type Environment =
-  | "dom"
-  | "server"
-  | "serviceWorker"
-  | "static"
-  | "test"
-  | "webWorker"
+  | Environment.Value
+  | `test:${Environment.Value}`
+
+export namespace Environment {
+  export type Value =
+    | "dom"
+    | "server"
+    | "serviceWorker"
+    | "static"
+    | "webWorker"
+}
+
+class EnvironmentValueImpl<T extends Environment.Value> extends String {
+  readonly test: string
+  constructor(value: T) {
+    super(value)
+
+    this.test = `test:${value}` as `test:${T}`
+  }
+}
+
+export type EnvironmentValue<T extends Environment.Value> = T & {
+  readonly test: `test:${T}`
+}
+
+function EnvironmentValue<const T extends Environment.Value>(value: T): EnvironmentValue<T> {
+  return new EnvironmentValueImpl(value) as any
+}
 
 /**
  * @since 1.0.0
  */
-export const Environment: { readonly [_ in Environment]: _ } = {
-  dom: "dom",
-  server: "server",
-  serviceWorker: "serviceWorker",
-  static: "static",
-  test: "test",
-  webWorker: "webWorker"
-}
+export const Environment = {
+  dom: EnvironmentValue("dom"),
+  server: EnvironmentValue("server"),
+  serviceWorker: EnvironmentValue("serviceWorker"),
+  static: EnvironmentValue("static"),
+  webWorker: EnvironmentValue("webWorker")
+} satisfies { readonly [_ in Environment.Value]: EnvironmentValue<_> }
 
 /**
  * @since 1.0.0
@@ -62,7 +83,9 @@ export const isStatic: Effect.Effect<boolean, never, CurrentEnvironment> = Curre
 /**
  * @since 1.0.0
  */
-export const isTest: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) => e === "test")
+export const isTest: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
+  e.startsWith("test:")
+)
 
 /**
  * @since 1.0.0

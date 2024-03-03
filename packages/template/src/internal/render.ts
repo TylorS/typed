@@ -600,7 +600,6 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
     values: Values
   ) => {
     const entry = getBrowserEntry(document, renderContext, templateStrings)
-    console.log("entry", ...entry.template.nodes)
     if (values.length === 0) {
       return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
     }

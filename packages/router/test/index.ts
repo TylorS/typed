@@ -1,4 +1,4 @@
-import { CurrentEnvironment } from "@typed/environment"
+import { CurrentEnvironment, Environment } from "@typed/environment"
 import * as Fx from "@typed/fx"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
@@ -44,5 +44,5 @@ describe("Router", () => {
 const resources = (url: string) =>
   Navigation.initialMemory({ url }).pipe(
     Layer.provideMerge(Router.layer("/")),
-    Layer.provideMerge(CurrentEnvironment.layer("test"))
+    Layer.provideMerge(CurrentEnvironment.layer(Environment.dom.test))
   )

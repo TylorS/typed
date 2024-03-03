@@ -75,7 +75,7 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
     Placeholder.Error<Values[number]>,
     Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>
   > => {
-    const isStatic = ctx.environment === "static"
+    const isStatic = ctx.environment === "static" || ctx.environment === "test:static"
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
 
     if (values.length === 0) {
