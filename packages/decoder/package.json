@@ -1,6 +1,6 @@
 {
   "name": "@typed/decoder",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "",
   "publishConfig": {
     "access": "public",

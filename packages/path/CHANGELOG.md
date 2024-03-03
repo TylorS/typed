@@ -1,5 +1,11 @@
 # @typed/path
 
+## 0.10.2
+
+### Patch Changes
+
+- [`d8ff1e2`](https://github.com/TylorS/typed/commit/d8ff1e2bc2538d4b17d6c05b781ab2237d833f05) Thanks [@TylorS](https://github.com/TylorS)! - Better interpolation reliability
+
 ## 0.10.1
 
 ### Patch Changes
