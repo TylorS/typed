@@ -7,6 +7,7 @@ import { Effect, ExecutionStrategy, Exit, Runtime } from "effect"
 import type { Cause } from "effect/Cause"
 import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
+import { hasProperty } from "effect/Predicate"
 import * as Scope from "effect/Scope"
 import { uncapitalize } from "effect/String"
 import type { Directive } from "../Directive.js"
@@ -41,7 +42,7 @@ import {
   TextPartImpl
 } from "./parts.js"
 import type { ParentChildNodes } from "./utils.js"
-import { findHoleComment, findPath } from "./utils.js"
+import { findPath } from "./utils.js"
 
 // TODO: We need to re-think hydration for dynamic lists, probably just markers should be fine
 
@@ -147,10 +148,10 @@ const RenderPartMap: RenderPartMap = {
   },
   "comment-part": (templatePart, node, ctx) => {
     const { refCounter, renderContext, values } = ctx
-    const comment = findHoleComment(node as Element, templatePart.index)
+    const comment = node as Comment
     const renderable = values[templatePart.index]
     const setValue = (value: string | null | undefined) => {
-      comment.textContent = isNullOrUndefined(value) ? "" : String(value)
+      comment.nodeValue = isNullOrUndefined(value) ? "" : String(value)
     }
 
     return matchSettablePart(
@@ -242,7 +243,7 @@ const RenderPartMap: RenderPartMap = {
   "property": (templatePart, node, ctx) => {
     const element = node as HTMLElement | SVGElement
     const renderable = ctx.values[templatePart.index]
-    const setValue = (value: string | null | undefined) => {
+    const setValue = (value: unknown) => {
       if (isNullOrUndefined(value)) {
         delete (element as any)[templatePart.name]
       } else {
@@ -260,7 +261,6 @@ const RenderPartMap: RenderPartMap = {
   },
   "properties": (templatePart, node, ctx) => {
     const renderable = ctx.values[templatePart.index] as any as Record<string, any>
-
     if (isNullOrUndefined(renderable)) return null
     else if (Fx.isFx(renderable) || Effect.isEffect(renderable)) {
       throw new Error(`Properties Part must utilize an Record of renderable values.`)
@@ -407,11 +407,9 @@ const RenderPartMap: RenderPartMap = {
     const element = node as HTMLElement | SVGElement
     const attr = createAttribute(ctx.document, element, templatePart.name)
 
-    const setValue = (value: string | null | undefined, index: number) =>
-      Effect.suspend(() => {
-        values[index] = value || ""
-        return ctx.renderContext.queue.add(element, () => attr.value = values.join(""))
-      })
+    const setValue = (value: string | null | undefined, index: number) => {
+      values[index] = value ?? ""
+    }
 
     const effects: Array<Effect.Effect<void, any, any>> = []
 
@@ -429,7 +427,11 @@ const RenderPartMap: RenderPartMap = {
             new AttributePartImpl(
               templatePart.name,
               node.index,
-              ({ value }) => setValue(value, index),
+              ({ value }) =>
+                Effect.zipRight(
+                  ctx.renderContext.queue.add(element, () => setValue(value, index)),
+                  ctx.refCounter.release(node.index)
+                ),
               attr.value
             ),
           (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(node.index)),
@@ -440,6 +442,11 @@ const RenderPartMap: RenderPartMap = {
           effects.push(effect)
         }
       }
+    }
+
+    if (effects.length === 0) {
+      attr.value = values.join("")
+      element.setAttributeNode(attr)
     }
 
     return effects
@@ -465,11 +472,12 @@ const RenderPartMap: RenderPartMap = {
     const values = Array.from({ length: templatePart.nodes.length }, (): string => "")
     const comment = node as Comment
 
-    const setValue = (value: string | null | undefined, index: number) =>
-      Effect.suspend(() => {
-        values[index] = value || ""
-        return ctx.renderContext.queue.add(comment, () => comment.textContent = values.join(""))
-      })
+    const setValue = (value: string | null | undefined, index: number) => {
+      values[index] = value ?? ""
+    }
+    const flushValue = () => {
+      comment.data = values.join("")
+    }
 
     const effects: Array<Effect.Effect<void, any, any>> = []
 
@@ -482,11 +490,18 @@ const RenderPartMap: RenderPartMap = {
         const index = i
         const effect = matchSettablePart(
           renderable,
-          (value) => setValue(value, index),
+          (value) => {
+            setValue(value, index)
+            flushValue()
+          },
           () =>
             new CommentPartImpl(
               node.index,
-              ({ value }) => setValue(value, index),
+              ({ value }) => (setValue(value, index),
+                Effect.zipRight(
+                  ctx.renderContext.queue.add(comment, () => flushValue()),
+                  ctx.refCounter.release(node.index)
+                )),
               null
             ),
           (f) => Effect.zipRight(ctx.renderContext.queue.add(comment, f), ctx.refCounter.release(node.index)),
@@ -497,6 +512,10 @@ const RenderPartMap: RenderPartMap = {
           effects.push(effect)
         }
       }
+    }
+
+    if (effects.length === 0) {
+      flushValue()
     }
 
     return effects
@@ -581,6 +600,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
     values: Values
   ) => {
     const entry = getBrowserEntry(document, renderContext, templateStrings)
+    console.log("entry", ...entry.template.nodes)
     if (values.length === 0) {
       return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
     }
@@ -803,7 +823,7 @@ function buildNode(document: Document, node: Template.Node, isSvgContext: boolea
     case "comment":
       return document.createComment(node.value)
     case "sparse-comment":
-      return document.createComment("")
+      return document.createComment(`hole${node.nodes.map((n) => n._tag === "text" ? "" : n.index).join("")}`)
     // Create placeholders for these elements
     case "comment-part":
     case "node":
@@ -903,7 +923,7 @@ function matchSettablePart(
   return matchRenderable(renderable, {
     Fx: (fx) => {
       expect()
-      return Fx.observe(fx, (a) => Effect.uninterruptible(schedule(() => setValue(a))))
+      return Fx.observe(fx, (a) => schedule(() => setValue(a)))
     },
     Effect: (effect) => {
       expect()
@@ -912,7 +932,7 @@ function matchSettablePart(
     Directive: (directive) => {
       expect()
       const part = makePart()
-      return Effect.flatMap(directive(part), () => schedule(() => setValue(part.value)))
+      return runDirective(directive, part, setValue, schedule)
     },
     Otherwise: (otherwise) => {
       setValue(otherwise)
@@ -935,5 +955,18 @@ function matchRenderable(renderable: Renderable<any, any>, matches: {
     return matches.Directive(renderable)
   } else {
     return matches.Otherwise(renderable)
+  }
+}
+
+function runDirective(
+  directive: Directive<any, any>,
+  part: Part,
+  setValue: (value: any) => void,
+  schedule: (f: () => void) => Effect.Effect<void, never, Scope.Scope>
+): Effect.Effect<void, any, any> {
+  if (hasProperty(part, "update")) {
+    return directive({ ...part, update: (value: any) => schedule(() => setValue(value)) })
+  } else {
+    return Effect.flatMap(directive(part), () => schedule(() => setValue(part.value)))
   }
 }

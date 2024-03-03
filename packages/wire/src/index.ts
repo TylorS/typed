@@ -184,7 +184,7 @@ export function isComment(node: Rendered): node is Comment {
  * Check if a node is a DocumentFragment
  * @since 1.0.0
  */
-export function isDocumentFragment(node: Rendered): node is Node {
+export function isDocumentFragment(node: Rendered): node is DocumentFragment {
   if (!isArray(node)) return node.nodeType === node.DOCUMENT_FRAGMENT_NODE
   return false
 }

@@ -13,6 +13,7 @@ import * as Sink from "@typed/fx/Sink"
 import { type Rendered } from "@typed/wire"
 import { Layer } from "effect"
 import * as Cause from "effect/Cause"
+import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Fiber from "effect/Fiber"
@@ -60,6 +61,7 @@ export function testRender<E, R>(
   options?:
     & HappyDOMOptions
     & { readonly [K in keyof DomServicesElementParams]?: (document: Document) => DomServicesElementParams[K] }
+    & { renderTimeout?: DurationInput }
 ): Effect.Effect<
   TestRender<E>,
   never,
@@ -105,7 +107,10 @@ export function testRender<E, R>(
     yield* _(adjustTime(1))
 
     // Await the first render
-    yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
+    yield* _(
+      Fx.first(elementRef),
+      Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), options?.renderTimeout ?? 1000))
+    )
 
     return test
   })

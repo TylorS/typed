@@ -38,6 +38,38 @@ export function it<E, A>(
   )
 }
 
+it.only = function it<E, A>(
+  name: string,
+  test: () => Effect.Effect<A, E, Scope>,
+  options?: vitest.TestOptions
+) {
+  return vitest.it.only(
+    name,
+    () =>
+      test().pipe(
+        Effect.scoped,
+        Effect.runPromise
+      ),
+    options
+  )
+}
+
+it.skip = function it<E, A>(
+  name: string,
+  test: () => Effect.Effect<A, E, Scope>,
+  options?: vitest.TestOptions
+) {
+  return vitest.it.skip(
+    name,
+    () =>
+      test().pipe(
+        Effect.scoped,
+        Effect.runPromise
+      ),
+    options
+  )
+}
+
 /**
  * @since 1.0.0
  */
@@ -49,6 +81,44 @@ export function test<E, A>(
   options?: vitest.TestOptions
 ) {
   return vitest.it(
+    name,
+    () =>
+      TestClock.testClockWith((clock) => test({ clock })).pipe(
+        Effect.provide(TestContext.TestContext),
+        Effect.scoped,
+        Effect.runPromise
+      ),
+    options
+  )
+}
+
+test.only = function test<E, A>(
+  name: string,
+  test: (options: {
+    readonly clock: TestClock.TestClock
+  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  options?: vitest.TestOptions
+) {
+  return vitest.it.only(
+    name,
+    () =>
+      TestClock.testClockWith((clock) => test({ clock })).pipe(
+        Effect.provide(TestContext.TestContext),
+        Effect.scoped,
+        Effect.runPromise
+      ),
+    options
+  )
+}
+
+test.skip = function test<E, A>(
+  name: string,
+  test: (options: {
+    readonly clock: TestClock.TestClock
+  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  options?: vitest.TestOptions
+) {
+  return vitest.it.skip(
     name,
     () =>
       TestClock.testClockWith((clock) => test({ clock })).pipe(

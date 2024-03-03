@@ -334,9 +334,8 @@ export class TextPartImpl extends base("text") implements TextPart {
   // TODO: Make this properly
   static browser(document: Document, index: number, element: Element, ctx: RenderContext) {
     const comment = findHoleComment(element, index)
-    const text = comment.previousSibling && isText(comment.previousSibling)
-      ? comment.previousSibling
-      : document.createTextNode("")
+    const text = document.createTextNode("")
+    element.insertBefore(text, comment)
 
     return new TextPartImpl(
       index,
