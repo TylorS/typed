@@ -1,5 +1,13 @@
 # @typed/router
 
+## 0.27.7
+
+### Patch Changes
+
+- Updated dependencies [[`a7e0e92`](https://github.com/TylorS/typed/commit/a7e0e92bfcdcbdb65553c75d5fdc714f41aee15d)]:
+  - @typed/fx@1.27.4
+  - @typed/navigation@0.13.5
+
 ## 0.27.6
 
 ### Patch Changes

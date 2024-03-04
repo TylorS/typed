@@ -1,6 +1,6 @@
 {
   "name": "@typed/ui",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "description": "",
   "publishConfig": {
     "access": "public",

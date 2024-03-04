@@ -1,5 +1,11 @@
 # @typed/fx
 
+## 1.27.4
+
+### Patch Changes
+
+- [`a7e0e92`](https://github.com/TylorS/typed/commit/a7e0e92bfcdcbdb65553c75d5fdc714f41aee15d) Thanks [@TylorS](https://github.com/TylorS)! - Improve Subject error handling
+
 ## 1.27.3
 
 ### Patch Changes
