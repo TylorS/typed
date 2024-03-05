@@ -1,5 +1,12 @@
 # @typed/fx
 
+## 1.27.5
+
+### Patch Changes
+
+- Updated dependencies [[`15414fd`](https://github.com/TylorS/typed/commit/15414fdefa9521c6eb9971133ccab00c293596b3)]:
+  - @typed/async-data@0.7.2
+
 ## 1.27.4
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @typed/router
 
+## 0.27.8
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @typed/fx@1.27.5
+  - @typed/navigation@0.13.6
+
 ## 0.27.7
 
 ### Patch Changes
