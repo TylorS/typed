@@ -51,16 +51,21 @@ export const diffable = (document: Document) => (node: Node, operation: number):
  * otherwise return the first child.
  * @since 1.0.0
  */
-export const persistent = (fragment: DocumentFragment): DocumentFragment | Node | Wire => {
+export const persistent = (document: Document, fragment: DocumentFragment): DocumentFragment | Node | Wire => {
   const { childNodes } = fragment
-  const { length } = childNodes
+  let { length } = childNodes
 
   if (length === 0) return fragment
   if (length === 1) return childNodes[0]
 
-  const nodes = Array.from(childNodes)
-  const firstChild = nodes[0]
-  const lastChild = nodes[length - 1]
+  const firstChild = document.createComment("<>")
+  const lastChild = document.createComment("</>")
+
+  // Add the first and last child comments
+  length += 2
+
+  fragment.prepend(firstChild)
+  fragment.append(lastChild)
 
   return {
     ELEMENT_NODE,
@@ -69,13 +74,27 @@ export const persistent = (fragment: DocumentFragment): DocumentFragment | Node 
     firstChild,
     lastChild,
     valueOf(): DocumentFragment {
-      if (childNodes.length !== length) {
-        let i = 0
-        while (i < length) fragment.append(nodes[i++])
+      const nodes = getAllSiblingsBetween(firstChild, lastChild)
+
+      if (fragment.childNodes.length !== nodes.length) {
+        fragment.replaceChildren(...getAllSiblingsBetween(firstChild, lastChild))
+        length = nodes.length
       }
+
       return fragment
     }
   }
+}
+
+function getAllSiblingsBetween(start: Node, end: Node): Array<Node> {
+  const siblings = [start]
+  let node = start
+  while (node && node !== end) {
+    siblings.push(node)
+    node = node.nextSibling as Node
+  }
+  siblings.push(end)
+  return siblings
 }
 
 /**

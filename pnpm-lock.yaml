@@ -757,6 +757,9 @@ importers:
       effect:
         specifier: ^2.4.1
         version: 2.4.1
+      ts-toolbelt:
+        specifier: ^9.6.0
+        version: 9.6.0
     publishDirectory: dist
 
   packages/storybook:

@@ -47,13 +47,23 @@ export interface RouteMatcher<out A, out E, out R> {
     f: (b: B) => C
   ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
-  readonly notFound: <B, E2, R2>(
-    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2> | Effect.Effect<B, E2, R2>
-  ) => Fx.Fx<
-    A | B,
-    Exclude<E | E2, Navigation.RedirectError>,
-    Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope
-  >
+  readonly notFound: {
+    <B, E2, R2>(
+      f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2>
+    ): Fx.Fx<
+      A | B,
+      Exclude<E | E2, Navigation.RedirectError>,
+      Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope
+    >
+
+    <B, E2, R2>(
+      f: (destination: typeof Navigation.CurrentEntry) => Effect.Effect<B, E2, R2>
+    ): Fx.Fx<
+      A | B,
+      Exclude<E | E2, Navigation.RedirectError>,
+      Navigation.Navigation | CurrentEnvironment | R | R2 | Scope.Scope
+    >
+  }
 
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
@@ -112,6 +122,26 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
   ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>> {
     return this.match(route, Fx.map(f))
   }
+
+  notFound<B, E2, R2>(
+    f: (
+      destination: RefSubject.Computed<Navigation.Destination, never, Navigation.Navigation>
+    ) => Fx.Fx<B, E2, R2>
+  ): Fx.Fx<
+    A | B,
+    Exclude<E | E2, Navigation.RedirectError>,
+    R | R2 | CurrentEnvironment | Navigation.Navigation | Scope.Scope
+  >
+
+  notFound<B, E2, R2>(
+    f: (
+      destination: RefSubject.Computed<Navigation.Destination, never, Navigation.Navigation>
+    ) => Effect.Effect<B, E2, R2>
+  ): Fx.Fx<
+    A | B,
+    Exclude<E | E2, Navigation.RedirectError>,
+    R | R2 | CurrentEnvironment | Navigation.Navigation | Scope.Scope
+  >
 
   notFound<B, E2, R2>(
     f: (

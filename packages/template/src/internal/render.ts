@@ -595,13 +595,13 @@ export function renderPart2(
  */
 export const renderTemplate: (document: Document, renderContext: RenderContext) => RenderTemplate =
   (document, renderContext) =>
-  <Values extends ReadonlyArray<Renderable<any, any>>, T extends Rendered = Rendered>(
+  <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
   ) => {
     const entry = getBrowserEntry(document, renderContext, templateStrings)
     if (values.length === 0) {
-      return Fx.sync(() => DomRenderEvent(persistent(document.importNode(entry.content, true))))
+      return Fx.sync(() => DomRenderEvent(persistent(document, document.importNode(entry.content, true))))
     }
 
     return Fx.make<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>>((
@@ -642,7 +642,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         // Fork any effects necessary
         if (effects.length > 0) {
           for (let i = 0; i < effects.length; ++i) {
-            runFork(effects[i], { scope })
+            runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
           }
         }
 
@@ -653,7 +653,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
         }
 
         // Create a persistent wire from our content
-        const wire = persistent(content) as T
+        const wire = persistent(document, content)
 
         // Setup our event listeners for our wire.
         // We use the parentScope to allow event listeners to exist

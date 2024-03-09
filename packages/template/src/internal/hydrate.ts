@@ -107,7 +107,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         // Fork any effects necessary
         if (effects.length > 0) {
           for (let i = 0; i < effects.length; i++) {
-            runFork(effects[i], { scope })
+            runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
           }
         }
 

@@ -542,4 +542,6 @@ describe("Render", () => {
       }).pipe(Effect.scoped)
     })
   })
+
+  // TODO: We need to add some dynamic templates with the use of document fragments
 })
