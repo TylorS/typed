@@ -3,6 +3,7 @@ import * as Directive from "@typed/template/Directive"
 import { html } from "@typed/template/RenderTemplate"
 import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
+import { isComment, isHtmlElement, isWire } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import * as Effect from "effect/Effect"
 import { range } from "effect/ReadonlyArray"
@@ -543,5 +544,62 @@ describe("Render", () => {
     })
   })
 
-  // TODO: We need to add some dynamic templates with the use of document fragments
+  describe("fragments", () => {
+    it("renders a fragment", () =>
+      Effect.gen(function*(_) {
+        const { elementRef } = yield* _(
+          testRender(html`<div>Hello, world!</div><div>Goodbye, world!</div>`)
+        )
+        const rendered = yield* _(elementRef)
+
+        ok(isWire(rendered))
+        const fragment = rendered.valueOf()
+
+        // A wire utilizes 2 comments at the beginning and end of the fragment
+        // to better allow for changes
+        deepStrictEqual(fragment.childNodes.length, 4)
+
+        const [a, b, c, d] = fragment.childNodes
+
+        ok(isComment(a))
+        ok(isHtmlElement(b))
+        ok(isHtmlElement(c))
+        ok(isComment(d))
+
+        deepStrictEqual(b.textContent, "Hello, world!")
+        deepStrictEqual(c.textContent, "Goodbye, world!")
+      }))
+
+    it("renders a dynamic fragment into a larger template", () =>
+      Effect.gen(function*(_) {
+        const timeout = 100
+        const content = Fx.mergeAll([
+          html`<p>1</p><p>2</p><p>3</p>`,
+          Fx.delay(html`<b>4</b><b>5</b><b>6</b>`, timeout)
+        ])
+
+        const { elementRef } = yield* _(
+          testRender(html`<div>${content}</div>`)
+        )
+        const rendered = yield* _(elementRef)
+
+        ok(isHtmlElement(rendered))
+        deepStrictEqual(rendered.tagName, "DIV")
+
+        deepStrictEqual(rendered.childNodes.length, 6)
+        const [, a, b, c] = rendered.childNodes
+
+        ok(isHtmlElement(a) && a.tagName === "P" && a.textContent === "1")
+        ok(isHtmlElement(b) && b.tagName === "P" && b.textContent === "2")
+        ok(isHtmlElement(c) && c.tagName === "P" && c.textContent === "3")
+
+        yield* _(Effect.sleep(timeout))
+
+        const [, d, e, f] = rendered.childNodes
+
+        ok(isHtmlElement(d) && d.tagName === "B" && d.textContent === "4")
+        ok(isHtmlElement(e) && e.tagName === "B" && e.textContent === "5")
+        ok(isHtmlElement(f) && f.tagName === "B" && f.textContent === "6")
+      }))
+  })
 })
