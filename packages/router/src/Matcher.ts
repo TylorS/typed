@@ -6,7 +6,6 @@ import { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import * as Match from "@typed/fx/Match"
 import * as RefSubject from "@typed/fx/RefSubject"
-import * as Guard from "@typed/guard"
 import * as Navigation from "@typed/navigation"
 import type * as Path from "@typed/path"
 import * as Route from "@typed/route"
@@ -20,33 +19,33 @@ import { makeHref, withCurrentRoute } from "./CurrentRoute.js"
  * @since 1.0.0
  */
 export interface RouteMatcher<out A, out E, out R> {
-  readonly guards: ReadonlyArray<RouteGuard<string, any, A, E, R, E, R>>
+  readonly guards: ReadonlyArray<RouteMatch<string, any, A, E, R, E, R>>
 
-  readonly match: {
-    <const P extends string, B, E2, R2>(
-      route: Route.Route<P> | P,
-      f: (ref: RefSubject.RefSubject<Path.ParamsOf<P>>) => Fx.Fx<B, E2, R2>
-    ): RouteMatcher<A | B, E | E2, R | Exclude<R2, Scope.Scope>>
+  readonly match: <
+    const P extends string,
+    B = Path.ParamsOf<P>,
+    E2 = never,
+    R2 = never,
+    C = never,
+    E3 = never,
+    R3 = never
+  >(
+    route: P | Route.RouteInput<P, B, E2, R2>,
+    f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
+  ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
-    <const P extends string, B, E2, R2, C, E3, R3>(
-      route: Route.Route<P> | P,
-      guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
-      f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
-    ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
-  }
-
-  readonly to: {
-    <const P extends string, B>(
-      route: Route.Route<P> | P,
-      f: (params: Path.ParamsOf<P>) => B
-    ): RouteMatcher<A | B, E, R>
-
-    <const P extends string, B, E2, R2, C, E3, R3>(
-      route: Route.Route<P> | P,
-      guard: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>,
-      f: (b: B) => C
-    ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
-  }
+  readonly to: <
+    const P extends string,
+    B = Path.ParamsOf<P>,
+    E2 = never,
+    R2 = never,
+    C = never,
+    E3 = never,
+    R3 = never
+  >(
+    route: P | Route.RouteInput<P, B, E2, R2>,
+    f: (b: B) => C
+  ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
   readonly notFound: <B, E2, R2>(
     f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2>
@@ -69,7 +68,7 @@ export interface RouteMatcher<out A, out E, out R> {
 /**
  * @since 1.0.0
  */
-export interface RouteGuard<
+export interface RouteMatch<
   P extends string,
   A,
   O,
@@ -78,47 +77,40 @@ export interface RouteGuard<
   E2 = never,
   R2 = never
 > {
-  readonly route: Route.Route<P>
-  readonly guard: Guard.Guard<string, A, E, R>
+  readonly guard: Route.RouteGuard<P, A, E, R>
   readonly match: (ref: RefSubject.RefSubject<A>) => Fx.Fx<O, E2, R2>
 }
 
+/**
+ * @since 1.0.0
+ */
+export function RouteMatch<P extends string, A, O, E = never, R = never, E2 = never, R2 = never>(
+  guard: Route.RouteGuard<P, A, E, R>,
+  match: (ref: RefSubject.RefSubject<A>) => Fx.Fx<O, E2, R2>
+): RouteMatch<P, A, O, E, R, E2, R2> {
+  return { guard, match }
+}
+
 class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
-  constructor(readonly guards: ReadonlyArray<RouteGuard<any, any, any, any, any, any, any>>) {
+  constructor(readonly guards: ReadonlyArray<RouteMatch<any, any, any, any, any, any, any>>) {
     this.match = this.match.bind(this)
     this.to = this.to.bind(this)
     this.notFound = this.notFound.bind(this)
     this.redirect = this.redirect.bind(this)
   }
 
-  match(
-    ...args: any
-  ) {
-    const route = getRoute(args[0])
-    if (args.length === 2) {
-      return new RouteMatcherImpl([...this.guards, {
-        route,
-        guard: getGuard(route),
-        match: (ref: any) => Fx.scoped(args[1](ref))
-      }]) as any
-    } else {
-      return new RouteMatcherImpl([...this.guards, {
-        route,
-        guard: getGuard(route, args[1]),
-        match: (ref: any) => Fx.scoped(args[2](ref))
-      }]) as any
-    }
+  match<P extends string, B, E2, R2, C, E3, R3>(
+    route: P | Route.RouteInput<P, B, E2, R2>,
+    f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
+  ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>> {
+    return new RouteMatcherImpl<any, any, any>([...this.guards, RouteMatch(getRouteGuard(route), f)])
   }
 
-  to(
-    ...args: any
-  ) {
-    const route = getRoute(args[0])
-    if (args.length === 2) {
-      return this.match(route, (ref: any) => RefSubject.map(ref, args[1]))
-    } else {
-      return this.match(route, args[1], (ref: any) => RefSubject.map(ref, args[2]))
-    }
+  to<P extends string, B, E2, R2, C, E3, R3>(
+    route: P | Route.RouteInput<P, B, E2, R2>,
+    f: (b: B) => C
+  ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>> {
+    return this.match(route, Fx.map(f))
   }
 
   notFound<B, E2, R2>(
@@ -136,8 +128,8 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
           env === "dom" || env === "test:dom" ? Navigation.CurrentPath : Fx.take(Navigation.CurrentPath, 1)
         )
 
-      for (const { guard, match, route } of this.guards) {
-        matcher = matcher.when(guard, (ref) => Fx.middleware(match(ref), withCurrentRoute(route)))
+      for (const { guard, match } of this.guards) {
+        matcher = matcher.when(guard, (ref) => Fx.middleware(match(ref), withCurrentRoute(guard.route)))
       }
 
       return Fx.filterMapErrorEffect(matcher.getOrElse(() => onNotFound), (e) =>
@@ -161,19 +153,15 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
     )
   }
 }
-function getGuard<const P extends string, B, E2, R2>(
-  path: Route.Route<P>,
-  guard?: Guard.Guard<Path.ParamsOf<P>, B, E2, R2>
-) {
-  if (guard) {
-    return Guard.compose(path, guard)
-  } else {
-    return path.asGuard()
-  }
-}
 
-function getRoute<const P extends string>(route: Route.Route<P> | P): Route.Route<P> {
-  return typeof route === "string" ? Route.fromPath(route) : route
+function getRouteGuard<P extends string, A, E, R>(
+  route: P | Route.RouteInput<P, A, E, R>
+): Route.RouteGuard<P, A, E, R> {
+  if (typeof route === "string") {
+    return Route.asRouteGuard(Route.fromPath(route))
+  } else {
+    return Route.asRouteGuard(route)
+  }
 }
 
 /**

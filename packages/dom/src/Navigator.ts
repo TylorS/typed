@@ -190,7 +190,7 @@ export const getCredential = (
  */
 export const storeCredential = (
   credential: Credential
-): Effect.Effect<Credential, never, Navigator> =>
+): Effect.Effect<void, never, Navigator> =>
   Navigator.withEffect((n) => Effect.promise(() => n.credentials.store(credential)))
 
 /**

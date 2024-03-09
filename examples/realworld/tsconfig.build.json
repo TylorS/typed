@@ -1,0 +1,46 @@
+{
+  "extends": [
+    "../../tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/dom"
+    },
+    {
+      "path": "../../packages/fx"
+    },
+    {
+      "path": "../../packages/navigation"
+    },
+    {
+      "path": "../../packages/route"
+    },
+    {
+      "path": "../../packages/router"
+    },
+    {
+      "path": "../../packages/template"
+    },
+    {
+      "path": "../../packages/ui"
+    }
+  ]
+}

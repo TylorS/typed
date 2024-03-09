@@ -7,7 +7,7 @@ import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import * as HttpServer from "@effect/platform/HttpServer"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { CurrentRoute, type RouteGuard, type RouteMatcher } from "@typed/router"
+import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
 import { RenderContext, renderHtmlTemplate, RenderTemplate } from "@typed/template"
 import { htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
@@ -23,7 +23,7 @@ import type { CoreServices } from "./CoreServices.js"
  */
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
   readonly request: HttpServer.request.ServerRequest
-  readonly guards: ReadonlyArray.NonEmptyReadonlyArray<RouteGuard<any, any, any, any, any, any, any>>
+  readonly guards: ReadonlyArray.NonEmptyReadonlyArray<RouteMatch<any, any, any, any, any, any, any>>
 }> {}
 
 /**
@@ -47,10 +47,10 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
     | ServerRequest,
     E | E2 | GuardsNotMatched
   > = HttpServer.router.empty
-  const guardsByPath = ReadonlyArray.groupBy(matcher.guards, (guard) => guard.route.path)
+  const guardsByPath = ReadonlyArray.groupBy(matcher.guards, ({ guard }) => guard.route.path)
 
   for (const [path, guards] of Object.entries(guardsByPath)) {
-    const route = guards[0].route
+    const route = guards[0].guard.route
 
     router = HttpServer.router.get(
       router,

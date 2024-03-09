@@ -81,7 +81,7 @@ export function fromElement<T extends Element, EventMap extends {} = DefaultEven
  * @since 1.0.0
  */
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
-  : Fallback extends globalThis.Element ? TQS.ParseSelector<T, Fallback>
+  : Fallback extends globalThis.Element ? Extract<TQS.ParseSelector<T, Fallback>, globalThis.Element>
   : Fallback
 
 /**

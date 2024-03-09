@@ -4,7 +4,6 @@
  * @since 1.0.0
  */
 
-import type { A } from "ts-toolbelt"
 import type {
   Modifier,
   ModifierNode,
@@ -25,18 +24,12 @@ import type {
  * Extract the parameters from a path
  * @since 1.0.0
  */
-export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {}
-  : ToParams<ParseSegments<PathToSegments<T>>>
+export type ParamsOf<T extends string> = ToParams<ParseSegments<PathToSegments<T>>>
 
-type ToParams<T extends ReadonlyArray<any>, Params = {}> = [
-  UnionToIntersection<
-    {
-      [K in keyof T]: AstToParams<T[K], Params>
-    }[number]
-  >
-] extends [infer P] ? { readonly [K in keyof P]: P[K] } : never
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+type ToParams<T extends ReadonlyArray<any>, Params = {}, R = unknown> = T extends readonly [infer H, ...infer Tail]
+  ? ToParams<Tail, Params, R & AstToParams<H, Params>>
+  : [R] extends [infer R2] ? { readonly [K in keyof R2]: R2[K] }
+  : {}
 
 type AstToParams<T, Params = {}> = T extends ModifierNode<infer M, infer S> ? ModifyParams<M, AstToParams<S>> :
   T extends TextNode<infer _> ? {} :

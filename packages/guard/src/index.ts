@@ -22,29 +22,29 @@ export namespace Guard {
   /**
    * @since 1.0.0
    */
-  export type Input<T> = T extends Guard<infer I, infer _R, infer _E, infer _O> ? I :
-    T extends AsGuard<infer I, infer _R, infer _E, infer _O> ? I
+  export type Input<T> = [T] extends [Guard<infer I, infer _R, infer _E, infer _O>] ? I :
+    [T] extends [AsGuard<infer I, infer _R, infer _E, infer _O>] ? I
     : never
 
   /**
    * @since 1.0.0
    */
-  export type Context<T> = T extends Guard<infer _I, infer _O, infer _E, infer R> ? R :
-    T extends AsGuard<infer _I, infer _O, infer _E, infer R> ? R
+  export type Context<T> = [T] extends [Guard<infer _I, infer _O, infer _E, infer R>] ? R :
+    [T] extends [AsGuard<infer _I, infer _O, infer _E, infer R>] ? R
     : never
 
   /**
    * @since 1.0.0
    */
-  export type Error<T> = T extends Guard<infer _I, infer _O, infer E, infer _R> ? E
-    : T extends AsGuard<infer _I, infer _O, infer E, infer _R> ? E
+  export type Error<T> = [T] extends [Guard<infer _I, infer _O, infer E, infer _R>] ? E
+    : [T] extends [AsGuard<infer _I, infer _O, infer E, infer _R>] ? E
     : never
 
   /**
    * @since 1.0.0
    */
-  export type Output<T> = T extends Guard<infer _I, infer O, infer _E, infer _R> ? O
-    : T extends AsGuard<infer _I, infer O, infer _E, infer _R> ? O
+  export type Output<T> = [T] extends [Guard<infer _I, infer O, infer _E, infer _R>] ? O
+    : [T] extends [AsGuard<infer _I, infer O, infer _E, infer _R>] ? O
     : never
 }
 
@@ -256,6 +256,33 @@ export const catchAll: {
 /**
  * @since 1.0.0
  */
+export const catchTag: {
+  <E, K extends E extends { _tag: string } ? E["_tag"] : never, O2, E2, R2>(
+    tag: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<O2, E2, R2>
+  ): <I, O, R>(guard: GuardInput<I, O, E, R>) => Guard<I, O | O2, E2 | Exclude<E, { _tag: K }>, R | R2>
+
+  <I, O, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, O2, E2, R2>(
+    guard: GuardInput<I, O, E, R>,
+    tag: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<O2, E2, R2>
+  ): Guard<I, O | O2, E2 | Exclude<E, { _tag: K }>, R | R2>
+} = dual(
+  3,
+  function catchTag<I, O, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, O2, E2, R2>(
+    guard: GuardInput<I, O, E, R>,
+    tag: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<O2, E2, R2>
+  ): Guard<I, O | O2, Exclude<E, { _tag: K }> | E2, R | R2> {
+    const g = getGuard(guard)
+    return (i): Effect.Effect<Option.Option<O | O2>, E2 | Exclude<E, { _tag: K }>, R | R2> =>
+      Effect.catchTag(g(i), tag, (e) => Effect.asSome(f(e)))
+  }
+)
+
+/**
+ * @since 1.0.0
+ */
 export const provide: {
   <R2>(
     provided: Context.Context<R2>
@@ -414,18 +441,19 @@ export {
 export const addTag: {
   <B>(
     value: B
-  ): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
+  ): <I, O, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
 
   <I, O, E, R, B>(
-    guard: Guard<I, O, E, R>,
+    guard: GuardInput<I, O, E, R>,
     value: B
   ): Guard<I, O & { readonly _tag: B }, E, R>
 } = dual(2, function attachProperty<I, O, E, R, B>(
-  guard: Guard<I, O, E, R>,
+  guard: GuardInput<I, O, E, R>,
   value: B
 ): Guard<I, O & { readonly _tag: B }, E, R> {
   return map(guard, (a) => ({ ...a, _tag: value } as O & { readonly _tag: B }))
 })
+
 /**
  * @since 1.0.0
  */
