@@ -1,6 +1,6 @@
-import { jwtToken } from "@/api/common/security"
-import { Article } from "@/domain"
-import { Schema } from "@effect/schema"
+import { security } from "@/api/common/security"
+import { Article, ArticleTag, Username } from "@/domain"
+import * as Schema from "@/lib/Schema"
 import { Api } from "effect-http"
 import * as Routes from "./routes"
 
@@ -9,8 +9,14 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getFeed",
     Routes.feed.path,
     {
+      query: Schema.struct({
+        limit: Schema.optionalOrNull(Schema.number),
+        offset: Schema.optionalOrNull(Schema.number)
+      }),
       response: [
-        { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) }
+        { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
+        { status: 401 },
+        { status: 422 }
       ]
     },
     {
@@ -21,8 +27,17 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getArticles",
     Routes.articles.path,
     {
+      query: Schema.struct({
+        tag: Schema.optionalOrNull(ArticleTag),
+        author: Schema.optionalOrNull(Username),
+        favorited: Schema.optionalOrNull(Username),
+        limit: Schema.optionalOrNull(Schema.number),
+        offset: Schema.optionalOrNull(Schema.number)
+      }),
       response: [
-        { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) }
+        { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
+        { status: 401 },
+        { status: 422 }
       ]
     },
     {
@@ -33,8 +48,10 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getArticle",
     Routes.article.path,
     {
+      params: Routes.article.schema,
       response: [
-        { status: 200, content: Schema.struct({ article: Article }) }
+        { status: 200, content: Schema.struct({ article: Article }) },
+        { status: 422 }
       ]
     },
     {
@@ -46,11 +63,13 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     Routes.articles.path,
     {
       response: [
-        { status: 201, content: Schema.struct({ article: Article }) }
+        { status: 201, content: Schema.struct({ article: Article }) },
+        { status: 401 },
+        { status: 422 }
       ]
     },
     {
-      security: { jwtToken },
+      security,
       description: "Create an article. Auth is required"
     }
   ),
@@ -58,12 +77,15 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "updateArticle",
     Routes.article.path,
     {
+      params: Routes.article.schema,
       response: [
-        { status: 200, content: Schema.struct({ article: Article }) }
+        { status: 200, content: Schema.struct({ article: Article }) },
+        { status: 401 },
+        { status: 422 }
       ]
     },
     {
-      security: { jwtToken },
+      security,
       description: "Update an article. Auth is required"
     }
   ),
@@ -71,12 +93,15 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "deleteArticle",
     Routes.article.path,
     {
+      params: Routes.article.schema,
       response: [
-        { status: 200 }
+        { status: 200 },
+        { status: 401 },
+        { status: 422 }
       ]
     },
     {
-      security: { jwtToken },
+      security,
       description: "Delete an article. Auth is required"
     }
   )

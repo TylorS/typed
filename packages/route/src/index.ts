@@ -510,35 +510,49 @@ export function RouteDecodeError<P extends string>(
 /**
  * @since 1.0.0
  */
+export interface RouteDecoder<P extends string, O, A = O, E = never, R = never, R2 = never>
+  extends RouteGuard<P, O, E | RouteDecodeError, R | R2>
+{
+  readonly schema: Schema.Schema<O, A, R2>
+}
+
+/**
+ * @since 1.0.0
+ */
 export const decode: {
   <I extends RouteInput<any, any, any, any>, A, R2>(
     schema: Schema.Schema<A, Route.Output<I>, R2>
-  ): (input: I) => RouteGuard<Route.Path<I>, A, Route.Error<I> | RouteDecodeError, Route.Context<I> | R2>
+  ): (
+    input: I
+  ) => RouteDecoder<Route.Path<I>, A, Route.Output<I>, Route.Error<I>, Route.Context<I>, R2>
 
   <P extends string, A, R2>(
     input: Route<P>,
     schema: Schema.Schema<A, Types.Simplify<typedPath.ParamsOf<P>>, R2>
-  ): RouteGuard<P, A, RouteDecodeError, R2>
+  ): RouteDecoder<P, A, Types.Simplify<typedPath.ParamsOf<P>>, RouteDecodeError, never, R2>
 
   <P extends string, O = typedPath.ParamsOf<P>, E = never, R = never, A = never, R2 = never>(
     input: RouteInput<P, O, E, R>,
     schema: Schema.Schema<A, Types.NoInfer<O>, R2>
-  ): RouteGuard<P, A, RouteDecodeError | E, R | R2>
+  ): RouteDecoder<P, A, O, E, R, R2>
 } = dual(2, function decode<P extends string, O, E, R, A, R2>(
   input: RouteInput<P, O, E, R>,
   schema: Schema.Schema<A, O, R2>
-): RouteGuard<P, A, E | RouteDecodeError, R | R2> {
+): RouteDecoder<P, A, O, E, R, R2> {
   const g = asRouteGuard(input)
-  return RouteGuard(
-    g.route,
-    Guard.catchAll(
-      Guard.decode(g, schema),
-      unify((e) =>
-        e instanceof ParseResult.ParseError
-          ? Effect.fail(RouteDecodeError(g.route, e))
-          : Effect.fail(e as Exclude<E, ParseResult.ParseError>)
+  return Object.assign(
+    RouteGuard(
+      g.route,
+      Guard.catchAll(
+        Guard.decode(g, schema),
+        unify((e) =>
+          e instanceof ParseResult.ParseError
+            ? Effect.fail(RouteDecodeError(g.route, e))
+            : Effect.fail(e as Exclude<E, ParseResult.ParseError>)
+        )
       )
-    )
+    ),
+    { schema }
   )
 })
 
