@@ -48,7 +48,7 @@ export interface RouteMatcher<out A, out E, out R> {
   ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
   readonly notFound: <B, E2, R2>(
-    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2>
+    f: (destination: typeof Navigation.CurrentEntry) => Fx.Fx<B, E2, R2> | Effect.Effect<B, E2, R2>
   ) => Fx.Fx<
     A | B,
     Exclude<E | E2, Navigation.RedirectError>,
@@ -114,14 +114,17 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
   }
 
   notFound<B, E2, R2>(
-    f: (destination: RefSubject.Computed<Navigation.Destination, never, Navigation.Navigation>) => Fx.Fx<B, E2, R2>
+    f: (
+      destination: RefSubject.Computed<Navigation.Destination, never, Navigation.Navigation>
+    ) => Fx.Fx<B, E2, R2> | Effect.Effect<B, E2, R2>
   ): Fx.Fx<
     A | B,
     Exclude<E | E2, Navigation.RedirectError>,
     R | R2 | CurrentEnvironment | Navigation.Navigation | Scope.Scope
   > {
     return Fx.fromFxEffect(CurrentEnvironment.with((env) => {
-      const onNotFound = Fx.scoped(f(Navigation.CurrentEntry))
+      const handler = f(Navigation.CurrentEntry)
+      const onNotFound = Fx.scoped(Fx.isFx(handler) ? handler : Fx.fromEffect(handler))
       let matcher: Match.ValueMatcher<string, A | B, E | E2, R | R2 | Navigation.Navigation | Scope.Scope> = Match
         .value(
           // Only if we're rendering in a DOM-based environment should we allow for routing to last indefinitely
