@@ -53,16 +53,13 @@ export const diffable = (document: Document) => (node: Node, operation: number):
  */
 export const persistent = (document: Document, fragment: DocumentFragment): DocumentFragment | Node | Wire => {
   const { childNodes } = fragment
-  let { length } = childNodes
+  const { length } = childNodes
 
   if (length === 0) return fragment
   if (length === 1) return childNodes[0]
 
   const firstChild = document.createComment("<>")
   const lastChild = document.createComment("</>")
-
-  // Add the first and last child comments
-  length += 2
 
   fragment.prepend(firstChild)
   fragment.append(lastChild)
@@ -77,8 +74,7 @@ export const persistent = (document: Document, fragment: DocumentFragment): Docu
       const nodes = getAllSiblingsBetween(firstChild, lastChild)
 
       if (fragment.childNodes.length !== nodes.length) {
-        fragment.replaceChildren(...getAllSiblingsBetween(firstChild, lastChild))
-        length = nodes.length
+        fragment.replaceChildren(...nodes)
       }
 
       return fragment
