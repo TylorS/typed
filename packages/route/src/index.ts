@@ -5,7 +5,7 @@
 import type { Schema } from "@effect/schema"
 import { ParseResult } from "@effect/schema"
 import * as Guard from "@typed/guard"
-import * as Path from "@typed/path"
+import * as typedPath from "@typed/path"
 import type { Cause, Context, Layer, Runtime, Types } from "effect"
 import { Effect, Option, Pipeable, Predicate } from "effect"
 import { dual } from "effect/Function"
@@ -25,25 +25,25 @@ export type RouteTypeId = typeof RouteTypeId
 /**
  * @since 1.0.0
  */
-export interface Route<in out P extends string> extends Pipeable.Pipeable, Guard.Guard<string, Path.ParamsOf<P>> {
+export interface Route<in out P extends string> extends Pipeable.Pipeable, Guard.Guard<string, typedPath.ParamsOf<P>> {
   readonly [RouteTypeId]: RouteTypeId
 
   readonly path: P
 
   readonly params: FromPathParams
 
-  readonly match: (path: string) => Option.Option<Path.ParamsOf<P>>
+  readonly match: (path: string) => Option.Option<typedPath.ParamsOf<P>>
 
-  readonly make: <const Params extends Path.ParamsOf<P> = Path.ParamsOf<P>>(
+  readonly make: <const Params extends typedPath.ParamsOf<P> = typedPath.ParamsOf<P>>(
     ...params: [keyof Params] extends [never] ? readonly [{}?] : readonly [Params]
-  ) => Path.Interpolate<P, Params>
+  ) => typedPath.Interpolate<P, Params>
 
   readonly concat: <P2 extends string>(
     route: Route<P2>,
     params?: FromPathParams
-  ) => Route<Path.PathJoin<[P, P2]>>
+  ) => Route<typedPath.PathJoin<[P, P2]>>
 
-  readonly guard: <A, E, R>(guard: Guard.Guard<Path.ParamsOf<P>, A, E, R>) => RouteGuard<P, A, E, R>
+  readonly guard: <A, E, R>(guard: Guard.Guard<typedPath.ParamsOf<P>, A, E, R>) => RouteGuard<P, A, E, R>
 }
 
 /**
@@ -60,21 +60,21 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type ParamsOf<T> = [T] extends [Route<infer P>] ? Path.ParamsOf<P> :
-    [T] extends [RouteGuard<infer P, infer _A, infer _E, infer _R>] ? Path.ParamsOf<P> :
+  export type ParamsOf<T> = [T] extends [Route<infer P>] ? typedPath.ParamsOf<P> :
+    [T] extends [RouteGuard<infer P, infer _A, infer _E, infer _R>] ? typedPath.ParamsOf<P> :
     never
 
   /**
    * @since 1.0.0
    */
-  export type GuardOf<T> = [T] extends [Route<infer P>] ? Guard.Guard<string, Path.ParamsOf<P>, never, never> :
+  export type GuardOf<T> = [T] extends [Route<infer P>] ? Guard.Guard<string, typedPath.ParamsOf<P>, never, never> :
     [T] extends [RouteGuard<infer _P, infer A, infer E, infer R>] ? Guard.Guard<string, A, E, R> :
     never
 
   /**
    * @since 1.0.0
    */
-  export type Output<T> = [T] extends [Route<infer P>] ? Path.ParamsOf<P> :
+  export type Output<T> = [T] extends [Route<infer P>] ? typedPath.ParamsOf<P> :
     [T] extends [RouteGuard<infer _P, infer A, infer _E, infer _R>] ? A
     : never
 
@@ -92,6 +92,11 @@ export namespace Route {
     [T] extends [RouteGuard<infer _P, infer _A, infer _E, infer R>] ? R
     : never
 }
+
+/**
+ * @since 1.0.0
+ */
+export type Path<T> = Route.Path<T>
 
 /**
  * @since 1.0.0
@@ -128,7 +133,7 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
 
     return match === false
       ? Option.none()
-      : Option.some({ ...match.params } as unknown as Path.ParamsOf<P>)
+      : Option.some({ ...match.params } as unknown as typedPath.ParamsOf<P>)
   }
 
   const guard = (path: string) => Effect.succeed(match(path))
@@ -142,11 +147,11 @@ export function fromPath<const P extends string>(path: P, params: FromPathParams
       params,
       make: ptr.compile(path, params.make) as Route<P>["make"],
       concat: <P2 extends string>(route: Route<P2>, overrides?: FromPathParams) =>
-        fromPath<Path.PathJoin<[P, P2]>>(
-          Path.pathJoin(path, route.path),
+        fromPath<typedPath.PathJoin<[P, P2]>>(
+          typedPath.pathJoin(path, route.path),
           overrides ?? mergeFromPathParams(params, route.params)
         ),
-      guard: <A, E, R>(g: Guard.Guard<Path.ParamsOf<P>, A, E, R>) => RouteGuard(route, Guard.compose(guard, g)),
+      guard: <A, E, R>(g: Guard.Guard<typedPath.ParamsOf<P>, A, E, R>) => RouteGuard(route, Guard.compose(guard, g)),
       pipe(this: Route<P>) {
         return Pipeable.pipeArguments(this, arguments)
       }
@@ -191,6 +196,12 @@ export interface RouteGuard<
   R = never
 > extends Guard.Guard<string, A, E, R> {
   readonly route: Route<P>
+  readonly path: P
+  readonly concat: {
+    <P2 extends string, A2 = typedPath.ParamsOf<P2>, E2 = never, R2 = never>(
+      route: RouteInput<P2, A2, E2, R2>
+    ): RouteGuard<typedPath.PathJoin<[P, P2]>, A & A2, E | E2, R | R2>
+  }
 }
 
 /**
@@ -200,13 +211,35 @@ export function RouteGuard<P extends string, A, E = never, R = never>(
   route: Route<P>,
   guard: Guard.Guard<string, A, E, R>
 ): RouteGuard<P, A, E, R> {
-  return Object.assign(guard, { route })
+  return Object.assign(guard, {
+    route,
+    path: route.path,
+    concat: <P2 extends string, A2 = typedPath.ParamsOf<P2>, E2 = never, R2 = never>(
+      other: RouteInput<P2, A2, E2, R2>
+    ) => {
+      const otherGuard = asRouteGuard(other)
+
+      return RouteGuard(
+        route.concat(otherGuard.route),
+        (i: string) =>
+          guard(i).pipe(
+            Effect.flatten,
+            Effect.bindTo("a"),
+            Effect.bind("b", () => Effect.flatten(otherGuard(i))),
+            Effect.map(({ a, b }) => ({ ...a, ...b })),
+            Effect.optionFromOptional
+          )
+      )
+    }
+  })
 }
 
 /**
  * @since 1.0.0
  */
-export type RouteInput<P extends string, A = Path.ParamsOf<P>, E = never, R = never> = Route<P> | RouteGuard<P, A, E, R>
+export type RouteInput<P extends string, A = typedPath.ParamsOf<P>, E = never, R = never> =
+  | Route<P>
+  | RouteGuard<P, A, E, R>
 
 /**
  * @since 1.0.0
@@ -239,7 +272,7 @@ export const guard: {
   guard: Guard.Guard<A, B, E2, R2>
 ): RouteGuard<P, B, E | E2, R | R2> {
   return isRoute<P>(route)
-    ? RouteGuard(route, Guard.compose(route, guard as Guard.Guard<Path.ParamsOf<P>, B, E2, R2>))
+    ? RouteGuard(route, Guard.compose(route, guard as Guard.Guard<typedPath.ParamsOf<P>, B, E2, R2>))
     : RouteGuard(route.route, Guard.compose(route, guard))
 })
 
@@ -484,10 +517,10 @@ export const decode: {
 
   <P extends string, A, R2>(
     input: Route<P>,
-    schema: Schema.Schema<A, Types.Simplify<Path.ParamsOf<P>>, R2>
+    schema: Schema.Schema<A, Types.Simplify<typedPath.ParamsOf<P>>, R2>
   ): RouteGuard<P, A, RouteDecodeError, R2>
 
-  <P extends string, O = Path.ParamsOf<P>, E = never, R = never, A = never, R2 = never>(
+  <P extends string, O = typedPath.ParamsOf<P>, E = never, R = never, A = never, R2 = never>(
     input: RouteInput<P, O, E, R>,
     schema: Schema.Schema<A, Types.NoInfer<O>, R2>
   ): RouteGuard<P, A, RouteDecodeError | E, R | R2>
@@ -584,7 +617,7 @@ export const bind: {
   return RouteGuard(g.route, Guard.bind(g, key, f))
 })
 
-export function asRouteGuard<P extends string, A = Path.ParamsOf<P>, E = never, R = never>(
+export function asRouteGuard<P extends string, A = typedPath.ParamsOf<P>, E = never, R = never>(
   route: RouteInput<P, A, E, R>
 ): RouteGuard<P, A, E, R> {
   return (isRoute<P>(route) ? RouteGuard(route, route) : route) as RouteGuard<P, A, E, R>
