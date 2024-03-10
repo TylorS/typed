@@ -118,7 +118,7 @@ type PartNodeMap = {
 const partNodeMap: PartNodeMap = {
   attr: (node, onChunk) => new AttributePartImpl(node.name, node.index, ({ value }) => onChunk(value), null),
   "boolean-part": (node, onChunk) => new BooleanPartImpl(node.name, node.index, ({ value }) => onChunk(value), null),
-  "className-part": (node, onChunk) => new ClassNamePartImpl(node.index, ({ value }) => onChunk(value), null),
+  "className-part": (node, onChunk) => new ClassNamePartImpl(node.index, ({ value }) => onChunk(value), []),
   "comment-part": (node, onChunk) => new CommentPartImpl(node.index, ({ value }) => onChunk(value), null),
   "data": (node, onChunk) => new DataPartImpl(node.index, ({ value }) => onChunk(value), null),
   "event": () => {
@@ -235,7 +235,7 @@ function renderSparseClassName(
         new ClassNamePartImpl(
           partIndex++,
           ({ value }) => setValue(value?.join(" ") || null, i),
-          null
+          []
         )
       )
     }

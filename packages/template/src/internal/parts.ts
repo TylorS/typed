@@ -43,7 +43,8 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
         previous: Extract<Part, { readonly _tag: T }>["value"]
         value: Extract<Part, { readonly _tag: T }>["value"]
         part: Extract<Part, { readonly _tag: T }>
-      }
+      },
+      priority?: number
     ) => Effect.Effect<void, never, Scope>,
     public value: Extract<Part, { readonly _tag: T }>["value"],
     readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
@@ -51,7 +52,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
     this.update = this.update.bind(this)
   }
 
-  update(input: this["value"]) {
+  update(input: this["value"], priority?: number) {
     const previous = this.value as any
     const value = this.getValue(input) as any
 
@@ -64,7 +65,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
         previous,
         value,
         part: this as any
-      }),
+      }, priority),
       () => Effect.sync(() => this.value = value)
     )
   }
@@ -88,10 +89,11 @@ export class AttributePartImpl extends base("attribute") implements AttributePar
     return new AttributePartImpl(
       name,
       index,
-      ({ part, value }) =>
+      ({ part, value }, priority) =>
         queue.add(
           part,
-          () => value == null ? element.removeAttribute(name) : element.setAttribute(name, value)
+          () => value == null ? element.removeAttribute(name) : element.setAttribute(name, value),
+          priority
         ),
       element.getAttribute(name)
     )
@@ -120,10 +122,11 @@ export class BooleanPartImpl extends base("boolean") implements BooleanPart {
     return new BooleanPartImpl(
       name,
       index,
-      ({ part, value }) =>
+      ({ part, value }, priority) =>
         queue.add(
           part,
-          () => element.toggleAttribute(name, value === true)
+          () => element.toggleAttribute(name, value === true),
+          priority
         ),
       element.hasAttribute(name)
     )
@@ -164,7 +167,7 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
   static browser(index: number, element: Element, queue: RenderQueue): ClassNamePartImpl {
     return new ClassNamePartImpl(
       index,
-      ({ part, previous, value }) =>
+      ({ part, previous, value }, priority) =>
         queue.add(
           part,
           () => {
@@ -175,7 +178,8 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
 
             element.classList.add(...added)
             element.classList.remove(...removed)
-          }
+          },
+          priority
         ),
       Array.from(element.classList)
     )
@@ -185,7 +189,7 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
     index: number,
     commit: ClassNamePartImpl["commit"]
   ) {
-    return new ClassNamePartImpl(index, commit, null)
+    return new ClassNamePartImpl(index, commit, [])
   }
 }
 
@@ -331,7 +335,6 @@ export class RefPartImpl implements RefPart {
 }
 
 export class TextPartImpl extends base("text") implements TextPart {
-  // TODO: Make this properly
   static browser(document: Document, index: number, element: Element, queue: RenderQueue) {
     const comment = findHoleComment(element, index)
     const text = document.createTextNode("")
@@ -339,7 +342,7 @@ export class TextPartImpl extends base("text") implements TextPart {
 
     return new TextPartImpl(
       index,
-      ({ part, value }) => queue.add(part, () => text.nodeValue = value ?? null),
+      ({ part, value }, priority) => queue.add(part, () => text.nodeValue = value ?? null, priority),
       text.nodeValue,
       strictEq
     )
@@ -348,7 +351,7 @@ export class TextPartImpl extends base("text") implements TextPart {
   static fromText(text: Text, index: number, queue: RenderQueue) {
     return new TextPartImpl(
       index,
-      ({ part, value }) => queue.add(part, () => text.nodeValue = value ?? null),
+      ({ part, value }, priority) => queue.add(part, () => text.nodeValue = value ?? null, priority),
       text.nodeValue,
       strictEq
     )
@@ -380,7 +383,7 @@ export class PropertiesPartImpl extends base("properties") implements Properties
   static browser(index: number, element: HTMLElement | SVGElement, queue: RenderQueue) {
     return new PropertiesPartImpl(
       index,
-      ({ part, previous, value }) =>
+      ({ part, previous, value }, priority) =>
         queue.add(
           part,
           () => {
@@ -395,7 +398,8 @@ export class PropertiesPartImpl extends base("properties") implements Properties
                 return addNameValue(element, nv)
               })
             }
-          }
+          },
+          priority
         ),
       {}
     )
@@ -496,14 +500,15 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
         previous: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
         value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
         part: Extract<SparsePart, { readonly _tag: T }>
-      }
+      },
+      priority?: number
     ) => Effect.Effect<void, never, Scope>,
     public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
     readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
       equals
   ) {}
 
-  update = (value: this["value"]) => {
+  update = (value: this["value"], priority?: number) => {
     if (this.eq(this.value as any, value as any)) {
       return Effect.unit
     }
@@ -512,7 +517,7 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
       previous: this.value,
       value: this.value = value as any,
       part: this
-    } as any)
+    } as any, priority)
   }
 })
 
@@ -540,8 +545,12 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
     return new SparseAttributePartImpl(
       name,
       parts,
-      ({ part, value }) =>
-        queue.add(part, () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")))
+      ({ part, value }, priority) =>
+        queue.add(
+          part,
+          () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")),
+          priority
+        )
     )
   }
 }
@@ -563,8 +572,12 @@ export class SparseClassNamePartImpl extends sparse("sparse/className") implemen
   ) {
     return new SparseClassNamePartImpl(
       parts,
-      ({ part, value }) =>
-        queue.add(part, () => element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" "))),
+      ({ part, value }, priority) =>
+        queue.add(
+          part,
+          () => element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" ")),
+          priority
+        ),
       values
     )
   }
@@ -582,8 +595,8 @@ export class SparseCommentPartImpl extends sparse("sparse/comment") implements S
   static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, queue: RenderQueue) {
     return new SparseCommentPartImpl(
       parts,
-      ({ part, value }) =>
-        queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join("")),
+      ({ part, value }, priority) =>
+        queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join(""), priority),
       []
     )
   }
