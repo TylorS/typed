@@ -91,7 +91,7 @@ export function testRender<E, R>(
           (rendered) => ElementRef.set(elementRef, rendered)
         )),
       Effect.forkScoped,
-      Effect.provide(Layer.mergeAll(renderLayer(window, { skipRenderScheduling: true })))
+      Effect.provide(Layer.mergeAll(renderLayer(window)))
     )
 
     const test: TestRender<E> = {
@@ -131,7 +131,15 @@ export type EventOptions = {
 }
 
 // TODO: Find more events to add here
-const NON_BUBBLING_EVENTS = new Set(["focus", "blur"])
+const NON_BUBBLING_EVENTS = new Set([
+  "focus",
+  "blur",
+  "loadstart",
+  "progress",
+  "error",
+  "load",
+  "loadend"
+])
 
 /**
  * @since 1.0.0
@@ -245,7 +253,7 @@ export function testHydrate<R, E, Elements>(
             ),
           (rendered) => ElementRef.set(elementRef, rendered)
         )),
-      Effect.provide(hydrateLayer(window, { skipRenderScheduling: true })),
+      Effect.provide(hydrateLayer(window)),
       Effect.forkScoped
     )
 

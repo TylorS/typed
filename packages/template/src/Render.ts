@@ -29,7 +29,7 @@ export type ToRendered<T extends RenderEvent | null> = T extends null ? Rendered
  */
 export const renderLayer = (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ): Layer.Layer<
   | RenderTemplate
   | RenderContext.RenderContext
@@ -81,7 +81,7 @@ export function render<R, E, T extends RenderEvent | null>(
 export function renderToLayer<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<T, E, R>,
   window: Window & GlobalThis = globalThis.window,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ): Layer.Layer<
   RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
   never,

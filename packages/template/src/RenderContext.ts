@@ -92,7 +92,7 @@ const buildWithCurrentEnvironment = (environment: Environment) =>
  */
 export const dom: (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices, never, RenderQueue.RenderQueue> = (
   window,
   options

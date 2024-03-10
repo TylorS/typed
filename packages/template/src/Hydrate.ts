@@ -25,7 +25,7 @@ import { RenderTemplate } from "./RenderTemplate.js"
  */
 export const hydrateLayer = (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ): Layer.Layer<
   | RenderTemplate
   | RenderContext.RenderContext

@@ -20,6 +20,7 @@ export const RenderQueue: Context.Tagged<RenderQueue, RenderQueue> = Context.Tag
  * @since 1.0.0
  */
 export interface RenderQueue {
+  // TODO: We should look into prioritizing tasks
   readonly add: (part: unknown, task: () => void) => Effect.Effect<void, never, Scope.Scope>
 }
 
