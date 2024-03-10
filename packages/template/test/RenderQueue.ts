@@ -12,21 +12,18 @@ describe("RenderQueue", () => {
       const queue = yield* _(RenderQueue.RenderQueue)
       const testPart = Parts.CommentPartImpl.server(0, () => Effect.unit)
 
-      const add1A = () => i++
-      const add1B = () => i++
-      const add1C = () => i++
-      const add1D = () => i++
+      const add1 = () => i++
 
       // When queuing multiple values before scheduling the queue, only the last value should be committed.
-      yield* _(queue.add(testPart, add1A))
-      yield* _(queue.add(testPart, add1B))
+      yield* _(queue.add(testPart, add1))
+      yield* _(queue.add(testPart, add1))
 
       yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 
       deepStrictEqual(i, 1)
 
-      yield* _(queue.add(testPart, add1C))
-      yield* _(queue.add(testPart, add1D))
+      yield* _(queue.add(testPart, add1))
+      yield* _(queue.add(testPart, add1))
 
       yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 
