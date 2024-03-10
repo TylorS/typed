@@ -148,11 +148,16 @@ class IdleImpl implements RenderQueue {
 class RafImpl implements RenderQueue {
   queue = new Map<unknown, () => void>()
   scheduled = false
+  private _set: ((callback: FrameRequestCallback) => number) | typeof setTimeout
+  private _clear: (handle: number) => void
 
   constructor(
     readonly scope: Scope.Scope
   ) {
     this.add.bind(this)
+
+    this._set = typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout
+    this._clear = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout
   }
 
   add(part: unknown, task: () => void) {
@@ -188,8 +193,8 @@ class RafImpl implements RenderQueue {
 
   run: Effect.Effect<void, never, Scope.Scope> = Effect.zipRight(
     Effect.async<void>((cb) => {
-      const id = requestAnimationFrame(() => cb(Effect.unit))
-      return Effect.sync(() => cancelAnimationFrame(id))
+      const id = this._set(() => cb(Effect.unit))
+      return Effect.sync(() => this._clear(id))
     }),
     Effect.sync(() => {
       const iterator = this.queue.entries()
