@@ -16,7 +16,11 @@ const environment = Live.pipe(
 TodoApp.pipe(
   Fx.provide(environment),
   renderToLayer,
-  Layer.provide(RenderQueue.idle({ timeout: 1000 })),
+  // Layer.provide(RenderQueue.sync),
+  // Layer.provide(RenderQueue.microtask),
+  // Layer.provide(RenderQueue.raf),
+  // Layer.provide(RenderQueue.idle({ timeout: 2000 })),
+  Layer.provide(RenderQueue.mixed({ timeout: 2000 })),
   Layer.launch,
   Effect.runFork
 )

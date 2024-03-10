@@ -24,10 +24,10 @@ export default defineConfig({
     createHtmlPlugin({
       minify: true,
       entry: "index.ts",
-      template: "index.html",
-      viteNext: true
+      template: "index.html"
     }),
     compression(),
+    // @ts-expect-error
     visualizer({
       gzipSize: true,
       brotliSize: true

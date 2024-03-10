@@ -82,7 +82,7 @@ export const raf: Layer.Layer<RenderQueue> = RenderQueue.scoped(
  * @since 1.0.0
  */
 export const microtask: Layer.Layer<RenderQueue> = RenderQueue.scoped(
-  Effect.scopeWith((scope) => Effect.succeed(unsafeMakeRafRenderQueue(scope)))
+  Effect.scopeWith((scope) => Effect.succeed(unsafeMakeMicrotaskRenderQueue(scope)))
 )
 
 /**
@@ -97,14 +97,14 @@ const IDLE_START = RAF_END + 1
 /**
  * @since 1.0.0
  */
-export const mixed = (idleTimeout: number = 5000): Layer.Layer<RenderQueue> =>
+export const mixed = (options?: IdleRequestOptions): Layer.Layer<RenderQueue> =>
   RenderQueue.scoped(Effect.gen(function*(_) {
     const scope = yield* _(Effect.scope)
     const queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]> = [
       [[-1, -1], new SyncImpl()],
       [[0, MICRO_TASK_END], new MicroTaskImpl(scope)],
       [[DEFAULT_PRIORITY, RAF_END], new RafImpl(scope)],
-      [[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, { timeout: idleTimeout })]
+      [[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, options)]
     ]
 
     return new MixedImpl(queues)
@@ -154,8 +154,8 @@ class PriorityQueue {
     return this.priorities.get(priority)?.delete(part)
   }
 
-  get size() {
-    return Array.from(this.priorities.values()).reduce((acc, set) => acc + set.size, 0)
+  get isEmpty() {
+    return this.priorities.size === 0
   }
 
   *entries() {
@@ -196,7 +196,7 @@ abstract class BaseImpl implements RenderQueue {
   }
 
   scheduleNextRun = Effect.suspend(() => {
-    if (this.queue.size === 0 || this.scheduled) return Effect.unit
+    if (this.queue.isEmpty || this.scheduled) return Effect.unit
 
     this.scheduled = true
 
@@ -234,7 +234,7 @@ abstract class BaseImpl implements RenderQueue {
 class IdleImpl extends BaseImpl implements RenderQueue {
   constructor(
     scope: Scope.Scope,
-    readonly options: IdleRequestOptions
+    readonly options?: IdleRequestOptions
   ) {
     super(scope)
   }
@@ -251,7 +251,7 @@ class IdleImpl extends BaseImpl implements RenderQueue {
           }
 
           // If we have more work to do, schedule another run
-          if (this.queue.size > 0) {
+          if (!this.queue.isEmpty) {
             return this.run
           }
 
@@ -272,25 +272,32 @@ class RafImpl extends BaseImpl implements RenderQueue {
   ) {
     super(scope)
 
-    this._set = typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout
-    this._clear = typeof cancelAnimationFrame === "function" ? cancelAnimationFrame : clearTimeout
+    const [set, clear] = typeof globalThis.requestAnimationFrame === "function"
+      ? [requestAnimationFrame.bind(globalThis), cancelAnimationFrame.bind(globalThis)]
+      : [setTimeout, clearTimeout]
+    this._set = set
+    this._clear = clear
   }
 
-  run: Effect.Effect<void, never, Scope.Scope> = Effect.zipRight(
-    Effect.async<void>((cb) => {
-      const id = this._set(() => cb(Effect.unit))
-      return Effect.sync(() => this._clear(id))
-    }),
-    Effect.sync(() => {
-      const iterator = this.queue.entries()
-
-      while (this.runTasks(iterator)) {
-        // Continue
-      }
-
-      this.scheduled = false
+  run: Effect.Effect<void> = Effect.async((cb) => {
+    const id = this._set(() => {
+      this.runAllTasks()
+      return cb(Effect.unit)
     })
-  )
+    return Effect.sync(() => {
+      this.scheduled = false
+      this._clear(id)
+    })
+  })
+
+  private runAllTasks = () => {
+    const iterator = this.queue.entries()
+    while (this.runTasks(iterator)) {
+      // Continue
+    }
+
+    this.scheduled = false
+  }
 }
 
 const noOp = () => void 0
@@ -306,26 +313,32 @@ class MicroTaskImpl extends BaseImpl implements RenderQueue {
   ) {
     super(scope)
 
-    const [set, clear] = typeof queueMicrotask === "function" ? [queueMicrotask, noOp] : [setTimeout, clearTimeout]
+    const [set, clear] = typeof globalThis.queueMicrotask === "function"
+      ? [globalThis.queueMicrotask.bind(globalThis), noOp]
+      : [setTimeout, clearTimeout]
     this._set = set
     this._clear = clear
   }
 
-  run: Effect.Effect<void, never, Scope.Scope> = Effect.zipRight(
-    Effect.async<void>((cb) => {
-      const id = this._set(() => cb(Effect.unit))
-      return id ? Effect.sync(() => this._clear(id!)) : void 0
-    }),
-    Effect.sync(() => {
-      const iterator = this.queue.entries()
-
-      while (this.runTasks(iterator)) {
-        // Continue
-      }
-
-      this.scheduled = false
+  run: Effect.Effect<void> = Effect.async((cb) => {
+    const id = this._set(() => {
+      this.runAllTasks()
+      return cb(Effect.unit)
     })
-  )
+    return Effect.sync(() => {
+      this.scheduled = false
+      id && this._clear(id)
+    })
+  })
+
+  private runAllTasks = () => {
+    const iterator = this.queue.entries()
+    while (this.runTasks(iterator)) {
+      // Continue
+    }
+
+    this.scheduled = false
+  }
 }
 
 class SyncImpl implements RenderQueue {
