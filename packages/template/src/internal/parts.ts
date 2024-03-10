@@ -28,7 +28,7 @@ import type {
   StaticText,
   TextPart
 } from "../Part.js"
-import type { RenderQueue } from "../RenderQueue.js"
+import { DEFAULT_PRIORITY, type RenderQueue } from "../RenderQueue.js"
 import { findHoleComment } from "./utils.js"
 
 const strictEq = Equivalence.strict<any>()
@@ -52,7 +52,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
     this.update = this.update.bind(this)
   }
 
-  update(input: this["value"], priority: number) {
+  update(input: this["value"], priority: number = DEFAULT_PRIORITY) {
     const previous = this.value as any
     const value = this.getValue(input) as any
 
@@ -509,7 +509,7 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
       equals
   ) {}
 
-  update = (value: this["value"], priority: number) => {
+  update = (value: this["value"], priority: number = DEFAULT_PRIORITY) => {
     if (this.eq(this.value as any, value as any)) {
       return Effect.unit
     }
