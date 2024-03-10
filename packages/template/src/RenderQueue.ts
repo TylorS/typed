@@ -12,7 +12,7 @@ import * as Scope from "effect/Scope"
 /**
  * @since 1.0.0
  */
-export const DEFAULT_PRIORITY = 1000
+export const DEFAULT_PRIORITY = 10
 
 /**
  * The context in which templates are rendered within
@@ -87,36 +87,15 @@ export const sync: Layer.Layer<RenderQueue> = RenderQueue.layer(Effect.sync(unsa
 /**
  * @since 1.0.0
  */
-export type MixedRenderQueueConfig =
-  | "idle"
-  | "raf"
-  | "microtask"
-  | "sync"
-  | { readonly idle: (priority: number) => IdleRequestOptions }
-
-/**
- * @since 1.0.0
- */
-export const mixed = (
-  ...options: ReadonlyArray<readonly [number, number, MixedRenderQueueConfig]>
-): Layer.Layer<RenderQueue> =>
+export const mixed = (idleTimeout: number = 5000): Layer.Layer<RenderQueue> =>
   RenderQueue.scoped(Effect.gen(function*(_) {
     const scope = yield* _(Effect.scope)
-    const queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]> = []
-
-    for (const [start, end, config] of options) {
-      const queue = config === "idle"
-        ? unsafeMakeIdleRenderQueue({ scope })
-        : config === "raf"
-        ? unsafeMakeRafRenderQueue(scope)
-        : config === "microtask"
-        ? unsafeMakeMicrotaskRenderQueue(scope)
-        : config === "sync"
-        ? unsafeMakeSyncRenderQueue()
-        : unsafeMakeIdleRenderQueue({ scope, ...config })
-
-      queues.push([[start, end], queue])
-    }
+    const queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]> = [
+      [[-1, -1], new SyncImpl()],
+      [[0, DEFAULT_PRIORITY - 1], new MicroTaskImpl(scope)],
+      [[DEFAULT_PRIORITY, DEFAULT_PRIORITY * 2], new RafImpl(scope)],
+      [[DEFAULT_PRIORITY * 2 + 1, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, { timeout: idleTimeout })]
+    ]
 
     return new MixedImpl(queues)
   }))
@@ -215,10 +194,18 @@ abstract class BaseImpl implements RenderQueue {
     else {
       for (const [part, task] of result.value) {
         this.queue.delete(part)
-        task()
+        this.tryRunTask(task)
       }
 
       return true
+    }
+  }
+
+  protected tryRunTask = (task: () => void) => {
+    try {
+      task()
+    } catch (error) {
+      console.error(error)
     }
   }
 }
@@ -334,15 +321,14 @@ class MixedImpl implements RenderQueue {
   private _priorityCache = new Map<number, RenderQueue>()
 
   constructor(
-    readonly queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]>,
-    readonly defaultPriority: number = DEFAULT_PRIORITY
+    readonly queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]>
   ) {
     this.queues.sort(([a], [b]) => a[0] - b[0])
 
     this.add.bind(this)
   }
 
-  add(part: unknown, task: () => void, priority = this.defaultPriority) {
+  add(part: unknown, task: () => void, priority = DEFAULT_PRIORITY) {
     let queue = this.getQueueForPriority(priority)
 
     if (queue === undefined) {
