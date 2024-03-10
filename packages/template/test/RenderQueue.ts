@@ -32,7 +32,7 @@ describe("RenderQueue", () => {
 
       deepStrictEqual(i, 2)
     }).pipe(
-      Effect.provide(RenderQueue.sync),
+      Effect.provide(RenderQueue.raf),
       Effect.scoped
     )
 
