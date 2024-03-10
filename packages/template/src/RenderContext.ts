@@ -13,7 +13,6 @@ import type { Rendered } from "@typed/wire"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type { Entry } from "./Entry.js"
-import type * as RenderQueue from "./RenderQueue.js"
 
 /**
  * The context in which templates are rendered within
@@ -93,7 +92,7 @@ const buildWithCurrentEnvironment = (environment: Environment) =>
 export const dom: (
   window: Window & GlobalThis,
   options?: DomServicesElementParams
-) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices, never, RenderQueue.RenderQueue> = (
+) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices> = (
   window,
   options
 ) =>
