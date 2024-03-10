@@ -1,6 +1,7 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
+import type { RenderQueue } from "@typed/template/RenderQueue.js"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect, ExecutionStrategy, Exit, Runtime } from "effect"
@@ -55,6 +56,7 @@ export type RenderPartContext = {
   readonly eventSource: EventSource
   readonly refCounter: IndexRefCounter2
   readonly renderContext: RenderContext
+  readonly queue: RenderQueue
   readonly values: ReadonlyArray<Renderable<any, any>>
   readonly onCause: (cause: Cause<any>) => Effect.Effect<void>
 
@@ -74,7 +76,7 @@ type RenderPartMap = {
 
 const RenderPartMap: RenderPartMap = {
   "attr": (templatePart, node, ctx) => {
-    const { document, refCounter, renderContext, values } = ctx
+    const { document, queue, refCounter, values } = ctx
     const element = node as HTMLElement | SVGElement
     const attr = createAttribute(document, element, templatePart.name)
     const renderable = values[templatePart.index]
@@ -95,13 +97,13 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => AttributePartImpl.browser(templatePart.index, element, templatePart.name, renderContext),
-      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => AttributePartImpl.browser(templatePart.index, element, templatePart.name, queue),
+      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
   "boolean-part": (templatePart, node, ctx) => {
-    const { refCounter, renderContext, values } = ctx
+    const { queue, refCounter, values } = ctx
     const element = node as HTMLElement | SVGElement
     const name = templatePart.name
     const renderable = values[templatePart.index]
@@ -112,13 +114,13 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => BooleanPartImpl.browser(templatePart.index, element, name, renderContext),
-      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => BooleanPartImpl.browser(templatePart.index, element, name, queue),
+      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
   "className-part": (templatePart, node, ctx) => {
-    const { refCounter, renderContext, values } = ctx
+    const { queue, refCounter, values } = ctx
     const element = node as HTMLElement | SVGElement
     const renderable = values[templatePart.index]
     let classNames: Set<string> = new Set()
@@ -141,13 +143,13 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => ClassNamePartImpl.browser(templatePart.index, element, renderContext),
-      (f) => Effect.zipRight(renderContext.queue.add(element, f), refCounter.release(templatePart.index)),
+      () => ClassNamePartImpl.browser(templatePart.index, element, queue),
+      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
   "comment-part": (templatePart, node, ctx) => {
-    const { refCounter, renderContext, values } = ctx
+    const { queue, refCounter, values } = ctx
     const comment = node as Comment
     const renderable = values[templatePart.index]
     const setValue = (value: string | null | undefined) => {
@@ -157,8 +159,8 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => CommentPartImpl.browser(templatePart.index, comment, renderContext),
-      (f) => Effect.zipRight(renderContext.queue.add(comment, f), refCounter.release(templatePart.index)),
+      () => CommentPartImpl.browser(templatePart.index, comment, queue),
+      (f) => Effect.zipRight(queue.add(comment, f), refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
@@ -192,8 +194,8 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => DataPartImpl.browser(templatePart.index, element, ctx.renderContext),
-      (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      () => DataPartImpl.browser(templatePart.index, element, ctx.queue),
+      (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
@@ -213,7 +215,7 @@ const RenderPartMap: RenderPartMap = {
     const part = makeRenderNodePart(
       templatePart.index,
       node as HTMLElement | SVGElement,
-      ctx.renderContext,
+      ctx.queue,
       ctx.document,
       !!makeHydrateContext
     )
@@ -254,8 +256,8 @@ const RenderPartMap: RenderPartMap = {
     return matchSettablePart(
       renderable,
       setValue,
-      () => PropertyPartImpl.browser(templatePart.index, element, templatePart.name, ctx.renderContext),
-      (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      () => PropertyPartImpl.browser(templatePart.index, element, templatePart.name, ctx.queue),
+      (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
       () => ctx.expected++
     )
   },
@@ -305,8 +307,8 @@ const RenderPartMap: RenderPartMap = {
             const eff = matchSettablePart(
               value,
               (value) => toggleBoolean(name, value),
-              () => BooleanPartImpl.browser(index, element, name, ctx.renderContext),
-              (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+              () => BooleanPartImpl.browser(index, element, name, ctx.queue),
+              (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
               () => ctx.expected++
             )
             if (eff !== null) {
@@ -319,8 +321,8 @@ const RenderPartMap: RenderPartMap = {
             const eff = matchSettablePart(
               value,
               (value) => setProperty(name, value),
-              () => PropertyPartImpl.browser(index, element, name, ctx.renderContext),
-              (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+              () => PropertyPartImpl.browser(index, element, name, ctx.queue),
+              (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
               () => ctx.expected++
             )
             if (eff !== null) {
@@ -364,8 +366,8 @@ const RenderPartMap: RenderPartMap = {
                 setClassNames(classNames, new Set(splitClassNames(String(value))))
               }
             },
-            () => ClassNamePartImpl.browser(index, element, ctx.renderContext),
-            (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+            () => ClassNamePartImpl.browser(index, element, ctx.queue),
+            (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
             () => ctx.expected++
           )
           if (eff !== null) {
@@ -375,8 +377,8 @@ const RenderPartMap: RenderPartMap = {
           const eff = matchSettablePart(
             value,
             (value) => setAttribute(key, value),
-            () => AttributePartImpl.browser(index, element, key, ctx.renderContext),
-            (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(index)),
+            () => AttributePartImpl.browser(index, element, key, ctx.queue),
+            (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
             () => ctx.expected++
           )
           if (eff !== null) {
@@ -429,12 +431,12 @@ const RenderPartMap: RenderPartMap = {
               node.index,
               ({ value }) =>
                 Effect.zipRight(
-                  ctx.renderContext.queue.add(element, () => setValue(value, index)),
+                  ctx.queue.add(element, () => setValue(value, index)),
                   ctx.refCounter.release(node.index)
                 ),
               attr.value
             ),
-          (f) => Effect.zipRight(ctx.renderContext.queue.add(element, f), ctx.refCounter.release(node.index)),
+          (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(node.index)),
           () => ctx.expected++
         )
 
@@ -499,12 +501,12 @@ const RenderPartMap: RenderPartMap = {
               node.index,
               ({ value }) => (setValue(value, index),
                 Effect.zipRight(
-                  ctx.renderContext.queue.add(comment, () => flushValue()),
+                  ctx.queue.add(comment, () => flushValue()),
                   ctx.refCounter.release(node.index)
                 )),
               null
             ),
-          (f) => Effect.zipRight(ctx.renderContext.queue.add(comment, f), ctx.refCounter.release(node.index)),
+          (f) => Effect.zipRight(ctx.queue.add(comment, f), ctx.refCounter.release(node.index)),
           () => ctx.expected++
         )
 
@@ -526,7 +528,7 @@ const RenderPartMap: RenderPartMap = {
       ctx.document,
       templatePart.index,
       node as HTMLElement | SVGElement,
-      ctx.renderContext
+      ctx.queue
     )
 
     if (isDirective(renderable)) {
@@ -593,8 +595,8 @@ export function renderPart2(
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const renderTemplate: (document: Document, renderContext: RenderContext) => RenderTemplate =
-  (document, renderContext) =>
+export const renderTemplate: (document: Document, queue: RenderQueue, renderContext: RenderContext) => RenderTemplate =
+  (document, queue, renderContext) =>
   <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
@@ -619,6 +621,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           document,
           eventSource: makeEventSource(),
           expected: 0,
+          queue,
           refCounter,
           renderContext,
           onCause: sink.onFailure as any,

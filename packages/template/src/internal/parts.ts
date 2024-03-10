@@ -28,7 +28,7 @@ import type {
   StaticText,
   TextPart
 } from "../Part.js"
-import type { RenderContext } from "../RenderContext.js"
+import type { RenderQueue } from "../RenderQueue.js"
 import { findHoleComment } from "./utils.js"
 
 const strictEq = Equivalence.strict<any>()
@@ -84,12 +84,12 @@ export class AttributePartImpl extends base("attribute") implements AttributePar
     super(index, commit, value, strictEq)
   }
 
-  static browser(index: number, element: Element, name: string, context: RenderContext): AttributePartImpl {
+  static browser(index: number, element: Element, name: string, queue: RenderQueue): AttributePartImpl {
     return new AttributePartImpl(
       name,
       index,
       ({ part, value }) =>
-        context.queue.add(
+        queue.add(
           part,
           () => value == null ? element.removeAttribute(name) : element.setAttribute(name, value)
         ),
@@ -116,12 +116,12 @@ export class BooleanPartImpl extends base("boolean") implements BooleanPart {
     super(index, commit, value, strictEq)
   }
 
-  static browser(index: number, element: Element, name: string, context: RenderContext): BooleanPartImpl {
+  static browser(index: number, element: Element, name: string, queue: RenderQueue): BooleanPartImpl {
     return new BooleanPartImpl(
       name,
       index,
       ({ part, value }) =>
-        context.queue.add(
+        queue.add(
           part,
           () => element.toggleAttribute(name, value === true)
         ),
@@ -161,11 +161,11 @@ export class ClassNamePartImpl extends base("className") implements ClassNamePar
     return []
   }
 
-  static browser(index: number, element: Element, context: RenderContext): ClassNamePartImpl {
+  static browser(index: number, element: Element, queue: RenderQueue): ClassNamePartImpl {
     return new ClassNamePartImpl(
       index,
       ({ part, previous, value }) =>
-        context.queue.add(
+        queue.add(
           part,
           () => {
             const { added, removed } = diffStrings(
@@ -227,10 +227,10 @@ function diffStrings(
 }
 
 export class CommentPartImpl extends base("comment") implements CommentPart {
-  static browser(index: number, comment: globalThis.Comment, ctx: RenderContext) {
+  static browser(index: number, comment: globalThis.Comment, queue: RenderQueue) {
     return new CommentPartImpl(
       index,
-      ({ part, value }) => ctx.queue.add(part, () => comment.data = value || ""),
+      ({ part, value }) => queue.add(part, () => comment.data = value || ""),
       comment.data,
       strictEq
     )
@@ -242,11 +242,11 @@ export class CommentPartImpl extends base("comment") implements CommentPart {
 }
 
 export class DataPartImpl extends base("data") implements DataPart {
-  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
+  static browser(index: number, element: HTMLElement | SVGElement, queue: RenderQueue) {
     return new DataPartImpl(
       index,
       ({ part, previous, value }) =>
-        ctx.queue.add(
+        queue.add(
           part,
           () => {
             const diff = diffDataSet(previous, value)
@@ -312,13 +312,13 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
     super(index, commit, value, strictEq)
   }
 
-  static browser(index: number, node: Node, name: string, ctx: RenderContext) {
+  static browser(index: number, node: Node, name: string, queue: RenderQueue) {
     const existing = (node as Element).getAttribute(name)
 
     return new PropertyPartImpl(
       name,
       index,
-      ({ part, value }) => ctx.queue.add(part, () => (node as any)[name] = value),
+      ({ part, value }) => queue.add(part, () => (node as any)[name] = value),
       existing ? unescape(existing) : null
     )
   }
@@ -332,23 +332,23 @@ export class RefPartImpl implements RefPart {
 
 export class TextPartImpl extends base("text") implements TextPart {
   // TODO: Make this properly
-  static browser(document: Document, index: number, element: Element, ctx: RenderContext) {
+  static browser(document: Document, index: number, element: Element, queue: RenderQueue) {
     const comment = findHoleComment(element, index)
     const text = document.createTextNode("")
     element.insertBefore(text, comment)
 
     return new TextPartImpl(
       index,
-      ({ part, value }) => ctx.queue.add(part, () => text.nodeValue = value ?? null),
+      ({ part, value }) => queue.add(part, () => text.nodeValue = value ?? null),
       text.nodeValue,
       strictEq
     )
   }
 
-  static fromText(text: Text, index: number, ctx: RenderContext) {
+  static fromText(text: Text, index: number, queue: RenderQueue) {
     return new TextPartImpl(
       index,
-      ({ part, value }) => ctx.queue.add(part, () => text.nodeValue = value ?? null),
+      ({ part, value }) => queue.add(part, () => text.nodeValue = value ?? null),
       text.nodeValue,
       strictEq
     )
@@ -377,11 +377,11 @@ export class PropertiesPartImpl extends base("properties") implements Properties
     return Data.struct(value)
   }
 
-  static browser(index: number, element: HTMLElement | SVGElement, ctx: RenderContext) {
+  static browser(index: number, element: HTMLElement | SVGElement, queue: RenderQueue) {
     return new PropertiesPartImpl(
       index,
       ({ part, previous, value }) =>
-        ctx.queue.add(
+        queue.add(
           part,
           () => {
             const diff = diffProperties(previous, value)
@@ -535,13 +535,13 @@ export class SparseAttributePartImpl extends sparse("sparse/attribute") implemen
     name: string,
     parts: ReadonlyArray<AttributePart | StaticText>,
     element: HTMLElement | SVGElement,
-    ctx: RenderContext
+    queue: RenderQueue
   ) {
     return new SparseAttributePartImpl(
       name,
       parts,
       ({ part, value }) =>
-        ctx.queue.add(part, () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")))
+        queue.add(part, () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")))
     )
   }
 }
@@ -558,15 +558,13 @@ export class SparseClassNamePartImpl extends sparse("sparse/className") implemen
   static browser(
     parts: ReadonlyArray<ClassNamePart | StaticText>,
     element: HTMLElement | SVGElement,
-    ctx: RenderContext,
+    queue: RenderQueue,
     values: Array<string | Array<string>> = []
   ) {
     return new SparseClassNamePartImpl(
       parts,
       ({ part, value }) =>
-        ctx.queue.add(part, () => {
-          return element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" "))
-        }),
+        queue.add(part, () => element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" "))),
       values
     )
   }
@@ -581,11 +579,11 @@ export class SparseCommentPartImpl extends sparse("sparse/comment") implements S
     super(commit, value, ReadonlyArray.getEquivalence(strictEq))
   }
 
-  static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, ctx: RenderContext) {
+  static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, queue: RenderQueue) {
     return new SparseCommentPartImpl(
       parts,
       ({ part, value }) =>
-        ctx.queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join("")),
+        queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join("")),
       []
     )
   }

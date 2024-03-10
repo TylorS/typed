@@ -12,6 +12,7 @@ import { unsafeGet } from "@typed/context"
 
 import { Either, ExecutionStrategy, Exit, Runtime } from "effect"
 import * as Scope from "effect/Scope"
+import type { RenderQueue } from "../RenderQueue.js"
 import type { Template } from "../Template.js"
 import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRootElement } from "./errors.js"
 import { makeEventSource } from "./EventSource.js"
@@ -31,11 +32,12 @@ import {
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const hydrateTemplate: (document: Document, ctx: RenderContext) => RenderTemplate = (
+export const hydrateTemplate: (document: Document, queue: RenderQueue, ctx: RenderContext) => RenderTemplate = (
   document,
+  queue,
   renderContext
 ) => {
-  const render_ = renderTemplate(document, renderContext)
+  const render_ = renderTemplate(document, queue, renderContext)
 
   return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
@@ -83,6 +85,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           document,
           eventSource: makeEventSource(),
           expected: 0,
+          queue,
           refCounter,
           renderContext,
           onCause: sink.onFailure,

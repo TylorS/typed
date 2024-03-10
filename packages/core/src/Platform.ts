@@ -8,7 +8,7 @@ import * as HttpServer from "@effect/platform/HttpServer"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
-import { RenderContext, renderHtmlTemplate, RenderTemplate } from "@typed/template"
+import { RenderContext, renderHtmlTemplate, RenderQueue, RenderTemplate } from "@typed/template"
 import { htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 
@@ -103,10 +103,11 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
     ),
     HttpServer.router.provideService(CurrentEnvironment, CurrentEnvironment.of(options?.environment ?? "server")),
     HttpServer.router.provideServiceEffect(RenderTemplate, RenderContext.RenderContext.with(renderHtmlTemplate)),
-    HttpServer.router.provideServiceEffect(
+    HttpServer.router.provideService(
       RenderContext.RenderContext,
       RenderContext.make({ environment: options?.environment ?? "server" })
-    )
+    ),
+    HttpServer.router.provideService(RenderQueue.RenderQueue, RenderQueue.unsafeMakeSyncRenderQueue())
   ) as HttpServer.router.Router<
     Exclude<R | R2, CoreServices> | ServerRequest,
     E | E2 | GuardsNotMatched

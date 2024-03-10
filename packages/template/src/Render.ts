@@ -11,11 +11,12 @@ import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import { type Rendered } from "@typed/wire"
 import type { Scope } from "effect"
-import { Layer } from "effect"
+import { Layer, pipe } from "effect"
 import * as Effect from "effect/Effect"
 import { attachRoot, renderTemplate } from "./internal/render.js"
 import * as RenderContext from "./RenderContext.js"
 import { type RenderEvent } from "./RenderEvent.js"
+import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
 /**
@@ -33,18 +34,27 @@ export const renderLayer = (
   | RenderTemplate
   | RenderContext.RenderContext
   | CurrentEnvironment
-  | DomServices
+  | DomServices,
+  never,
+  RenderQueue.RenderQueue
 > =>
   Layer.provideMerge(
-    RenderTemplate.layer(Effect.contextWith((context: Context.Context<Document | RenderContext.RenderContext>) => {
-      const [document, ctx] = Context.getMany(
-        context,
-        Document,
-        RenderContext.RenderContext
-      )
+    RenderTemplate.layer(
+      Effect.contextWith(
+        (context: Context.Context<Document | RenderQueue.RenderQueue | RenderContext.RenderContext>) => {
+          const [document, queue, ctx] = pipe(
+            context,
+            Context.getMany(
+              Document,
+              RenderQueue.RenderQueue,
+              RenderContext.RenderContext
+            )
+          )
 
-      return renderTemplate(document, ctx)
-    })),
+          return renderTemplate(document, queue, ctx)
+        }
+      )
+    ),
     RenderContext.dom(window, options)
   )
 
@@ -75,7 +85,8 @@ export function renderToLayer<R, E, T extends RenderEvent | null>(
 ): Layer.Layer<
   RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
   never,
-  Exclude<
+  | RenderQueue.RenderQueue
+  | Exclude<
     Exclude<R, Scope.Scope>,
     RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices
   >

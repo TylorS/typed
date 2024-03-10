@@ -430,6 +430,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
+      '@typed/core':
+        specifier: workspace:*
+        version: link:../../packages/core/dist
       '@typed/dom':
         specifier: workspace:*
         version: link:../../packages/dom/dist
@@ -757,9 +760,6 @@ importers:
       effect:
         specifier: ^2.4.1
         version: 2.4.1
-      ts-toolbelt:
-        specifier: ^9.6.0
-        version: 9.6.0
     publishDirectory: dist
 
   packages/storybook:

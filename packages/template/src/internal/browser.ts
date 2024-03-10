@@ -1,14 +1,14 @@
 import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
-import type { RenderContext } from "../RenderContext.js"
 import { isRenderEvent } from "../RenderEvent.js"
+import type { RenderQueue } from "../RenderQueue.js"
 import { NodePartImpl } from "./parts.js"
 import { findHoleComment, isCommentWithValue } from "./utils.js"
 
 export function makeRenderNodePart(
   index: number,
   parent: HTMLElement | SVGElement,
-  ctx: RenderContext,
+  queue: RenderQueue,
   document: Document,
   isHydrating: boolean
 ) {
@@ -17,7 +17,7 @@ export function makeRenderNodePart(
   let nodes = isHydrating ? findPreviousNodes(comment, index) : []
 
   return new NodePartImpl(index, ({ part, value }) => {
-    return ctx.queue.add(part, () => {
+    return queue.add(part, () => {
       matchValue(
         value,
         (content) => {

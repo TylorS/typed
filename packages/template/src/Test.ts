@@ -26,6 +26,7 @@ import { adjustTime } from "./internal/utils.js"
 import { render, renderLayer } from "./Render.js"
 import type * as RenderContext from "./RenderContext.js"
 import type { RenderEvent } from "./RenderEvent.js"
+import * as RenderQueue from "./RenderQueue.js"
 import type { RenderTemplate } from "./RenderTemplate.js"
 
 // TODO: Instrument RenderTemplate to log info about when specific values are hanging for too long
@@ -65,7 +66,11 @@ export function testRender<E, R>(
 ): Effect.Effect<
   TestRender<E>,
   never,
-  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+  | Scope.Scope
+  | Exclude<
+    R,
+    RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices
+  >
 > {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
@@ -86,7 +91,7 @@ export function testRender<E, R>(
           (rendered) => ElementRef.set(elementRef, rendered)
         )),
       Effect.forkScoped,
-      Effect.provide(renderLayer(window, { skipRenderScheduling: true }))
+      Effect.provide(Layer.mergeAll(renderLayer(window, { skipRenderScheduling: true })))
     )
 
     const test: TestRender<E> = {
@@ -113,7 +118,7 @@ export function testRender<E, R>(
     )
 
     return test
-  })
+  }).pipe(Effect.provide(RenderQueue.sync))
 }
 
 /**
@@ -266,5 +271,5 @@ export function testHydrate<R, E, Elements>(
     yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
 
     return test
-  })
+  }).pipe(Effect.provide(RenderQueue.sync))
 }

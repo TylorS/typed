@@ -12,6 +12,7 @@ import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
 import { hydrateLayer, renderLayer, serverLayer, staticLayer } from "@typed/template"
 import type * as RenderContext from "@typed/template/RenderContext"
+import * as RenderQueue from "@typed/template/RenderQueue"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -26,6 +27,7 @@ export type CoreServices =
   | Navigation.Navigation
   | Router.CurrentRoute
   | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
   | RenderTemplate
 
 /**
@@ -38,9 +40,7 @@ export type CoreDomServices = DomServices | CoreServices
  */
 export function fromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & {
-    readonly skipRenderScheduling?: boolean
-  }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices> {
   return Layer.mergeAll(
     GetRandomValues.implement((length: number) =>
@@ -48,7 +48,7 @@ export function fromWindow(
     ),
     Navigation.fromWindow,
     Router.browser
-  ).pipe(Layer.provideMerge(renderLayer(window, options)))
+  ).pipe(Layer.provideMerge(renderLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
 }
 
 /**
@@ -56,9 +56,7 @@ export function fromWindow(
  */
 export function hydrateFromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & {
-    readonly skipRenderScheduling?: boolean
-  }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices> {
   return Layer.mergeAll(
     GetRandomValues.implement((length: number) =>
@@ -66,7 +64,7 @@ export function hydrateFromWindow(
     ),
     Navigation.fromWindow,
     Router.browser
-  ).pipe(Layer.provideMerge(hydrateLayer(window, options)))
+  ).pipe(Layer.provideMerge(hydrateLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
 }
 
 /**
@@ -79,7 +77,8 @@ export function server(
     getRandomValues,
     Navigation.initialMemory(options),
     Router.server(options.base),
-    serverLayer
+    serverLayer,
+    RenderQueue.sync
   )
 }
 
@@ -93,7 +92,8 @@ function static_(
     getRandomValues,
     Navigation.initialMemory(options),
     Router.server(options.base),
-    staticLayer
+    staticLayer,
+    RenderQueue.sync
   )
 }
 
@@ -102,4 +102,15 @@ export {
    * @since 1.0.0
    */
   static_ as static
+}
+
+function makeQueueLayer(type: "raf" | "sync" | ["idle", IdleRequestOptions]) {
+  switch (type) {
+    case "raf":
+      return RenderQueue.raf
+    case "sync":
+      return RenderQueue.sync
+    default:
+      return RenderQueue.idle(type[1])
+  }
 }

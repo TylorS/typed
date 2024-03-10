@@ -2,6 +2,7 @@ import { Storage } from "@typed/dom/Storage"
 import * as Fx from "@typed/fx/Fx"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
+import { RenderQueue } from "@typed/template"
 import { renderToLayer } from "@typed/template/Render"
 import { Effect, Layer } from "effect"
 import { Live } from "./infrastructure"
@@ -16,6 +17,9 @@ const environment = Live.pipe(
 TodoApp.pipe(
   Fx.provide(environment),
   renderToLayer,
+  // Layer.provide(RenderQueue.sync),
+  // Layer.provide(RenderQueue.raf),
+  Layer.provide(RenderQueue.idle({ timeout: 2000 })),
   Layer.launch,
   Effect.runFork
 )

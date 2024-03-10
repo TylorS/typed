@@ -55,6 +55,10 @@ export * as RenderContext from "./RenderContext.js"
 /**
  * @since 1.0.0
  */
+export * as RenderQueue from "./RenderQueue.js"
+/**
+ * @since 1.0.0
+ */
 export * from "./RenderEvent.js"
 /**
  * @since 1.0.0

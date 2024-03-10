@@ -17,6 +17,7 @@ import { attachRoot } from "./internal/render.js"
 import type { ToRendered } from "./Render.js"
 import * as RenderContext from "./RenderContext.js"
 import { type RenderEvent } from "./RenderEvent.js"
+import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
 /**
@@ -29,18 +30,25 @@ export const hydrateLayer = (
   | RenderTemplate
   | RenderContext.RenderContext
   | CurrentEnvironment
-  | DomServices
+  | DomServices,
+  never,
+  RenderQueue.RenderQueue
 > =>
   Layer.provideMerge(
-    RenderTemplate.layer(Effect.contextWith((context: Context.Context<Document | RenderContext.RenderContext>) => {
-      const [document, ctx] = Context.getMany(
-        context,
-        Document,
-        RenderContext.RenderContext
-      )
+    RenderTemplate.layer(
+      Effect.contextWith(
+        (context: Context.Context<Document | RenderQueue.RenderQueue | RenderContext.RenderContext>) => {
+          const [document, queue, ctx] = Context.getMany(
+            context,
+            Document,
+            RenderQueue.RenderQueue,
+            RenderContext.RenderContext
+          )
 
-      return hydrateTemplate(document, ctx)
-    })),
+          return hydrateTemplate(document, queue, ctx)
+        }
+      )
+    ),
     RenderContext.dom(window, options)
   )
 
