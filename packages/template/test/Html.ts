@@ -275,6 +275,12 @@ describe("Html", () => {
       ["<html data-typed=\"...\"><head><title>@typed TodoMVC</title><meta charset=\"utf-8\"/><meta name=\"description\" content=\"@typed TodoMVC\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body><h1>Hello, world!</h1><script async defer type=\"module\" src=\"./index.ts\"></script></body></html>"]
     )
   })
+
+  it.concurrent("renders with fragments", async () => {
+    await testHtmlChunks(html`<div>Hello, world!</div><div>Goodbye, world!</div>`, [
+      "<div data-typed=\"...\">Hello, world!</div><div data-typed=\"...\">Goodbye, world!</div>"
+    ])
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
