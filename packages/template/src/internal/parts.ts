@@ -44,7 +44,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
         value: Extract<Part, { readonly _tag: T }>["value"]
         part: Extract<Part, { readonly _tag: T }>
       },
-      priority?: number
+      priority: number
     ) => Effect.Effect<void, never, Scope>,
     public value: Extract<Part, { readonly _tag: T }>["value"],
     readonly eq: Equivalence.Equivalence<Extract<Part, { readonly _tag: T }>["value"]> = equals
@@ -52,7 +52,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
     this.update = this.update.bind(this)
   }
 
-  update(input: this["value"], priority?: number) {
+  update(input: this["value"], priority: number) {
     const previous = this.value as any
     const value = this.getValue(input) as any
 
@@ -234,7 +234,7 @@ export class CommentPartImpl extends base("comment") implements CommentPart {
   static browser(index: number, comment: globalThis.Comment, queue: RenderQueue) {
     return new CommentPartImpl(
       index,
-      ({ part, value }) => queue.add(part, () => comment.data = value || ""),
+      ({ part, value }, priority) => queue.add(part, () => comment.data = value || "", priority),
       comment.data,
       strictEq
     )
@@ -249,7 +249,7 @@ export class DataPartImpl extends base("data") implements DataPart {
   static browser(index: number, element: HTMLElement | SVGElement, queue: RenderQueue) {
     return new DataPartImpl(
       index,
-      ({ part, previous, value }) =>
+      ({ part, previous, value }, priority) =>
         queue.add(
           part,
           () => {
@@ -261,7 +261,8 @@ export class DataPartImpl extends base("data") implements DataPart {
               removed.forEach((k) => delete element.dataset[k])
               added.forEach(([k, v]) => element.dataset[k] = v)
             }
-          }
+          },
+          priority
         ),
       element.dataset
     )
@@ -322,7 +323,7 @@ export class PropertyPartImpl extends base("property") implements PropertyPart {
     return new PropertyPartImpl(
       name,
       index,
-      ({ part, value }) => queue.add(part, () => (node as any)[name] = value),
+      ({ part, value }, priority) => queue.add(part, () => (node as any)[name] = value, priority),
       existing ? unescape(existing) : null
     )
   }
@@ -501,14 +502,14 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
         value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
         part: Extract<SparsePart, { readonly _tag: T }>
       },
-      priority?: number
+      priority: number
     ) => Effect.Effect<void, never, Scope>,
     public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
     readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
       equals
   ) {}
 
-  update = (value: this["value"], priority?: number) => {
+  update = (value: this["value"], priority: number) => {
     if (this.eq(this.value as any, value as any)) {
       return Effect.unit
     }

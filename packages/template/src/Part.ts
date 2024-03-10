@@ -33,7 +33,7 @@ export interface AttributePart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -45,7 +45,7 @@ export interface BooleanPart {
   readonly value: boolean | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -54,10 +54,9 @@ export interface BooleanPart {
 export interface ClassNamePart {
   readonly _tag: "className"
   readonly value: ReadonlyArray<string>
-  priority?: number | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -68,7 +67,7 @@ export interface DataPart {
   readonly value: Readonly<Record<string, string | undefined>> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -93,7 +92,7 @@ export interface PropertyPart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -113,7 +112,7 @@ export interface CommentPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -124,7 +123,7 @@ export interface TextPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -135,7 +134,7 @@ export interface NodePart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -146,7 +145,7 @@ export interface PropertiesPart {
   readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -162,7 +161,7 @@ export interface SparseAttributePart {
   readonly name: string
   readonly parts: ReadonlyArray<AttributePart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: ReadonlyArray<string>, priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -172,7 +171,7 @@ export interface SparseClassNamePart {
   readonly _tag: "sparse/className"
   readonly parts: ReadonlyArray<ClassNamePart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: ReadonlyArray<string>, priority: number) => Effect<void, never, Scope>
 }
 
 /**
@@ -182,7 +181,7 @@ export interface SparseCommentPart {
   readonly _tag: "sparse/comment"
   readonly parts: ReadonlyArray<CommentPart | StaticText>
 
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
+  readonly update: (value: ReadonlyArray<string>, priority: number) => Effect<void, never, Scope>
 }
 
 /**

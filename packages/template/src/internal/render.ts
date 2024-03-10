@@ -23,7 +23,7 @@ import type { Renderable } from "../Renderable.js"
 import type { RenderContext } from "../RenderContext.js"
 import type { RenderEvent } from "../RenderEvent.js"
 import { DomRenderEvent } from "../RenderEvent.js"
-import { RenderQueue } from "../RenderQueue.js"
+import { RenderQueue, withCurrentPriority } from "../RenderQueue.js"
 import type { RenderTemplate } from "../RenderTemplate.js"
 import type * as Template from "../Template.js"
 import { makeRenderNodePart } from "./browser.js"
@@ -44,8 +44,6 @@ import {
 } from "./parts.js"
 import type { ParentChildNodes } from "./utils.js"
 import { findPath } from "./utils.js"
-
-// TODO: We need to re-think hydration for dynamic lists, probably just markers should be fine
 
 /**
  * @internal
@@ -98,7 +96,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => AttributePartImpl.browser(templatePart.index, element, templatePart.name, queue),
-      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(queue.add(element, f, priority), refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -115,7 +116,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => BooleanPartImpl.browser(templatePart.index, element, name, queue),
-      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(queue.add(element, f, priority), refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -144,7 +148,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => ClassNamePartImpl.browser(templatePart.index, element, queue),
-      (f) => Effect.zipRight(queue.add(element, f), refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(queue.add(element, f, priority), refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -160,7 +167,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => CommentPartImpl.browser(templatePart.index, comment, queue),
-      (f) => Effect.zipRight(queue.add(comment, f), refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(queue.add(comment, f, priority), refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -195,7 +205,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => DataPartImpl.browser(templatePart.index, element, ctx.queue),
-      (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -233,7 +246,13 @@ const RenderPartMap: RenderPartMap = {
 
     const handle = handlePart(
       renderable,
-      Sink.make(ctx.onCause, (value) => Effect.zipRight(part.update(value), ctx.refCounter.release(templatePart.index)))
+      Sink.make(
+        ctx.onCause,
+        (value) =>
+          withCurrentPriority((priority) =>
+            Effect.zipRight(part.update(value, priority), ctx.refCounter.release(templatePart.index))
+          )
+      )
     )
 
     if (makeHydrateContext) {
@@ -257,7 +276,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       setValue,
       () => PropertyPartImpl.browser(templatePart.index, element, templatePart.name, ctx.queue),
-      (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(templatePart.index)),
+      (f) =>
+        withCurrentPriority((priority) =>
+          Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(templatePart.index))
+        ),
       () => ctx.expected++
     )
   },
@@ -308,7 +330,10 @@ const RenderPartMap: RenderPartMap = {
               value,
               (value) => toggleBoolean(name, value),
               () => BooleanPartImpl.browser(index, element, name, ctx.queue),
-              (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
+              (f) =>
+                withCurrentPriority((priority) =>
+                  Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+                ),
               () => ctx.expected++
             )
             if (eff !== null) {
@@ -322,7 +347,10 @@ const RenderPartMap: RenderPartMap = {
               value,
               (value) => setProperty(name, value),
               () => PropertyPartImpl.browser(index, element, name, ctx.queue),
-              (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
+              (f) =>
+                withCurrentPriority((priority) =>
+                  Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+                ),
               () => ctx.expected++
             )
             if (eff !== null) {
@@ -367,7 +395,10 @@ const RenderPartMap: RenderPartMap = {
               }
             },
             () => ClassNamePartImpl.browser(index, element, ctx.queue),
-            (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
+            (f) =>
+              withCurrentPriority((priority) =>
+                Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+              ),
             () => ctx.expected++
           )
           if (eff !== null) {
@@ -378,7 +409,10 @@ const RenderPartMap: RenderPartMap = {
             value,
             (value) => setAttribute(key, value),
             () => AttributePartImpl.browser(index, element, key, ctx.queue),
-            (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(index)),
+            (f) =>
+              withCurrentPriority((priority) =>
+                Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+              ),
             () => ctx.expected++
           )
           if (eff !== null) {
@@ -429,14 +463,17 @@ const RenderPartMap: RenderPartMap = {
             new AttributePartImpl(
               templatePart.name,
               node.index,
-              ({ value }) =>
+              ({ value }, priority) =>
                 Effect.zipRight(
-                  ctx.queue.add(element, () => setValue(value, index)),
+                  ctx.queue.add(element, () => setValue(value, index), priority),
                   ctx.refCounter.release(node.index)
                 ),
               attr.value
             ),
-          (f) => Effect.zipRight(ctx.queue.add(element, f), ctx.refCounter.release(node.index)),
+          (f) =>
+            withCurrentPriority((priority) =>
+              Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(node.index))
+            ),
           () => ctx.expected++
         )
 
@@ -499,14 +536,17 @@ const RenderPartMap: RenderPartMap = {
           () =>
             new CommentPartImpl(
               node.index,
-              ({ value }) => (setValue(value, index),
+              ({ value }, priority) => (setValue(value, index),
                 Effect.zipRight(
-                  ctx.queue.add(comment, () => flushValue()),
+                  ctx.queue.add(comment, () => flushValue(), priority),
                   ctx.refCounter.release(node.index)
                 )),
               null
             ),
-          (f) => Effect.zipRight(ctx.queue.add(comment, f), ctx.refCounter.release(node.index)),
+          (f) =>
+            withCurrentPriority((priority) =>
+              Effect.zipRight(ctx.queue.add(comment, f, priority), ctx.refCounter.release(node.index))
+            ),
           () => ctx.expected++
         )
 
@@ -541,7 +581,10 @@ const RenderPartMap: RenderPartMap = {
       renderable,
       Sink.make(
         ctx.onCause,
-        (value) => Effect.zipRight(part.update(value as any), ctx.refCounter.release(templatePart.index))
+        (value) =>
+          withCurrentPriority((priority) =>
+            Effect.zipRight(part.update(value as any, priority), ctx.refCounter.release(templatePart.index))
+          )
       )
     )
   }

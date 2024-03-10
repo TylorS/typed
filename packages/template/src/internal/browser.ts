@@ -16,23 +16,27 @@ export function makeRenderNodePart(
   let text: Text
   let nodes = isHydrating ? findPreviousNodes(comment, index) : []
 
-  return new NodePartImpl(index, ({ part, value }) => {
-    return queue.add(part, () => {
-      matchValue(
-        value,
-        (content) => {
-          if (text === undefined) {
-            text = document.createTextNode("")
-          }
-          text.textContent = content
+  return new NodePartImpl(index, ({ part, value }, priority) => {
+    return queue.add(
+      part,
+      () => {
+        matchValue(
+          value,
+          (content) => {
+            if (text === undefined) {
+              text = document.createTextNode("")
+            }
+            text.textContent = content
 
-          nodes = diffChildren(comment, nodes, [text], document)
-        },
-        (updatedNodes) => {
-          nodes = diffChildren(comment, nodes, updatedNodes, document)
-        }
-      )
-    })
+            nodes = diffChildren(comment, nodes, [text], document)
+          },
+          (updatedNodes) => {
+            nodes = diffChildren(comment, nodes, updatedNodes, document)
+          }
+        )
+      },
+      priority
+    )
   }, nodes)
 }
 

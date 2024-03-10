@@ -5,6 +5,7 @@ import { make } from "@typed/template/EventHandler"
 import { renderToHtml, staticLayer } from "@typed/template/Html"
 import type * as RenderContext from "@typed/template/RenderContext"
 import type { RenderEvent } from "@typed/template/RenderEvent"
+import { DEFAULT_PRIORITY } from "@typed/template/RenderQueue"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import { html } from "@typed/template/RenderTemplate"
 import { counter, inputWithLabel } from "@typed/template/test/fixtures/test_components"
@@ -160,7 +161,7 @@ describe("Html", () => {
   })
 
   it.concurrent(`renders with attribute directives`, async () => {
-    await testHtmlChunks(html`<div id=${Directive.attribute((part) => part.update("foo"))}></div>`, [
+    await testHtmlChunks(html`<div id=${Directive.attribute((part) => part.update("foo", DEFAULT_PRIORITY))}></div>`, [
       `<div`,
       ` id="foo"`,
       `></div>`
@@ -170,27 +171,27 @@ describe("Html", () => {
   it.concurrent(`rendered with boolean directives`, async () => {
     // True
     await testHtmlChunks(
-      html`<div ?hidden=${Directive.boolean((part) => part.update(true))}></div>`,
+      html`<div ?hidden=${Directive.boolean((part) => part.update(true, DEFAULT_PRIORITY))}></div>`,
       [`<div`, ` hidden`, `></div>`]
     )
 
     // False
     await testHtmlChunks(
-      html`<div ?hidden=${Directive.boolean((part) => part.update(false))}></div>`,
+      html`<div ?hidden=${Directive.boolean((part) => part.update(false, DEFAULT_PRIORITY))}></div>`,
       [`<div`, `></div>`]
     )
   })
 
   it.concurrent(`renders with class name directives`, async () => {
     await testHtmlChunks(
-      html`<div class=${Directive.className((part) => part.update(["foo"]))}></div>`,
+      html`<div class=${Directive.className((part) => part.update(["foo"], DEFAULT_PRIORITY))}></div>`,
       [`<div`, ` class="foo"`, `></div>`]
     )
   })
 
   it.concurrent(`renders with data directives`, async () => {
     await testHtmlChunks(
-      html`<div .data=${Directive.data((part) => part.update({ foo: "bar" }))}></div>`,
+      html`<div .data=${Directive.data((part) => part.update({ foo: "bar" }, DEFAULT_PRIORITY))}></div>`,
       [`<div`, ` data-foo="bar"`, `></div>`]
     )
   })
@@ -206,7 +207,7 @@ describe("Html", () => {
 
   it.concurrent(`renders with property directives`, async () => {
     await testHtmlChunks(
-      html`<input .value=${Directive.property((part) => part.update("foo"))} />`,
+      html`<input .value=${Directive.property((part) => part.update("foo", DEFAULT_PRIORITY))} />`,
       [`<input`, ` value="foo"`, `/>`]
     )
   })
@@ -220,9 +221,9 @@ describe("Html", () => {
   it.concurrent(`renders with sparse attribute directives`, async () => {
     await testHtmlChunks(
       html`<div
-        id="${Directive.attribute((part) => part.update("foo"))} ${Directive.attribute((part) => part.update("bar"))} ${
-        Directive.attribute((part) => part.update("baz"))
-      }"
+        id="${Directive.attribute((part) => part.update("foo", DEFAULT_PRIORITY))} ${
+        Directive.attribute((part) => part.update("bar", DEFAULT_PRIORITY))
+      } ${Directive.attribute((part) => part.update("baz", DEFAULT_PRIORITY))}"
       ></div>`,
       [`<div`, ` id="foo bar baz"`, `></div>`]
     )

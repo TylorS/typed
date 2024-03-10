@@ -5,8 +5,9 @@
 
 import * as Context from "@typed/context"
 import * as Idle from "@typed/fx/Idle"
-import type { Layer } from "effect"
+import { FiberRef, type Layer } from "effect"
 import * as Effect from "effect/Effect"
+import { dual } from "effect/Function"
 import * as Scope from "effect/Scope"
 
 /**
@@ -25,8 +26,13 @@ export const RenderQueue: Context.Tagged<RenderQueue, RenderQueue> = Context.Tag
 /**
  * @since 1.0.0
  */
+export const currentPriority: FiberRef.FiberRef<number> = FiberRef.unsafeMake(DEFAULT_PRIORITY)
+
+/**
+ * @since 1.0.0
+ */
 export interface RenderQueue {
-  readonly add: (part: unknown, task: () => void, priority?: number) => Effect.Effect<void, never, Scope.Scope>
+  readonly add: (part: unknown, task: () => void, priority: number) => Effect.Effect<void, never, Scope.Scope>
 }
 
 /**
@@ -101,47 +107,36 @@ export const mixed = (idleTimeout: number = 5000): Layer.Layer<RenderQueue> =>
   }))
 
 class PriorityQueue {
-  tasks: Map<unknown, () => void> = new Map()
-  priorities: Map<number, Set<unknown>> = new Map()
+  priorities: Map<number, Map<unknown, () => void>> = new Map()
 
   add(part: unknown, task: () => void, priority: number) {
-    this.tasks.set(part, task)
-
     let set = this.priorities.get(priority)
 
     if (set === undefined) {
-      set = new Set()
+      set = new Map()
       this.priorities.set(priority, set)
     }
 
-    set.add(part)
+    set.set(part, task)
   }
 
-  get(part: unknown) {
-    return this.tasks.get(part)
+  get(part: unknown, priority: number) {
+    return this.priorities.get(priority)?.get(part)
+  }
+
+  delete(part: unknown, priority: number) {
+    return this.priorities.get(priority)?.delete(part)
   }
 
   get size() {
-    return this.tasks.size
-  }
-
-  delete(part: unknown) {
-    this.tasks.delete(part)
-
-    for (const [priority, set] of this.priorities) {
-      set.delete(part)
-
-      if (set.size === 0) {
-        this.priorities.delete(priority)
-      }
-    }
+    return Array.from(this.priorities.values()).reduce((acc, set) => acc + set.size, 0)
   }
 
   *entries() {
     for (const priority of Array.from(this.priorities.keys()).sort((a, b) => a - b)) {
       const parts = this.priorities.get(priority)!
       this.priorities.delete(priority)
-      yield Array.from(parts).map((part) => [part, this.tasks.get(part)!] as const)
+      yield parts.values()
     }
   }
 }
@@ -154,18 +149,18 @@ abstract class BaseImpl implements RenderQueue {
     this.add.bind(this)
   }
 
-  add(part: unknown, task: () => void, priority = DEFAULT_PRIORITY) {
+  add(part: unknown, task: () => void, priority: number) {
     return Effect.suspend(() => {
       this.queue.add(part, task, priority)
 
       return Effect.zipRight(
         Effect.addFinalizer(() =>
           Effect.sync(() => {
-            const currentTask = this.queue.get(part)
+            const currentTask = this.queue.get(part, priority)
 
             // If the current task is still the same we'll delete it from the queue
             if (currentTask === task) {
-              this.queue.delete(part)
+              this.queue.delete(part, priority)
             }
           })
         ),
@@ -187,13 +182,12 @@ abstract class BaseImpl implements RenderQueue {
 
   abstract run: Effect.Effect<void, never, Scope.Scope>
 
-  protected runTasks = (iterator: Iterator<ReadonlyArray<readonly [unknown, () => void]>>) => {
+  protected runTasks = (iterator: Iterator<Iterable<() => void>>) => {
     const result = iterator.next()
 
     if (result.done) return false
     else {
-      for (const [part, task] of result.value) {
-        this.queue.delete(part)
+      for (const task of result.value) {
         this.tryRunTask(task)
       }
 
@@ -205,6 +199,7 @@ abstract class BaseImpl implements RenderQueue {
     try {
       task()
     } catch (error) {
+      // TODO: We should probably be able to report this back to a template
       console.error(error)
     }
   }
@@ -328,7 +323,7 @@ class MixedImpl implements RenderQueue {
     this.add.bind(this)
   }
 
-  add(part: unknown, task: () => void, priority = DEFAULT_PRIORITY) {
+  add(part: unknown, task: () => void, priority: number) {
     let queue = this.getQueueForPriority(priority)
 
     if (queue === undefined) {
@@ -353,3 +348,20 @@ class MixedImpl implements RenderQueue {
     return q
   }
 }
+
+/**
+ * @since 1.0.0
+ */
+export const withCurrentPriority = <A, E, R>(f: (priority: number) => Effect.Effect<A, E, R>) =>
+  Effect.flatMap(FiberRef.get(currentPriority), f)
+
+/**
+ * @since 1.0.0
+ */
+export const usingCurrentPriority: {
+  (priority: number): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
+  <A, E, R>(effect: Effect.Effect<A, E, R>, priority: number): Effect.Effect<A, E, R>
+} = dual(
+  2,
+  <A, E, R>(effect: Effect.Effect<A, E, R>, priority: number) => Effect.locally(effect, currentPriority, priority)
+)

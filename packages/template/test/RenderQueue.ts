@@ -15,15 +15,15 @@ describe("RenderQueue", () => {
       const add1 = () => i++
 
       // When queuing multiple values before scheduling the queue, only the last value should be committed.
-      yield* _(queue.add(testPart, add1))
-      yield* _(queue.add(testPart, add1))
+      yield* _(queue.add(testPart, add1, RenderQueue.DEFAULT_PRIORITY))
+      yield* _(queue.add(testPart, add1, RenderQueue.DEFAULT_PRIORITY))
 
       yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 
       deepStrictEqual(i, 1)
 
-      yield* _(queue.add(testPart, add1))
-      yield* _(queue.add(testPart, add1))
+      yield* _(queue.add(testPart, add1, RenderQueue.DEFAULT_PRIORITY))
+      yield* _(queue.add(testPart, add1, RenderQueue.DEFAULT_PRIORITY))
 
       yield* _(Effect.sleep(50)) // Wait for the queue to be scheduled next tick
 

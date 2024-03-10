@@ -1,5 +1,6 @@
 import * as Fx from "@typed/fx"
 import * as Directive from "@typed/template/Directive"
+import { DEFAULT_PRIORITY } from "@typed/template/RenderQueue"
 import { html } from "@typed/template/RenderTemplate"
 import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
@@ -159,9 +160,9 @@ describe("Render", () => {
               html`<div data-foo=${
                 Directive.attribute((part) =>
                   Effect.gen(function*(_) {
-                    yield* _(part.update("foo"))
+                    yield* _(part.update("foo", DEFAULT_PRIORITY))
                     yield* _(Effect.sleep(100))
-                    yield* _(part.update("bar"))
+                    yield* _(part.update("bar", DEFAULT_PRIORITY))
                   })
                 )
               }>Hello, world!</div>`
@@ -240,9 +241,9 @@ describe("Render", () => {
             html`<div ?disabled=${
               Directive.boolean((part) =>
                 Effect.gen(function*(_) {
-                  yield* _(part.update(true))
+                  yield* _(part.update(true, DEFAULT_PRIORITY))
                   yield* _(Effect.sleep(100))
-                  yield* _(part.update(false))
+                  yield* _(part.update(false, DEFAULT_PRIORITY))
                 })
               )
             }>Hello, world!</div>`
@@ -300,9 +301,9 @@ describe("Render", () => {
             html`<div class=${
               Directive.className((part) =>
                 Effect.gen(function*(_) {
-                  yield* _(part.update(["foo"]))
+                  yield* _(part.update(["foo"], DEFAULT_PRIORITY))
                   yield* _(Effect.sleep(100))
-                  yield* _(part.update(["bar"]))
+                  yield* _(part.update(["bar"], DEFAULT_PRIORITY))
                 })
               )
             }>Hello, world!</div>`
@@ -386,9 +387,9 @@ describe("Render", () => {
             html`<!-- ${
               Directive.comment((part) =>
                 Effect.gen(function*(_) {
-                  yield* _(part.update("Hello, world!"))
+                  yield* _(part.update("Hello, world!", DEFAULT_PRIORITY))
                   yield* _(Effect.sleep(100))
-                  yield* _(part.update("Goodbye, world!"))
+                  yield* _(part.update("Goodbye, world!", DEFAULT_PRIORITY))
                 })
               )
             } -->`
@@ -436,9 +437,9 @@ describe("Render", () => {
               html`<input .value=${
                 Directive.property((part) =>
                   Effect.gen(function*(_) {
-                    yield* _(part.update("foo"))
+                    yield* _(part.update("foo", DEFAULT_PRIORITY))
                     yield* _(Effect.sleep(100))
-                    yield* _(part.update("bar"))
+                    yield* _(part.update("bar", DEFAULT_PRIORITY))
                   })
                 )
               } />`
@@ -500,9 +501,9 @@ describe("Render", () => {
       Effect.gen(function*(_) {
         const directive = Directive.text((part) =>
           Effect.gen(function*(_) {
-            yield* _(part.update("Hello, world!"))
+            yield* _(part.update("Hello, world!", DEFAULT_PRIORITY))
             yield* _(Effect.sleep(100))
-            yield* _(part.update("Goodbye, world!"))
+            yield* _(part.update("Goodbye, world!", DEFAULT_PRIORITY))
           })
         )
         const { elementRef, window } = yield* _(
