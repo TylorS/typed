@@ -90,6 +90,10 @@ export const microtask: Layer.Layer<RenderQueue> = RenderQueue.scoped(
  */
 export const sync: Layer.Layer<RenderQueue> = RenderQueue.layer(Effect.sync(unsafeMakeSyncRenderQueue))
 
+const MICRO_TASK_END = DEFAULT_PRIORITY - 1
+const RAF_END = DEFAULT_PRIORITY + 9
+const IDLE_START = RAF_END + 1
+
 /**
  * @since 1.0.0
  */
@@ -98,13 +102,35 @@ export const mixed = (idleTimeout: number = 5000): Layer.Layer<RenderQueue> =>
     const scope = yield* _(Effect.scope)
     const queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]> = [
       [[-1, -1], new SyncImpl()],
-      [[0, DEFAULT_PRIORITY - 1], new MicroTaskImpl(scope)],
-      [[DEFAULT_PRIORITY, DEFAULT_PRIORITY * 2], new RafImpl(scope)],
-      [[DEFAULT_PRIORITY * 2 + 1, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, { timeout: idleTimeout })]
+      [[0, MICRO_TASK_END], new MicroTaskImpl(scope)],
+      [[DEFAULT_PRIORITY, RAF_END], new RafImpl(scope)],
+      [[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, { timeout: idleTimeout })]
     ]
 
     return new MixedImpl(queues)
   }))
+
+/**
+ * @since 1.0.0
+ */
+export const RenderPriority = {
+  Sync: -1,
+  /**
+   * @example
+   * RenderPriority.MicroTask(0-9)
+   */
+  MicroTask: (priority: number) => Math.min(Math.max(0, priority), MICRO_TASK_END),
+  /**
+   * @example
+   * RenderPriority.Raf(0-9)
+   */
+  Raf: (priority: number) => Math.min(Math.max(DEFAULT_PRIORITY, DEFAULT_PRIORITY + priority), RAF_END),
+  /**
+   * @example
+   * RenderPriority.Idle(0-9)
+   */
+  Idle: (priority: number) => Math.max(IDLE_START, IDLE_START + priority)
+} as const
 
 class PriorityQueue {
   priorities: Map<number, Map<unknown, () => void>> = new Map()
