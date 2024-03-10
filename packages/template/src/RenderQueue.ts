@@ -113,7 +113,7 @@ export const mixed = (options?: IdleRequestOptions): Layer.Layer<RenderQueue> =>
 /**
  * @since 1.0.0
  */
-export const RenderPriority = {
+export const Priority = {
   Sync: -1,
   /**
    * @example

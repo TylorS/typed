@@ -16,11 +16,26 @@ const environment = Live.pipe(
 TodoApp.pipe(
   Fx.provide(environment),
   renderToLayer,
+  /* Synchronous */
   // Layer.provide(RenderQueue.sync),
+
+  /* queueMicrotask */
   // Layer.provide(RenderQueue.microtask),
+
+  /* requestAnimationFrame */
   // Layer.provide(RenderQueue.raf),
+
+  /* requestIdleCallback */
   // Layer.provide(RenderQueue.idle({ timeout: 2000 })),
+
+  /* All of the above, based on priority, defaults to requestAnimationFrame (priority:10) */
   Layer.provide(RenderQueue.mixed({ timeout: 2000 })),
   Layer.launch,
+  /* RenderQueue.usingCurrentPriority can be utilized to change the default priority */
+
+  // RenderQueue.usingCurrentPriority(RenderQueue.Priority.Sync), // -1
+  // RenderQueue.usingCurrentPriority(RenderQueue.Priority.MicroTask(/[0-9]/)), // 0-9
+  // RenderQueue.usingCurrentPriority(RenderQueue.Priority.Raf(/[0-9]/)), // 10-19
+  // RenderQueue.usingCurrentPriority(RenderQueue.Priority.Idle(/[0-9)]/)), // 20+
   Effect.runFork
 )
