@@ -16,7 +16,7 @@ import * as Effect from "effect/Effect"
 import { attachRoot, renderTemplate } from "./internal/render.js"
 import * as RenderContext from "./RenderContext.js"
 import { type RenderEvent } from "./RenderEvent.js"
-import * as RenderQueue from "./RenderQueue.js"
+import type * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
 /**
@@ -34,24 +34,21 @@ export const renderLayer = (
   | RenderTemplate
   | RenderContext.RenderContext
   | CurrentEnvironment
-  | DomServices,
-  never,
-  RenderQueue.RenderQueue
+  | DomServices
 > =>
   Layer.provideMerge(
     RenderTemplate.layer(
       Effect.contextWith(
-        (context: Context.Context<Document | RenderQueue.RenderQueue | RenderContext.RenderContext>) => {
-          const [document, queue, ctx] = pipe(
+        (context: Context.Context<Document | RenderContext.RenderContext>) => {
+          const [document, ctx] = pipe(
             context,
             Context.getMany(
               Document,
-              RenderQueue.RenderQueue,
               RenderContext.RenderContext
             )
           )
 
-          return renderTemplate(document, queue, ctx)
+          return renderTemplate(document, ctx)
         }
       )
     ),

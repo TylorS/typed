@@ -12,7 +12,7 @@ import { unsafeGet } from "@typed/context"
 
 import { Either, ExecutionStrategy, Exit, Runtime } from "effect"
 import * as Scope from "effect/Scope"
-import type { RenderQueue } from "../RenderQueue.js"
+import { RenderQueue } from "../RenderQueue.js"
 import type { Template } from "../Template.js"
 import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRootElement } from "./errors.js"
 import { makeEventSource } from "./EventSource.js"
@@ -32,23 +32,27 @@ import {
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const hydrateTemplate: (document: Document, queue: RenderQueue, ctx: RenderContext) => RenderTemplate = (
+export const hydrateTemplate: (document: Document, ctx: RenderContext) => RenderTemplate = (
   document,
-  queue,
   renderContext
 ) => {
-  const render_ = renderTemplate(document, queue, renderContext)
+  const render_ = renderTemplate(document, renderContext)
 
   return <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
-  ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>> => {
+  ): Fx.Fx<
+    RenderEvent,
+    Placeholder.Error<Values[number]>,
+    Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
+  > => {
     return Fx.make((sink) =>
       Effect.gen(function*(_) {
-        const runtime = yield* _(Effect.runtime<Placeholder.Context<Values[number]> | Scope.Scope>())
+        const runtime = yield* _(Effect.runtime<Placeholder.Context<Values[number]> | RenderQueue | Scope.Scope>())
         const runFork = Runtime.runFork(runtime)
         const hydrateCtx = unsafeGet(runtime.context, HydrateContext)
         const parentScope = unsafeGet(runtime.context, Scope.Scope)
+        const queue = unsafeGet(runtime.context, RenderQueue)
         const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
 
         // If we're not longer hydrating, just render normally

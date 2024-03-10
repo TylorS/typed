@@ -1,7 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
-import type { RenderQueue } from "@typed/template/RenderQueue.js"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect, ExecutionStrategy, Exit, Runtime } from "effect"
@@ -24,6 +23,7 @@ import type { Renderable } from "../Renderable.js"
 import type { RenderContext } from "../RenderContext.js"
 import type { RenderEvent } from "../RenderEvent.js"
 import { DomRenderEvent } from "../RenderEvent.js"
+import { RenderQueue } from "../RenderQueue.js"
 import type { RenderTemplate } from "../RenderTemplate.js"
 import type * as Template from "../Template.js"
 import { makeRenderNodePart } from "./browser.js"
@@ -595,8 +595,8 @@ export function renderPart2(
  * Here for "standard" browser rendering, a TemplateInstance is effectively a live
  * view into the contents rendered by the Template.
  */
-export const renderTemplate: (document: Document, queue: RenderQueue, renderContext: RenderContext) => RenderTemplate =
-  (document, queue, renderContext) =>
+export const renderTemplate: (document: Document, renderContext: RenderContext) => RenderTemplate =
+  (document, renderContext) =>
   <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
@@ -606,14 +606,19 @@ export const renderTemplate: (document: Document, queue: RenderQueue, renderCont
       return Fx.sync(() => DomRenderEvent(persistent(document, document.importNode(entry.content, true))))
     }
 
-    return Fx.make<RenderEvent, Placeholder.Error<Values[number]>, Scope.Scope | Placeholder.Context<Values[number]>>((
+    return Fx.make<
+      RenderEvent,
+      Placeholder.Error<Values[number]>,
+      Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
+    >((
       sink
     ) => {
       return Effect.gen(function*(_) {
-        const runtime = yield* _(Effect.runtime<Scope.Scope | Placeholder.Context<Values[number]>>())
+        const runtime = yield* _(Effect.runtime<Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>>())
         const runFork = Runtime.runFork(runtime)
         const parentScope = Context.get(runtime.context, Scope.Scope)
         const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+        const queue = Context.get(runtime.context, RenderQueue)
         const refCounter = yield* _(indexRefCounter2())
         const content = document.importNode(entry.content, true)
         const ctx: RenderPartContext = {

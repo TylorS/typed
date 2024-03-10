@@ -214,7 +214,12 @@ export function testHydrate<R, E, Elements>(
 ): Effect.Effect<
   TestHydrate<E, Elements>,
   E,
-  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+  | Scope.Scope
+  | Exclude<
+    R,
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment | DomServices
+  >
+  | Exclude<R, RenderContext.RenderContext | RenderTemplate | CurrentEnvironment | DomServices>
 > {
   return Effect.gen(function*(_) {
     const window = yield* _(getOrMakeWindow(options))
@@ -279,5 +284,5 @@ export function testHydrate<R, E, Elements>(
     yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
 
     return test
-  }).pipe(Effect.provide(RenderQueue.sync))
+  })
 }

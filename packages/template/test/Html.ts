@@ -1,4 +1,5 @@
 import * as Fx from "@typed/fx/Fx"
+import type { RenderQueue } from "@typed/template"
 import * as Directive from "@typed/template/Directive"
 import { make } from "@typed/template/EventHandler"
 import { renderToHtml, serverLayer } from "@typed/template/Html"
@@ -280,7 +281,7 @@ function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {
 }
 
 async function testHtmlChunks(
-  template: Fx.Fx<RenderEvent, never, RenderTemplate | RenderContext.RenderContext | Scope>,
+  template: Fx.Fx<RenderEvent, never, RenderTemplate | RenderQueue.RenderQueue | RenderContext.RenderContext | Scope>,
   expected: Array<string>
 ): Promise<void> {
   const actual = await template.pipe(

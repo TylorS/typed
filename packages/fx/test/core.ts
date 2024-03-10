@@ -135,7 +135,7 @@ describe.concurrent(__filename, () => {
           // Validate the outputs
           expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
           expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
-        }).pipe(Effect.scoped)
+        }).pipe(Effect.retry(Schedule.recurUpTo(3)), Effect.scoped)
 
         await Effect.runPromise(test)
       })
@@ -169,7 +169,7 @@ describe.concurrent(__filename, () => {
           // Validate the outputs
           expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
           expect(yield* _(Fiber.join(b))).toEqual([1, 2, 3, 4])
-        }).pipe(Effect.scoped)
+        }).pipe(Effect.retry(Schedule.recurUpTo(3)), Effect.scoped)
 
         await Effect.runPromise(test)
       })

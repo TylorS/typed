@@ -7,6 +7,7 @@ import * as TestClock from "effect/TestClock"
 import * as TestContext from "effect/TestContext"
 import type * as TestServices from "effect/TestServices"
 import * as vitest from "vitest"
+import * as RenderQueue from "./RenderQueue"
 
 export {
   /**
@@ -24,13 +25,14 @@ export {
  */
 export function it<E, A>(
   name: string,
-  test: () => Effect.Effect<A, E, Scope>,
+  test: () => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue>,
   options?: vitest.TestOptions
 ) {
   return vitest.it(
     name,
     () =>
       test().pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.scoped,
         Effect.runPromise
       ),
@@ -40,13 +42,14 @@ export function it<E, A>(
 
 it.only = function it<E, A>(
   name: string,
-  test: () => Effect.Effect<A, E, Scope>,
+  test: () => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue>,
   options?: vitest.TestOptions
 ) {
   return vitest.it.only(
     name,
     () =>
       test().pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.scoped,
         Effect.runPromise
       ),
@@ -56,13 +59,14 @@ it.only = function it<E, A>(
 
 it.skip = function it<E, A>(
   name: string,
-  test: () => Effect.Effect<A, E, Scope>,
+  test: () => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue>,
   options?: vitest.TestOptions
 ) {
   return vitest.it.skip(
     name,
     () =>
       test().pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.scoped,
         Effect.runPromise
       ),
@@ -77,13 +81,14 @@ export function test<E, A>(
   name: string,
   test: (options: {
     readonly clock: TestClock.TestClock
-  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  }) => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue | TestServices.TestServices>,
   options?: vitest.TestOptions
 ) {
   return vitest.it(
     name,
     () =>
       TestClock.testClockWith((clock) => test({ clock })).pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.provide(TestContext.TestContext),
         Effect.scoped,
         Effect.runPromise
@@ -96,13 +101,14 @@ test.only = function test<E, A>(
   name: string,
   test: (options: {
     readonly clock: TestClock.TestClock
-  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  }) => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue | TestServices.TestServices>,
   options?: vitest.TestOptions
 ) {
   return vitest.it.only(
     name,
     () =>
       TestClock.testClockWith((clock) => test({ clock })).pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.provide(TestContext.TestContext),
         Effect.scoped,
         Effect.runPromise
@@ -115,13 +121,14 @@ test.skip = function test<E, A>(
   name: string,
   test: (options: {
     readonly clock: TestClock.TestClock
-  }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  }) => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue | TestServices.TestServices>,
   options?: vitest.TestOptions
 ) {
   return vitest.it.skip(
     name,
     () =>
       TestClock.testClockWith((clock) => test({ clock })).pipe(
+        Effect.provide(RenderQueue.sync),
         Effect.provide(TestContext.TestContext),
         Effect.scoped,
         Effect.runPromise

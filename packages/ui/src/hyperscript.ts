@@ -8,6 +8,7 @@ import { fromFxEffect } from "@typed/fx/Fx"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
+import type { RenderQueue } from "@typed/template/RenderQueue"
 import { RenderTemplate } from "@typed/template/RenderTemplate"
 import type { Scope } from "effect"
 import type { TypedPropertiesMap } from "./Props.js"
@@ -30,6 +31,7 @@ export function h<
   >,
   | Scope.Scope
   | RenderTemplate
+  | RenderQueue
   | Placeholder.Context<
     Props[keyof Props] | Children[number]
   >
@@ -70,7 +72,7 @@ export type HyperscriptForTagName<TagName extends keyof TypedPropertiesMap> = <
 ) => Fx<
   RenderEvent,
   Placeholder.Error<Props[keyof Props] | Children[number]>,
-  Scope.Scope | RenderTemplate | Placeholder.Context<Props[keyof Props] | Children[number]>
+  Scope.Scope | RenderTemplate | RenderQueue | Placeholder.Context<Props[keyof Props] | Children[number]>
 >
 
 /**
@@ -92,6 +94,7 @@ export function createHyperscript<const TagName extends keyof TypedPropertiesMap
     >,
     | Scope.Scope
     | RenderTemplate
+    | RenderQueue
     | Placeholder.Context<
       Props[keyof Props] | Children[number]
     >

@@ -1,11 +1,9 @@
 import * as Fx from "@typed/fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { ElementRef, EventHandler, html } from "@typed/template"
-import type { RenderEvent, RenderTemplate } from "@typed/template"
 import * as Effect from "effect/Effect"
-import type * as Scope from "effect/Scope"
 
-export const counter: Fx.Fx<RenderEvent, never, Scope.Scope | RenderTemplate> = Fx.gen(
+export const counter = Fx.gen(
   function*($) {
     const count = yield* $(RefSubject.make(Effect.succeed(0)))
     const increment = RefSubject.update(count, (n) => n + 1)

@@ -10,6 +10,7 @@ import { getRandomValues } from "@typed/id"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
 import { renderToLayer } from "@typed/template"
+import * as RenderQueue from "@typed/template/RenderQueue"
 import { Cause, Effect, FiberId, Layer } from "effect"
 import type { TypedRenderer } from "./types"
 
@@ -44,6 +45,7 @@ export async function renderToCanvas(
     Layer.provideMerge(Router.server("/")),
     Layer.provideMerge(Navigation.initialMemory({ url: "/" })),
     Layer.provideMerge(getRandomValues),
+    Layer.provideMerge(RenderQueue.sync),
     Layer.launch,
     Effect.catchAllCause(onCause)
   )
