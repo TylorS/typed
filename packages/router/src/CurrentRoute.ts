@@ -13,7 +13,7 @@ import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
 
-import type { ParamsOf } from "@typed/path"
+import type { ParamsList } from "@typed/path"
 import * as Route from "@typed/route"
 
 /**
@@ -93,17 +93,17 @@ export const withCurrentRoute: {
     )
   }))
 
-const makeHref_ = <P extends string, P2 extends string>(
+const makeHref_ = (
   currentPath: string,
-  currentRoute: Route.Route<P>,
-  route: Route.Route<P2>,
-  ...[params]: [keyof ParamsOf<P2>] extends [never] ? [{}?] : [ParamsOf<P2>]
-) => {
+  currentRoute: Route.Route<any>,
+  route: Route.Route<any>,
+  ...params: ParamsList<string>
+): Option.Option<string> => {
   const currentMatch = currentRoute.match(currentPath)
   if (Option.isNone(currentMatch)) return Option.none()
 
   const fullRoute = currentRoute.concat(route)
-  const fullParams = { ...currentMatch.value, ...params }
+  const fullParams = { ...currentMatch.value, ...params[0] }
 
   return Option.some(fullRoute.make(fullParams as any))
 }
@@ -113,29 +113,32 @@ const makeHref_ = <P extends string, P2 extends string>(
  */
 export function makeHref<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
-  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+  ...params: ParamsList<P>
 ): RefSubject.Filtered<string, never, Navigation | CurrentRoute> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return RefSubject.filterMapEffect(
     CurrentPath,
     (currentPath) =>
-      Effect.map(CurrentRoute, (currentRoute) => makeHref_(currentPath, currentRoute.route, route, ...params))
+      Effect.map(
+        CurrentRoute,
+        (currentRoute): Option.Option<string> => makeHref_(currentPath, currentRoute.route, route, ...params)
+      )
   )
 }
 
-const isActive_ = <P extends string, P2 extends string>(
+const isActive_ = (
   currentPath: string,
-  currentRoute: Route.Route<P>,
-  route: Route.Route<P2>,
-  ...params: [keyof ParamsOf<P2>] extends [never] ? [{}?] : [ParamsOf<P2>]
-) => {
+  currentRoute: Route.Route<any>,
+  route: Route.Route<any>,
+  ...params: ParamsList<any>
+): boolean => {
   const currentMatch = currentRoute.match(currentPath)
 
   if (Option.isNone(currentMatch)) return false
 
   const fullRoute = currentRoute.concat(route)
-  const fullParams = { ...currentMatch.value, ...params }
+  const fullParams = { ...currentMatch.value, ...params[0] }
   const fullPath = fullRoute.make(fullParams as any)
 
   return fullPath === currentPath || currentPath.startsWith(fullPath)
@@ -145,14 +148,17 @@ const isActive_ = <P extends string, P2 extends string>(
  */
 export function isActive<const P extends string>(
   pathOrRoute: Route.Route<P> | P,
-  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+  ...[params]: ParamsList<P>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute> {
   const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
 
   return RefSubject.mapEffect(
     CurrentPath,
     (currentPath) =>
-      Effect.map(CurrentRoute, (currentRoute) => isActive_(currentPath, currentRoute.route, route, ...params))
+      Effect.map(
+        CurrentRoute,
+        (currentRoute): boolean => isActive_(currentPath, currentRoute.route, route, params)
+      )
   )
 }
 

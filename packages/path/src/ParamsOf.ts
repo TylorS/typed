@@ -5,6 +5,7 @@
  */
 
 import type { A } from "ts-toolbelt"
+
 import type {
   Modifier,
   ModifierNode,
@@ -27,6 +28,14 @@ import type {
  */
 export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {}
   : ToParams<ParseSegments<PathToSegments<T>>>
+
+/**
+ * ParamsList
+ * @since 1.0.0
+ */
+export type ParamsList<T extends string> = A.Equals<T, string> extends 1 ? [params?: {}] :
+  [ParamsOf<T>] extends [infer R] ? [keyof R] extends [never] ? [params?: {}] : [params: R]
+  : [params?: {}]
 
 type ToParams<T extends ReadonlyArray<any>, Params = {}, R = unknown> = T extends readonly [infer H, ...infer Tail]
   ? ToParams<Tail, Params, R & AstToParams<H, Params>>

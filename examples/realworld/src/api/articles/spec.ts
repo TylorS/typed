@@ -1,8 +1,12 @@
 import { security } from "@/api/common/security"
 import { Article, ArticleTag, Username } from "@/domain"
 import * as Schema from "@/lib/Schema"
+import { CreateArticleInput } from "@/services/CreateArticle"
+import { UpdateArticleInput } from "@/services/UpdateArticle"
 import { Api } from "effect-http"
 import * as Routes from "./routes"
+
+console.log(Routes.article.schema)
 
 export const ArticlesSpec = Api.apiGroup("Articles").pipe(
   Api.get(
@@ -16,7 +20,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 401 },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {
@@ -37,7 +41,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 401 },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {
@@ -48,10 +52,10 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getArticle",
     Routes.article.path,
     {
-      params: Routes.article.schema,
+      request: { params: Routes.article.schema },
       response: [
         { status: 200, content: Schema.struct({ article: Article }) },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {
@@ -62,10 +66,13 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "createArticle",
     Routes.articles.path,
     {
+      request: {
+        body: Schema.struct({ article: CreateArticleInput })
+      },
       response: [
         { status: 201, content: Schema.struct({ article: Article }) },
         { status: 401 },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {
@@ -77,11 +84,14 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "updateArticle",
     Routes.article.path,
     {
-      params: Routes.article.schema,
+      request: {
+        params: Routes.article.schema,
+        body: Schema.struct({ article: UpdateArticleInput })
+      },
       response: [
         { status: 200, content: Schema.struct({ article: Article }) },
         { status: 401 },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {
@@ -93,11 +103,11 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "deleteArticle",
     Routes.article.path,
     {
-      params: Routes.article.schema,
+      request: { params: Routes.article.schema },
       response: [
         { status: 200 },
         { status: 401 },
-        { status: 422 }
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },
     {

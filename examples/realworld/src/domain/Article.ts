@@ -12,7 +12,7 @@ export const Article = Schema.suspend(() =>
     createdAt: Schema.Date,
     updatedAt: Schema.Date
   })
-)
+).pipe(Schema.identifier("Article"))
 
 export type Article = Schema.Schema.To<typeof Article>
 

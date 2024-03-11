@@ -9,7 +9,7 @@ export const User = Schema.suspend(() =>
     bio: Schema.optionalOrNull(Bio),
     image: Schema.optionalOrNull(Image)
   })
-)
+).pipe(Schema.identifier("User"))
 
 export type User = Schema.Schema.To<typeof User>
 

@@ -7,10 +7,10 @@
     "declarationDir": "build/dts",
     "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
     "rootDir": "src",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": [
-        "src/*"
+        "./*"
       ]
     }
   },

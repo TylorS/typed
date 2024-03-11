@@ -67,30 +67,25 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type GuardOf<T> = [T] extends [Route<infer P>] ? Guard.Guard<string, typedPath.ParamsOf<P>, never, never> :
-    [T] extends [RouteGuard<infer _P, infer A, infer E, infer R>] ? Guard.Guard<string, A, E, R> :
+  export type GuardOf<T> = [T] extends [RouteGuard<infer _P extends `/${string}`, infer A, infer E, infer R>] ?
+    Guard.Guard<string, A, E, R> :
+    [T] extends [Route<infer P>] ? Guard.Guard<string, typedPath.ParamsOf<P>, never, never> :
     never
 
   /**
    * @since 1.0.0
    */
-  export type Output<T> = [T] extends [Route<infer P>] ? typedPath.ParamsOf<P> :
-    [T] extends [RouteGuard<infer _P, infer A, infer _E, infer _R>] ? A
-    : never
+  export type Output<T> = Guard.Guard.Output<GuardOf<T>>
 
   /**
    * @since 1.0.0
    */
-  export type Error<T> = [T] extends [Route<infer _P>] ? never :
-    [T] extends [RouteGuard<infer _P, infer _A, infer E, infer _R>] ? E
-    : never
+  export type Error<T> = Guard.Guard.Error<GuardOf<T>>
 
   /**
    * @since 1.0.0
    */
-  export type Context<T> = [T] extends [Route<infer _P>] ? never :
-    [T] extends [RouteGuard<infer _P, infer _A, infer _E, infer R>] ? R
-    : never
+  export type Context<T> = Guard.Guard.Context<GuardOf<T>>
 }
 
 /**
@@ -122,6 +117,12 @@ export type Error<T> = Route.Error<T>
  * @since 1.0.0
  */
 export type Context<T> = Route.Context<T>
+
+/**
+ * @since 1.0.0
+ */
+export type ParamsList<T> = [ParamsOf<T>] extends [infer R] ? [keyof R] extends [never] ? readonly [{}?] : readonly [R]
+  : []
 
 /**
  * @since 1.0.0
@@ -521,7 +522,7 @@ export interface RouteDecoder<P extends string, O, A = O, E = never, R = never, 
  */
 export const decode: {
   <I extends RouteInput<any, any, any, any>, A, R2>(
-    schema: Schema.Schema<A, Route.Output<I>, R2>
+    schema: Schema.Schema<A, Types.NoInfer<Route.Output<I>>, R2>
   ): (
     input: I
   ) => RouteDecoder<Route.Path<I>, A, Route.Output<I>, Route.Error<I>, Route.Context<I>, R2>

@@ -9,7 +9,7 @@ export const Comment = Schema.suspend(() =>
     createdAt: Schema.Date,
     updatedAt: Schema.Date
   })
-)
+).pipe(Schema.identifier("Comment"))
 
 export type Comment = Schema.Schema.To<typeof Comment>
 

@@ -67,7 +67,7 @@ export interface RouteMatcher<out A, out E, out R> {
 
   readonly redirect: <const P extends string>(
     route: Route.Route<P> | P,
-    ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
+    ...params: Path.ParamsList<P>
   ) => Fx.Fx<
     A,
     Exclude<E, Navigation.RedirectError>,
@@ -175,7 +175,7 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
 
   redirect<const P extends string>(
     route: P | Route.Route<P>,
-    ...params: [keyof Path.ParamsOf<P>] extends [never] ? [{}?] : [Path.ParamsOf<P>]
+    ...params: Path.ParamsList<P>
   ): Fx.Fx<
     A,
     Exclude<E, Navigation.RedirectError>,
