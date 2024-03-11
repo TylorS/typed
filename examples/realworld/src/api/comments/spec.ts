@@ -1,7 +1,7 @@
-import { Comment } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { Comment } from "@/model"
 import { CreateCommentInput } from "@/services/CreateComment"
 import { Api } from "effect-http"
+import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const CommentsSpec = Api.apiGroup("Comments").pipe(

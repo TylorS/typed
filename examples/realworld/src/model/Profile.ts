@@ -1,4 +1,4 @@
-import * as Schema from "@/lib/Schema"
+import * as Schema from "lib/Schema"
 import { User } from "./User"
 
 export const Profile = User.pipe(

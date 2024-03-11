@@ -1,11 +1,11 @@
 import { security } from "@/api/common/security"
-import { Article } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { Article } from "@/model"
 import { CreateArticleInput } from "@/services/CreateArticle"
 import { GetArticlesInput } from "@/services/GetArticles"
 import { GetFeedInput } from "@/services/GetFeed"
 import { UpdateArticleInput } from "@/services/UpdateArticle"
 import { Api } from "effect-http"
+import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const ArticlesSpec = Api.apiGroup("Articles").pipe(
@@ -31,7 +31,6 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
       query: GetArticlesInput,
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
-        { status: 401 },
         { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
     },

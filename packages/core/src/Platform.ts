@@ -29,10 +29,41 @@ export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotM
 /**
  * @since 1.0.0
  */
-export function toHttpRouter<E, R, E2 = never, R2 = never>(
-  matcher: RouteMatcher<RenderEvent, E, R>,
+export type LayoutTemplate<
+  Content extends Fx.Fx<RenderEvent | null, any, any>,
+  Head extends
+    | string
+    | Effect.Effect<string | ReadonlyArray<string>, any, any>
+    | Fx.Fx<RenderEvent | null, any, any>
+    | undefined,
+  E,
+  R
+> = (
+  params: {
+    readonly content: Content
+    readonly head?: Head
+    readonly request: ServerRequest
+  }
+) => Fx.Fx<RenderEvent | null, E, R>
+
+/**
+ * @since 1.0.0
+ */
+export function toHttpRouter<
+  E,
+  R,
+  E2 = never,
+  R2 = never,
+  Head extends
+    | string
+    | Effect.Effect<string | ReadonlyArray<string>, any, any>
+    | Fx.Fx<RenderEvent | null, any, any>
+    | undefined = undefined
+>(
+  matcher: RouteMatcher<RenderEvent | null, E, R>,
   options?: {
-    layout?: (content: Fx.Fx<RenderEvent, E, R>) => Fx.Fx<RenderEvent, E2, R2>
+    layout?: LayoutTemplate<Fx.Fx<RenderEvent | null, E, R>, Head, E2, R2>
+    head?: Head
     base?: string
     environment?: "server" | "static"
   }
@@ -69,8 +100,9 @@ export function toHttpRouter<E, R, E2 = never, R2 = never>(
               )
 
               const ref = yield* _(RefSubject.of(match.value))
-              const renderable = guard.match(RefSubject.take(ref, 1))
-              const template = Fx.unify(options?.layout ? options.layout(renderable) : renderable).pipe(
+              const content = guard.match(RefSubject.take(ref, 1))
+              const params = { content, head: options?.head as Head, request }
+              const template = Fx.unify(options?.layout ? options.layout(params) : content).pipe(
                 Fx.withSpan("render_template"),
                 Fx.onExit(() => Effect.annotateLogs(Effect.logDebug(`Rendered Tempate`), "route.params", match.value)),
                 Fx.annotateSpans("route.params", match.value),

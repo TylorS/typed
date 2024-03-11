@@ -1,4 +1,4 @@
-import { ArticleSlug } from "@/domain"
+import { ArticleSlug } from "@/model"
 import { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 

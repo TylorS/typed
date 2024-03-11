@@ -1,8 +1,8 @@
-import type { User } from "@/domain"
-import { Password, Username } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import type { User } from "@/model"
+import { Password, Username } from "@/model"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect/Effect"
+import * as Schema from "lib/Schema"
 
 export const LoginInput = Schema.struct({
   username: Username,

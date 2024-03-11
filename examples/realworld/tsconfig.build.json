@@ -7,7 +7,7 @@
     "declarationDir": "build/dts",
     "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
     "rootDir": "src",
-    "baseUrl": "./",
+    "baseUrl": "src",
     "paths": {
       "@/*": [
         "./*"
@@ -19,16 +19,34 @@
   ],
   "references": [
     {
+      "path": "../../packages/async-data"
+    },
+    {
       "path": "../../packages/context"
+    },
+    {
+      "path": "../../packages/core"
     },
     {
       "path": "../../packages/dom"
     },
     {
+      "path": "../../packages/environment"
+    },
+    {
       "path": "../../packages/fx"
     },
     {
+      "path": "../../packages/guard"
+    },
+    {
+      "path": "../../packages/id"
+    },
+    {
       "path": "../../packages/navigation"
+    },
+    {
+      "path": "../../packages/path"
     },
     {
       "path": "../../packages/route"

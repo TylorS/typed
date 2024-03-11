@@ -247,6 +247,9 @@ importers:
       '@effect/schema':
         specifier: 0.63.2
         version: 0.63.2(effect@2.4.1)(fast-check@3.16.0)
+      '@typed/async-data':
+        specifier: workspace:*
+        version: link:../../packages/async-data/dist
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
@@ -256,6 +259,9 @@ importers:
       '@typed/dom':
         specifier: workspace:*
         version: link:../../packages/dom/dist
+      '@typed/environment':
+        specifier: workspace:*
+        version: link:../../packages/environment/dist
       '@typed/fx':
         specifier: workspace:*
         version: link:../../packages/fx/dist
@@ -326,12 +332,6 @@ importers:
       vite-plugin-compression:
         specifier: ^0.5.1
         version: 0.5.1(vite@5.1.5)
-      vite-plugin-html:
-        specifier: ^3.2.2
-        version: 3.2.2(vite@5.1.5)
-      vite-plugin-top-level-await:
-        specifier: ^1.4.1
-        version: 1.4.1(vite@5.1.5)
       vite-tsconfig-paths:
         specifier: ^4.3.1
         version: 4.3.1(typescript@5.4.2)(vite@5.1.5)

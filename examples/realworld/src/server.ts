@@ -1,17 +1,37 @@
+/// <reference types="vite/client" />
+
 import * as Api from "@/api"
 import * as Ui from "@/ui"
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Http from "@effect/platform/HttpServer"
 import { toHttpRouter } from "@typed/core/Platform"
-import { Effect, Layer, pipe } from "effect"
+import { Effect, Layer, Logger, LogLevel, pipe } from "effect"
 import { NodeSwaggerFiles } from "effect-http-node"
+import { existsSync } from "node:fs"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
 
+const StaticFiles = Effect.gen(function*(_) {
+  const request = yield* _(Http.request.ServerRequest)
+  const filePath = request.url.replace("/assets", "dist/client/assets")
+
+  if (existsSync(filePath + ".gz")) {
+    return yield* _(
+      Http.response.file(filePath + ".gz", { headers: Http.headers.unsafeFromRecord({ "Content-Encoding": "gzip" }) })
+    )
+  }
+
+  return yield* _(Http.response.file(filePath))
+})
+
 toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
+  Http.router.mountApp("/assets", StaticFiles, { includePrefix: true }),
   Http.router.mountApp("/api", Api.server),
+  Http.router.get("*", Http.response.html`<h1>Not Found</h1>`),
+  Http.middleware.logger,
   listen,
+  Logger.withMinimumLogLevel(import.meta.env.PROD ? LogLevel.Info : LogLevel.Debug),
   runMain
 )
 

@@ -222,6 +222,66 @@
       ],
       "@typed/wire/examples/*": [
         "packages/wire/build/examples/*"
+      ],
+      "@typed/counter": [
+        "examples/counter/build/esm/index.js"
+      ],
+      "@typed/counter/*": [
+        "examples/counter/build/esm/*"
+      ],
+      "@typed/counter/test/*": [
+        "examples/counter/build/test/*"
+      ],
+      "@typed/counter/examples/*": [
+        "examples/counter/build/examples/*"
+      ],
+      "@typed/fx-tracing": [
+        "examples/fx-tracing/build/esm/index.js"
+      ],
+      "@typed/fx-tracing/*": [
+        "examples/fx-tracing/build/esm/*"
+      ],
+      "@typed/fx-tracing/test/*": [
+        "examples/fx-tracing/build/test/*"
+      ],
+      "@typed/fx-tracing/examples/*": [
+        "examples/fx-tracing/build/examples/*"
+      ],
+      "@typed/realworld": [
+        "examples/realworld/build/esm/index.js"
+      ],
+      "@typed/realworld/*": [
+        "examples/realworld/build/esm/*"
+      ],
+      "@typed/realworld/test/*": [
+        "examples/realworld/build/test/*"
+      ],
+      "@typed/realworld/examples/*": [
+        "examples/realworld/build/examples/*"
+      ],
+      "@typed/simple-ssr": [
+        "examples/simple-ssr/build/esm/index.js"
+      ],
+      "@typed/simple-ssr/*": [
+        "examples/simple-ssr/build/esm/*"
+      ],
+      "@typed/simple-ssr/test/*": [
+        "examples/simple-ssr/build/test/*"
+      ],
+      "@typed/simple-ssr/examples/*": [
+        "examples/simple-ssr/build/examples/*"
+      ],
+      "@typed/todomvc": [
+        "examples/todomvc/build/esm/index.js"
+      ],
+      "@typed/todomvc/*": [
+        "examples/todomvc/build/esm/*"
+      ],
+      "@typed/todomvc/test/*": [
+        "examples/todomvc/build/test/*"
+      ],
+      "@typed/todomvc/examples/*": [
+        "examples/todomvc/build/examples/*"
       ]
     }
   },
@@ -279,6 +339,21 @@
     "packages/ui/build/examples/**/*",
     "packages/wire/build/esm/**/*",
     "packages/wire/build/test/**/*",
-    "packages/wire/build/examples/**/*"
+    "packages/wire/build/examples/**/*",
+    "packages/counter/build/esm/**/*",
+    "packages/counter/build/test/**/*",
+    "packages/counter/build/examples/**/*",
+    "packages/fx-tracing/build/esm/**/*",
+    "packages/fx-tracing/build/test/**/*",
+    "packages/fx-tracing/build/examples/**/*",
+    "packages/realworld/build/esm/**/*",
+    "packages/realworld/build/test/**/*",
+    "packages/realworld/build/examples/**/*",
+    "packages/simple-ssr/build/esm/**/*",
+    "packages/simple-ssr/build/test/**/*",
+    "packages/simple-ssr/build/examples/**/*",
+    "packages/todomvc/build/esm/**/*",
+    "packages/todomvc/build/test/**/*",
+    "packages/todomvc/build/examples/**/*"
   ]
 }

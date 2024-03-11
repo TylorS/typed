@@ -1,7 +1,7 @@
 import { security } from "@/api/common/security"
-import { Profile } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { Profile } from "@/model"
 import { Api } from "effect-http"
+import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const ProfilesSpec = Api.apiGroup("Profiles").pipe(

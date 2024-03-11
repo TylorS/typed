@@ -26,7 +26,7 @@ import type { RenderEvent } from "./RenderEvent.js"
 import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
-const toHtml = (r: RenderEvent) => (r as HtmlRenderEvent).html
+const toHtml = (r: RenderEvent | null) => r === null ? "" : (r as HtmlRenderEvent).html
 
 /**
  * @since 1.0.0
@@ -58,7 +58,7 @@ export const staticLayer: Layer.Layer<
  * @since 1.0.0
  */
 export function renderToHtml<E, R>(
-  fx: Fx.Fx<RenderEvent, E, R>
+  fx: Fx.Fx<RenderEvent | null, E, R>
 ): Fx.Fx<string, E, R> {
   return Fx.map(fx, toHtml)
 }
@@ -67,7 +67,7 @@ export function renderToHtml<E, R>(
  * @since 1.0.0
  */
 export function renderToHtmlString<E, R>(
-  fx: Fx.Fx<RenderEvent, E, R>
+  fx: Fx.Fx<RenderEvent | null, E, R>
 ): Effect.Effect<string, E, R> {
   return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
 }

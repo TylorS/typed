@@ -1,4 +1,4 @@
-import * as Schema from "@/lib/Schema"
+import * as Schema from "lib/Schema"
 import { Profile } from "./Profile"
 
 export const Comment = Schema.suspend(() =>

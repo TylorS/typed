@@ -9,8 +9,8 @@
   },
   "homepage": "https://github.com/tylors/typed",
   "scripts": {
-    "build": "vite --config ./vite.config.mts build src",
-    "preview": "vite --config ./vite.config.mts preview src",
+    "build": "vavite",
+    "preview": "node ./dist/server/index.mjs",
     "start": "vite --config ./vite.config.mts serve src"
   },
   "keywords": [],
@@ -21,9 +21,11 @@
     "@effect/platform": "^0.46.3",
     "@effect/platform-node": "^0.44.11",
     "@effect/schema": "0.63.2",
+    "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
     "@typed/dom": "workspace:*",
+    "@typed/environment": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/guard": "workspace:*",
     "@typed/id": "workspace:*",
@@ -49,8 +51,6 @@
     "vavite": "^4.1.1",
     "vite": "^5.1.5",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-html": "^3.2.2",
-    "vite-plugin-top-level-await": "^1.4.1",
     "vite-tsconfig-paths": "^4.3.1"
   }
 }

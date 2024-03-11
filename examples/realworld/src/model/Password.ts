@@ -1,4 +1,4 @@
-import * as Schema from "@/lib/Schema"
+import * as Schema from "lib/Schema"
 
 export const Password = Schema.string.pipe(Schema.brand("Password"))
 export type Password = Schema.Schema.To<typeof Password>

@@ -16,6 +16,9 @@
       "path": "../../packages/context"
     },
     {
+      "path": "../../packages/core"
+    },
+    {
       "path": "../../packages/dom"
     },
     {

@@ -1,6 +1,6 @@
-import { ArticleTagList } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { ArticleTagList } from "@/model"
 import { Api } from "effect-http"
+import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const TagsSpec = Api.apiGroup("Tags").pipe(

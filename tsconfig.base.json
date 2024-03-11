@@ -1,6 +1,7 @@
 {
   "extends": "./packages/tsconfig/base.json",
   "compilerOptions": {
+    "rootDir": ".",
     "build": true,
     "baseUrl": ".",
     "paths": {
@@ -222,6 +223,66 @@
       ],
       "@typed/wire/examples/*": [
         "packages/wire/examples/*"
+      ],
+      "@typed/counter": [
+        "examples/counter/src/index.ts"
+      ],
+      "@typed/counter/*": [
+        "examples/counter/src/*"
+      ],
+      "@typed/counter/test/*": [
+        "examples/counter/test/*"
+      ],
+      "@typed/counter/examples/*": [
+        "examples/counter/examples/*"
+      ],
+      "@typed/fx-tracing": [
+        "examples/fx-tracing/src/index.ts"
+      ],
+      "@typed/fx-tracing/*": [
+        "examples/fx-tracing/src/*"
+      ],
+      "@typed/fx-tracing/test/*": [
+        "examples/fx-tracing/test/*"
+      ],
+      "@typed/fx-tracing/examples/*": [
+        "examples/fx-tracing/examples/*"
+      ],
+      "@typed/realworld": [
+        "examples/realworld/src/index.ts"
+      ],
+      "@typed/realworld/*": [
+        "examples/realworld/src/*"
+      ],
+      "@typed/realworld/test/*": [
+        "examples/realworld/test/*"
+      ],
+      "@typed/realworld/examples/*": [
+        "examples/realworld/examples/*"
+      ],
+      "@typed/simple-ssr": [
+        "examples/simple-ssr/src/index.ts"
+      ],
+      "@typed/simple-ssr/*": [
+        "examples/simple-ssr/src/*"
+      ],
+      "@typed/simple-ssr/test/*": [
+        "examples/simple-ssr/test/*"
+      ],
+      "@typed/simple-ssr/examples/*": [
+        "examples/simple-ssr/examples/*"
+      ],
+      "@typed/todomvc": [
+        "examples/todomvc/src/index.ts"
+      ],
+      "@typed/todomvc/*": [
+        "examples/todomvc/src/*"
+      ],
+      "@typed/todomvc/test/*": [
+        "examples/todomvc/test/*"
+      ],
+      "@typed/todomvc/examples/*": [
+        "examples/todomvc/examples/*"
       ]
     }
   },

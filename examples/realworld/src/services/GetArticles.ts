@@ -1,8 +1,9 @@
-import type { Article } from "@/domain"
-import { ArticleTag, Username } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import type { Article } from "@/model"
+import { ArticleTag, Username } from "@/model"
+import type { Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
+import * as Schema from "lib/Schema"
 
 export const GetArticlesInput = Schema.struct({
   tag: Schema.optionalOrNull(ArticleTag),
@@ -14,5 +15,9 @@ export const GetArticlesInput = Schema.struct({
 
 export type GetArticlesInput = Schema.Schema.To<typeof GetArticlesInput>
 
-export const GetArticles = Fn<(input: GetArticlesInput) => Effect.Effect<ReadonlyArray<Article>>>()("GetArticles")
+export type GetArticlesError = Unprocessable
+
+export const GetArticles = Fn<(input: GetArticlesInput) => Effect.Effect<ReadonlyArray<Article>, GetArticlesError>>()(
+  "GetArticles"
+)
 export type GetArticles = Fn.Identifier<typeof GetArticles>

@@ -2,15 +2,13 @@ import * as Router from "@typed/router"
 import { html } from "@typed/template"
 import * as pages from "./pages"
 
-const notImplemented = () => html`<div>Not Implemented</div>`
-
 export const router = Router
-  .match(pages.login.route, notImplemented)
-  .match(pages.home.route, notImplemented)
-  .match(pages.article.route, notImplemented)
-  .match(pages.register.route, notImplemented)
-  .match(pages.settings.route, notImplemented)
-  .match(pages.editArticle.route, notImplemented)
-  .match(pages.editor.route, notImplemented)
-  .match(pages.profile.route, notImplemented)
-  .match(pages.profileFavorites.route, notImplemented)
+  .match(pages.login.route, () => html`<div>Login</div>`)
+  .match(pages.article.route, () => html`<div>Article</div>`)
+  .match(pages.register.route, () => html`<div>Register</div>`)
+  .match(pages.settings.route, () => html`<div>Settings</div>`)
+  .match(pages.editArticle.route, () => html`<div>Edit Article</div>`)
+  .match(pages.editor.route, () => html`<div>Editor</div>`)
+  .match(pages.profile.route, () => html`<div>Profile</div>`)
+  .match(pages.profileFavorites.route, () => html`<div>Profile Favorites</div>`)
+  .match(pages.home.route, () => html`<div>Home</div>`)

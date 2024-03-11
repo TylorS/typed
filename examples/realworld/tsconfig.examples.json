@@ -5,13 +5,7 @@
     "rootDir": "examples",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "build/examples",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
+    "outDir": "build/examples"
   },
   "include": [
     "examples/**/*.ts"

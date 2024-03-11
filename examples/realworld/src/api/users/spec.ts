@@ -1,10 +1,10 @@
 import { security } from "@/api/common/security"
-import { User } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { User } from "@/model"
 import { LoginInput } from "@/services/Login"
 import { RegisterInput } from "@/services/Register"
 import { UpdateUserInput } from "@/services/UpdateUser"
 import { Api } from "effect-http"
+import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const UsersSpec = Api.apiGroup("User and Authentication").pipe(

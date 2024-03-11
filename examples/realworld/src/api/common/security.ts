@@ -1,6 +1,6 @@
-import { JwtToken } from "@/domain"
-import * as Schema from "@/lib/Schema"
+import { JwtToken } from "@/model"
 import type { SecurityScheme } from "effect-http/SecurityScheme"
+import * as Schema from "lib/Schema"
 
 export const jwtTokenSecuritySchema: SecurityScheme<JwtToken> = {
   type: "http",

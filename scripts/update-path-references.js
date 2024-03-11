@@ -1,4 +1,4 @@
-const { ROOT_DIRECTORY, readAllPackages } = require("./common")
+const { ROOT_DIRECTORY, readAllPackages, readAllExamples } = require("./common")
 const Path = require("node:path")
 const FS = require("node:fs")
 const { EOL } = require("node:os")
@@ -12,7 +12,7 @@ const BASE_TSCONFIG_JSON = Path.join(ROOT_DIRECTORY, "tsconfig.base.json")
 const MADGE_TSCONFIG_JSON = Path.join(ROOT_DIRECTORY, "tsconfig.madge.json")
 
 async function main() {
-  const packages = await readAllPackages()
+  const packages = (await Promise.all([readAllPackages(), readAllExamples()])).flat()
   const testPaths = 
     {
       "@/test/*": ["./test/*"],

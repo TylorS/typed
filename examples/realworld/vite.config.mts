@@ -3,10 +3,11 @@ import { visualizer } from "rollup-plugin-visualizer"
 import { fileURLToPath } from "url"
 import { vavite } from "vavite"
 import { defineConfig } from "vite"
+import type { Plugin } from "vite"
 import compression from "vite-plugin-compression"
 import tsconfigPaths from "vite-tsconfig-paths"
 
-const exclusions = ["fx", "router", "template", "ui"].flatMap((pkg) => [
+const exclusions = ["core", "fx", "router", "template", "ui"].flatMap((pkg) => [
   `@typed/${pkg}`,
   `@typed/${pkg}/*`
 ])
@@ -40,20 +41,12 @@ export default defineConfig({
       }
     }
   ],
+  root: dir,
   build: {
     minify: true,
     cssMinify: true,
     manifest: true,
     sourcemap: true
-  },
-  resolve: {
-    alias: {
-      "@/api": join(src, "api"),
-      "@/domain": join(src, "domain"),
-      "@/lib": join(src, "lib"),
-      "@/services": join(src, "services"),
-      "@/ui": join(src, "ui")
-    }
   },
   plugins: [
     tsconfigPaths({ projects: [join(dir, "./tsconfig.build.json")] }),
@@ -68,6 +61,28 @@ export default defineConfig({
       serveClientAssetsInDev: true,
       // Don't reload when dynamically imported dependencies change
       reloadOn: "static-deps-change"
-    })
+    }),
+    exposeAssetManifest(join(dir, "dist/client/.vite/manifest.json"))
   ]
 })
+
+function exposeAssetManifest(path: string): Plugin {
+  let isDev = false
+  return {
+    name: "expose-asset-manifest",
+    config(_, env) {
+      isDev = env.command === "serve"
+    },
+    resolveId(id) {
+      if (id === "virtual:asset-manifest") {
+        return id
+      }
+    },
+    async load(id) {
+      if (id === "virtual:asset-manifest") {
+        if (isDev) return `export default {}`
+        return `export default ${JSON.stringify((await import(path, { with: { type: "json" } })).default, null, 2)}`
+      }
+    }
+  }
+}
