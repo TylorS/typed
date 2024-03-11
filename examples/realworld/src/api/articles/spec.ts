@@ -1,22 +1,19 @@
 import { security } from "@/api/common/security"
-import { Article, ArticleTag, Username } from "@/domain"
+import { Article } from "@/domain"
 import * as Schema from "@/lib/Schema"
 import { CreateArticleInput } from "@/services/CreateArticle"
+import { GetArticlesInput } from "@/services/GetArticles"
+import { GetFeedInput } from "@/services/GetFeed"
 import { UpdateArticleInput } from "@/services/UpdateArticle"
 import { Api } from "effect-http"
 import * as Routes from "./routes"
-
-console.log(Routes.article.schema)
 
 export const ArticlesSpec = Api.apiGroup("Articles").pipe(
   Api.get(
     "getFeed",
     Routes.feed.path,
     {
-      query: Schema.struct({
-        limit: Schema.optionalOrNull(Schema.number),
-        offset: Schema.optionalOrNull(Schema.number)
-      }),
+      query: GetFeedInput,
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 401 },
@@ -31,13 +28,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getArticles",
     Routes.articles.path,
     {
-      query: Schema.struct({
-        tag: Schema.optionalOrNull(ArticleTag),
-        author: Schema.optionalOrNull(Username),
-        favorited: Schema.optionalOrNull(Username),
-        limit: Schema.optionalOrNull(Schema.number),
-        offset: Schema.optionalOrNull(Schema.number)
-      }),
+      query: GetArticlesInput,
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 401 },
