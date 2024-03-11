@@ -250,6 +250,9 @@ importers:
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
+      '@typed/core':
+        specifier: workspace:*
+        version: link:../../packages/core/dist
       '@typed/dom':
         specifier: workspace:*
         version: link:../../packages/dom/dist

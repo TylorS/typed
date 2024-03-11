@@ -22,6 +22,7 @@
     "@effect/platform-node": "^0.44.11",
     "@effect/schema": "0.63.2",
     "@typed/context": "workspace:*",
+    "@typed/core": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/guard": "workspace:*",

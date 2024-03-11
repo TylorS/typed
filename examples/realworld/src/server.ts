@@ -1,13 +1,15 @@
 import * as Api from "@/api"
+import * as Ui from "@/ui"
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Http from "@effect/platform/HttpServer"
+import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, Layer, pipe } from "effect"
 import { NodeSwaggerFiles } from "effect-http-node"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
 
-Http.router.empty.pipe(
+toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.mountApp("/api", Api.server),
   listen,
   runMain
