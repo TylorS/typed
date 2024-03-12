@@ -1,0 +1,13 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: effect_dev
+      POSTGRES_PASSWORD: effect_dev
+      POSTGRES_DB: realworld
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432

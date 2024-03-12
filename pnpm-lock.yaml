@@ -207,6 +207,12 @@ importers:
       '@effect/schema':
         specifier: 0.63.2
         version: 0.63.2(effect@2.4.1)(fast-check@3.16.0)
+      '@sqlfx/pg':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/schema@0.63.2)(effect@2.4.1)
+      '@sqlfx/sql':
+        specifier: ^0.45.0
+        version: 0.45.0(@effect/schema@0.63.2)(effect@2.4.1)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../../packages/async-data/dist
@@ -264,6 +270,9 @@ importers:
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
+      postgres:
+        specifier: ^3.4.3
+        version: 3.4.3
       ts-toolbelt:
         specifier: ^9.6.0
         version: 9.6.0
@@ -4302,6 +4311,28 @@ packages:
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
+
+  /@sqlfx/pg@0.45.0(@effect/schema@0.63.2)(effect@2.4.1):
+    resolution: {integrity: sha512-OhuCNfLcUlDnuOWtRSY8BVQcs9NhCmku8jeZLwaz0BUeve5sHYkxkLqIX8IVZKAPVpCmovUY7Ow06b8mnZ+n+A==}
+    peerDependencies:
+      effect: ^2.4.0
+    dependencies:
+      '@sqlfx/sql': 0.45.0(@effect/schema@0.63.2)(effect@2.4.1)
+      effect: 2.4.1
+      postgres: 3.4.3
+    transitivePeerDependencies:
+      - '@effect/schema'
+    dev: false
+
+  /@sqlfx/sql@0.45.0(@effect/schema@0.63.2)(effect@2.4.1):
+    resolution: {integrity: sha512-sBgGpAGd8TYcK1tf+Anq0bERgVxZxJ0mWyreGmAFlkSVhMQCLMYFCnRKlTN+kxLZng8o4l2kkeZESmlqBJNYqQ==}
+    peerDependencies:
+      '@effect/schema': ^0.63.0
+      effect: ^2.4.0
+    dependencies:
+      '@effect/schema': 0.63.2(effect@2.4.1)(fast-check@3.16.0)
+      effect: 2.4.1
+    dev: false
 
   /@storybook/addon-actions@7.6.17:
     resolution: {integrity: sha512-TBphs4v6LRfyTpFo/WINF0TkMaE3rrNog7wW5mbz6n0j8o53kDN4o9ZEcygSL5zQX43CAaghQTeDCss7ueG7ZQ==}
@@ -10909,6 +10940,11 @@ packages:
       nanoid: 3.3.7
       picocolors: 1.0.0
       source-map-js: 1.0.2
+
+  /postgres@3.4.3:
+    resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
+    engines: {node: '>=12'}
+    dev: false
 
   /precinct@8.3.1:
     resolution: {integrity: sha512-pVppfMWLp2wF68rwHqBIpPBYY8Kd12lDhk8LVQzOwqllifVR15qNFyod43YLyFpurKRZQKnE7E4pofAagDOm2Q==}

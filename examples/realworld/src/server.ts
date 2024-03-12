@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
 import * as Api from "@/api"
+import { DbLive } from "@/api/common/infrastructure/db"
 import * as Ui from "@/ui"
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import { runMain } from "@effect/platform-node/NodeRuntime"
@@ -11,7 +12,7 @@ import * as CoreServices from "@typed/core/CoreServices"
 import { toHttpRouter } from "@typed/core/Platform"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
-import { Effect, identity, Layer, Logger, LogLevel } from "effect"
+import { ConfigProvider, Effect, identity, Layer, Logger, LogLevel } from "effect"
 import { NodeSwaggerFiles } from "effect-http-node"
 import { createServer } from "node:http"
 import { join, resolve } from "node:path"
@@ -34,10 +35,14 @@ toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
       }),
       Layer.launch(Http.server.serve(app))
     ),
+  Effect.provide(DbLive),
   Effect.provide(NodeHttpServer.server.layer(() => getOrCreateServer(), { port: 3000 })),
   Effect.provide(NodeSwaggerFiles.SwaggerFilesLive),
   Effect.provide(NodeContext.layer),
   Effect.provide(CoreServices.server),
+  // Using import.meta.env directly like this is no recommended in production
+  // as your environment variables will be inlined in the code, but here it is for convenience.
+  Effect.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env))),
   Effect.scoped,
   Logger.withMinimumLogLevel(import.meta.env.PROD ? LogLevel.Info : LogLevel.Debug),
   runMain

@@ -21,6 +21,8 @@
     "@effect/platform": "^0.46.3",
     "@effect/platform-node": "^0.44.11",
     "@effect/schema": "0.63.2",
+    "@sqlfx/pg": "^0.45.0",
+    "@sqlfx/sql": "^0.45.0",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -40,6 +42,7 @@
     "effect-http-node": "^0.5.1",
     "effect-log": "^0.30.3",
     "path-to-regexp": "^6.2.1",
+    "postgres": "^3.4.3",
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
