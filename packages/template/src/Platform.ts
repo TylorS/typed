@@ -9,9 +9,7 @@ import type * as Fx from "@typed/fx/Fx"
 import { toStream } from "@typed/fx/Stream"
 import { Effect, Option, Stream } from "effect"
 import { renderToHtml } from "./Html.js"
-import type * as RenderContext from "./RenderContext.js"
 import type { RenderEvent } from "./RenderEvent.js"
-import type { RenderTemplate } from "./RenderTemplate.js"
 
 const HTML_CONTENT_TYPE = "text/html"
 const CAMEL_CASE_CONTENT_TYPE = { contentType: HTML_CONTENT_TYPE }
@@ -23,7 +21,7 @@ const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
 export function htmlResponse<E, R>(
   fx: Fx.Fx<RenderEvent | null, E, R>,
   options?: HttpServer.response.Options
-): Effect.Effect<HttpServer.response.ServerResponse, E, R | RenderTemplate | RenderContext.RenderContext> {
+): Effect.Effect<HttpServer.response.ServerResponse, E, R> {
   return Effect.contextWithEffect((ctx) =>
     HttpServer.response.stream(
       Stream.provideContext(Stream.encodeText(toStream(renderToHtml(fx))), ctx),

@@ -196,46 +196,6 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
 
-  examples/react-counter:
-    dependencies:
-      '@typed/context':
-        specifier: workspace:*
-        version: link:../../packages/context/dist
-      '@typed/dom':
-        specifier: workspace:*
-        version: link:../../packages/dom/dist
-      '@typed/fx':
-        specifier: workspace:*
-        version: link:../../packages/fx/dist
-      '@typed/template':
-        specifier: workspace:*
-        version: link:../../packages/template/dist
-      effect:
-        specifier: 2.4.1
-        version: 2.4.1
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.2.0(react@18.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.64
-        version: 18.2.64
-      '@types/react-dom':
-        specifier: ^18.2.21
-        version: 18.2.21
-      vite:
-        specifier: ^5.1.5
-        version: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-      vite-plugin-compression:
-        specifier: ^0.5.1
-        version: 0.5.1(vite@5.1.5)
-      vite-tsconfig-paths:
-        specifier: ^4.3.1
-        version: 4.3.1(typescript@5.4.2)(vite@5.1.5)
-
   examples/realworld:
     dependencies:
       '@effect/platform':
@@ -308,12 +268,15 @@ importers:
         specifier: ^9.6.0
         version: 9.6.0
     devDependencies:
+      '@typed/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin/dist
       mock-storage:
         specifier: ^1.1.0
         version: 1.1.0
       rollup-plugin-visualizer:
         specifier: ^5.12.0
-        version: 5.12.0
+        version: 5.12.0(rollup@4.12.1)
       schema-openapi:
         specifier: ^0.32.1
         version: 0.32.1(@effect/schema@0.63.2)(effect@2.4.1)
@@ -478,7 +441,7 @@ importers:
         version: 1.1.0
       rollup-plugin-visualizer:
         specifier: ^5.12.0
-        version: 5.12.0
+        version: 5.12.0(rollup@4.12.1)
       terser:
         specifier: ^5.29.1
         version: 5.29.1
@@ -914,6 +877,29 @@ importers:
       effect:
         specifier: ^2.4.1
         version: 2.4.1
+    publishDirectory: dist
+
+  packages/vite-plugin:
+    dependencies:
+      rollup-plugin-visualizer:
+        specifier: ^5.12.0
+        version: 5.12.0(rollup@4.12.1)
+      vavite:
+        specifier: ^4.1.1
+        version: 4.1.1(vite@5.1.5)
+      vite-plugin-compression:
+        specifier: ^0.5.1
+        version: 0.5.1(vite@5.1.5)
+      vite-tsconfig-paths:
+        specifier: ^4.3.1
+        version: 4.3.1(typescript@5.4.2)(vite@5.1.5)
+    devDependencies:
+      rollup:
+        specifier: ^4.12.1
+        version: 4.12.1
+      vite:
+        specifier: ^5.1.5
+        version: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
     publishDirectory: dist
 
   packages/wire:
@@ -5468,12 +5454,6 @@ packages:
   /@types/range-parser@1.2.7:
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
 
-  /@types/react-dom@18.2.21:
-    resolution: {integrity: sha512-gnvBA/21SA4xxqNXEwNiVcP0xSGHh/gi1VhWv9Bl46a0ItbTT5nFY+G9VSQpaG/8N/qdJpJ+vftQ4zflTtnjLw==}
-    dependencies:
-      '@types/react': 18.2.64
-    dev: true
-
   /@types/react@18.2.64:
     resolution: {integrity: sha512-MlmPvHgjj2p3vZaxbQgFUQFvD8QiZwACfGqEdDSWou5yISWxDQ4/74nCAwsUiX7UFLKZz3BbVSPj+YxeoGGCfg==}
     dependencies:
@@ -5870,7 +5850,6 @@ packages:
     dependencies:
       '@types/node': 20.11.25
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@vavite/expose-vite-dev-server@4.1.1(vite@5.1.5):
     resolution: {integrity: sha512-w+FsAF3OvjbITNkuMTxv/t28gGMWs8qngDGgk2OCdBcaQeyrdfAme0jIT4KrIx+GLQjwkzhoZXpQju/E3mbH+Q==}
@@ -5878,7 +5857,6 @@ packages:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@vavite/multibuild-cli@4.1.1(vite@5.1.5):
     resolution: {integrity: sha512-5jixDRjUH8fE3FVVGvlDGTatGrga886RlArCf3IUUpYKkued2qrUcq/BqdxSy6WukY15OS+l5nIVRwm1wB8AIQ==}
@@ -5891,7 +5869,6 @@ packages:
       cac: 6.7.14
       picocolors: 1.0.0
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@vavite/multibuild@4.1.1(vite@5.1.5):
     resolution: {integrity: sha512-R+UJWT2wH598OsGNA/NHgUgtOGvyh9kqaDsP/twJa/OJSH+RWgzj+ONQPqbkAYqPYu0NgRb8rkQOK4QJwdLx0A==}
@@ -5902,7 +5879,6 @@ packages:
       cac: 6.7.14
       picocolors: 1.0.0
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@vavite/node-loader@4.1.1(vite@5.1.5):
     resolution: {integrity: sha512-3vJ3lnO2yJYE+i7DlZuSc7jUT4z+Fe4yVaxlODHWn1lpkVsXjIz2TfTp6zEJGXZJlhY1SnIzZczfQzA3Gs/NZw==}
@@ -5911,7 +5887,6 @@ packages:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@vavite/reloader@4.1.1(vite@5.1.5):
     resolution: {integrity: sha512-7gzjA9NIVu+eRFATlhWndDKFM78xtBl225AwsnKjhNxUyYES0dLMc7vjH6aFi37S1f/JRRDQDm+ghrCVTUz62A==}
@@ -5919,7 +5894,6 @@ packages:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /@virtualstate/composite-key@1.0.0:
     resolution: {integrity: sha512-5G3RT87X1w39UQyBvqQpTfsxK9FjoKlXfonvIY9esAHe9d0vOWVGtbElJppwJKWzh508Ja6gWn7W7dWHwj50Jw==}
@@ -6600,7 +6574,6 @@ packages:
   /cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
-    dev: true
 
   /call-bind@1.0.7:
     resolution: {integrity: sha512-GHTSNSYICQ7scH7sZ+M2rFopRoLh8t2bLSW6BbgrtLsahOIB5iyAVJf9GjWK3cYTDaMj4XdBpM1cA6pIS0Kv2w==}
@@ -7200,7 +7173,6 @@ packages:
   /define-lazy-prop@2.0.0:
     resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
     engines: {node: '>=8'}
-    dev: true
 
   /define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
@@ -8587,7 +8559,6 @@ packages:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0
       universalify: 2.0.1
-    dev: true
 
   /fs-extra@11.1.1:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
@@ -9236,7 +9207,6 @@ packages:
     resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
     engines: {node: '>=8'}
     hasBin: true
-    dev: true
 
   /is-extendable@0.1.1:
     resolution: {integrity: sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw==}
@@ -9464,7 +9434,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       is-docker: 2.2.1
-    dev: true
 
   /isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
@@ -9925,6 +9894,7 @@ packages:
     hasBin: true
     dependencies:
       js-tokens: 4.0.0
+    dev: true
 
   /loupe@2.3.7:
     resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
@@ -10615,7 +10585,6 @@ packages:
       define-lazy-prop: 2.0.0
       is-docker: 2.2.1
       is-wsl: 2.2.0
-    dev: true
 
   /optionator@0.9.3:
     resolution: {integrity: sha512-JjCoypp+jKn1ttEFExxhetCKeJt9zhAgAve5FXHixTvFDW/5aEktX9bufBKLRRMdU7bNtpLfcGu94B3cdEJgjg==}
@@ -11242,6 +11211,7 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
+    dev: true
 
   /react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
@@ -11310,6 +11280,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+    dev: true
 
   /read-pkg-up@7.0.1:
     resolution: {integrity: sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==}
@@ -11594,7 +11565,7 @@ packages:
       glob: 10.3.10
     dev: true
 
-  /rollup-plugin-visualizer@5.12.0:
+  /rollup-plugin-visualizer@5.12.0(rollup@4.12.1):
     resolution: {integrity: sha512-8/NU9jXcHRs7Nnj07PF2o4gjxmm9lXIrZ8r175bT9dK8qoLlvKTwRMArRCMgpMGlq8CTLugRvEmyMeMXIU2pNQ==}
     engines: {node: '>=14'}
     hasBin: true
@@ -11606,9 +11577,9 @@ packages:
     dependencies:
       open: 8.4.2
       picomatch: 2.3.1
+      rollup: 4.12.1
       source-map: 0.7.4
       yargs: 17.7.2
-    dev: true
 
   /rollup@3.29.4:
     resolution: {integrity: sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==}
@@ -11692,6 +11663,7 @@ packages:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
+    dev: true
 
   /schema-openapi@0.32.1(@effect/schema@0.63.2)(effect@2.4.1):
     resolution: {integrity: sha512-ZJJFln8Kz1VaDl0Eyg+6L8rO4j3+rgXJlMnTDc8BElls5HRZjE0JtSvTiyTVrMiRVFACmR9v4QQQb9bpxng6IA==}
@@ -11936,7 +11908,6 @@ packages:
   /source-map@0.7.4:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
-    dev: true
 
   /space-separated-tokens@1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
@@ -12983,7 +12954,6 @@ packages:
       cac: 6.7.14
       picocolors: 1.0.0
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
-    dev: true
 
   /vite-node@1.3.1(@types/node@20.11.25):
     resolution: {integrity: sha512-azbRrqRxlWTJEVbzInZCTchx0X69M/XPTCz4H+TLvlTcR/xH/3hkRqhOakT41fMJCMzXTu4UvegkZiEoJAWvng==}
@@ -13017,7 +12987,6 @@ packages:
       vite: 5.1.5(@types/node@20.11.25)(terser@5.29.1)
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /vite-plugin-html@3.2.2(vite@5.1.5):
     resolution: {integrity: sha512-vb9C9kcdzcIo/Oc3CLZVS03dL5pDlOFuhGlZYDCJ840BhWl/0nGeZWf3Qy7NlOayscY4Cm/QRgULCQkEZige5Q==}

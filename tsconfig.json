@@ -53,6 +53,9 @@
       "path": "packages/ui"
     },
     {
+      "path": "packages/vite-plugin"
+    },
+    {
       "path": "packages/wire"
     },
     {
@@ -60,9 +63,6 @@
     },
     {
       "path": "examples/fx-tracing"
-    },
-    {
-      "path": "examples/realworld"
     },
     {
       "path": "examples/simple-ssr"

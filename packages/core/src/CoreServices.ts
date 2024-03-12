@@ -70,32 +70,20 @@ export function hydrateFromWindow(
 /**
  * @since 1.0.0
  */
-export function server(
-  options: Navigation.InitialMemoryOptions
-): Layer.Layer<CoreServices> {
-  return Layer.mergeAll(
-    getRandomValues,
-    Navigation.initialMemory(options),
-    Router.server(options.base),
-    serverLayer,
-    RenderQueue.sync
-  )
-}
+export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | Router.CurrentRoute>> = Layer.mergeAll(
+  getRandomValues,
+  serverLayer,
+  RenderQueue.sync
+)
 
 /**
  * @since 1.0.0
  */
-function static_(
-  options: Navigation.InitialMemoryOptions
-): Layer.Layer<CoreServices> {
-  return Layer.mergeAll(
-    getRandomValues,
-    Navigation.initialMemory(options),
-    Router.server(options.base),
-    staticLayer,
-    RenderQueue.sync
-  )
-}
+const static_: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | Router.CurrentRoute>> = Layer.mergeAll(
+  getRandomValues,
+  staticLayer,
+  RenderQueue.sync
+)
 
 export {
   /**

@@ -211,6 +211,18 @@
       "@typed/ui/examples/*": [
         "packages/ui/build/examples/*"
       ],
+      "@typed/vite-plugin": [
+        "packages/vite-plugin/build/esm/index.js"
+      ],
+      "@typed/vite-plugin/*": [
+        "packages/vite-plugin/build/esm/*"
+      ],
+      "@typed/vite-plugin/test/*": [
+        "packages/vite-plugin/build/test/*"
+      ],
+      "@typed/vite-plugin/examples/*": [
+        "packages/vite-plugin/build/examples/*"
+      ],
       "@typed/wire": [
         "packages/wire/build/esm/index.js"
       ],
@@ -246,18 +258,6 @@
       ],
       "@typed/fx-tracing/examples/*": [
         "examples/fx-tracing/build/examples/*"
-      ],
-      "@typed/realworld": [
-        "examples/realworld/build/esm/index.js"
-      ],
-      "@typed/realworld/*": [
-        "examples/realworld/build/esm/*"
-      ],
-      "@typed/realworld/test/*": [
-        "examples/realworld/build/test/*"
-      ],
-      "@typed/realworld/examples/*": [
-        "examples/realworld/build/examples/*"
       ],
       "@typed/simple-ssr": [
         "examples/simple-ssr/build/esm/index.js"
@@ -337,6 +337,9 @@
     "packages/ui/build/esm/**/*",
     "packages/ui/build/test/**/*",
     "packages/ui/build/examples/**/*",
+    "packages/vite-plugin/build/esm/**/*",
+    "packages/vite-plugin/build/test/**/*",
+    "packages/vite-plugin/build/examples/**/*",
     "packages/wire/build/esm/**/*",
     "packages/wire/build/test/**/*",
     "packages/wire/build/examples/**/*",

@@ -1,17 +1,13 @@
 import { html } from "@typed/core"
-import type { Fx, RenderEvent } from "@typed/core"
-// import viteDevServer from "vavite/vite-dev-server"
-// @ts-expect-error No Types YET
+import type { Fx, RenderEvent, RenderQueue, RenderTemplate } from "@typed/core"
+import type { Scope } from "effect"
 import assetManifest from "virtual:asset-manifest"
-
-const manifestEntry = "src/client.ts"
+import options from "virtual:typed-options"
 
 export function layout<E, R>({ content }: {
   content: Fx.Fx<RenderEvent | null, E, R>
-}) {
-  const [type, as, src] = manifestEntry in assetManifest
-    ? [undefined, "script", assetManifest[manifestEntry].file]
-    : ["module", "module", manifestEntry.slice(4)]
+}): Fx.Fx<RenderEvent, never, R | RenderTemplate | RenderQueue.RenderQueue | Scope.Scope> {
+  const { as, src, type } = getClientEntry()
 
   return html`<!DOCTYPE html>
     <html lang="en">
@@ -19,11 +15,19 @@ export function layout<E, R>({ content }: {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>RealWorld</title>
-        <link rel="preload" href="/${src}" as=${as} />
+        <link rel="preload" href=${src} as=${as} />
       </head>
       <body>
         <div id="app">${content}</div>
-        <script type=${type} src="/${src}"></script>
+        <script type=${type} src=${src}></script>
       </body>
     </html>`
+}
+
+function getClientEntry() {
+  const [type, as, src] = options.clientEntry in assetManifest
+    ? [undefined, "script", assetManifest[options.clientEntry].file]
+    : ["module", "module", options.clientEntry]
+
+  return { type, as, src: src[0] === "/" ? src : `/${src}` } as const
 }
