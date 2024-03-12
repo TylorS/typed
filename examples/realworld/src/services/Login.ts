@@ -7,7 +7,9 @@ import * as Schema from "lib/Schema"
 export const LoginInput = Schema.struct({
   username: Username,
   password: Password
-})
+}).pipe(
+  Schema.identifier("LoginInput")
+)
 export type LoginInput = Schema.Schema.To<typeof LoginInput>
 
 export const Login = Fn<(input: LoginInput) => Effect<User>>()("Login")

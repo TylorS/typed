@@ -5,7 +5,9 @@ import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
-export const UpdateArticleInput = Schema.partial(CreateArticleInput)
+export const UpdateArticleInput = Schema.partial(CreateArticleInput).pipe(
+  Schema.identifier("UpdateArticleInput")
+)
 export type UpdateArticleInput = Schema.Schema.To<typeof UpdateArticleInput>
 
 export type UpdateArticleError = Unauthorized | Unprocessable

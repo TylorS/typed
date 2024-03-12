@@ -7,7 +7,9 @@ import * as Schema from "lib/Schema"
 export const GetFeedInput = Schema.struct({
   limit: Schema.optionalOrNull(Schema.number),
   offset: Schema.optionalOrNull(Schema.number)
-})
+}).pipe(
+  Schema.identifier("GetFeedInput")
+)
 export type GetFeedInput = Schema.Schema.To<typeof GetFeedInput>
 
 export type GetFeedError = Unprocessable | Unauthorized

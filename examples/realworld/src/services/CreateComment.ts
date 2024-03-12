@@ -3,7 +3,10 @@ import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
-export const CreateCommentInput = Comment.pipe(Schema.omit("id", "author", "createdAt", "updatedAt"))
+export const CreateCommentInput = Comment.pipe(
+  Schema.omit("id", "author", "createdAt", "updatedAt"),
+  Schema.identifier("CreateCommentInput")
+)
 export type CreateCommentInput = Schema.Schema.To<typeof CreateCommentInput>
 
 export const CreateComment = Fn<(input: CreateCommentInput) => Effect.Effect<Comment>>()("CreateComment")

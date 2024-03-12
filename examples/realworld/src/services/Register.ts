@@ -8,7 +8,7 @@ export const RegisterInput = Schema.struct({
   email: Email,
   username: Username,
   password: Password
-})
+}).pipe(Schema.identifier("RegisterInput"))
 export type RegisterInput = Schema.Schema.To<typeof RegisterInput>
 
 export const Register = Fn<(input: RegisterInput) => Effect<User>>()("Register")
