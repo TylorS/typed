@@ -60,7 +60,6 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
               config: {
                 build: {
                   outDir: clientOutputDirectory,
-                  manifest: true,
                   rollupOptions: { input: options.clientEntry }
                 }
               }
