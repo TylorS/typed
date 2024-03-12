@@ -1,3 +1,5 @@
+import "./styles.css"
+
 import { fromWindow, hydrateToLayer } from "@typed/core"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 import * as Ui from "./ui"
