@@ -90,19 +90,41 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
       serverEntry: options.serverEntry,
       serveClientAssetsInDev: true
     }),
-    exposeAssetManifest(join(clientOutputDirectory, ".vite/manifest.json")),
+    exposeAssetManifest(clientOutputDirectory),
     exposeTypedOptions(options)
   ]
 
   return plugins
 }
 
-function exposeAssetManifest(path: string): Plugin {
-  let isDev = false
+function exposeAssetManifest(clientOutputDirectory: string): Plugin {
+  let isDev = true
+  let isClient = false
+  let path = join(clientOutputDirectory, ".vite/manifest.json")
   return {
     name: "expose-asset-manifest",
-    config(_, env) {
-      isDev = env.command === "serve"
+    config(config, env) {
+      config.build ??= {}
+      config.build.sourcemap = true
+
+      if (!config.build.manifest) {
+        config.build.manifest = true
+      }
+
+      isDev = env.command !== "build"
+
+      if (!isDev) {
+        Object.assign(config.build, { minify: true, cssMinify: true })
+      }
+    },
+    configResolved(config) {
+      if (typeof config.build.manifest === "string") {
+        path = resolve(clientOutputDirectory, config.build.manifest)
+      }
+
+      if (config.build.outDir === clientOutputDirectory) {
+        isClient = true
+      }
     },
     resolveId(id) {
       if (id === "virtual:asset-manifest") {
@@ -111,7 +133,7 @@ function exposeAssetManifest(path: string): Plugin {
     },
     async load(id) {
       if (id === "virtual:asset-manifest") {
-        if (isDev) return `export default {}`
+        if (isDev || isClient) return `export default {}`
 
         const content = JSON.parse(await readFile(path, "utf-8"))
 
