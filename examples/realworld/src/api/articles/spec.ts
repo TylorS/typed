@@ -13,7 +13,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getFeed",
     Routes.feed.path,
     {
-      query: GetFeedInput,
+      request: { query: GetFeedInput },
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 401 },
@@ -28,7 +28,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
     "getArticles",
     Routes.articles.path,
     {
-      query: GetArticlesInput,
+      request: { query: GetArticlesInput },
       response: [
         { status: 200, content: Schema.struct({ articles: Schema.array(Article) }) },
         { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
