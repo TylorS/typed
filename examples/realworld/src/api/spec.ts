@@ -1,6 +1,5 @@
 import { ArticlesSpec } from "@/api/articles"
 import { CommentsSpec } from "@/api/comments"
-import { FavoritesSpec } from "@/api/favorites"
 import { ProfilesSpec } from "@/api/profiles"
 import { TagsSpec } from "@/api/tags"
 import { UsersSpec } from "@/api/users"
@@ -13,7 +12,6 @@ export const Spec = Api.api({
 }).pipe(
   Api.addGroup(ArticlesSpec),
   Api.addGroup(CommentsSpec),
-  Api.addGroup(FavoritesSpec),
   Api.addGroup(ProfilesSpec),
   Api.addGroup(TagsSpec),
   Api.addGroup(UsersSpec)

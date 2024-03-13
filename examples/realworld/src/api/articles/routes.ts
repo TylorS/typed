@@ -6,3 +6,5 @@ export const articles = Route.fromPath("/articles")
 export const article = Route.fromPath("/articles/:slug").pipe(Route.decode(GetArticleInput))
 
 export const feed = Route.fromPath("/articles/feed")
+
+export const favorites = article.concat(Route.fromPath("/favorite"))

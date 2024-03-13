@@ -104,5 +104,39 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
       security,
       description: "Delete an article. Auth is required"
     }
+  ),
+  Api.post(
+    "favorite",
+    Routes.favorites.path,
+    {
+      request: {
+        params: Routes.article.schema
+      },
+      response: [
+        { status: 200, content: Schema.struct({ article: Article }) },
+        { status: 401 },
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
+      ]
+    },
+    {
+      security
+    }
+  ),
+  Api.delete(
+    "unfavorite",
+    Routes.favorites.path,
+    {
+      request: {
+        params: Routes.article.schema
+      },
+      response: [
+        { status: 200, content: Schema.struct({ article: Article }) },
+        { status: 401 },
+        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
+      ]
+    },
+    {
+      security
+    }
   )
 )
