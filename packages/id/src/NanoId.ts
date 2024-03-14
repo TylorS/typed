@@ -79,7 +79,7 @@ export const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) =
 /**
  * @since 1.0.0
  */
-export const makeNanoIdSeed: Effect.Effect<NanoIdSeed, never, GetRandomValues> = GetRandomValues.apply(21) as any
+export const makeNanoIdSeed: Effect.Effect<NanoIdSeed, never, GetRandomValues> = GetRandomValues(21) as any
 
 /**
  * @since 1.0.0

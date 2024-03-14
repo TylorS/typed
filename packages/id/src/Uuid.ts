@@ -48,7 +48,7 @@ export type UuidSeed = readonly [
 /**
  * @since 1.0.0
  */
-export const makeUuidSeed: Effect.Effect<UuidSeed, never, GetRandomValues> = GetRandomValues.apply(32) as any
+export const makeUuidSeed: Effect.Effect<UuidSeed, never, GetRandomValues> = GetRandomValues(32) as any
 
 /**
  * @since 1.0.0

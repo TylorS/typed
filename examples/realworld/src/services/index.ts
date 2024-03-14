@@ -50,3 +50,5 @@ export const Users = repository({
   register: Register,
   update: UpdateUser
 })
+
+const x = Users.current

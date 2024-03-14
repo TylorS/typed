@@ -51,7 +51,7 @@ export const AllAreCompleted: RefSubject.Computed<boolean, never, TodoList> = Re
 export const createTodo: Effect.Effect<Option.Option<Domain.Todo>, never, CreateTodo | TodoList | TodoText> = Effect
   .flatMap(TodoText, (text) =>
     Effect.if(text.trim() === "", {
-      onFalse: CreateTodo.apply(text).pipe(
+      onFalse: CreateTodo(text).pipe(
         Effect.tap((todo) => RefArray.prepend(TodoList, todo)),
         Effect.tap(() => RefSubject.set(TodoText, "")),
         Effect.asSome

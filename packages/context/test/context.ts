@@ -291,4 +291,14 @@ describe(__filename, () => {
       expect(result).toEqual(Chunk.unsafeFromArray([1, 2, 3]))
     })
   })
+
+  describe(Context.Fn, () => {
+    it("allows creating a Fn in the effect context", async () => {
+      const fn = Context.Fn<(a: number) => Effect.Effect<number>>()("test")
+      const test = fn(1).pipe(fn.provide((a) => Effect.succeed(a + 1)))
+      const result = await Effect.runPromise(test)
+
+      expect(result).toBe(2)
+    })
+  })
 })

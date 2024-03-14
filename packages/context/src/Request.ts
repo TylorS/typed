@@ -88,7 +88,7 @@ export const Request: RequestConstructor = Object.assign(
       const fn = Fn<(req: Req) => Effect<R.Request.Success<Req>, R.Request.Error<Req>>>()(id)
 
       return Object.assign(fn, {
-        make: (...[input]: SimplifyInputArg<Input>) => fn.apply(makeRequest((input || {}) as Input))
+        make: (...[input]: SimplifyInputArg<Input>) => fn(makeRequest((input || {}) as Input))
       })
     }
   },

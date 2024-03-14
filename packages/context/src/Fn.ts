@@ -37,8 +37,24 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
    * Call your effectful function with the provided arguments.
    * @since 1.0.0
    */
-  readonly apply: <Args extends EffectFn.ArgsOf<T>>(
+  <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
+  ): Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
+
+  /**
+   * Call your effectful function with the provided arguments.
+   * @since 1.0.0
+   */
+  readonly call: (
+    ...args: EffectFn.ArgsOf<T>
+  ) => Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
+
+  /**
+   * Call your effectful function with the provided arguments.
+   * @since 1.0.0
+   */
+  readonly apply: (
+    args: EffectFn.ArgsOf<T>
   ) => Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
 
   /**
@@ -98,9 +114,13 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
       )
     )
 
-  return Object.assign(tagged, {
+  const apply = (args: EffectFn.ArgsOf<S>) => tagged.withEffect((f) => f(...args))
+  const call = (...args: EffectFn.ArgsOf<S>) => apply(args)
+
+  const output: any = Object.assign(call, {
     [FnTypeId]: FnTypeId,
-    apply: (...args: EffectFn.ArgsOf<S>) => tagged.withEffect((f) => f(...args)),
+    apply,
+    call,
     implement,
     provideImplementation: dual(
       2,
@@ -110,7 +130,15 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
       ): Effect.Effect<A, E | EffectFn.Error<T2>, Exclude<R, I> | EffectFn.Context<T2>> =>
         Effect.provide(effect, implement(implementation))
     )
-  }) as Fn<I, S>
+  })
+
+  const taggedKeys = Reflect.ownKeys(tagged) as Array<keyof typeof tagged>
+
+  for (const key of taggedKeys) {
+    output[key] = tagged[key]
+  }
+
+  return output
 }
 
 /**
