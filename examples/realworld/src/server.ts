@@ -104,19 +104,19 @@ function getOrCreateServer() {
           return (...args: Parameters<NonNullable<typeof viteHttpServer>["on"]>) => {
             // We don't want to utilize Effect's default websocket upgrade handling to allow HMR to continue working
             if (args[0] === "upgrade" && effectUpgradeHandler === undefined) {
-              const [existingListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
+              const [viteHmrListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
 
               effectUpgradeHandler = args[1]
               combinedUpgradeHandler = (req, socket, head) => {
                 if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
-                  return existingListener(req, socket, head)
+                  return viteHmrListener(req, socket, head)
                 } else {
                   return args[1](req, socket, head)
                 }
               }
 
               // Remove the vite listener since it will be replaced with our combined listener
-              target.off("upgrade", existingListener as any)
+              target.off("upgrade", viteHmrListener as any)
               return target.on("upgrade", combinedUpgradeHandler)
             }
 
