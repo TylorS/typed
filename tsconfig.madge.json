@@ -259,6 +259,18 @@
       "@typed/fx-tracing/examples/*": [
         "examples/fx-tracing/build/examples/*"
       ],
+      "@typed/realworld": [
+        "examples/realworld/build/esm/index.js"
+      ],
+      "@typed/realworld/*": [
+        "examples/realworld/build/esm/*"
+      ],
+      "@typed/realworld/test/*": [
+        "examples/realworld/build/test/*"
+      ],
+      "@typed/realworld/examples/*": [
+        "examples/realworld/build/examples/*"
+      ],
       "@typed/simple-ssr": [
         "examples/simple-ssr/build/esm/index.js"
       ],

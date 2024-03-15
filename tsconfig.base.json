@@ -260,6 +260,18 @@
       "@typed/fx-tracing/examples/*": [
         "examples/fx-tracing/examples/*"
       ],
+      "@typed/realworld": [
+        "examples/realworld/src/index.ts"
+      ],
+      "@typed/realworld/*": [
+        "examples/realworld/src/*"
+      ],
+      "@typed/realworld/test/*": [
+        "examples/realworld/test/*"
+      ],
+      "@typed/realworld/examples/*": [
+        "examples/realworld/examples/*"
+      ],
       "@typed/simple-ssr": [
         "examples/simple-ssr/src/index.ts"
       ],

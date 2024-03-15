@@ -65,6 +65,9 @@
       "path": "examples/fx-tracing"
     },
     {
+      "path": "examples/realworld"
+    },
+    {
       "path": "examples/simple-ssr"
     },
     {

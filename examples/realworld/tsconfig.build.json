@@ -64,6 +64,9 @@
     },
     {
       "path": "../../packages/ui"
+    },
+    {
+      "path": "../../packages/vite-plugin"
     }
   ]
 }

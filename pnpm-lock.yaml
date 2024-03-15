@@ -501,6 +501,9 @@ importers:
       '@effect/platform':
         specifier: ^0.48.8
         version: 0.48.8(@effect/schema@0.64.5)(effect@2.4.7)(ws@8.16.0)
+      '@effect/platform-node':
+        specifier: ^0.45.10
+        version: 0.45.10(@effect/platform@0.48.8)(effect@2.4.7)
       '@effect/schema':
         specifier: ^0.64.5
         version: 0.64.5(effect@2.4.7)(fast-check@3.16.0)
@@ -546,9 +549,15 @@ importers:
       '@typed/ui':
         specifier: workspace:*
         version: link:../ui/dist
+      '@typed/vite-plugin':
+        specifier: workspace:*
+        version: link:../vite-plugin/dist
       effect:
         specifier: ^2.4.7
         version: 2.4.7
+      vavite:
+        specifier: ^4.1.1
+        version: 4.1.1(vite@5.1.6)
     publishDirectory: dist
 
   packages/decoder:

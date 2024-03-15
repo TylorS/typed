@@ -1,5 +1,6 @@
 import { Effect } from "effect"
 import { RouterBuilder } from "effect-http"
+import { NodeSwaggerFiles } from "effect-http-node"
 import { Spec } from "./spec"
 
 export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/docs" }).pipe(
@@ -80,4 +81,6 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
     () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
   ),
   RouterBuilder.build
+).pipe(
+  Effect.provide(NodeSwaggerFiles.SwaggerFilesLive)
 )

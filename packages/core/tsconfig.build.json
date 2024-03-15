@@ -53,6 +53,9 @@
     },
     {
       "path": "../ui"
+    },
+    {
+      "path": "../vite-plugin"
     }
   ]
 }

@@ -2,23 +2,28 @@
  * @since 1.0.0
  */
 
+import { FileSystem } from "@effect/platform/FileSystem"
 import type { PathInput } from "@effect/platform/Http/Router"
 import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
-import * as HttpServer from "@effect/platform/HttpServer"
+import * as Http from "@effect/platform/HttpServer"
+import { Path } from "@effect/platform/Path"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 
+import type { PlatformError } from "@effect/platform/Error"
 import * as Navigation from "@typed/navigation"
-import { Data, Effect, Layer, Option, ReadonlyArray } from "effect"
+import type { TypedOptions } from "@typed/vite-plugin"
+import type { Scope } from "effect"
+import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
 
 /**
  * @since 1.0.0
  */
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
-  readonly request: HttpServer.request.ServerRequest
+  readonly request: Http.request.ServerRequest
   readonly guards: ReadonlyArray.NonEmptyReadonlyArray<RouteMatch<any, any, any, any, any, any, any>>
 }> {}
 
@@ -51,25 +56,25 @@ export function toHttpRouter<
     base?: string
     environment?: "server" | "static"
   }
-): HttpServer.router.Router<
+): Http.router.Router<
   | ServerRequest
   | Exclude<R | R2, Navigation.Navigation | CurrentRoute>,
   E | E2 | GuardsNotMatched
 > {
-  let router: HttpServer.router.Router<
+  let router: Http.router.Router<
     | Exclude<R | R2, Navigation.Navigation | CurrentRoute>
     | ServerRequest,
     E | E2 | GuardsNotMatched
-  > = HttpServer.router.empty
+  > = Http.router.empty
   const guardsByPath = ReadonlyArray.groupBy(matcher.guards, ({ guard }) => guard.route.path)
 
   for (const [path, guards] of Object.entries(guardsByPath)) {
     const route = guards[0].guard.route
 
-    router = HttpServer.router.get(
+    router = Http.router.get(
       router,
       path as PathInput,
-      Effect.flatMap(HttpServer.request.ServerRequest, (request) => {
+      Effect.flatMap(Http.request.ServerRequest, (request) => {
         const url = getUrlFromServerRequest(request)
         const path = Navigation.getCurrentPathFromUrl(url)
 
@@ -113,4 +118,44 @@ export function toHttpRouter<
   }
 
   return router
+}
+
+export function staticFiles(
+  serverOutputDirectory: string,
+  enabled: boolean,
+  options: TypedOptions
+): <R, E>(
+  self: Http.router.Router<R, E>
+) => Http.router.Router<
+  | FileSystem
+  | Path
+  | Http.platform.Platform
+  | Exclude<R, Scope.Scope | Http.request.ServerRequest | Http.router.RouteContext>,
+  PlatformError | E
+> {
+  const addStaticFileServer = Http.router.mountApp(
+    `/${options.assetDirectory}`,
+    Effect.gen(function*(_) {
+      const request = yield* _(Http.request.ServerRequest)
+      const fs = yield* _(FileSystem)
+      const path = yield* _(Path)
+      const filePath = path.resolve(
+        serverOutputDirectory,
+        path.join(options.relativeServerToClientOutputDirectory, request.url)
+      )
+
+      if (yield* _(fs.exists(filePath + ".gz"))) {
+        return yield* _(
+          Http.response.file(filePath + ".gz", {
+            headers: Http.headers.unsafeFromRecord({ "Content-Encoding": "gzip" })
+          })
+        )
+      }
+
+      return yield* _(Http.response.file(filePath))
+    }),
+    { includePrefix: true }
+  )
+
+  return enabled ? addStaticFileServer : identity as any
 }
