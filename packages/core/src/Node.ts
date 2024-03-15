@@ -1,18 +1,21 @@
+/// <reference types="vite/client" />
+/// <reference types="@typed/vite-plugin/virtual-modules" />
+
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
+import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Http from "@effect/platform/HttpServer"
 import type { RunMain } from "@effect/platform/Runtime"
 import type { CurrentEnvironment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
-import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 import { dual } from "effect/Function"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
+import typedOptions from "virtual:typed-options"
 import * as CoreServices from "./CoreServices.js"
-
-import { runMain } from "@effect/platform-node/NodeRuntime"
+import { staticFiles } from "./Platform.js"
 
 /**
  * TODO: Allow configuration of the server for HTTPS and HTTP2
@@ -82,10 +85,11 @@ export function getOrCreateServer() {
  * @since 1.0.0
  */
 export type Options = {
+  readonly serverDirectory: string
   readonly port?: number
   readonly static?: boolean
+  readonly serveStatic?: boolean
   readonly logLevel?: LogLevel.LogLevel
-  readonly options: TypedOptions
 }
 
 const logServerAddress = Effect.gen(function*(_) {
@@ -148,6 +152,7 @@ export const listen: {
   >
 } = dual(2, function listen<R, E>(app: Http.app.Default<R, E>, options: Options) {
   return app.pipe(
+    staticFiles(options.serverDirectory, options?.serveStatic ?? import.meta.env.PROD, typedOptions),
     Http.middleware.logger,
     (app) =>
       Effect.zipRight(

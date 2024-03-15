@@ -1,12 +1,10 @@
 import { html } from "@typed/core"
 import type { Fx, RenderEvent } from "@typed/core"
-import { getHeadAndScript } from "@typed/core/Vite"
-import assetManifest from "virtual:asset-manifest"
-import options from "virtual:typed-options"
+import type { LayoutParams } from "@typed/core/Platform"
 
-const { head, script } = getHeadAndScript(options.clientEntry, assetManifest)
-
-export function layout<E, R>({ content }: { content: Fx.Fx<RenderEvent | null, E, R> }) {
+export function layout<Content extends Fx.Fx<RenderEvent | null, any, any>>(
+  { content, head, script }: LayoutParams<Content>
+) {
   return html`<!DOCTYPE html>
     <html lang="en">
       <head>

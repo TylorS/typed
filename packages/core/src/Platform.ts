@@ -12,9 +12,13 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
+import assetManifest from "virtual:asset-manifest"
+import typedOptions from "virtual:typed-options"
+import { getHeadAndScript } from "./Vite.js"
 
 import type { PlatformError } from "@effect/platform/Error"
 import * as Navigation from "@typed/navigation"
+import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
 import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
@@ -30,15 +34,30 @@ export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotM
 /**
  * @since 1.0.0
  */
+export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = {
+  readonly content: Content
+  readonly request: ServerRequest
+  readonly head: Fx.Fx<
+    RenderEvent | null,
+    never,
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+  >
+  readonly script: Fx.Fx<
+    RenderEvent | null,
+    never,
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+  >
+}
+
+/**
+ * @since 1.0.0
+ */
 export type LayoutTemplate<
   Content extends Fx.Fx<RenderEvent | null, any, any>,
   E,
   R
 > = (
-  params: {
-    readonly content: Content
-    readonly request: ServerRequest
-  }
+  params: LayoutParams<Content>
 ) => Fx.Fx<RenderEvent | null, E, R>
 
 /**
@@ -92,7 +111,8 @@ export function toHttpRouter<
 
               const ref = yield* _(RefSubject.of(match.value))
               const content = guard.match(RefSubject.take(ref, 1))
-              const params = { content, request }
+              const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
+              const params = { content, request, head, script }
               const template = Fx.unify(options?.layout ? options.layout(params) : content).pipe(
                 Fx.withSpan("render_template"),
                 Fx.onExit(() => Effect.annotateLogs(Effect.logDebug(`Rendered Template`), "route.params", match.value)),
@@ -125,8 +145,8 @@ export function staticFiles(
   enabled: boolean,
   options: TypedOptions
 ): <R, E>(
-  self: Http.router.Router<R, E>
-) => Http.router.Router<
+  self: Http.app.Default<R, E>
+) => Http.app.Default<
   | FileSystem
   | Path
   | Http.platform.Platform
