@@ -12,7 +12,12 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "vite/client",
+      "@typed/vite-plugin/virtual-modules"
+    ]
   },
   "include": [
     "src/**/*.ts"

@@ -6,6 +6,9 @@
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
     "rootDir": "test",
     "types": [
+      "node",
+      "vite/client",
+      "@typed/vite-plugin/virtual-modules",
       "vitest/globals"
     ]
   },

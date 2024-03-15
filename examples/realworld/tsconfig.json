@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "build/tsbuildinfo/tsconfig.tsbuildinfo",
-    "isolatedModules": false
+    "isolatedModules": false,
+    "types": [
+      "node",
+      "vite/client",
+      "@typed/vite-plugin/virtual-modules"
+    ]
   },
   "references": [
     {

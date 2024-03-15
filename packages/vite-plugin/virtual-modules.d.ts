@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-
 declare module "virtual:asset-manifest" {
-  const assetManifest: Record<string, import("vite").ManifestChunk>
+  import type { AssetManifest } from "@typed/vite-plugin"
+
+  const assetManifest: AssetManifest
   export default assetManifest
 }
 
