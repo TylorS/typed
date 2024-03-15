@@ -85,6 +85,9 @@ function getOrCreateServer() {
   if (viteHttpServer === undefined) {
     return createServer()
   } else {
+    let effectUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
+    let combinedUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
+
     return new Proxy(viteHttpServer, {
       get(target, prop) {
         // Proxy the listen method to call the callback so Effect will continue to run
@@ -95,7 +98,42 @@ function getOrCreateServer() {
               fn()
             }
           }
+        } else if (
+          prop === "on"
+        ) {
+          return (...args: Parameters<NonNullable<typeof viteHttpServer>["on"]>) => {
+            // We don't want to utilize Effect's default websocket upgrade handling to allow HMR to continue working
+            if (args[0] === "upgrade" && effectUpgradeHandler === undefined) {
+              const [existingListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
+
+              effectUpgradeHandler = args[1]
+              combinedUpgradeHandler = (req, socket, head) => {
+                if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
+                  return existingListener(req, socket, head)
+                } else {
+                  return args[1](req, socket, head)
+                }
+              }
+
+              // Remove the vite listener since it will be replaced with our combined listener
+              target.off("upgrade", existingListener as any)
+              return target.on("upgrade", combinedUpgradeHandler)
+            }
+
+            return target.on(...args)
+          }
+        } else if (prop === "off") {
+          return (...args: Parameters<NonNullable<typeof viteHttpServer>["off"]>) => {
+            if (args[0] === "upgrade" && args[1] === effectUpgradeHandler && combinedUpgradeHandler !== undefined) {
+              target.off("upgrade", combinedUpgradeHandler)
+              effectUpgradeHandler = undefined
+              combinedUpgradeHandler = undefined
+            }
+
+            return target.off(...args)
+          }
         }
+
         return Reflect.get(target, prop)
       }
     })

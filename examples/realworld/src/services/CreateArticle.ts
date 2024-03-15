@@ -8,7 +8,7 @@ export const CreateArticleInput = Article.pipe(
   Schema.omit("slug", "createdAt", "updatedAt", "favorited", "favoritesCount"),
   Schema.identifier("CreateArticleInput")
 )
-export type CreateArticleInput = Schema.Schema.To<typeof CreateArticleInput>
+export type CreateArticleInput = Schema.Schema.Type<typeof CreateArticleInput>
 
 export type CreateArticleError = Unauthorized | Unprocessable
 

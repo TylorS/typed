@@ -6,7 +6,7 @@ import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
 export const DeleteCommentInput = Schema.struct({ id: CommentId }).pipe(Schema.identifier("DeleteCommentInput"))
-export type DeleteCommentInput = Schema.Schema.To<typeof DeleteCommentInput>
+export type DeleteCommentInput = Schema.Schema.Type<typeof DeleteCommentInput>
 
 export type DeleteCommentError = Unauthorized | Unprocessable
 

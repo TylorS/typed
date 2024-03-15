@@ -15,7 +15,7 @@ export const GetArticlesInput = Schema.struct({
   Schema.identifier("GetArticlesInput")
 )
 
-export type GetArticlesInput = Schema.Schema.To<typeof GetArticlesInput>
+export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
 
 export type GetArticlesError = Unprocessable
 

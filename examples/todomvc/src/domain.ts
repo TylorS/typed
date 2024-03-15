@@ -5,10 +5,10 @@ export { Brand }
 
 /* #region Model */
 
-export const TodoId: Schema.BrandSchema<string & Brand.Brand<"TodoId">, string, never> = Schema.string.pipe(
+export const TodoId: Schema.brand<Schema.$string, "TodoId"> = Schema.string.pipe(
   Schema.brand("TodoId")
 )
-export type TodoId = Schema.Schema.To<typeof TodoId>
+export type TodoId = Schema.Schema.Type<typeof TodoId>
 
 export const Todo = Schema.struct({
   id: TodoId,
@@ -16,12 +16,12 @@ export const Todo = Schema.struct({
   completed: Schema.boolean,
   timestamp: Schema.DateFromString
 })
-export interface TodoJson extends Schema.Schema.From<typeof Todo> {}
-export interface Todo extends Schema.Schema.To<typeof Todo> {}
+export interface TodoJson extends Schema.Schema.Encoded<typeof Todo> {}
+export interface Todo extends Schema.Schema.Type<typeof Todo> {}
 
 export const TodoList = Schema.array(Todo)
-export interface TodoListJson extends Schema.Schema.From<typeof TodoList> {}
-export interface TodoList extends Schema.Schema.To<typeof TodoList> {}
+export interface TodoListJson extends Schema.Schema.Encoded<typeof TodoList> {}
+export interface TodoList extends Schema.Schema.Type<typeof TodoList> {}
 
 export enum FilterState {
   All = "all",

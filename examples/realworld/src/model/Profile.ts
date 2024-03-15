@@ -9,4 +9,4 @@ export const Profile = Schema.suspend(() =>
   )
 )
 
-export type Profile = Schema.Schema.To<typeof Profile>
+export type Profile = Schema.Schema.Type<typeof Profile>

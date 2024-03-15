@@ -7,7 +7,7 @@ import * as Schema from "lib/Schema"
 export const UpdateUserInput = User.pipe(Schema.omit("id", "token")).pipe(
   Schema.identifier("UpdateUserInput")
 )
-export type UpdateUserInput = Schema.Schema.To<typeof UpdateUserInput>
+export type UpdateUserInput = Schema.Schema.Type<typeof UpdateUserInput>
 
 export type UpdateUserError = Unauthorized | Unprocessable
 

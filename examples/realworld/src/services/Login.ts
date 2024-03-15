@@ -11,7 +11,7 @@ export const LoginInput = Schema.struct({
 }).pipe(
   Schema.identifier("LoginInput")
 )
-export type LoginInput = Schema.Schema.To<typeof LoginInput>
+export type LoginInput = Schema.Schema.Type<typeof LoginInput>
 
 export type LoginError = Unauthorized | Unprocessable
 

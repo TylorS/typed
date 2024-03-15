@@ -13,6 +13,7 @@ export function layout<E, R>({ content }: { content: Fx.Fx<RenderEvent | null, E
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>RealWorld</title>
+        <base href="/" />
         ${headAssets}
       </head>
       <body>

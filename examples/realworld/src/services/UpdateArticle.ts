@@ -8,7 +8,7 @@ import * as Schema from "lib/Schema"
 export const UpdateArticleInput = Schema.partial(CreateArticleInput).pipe(
   Schema.identifier("UpdateArticleInput")
 )
-export type UpdateArticleInput = Schema.Schema.To<typeof UpdateArticleInput>
+export type UpdateArticleInput = Schema.Schema.Type<typeof UpdateArticleInput>
 
 export type UpdateArticleError = Unauthorized | Unprocessable
 

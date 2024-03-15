@@ -7,5 +7,5 @@ export * from "@typed/id/Schema"
 
 export const optionalOrNull = <A, I, R>(
   schema: Schema.Schema<A, I, R>
-): Schema.PropertySignature<I | null, true, Option.Option<A>, false, R> =>
+): Schema.PropertySignature<":", Option.Option<A>, never, "?:", I | null, R> =>
   Schema.optional(schema, { nullable: true, exact: true, as: "Option" })

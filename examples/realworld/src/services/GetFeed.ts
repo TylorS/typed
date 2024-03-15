@@ -10,7 +10,7 @@ export const GetFeedInput = Schema.struct({
 }).pipe(
   Schema.identifier("GetFeedInput")
 )
-export type GetFeedInput = Schema.Schema.To<typeof GetFeedInput>
+export type GetFeedInput = Schema.Schema.Type<typeof GetFeedInput>
 
 export type GetFeedError = Unprocessable | Unauthorized
 
