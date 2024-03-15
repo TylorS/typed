@@ -75,10 +75,10 @@ describe(__filename, () => {
 
   it("can be decoded with multiple routes", async () => {
     const foo = Route.fromPath("/foo/:fooId").pipe(
-      Guard.decode(Schema.struct({ fooId: Schema.NumberFromString }))
+      Route.decode(Schema.struct({ fooId: Schema.NumberFromString }))
     )
     const bar = Route.fromPath("/bar/:barId").pipe(
-      Guard.decode(Schema.struct({ barId: Schema.NumberFromString }))
+      Route.decode(Schema.struct({ barId: Schema.NumberFromString }))
     )
     const foobar = Guard.any({ foo, bar })
 
@@ -91,7 +91,7 @@ describe(__filename, () => {
 
       const c = yield* _(foobar("/foo/bar"), Effect.either)
       ok(Either.isLeft(c))
-      expect(ArrayFormatter.formatError(c.left)).toEqual([
+      expect(ArrayFormatter.formatError(c.left.parseError)).toEqual([
         {
           _tag: "Type",
           path: ["fooId"],
@@ -101,6 +101,21 @@ describe(__filename, () => {
 
       const d = yield* _(foobar("/baz/123"))
       expect(d).toEqual(Option.none())
+    })
+
+    await Effect.runPromise(test)
+  })
+
+  it("can concatenate route guard and route", async () => {
+    const foo = Route.fromPath("/foo/:fooId").pipe(
+      Route.decode(Schema.struct({ fooId: Schema.NumberFromString }))
+    )
+    const bar = Route.fromPath("/bar/:barId")
+    const foobar = foo.concat(bar)
+
+    const test = Effect.gen(function*(_) {
+      const a = yield* _(foobar("/foo/123/bar/456"))
+      expect(a).toEqual(Option.some({ fooId: 123, barId: "456" }))
     })
 
     await Effect.runPromise(test)

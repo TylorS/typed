@@ -40,10 +40,10 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.63.2",
+    "@effect/schema": "^0.64.5",
     "@typed/context": "workspace:*",
-    "effect": "^2.4.1",
-    "typed-query-selector": "^2.11.0"
+    "effect": "^2.4.7",
+    "typed-query-selector": "^2.11.1"
   },
   "peerDependencies": {
     "@effect/schema": "^0.63.0",

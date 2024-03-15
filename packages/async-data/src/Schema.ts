@@ -5,7 +5,6 @@
 import * as Arbitrary from "@effect/schema/Arbitrary"
 import * as AST from "@effect/schema/AST"
 import * as Eq from "@effect/schema/Equivalence"
-import * as Parser from "@effect/schema/Parser"
 import * as ParseResult from "@effect/schema/ParseResult"
 import * as Pretty from "@effect/schema/Pretty"
 import * as Schema from "@effect/schema/Schema"
@@ -133,12 +132,12 @@ const failureArbitrary = <E>(
  */
 export type FailureFrom<E> = {
   readonly _tag: "Failure"
-  readonly cause: Schema.CauseFrom<E>
+  readonly cause: Schema.CauseEncoded<E>
   readonly timestamp: number
   readonly refreshing?: LoadingFrom | undefined
 }
 
-const FailureFrom = <E>(cause: Schema.CauseFrom<E>, timestamp: number, refreshing?: LoadingFrom): FailureFrom<E> => {
+const FailureFrom = <E>(cause: Schema.CauseEncoded<E>, timestamp: number, refreshing?: LoadingFrom): FailureFrom<E> => {
   const base = {
     _tag: "Failure",
     cause,
@@ -291,13 +290,13 @@ function isLoadingFrom(value: unknown): value is LoadingFrom {
     && (hasProperty(value, "progress") ? isProgressFrom(value.progress) : true)
 }
 
-const isCauseFrom = Schema.is(Schema.from(Schema.cause({ defect: Schema.unknown, error: Schema.unknown })))
+const isCauseEncoded = Schema.is(Schema.encodedSchema(Schema.cause({ defect: Schema.unknown, error: Schema.unknown })))
 
 function isFailureFrom(value: unknown): value is FailureFrom<any> {
   return hasProperty(value, "_tag")
     && value._tag === "Failure"
     && hasProperty(value, "cause")
-    && isCauseFrom(value.cause)
+    && isCauseEncoded(value.cause)
     && hasProperty(value, "timestamp")
     && typeof value.timestamp === "number"
     && (hasProperty(value, "refreshing") ? value.refreshing === undefined || isLoadingFrom(value.refreshing) : true)
@@ -340,8 +339,8 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
   const schema = Schema.declare(
     [value, Schema.cause({ error, defect: Schema.unknown })],
     (valueSchema, causeSchema) => {
-      const parseCause = Parser.decode(causeSchema)
-      const parseValue = Parser.decode(valueSchema)
+      const parseCause = ParseResult.decode(causeSchema)
+      const parseValue = ParseResult.decode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -353,7 +352,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<AI, EI>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -380,8 +379,8 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
       return parseAsyncData
     },
     (valueSchema, causeSchema) => {
-      const parseCause = Parser.encode(causeSchema)
-      const parseValue = Parser.encode(valueSchema)
+      const parseCause = ParseResult.encode(causeSchema)
+      const parseValue = ParseResult.encode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -393,7 +392,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
       > => {
         return Effect.gen(function*(_) {
           if (!isAsyncDataFrom<A, E>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -440,7 +439,7 @@ export const asyncData = <A, AI, R1, E, EI, R2>(
   errorSchema: Schema.Schema<E, EI, R1>
 ): Schema.Schema<AsyncData.AsyncData<A, E>, AsyncDataFrom<AI, EI>, R1 | R2> => {
   const from = asyncDataFromJson(valueSchema, errorSchema)
-  const to = asyncDataFromSelf(Schema.to(valueSchema), Schema.to(errorSchema))
+  const to = asyncDataFromSelf(Schema.typeSchema(valueSchema), Schema.typeSchema(errorSchema))
 
   return from
     .pipe(Schema.transform(
@@ -460,8 +459,8 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
   const schema = Schema.declare(
     [value, Schema.causeFromSelf({ error })],
     (valueSchema, causeSchema) => {
-      const parseCause = Parser.decode(causeSchema)
-      const parseValue = Parser.decode(valueSchema)
+      const parseCause = ParseResult.decode(causeSchema)
+      const parseValue = ParseResult.decode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -473,7 +472,7 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData<AI, EI>(input)) {
-            return yield* _(Effect.fail<ParseResult.ParseIssue>(ParseResult.forbidden(schema.ast, input)))
+            return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -511,8 +510,8 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       return parseAsyncData
     },
     (valueSchema, causeSchema) => {
-      const parseCause = Parser.encode(causeSchema)
-      const parseValue = Parser.encode(valueSchema)
+      const parseCause = ParseResult.encode(causeSchema)
+      const parseValue = ParseResult.encode(valueSchema)
 
       const parseAsyncData = (
         input: unknown,
@@ -524,7 +523,7 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       > => {
         return Effect.gen(function*(_) {
           if (!AsyncData.isAsyncData<A, E>(input)) {
-            return yield* _(Effect.fail(ParseResult.forbidden(schema.ast, input)))
+            return yield* _(Effect.fail(new ParseResult.Forbidden(schema.ast, input)))
           }
 
           switch (input._tag) {
@@ -568,7 +567,7 @@ export const asyncDataFromSelf = <A, AI, R1, E, EI, R2>(
       equivalence: () => Equal.equals
     }
   )
-  return schema
+  return schema as any
 }
 
 function asyncDataPretty<A, E>(
@@ -636,7 +635,7 @@ function loadingToJson(loading: AsyncData.Loading): LoadingFrom {
   return from
 }
 
-function causeFromToCause<E>(from: Schema.CauseFrom<E>): Cause.Cause<E> {
+function causeFromToCause<E>(from: Schema.CauseEncoded<E>): Cause.Cause<E> {
   switch (from._tag) {
     case "Die":
       return Cause.die(from.defect)
@@ -653,7 +652,7 @@ function causeFromToCause<E>(from: Schema.CauseFrom<E>): Cause.Cause<E> {
   }
 }
 
-function fiberIdFromToFiberId(id: Schema.FiberIdFrom): FiberId.FiberId {
+function fiberIdFromToFiberId(id: Schema.FiberIdEncoded): FiberId.FiberId {
   switch (id._tag) {
     case "None":
       return FiberId.none
@@ -664,7 +663,7 @@ function fiberIdFromToFiberId(id: Schema.FiberIdFrom): FiberId.FiberId {
   }
 }
 
-function causeToCauseFrom<E>(cause: Cause.Cause<E>): Schema.CauseFrom<E> {
+function causeToCauseEncoded<E>(cause: Cause.Cause<E>): Schema.CauseEncoded<E> {
   switch (cause._tag) {
     case "Die":
       return { _tag: "Die", defect: cause.defect }
@@ -675,13 +674,13 @@ function causeToCauseFrom<E>(cause: Cause.Cause<E>): Schema.CauseFrom<E> {
     case "Interrupt":
       return { _tag: "Interrupt", fiberId: fiberIdToFiberIdFrom(cause.fiberId) }
     case "Parallel":
-      return { _tag: "Parallel", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+      return { _tag: "Parallel", left: causeToCauseEncoded(cause.left), right: causeToCauseEncoded(cause.right) }
     case "Sequential":
-      return { _tag: "Sequential", left: causeToCauseFrom(cause.left), right: causeToCauseFrom(cause.right) }
+      return { _tag: "Sequential", left: causeToCauseEncoded(cause.left), right: causeToCauseEncoded(cause.right) }
   }
 }
 
-function fiberIdToFiberIdFrom(id: FiberId.FiberId): Schema.FiberIdFrom {
+function fiberIdToFiberIdFrom(id: FiberId.FiberId): Schema.FiberIdEncoded {
   switch (id._tag) {
     case "None":
       return { _tag: "None" }
@@ -702,7 +701,7 @@ function asyncDataToAsyncDataFrom<A, E>(data: AsyncData.AsyncData<A, E>): AsyncD
       return loadingToJson(data)
     case "Failure":
       return FailureFrom(
-        causeToCauseFrom(data.cause),
+        causeToCauseEncoded(data.cause),
         data.timestamp,
         Option.getOrUndefined(Option.map(data.refreshing, loadingToJson))
       )

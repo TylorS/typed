@@ -25,7 +25,7 @@ const equalDestinations = (a: ReadonlyArray<Navigation.Destination>, b: Readonly
 
 describe(__filename, () => {
   describe("Navigation", () => {
-    it("memory", async () => {
+    it.only("memory", async () => {
       const url = new URL("https://example.com/foo/1")
       const state = { x: Math.random() }
       const test = Effect.gen(function*(_) {

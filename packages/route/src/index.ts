@@ -222,11 +222,14 @@ export function RouteGuard<P extends string, A, E = never, R = never>(
 
       return RouteGuard(
         route.concat(otherGuard.route),
-        (i: string) =>
+        (i: string): Effect.Effect<Option.Option<A & A2>, E | E2, R | R2> =>
           guard(i).pipe(
             Effect.flatten,
             Effect.bindTo("a"),
-            Effect.bind("b", () => Effect.flatten(otherGuard(i))),
+            // Since the guard above matched, we can safely assume that the match will succeed
+            // to pass only the relevant part of the path to the next guard
+            Effect.let("aPath", () => route.make((route.match(i) as Option.Some<typedPath.ParamsOf<P>>).value)),
+            Effect.bind("b", ({ aPath }) => Effect.flatten(otherGuard(i.replace(aPath, "")))),
             Effect.map(({ a, b }) => ({ ...a, ...b })),
             Effect.optionFromOptional
           )
@@ -635,5 +638,5 @@ export const bind: {
 export function asRouteGuard<P extends string, A = typedPath.ParamsOf<P>, E = never, R = never>(
   route: RouteInput<P, A, E, R>
 ): RouteGuard<P, A, E, R> {
-  return (isRoute<P>(route) ? RouteGuard(route, route) : route) as RouteGuard<P, A, E, R>
+  return (isRoute<P>(route) ? RouteGuard(route, (i) => route(i)) : route) as RouteGuard<P, A, E, R>
 }

@@ -4,8 +4,7 @@
  */
 
 import type { ParseOptions } from "@effect/schema/AST"
-import * as P from "@effect/schema/Parser"
-import type * as ParseResult from "@effect/schema/ParseResult"
+import * as ParseResult from "@effect/schema/ParseResult"
 import * as S from "@effect/schema/Schema"
 import * as Context from "@typed/context"
 import * as Effect from "effect/Effect"
@@ -119,11 +118,11 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<O.Option<S.Schema.To<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
+  ) => StorageEffect<O.Option<S.Schema.Type<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
-    value: S.Schema.To<Schemas[K]>,
+    value: S.Schema.Type<Schemas[K]>,
     options?: ParseOptions
   ) => StorageEffect<void, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
@@ -131,7 +130,7 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
 
   readonly key: <K extends keyof Schemas & string>(
     key: K
-  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.To<Schemas[K]>>
+  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.Type<Schemas[K]>>
 }
 
 /**
@@ -167,24 +166,24 @@ export function SchemaStorage<
   const decoders: Partial<
     {
       [K in keyof Schemas]: (
-        i: S.Schema.From<Schemas[K]>,
+        i: S.Schema.Encoded<Schemas[K]>,
         options?: ParseOptions
-      ) => Effect.Effect<S.Schema.To<Schemas[K]>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
+      ) => Effect.Effect<S.Schema.Type<Schemas[K]>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
     }
   > = {}
   const getDecoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof decoders)[K]> =>
-    decoders[key] || (decoders[key] = P.decode(schemas[key]) as any)
+    decoders[key] || (decoders[key] = ParseResult.decode(schemas[key]) as any)
 
   const encoders: Partial<
     {
       [K in keyof Schemas]: (
-        i: S.Schema.To<Schemas[K]>,
+        i: S.Schema.Type<Schemas[K]>,
         options?: ParseOptions
-      ) => Effect.Effect<S.Schema.From<Schemas[K]>, ParseResult.ParseError>
+      ) => Effect.Effect<S.Schema.Encoded<Schemas[K]>, ParseResult.ParseError>
     }
   > = {}
   const getEncoder = <K extends keyof Schemas>(key: K): NonNullable<(typeof encoders)[K]> =>
-    encoders[key] || (encoders[key] = P.encode(schemas[key]) as any)
+    encoders[key] || (encoders[key] = ParseResult.encode(schemas[key]) as any)
 
   const get = <K extends keyof Schemas & string>(key: K, options?: ParseOptions) =>
     StorageEffect(
@@ -197,7 +196,7 @@ export function SchemaStorage<
 
         const decoder = getDecoder(key)
 
-        const result = yield* $(decoder(option.value as S.Schema.From<Schemas[K]>, options))
+        const result = yield* $(decoder(option.value as S.Schema.Encoded<Schemas[K]>, options))
 
         return O.some(result)
       })
@@ -205,7 +204,7 @@ export function SchemaStorage<
 
   const set = <K extends keyof Schemas & string>(
     key: K,
-    value: S.Schema.To<Schemas[K]>,
+    value: S.Schema.Type<Schemas[K]>,
     options?: ParseOptions
   ) =>
     StorageEffect(

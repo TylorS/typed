@@ -7,4 +7,4 @@ export const article = Route.fromPath("/articles/:slug").pipe(Route.decode(GetAr
 
 export const feed = Route.fromPath("/articles/feed")
 
-export const favorites = article.concat(Route.fromPath("/favorite"))
+export const favorites = article.concat(Route.fromPath("/favorites"))

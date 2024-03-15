@@ -800,8 +800,8 @@ describe("V3", () => {
         ),
         timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
       })
-      type FooInput = Schema.Schema.From<typeof Foo>
-      type FooOutput = Schema.Schema.To<typeof Foo>
+      type FooInput = Schema.Schema.Encoded<typeof Foo>
+      type FooOutput = Schema.Schema.Type<typeof Foo>
 
       const initialFooOutput: FooOutput = {
         id: "asdf",
@@ -1009,8 +1009,8 @@ describe("V3", () => {
         ),
         timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
       })
-      type FooInput = Schema.Schema.From<typeof Foo>
-      type FooOutput = Schema.Schema.To<typeof Foo>
+      type FooInput = Schema.Schema.Encoded<typeof Foo>
+      type FooOutput = Schema.Schema.Type<typeof Foo>
 
       const initialFooOutput: FooOutput = {
         id: "asdf",

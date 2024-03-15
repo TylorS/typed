@@ -624,7 +624,8 @@ class RefSubjectCore<A, E, R, R2> {
     readonly scope: Scope.CloseableScope,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
     readonly semaphore: Effect.Semaphore
-  ) {}
+  ) {
+  }
 
   public _fiber: Fiber.Fiber<A, E> | undefined = undefined
 }

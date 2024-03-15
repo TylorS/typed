@@ -333,7 +333,7 @@ class FormImpl<Entries extends Form.AnyEntries> extends FxEffectBase<
     this._fx = hold(
       core.skipRepeatsWith(
         core.struct(this.entries as any) as Fx<Form.Input<Entries>, Form.Error<Entries> | ParseError>,
-        make(S.from(this.schema))
+        make(S.encodedSchema(this.schema))
       )
     )
   }
@@ -402,7 +402,7 @@ const deriveMakeEntries = <
 
           for (const prop of propertySignatures) {
             const nested = propOf(input, prop.name)
-            const ast = prop.isOptional ? AST.createUnion([prop.type, AST.undefinedKeyword]) : prop.type
+            const ast = prop.isOptional ? AST.Union.make([prop.type, AST.undefinedKeyword]) : prop.type
 
             if (prop.type._tag === "TypeLiteral") {
               entries[prop.name] = Form(
@@ -451,7 +451,7 @@ const deriveMakeInputEntries = <
           const entries: any = {}
 
           for (const prop of propertySignatures) {
-            const ast = prop.isOptional ? AST.createUnion([prop.type, AST.undefinedKeyword]) : prop.type
+            const ast = prop.isOptional ? AST.Union.make([prop.type, AST.undefinedKeyword]) : prop.type
             const nested = propOf(input, prop.name)
 
             if (prop.type._tag === "TypeLiteral") {

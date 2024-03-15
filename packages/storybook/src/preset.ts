@@ -32,11 +32,7 @@ export const core: PresetProperty<"core"> = async (config, options) => {
 /**
  * @since 1.0.0
  */
-export const previewAnnotations: PresetProperty<"previewAnnotations"> = (
-  entry: Array<string>
-) => {
-  return entry
-}
+export const previewAnnotations: PresetProperty<"previewAnnotations"> = (entry) => entry
 
 /**
  * @since 1.0.0

@@ -114,7 +114,7 @@ function setupWithNavigation(
     const state = yield* _(
       RefSubject.fromEffect(
         Effect.sync((): NavigationState => getNavigationState(navigation)),
-        { eq: Equivalence.make(Schema.to(Schema.to(NavigationState))) }
+        { eq: Equivalence.make(Schema.typeSchema(Schema.typeSchema(NavigationState))) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
@@ -235,7 +235,7 @@ function setupWithHistory(
             (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
           )
         ),
-        { eq: Equivalence.make(Schema.to(NavigationState)) }
+        { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)

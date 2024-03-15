@@ -3,7 +3,7 @@
  */
 
 import type * as HttpClient from "@effect/platform/HttpClient"
-import { Parser, ParseResult } from "@effect/schema"
+import { ParseResult } from "@effect/schema"
 import * as Schema from "@effect/schema/Schema"
 import { Tagged } from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -91,7 +91,7 @@ const urlSchema = Schema.string.pipe(
         try {
           return Effect.succeed(new URL(s))
         } catch {
-          return Effect.fail(ParseResult.type(urlSchema_.ast, s, `Expected a URL`))
+          return Effect.fail(new ParseResult.Type(urlSchema_.ast, s, `Expected a URL`))
         }
       }),
     (url) => Effect.succeed(url.toString())
@@ -112,11 +112,11 @@ export const Destination = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type DestinationJson = Schema.Schema.From<typeof Destination>
+export type DestinationJson = Schema.Schema.Encoded<typeof Destination>
 /**
  * @since 1.0.0
  */
-export interface Destination extends Schema.Schema.To<typeof Destination> {}
+export interface Destination extends Schema.Schema.Type<typeof Destination> {}
 
 /**
  * @since 1.0.0
@@ -126,11 +126,11 @@ export const ProposedDestination = Destination.pipe(Schema.omit("id", "key"))
 /**
  * @since 1.0.0
  */
-export type ProposedDestinationJson = Schema.Schema.From<typeof ProposedDestination>
+export type ProposedDestinationJson = Schema.Schema.Encoded<typeof ProposedDestination>
 /**
  * @since 1.0.0
  */
-export interface ProposedDestination extends Schema.Schema.To<typeof ProposedDestination> {}
+export interface ProposedDestination extends Schema.Schema.Type<typeof ProposedDestination> {}
 
 /**
  * @since 1.0.0
@@ -139,7 +139,7 @@ export const NavigationType = Schema.literal("push", "replace", "reload", "trave
 /**
  * @since 1.0.0
  */
-export type NavigationType = Schema.Schema.To<typeof NavigationType>
+export type NavigationType = Schema.Schema.Type<typeof NavigationType>
 
 /**
  * @since 1.0.0
@@ -153,11 +153,11 @@ export const Transition = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type TransitionJson = Schema.Schema.From<typeof Transition>
+export type TransitionJson = Schema.Schema.Encoded<typeof Transition>
 /**
  * @since 1.0.0
  */
-export interface Transition extends Schema.Schema.To<typeof Transition> {}
+export interface Transition extends Schema.Schema.Type<typeof Transition> {}
 
 /**
  * @since 1.0.0
@@ -173,11 +173,11 @@ export const BeforeNavigationEvent = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type BeforeNavigationEventJson = Schema.Schema.From<typeof BeforeNavigationEvent>
+export type BeforeNavigationEventJson = Schema.Schema.Encoded<typeof BeforeNavigationEvent>
 /**
  * @since 1.0.0
  */
-export interface BeforeNavigationEvent extends Schema.Schema.To<typeof BeforeNavigationEvent> {}
+export interface BeforeNavigationEvent extends Schema.Schema.Type<typeof BeforeNavigationEvent> {}
 
 /**
  * @since 1.0.0
@@ -191,11 +191,11 @@ export const NavigationEvent = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type NavigationEventJson = Schema.Schema.From<typeof NavigationEvent>
+export type NavigationEventJson = Schema.Schema.Encoded<typeof NavigationEvent>
 /**
  * @since 1.0.0
  */
-export interface NavigationEvent extends Schema.Schema.To<typeof NavigationEvent> {}
+export interface NavigationEvent extends Schema.Schema.Type<typeof NavigationEvent> {}
 
 /**
  * @since 1.0.0
@@ -277,10 +277,10 @@ export const FileSchemaFrom = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type FileSchemaFrom = Schema.Schema.From<typeof FileSchemaFrom>
+export type FileSchemaFrom = Schema.Schema.Encoded<typeof FileSchemaFrom>
 
-const decodeBase64 = Parser.decode(Schema.Base64)
-const encodeBase64 = Parser.encode(Schema.Base64)
+const decodeBase64 = ParseResult.decode(Schema.Base64)
+const encodeBase64 = ParseResult.encode(Schema.Base64)
 
 /**
  * @since 1.0.0
@@ -336,12 +336,12 @@ export const FormInputSchema = Schema.struct({
 /**
  * @since 1.0.0
  */
-export type FormInputFrom = Schema.Schema.From<typeof FormInputSchema>
+export type FormInputFrom = Schema.Schema.Encoded<typeof FormInputSchema>
 
 /**
  * @since 1.0.0
  */
-export interface FormInput extends Schema.Schema.To<typeof FormInputSchema> {}
+export interface FormInput extends Schema.Schema.Type<typeof FormInputSchema> {}
 
 /**
  * @since 1.0.0
@@ -351,12 +351,12 @@ export const FormDataEvent = Schema.extend(Schema.struct({ from: Destination }),
 /**
  * @since 1.0.0
  */
-export type FormDataEventJson = Schema.Schema.From<typeof FormDataEvent>
+export type FormDataEventJson = Schema.Schema.Encoded<typeof FormDataEvent>
 
 /**
  * @since 1.0.0
  */
-export interface FormDataEvent extends Schema.Schema.To<typeof FormDataEvent> {}
+export interface FormDataEvent extends Schema.Schema.Type<typeof FormDataEvent> {}
 
 /**
  * @since 1.0.0

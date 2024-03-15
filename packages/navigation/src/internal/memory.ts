@@ -67,7 +67,7 @@ function setupMemory(
             transition: Option.none()
           }
         }),
-        { eq: Equivalence.make(Schema.to(NavigationState)) }
+        { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
       )
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)

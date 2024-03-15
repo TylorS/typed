@@ -300,5 +300,18 @@ describe(__filename, () => {
 
       expect(result).toBe(2)
     })
+
+    it("can still be used like another Tag", async () => {
+      const Foo = Context.Fn<(a: number) => Effect.Effect<number>>()("test")
+      const test = Effect.gen(function*(_) {
+        const foo = yield* _(Foo)
+
+        return yield* _(foo(1))
+      }).pipe(Foo.provide((a) => Effect.succeed(a + 1)))
+
+      const result = await Effect.runPromise(test)
+
+      expect(result).toBe(2)
+    })
   })
 })

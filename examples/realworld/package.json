@@ -18,11 +18,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.46.3",
-    "@effect/platform-node": "^0.44.11",
-    "@effect/schema": "0.63.2",
-    "@sqlfx/pg": "^0.45.0",
-    "@sqlfx/sql": "^0.45.0",
+    "@effect/platform": "^0.48.8",
+    "@effect/platform-node": "^0.45.10",
+    "@effect/schema": "0.64.5",
+    "@sqlfx/pg": "^0.46.0",
+    "@sqlfx/sql": "^0.46.0",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -37,10 +37,10 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "2.4.1",
-    "effect-http": "^0.57.1",
-    "effect-http-node": "^0.5.1",
-    "effect-log": "^0.30.3",
+    "effect": "2.4.7",
+    "effect-http": "^0.58.1",
+    "effect-http-node": "^0.6.1",
+    "effect-log": "^0.30.9",
     "path-to-regexp": "^6.2.1",
     "postgres": "^3.4.3",
     "ts-toolbelt": "^9.6.0"
@@ -49,12 +49,12 @@
     "@typed/vite-plugin": "workspace:*",
     "mock-storage": "^1.1.0",
     "rollup-plugin-visualizer": "^5.12.0",
-    "schema-openapi": "^0.32.1",
-    "terser": "^5.29.1",
+    "schema-openapi": "^0.33.4",
+    "terser": "^5.29.2",
     "tsx": "^4.7.1",
     "vavite": "^4.1.1",
-    "vite": "^5.1.5",
+    "vite": "^5.1.6",
     "vite-plugin-compression": "^0.5.1",
-    "vite-tsconfig-paths": "^4.3.1"
+    "vite-tsconfig-paths": "^4.3.2"
   }
 }

@@ -117,7 +117,7 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
   const apply = (args: EffectFn.ArgsOf<S>) => tagged.withEffect((f) => f(...args))
   const call = (...args: EffectFn.ArgsOf<S>) => apply(args)
 
-  const output: any = Object.assign(call, {
+  const output: any = Object.assign(call, tagged, {
     [FnTypeId]: FnTypeId,
     apply,
     call,
@@ -132,11 +132,10 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
     )
   })
 
-  const taggedKeys = Reflect.ownKeys(tagged) as Array<keyof typeof tagged>
-
-  for (const key of taggedKeys) {
-    output[key] = tagged[key]
-  }
+  // Ensure Effect still sees this as an Effect
+  output._op = tagged._op
+  output._tag = tagged._tag
+  output[Effect.EffectTypeId] = tagged[Effect.EffectTypeId]
 
   return output
 }

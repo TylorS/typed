@@ -322,8 +322,8 @@ function encodeDecodeAreDual<O, I, R>(
   return Effect.gen(function*(_) {
     const encode = Schema.encode(schema)
     const decode = Schema.decode(schema)
-    const decodeEquals = Equivalence.make(Schema.to(schema))
-    const encodeEquals = Equivalence.make(Schema.from(schema))
+    const decodeEquals = Equivalence.make(Schema.typeSchema(schema))
+    const encodeEquals = Equivalence.make(Schema.encodedSchema(schema))
     const decoded = yield* _(decode(input))
     const encoded = yield* _(encode(output))
 

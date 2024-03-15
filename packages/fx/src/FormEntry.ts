@@ -81,7 +81,7 @@ export function derive<R, I, O>(options: FormEntryOptions<R, I, O>): MakeFormEnt
 
     return Effect.map(
       RefSubject.make(initial, {
-        eq: Equivalence.make(Schema.from(options.schema))
+        eq: Equivalence.make(Schema.encodedSchema(options.schema))
       }),
       (inputRef): FormEntry<R, E, I, O> | FormEntry.Derived<R, R2, E, I, O> => {
         if (RefSubject.isRefSubject<O, E, R2>(input)) {
@@ -118,7 +118,7 @@ export function deriveInput<R, I, O>(options: FormEntryOptions<R, I, O>): MakeIn
     const initial: Fx.Fx<I, E | ParseError, R2> = Effect.isEffect(input) ? Fx.fromEffect(input) : input
 
     return Effect.map(
-      RefSubject.make(initial, { eq: Equivalence.make(Schema.from(options.schema)) }),
+      RefSubject.make(initial, { eq: Equivalence.make(Schema.encodedSchema(options.schema)) }),
       (inputRef): FormEntry<R, E, I, O> | FormEntry.Derived<R, R2, E, I, O> => {
         if (RefSubject.isRefSubject<R2, E, O>(input)) {
           const persist: Effect.Effect<O, ParseError | E, R | R2> = Effect.flatMap(
