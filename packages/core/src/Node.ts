@@ -26,6 +26,7 @@ export function getOrCreateServer() {
   if (viteHttpServer === undefined) {
     return createServer()
   } else {
+    let effectRequestHandler: ((req: any, res: any) => void) | undefined
     let effectUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
     let combinedUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
 
@@ -42,7 +43,7 @@ export function getOrCreateServer() {
         } else if (
           prop === "on"
         ) {
-          return (...args: Parameters<NonNullable<typeof viteHttpServer>["on"]>) => {
+          return (...args: readonly [string, ...Array<any>]) => {
             // We don't want to utilize Effect's default websocket upgrade handling to allow HMR to continue working
             if (args[0] === "upgrade" && effectUpgradeHandler === undefined) {
               const [viteHmrListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
@@ -61,7 +62,17 @@ export function getOrCreateServer() {
               return target.on("upgrade", combinedUpgradeHandler)
             }
 
-            return target.on(...args)
+            if (args[0] === "request" && effectRequestHandler === undefined) {
+              effectRequestHandler = args[1]
+              return target.on.apply(target, args as any)
+            } else if (args[0] === "request" && effectRequestHandler !== undefined) {
+              target.off("request", effectRequestHandler)
+              effectRequestHandler = args[1]
+
+              return target.on.apply(target, args as any)
+            }
+
+            return target.on.apply(target, args as any)
           }
         } else if (prop === "off") {
           return (...args: Parameters<NonNullable<typeof viteHttpServer>["off"]>) => {
