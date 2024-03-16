@@ -15,7 +15,7 @@ export const getCurrentJwt = getCurrentJwtOption.pipe(
   Effect.catchAll(() => new Unauthorized())
 )
 
-const JwtUser = DbUser.pipe(
+export const JwtUser = DbUser.pipe(
   Schema.omit("password", "created_at", "updated_at"),
   Schema.extend(Schema.struct({
     created_at: Schema.DateFromString,

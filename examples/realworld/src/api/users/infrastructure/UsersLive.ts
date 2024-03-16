@@ -1,4 +1,4 @@
-import { getCurrentJwt, verifyJwt } from "@/api/common/infrastructure/CurrentJwt"
+import { getCurrentJwt, JwtUser, verifyJwt } from "@/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
 import {
   ComparePassword,
@@ -138,7 +138,7 @@ function creatJwtTokenForUser(user: DbUser) {
     const id = yield* _(makeNanoId)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
-    const { password: __, ...jwtUser } = user
+    const jwtUser = yield* _(user, Schema.encode(JwtUser))
     const token = JwtToken(jwt.sign(jwtUser, secret, { expiresIn: "7d" }))
     const jwtToken: DbJwtToken = {
       id,
