@@ -76,7 +76,7 @@ export type DbTag = S.Schema.Type<typeof DbTag>
 
 export const DbArticleTag = S.struct({
   article_id: ArticleId,
-  tag_id: S.nanoId
+  tag_id: ArticleTag
 })
 
 export type DbArticleTag = S.Schema.Type<typeof DbArticleTag>

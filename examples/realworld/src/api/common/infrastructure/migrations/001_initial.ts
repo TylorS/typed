@@ -51,7 +51,7 @@ export default Effect.flatMap(
       -- ArticleTags
       CREATE TABLE article_tags(
         article_id varchar(21) NOT NULL,
-        tag_id varchar(21) NOT NULL,
+        tag_id varchar(255) NOT NULL,
         PRIMARY KEY (article_id, tag_id),
         FOREIGN KEY (article_id) REFERENCES articles(id),
         FOREIGN KEY (tag_id) REFERENCES tags(id)
