@@ -1,4 +1,5 @@
 import * as Schema from "@/lib/Schema"
+import { Profile } from "@/model/Profile"
 
 export const ArticleId = Schema.nanoId.pipe(
   Schema.brand("ArticleId"),
@@ -36,6 +37,7 @@ export const Article = Schema.struct({
   description: ArticleDescription,
   body: ArticleBody,
   tagList: ArticleTagList,
+  author: Profile,
   favorited: Schema.boolean,
   favoritesCount: Schema.number,
   createdAt: Schema.Date,

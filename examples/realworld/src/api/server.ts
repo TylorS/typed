@@ -1,4 +1,3 @@
-import { CurrentJwt } from "@/api/common/infrastructure/CurrentJwt"
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import { GetCurrentUser } from "@/services/GetCurrentUser"
 import { UpdateUser } from "@/services/UpdateUser"
@@ -9,80 +8,74 @@ import { Spec } from "./spec"
 export const server = RouterBuilder.make(Spec, {}).pipe(
   RouterBuilder.handle(
     "createArticle",
-    ({ body: { article } }, { jwtToken }) =>
+    ({ body: { article } }) =>
       Articles.create(article).pipe(
         Effect.map((article) => ({ status: 201, content: { article } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "createComment",
-    ({ body: { comment }, params: { slug } }, { jwtToken }) =>
+    ({ body: { comment }, params: { slug } }) =>
       Comments.create(slug, comment).pipe(
         Effect.map((comment) => ({ status: 201, content: { comment } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "deleteArticle",
-    ({ params: { slug } }, { jwtToken }) =>
+    ({ params: { slug } }) =>
       Articles.delete({ slug }).pipe(
         Effect.map(() => ({ status: 200 } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "deleteComment",
-    ({ params: { id, slug } }, { jwtToken }) =>
+    ({ params: { id, slug } }) =>
       Comments.delete(slug, { id }).pipe(
         Effect.map(() => ({ status: 200 } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "favorite",
-    ({ params: { slug } }, { jwtToken }) =>
+    ({ params: { slug } }) =>
       Articles.favorite(slug).pipe(
         Effect.map((article) => ({ status: 200, content: { article } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "follow",
-    ({ params: { username } }, { jwtToken }) =>
+    ({ params: { username } }) =>
       Profiles.follow(username).pipe(
         Effect.map((profile) => ({ status: 200, content: { profile } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
@@ -101,7 +94,10 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
     ({ query }) =>
       Articles.list(query).pipe(
         Effect.map((articles) => ({ status: 200, content: { articles } } as const)),
-        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+        Effect.catchTag(
+          "Unprocessable",
+          (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
+        )
       )
   ),
   RouterBuilder.handle(
@@ -117,28 +113,26 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "getCurrentUser",
-    (_, { jwtToken }) =>
+    (_) =>
       GetCurrentUser().pipe(
         Effect.map((user) => ({ status: 200, content: { user } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "getFeed",
-    ({ query }, { jwtToken }) =>
+    ({ query }) =>
       Articles.feed(query).pipe(
         Effect.map((articles) => ({ status: 200, content: { articles } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
@@ -151,7 +145,8 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
         )
       )
-  ),
+  )
+).pipe(
   RouterBuilder.handle(
     "getTags",
     () =>
@@ -169,7 +164,10 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
       return Users.login(user).pipe(
         Effect.map((user) => ({ status: 200, content: { user } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
-        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+        Effect.catchTag(
+          "Unprocessable",
+          (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
+        )
       )
     }
   ),
@@ -186,55 +184,52 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "unfavorite",
-    ({ params: { slug } }, { jwtToken }) =>
+    ({ params: { slug } }) =>
       Articles.unfavorite(slug).pipe(
         Effect.map((article) => ({ status: 200, content: { article } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "unfollow",
-    ({ params: { username } }, { jwtToken }) =>
+    ({ params: { username } }) =>
       Profiles.unfollow(username).pipe(
         Effect.map((profile) => ({ status: 200, content: { profile } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "updateArticle",
-    ({ body: { article }, params: { slug } }, { jwtToken }) =>
+    ({ body: { article }, params: { slug } }) =>
       Articles.update(slug, article).pipe(
         Effect.map((article) => ({ status: 200, content: { article } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
   ),
   RouterBuilder.handle(
     "updateUser",
-    ({ body: { user } }, { jwtToken }) =>
+    ({ body: { user } }) =>
       UpdateUser(user).pipe(
         Effect.map((user) => ({ status: 200, content: { user } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-        ),
-        CurrentJwt.provide(jwtToken.token)
+        )
       )
-  ),
+  )
+).pipe(
   RouterBuilder.getRouter
 )

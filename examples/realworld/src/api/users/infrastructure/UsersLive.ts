@@ -1,4 +1,4 @@
-import { getCurrentJwt, JwtUser, verifyJwt } from "@/api/common/infrastructure/CurrentJwt"
+import { getCurrentJwtUser, JwtUser } from "@/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
 import {
   ComparePassword,
@@ -20,11 +20,10 @@ import jwt from "jsonwebtoken"
 export const UsersLive = Users.implement({
   current: () =>
     Effect.gen(function*(_) {
-      const token = yield* _(getCurrentJwt)
-      const user = yield* _(verifyJwt(token))
+      const user = yield* _(getCurrentJwtUser)
       const dbUser = yield* _(getDbUserByEmail(user.email), Effect.flatten, Effect.catchAll(() => new Unauthorized()))
 
-      return dbUserToUser(dbUser, token)
+      return dbUserToUser(dbUser, user.token)
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
@@ -65,9 +64,7 @@ export const UsersLive = Users.implement({
     }).pipe(catchExpectedErrors),
   update: (user) =>
     Effect.gen(function*(_) {
-      const token = yield* _(getCurrentJwt)
-      yield* _(verifyJwt(token))
-
+      const current = yield* _(getCurrentJwtUser)
       const sql = yield* _(Pg.tag)
       const now = new Date(yield* _(Clock.currentTimeMillis))
       const [rawUser] = yield* _(
@@ -81,7 +78,7 @@ export const UsersLive = Users.implement({
       )
       const dbUser = yield* _(rawUser, Schema.decodeUnknown(DbUser))
 
-      return dbUserToUser(dbUser, token)
+      return dbUserToUser(dbUser, current.token)
     }).pipe(catchExpectedErrors)
 }).pipe(
   Layer.provide(HashPasswordLive),

@@ -1,5 +1,5 @@
 import * as S from "@/lib/Schema"
-import type { User } from "@/model"
+import type { Article, User } from "@/model"
 import {
   ArticleBody,
   ArticleDescription,
@@ -54,7 +54,49 @@ export const DbArticle = S.struct({
   updated_at: S.ValidDateFromSelf
 })
 
+export function dbArticleToArticle(
+  article: DbArticleWithFavoritesAndTags
+): Article {
+  return {
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    description: article.description,
+    body: article.body,
+    author: {
+      username: article.author_username,
+      email: article.author_email,
+      bio: Option.fromNullable(article.author_bio),
+      image: Option.fromNullable(article.author_image),
+      following: article.author_following ?? false
+    },
+    tagList: article.tag_list,
+    createdAt: article.created_at,
+    updatedAt: article.updated_at,
+    favorited: article?.favorited ?? false,
+    favoritesCount: article?.favorites_count ?? 0
+  }
+}
+
 export type DbArticle = S.Schema.Type<typeof DbArticle>
+
+export const DbProfile = DbUser.pipe(S.pick("username", "email", "bio", "image"))
+
+export const DbArticleWithFavoritesAndTags = DbArticle.pipe(
+  S.extend(
+    S.struct({
+      author_username: Username,
+      author_email: Email,
+      author_bio: S.nullable(Bio),
+      author_image: S.nullable(Image),
+      author_following: S.nullable(S.boolean),
+      favorites_count: S.NumberFromString,
+      favorited: S.nullable(S.boolean),
+      tag_list: S.array(ArticleTag)
+    })
+  )
+)
+export type DbArticleWithFavoritesAndTags = S.Schema.Type<typeof DbArticleWithFavoritesAndTags>
 
 export const DbComment = S.struct({
   id: CommentId,

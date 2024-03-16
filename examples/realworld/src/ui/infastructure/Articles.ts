@@ -19,7 +19,8 @@ export const ArticlesLive = Articles.implement({
       withJwtToken((jwtToken) => client.deleteArticle({ params: input }, { jwtToken }))
     ),
   list: (input) => handleClientRequest(client.getArticles({ query: input }), (r) => r.articles),
-  feed: (input) => handleClientRequest(client.getFeed({ query: input }), (r) => r.articles),
+  feed: (input) =>
+    handleClientRequest(withJwtToken((jwtToken) => client.getFeed({ query: input }, { jwtToken })), (r) => r.articles),
   favorite: (slug) =>
     handleClientRequest(
       withJwtToken((jwtToken) => client.favorite({ params: { slug } }, { jwtToken })),

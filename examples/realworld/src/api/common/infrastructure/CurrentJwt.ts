@@ -3,7 +3,7 @@ import type { JwtToken } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import { Schema } from "@effect/schema"
 import { Context } from "@typed/core"
-import { Config, Effect } from "effect"
+import { Config, Effect, Option } from "effect"
 import jwt from "jsonwebtoken"
 
 export const CurrentJwt = Context.Tagged<JwtToken>()("CurrentJwt")
@@ -35,3 +35,19 @@ export const verifyJwt = (token: JwtToken) =>
   }).pipe(
     Effect.catchAll(() => new Unauthorized())
   )
+
+export const getOptionalCurrentJwtUser = Effect.gen(function*(_) {
+  const option = yield* _(getCurrentJwtOption)
+  if (Option.isNone(option)) {
+    return Option.none()
+  }
+
+  return Option.some(yield* _(verifyJwt(option.value)))
+}).pipe(
+  Effect.catchAll(() => Effect.succeedNone)
+)
+
+export const getCurrentJwtUser = Effect.gen(function*(_) {
+  const token = yield* _(getCurrentJwt)
+  return yield* _(verifyJwt(token))
+})

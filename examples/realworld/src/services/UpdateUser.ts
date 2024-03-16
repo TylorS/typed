@@ -6,8 +6,8 @@ import * as Schema from "lib/Schema"
 
 export const UpdateUserInput = Schema.struct({
   email: User.fields.email,
-  username: Schema.optionalOrNull(User.fields.username),
-  password: Schema.optionalOrNull(Password),
+  username: Schema.optionFromNullable(User.fields.username),
+  password: Schema.optionFromNullable(Password),
   image: User.fields.image,
   bio: User.fields.bio
 })

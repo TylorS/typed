@@ -23,8 +23,8 @@ export const User = Schema.struct({
   email: Email,
   username: Username,
   token: JwtToken,
-  bio: Schema.optionalOrNull(Bio),
-  image: Schema.optionalOrNull(Image)
+  bio: Schema.optionFromNullable(Bio),
+  image: Schema.optionFromNullable(Image)
 }).pipe(Schema.identifier("User"))
 
 export type User = Schema.Schema.Type<typeof User>

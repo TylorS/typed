@@ -30,11 +30,4 @@ export const SaveJwtToken = Context.Fn<(token: JwtToken) => Effect.Effect<void, 
 
 export const ReadJwtToken = Context.Fn<() => Effect.Effect<Option.Option<JwtToken>, never>>()("ReadJwtToken")
 
-export const getCurrentUser = RefAsyncData.runAsyncData(
-  CurrentUser,
-  Effect.gen(function*(_) {
-    const token = yield* _(ReadJwtToken())
-    if (Option.isNone(token)) return yield* _(new Unauthorized())
-    return yield* _(GetCurrentUser(token.value))
-  })
-)
+export const getCurrentUser = RefAsyncData.runAsyncData(CurrentUser, GetCurrentUser())

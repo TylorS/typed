@@ -5,8 +5,8 @@ import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
 export const GetFeedInput = Schema.struct({
-  limit: Schema.optionalOrNull(Schema.number),
-  offset: Schema.optionalOrNull(Schema.number)
+  limit: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" }),
+  offset: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" })
 }).pipe(
   Schema.identifier("GetFeedInput")
 )
