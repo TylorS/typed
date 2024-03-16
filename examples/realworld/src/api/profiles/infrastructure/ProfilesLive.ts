@@ -1,24 +1,17 @@
 import { Profiles } from "@/services"
-import * as Pg from "@sqlfx/pg"
 import { Effect } from "effect"
 
 export const ProfilesLive = Profiles.implement({
   get: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  follow: (input) =>
+  follow: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  unfollow: (input) =>
+  unfollow: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     })
 })

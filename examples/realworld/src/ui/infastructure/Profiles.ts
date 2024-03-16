@@ -1,4 +1,4 @@
-import { client } from "@/api"
+import { client } from "@/api/client"
 import { Profiles } from "@/services"
 import { handleClientRequest, withJwtToken } from "@/ui/infastructure/_client"
 

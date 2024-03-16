@@ -1,54 +1,37 @@
 import { Articles } from "@/services"
-import * as Pg from "@sqlfx/pg"
 import { Effect } from "effect"
 
 export const ArticlesLive = Articles.implement({
   get: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  create: (input) =>
+  create: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  update: (input) =>
+  update: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  delete: (input) =>
+  delete: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  favorite: (input) =>
+  favorite: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  unfavorite: (input) =>
+  unfavorite: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  list: (input) =>
+  list: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     }),
-  feed: (input) =>
+  feed: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-
       return yield* _(Effect.dieMessage(`Not implemented`))
     })
 })

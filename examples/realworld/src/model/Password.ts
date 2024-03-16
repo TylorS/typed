@@ -1,13 +1,13 @@
 import * as Schema from "lib/Schema"
 
-export const Password = Schema.string.pipe(
+export const Password = Schema.Secret.pipe(
   Schema.brand("Password"),
   Schema.identifier("Password"),
   Schema.description("Password")
 )
 export type Password = Schema.Schema.Type<typeof Password>
 
-export const PasswordHash = Schema.string.pipe(
+export const PasswordHash = Schema.Secret.pipe(
   Schema.brand("PasswordHash"),
   Schema.identifier("PasswordHash"),
   Schema.description("PasswordHash")

@@ -4,15 +4,16 @@ import { DbLive } from "@/api/common/infrastructure/db"
 import { ProfilesLive } from "@/api/profiles/infrastructure/ProfilesLive"
 import { TagsLive } from "@/api/tags/infrastructure/TagsLive"
 import { UsersLive } from "@/api/users/infrastructure/UsersLive"
+import { getRandomValues } from "@typed/id"
 import { Layer } from "effect"
 
-export const Live = Layer.provideMerge(
-  Layer.mergeAll(
-    ArticlesLive,
-    CommentsLive,
-    ProfilesLive,
-    TagsLive,
-    UsersLive
-  ),
-  Layer.mergeAll(DbLive)
+export const Live = Layer.mergeAll(
+  ArticlesLive,
+  CommentsLive,
+  ProfilesLive,
+  TagsLive,
+  UsersLive
+).pipe(
+  Layer.provideMerge(DbLive),
+  Layer.provideMerge(getRandomValues)
 )

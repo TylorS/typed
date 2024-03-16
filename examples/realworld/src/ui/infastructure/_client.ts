@@ -26,7 +26,7 @@ export function handleClientRequest<
   return effect.pipe(
     Effect.catchTag(
       "ClientError" as any,
-      (error) => Effect.fail(new Unprocessable([(error as ClientError.ClientError).message]))
+      (error) => Effect.fail(new Unprocessable({ errors: [(error as ClientError.ClientError).message] }))
     ),
     Effect.flatMap(Unify.unify((response: T) => {
       if (response.status === 401) return Effect.fail(new Unauthorized())

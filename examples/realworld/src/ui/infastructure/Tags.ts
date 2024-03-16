@@ -1,4 +1,4 @@
-import { client } from "@/api"
+import { client } from "@/api/client"
 import { Tags } from "@/services"
 import { handleClientRequest } from "@/ui/infastructure/_client"
 

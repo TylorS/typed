@@ -74,6 +74,15 @@ export default Effect.flatMap(
         FOREIGN KEY (follower_id) REFERENCES users(id),
         FOREIGN KEY (followed_id) REFERENCES users(id)
       );
+
+      -- JWT
+      CREATE TABLE jwt_tokens(
+        id varchar(21) PRIMARY KEY,
+        user_id varchar(21) NOT NULL,
+        token text NOT NULL,
+        created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
       
       -- Indexes
       CREATE INDEX articles_author_id_idx ON articles(author_id);
@@ -93,5 +102,7 @@ export default Effect.flatMap(
       CREATE INDEX follows_follower_id_idx ON follows(follower_id);
       
       CREATE INDEX follows_followed_id_idx ON follows(followed_id);
+
+      CREATE INDEX jwt_tokens_user_id_idx ON jwt_tokens(user_id);
     `
 )

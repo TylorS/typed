@@ -1,4 +1,9 @@
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
+
+export const ArticleId = Schema.nanoId.pipe(
+  Schema.brand("ArticleId"),
+  Schema.description("Unique identifier for the Article")
+)
 
 export const ArticleSlug = Schema.string.pipe(
   Schema.brand("ArticleSlug"),
@@ -25,6 +30,7 @@ export const ArticleTagList = Schema.array(ArticleTag)
 export type ArticleTagList = Schema.Schema.Type<typeof ArticleTagList>
 
 export const Article = Schema.struct({
+  id: ArticleId,
   slug: ArticleSlug,
   title: ArticleTitle,
   description: ArticleDescription,

@@ -1,3 +1,4 @@
+import { Register } from "@/services/Register"
 import { Effect } from "effect"
 import { RouterBuilder } from "effect-http"
 import { NodeSwaggerFiles } from "effect-http-node"
@@ -62,7 +63,11 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
   ),
   RouterBuilder.handle(
     "register",
-    () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
+    ({ body: { user } }) =>
+      Register(user).pipe(
+        Effect.map((user) => ({ status: 200, content: { user } } as const)),
+        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+      )
   ),
   RouterBuilder.handle(
     "unfavorite",

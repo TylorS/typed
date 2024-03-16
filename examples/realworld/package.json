@@ -11,7 +11,7 @@
   "scripts": {
     "build": "vavite",
     "preview": "node ./dist/server/index.mjs",
-    "start": "vite --config ./vite.config.mts serve src"
+    "start": "vite --config ./vite.config.mts serve --force src"
   },
   "keywords": [],
   "author": "Typed contributors",
@@ -37,16 +37,20 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
+    "bcrypt": "^5.1.1",
     "effect": "2.4.7",
     "effect-http": "^0.58.1",
     "effect-http-node": "^0.6.1",
     "effect-log": "^0.30.9",
+    "jsonwebtoken": "^9.0.2",
     "path-to-regexp": "^6.2.1",
     "postgres": "^3.4.3",
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
     "@typed/vite-plugin": "workspace:*",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
     "mock-storage": "^1.1.0",
     "rollup-plugin-visualizer": "^5.12.0",
     "schema-openapi": "^0.33.4",

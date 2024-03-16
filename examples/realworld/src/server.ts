@@ -1,4 +1,5 @@
 import * as Api from "@/api"
+import { Live as ApiLive } from "@/api/infrastructure"
 import { JwtToken } from "@/model"
 import { GetCurrentUser } from "@/services/GetCurrentUser"
 import * as Ui from "@/ui"
@@ -13,7 +14,7 @@ Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.mountApp("/api", Api.server),
   Http.router.provideServiceEffect(CurrentUser.tag, Effect.suspend(() => getCurrentUserFromToken)),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname }),
-  Effect.provide(Api.Live),
+  Effect.provide(ApiLive),
   Node.run
 )
 
