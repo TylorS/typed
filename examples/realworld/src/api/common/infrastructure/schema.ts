@@ -1,4 +1,5 @@
 import * as S from "@/lib/Schema"
+import type { User } from "@/model"
 import {
   ArticleBody,
   ArticleDescription,
@@ -16,6 +17,7 @@ import {
   UserId,
   Username
 } from "@/model"
+import { Option } from "effect"
 
 export const DbUser = S.struct({
   id: UserId,
@@ -27,6 +29,17 @@ export const DbUser = S.struct({
   created_at: S.ValidDateFromSelf,
   updated_at: S.ValidDateFromSelf
 })
+
+export function dbUserToUser(user: DbUser, token: JwtToken): User {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    bio: Option.fromNullable(user.bio),
+    image: Option.fromNullable(user.image),
+    token
+  }
+}
 
 export type DbUser = S.Schema.Type<typeof DbUser>
 

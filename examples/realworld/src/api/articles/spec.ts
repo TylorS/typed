@@ -21,6 +21,7 @@ export const ArticlesSpec = Api.apiGroup("Articles").pipe(
       ]
     },
     {
+      security,
       description: "Get most recent articles from users you follow. Use query parameters to limit. Auth is required."
     }
   ),

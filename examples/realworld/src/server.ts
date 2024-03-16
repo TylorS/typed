@@ -1,4 +1,5 @@
 import * as Api from "@/api"
+import { CurrentJwt } from "@/api/common/infrastructure/CurrentJwt"
 import { Live as ApiLive } from "@/api/infrastructure"
 import { JwtToken } from "@/model"
 import { GetCurrentUser } from "@/services/GetCurrentUser"
@@ -33,7 +34,7 @@ const getCurrentUserFromToken = Effect.gen(function*(_) {
     return yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
   }
   const token = JwtToken(authorization.value.split(" ")[1])
-  const user = yield* _(GetCurrentUser(token), Effect.exit)
+  const user = yield* _(GetCurrentUser(), CurrentJwt.provide(token), Effect.exit)
 
   return yield* _(
     RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.fromExit(user))

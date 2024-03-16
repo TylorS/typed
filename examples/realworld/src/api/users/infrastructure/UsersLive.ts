@@ -1,3 +1,4 @@
+import { getCurrentJwt, verifyJwt } from "@/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
 import {
   ComparePassword,
@@ -5,8 +6,8 @@ import {
   HashPassword,
   HashPasswordLive
 } from "@/api/common/infrastructure/Passwords"
-import { DbJwtToken, DbUser } from "@/api/common/infrastructure/schema"
-import { Email, JwtToken, type User, UserId } from "@/model"
+import { DbJwtToken, DbUser, dbUserToUser } from "@/api/common/infrastructure/schema"
+import { Email, JwtToken, UserId } from "@/model"
 import { Users } from "@/services"
 import { Unauthorized, Unprocessable } from "@/services/errors"
 import type { RegisterInput } from "@/services/Register"
@@ -17,20 +18,10 @@ import { Clock, Config, Effect, Layer, Option } from "effect"
 import jwt from "jsonwebtoken"
 
 export const UsersLive = Users.implement({
-  current: (token) =>
+  current: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
-      const user = yield* _(
-        token,
-        sql.schemaSingleOption(JwtToken, DbUser, (t) =>
-          sql`select * from users where id = (select user_id from jwt_tokens where token = ${t})`)
-      )
-
-      if (Option.isNone(user)) {
-        return yield* _(new Unauthorized())
-      }
-
-      return dbUserToUser(user.value, token)
+      const token = yield* _(getCurrentJwt)
+      return yield* _(verifyJwt(token))
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
@@ -89,7 +80,7 @@ export const UsersLive = Users.implement({
       }
 
       return dbUserToUser(dbUser, token.value.token)
-    }).pipe((_) => catchExpectedErrors(_))
+    }).pipe(catchExpectedErrors)
 }).pipe(
   Layer.provide(HashPasswordLive),
   Layer.provide(ComparePasswordLive)
@@ -158,15 +149,4 @@ function creatJwtTokenForUser(user: DbUser) {
       sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`)
     )
   })
-}
-
-function dbUserToUser(user: DbUser, token: JwtToken): User {
-  return {
-    id: user.id,
-    email: user.email,
-    username: user.username,
-    bio: Option.fromNullable(user.bio),
-    image: Option.fromNullable(user.image),
-    token
-  }
 }
