@@ -10,5 +10,7 @@ import { ConfigProvider, Layer } from "effect"
 export const Live = Layer.mergeAll(ArticlesLive, CommentsLive, ProfilesLive, TagsLive, UsersLive).pipe(
   Layer.provideMerge(DbLive),
   Layer.provideMerge(getRandomValues),
+  // You probably shouldn't use import.meta.env in a real application
+  // as it will leak information into your bundle since Vite replaces these values at build time
   Layer.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env)))
 )
