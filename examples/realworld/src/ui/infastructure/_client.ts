@@ -1,4 +1,6 @@
+import type { JwtToken } from "@/model"
 import { Unauthorized, Unprocessable } from "@/services/errors"
+import { getCurrentJwtToken } from "@/ui/services/CurrentUser"
 import { Effect, Unify } from "effect"
 import type { ClientError } from "effect-http"
 
@@ -42,3 +44,6 @@ export function handleClientRequest<
     })) as any
   )
 }
+
+export const withJwtToken = <A, E, R>(f: (jwtToken: JwtToken) => Effect.Effect<A, E, R>) =>
+  Effect.flatMap(getCurrentJwtToken, f)

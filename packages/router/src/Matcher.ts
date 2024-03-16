@@ -65,13 +65,13 @@ export interface RouteMatcher<out A, out E, out R> {
     >
   }
 
-  readonly redirect: <const P extends string>(
-    route: Route.Route<P> | P,
+  readonly redirect: <const P extends string, B = Path.ParamsOf<P>, E2 = never, R2 = never>(
+    route: P | Route.RouteInput<P, B, E2, R2>,
     ...params: Path.ParamsList<P>
   ) => Fx.Fx<
     A,
-    Exclude<E, Navigation.RedirectError>,
-    Navigation.Navigation | CurrentRoute | CurrentEnvironment | R | Scope.Scope
+    Exclude<E | E2, Navigation.RedirectError>,
+    R | Navigation.Navigation | CurrentEnvironment | CurrentRoute | Scope.Scope
   >
 }
 
@@ -173,12 +173,12 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
     }))
   }
 
-  redirect<const P extends string>(
-    route: P | Route.Route<P>,
+  redirect<const P extends string, B = Path.ParamsOf<P>, E2 = never, R2 = never>(
+    route: P | Route.RouteInput<P, B, E2, R2>,
     ...params: Path.ParamsList<P>
   ): Fx.Fx<
     A,
-    Exclude<E, Navigation.RedirectError>,
+    Exclude<E | E2, Navigation.RedirectError>,
     R | Navigation.Navigation | CurrentEnvironment | CurrentRoute | Scope.Scope
   > {
     return this.notFound(() =>

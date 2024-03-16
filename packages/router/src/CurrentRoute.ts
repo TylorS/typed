@@ -13,7 +13,7 @@ import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
 
-import type { ParamsList } from "@typed/path"
+import type { ParamsList, ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"
 
 /**
@@ -111,11 +111,11 @@ const makeHref_ = (
 /**
  * @since 1.0.0
  */
-export function makeHref<const P extends string>(
-  pathOrRoute: Route.Route<P> | P,
+export function makeHref<const P extends string, A = ParamsOf<P>, E = never, R = never>(
+  pathOrRoute: Route.RouteInput<P, A, E, R> | P,
   ...params: ParamsList<P>
 ): RefSubject.Filtered<string, never, Navigation | CurrentRoute> {
-  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
+  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : Route.asRouteGuard(pathOrRoute).route
 
   return RefSubject.filterMapEffect(
     CurrentPath,
@@ -146,11 +146,11 @@ const isActive_ = (
 /**
  * @since 1.0.0
  */
-export function isActive<const P extends string>(
-  pathOrRoute: Route.Route<P> | P,
+export function isActive<const P extends string, A = ParamsOf<P>, E = never, R = never>(
+  pathOrRoute: Route.RouteInput<P, A, E, R> | P,
   ...[params]: ParamsList<P>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute> {
-  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : pathOrRoute
+  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : Route.asRouteGuard(pathOrRoute).route
 
   return RefSubject.mapEffect(
     CurrentPath,
