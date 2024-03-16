@@ -21,7 +21,10 @@ export const UsersLive = Users.implement({
   current: () =>
     Effect.gen(function*(_) {
       const token = yield* _(getCurrentJwt)
-      return yield* _(verifyJwt(token))
+      const user = yield* _(verifyJwt(token))
+      const dbUser = yield* _(getDbUserByEmail(user.email), Effect.flatten, Effect.catchAll(() => new Unauthorized()))
+
+      return dbUserToUser(dbUser, token)
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
@@ -62,6 +65,9 @@ export const UsersLive = Users.implement({
     }).pipe(catchExpectedErrors),
   update: (user) =>
     Effect.gen(function*(_) {
+      const token = yield* _(getCurrentJwt)
+      yield* _(verifyJwt(token))
+
       const sql = yield* _(Pg.tag)
       const now = new Date(yield* _(Clock.currentTimeMillis))
       const [rawUser] = yield* _(
@@ -74,12 +80,8 @@ export const UsersLive = Users.implement({
         returning *;`
       )
       const dbUser = yield* _(rawUser, Schema.decodeUnknown(DbUser))
-      const token = yield* _(getUnexpiredJwtTokenForUser(dbUser))
-      if (Option.isNone(token)) {
-        return yield* _(new Unauthorized())
-      }
 
-      return dbUserToUser(dbUser, token.value.token)
+      return dbUserToUser(dbUser, token)
     }).pipe(catchExpectedErrors)
 }).pipe(
   Layer.provide(HashPasswordLive),
@@ -136,7 +138,8 @@ function creatJwtTokenForUser(user: DbUser) {
     const id = yield* _(makeNanoId)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
-    const token = JwtToken(jwt.sign(user, secret, { expiresIn: "7d" }))
+    const { password: __, ...jwtUser } = user
+    const token = JwtToken(jwt.sign(jwtUser, secret, { expiresIn: "7d" }))
     const jwtToken: DbJwtToken = {
       id,
       user_id: user.id,

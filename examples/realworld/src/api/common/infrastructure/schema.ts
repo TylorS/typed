@@ -30,7 +30,7 @@ export const DbUser = S.struct({
   updated_at: S.ValidDateFromSelf
 })
 
-export function dbUserToUser(user: DbUser, token: JwtToken): User {
+export function dbUserToUser(user: Omit<DbUser, "password">, token: JwtToken): User {
   return {
     id: user.id,
     email: user.email,

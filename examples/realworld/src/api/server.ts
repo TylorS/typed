@@ -225,11 +225,15 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "updateUser",
-    ({ body: { user } }) =>
+    ({ body: { user } }, { jwtToken }) =>
       UpdateUser(user).pipe(
         Effect.map((user) => ({ status: 200, content: { user } } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
-        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+        Effect.catchTag(
+          "Unprocessable",
+          (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
+        ),
+        CurrentJwt.provide(jwtToken.token)
       )
   ),
   RouterBuilder.getRouter
