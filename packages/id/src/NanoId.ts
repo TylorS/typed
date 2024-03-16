@@ -67,14 +67,10 @@ const numToCharacter = (byte: number): string => {
   }
 }
 
-const characters = Array.from({ length: 64 }, (_, i) => {
-  return numToCharacter(i)
-})
-
 /**
  * @since 1.0.0
  */
-export const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) => id + characters[x], ""))
+export const nanoId = (seed: NanoIdSeed): NanoId => NanoId(seed.reduce((id, x) => id + numToCharacter(x), ""))
 
 /**
  * @since 1.0.0

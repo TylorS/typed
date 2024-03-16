@@ -8,7 +8,7 @@ export const HashPassword = Context.Fn<(password: Password) => Effect.Effect<Pas
 export const HashPasswordLive = HashPassword.implement((password) =>
   Effect.gen(function*(_) {
     const bcrypt = yield* _(Effect.promise(() => import("bcrypt")))
-    const hash = yield* _(Effect.promise(() => bcrypt.hash(Secret.value(password), 1000)))
+    const hash = yield* _(Effect.promise(() => bcrypt.hash(Secret.value(password), 10)))
     return PasswordHash(Secret.fromString(hash))
   })
 )

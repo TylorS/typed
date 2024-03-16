@@ -5,6 +5,7 @@ import { Users } from "@/services"
 import { Unprocessable } from "@/services/errors"
 import type { RegisterInput } from "@/services/Register"
 import { TreeFormatter } from "@effect/schema"
+import type { ParseError } from "@effect/schema/ParseResult"
 import * as Pg from "@sqlfx/pg"
 import type { SchemaError, SqlError } from "@sqlfx/pg/Error"
 import { makeNanoId } from "@typed/id"
@@ -21,14 +22,10 @@ export const UsersLive = Users.implement({
     Effect.gen(function*(_) {
       const sql = yield* _(Pg.tag)
       const inputUser = yield* _(dbUserFromRegisterInput(input))
-      const { token } = yield* _(creatJwtTokenForUser(inputUser))
       const user = yield* _(
-        sql.schemaSingle(
-          DbUser,
-          DbUser,
-          (u) => sql`insert into users ${sql.insert(u)}`
-        )(inputUser)
+        sql.schemaSingle(DbUser, DbUser, (t) => sql`insert into users ${sql.insert(t)} returning *;`)(inputUser)
       )
+      const { token } = yield* _(creatJwtTokenForUser(user))
 
       return dbUserToUser(user, token)
     }).pipe(
@@ -78,8 +75,11 @@ function creatJwtTokenForUser(user: DbUser) {
       token,
       created_at: now
     }
+
     return yield* _(
-      sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)}`)(jwtToken)
+      sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`)(
+        jwtToken
+      )
     )
   })
 }
@@ -95,10 +95,11 @@ function dbUserToUser(user: DbUser, token: JwtToken): User {
   }
 }
 
-function toUnprocessable(error: SqlError | SchemaError | ConfigError.ConfigError) {
+function toUnprocessable(error: SqlError | ParseError | SchemaError | ConfigError.ConfigError) {
   switch (error._tag) {
     case "SqlError":
       return new Unprocessable({ errors: [error.message] })
+    case "ParseError":
     case "SchemaError":
       return new Unprocessable({ errors: [TreeFormatter.formatIssue(error.error)] })
     default: // ConfigError

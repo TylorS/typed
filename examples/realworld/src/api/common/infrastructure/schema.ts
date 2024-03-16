@@ -24,8 +24,8 @@ export const DbUser = S.struct({
   password: PasswordHash,
   bio: S.nullable(Bio),
   image: S.nullable(Image),
-  created_at: S.DateFromString,
-  updated_at: S.DateFromString
+  created_at: S.ValidDateFromSelf,
+  updated_at: S.ValidDateFromSelf
 })
 
 export type DbUser = S.Schema.Type<typeof DbUser>
@@ -37,8 +37,8 @@ export const DbArticle = S.struct({
   title: ArticleTitle,
   description: ArticleDescription,
   body: ArticleBody,
-  created_at: S.DateFromString,
-  updated_at: S.DateFromString
+  created_at: S.ValidDateFromSelf,
+  updated_at: S.ValidDateFromSelf
 })
 
 export type DbArticle = S.Schema.Type<typeof DbArticle>
@@ -48,8 +48,8 @@ export const DbComment = S.struct({
   article_id: ArticleId,
   author_id: UserId,
   body: CommentBody,
-  created_at: S.DateFromString,
-  updated_at: S.DateFromString
+  created_at: S.ValidDateFromSelf,
+  updated_at: S.ValidDateFromSelf
 })
 
 export type DbComment = S.Schema.Type<typeof DbComment>
@@ -86,7 +86,7 @@ export const DbJwtToken = S.struct({
   id: S.nanoId,
   user_id: UserId,
   token: JwtToken,
-  created_at: S.DateFromString
+  created_at: S.ValidDateFromSelf
 })
 
 export type DbJwtToken = S.Schema.Type<typeof DbJwtToken>

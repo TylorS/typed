@@ -1,6 +1,6 @@
 import * as Pg from "@sqlfx/pg"
 import * as Migrator from "@sqlfx/pg/Migrator"
-import { Config, ConfigProvider, Layer } from "effect"
+import { Config, Layer } from "effect"
 
 const PgLive = Pg.makeLayer(Config.all({
   host: Config.string("VITE_DATABASE_HOST"),
@@ -10,18 +10,7 @@ const PgLive = Pg.makeLayer(Config.all({
   password: Config.secret("VITE_DATABASE_PASSWORD")
 }))
 
-const MigrationsLive = Layer.provide(
-  Migrator.makeLayer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*.ts")) }),
+export const DbLive = Layer.provideMerge(
+  Migrator.makeLayer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
   PgLive
-)
-
-export const DbLive = Layer.mergeAll(
-  MigrationsLive,
-  PgLive
-).pipe(
-  Layer.provide(
-    // Using import.meta.env directly like this is not recommended in production
-    // as your environment variables will be inlined in the code, but here it is for convenience.
-    Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env))
-  )
 )

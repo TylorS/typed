@@ -1,10 +1,9 @@
-import { Register } from "@/services/Register"
+import { Users } from "@/services"
 import { Effect } from "effect"
 import { RouterBuilder } from "effect-http"
-import { NodeSwaggerFiles } from "effect-http-node"
 import { Spec } from "./spec"
 
-export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/docs" }).pipe(
+export const server = RouterBuilder.make(Spec, {}).pipe(
   RouterBuilder.handle(
     "createArticle",
     () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
@@ -59,15 +58,27 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
   ),
   RouterBuilder.handle(
     "login",
-    () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
+    ({ body: { user } }) => {
+      return Users.login(user).pipe(
+        Effect.map((user) => ({ status: 200, content: { user } } as const)),
+        Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
+        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+      )
+    }
   ),
   RouterBuilder.handle(
     "register",
-    ({ body: { user } }) =>
-      Register(user).pipe(
-        Effect.map((user) => ({ status: 200, content: { user } } as const)),
-        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
-      )
+    ({ body: { user } }) => {
+      return Effect.log(user).pipe(Effect.zipRight(
+        Users.register(user).pipe(
+          Effect.map((user) => ({ status: 200, content: { user } } as const)),
+          Effect.catchTag(
+            "Unprocessable",
+            (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
+          )
+        )
+      ))
+    }
   ),
   RouterBuilder.handle(
     "unfavorite",
@@ -85,7 +96,5 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
     "updateUser",
     () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
   ),
-  RouterBuilder.build
-).pipe(
-  Effect.provide(NodeSwaggerFiles.SwaggerFilesLive)
+  RouterBuilder.getRouter
 )

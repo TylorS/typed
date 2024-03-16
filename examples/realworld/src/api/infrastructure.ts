@@ -5,7 +5,7 @@ import { ProfilesLive } from "@/api/profiles/infrastructure/ProfilesLive"
 import { TagsLive } from "@/api/tags/infrastructure/TagsLive"
 import { UsersLive } from "@/api/users/infrastructure/UsersLive"
 import { getRandomValues } from "@typed/id"
-import { Layer } from "effect"
+import { ConfigProvider, Layer } from "effect"
 
 export const Live = Layer.mergeAll(
   ArticlesLive,
@@ -15,5 +15,6 @@ export const Live = Layer.mergeAll(
   UsersLive
 ).pipe(
   Layer.provideMerge(DbLive),
-  Layer.provideMerge(getRandomValues)
+  Layer.provideMerge(getRandomValues),
+  Layer.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env)))
 )
