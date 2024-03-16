@@ -12,3 +12,14 @@ export const HashPasswordLive = HashPassword.implement((password) =>
     return PasswordHash(Secret.fromString(hash))
   })
 )
+
+export const ComparePassword = Context.Fn<(password: Password, hash: PasswordHash) => Effect.Effect<boolean>>()(
+  "ComparePassword"
+)
+
+export const ComparePasswordLive = ComparePassword.implement((password, hash) =>
+  Effect.gen(function*(_) {
+    const bcrypt = yield* _(Effect.promise(() => import("bcrypt")))
+    return yield* _(Effect.promise(() => bcrypt.compare(Secret.value(password), Secret.value(hash))))
+  })
+)

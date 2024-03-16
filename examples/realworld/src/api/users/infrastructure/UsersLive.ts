@@ -1,47 +1,109 @@
-import { HashPassword, HashPasswordLive } from "@/api/common/infrastructure/HashPassword"
+import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
+import {
+  ComparePassword,
+  ComparePasswordLive,
+  HashPassword,
+  HashPasswordLive
+} from "@/api/common/infrastructure/Passwords"
 import { DbJwtToken, DbUser } from "@/api/common/infrastructure/schema"
-import { JwtToken, type User, UserId } from "@/model"
+import { Email, JwtToken, type User, UserId } from "@/model"
 import { Users } from "@/services"
-import { Unprocessable } from "@/services/errors"
+import { Unauthorized, Unprocessable } from "@/services/errors"
 import type { RegisterInput } from "@/services/Register"
-import { TreeFormatter } from "@effect/schema"
-import type { ParseError } from "@effect/schema/ParseResult"
+import { Schema } from "@effect/schema"
 import * as Pg from "@sqlfx/pg"
-import type { SchemaError, SqlError } from "@sqlfx/pg/Error"
 import { makeNanoId } from "@typed/id"
-import type { ConfigError } from "effect"
 import { Clock, Config, Effect, Layer, Option } from "effect"
 import jwt from "jsonwebtoken"
 
 export const UsersLive = Users.implement({
-  current: () =>
+  current: (token) =>
     Effect.gen(function*(_) {
-      return yield* _(Effect.dieMessage(`Not implemented`))
-    }),
+      const sql = yield* _(Pg.tag)
+      const user = yield* _(
+        token,
+        sql.schemaSingleOption(JwtToken, DbUser, (t) =>
+          sql`select * from users where id = (select user_id from jwt_tokens where token = ${t})`)
+      )
+
+      if (Option.isNone(user)) {
+        return yield* _(new Unauthorized())
+      }
+
+      return dbUserToUser(user.value, token)
+    }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
       const sql = yield* _(Pg.tag)
+      const existingUser = yield* _(getDbUserByEmail(input.email))
+      if (Option.isSome(existingUser)) {
+        return yield* _(new Unprocessable({ errors: ["Email already exists"] }))
+      }
+
       const inputUser = yield* _(dbUserFromRegisterInput(input))
       const user = yield* _(
-        sql.schemaSingle(DbUser, DbUser, (t) => sql`insert into users ${sql.insert(t)} returning *;`)(inputUser)
+        inputUser,
+        sql.schemaSingle(DbUser, DbUser, (t) => sql`insert into users ${sql.insert(t)} returning *;`)
       )
       const { token } = yield* _(creatJwtTokenForUser(user))
 
       return dbUserToUser(user, token)
-    }).pipe(
-      Effect.catchAll(toUnprocessable)
-    ),
-  login: () =>
+    }).pipe(catchExpectedErrors),
+  login: (input) =>
     Effect.gen(function*(_) {
-      return yield* _(Effect.dieMessage(`Not implemented`))
-    }),
-  update: () =>
+      const user = yield* _(getDbUserByEmail(input.email))
+      if (Option.isNone(user)) {
+        return yield* _(new Unauthorized())
+      }
+
+      const dbUser = user.value
+      if (!(yield* _(ComparePassword(input.password, dbUser.password)))) {
+        return yield* _(new Unauthorized())
+      }
+
+      const existingToken = yield* _(getUnexpiredJwtTokenForUser(dbUser))
+      if (Option.isSome(existingToken)) {
+        return dbUserToUser(dbUser, existingToken.value.token)
+      }
+
+      const { token } = yield* _(creatJwtTokenForUser(dbUser))
+      return dbUserToUser(dbUser, token)
+    }).pipe(catchExpectedErrors),
+  update: (user) =>
     Effect.gen(function*(_) {
-      return yield* _(Effect.dieMessage(`Not implemented`))
-    })
+      const sql = yield* _(Pg.tag)
+      const now = new Date(yield* _(Clock.currentTimeMillis))
+      const [rawUser] = yield* _(
+        sql`update users set 
+        ${Option.match(user.username, { onNone: () => sql``, onSome: (t) => sql`username = ${t},` })}
+        ${Option.match(user.bio, { onNone: () => sql``, onSome: (t) => sql`bio = ${t},` })}
+        ${Option.match(user.image, { onNone: () => sql``, onSome: (t) => sql`image = ${t},` })}
+        updated_at = ${now}
+        where email = ${user.email}
+        returning *;`
+      )
+      const dbUser = yield* _(rawUser, Schema.decodeUnknown(DbUser))
+      const token = yield* _(getUnexpiredJwtTokenForUser(dbUser))
+      if (Option.isNone(token)) {
+        return yield* _(new Unauthorized())
+      }
+
+      return dbUserToUser(dbUser, token.value.token)
+    }).pipe((_) => catchExpectedErrors(_))
 }).pipe(
-  Layer.provide(HashPasswordLive)
+  Layer.provide(HashPasswordLive),
+  Layer.provide(ComparePasswordLive)
 )
+
+function getDbUserByEmail(email: Email) {
+  return Effect.gen(function*(_) {
+    const sql = yield* _(Pg.tag)
+    return yield* _(
+      email,
+      sql.schemaSingleOption(Email, DbUser, (t) => sql`select * from users where email = ${t}`)
+    )
+  }).pipe(Effect.catchAllCause(() => Effect.succeedNone))
+}
 
 function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
   return Effect.gen(function*(_) {
@@ -62,13 +124,28 @@ function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
   })
 }
 
+function getUnexpiredJwtTokenForUser(user: DbUser) {
+  return Effect.gen(function*(_) {
+    const sql = yield* _(Pg.tag)
+    const now = new Date(yield* _(Clock.currentTimeMillis))
+    return yield* _(
+      user.id,
+      sql.schemaSingleOption(
+        UserId,
+        DbJwtToken,
+        (t) => sql`select * from jwt_tokens where user_id = ${t} and created_at > ${now} - interval '7 days'`
+      )
+    )
+  }).pipe(Effect.catchAllCause(() => Effect.succeedNone))
+}
+
 function creatJwtTokenForUser(user: DbUser) {
   return Effect.gen(function*(_) {
     const sql = yield* _(Pg.tag)
     const id = yield* _(makeNanoId)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
-    const token = JwtToken(jwt.sign(user, secret))
+    const token = JwtToken(jwt.sign(user, secret, { expiresIn: "7d" }))
     const jwtToken: DbJwtToken = {
       id,
       user_id: user.id,
@@ -77,9 +154,8 @@ function creatJwtTokenForUser(user: DbUser) {
     }
 
     return yield* _(
-      sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`)(
-        jwtToken
-      )
+      jwtToken,
+      sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`)
     )
   })
 }
@@ -92,17 +168,5 @@ function dbUserToUser(user: DbUser, token: JwtToken): User {
     bio: Option.fromNullable(user.bio),
     image: Option.fromNullable(user.image),
     token
-  }
-}
-
-function toUnprocessable(error: SqlError | ParseError | SchemaError | ConfigError.ConfigError) {
-  switch (error._tag) {
-    case "SqlError":
-      return new Unprocessable({ errors: [error.message] })
-    case "ParseError":
-    case "SchemaError":
-      return new Unprocessable({ errors: [TreeFormatter.formatIssue(error.error)] })
-    default: // ConfigError
-      return new Unprocessable({ errors: [error.toString()] })
   }
 }

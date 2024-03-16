@@ -24,7 +24,7 @@ export const UsersSpec = Api.apiGroup("User and Authentication").pipe(
   ),
   Api.get(
     "getCurrentUser",
-    Routes.users.path,
+    Routes.user.path,
     {
       response: [
         { status: 200, content: Schema.struct({ user: User }) },
@@ -47,7 +47,7 @@ export const UsersSpec = Api.apiGroup("User and Authentication").pipe(
   }),
   Api.put(
     "updateUser",
-    Routes.users.path,
+    Routes.user.path,
     {
       request: {
         body: Schema.struct({ user: UpdateUserInput })

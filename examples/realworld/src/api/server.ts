@@ -1,4 +1,6 @@
 import { Users } from "@/services"
+import { GetCurrentUser } from "@/services/GetCurrentUser"
+import { UpdateUser } from "@/services/UpdateUser"
 import { Effect } from "effect"
 import { RouterBuilder } from "effect-http"
 import { Spec } from "./spec"
@@ -42,7 +44,12 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "getCurrentUser",
-    () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
+    (_, { jwtToken }) =>
+      GetCurrentUser(jwtToken.token).pipe(
+        Effect.map((user) => ({ status: 200, content: { user } } as const)),
+        Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
+        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+      )
   ),
   RouterBuilder.handle(
     "getFeed",
@@ -68,17 +75,14 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "register",
-    ({ body: { user } }) => {
-      return Effect.log(user).pipe(Effect.zipRight(
-        Users.register(user).pipe(
-          Effect.map((user) => ({ status: 200, content: { user } } as const)),
-          Effect.catchTag(
-            "Unprocessable",
-            (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
-          )
+    ({ body: { user } }) =>
+      Users.register(user).pipe(
+        Effect.map((user) => ({ status: 200, content: { user } } as const)),
+        Effect.catchTag(
+          "Unprocessable",
+          (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)
         )
-      ))
-    }
+      )
   ),
   RouterBuilder.handle(
     "unfavorite",
@@ -94,7 +98,12 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "updateUser",
-    () => Effect.succeed({ status: 422, content: { errors: ["Not implemented"] } } as const)
+    ({ body: { user } }) =>
+      UpdateUser(user).pipe(
+        Effect.map((user) => ({ status: 200, content: { user } } as const)),
+        Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
+        Effect.catchTag("Unprocessable", (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const))
+      )
   ),
   RouterBuilder.getRouter
 )
