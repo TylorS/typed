@@ -89,6 +89,7 @@ export function toHttpRouter<
     E | E2 | GuardsNotMatched
   > = Http.router.empty
   const guardsByPath = ReadonlyArray.groupBy(matcher.guards, ({ guard }) => guard.route.path)
+  const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
 
   for (const [path, guards] of Object.entries(guardsByPath)) {
     const route = guards[0].guard.route
@@ -114,7 +115,6 @@ export function toHttpRouter<
 
               const ref = yield* _(RefSubject.of(match.value))
               const content = guard.match(RefSubject.take(ref, 1))
-              const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
               const params = { content, request, head, script }
               const template = Fx.unify(options?.layout ? options.layout(params) : content).pipe(
                 Fx.withSpan("render_template"),

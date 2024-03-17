@@ -1,6 +1,6 @@
 import * as Fx from "@typed/fx"
 import type { RenderEvent, RenderQueue, RenderTemplate } from "@typed/template"
-import { html } from "@typed/template"
+import { HtmlRenderEvent } from "@typed/template"
 import type { AssetManifest } from "@typed/vite-plugin"
 import type { Scope } from "effect"
 
@@ -25,15 +25,24 @@ export function getHeadAndScript(
   const modulePreloads = [file, ...imports.map((i) => manifest[i]?.file ?? i)]
   const styles = [...css, ...imports.flatMap((i) => manifest[i]?.css ?? [])]
 
+  const headHtml = [
+    ...modulePreloads.map((src) =>
+      makePreloadLink(useScript ? "preload" : "modulepreload", src, useScript ? "script" : undefined)
+    ),
+    ...styles.map(makeStylesheetLink)
+  ].join("\n")
+  const scriptHtml = `<script ${useScript ? "" : `type="module"`} src=${file}></script>`
+
   return {
-    head: Fx.mergeOrdered([
-      ...modulePreloads.map((src) =>
-        html`<link rel="${useScript ? "preload" : "modulepreload"}" as=${
-          useScript ? "script" : undefined
-        } href=${src} />`
-      ),
-      ...styles.map((href) => html`<link rel="stylesheet" href=${href} />`)
-    ]),
-    script: html`<script type=${useScript ? undefined : "module"} src=${file}></script>`
+    head: Fx.succeed(HtmlRenderEvent(headHtml)),
+    script: Fx.succeed(HtmlRenderEvent(scriptHtml))
   }
+}
+
+function makePreloadLink(rel: string, href: string, as?: string) {
+  return `<link rel=${rel} href=${href} ${as ? `as="${as}"` : ""} />`
+}
+
+function makeStylesheetLink(href: string) {
+  return `<link rel="stylesheet" href=${href} />`
 }
