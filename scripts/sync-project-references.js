@@ -9,10 +9,12 @@ main().catch((err) => {
 })
 
 async function main() {
-  const packages = (await Promise.all([readAllPackages(), readAllExamples()])).flat()
+  const pkgs = await readAllPackages()
+  const examples = await readAllExamples()
+  const packages = [...pkgs, ...examples]
 
   await Promise.all([
-    updateRootReferences(packages),
+    updateRootReferences(pkgs),
     ...packages.map(updateProjectReferences),
   ])
 }
@@ -60,4 +62,5 @@ function findTypedReferencesFromPackageJson(packageJson) {
   return Object.entries(allDependencies)
     .filter(([name, version]) => name.startsWith('@typed/') && version === 'workspace:*')
     .map(([name]) => name.replace('@typed/', ''))
+    .filter((_) => _ !== 'vite-plugin-types')
 }

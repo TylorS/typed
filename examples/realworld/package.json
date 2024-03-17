@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@typed/vite-plugin": "workspace:*",
+    "@typed/vite-plugin-types": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "mock-storage": "^1.1.0",

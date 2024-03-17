@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-/// <reference types="@typed/vite-plugin/virtual-modules" />
+/// <reference types="@typed/vite-plugin-types" />
 
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import * as Http from "@effect/platform/HttpServer"
@@ -13,7 +13,7 @@ import { dual } from "effect/Function"
 import type { RunForkOptions } from "effect/Runtime"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
-import typedOptions from "virtual:typed-options"
+import * as typedOptions from "virtual:typed-options"
 import * as CoreServices from "./CoreServices.js"
 import { staticFiles } from "./Platform.js"
 

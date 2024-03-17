@@ -1,0 +1,32 @@
+{
+  "name": "@typed/vite-plugin-types",
+  "version": "0.0.0",
+  "description": "",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "version": "changeset version && pnpm install --no-frozen-lockfile",
+    "release": "pnpm run build && changeset publish"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "vite": "^5.1.6"
+  },
+  "peerDependencies": {
+    "vite": "^5.1.6"
+  }
+}

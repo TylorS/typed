@@ -16,3 +16,5 @@ export const Live = Layer.mergeAll(ArticlesLive, CommentsLive, ProfilesLive, Tag
   Layer.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env))),
   Layer.provideMerge(NodeSwaggerFiles.SwaggerFilesLive)
 )
+
+export * from "./common/infrastructure/CurrentJwt"

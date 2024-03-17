@@ -1,3 +1,6 @@
+/// <reference types="vite/client" />
+/// <reference types="@typed/vite-plugin-types" />
+
 /**
  * @since 1.0.0
  */
@@ -13,7 +16,7 @@ import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import assetManifest from "virtual:asset-manifest"
-import typedOptions from "virtual:typed-options"
+import * as typedOptions from "virtual:typed-options"
 import { getHeadAndScript } from "./Vite.js"
 
 import type { PlatformError } from "@effect/platform/Error"

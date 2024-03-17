@@ -33,10 +33,12 @@ export const ReadJwtToken = Context.Fn<() => Effect.Effect<Option.Option<JwtToke
 
 export const RemoveJwtToken = Context.Fn<() => Effect.Effect<void>>()("RemoveJwtToken")
 
-export const getCurrentUser = RefAsyncData.runAsyncData(
+export const getCurrentUserData = RefAsyncData.runAsyncData(
   CurrentUser,
   Effect.tapBoth(GetCurrentUser(), {
     onFailure: () => RemoveJwtToken(),
     onSuccess: (user) => SaveJwtToken(user.token)
   })
 )
+
+export const getOptionalCurrentUser = Effect.map(getCurrentUserData, AsyncData.toOption)

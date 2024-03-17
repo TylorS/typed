@@ -16,7 +16,7 @@
     "types": [
       "node",
       "vite/client",
-      "@typed/vite-plugin/virtual-modules"
+      "@typed/vite-plugin-types"
     ]
   },
   "include": [

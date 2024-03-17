@@ -58,6 +58,7 @@
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
     "@typed/vite-plugin": "workspace:*",
+    "@typed/vite-plugin-types": "workspace:*",
     "effect": "^2.4.7",
     "vavite": "^4.1.1"
   },

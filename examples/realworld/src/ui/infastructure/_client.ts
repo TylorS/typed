@@ -1,6 +1,6 @@
 import type { JwtToken } from "@/model"
+import { getCurrentJwtToken } from "@/services/CurrentUser"
 import { Unauthorized, Unprocessable } from "@/services/errors"
-import { getCurrentJwtToken } from "@/ui/services/CurrentUser"
 import { Effect, Unify } from "effect"
 import type { ClientError } from "effect-http"
 

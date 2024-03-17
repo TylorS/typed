@@ -650,3 +650,42 @@ export function dataEqual<A, E>(first: AsyncData<A, E>, second: AsyncData<A, E>)
       isOptimistic(second) && Equal.equals(o1.value, second.value) && dataEqual(o1.previous, second.previous)
   })
 }
+
+/**
+ * @since 1.0.0
+ */
+export function toOption<A, E>(data: AsyncData<A, E>): Option.Option<A> {
+  return match(data, {
+    NoData: Option.none,
+    Loading: Option.none,
+    Failure: Option.none,
+    Success: Option.some,
+    Optimistic: Option.some
+  })
+}
+
+/**
+ * @since 1.0.0
+ */
+export function toOptionCause<A, E>(data: AsyncData<A, E>): Option.Option<Cause.Cause<E>> {
+  return match(data, {
+    NoData: Option.none,
+    Loading: Option.none,
+    Failure: Option.some,
+    Success: Option.none,
+    Optimistic: Option.none
+  })
+}
+
+/**
+ * @since 1.0.0
+ */
+export function toOptionError<A, E>(data: AsyncData<A, E>): Option.Option<E> {
+  return match(data, {
+    NoData: Option.none,
+    Loading: Option.none,
+    Failure: Cause.failureOption,
+    Success: Option.none,
+    Optimistic: Option.none
+  })
+}

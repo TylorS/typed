@@ -61,7 +61,15 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
                 build: {
                   outDir: clientOutputDirectory,
                   rollupOptions: { input: options.clientEntry }
-                }
+                },
+                plugins: [
+                  compression(),
+                  visualizer({
+                    gzipSize: true,
+                    filename: join(clientOutputDirectory, ".vite/dependency-visualizer.html"),
+                    title: "Dependency Visualizer"
+                  })
+                ]
               }
             },
             {
@@ -79,12 +87,6 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
       }
     },
     tsconfigPaths({ projects: [tsconfig] }),
-    compression(),
-    visualizer({
-      gzipSize: true,
-      filename: join(clientOutputDirectory, ".vite/dependency-visualizer.html"),
-      title: "Dependency Visualizer"
-    }),
     vavite({
       serverEntry: options.serverEntry,
       serveClientAssetsInDev: true,
@@ -153,7 +155,10 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
     },
     async load(id) {
       if (id === "virtual:typed-options") {
-        return `export default ${JSON.stringify(options, null, 2)}`
+        const entries = Object.entries(options)
+        const lines = entries.map(([key, value]) => `export const ${key} = "${value}"`)
+
+        return lines.join("\n") + "\n"
       }
     }
   }

@@ -1,23 +1,21 @@
 import * as Api from "@/api"
-import { CurrentJwt } from "@/api/common/infrastructure/CurrentJwt"
-import { Live as ApiLive } from "@/api/infrastructure"
+import { CurrentJwt, Live } from "@/api/infrastructure"
 import { JwtToken } from "@/model"
-import { GetCurrentUser } from "@/services/GetCurrentUser"
+import { CurrentUser, Users } from "@/services"
 import * as Ui from "@/ui"
-import { CurrentUser } from "@/ui/services/CurrentUser"
 import type { HttpServer } from "@effect/platform"
 import * as Http from "@effect/platform/HttpServer"
 import { AsyncData, RefSubject } from "@typed/core"
 import * as Node from "@typed/core/Node"
-import * as Platform from "@typed/core/Platform"
+import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 
-Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
+toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.mount("/api", Api.server),
   withCurrentUserFromHeaders,
-  Effect.provide(ApiLive),
+  Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
-  Node.hot(import.meta.hot)
+  Node.run
 )
 
 function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
@@ -31,6 +29,7 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
     if (Option.isNone(token)) {
       return yield* _(
         app,
+        // CurrentUser is the client representation of the current user
         CurrentUser.tag.provideEffect(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
       )
     }
@@ -38,7 +37,11 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
     // Otherwise, provide the app with the current user and token
     return yield* _(
       app,
-      CurrentUser.tag.provideEffect(RefSubject.of(AsyncData.fromExit(yield* _(Effect.exit(GetCurrentUser()))))),
+      CurrentUser.tag.provideEffect(
+        // A RefSubject is lazily-instantiated, so this Service will not be called unless the app needs it
+        RefSubject.make(Users.current().pipe(Effect.exit, Effect.map(AsyncData.fromExit)))
+      ),
+      // CurrentJwt is the server representation of the current user
       CurrentJwt.provide(token.value)
     )
   })

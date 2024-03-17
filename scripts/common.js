@@ -13,7 +13,7 @@ exports.readAllPackageNames = async function readAllPackageNames() {
   return dir
     .filter((_) => _.isDirectory())
     .map((_) => _.name)
-    .filter((_) => _ !== 'tsconfig')
+    .filter((_) => !(['tsconfig', 'vite-plugin-types'].includes(_)))
 }
 
 exports.readAllExampleNames = async function readAllExampleNames() {

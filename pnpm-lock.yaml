@@ -286,6 +286,9 @@ importers:
       '@typed/vite-plugin':
         specifier: workspace:*
         version: link:../../packages/vite-plugin/dist
+      '@typed/vite-plugin-types':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin-types
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
@@ -564,6 +567,9 @@ importers:
       '@typed/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin/dist
+      '@typed/vite-plugin-types':
+        specifier: workspace:*
+        version: link:../vite-plugin-types
       effect:
         specifier: ^2.4.7
         version: 2.4.7
@@ -918,6 +924,9 @@ importers:
 
   packages/vite-plugin:
     dependencies:
+      '@typed/vite-plugin-types':
+        specifier: workspace:*
+        version: link:../vite-plugin-types
       rollup-plugin-visualizer:
         specifier: ^5.12.0
         version: 5.12.0(rollup@4.13.0)
@@ -938,6 +947,12 @@ importers:
         specifier: ^5.1.6
         version: 5.1.6(@types/node@20.11.28)(terser@5.29.2)
     publishDirectory: dist
+
+  packages/vite-plugin-types:
+    devDependencies:
+      vite:
+        specifier: ^5.1.6
+        version: 5.1.6(@types/node@20.11.28)(terser@5.29.2)
 
   packages/wire:
     publishDirectory: dist
