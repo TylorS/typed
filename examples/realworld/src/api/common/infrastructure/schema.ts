@@ -76,6 +76,8 @@ export type DbArticle = S.Schema.Type<typeof DbArticle>
 
 export const DbProfile = DbUser.pipe(S.pick("username", "email", "bio", "image"))
 
+export type DbProfile = S.Schema.Type<typeof DbProfile>
+
 const DbProfileJoin = S.struct({
   author_username: Username,
   author_email: Email,

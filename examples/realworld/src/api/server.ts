@@ -44,8 +44,8 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "deleteComment",
-    ({ params: { id } }) =>
-      Comments.delete({ id }).pipe(
+    ({ params: { id, slug } }) =>
+      Comments.delete(slug, { id }).pipe(
         Effect.map(() => ({ status: 200 } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
@@ -140,6 +140,7 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
     ({ params: { username } }) =>
       Profiles.get(username).pipe(
         Effect.map((profile) => ({ status: 200, content: { profile } } as const)),
+        Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(
           "Unprocessable",
           (e) => Effect.succeed({ status: 422, content: { errors: e.errors } } as const)

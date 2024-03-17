@@ -17,9 +17,6 @@ export const ProfilesSpec = Api.apiGroup("Profiles").pipe(
         { status: 401 },
         { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
       ]
-    },
-    {
-      security
     }
   ),
   Api.post(

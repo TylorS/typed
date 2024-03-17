@@ -14,19 +14,17 @@ import * as Platform from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 import { NodeSwaggerFiles } from "effect-http-node"
 
-const server = Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
+export const server = Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.provideServiceEffect(CurrentUser.tag, Effect.suspend(() => getCurrentUserFromToken)),
   Http.router.mount("/api", Api.server),
-  provideCurrentJwt
-)
-
-server.pipe(
+  provideCurrentJwt,
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
   Effect.provide(NodeSwaggerFiles.SwaggerFilesLive),
   Effect.provide(NodeContext.layer),
-  Effect.provide(ApiLive),
-  Node.run
+  Effect.provide(ApiLive)
 )
+
+Node.run(server, import.meta.hot)
 
 function provideCurrentJwt<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {

@@ -87,7 +87,8 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
     }),
     vavite({
       serverEntry: options.serverEntry,
-      serveClientAssetsInDev: true
+      serveClientAssetsInDev: true,
+      reloadOn: "static-deps-change"
     }),
     exposeAssetManifest(clientOutputDirectory),
     exposeTypedOptions(options)

@@ -1,5 +1,5 @@
 import { DbUser, dbUserToUser } from "@/api/common/infrastructure/schema"
-import type { JwtToken } from "@/model"
+import type { JwtToken, User } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import { Schema } from "@effect/schema"
 import { Context } from "@typed/core"
@@ -36,7 +36,7 @@ export const verifyJwt = (token: JwtToken) =>
     Effect.catchAll(() => new Unauthorized())
   )
 
-export const getOptionalCurrentJwtUser = Effect.gen(function*(_) {
+export const getOptionalCurrentJwtUser: Effect.Effect<Option.Option<User>> = Effect.gen(function*(_) {
   const option = yield* _(getCurrentJwtOption)
   if (Option.isNone(option)) {
     return Option.none()
@@ -47,7 +47,7 @@ export const getOptionalCurrentJwtUser = Effect.gen(function*(_) {
   Effect.catchAll(() => Effect.succeedNone)
 )
 
-export const getCurrentJwtUser = Effect.gen(function*(_) {
+export const getCurrentJwtUser: Effect.Effect<User, Unauthorized> = Effect.gen(function*(_) {
   const token = yield* _(getCurrentJwt)
   return yield* _(verifyJwt(token))
 })

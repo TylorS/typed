@@ -142,7 +142,7 @@ export const ArticlesLive = Articles.implement({
       const whereConditions: Array<Statement<any>> = []
 
       if (Option.isSome(input.tag)) {
-        whereConditions.push(sql`at.tag_id = ${input.tag.value}`)
+        whereConditions.push(sql`t.name = ${input.tag.value}`)
       }
 
       if (Option.isSome(input.author)) {

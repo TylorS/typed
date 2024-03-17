@@ -6,7 +6,6 @@ import type { User } from "@/model"
 import { ArticleId, ArticleSlug, CommentId } from "@/model"
 import { Comments } from "@/services"
 import type { CreateCommentInput } from "@/services/CreateComment"
-import { Unauthorized } from "@/services/errors"
 import { Schema } from "@effect/schema"
 import * as Pg from "@sqlfx/pg"
 import { makeNanoId } from "@typed/id"
@@ -58,29 +57,11 @@ export const CommentsLive = Comments.implement({
         author_following: false
       })
     }).pipe(catchExpectedErrors),
-  delete: ({ id }) =>
+  delete: (_, { id }) =>
     Effect.gen(function*(_) {
       const sql = yield* _(Pg.tag)
       const user = yield* _(getCurrentJwtUser)
-      const dbComment = yield* _(
-        id,
-        sql.schemaSingleOption(CommentId, DbCommentWithAuthor, (id) =>
-          sql`
-          SELECT c.*, u.username as author_username, u.bio as author_bio, u.image as author_image, u.email as author_email, 
-                  exists (select 1 from follows f where f.follower_id = ${user.id} and f.followed_id = u.id) as author_following
-          FROM comments c
-          JOIN users u ON c.author_id = u.id
-          WHERE c.id = ${id} AND c.author_id = ${user.id};
-        `)
-      )
-
-      if (Option.isNone(dbComment)) {
-        return yield* _(new Unauthorized())
-      }
-
-      yield* _(sql`DELETE FROM comments WHERE id = ${id};`)
-
-      return dbCommentToComment(dbComment.value)
+      yield* _(sql`DELETE FROM comments WHERE id = ${id} AND author_id = ${user.id};`)
     }).pipe(catchExpectedErrors)
 })
 

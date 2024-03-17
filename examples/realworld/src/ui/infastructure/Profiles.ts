@@ -5,7 +5,7 @@ import { handleClientRequest, withJwtToken } from "@/ui/infastructure/_client"
 export const ProfilesLive = Profiles.implement({
   get: (username) =>
     handleClientRequest(
-      withJwtToken((jwtToken) => client.getProfile({ params: { username } }, { jwtToken })),
+      client.getProfile({ params: { username } }),
       (r) => r.profile
     ),
   follow: (username) =>

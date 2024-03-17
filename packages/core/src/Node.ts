@@ -2,18 +2,18 @@
 /// <reference types="@typed/vite-plugin/virtual-modules" />
 
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
-import { runMain } from "@effect/platform-node/NodeRuntime"
 import * as Http from "@effect/platform/HttpServer"
-import type { RunMain } from "@effect/platform/Runtime"
 import type { CurrentEnvironment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { Scope } from "effect"
-import { Effect, Layer, Logger, LogLevel } from "effect"
+import { Effect, FiberId, Layer, Logger, LogLevel } from "effect"
 import { dual } from "effect/Function"
+import type { RunForkOptions } from "effect/Runtime"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
 import typedOptions from "virtual:typed-options"
+import type { ViteHotContext } from "vite/types/hot.js"
 import * as CoreServices from "./CoreServices.js"
 import { staticFiles } from "./Platform.js"
 
@@ -178,4 +178,13 @@ export const listen: {
   )
 })
 
-export const run: RunMain = runMain
+export const run = <A, E>(effect: Effect.Effect<A, E>, hot: ViteHotContext | undefined, options?: RunForkOptions) => {
+  const fiber = Effect.runFork(effect, options)
+
+  if (hot) {
+    hot.accept()
+    hot.dispose(() => fiber.unsafeInterruptAsFork(FiberId.none))
+  }
+
+  return fiber
+}

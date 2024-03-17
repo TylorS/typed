@@ -1,3 +1,4 @@
+import type { ArticleSlug } from "@/model"
 import { CommentId } from "@/model"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
@@ -10,7 +11,7 @@ export type DeleteCommentInput = Schema.Schema.Type<typeof DeleteCommentInput>
 export type DeleteCommentError = Unauthorized | Unprocessable
 
 export const DeleteComment = Fn<
-  (input: DeleteCommentInput) => Effect.Effect<void, DeleteCommentError>
+  (slug: ArticleSlug, input: DeleteCommentInput) => Effect.Effect<void, DeleteCommentError>
 >()(
   "DeleteComment"
 )
