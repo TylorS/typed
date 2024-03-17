@@ -24,7 +24,7 @@ import * as Navigation from "@typed/navigation"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
-import { Data, Effect, Layer, Option, ReadonlyArray } from "effect"
+import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
 
 /**
  * @since 1.0.0
@@ -149,41 +149,83 @@ export function toHttpRouter<
  * @since 1.0.0
  */
 export function staticFiles(
-  serverOutputDirectory: string,
-  enabled: boolean,
-  options: TypedOptions
-) {
-  const basePath = `/${options.assetDirectory}`
+  { cacheControl, enabled, options, serverOutputDirectory }: {
+    serverOutputDirectory: string
+    enabled: boolean
+    options: TypedOptions
+    cacheControl?: (filePath: string) => {
+      readonly maxAge: number
+      readonly immutable?: boolean
+    }
+  }
+): <R, E>(
+  self: Http.app.Default<R, E>
+) => Effect.Effect<
+  Http.response.ServerResponse,
+  E | PlatformError,
+  ServerRequest | R | Http.platform.Platform | FileSystem | Path
+> {
+  if (!enabled) {
+    return identity
+  }
 
   return <R, E>(
     self: Http.app.Default<R, E>
-  ): Effect.Effect<
-    Http.response.ServerResponse,
-    E | PlatformError,
-    ServerRequest | Http.platform.Platform | FileSystem | Path | R
+  ): Http.app.Default<
+    ServerRequest | Http.platform.Platform | FileSystem | Path | R,
+    E | PlatformError
   > =>
     Effect.gen(function*(_) {
       const request = yield* _(Http.request.ServerRequest)
-
-      if (!enabled || !request.url.startsWith(basePath)) {
-        return yield* _(self)
-      }
-
       const fs = yield* _(FileSystem)
       const path = yield* _(Path)
+      // TODO: We should probably modify the request url to also look for html files
       const filePath = path.resolve(
         serverOutputDirectory,
         path.join(options.relativeServerToClientOutputDirectory, request.url)
       )
+      const gzipFilePath = filePath + ".gz"
 
-      if (yield* _(fs.exists(filePath + ".gz"))) {
+      if (yield* _(isFile(fs, gzipFilePath))) {
         return yield* _(
-          Http.response.file(filePath + ".gz", {
-            headers: Http.headers.unsafeFromRecord({ "Content-Encoding": "gzip" })
+          Http.response.file(gzipFilePath, {
+            headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl))
           })
         )
+      } else if (yield* _(isFile(fs, filePath))) {
+        return yield* _(Http.response.file(filePath, {
+          headers: Http.headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
+        }))
+      } else {
+        return yield* _(self)
       }
-
-      return yield* _(Http.response.file(filePath))
     })
+}
+
+function isFile(fs: FileSystem, path: string) {
+  return fs.stat(path).pipe(
+    Effect.map((stat) => stat.type === "File"),
+    Effect.catchAll(() => Effect.succeed(false))
+  )
+}
+
+function gzipHeaders(filePath: string, cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }) {
+  return {
+    "Content-Encoding": "gzip",
+    ...cacheControlHeaders(filePath, cacheControl)
+  }
+}
+
+function cacheControlHeaders(
+  filePath: string,
+  cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }
+) {
+  if (!cacheControl) {
+    return {}
+  }
+  const { immutable, maxAge } = cacheControl(filePath)
+
+  return {
+    "Cache-Control": `${immutable ? "public, " : ""}max-age=${maxAge}`
+  }
 }

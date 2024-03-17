@@ -28,7 +28,9 @@ export function getHeadAndScript(
   return {
     head: Fx.mergeOrdered([
       ...modulePreloads.map((src) =>
-        html`<link rel="${useScript ? "preload" : "modulepreload"}" crossOrigin href=${src} />`
+        html`<link rel="${useScript ? "preload" : "modulepreload"}" as=${
+          useScript ? "script" : undefined
+        } href=${src} />`
       ),
       ...styles.map((href) => html`<link rel="stylesheet" href=${href} />`)
     ]),

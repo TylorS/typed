@@ -110,6 +110,7 @@ export type Options = {
   readonly static?: boolean
   readonly serveStatic?: boolean
   readonly logLevel?: LogLevel.LogLevel
+  readonly cacheControl?: (filePath: string) => { readonly maxAge: number; readonly immutable?: boolean }
 }
 
 const logServerAddress = Effect.gen(function*(_) {
@@ -120,6 +121,16 @@ const logServerAddress = Effect.gen(function*(_) {
 
   yield* _(Effect.log(`Listening on ${address}`))
 })
+
+const defaultHtmlCacheControl = { maxAge: 0 } as const
+const defaultFileCacheControl = { maxAge: 60 * 60 * 24 * 365, immutable: true } as const
+const defaultCacheControl = (filePath: string) => {
+  if (filePath.endsWith(".html")) {
+    return defaultHtmlCacheControl
+  }
+
+  return defaultFileCacheControl
+}
 
 export const listen: {
   (options: Options): <R, E>(
@@ -164,7 +175,12 @@ export const listen: {
   >
 } = dual(2, function listen<R, E>(app: Http.app.Default<R, E>, options: Options) {
   return app.pipe(
-    staticFiles(options.serverDirectory, options?.serveStatic ?? import.meta.env.PROD, typedOptions),
+    staticFiles({
+      serverOutputDirectory: options.serverDirectory,
+      enabled: options?.serveStatic ?? import.meta.env.PROD,
+      options: typedOptions,
+      cacheControl: options?.cacheControl ?? defaultCacheControl
+    }),
     Http.middleware.logger,
     (app) =>
       Effect.zipRight(

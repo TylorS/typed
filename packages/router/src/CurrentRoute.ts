@@ -169,7 +169,7 @@ export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = Curr
   Effect.gen(function*(_) {
     const document = yield* _(Document.Document)
     const base = document.querySelector("base")
-    const baseHref = base ? base.href : "/"
+    const baseHref = base ? getBasePathname(base.href) : "/"
 
     return {
       route: Route.fromPath(baseHref),
@@ -177,6 +177,15 @@ export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = Curr
     }
   })
 )
+
+function getBasePathname(base: string): string {
+  try {
+    const url = new URL(base)
+    return url.pathname
+  } catch {
+    return base
+  }
+}
 
 /**
  * @since 1.0.0

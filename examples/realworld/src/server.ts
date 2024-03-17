@@ -10,13 +10,18 @@ import * as Node from "@typed/core/Node"
 import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 
-toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
+const disposable = toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.mount("/api", Api.server),
   withCurrentUserFromHeaders,
   Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
   Node.run
 )
+
+if (import.meta.hot) {
+  import.meta.hot.accept()
+  import.meta.hot.dispose(disposable[Symbol.dispose])
+}
 
 function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {
