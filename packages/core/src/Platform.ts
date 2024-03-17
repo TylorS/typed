@@ -21,7 +21,7 @@ import * as Navigation from "@typed/navigation"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
-import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
+import { Data, Effect, Layer, Option, ReadonlyArray } from "effect"
 
 /**
  * @since 1.0.0
@@ -140,23 +140,32 @@ export function toHttpRouter<
   return router
 }
 
+/**
+ * A very simple static file middleware with support for gzip'd files.
+ *
+ * @since 1.0.0
+ */
 export function staticFiles(
   serverOutputDirectory: string,
   enabled: boolean,
   options: TypedOptions
-): <R, E>(
-  self: Http.app.Default<R, E>
-) => Http.app.Default<
-  | FileSystem
-  | Path
-  | Http.platform.Platform
-  | Exclude<R, Scope.Scope | Http.request.ServerRequest | Http.router.RouteContext>,
-  PlatformError | E
-> {
-  const addStaticFileServer = Http.router.mountApp(
-    `/${options.assetDirectory}`,
+) {
+  const basePath = `/${options.assetDirectory}`
+
+  return <R, E>(
+    self: Http.app.Default<R, E>
+  ): Effect.Effect<
+    Http.response.ServerResponse,
+    E | PlatformError,
+    ServerRequest | Http.platform.Platform | FileSystem | Path | R
+  > =>
     Effect.gen(function*(_) {
       const request = yield* _(Http.request.ServerRequest)
+
+      if (!enabled || !request.url.startsWith(basePath)) {
+        return yield* _(self)
+      }
+
       const fs = yield* _(FileSystem)
       const path = yield* _(Path)
       const filePath = path.resolve(
@@ -173,9 +182,5 @@ export function staticFiles(
       }
 
       return yield* _(Http.response.file(filePath))
-    }),
-    { includePrefix: true }
-  )
-
-  return enabled ? addStaticFileServer : identity as any
+    })
 }
