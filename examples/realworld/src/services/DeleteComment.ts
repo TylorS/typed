@@ -12,7 +12,5 @@ export type DeleteCommentError = Unauthorized | Unprocessable
 
 export const DeleteComment = Fn<
   (slug: ArticleSlug, input: DeleteCommentInput) => Effect.Effect<void, DeleteCommentError>
->()(
-  "DeleteComment"
-)
+>()("DeleteComment")
 export type DeleteComment = Fn.Identifier<typeof DeleteComment>

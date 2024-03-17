@@ -8,3 +8,5 @@ export type FavoriteArticleError = Unauthorized | Unprocessable
 export const FavoriteArticle = Fn<(slug: ArticleSlug) => Effect.Effect<Article, FavoriteArticleError>>()(
   "FavoriteArticle"
 )
+
+export type FavoriteArticle = Fn.Identifier<typeof FavoriteArticle>

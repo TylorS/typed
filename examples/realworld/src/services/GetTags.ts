@@ -6,3 +6,5 @@ import type { Effect } from "effect"
 export type GetTagsError = Unprocessable
 
 export const GetTags = Fn<() => Effect.Effect<ArticleTagList, GetTagsError>>()("GetTags")
+
+export type GetTags = Fn.Identifier<typeof GetTags>

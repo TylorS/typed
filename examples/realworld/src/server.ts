@@ -6,59 +6,40 @@ import { GetCurrentUser } from "@/services/GetCurrentUser"
 import * as Ui from "@/ui"
 import { CurrentUser } from "@/ui/services/CurrentUser"
 import type { HttpServer } from "@effect/platform"
-import { NodeContext } from "@effect/platform-node"
 import * as Http from "@effect/platform/HttpServer"
 import { AsyncData, RefSubject } from "@typed/core"
 import * as Node from "@typed/core/Node"
 import * as Platform from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
-import { NodeSwaggerFiles } from "effect-http-node"
 
-export const server = Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
-  Http.router.provideServiceEffect(CurrentUser.tag, Effect.suspend(() => getCurrentUserFromToken)),
+Platform.toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
   Http.router.mount("/api", Api.server),
-  provideCurrentJwt,
+  withCurrentUserFromHeaders,
+  Effect.provide(ApiLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
-  Effect.provide(NodeSwaggerFiles.SwaggerFilesLive),
-  Effect.provide(NodeContext.layer),
-  Effect.provide(ApiLive)
+  Node.hot(import.meta.hot)
 )
 
-Node.run(server, import.meta.hot)
-
-function provideCurrentJwt<R, E>(app: HttpServer.router.Router<R, E>) {
+function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {
-    const token = yield* _(getCurrentJwtFromHeaders)
+    const { headers } = yield* _(Http.request.ServerRequest)
+    const token = Http.headers.get(headers, "authorization").pipe(
+      Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
+    )
 
+    // If no token is present, provide the app with no user or token
     if (Option.isNone(token)) {
-      return yield* _(app)
+      return yield* _(
+        app,
+        CurrentUser.tag.provideEffect(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
+      )
     }
 
-    return yield* _(app, CurrentJwt.provide(token.value))
+    // Otherwise, provide the app with the current user and token
+    return yield* _(
+      app,
+      CurrentUser.tag.provideEffect(RefSubject.of(AsyncData.fromExit(yield* _(Effect.exit(GetCurrentUser()))))),
+      CurrentJwt.provide(token.value)
+    )
   })
 }
-
-const getCurrentUserFromToken = Effect.gen(function*(_) {
-  const token = yield* _(getCurrentJwtFromHeaders)
-
-  if (Option.isNone(token)) {
-    return yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
-  }
-  const user = yield* _(GetCurrentUser(), CurrentJwt.provide(token.value), Effect.exit)
-
-  return yield* _(
-    RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.fromExit(user))
-  )
-})
-
-const getCurrentJwtFromHeaders = Effect.gen(function*(_) {
-  const { headers } = yield* _(Http.request.ServerRequest)
-  const authorization = Http.headers.get(headers, "authorization")
-
-  if (Option.isNone(authorization)) {
-    return Option.none()
-  }
-  const token = JwtToken(authorization.value.split(" ")[1])
-
-  return Option.some(token)
-})

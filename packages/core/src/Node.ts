@@ -3,17 +3,17 @@
 
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import * as Http from "@effect/platform/HttpServer"
+import { defaultTeardown } from "@effect/platform/Runtime"
 import type { CurrentEnvironment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { Scope } from "effect"
-import { Effect, FiberId, Layer, Logger, LogLevel } from "effect"
+import { Cause, Effect, Layer, Logger, LogLevel } from "effect"
 import { dual } from "effect/Function"
 import type { RunForkOptions } from "effect/Runtime"
 import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
 import typedOptions from "virtual:typed-options"
-import type { ViteHotContext } from "vite/types/hot.js"
 import * as CoreServices from "./CoreServices.js"
 import { staticFiles } from "./Platform.js"
 
@@ -41,41 +41,50 @@ export function getOrCreateServer() {
             }
           }
         } else if (
+          // Proxy the "on" method to allow us to intercept the "upgrade" and "request" event listeners
+          // to support HMR and static file serving and to ensure only one listener is added at a time.
+          // Without this, Effect's Websocket upgrade handling will intercept Vite's HMR websocket upgrade
+          // and will fail, causing the UI to refresh forever.
           prop === "on"
         ) {
           return (...args: readonly [string, ...Array<any>]) => {
             // We don't want to utilize Effect's default websocket upgrade handling to allow HMR to continue working
-            if (args[0] === "upgrade" && effectUpgradeHandler === undefined) {
+            if (args[0] === "upgrade") {
+              if (combinedUpgradeHandler !== undefined) {
+                target.off("upgrade", combinedUpgradeHandler)
+              }
+
               const [viteHmrListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
+
+              // Remove the vite listener since it will be replaced with our combined listener
+              target.off("upgrade", viteHmrListener as any)
 
               effectUpgradeHandler = args[1]
               combinedUpgradeHandler = (req, socket, head) => {
                 if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
                   return viteHmrListener(req, socket, head)
                 } else {
-                  return args[1](req, socket, head)
+                  return effectUpgradeHandler!(req, socket, head)
                 }
               }
 
-              // Remove the vite listener since it will be replaced with our combined listener
-              target.off("upgrade", viteHmrListener as any)
               return target.on("upgrade", combinedUpgradeHandler)
             }
 
+            // Here we track the request listener to ensure only one is added at a time
             if (args[0] === "request" && effectRequestHandler === undefined) {
-              effectRequestHandler = args[1]
-              return target.on.apply(target, args as any)
-            } else if (args[0] === "request" && effectRequestHandler !== undefined) {
-              target.off("request", effectRequestHandler)
-              effectRequestHandler = args[1]
+              if (effectRequestHandler !== undefined) {
+                target.off("request", effectRequestHandler)
+              }
 
+              effectRequestHandler = args[1]
               return target.on.apply(target, args as any)
             }
-
             return target.on.apply(target, args as any)
           }
         } else if (prop === "off") {
           return (...args: Parameters<NonNullable<typeof viteHttpServer>["off"]>) => {
+            // Here we need to proxy to the listener we really added
             if (args[0] === "upgrade" && args[1] === effectUpgradeHandler && combinedUpgradeHandler !== undefined) {
               target.off("upgrade", combinedUpgradeHandler)
               effectUpgradeHandler = undefined
@@ -119,21 +128,17 @@ export const listen: {
     never,
     Http.error.ServeError,
     Exclude<
-      Exclude<
-        Exclude<
-          Exclude<
-            Exclude<R, Http.request.ServerRequest | Scope.Scope>,
-            Http.server.Server | Http.platform.Platform | Http.etag.Generator | NodeContext.NodeContext
-          >,
-          NodeContext.NodeContext
-        >,
-        | CurrentEnvironment
-        | GetRandomValues
-        | RenderContext.RenderContext
-        | RenderQueue.RenderQueue
-        | RenderTemplate
-      >,
-      Scope.Scope
+      R,
+      | Http.request.ServerRequest
+      | Scope.Scope
+      | Http.server.Server
+      | Http.platform.Platform
+      | Http.etag.Generator
+      | CurrentEnvironment
+      | GetRandomValues
+      | RenderContext.RenderContext
+      | RenderQueue.RenderQueue
+      | RenderTemplate
     >
   >
 
@@ -144,21 +149,17 @@ export const listen: {
     never,
     Http.error.ServeError,
     Exclude<
-      Exclude<
-        Exclude<
-          Exclude<
-            Exclude<R, Http.request.ServerRequest | Scope.Scope>,
-            Http.server.Server | Http.platform.Platform | Http.etag.Generator | NodeContext.NodeContext
-          >,
-          NodeContext.NodeContext
-        >,
-        | CurrentEnvironment
-        | GetRandomValues
-        | RenderContext.RenderContext
-        | RenderQueue.RenderQueue
-        | RenderTemplate
-      >,
-      Scope.Scope
+      R,
+      | Http.request.ServerRequest
+      | Scope.Scope
+      | Http.server.Server
+      | Http.platform.Platform
+      | Http.etag.Generator
+      | CurrentEnvironment
+      | GetRandomValues
+      | RenderContext.RenderContext
+      | RenderQueue.RenderQueue
+      | RenderTemplate
     >
   >
 } = dual(2, function listen<R, E>(app: Http.app.Default<R, E>, options: Options) {
@@ -171,20 +172,39 @@ export const listen: {
         Layer.launch(Http.server.serve(app))
       ),
     Effect.provide(NodeHttpServer.server.layer(getOrCreateServer, options)),
-    Effect.provide(NodeContext.layer),
     Effect.provide(options.static ? CoreServices.static : CoreServices.server),
     Effect.scoped,
     Logger.withMinimumLogLevel(options.logLevel ?? LogLevel.Info)
   )
 })
 
-export const run = <A, E>(effect: Effect.Effect<A, E>, hot: ViteHotContext | undefined, options?: RunForkOptions) => {
-  const fiber = Effect.runFork(effect, options)
+export const run = <A, E>(
+  effect: Effect.Effect<A, E, NodeContext.NodeContext>,
+  options?: RunForkOptions
+): Disposable => {
+  const program = effect.pipe(
+    Effect.tapErrorCause((cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : Effect.logError(cause)),
+    Effect.provide(NodeContext.layer)
+  )
+  const keepAlive = setInterval(() => {}, 2 ** 31 - 1)
+  const fiber = Effect.runFork(program, options)
 
-  if (hot) {
-    hot.accept()
-    hot.dispose(() => fiber.unsafeInterruptAsFork(FiberId.none))
+  fiber.addObserver((exit) => {
+    clearInterval(keepAlive)
+    defaultTeardown(exit, (code) => process.exit(code))
+  })
+
+  function onDispose() {
+    clearInterval(keepAlive)
+    process.removeListener("SIGINT", onDispose)
+    process.removeListener("SIGTERM", onDispose)
+    fiber.unsafeInterruptAsFork(fiber.id())
   }
 
-  return fiber
+  process.once("SIGINT", onDispose)
+  process.once("SIGTERM", onDispose)
+
+  return {
+    [Symbol.dispose]: onDispose
+  }
 }

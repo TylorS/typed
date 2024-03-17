@@ -720,6 +720,9 @@ importers:
       '@effect/schema':
         specifier: ^0.64.5
         version: 0.64.5(effect@2.4.7)(fast-check@3.16.0)
+      '@typed/decoder':
+        specifier: workspace:*
+        version: link:../decoder/dist
       '@typed/guard':
         specifier: workspace:*
         version: link:../guard/dist

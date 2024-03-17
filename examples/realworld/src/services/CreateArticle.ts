@@ -5,7 +5,7 @@ import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
 export const CreateArticleInput = Article.pipe(
-  Schema.omit("id", "slug", "createdAt", "updatedAt", "favorited", "favoritesCount", "author"),
+  Schema.pick("title", "description", "body", "tagList"),
   Schema.identifier("CreateArticleInput")
 )
 export type CreateArticleInput = Schema.Schema.Type<typeof CreateArticleInput>

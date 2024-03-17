@@ -41,6 +41,7 @@
   "sideEffects": [],
   "dependencies": {
     "@effect/schema": "^0.64.5",
+    "@typed/decoder": "workspace:*",
     "@typed/guard": "workspace:*",
     "@typed/path": "workspace:*",
     "effect": "^2.4.7",

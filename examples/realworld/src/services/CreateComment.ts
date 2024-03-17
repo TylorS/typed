@@ -15,7 +15,6 @@ export type CreateCommentError = Unauthorized | Unprocessable
 
 export const CreateComment = Fn<
   (slug: ArticleSlug, input: CreateCommentInput) => Effect.Effect<Comment, CreateCommentError>
->()(
-  "CreateComment"
-)
+>()("CreateComment")
+
 export type CreateComment = Fn.Identifier<typeof CreateComment>

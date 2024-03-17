@@ -10,7 +10,7 @@ export const UpdateUserInput = Schema.struct({
   password: Schema.optionFromNullable(Password),
   image: User.fields.image,
   bio: User.fields.bio
-})
+}).pipe(Schema.identifier("UpdateUserInput"))
 export type UpdateUserInput = Schema.Schema.Type<typeof UpdateUserInput>
 
 export type UpdateUserError = Unauthorized | Unprocessable

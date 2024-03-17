@@ -8,3 +8,5 @@ export type GetProfileError = Unauthorized | Unprocessable
 export const GetProfile = Fn<(username: Username) => Effect.Effect<Profile, GetProfileError>>()(
   "GetProfile"
 )
+
+export type GetProfile = Fn.Identifier<typeof GetProfile>

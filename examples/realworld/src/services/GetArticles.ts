@@ -1,7 +1,7 @@
 import * as Schema from "@/lib/Schema"
 import type { Article } from "@/model"
 import { ArticleTag, Username } from "@/model"
-import type { Unauthorized, Unprocessable } from "@/services/errors"
+import type { Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 
@@ -17,7 +17,7 @@ export const GetArticlesInput = Schema.struct({
 
 export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
 
-export type GetArticlesError = Unprocessable | Unauthorized
+export type GetArticlesError = Unprocessable
 
 export const GetArticles = Fn<(input: GetArticlesInput) => Effect.Effect<ReadonlyArray<Article>, GetArticlesError>>()(
   "GetArticles"
