@@ -44,8 +44,8 @@ export const server = RouterBuilder.make(Spec, {}).pipe(
   ),
   RouterBuilder.handle(
     "deleteComment",
-    ({ params: { id, slug } }) =>
-      Comments.delete(slug, { id }).pipe(
+    ({ params: { id } }) =>
+      Comments.delete({ id }).pipe(
         Effect.map(() => ({ status: 200 } as const)),
         Effect.catchTag("Unauthorized", () => Effect.succeed({ status: 401 } as const)),
         Effect.catchTag(

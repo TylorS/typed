@@ -1,5 +1,5 @@
 import * as S from "@/lib/Schema"
-import type { Article, User } from "@/model"
+import type { Article, Comment, Profile, User } from "@/model"
 import {
   ArticleBody,
   ArticleDescription,
@@ -63,13 +63,7 @@ export function dbArticleToArticle(
     title: article.title,
     description: article.description,
     body: article.body,
-    author: {
-      username: article.author_username,
-      email: article.author_email,
-      bio: Option.fromNullable(article.author_bio),
-      image: Option.fromNullable(article.author_image),
-      following: article.author_following ?? false
-    },
+    author: dbProfileJoinToProfile(article),
     tagList: article.tag_list,
     createdAt: article.created_at,
     updatedAt: article.updated_at,
@@ -82,14 +76,20 @@ export type DbArticle = S.Schema.Type<typeof DbArticle>
 
 export const DbProfile = DbUser.pipe(S.pick("username", "email", "bio", "image"))
 
+const DbProfileJoin = S.struct({
+  author_username: Username,
+  author_email: Email,
+  author_bio: S.nullable(Bio),
+  author_image: S.nullable(Image),
+  author_following: S.nullable(S.boolean)
+})
+
+type DbProfileJoin = S.Schema.Type<typeof DbProfileJoin>
+
 export const DbArticleWithFavoritesAndTags = DbArticle.pipe(
   S.extend(
     S.struct({
-      author_username: Username,
-      author_email: Email,
-      author_bio: S.nullable(Bio),
-      author_image: S.nullable(Image),
-      author_following: S.nullable(S.boolean),
+      ...DbProfileJoin.fields,
       favorites_count: S.NumberFromString,
       favorited: S.nullable(S.boolean),
       tag_list: S.array(ArticleTag)
@@ -108,6 +108,30 @@ export const DbComment = S.struct({
 })
 
 export type DbComment = S.Schema.Type<typeof DbComment>
+
+export const DbCommentWithAuthor = DbComment.pipe(S.extend(DbProfileJoin))
+
+export type DbCommentWithAuthor = S.Schema.Type<typeof DbCommentWithAuthor>
+
+export function dbCommentToComment(db: DbCommentWithAuthor): Comment {
+  return {
+    id: db.id,
+    body: db.body,
+    author: dbProfileJoinToProfile(db),
+    createdAt: db.created_at,
+    updatedAt: db.updated_at
+  }
+}
+
+function dbProfileJoinToProfile(db: DbProfileJoin): Profile {
+  return {
+    email: db.author_email,
+    username: db.author_username,
+    bio: Option.fromNullable(db.author_bio),
+    image: Option.fromNullable(db.author_image),
+    following: db.author_following ?? false
+  }
+}
 
 export const DbTag = S.struct({
   id: S.nanoId,
