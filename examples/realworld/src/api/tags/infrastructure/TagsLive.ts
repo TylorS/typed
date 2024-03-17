@@ -22,8 +22,7 @@ export const TagsLive = Tags.implement({
       )
 
       return tags.map((t) => t.tag)
-    }).pipe(Effect.catchAll((e) => {
-      console.log(e)
-      return new Unprocessable({ errors: ["Failed to get tags"] })
-    }))
+    }).pipe(
+      Effect.catchAll(() => new Unprocessable({ errors: ["Failed to get tags"] }))
+    )
 })
