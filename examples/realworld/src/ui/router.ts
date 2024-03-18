@@ -3,9 +3,9 @@ import { html } from "@typed/template"
 import * as pages from "./pages"
 
 export const router = Router
-  .match(pages.login.route, () => html`<div>Login</div>`)
+  .match(pages.login.route, () => pages.login.main)
   .match(pages.article.route, () => html`<div>Article</div>`)
-  .match(pages.register.route, () => html`<div>Register</div>`)
+  .match(pages.register.route, () => pages.register.main)
   .match(pages.settings.route, () => html`<div>Settings</div>`)
   .match(pages.editArticle.route, () => html`<div>Edit Article</div>`)
   .match(pages.editor.route, () => html`<div>Editor</div>`)
