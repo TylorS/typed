@@ -89,8 +89,7 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
     tsconfigPaths({ projects: [tsconfig] }),
     vavite({
       serverEntry: options.serverEntry,
-      serveClientAssetsInDev: true,
-      reloadOn: "static-deps-change"
+      serveClientAssetsInDev: true
     }),
     exposeAssetManifest(clientOutputDirectory),
     exposeTypedOptions(options)

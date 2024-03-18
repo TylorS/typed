@@ -26,7 +26,7 @@ export function getOrCreateServer() {
   if (viteHttpServer === undefined) {
     return createServer()
   } else {
-    let effectRequestHandler: ((req: any, res: any) => void) | undefined
+    let viteHmrListener: ((req: any, socket: any, head: any) => void) | undefined
     let effectUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
     let combinedUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
 
@@ -54,15 +54,14 @@ export function getOrCreateServer() {
                 target.off("upgrade", combinedUpgradeHandler)
               }
 
-              const [viteHmrListener] = Array.from(new Set(viteHttpServer!.listeners(args[0])))
-
+              viteHmrListener = Array.from(new Set(viteHttpServer!.listeners(args[0])))[0] as any
               // Remove the vite listener since it will be replaced with our combined listener
-              target.off("upgrade", viteHmrListener as any)
+              target.off("upgrade", viteHmrListener!)
 
               effectUpgradeHandler = args[1]
               combinedUpgradeHandler = (req, socket, head) => {
                 if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
-                  return viteHmrListener(req, socket, head)
+                  return viteHmrListener!(req, socket, head)
                 } else {
                   return effectUpgradeHandler!(req, socket, head)
                 }
@@ -71,21 +70,13 @@ export function getOrCreateServer() {
               return target.on("upgrade", combinedUpgradeHandler)
             }
 
-            // Here we track the request listener to ensure only one is added at a time
-            if (args[0] === "request" && effectRequestHandler === undefined) {
-              if (effectRequestHandler !== undefined) {
-                target.off("request", effectRequestHandler)
-              }
-
-              effectRequestHandler = args[1]
-              return target.on.apply(target, args as any)
-            }
             return target.on.apply(target, args as any)
           }
         } else if (prop === "off") {
           return (...args: Parameters<NonNullable<typeof viteHttpServer>["off"]>) => {
             // Here we need to proxy to the listener we really added
             if (args[0] === "upgrade" && args[1] === effectUpgradeHandler && combinedUpgradeHandler !== undefined) {
+              target.on("upgrade", viteHmrListener!)
               target.off("upgrade", combinedUpgradeHandler)
               effectUpgradeHandler = undefined
               combinedUpgradeHandler = undefined

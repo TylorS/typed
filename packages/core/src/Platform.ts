@@ -12,7 +12,7 @@ import * as Http from "@effect/platform/HttpServer"
 import { Path } from "@effect/platform/Path"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { CurrentRoute, type RouteMatch, type RouteMatcher } from "@typed/router"
+import * as Router from "@typed/router"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import assetManifest from "virtual:asset-manifest"
@@ -31,7 +31,7 @@ import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
  */
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
   readonly request: Http.request.ServerRequest
-  readonly guards: ReadonlyArray.NonEmptyReadonlyArray<RouteMatch<any, any, any, any, any, any, any>>
+  readonly guards: ReadonlyArray.NonEmptyReadonlyArray<Router.RouteMatch<any, any, any, any, any, any, any>>
 }> {}
 
 /**
@@ -72,7 +72,7 @@ export function toHttpRouter<
   E2 = never,
   R2 = never
 >(
-  matcher: RouteMatcher<RenderEvent | null, E, R>,
+  matcher: Router.RouteMatcher<RenderEvent | null, E, R>,
   options?: {
     layout?: LayoutTemplate<Fx.Fx<RenderEvent | null, E, R>, E2, R2>
     base?: string
@@ -80,11 +80,11 @@ export function toHttpRouter<
   }
 ): Http.router.Router<
   | ServerRequest
-  | Exclude<R | R2, Navigation.Navigation | CurrentRoute>,
+  | Exclude<R | R2, Navigation.Navigation | Router.CurrentRoute>,
   E | E2 | GuardsNotMatched
 > {
   let router: Http.router.Router<
-    | Exclude<R | R2, Navigation.Navigation | CurrentRoute>
+    | Exclude<R | R2, Navigation.Navigation | Router.CurrentRoute>
     | ServerRequest,
     E | E2 | GuardsNotMatched
   > = Http.router.empty
@@ -115,23 +115,33 @@ export function toHttpRouter<
 
               const ref = yield* _(RefSubject.of(match.value))
               const content = guard.match(RefSubject.take(ref, 1))
-              const params = { content, request, head, script }
-              const template = Fx.unify(options?.layout ? options.layout(params) : content).pipe(
-                Fx.withSpan("render_template"),
-                Fx.onExit(() => Effect.annotateLogs(Effect.logDebug(`Rendered Template`), "route.params", match.value)),
-                Fx.annotateSpans("route.params", match.value),
-                Fx.annotateLogs("route.params", match.value)
-              )
+              const template = Fx.unify(options?.layout ? options.layout({ content, request, head, script }) : content)
+                .pipe(
+                  Fx.withSpan("render_template"),
+                  Fx.onExit((exit) =>
+                    exit.pipe(
+                      Effect.matchCauseEffect({
+                        onFailure: (cause) => Effect.logError(`Failed to render Template`, cause),
+                        onSuccess: () => Effect.logDebug(`Rendered Template`)
+                      }),
+                      Effect.annotateLogs("route.params", match.value)
+                    )
+                  ),
+                  Fx.annotateSpans("route.params", match.value),
+                  Fx.annotateLogs("route.params", match.value)
+                )
 
               return yield* _(htmlResponse(template))
             }
           }
           return yield* _(Effect.fail(new GuardsNotMatched({ request, guards })))
         }).pipe(
-          Effect.provide(Layer.mergeAll(
-            Navigation.initialMemory({ url, base: options?.base }),
-            CurrentRoute.layer(route as any)
-          )),
+          Effect.provide(
+            Layer.mergeAll(
+              Navigation.initialMemory({ url, base: options?.base }),
+              Router.layer(route as any)
+            )
+          ),
           Effect.withSpan("check_route_guards"),
           Effect.annotateSpans("route.path", path),
           Effect.annotateLogs("route.path", path)

@@ -1,23 +1,82 @@
-import { html } from "@typed/core"
-import type { Fx, RenderEvent } from "@typed/core"
-import type { LayoutParams } from "@typed/core/Platform"
+import { CurrentUser, isAuthenticated } from "@/services"
+import type { Path, Placeholder, RenderEvent } from "@typed/core"
+import { AsyncData, EventHandler, Fx, html, Navigation, Route, Router } from "@typed/core"
+import { Option } from "effect"
+import * as pages from "./pages"
 
-export function layout<Content extends Fx.Fx<RenderEvent | null, any, any>>(
-  { content, head, script }: LayoutParams<Content>
+const UnauthenticatedHeader = html`<nav class="navbar navbar-light">
+  <div class="container">
+    <a class="navbar-brand" href="/">conduit</a>
+    <ul class="nav navbar-nav pull-xs-right">
+      ${NavLink("Home", pages.home.route)}
+      ${NavLink("Sign in", pages.login.route)}
+      ${NavLink("Sign up", pages.register.route)}
+    </ul>
+  </div>
+</nav>`
+
+const AuthenticatedHeader = html`<nav class="navbar navbar-light">
+  <div class="container">
+    <a class="navbar-brand" href="/">conduit</a>
+    <ul class="nav navbar-nav pull-xs-right">
+      ${NavLink("Home", pages.home.route)}
+      ${NavLink(html`<i class="mr-2 ion-compose"></i> New Article`, pages.editor.route)}
+      ${NavLink(html`<i class="mr-2 ion-gear-a"></i> Settings`, pages.settings.route)}
+      ${
+  CurrentUser.pipe(
+    Fx.map(AsyncData.toOption),
+    Fx.switchMap(Option.match({
+      onNone: () => Fx.succeed(null),
+      onSome: (user) =>
+        NavLink(
+          html`<img src="${user.image}" class="user-pic" />${user.username}`,
+          pages.profile.route,
+          user
+        )
+    }))
+  )
+}
+    </ul>
+  </div>
+</nav>`
+
+const Header = Fx.if(
+  isAuthenticated,
+  { onFalse: UnauthenticatedHeader, onTrue: AuthenticatedHeader }
+)
+
+const Footer = html`<footer>
+  <div class="container">
+    <a href="/" class="logo-font">conduit</a>
+    <span class="attribution">
+      An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
+    </span>
+  </div>
+</footer>`
+
+function NavLink<E, R, P extends string, A = Path.ParamsOf<P>, E2 = never, R2 = never>(
+  content: Placeholder<string | RenderEvent, E, R>,
+  input: Route.RouteInput<P, A, E2, R2>,
+  ...params: Path.ParamsList<P>
 ) {
-  return html`<!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="RealWorld Example App" />
-        <title>RealWorld</title>
-        <base href="/" />
-        ${head}
-      </head>
-      <body>
-        <div id="app">${content}</div>
-        ${script}
-      </body>
-    </html>`
+  const { route } = Route.asRouteGuard(input)
+  const to: string = route.make(...params as any)
+  const className = Fx.when(Router.isActive(input, ...params), {
+    onTrue: "nav-link active",
+    onFalse: "nav-link"
+  })
+
+  return html`<li class="nav-item">
+    <a
+      class=${className} 
+      href=${to} 
+      onclick=${EventHandler.preventDefault(() => Navigation.navigate(to))}
+    >
+      ${content}
+    </a>
+  </li>`
+}
+
+export function layout<E, R>(content: Fx.Fx<RenderEvent | null, E, R>) {
+  return html`${Header}<main>${content}</main>${Footer}`
 }

@@ -209,11 +209,23 @@ const attrMap: AttrMap = {
       attr,
       (
         value
-      ) => (value == null
-        ? ``
-        : " " + Object.entries(value).map(([key, value]) =>
-          value === true ? key : value === false ? "" : `${key}="${escape(value)}"`
-        ).join(" "))
+      ) => {
+        const out = value == null
+          ? ``
+          : " " + Object.entries(value).flatMap(([key, value]) => {
+            if (value === true) return [key]
+            if (value == null) return []
+            if (key[0] === "o" && key[1] === "n") return []
+            if (key[0] === "@") return []
+            if (key[0] === ".") return [`${key}="${escape(value)}"`]
+            if (key === "ref") return []
+            if (key.toLowerCase() === "classname") return `class="${value}"`
+
+            return [`${key}="${value}"`]
+          }).join(" ")
+
+        return out
+      }
     ),
   ref: () => new TextChunk(""),
   "sparse-attr": (attr) =>

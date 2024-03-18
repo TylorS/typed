@@ -89,7 +89,7 @@ export namespace Fx {
   /**
    * @since 1.20.0
    */
-  export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R> | infer _] ? Fx<A, E, R> : never
+  export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R>] ? Fx<A, E, R> : never
 }
 
 /**
@@ -1037,11 +1037,11 @@ export const middleware: {
 export const onExit: {
   <R2>(
     f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
-  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | R2>
 
   <A, E, R, R2>(
     fx: Fx<A, E, R>,
-    f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
+    f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R | R2>
   ): Fx<A, E, R | R2>
 } = dual(2, core.onExit)
 

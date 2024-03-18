@@ -22,7 +22,7 @@ export const getCurrentJwtToken = CurrentUser.pipe(
   }))
 )
 
-export const isAuthenticated = Effect.map(CurrentUser, AsyncData.isSuccess)
+export const isAuthenticated = RefSubject.map(CurrentUser, AsyncData.isSuccess)
 
 export const isAuthenticatedGuard = <P>(params: P) =>
   Effect.map(isAuthenticated, (b) => b ? Option.some(params) : Option.none())

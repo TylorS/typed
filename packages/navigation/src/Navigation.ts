@@ -461,11 +461,10 @@ export function getCurrentPathFromUrl(location: Pick<URL, "pathname" | "search" 
 /**
  * @since 1.0.0
  */
-export const CurrentPath: RefSubject.Computed<string, never, Navigation> = RefSubject.map(
-  CurrentEntry,
-  (d) => getCurrentPathFromUrl(d.url)
+export const CurrentPath: RefSubject.Computed<string, never, Navigation> = RefSubject.computedFromTag(
+  Navigation,
+  (nav) => RefSubject.map(nav.currentEntry, (e) => getCurrentPathFromUrl(e.url))
 )
-
 /**
  * @since 1.0.0
  */

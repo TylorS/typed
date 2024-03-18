@@ -59,16 +59,11 @@ function setupMemory(
 ): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
   return Effect.gen(function*(_) {
     const state = yield* _(
-      RefSubject.fromEffect(
-        Effect.sync((): NavigationState => {
-          return {
-            entries: options.entries,
-            index: options.currentIndex ?? options.entries.length - 1,
-            transition: Option.none()
-          }
-        }),
-        { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
-      )
+      RefSubject.of<NavigationState>({
+        entries: options.entries,
+        index: options.currentIndex ?? options.entries.length - 1,
+        transition: Option.none()
+      }, { eq: Equivalence.make(Schema.typeSchema(NavigationState)) })
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)

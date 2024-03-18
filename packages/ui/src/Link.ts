@@ -85,7 +85,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       onClickHandler?.options
     )
 
-    const allProps = { ...props, href, state: stateRef, onClick: onClickEventHandler }
+    const allProps = { ...props, href, state: stateRef, onclick: onClickEventHandler }
 
     return a(allProps as any as Props, ...children)
   })

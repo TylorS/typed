@@ -5,8 +5,8 @@
 import * as Context from "@typed/context"
 import * as Document from "@typed/dom/Document"
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Destination, Navigation } from "@typed/navigation"
-import { CurrentEntry, CurrentPath } from "@typed/navigation"
+import type { Destination } from "@typed/navigation"
+import { CurrentEntry, CurrentPath, getCurrentPathFromUrl, Navigation } from "@typed/navigation"
 import type { Layer } from "effect"
 import * as Option from "effect/Option"
 
@@ -49,7 +49,7 @@ export function layer<const P extends string>(
   route: P | Route.Route<P>,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): Layer.Layer<CurrentRoute> {
-  return CurrentRoute.layer(make(route, parent) as any as CurrentRoute)
+  return CurrentRoute.layer(make(route, parent) as any)
 }
 
 function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
@@ -64,7 +64,14 @@ export const CurrentParams: RefSubject.Filtered<
   never,
   Navigation | CurrentRoute
 > = RefSubject
-  .filterMapEffect(CurrentPath, (path) => CurrentRoute.with(({ route }) => route.match(path)))
+  .filteredFromTag(
+    Navigation,
+    (nav) =>
+      RefSubject.filterMapEffect(
+        nav.currentEntry,
+        (e) => CurrentRoute.with(({ route }) => route.match(getCurrentPathFromUrl(e.url)))
+      )
+  )
 
 /**
  * @since 1.0.0
@@ -138,6 +145,9 @@ const isActive_ = (
   if (Option.isNone(currentMatch)) return false
 
   const fullRoute = currentRoute.concat(route)
+
+  if (fullRoute.path === "/") return currentPath === "/"
+
   const fullParams = { ...currentMatch.value, ...params[0] }
   const fullPath = fullRoute.make(fullParams as any)
 
@@ -205,4 +215,7 @@ export const CurrentSearchParams: RefSubject.Computed<Readonly<Record<string, st
 /**
  * @since 1.0.0
  */
-export const CurrentState = RefSubject.map(CurrentEntry, (d) => d.state)
+export const CurrentState = RefSubject.computedFromTag(
+  Navigation,
+  (n) => RefSubject.map(n.currentEntry, (e) => e.state)
+)

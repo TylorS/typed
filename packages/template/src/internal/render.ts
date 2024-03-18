@@ -9,7 +9,6 @@ import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
 import { hasProperty } from "effect/Predicate"
 import * as Scope from "effect/Scope"
-import { uncapitalize } from "effect/String"
 import type { Directive } from "../Directive.js"
 import { isDirective } from "../Directive.js"
 import * as ElementRef from "../ElementRef.js"
@@ -43,7 +42,7 @@ import {
   TextPartImpl
 } from "./parts.js"
 import type { ParentChildNodes } from "./utils.js"
-import { findPath } from "./utils.js"
+import { findPath, keyToPartType } from "./utils.js"
 
 /**
  * @internal
@@ -127,7 +126,7 @@ const RenderPartMap: RenderPartMap = {
     const { queue, refCounter, values } = ctx
     const element = node as HTMLElement | SVGElement
     const renderable = values[templatePart.index]
-    let classNames: Set<string> = new Set()
+    let classNames: Set<string> = new Set(element.classList)
     const setValue = (value: string | Array<string> | null | undefined) => {
       if (isNullOrUndefined(value)) {
         element.classList.remove(...classNames)
@@ -320,12 +319,29 @@ const RenderPartMap: RenderPartMap = {
       const effects: Array<Effect.Effect<void, any, any>> = []
       const entries = Object.entries(renderable)
 
-      loop:
       for (const [key, value] of entries) {
         const index = ++ctx.spreadIndex
-        switch (key[0]) {
-          case "?": {
-            const name = key.slice(1)
+        const match = keyToPartType(key)
+
+        switch (match[0]) {
+          case "attr": {
+            const eff = matchSettablePart(
+              value,
+              (value) => setAttribute(key, value),
+              () => AttributePartImpl.browser(index, element, key, ctx.queue),
+              (f) =>
+                withCurrentPriority((priority) =>
+                  Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+                ),
+              () => ctx.expected++
+            )
+            if (eff !== null) {
+              effects.push(eff)
+            }
+            break
+          }
+          case "boolean": {
+            const name = match[1]
             const eff = matchSettablePart(
               value,
               (value) => toggleBoolean(name, value),
@@ -339,10 +355,47 @@ const RenderPartMap: RenderPartMap = {
             if (eff !== null) {
               effects.push(eff)
             }
-            continue loop
+            break
           }
-          case ".": {
-            const name = key.slice(1)
+          case "class": {
+            const classNames: Set<string> = new Set(element.className)
+            const eff = matchSettablePart(
+              value,
+              (value) => {
+                if (isNullOrUndefined(value)) {
+                  element.classList.remove(...classNames)
+                  classNames.clear()
+                } else {
+                  setClassNames(classNames, new Set(splitClassNames(String(value))))
+                }
+              },
+              () => ClassNamePartImpl.browser(index, element, ctx.queue),
+              (f) =>
+                withCurrentPriority((priority) =>
+                  Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
+                ),
+              () => ctx.expected++
+            )
+            if (eff !== null) {
+              effects.push(eff)
+            }
+            break
+          }
+          case "data": {
+            break
+          }
+          case "event": {
+            const handler = getEventHandler(value, ctx.context, ctx.onCause)
+            if (handler) {
+              ctx.eventSource.addEventListener(element, match[1], handler)
+            }
+            break
+          }
+          case "properties": {
+            break
+          }
+          case "property": {
+            const name = match[1]
             const eff = matchSettablePart(
               value,
               (value) => setProperty(name, value),
@@ -356,67 +409,10 @@ const RenderPartMap: RenderPartMap = {
             if (eff !== null) {
               effects.push(eff)
             }
-            continue loop
+            break
           }
-          case "@": {
-            const name = uncapitalize(key.slice(1))
-            const handler = getEventHandler(value, ctx.context, ctx.onCause)
-            if (handler) {
-              ctx.eventSource.addEventListener(element, name, handler)
-            }
-            continue loop
-          }
-          case "o": {
-            if (key[1] === "n") {
-              const name = uncapitalize(key.slice(2))
-              const handler = getEventHandler(value, ctx.context, ctx.onCause)
-              if (handler) {
-                ctx.eventSource.addEventListener(element, name, handler)
-              }
-            }
-            continue loop
-          }
-        }
-
-        const lowerCaseName = key.toLowerCase()
-
-        const isClass = lowerCaseName === "class" || lowerCaseName === "classname"
-
-        if (isClass) {
-          const classNames: Set<string> = new Set()
-          const eff = matchSettablePart(
-            value,
-            (value) => {
-              if (isNullOrUndefined(value)) {
-                element.classList.remove(...classNames)
-                classNames.clear()
-              } else {
-                setClassNames(classNames, new Set(splitClassNames(String(value))))
-              }
-            },
-            () => ClassNamePartImpl.browser(index, element, ctx.queue),
-            (f) =>
-              withCurrentPriority((priority) =>
-                Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
-              ),
-            () => ctx.expected++
-          )
-          if (eff !== null) {
-            effects.push(eff)
-          }
-        } else {
-          const eff = matchSettablePart(
-            value,
-            (value) => setAttribute(key, value),
-            () => AttributePartImpl.browser(index, element, key, ctx.queue),
-            (f) =>
-              withCurrentPriority((priority) =>
-                Effect.zipRight(ctx.queue.add(element, f, priority), ctx.refCounter.release(index))
-              ),
-            () => ctx.expected++
-          )
-          if (eff !== null) {
-            effects.push(eff)
+          case "ref": {
+            break
           }
         }
       }

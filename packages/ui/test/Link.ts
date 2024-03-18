@@ -2,6 +2,7 @@ import * as Fx from "@typed/fx/Fx"
 import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import * as Router from "@typed/router"
+import { renderToHtmlString, staticLayer } from "@typed/template/Html"
 import { testRender } from "@typed/template/Test"
 import * as Vitest from "@typed/template/Vitest"
 import { Link } from "@typed/ui/Link"
@@ -91,6 +92,21 @@ describe("Link", () => {
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
         Router.withCurrentRoute(Route.fromPath("/foo"))
+      ))
+
+    Vitest.test.only("renders to html", () =>
+      Effect.gen(function*(_) {
+        const html = yield* _(
+          renderToHtmlString(
+            Link({ to: Fx.succeed("/test"), className: Fx.succeed("nav-link"), relative: false }, "Hello")
+          )
+        )
+
+        deepStrictEqual(html, `<a class="nav-link" href="/test">Hello</a>`)
+      }).pipe(
+        Effect.provide(Navigation.initialMemory({ url: initialUrl })),
+        Router.withCurrentRoute(Route.fromPath("/foo")),
+        Effect.provide(staticLayer)
       ))
   })
 })

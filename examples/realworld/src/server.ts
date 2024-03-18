@@ -10,18 +10,13 @@ import * as Node from "@typed/core/Node"
 import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 
-const disposable = toHttpRouter(Ui.router, { layout: Ui.layout }).pipe(
+toHttpRouter(Ui.router, { layout: Ui.document }).pipe(
   Http.router.mount("/api", Api.server),
   withCurrentUserFromHeaders,
   Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
   Node.run
 )
-
-if (import.meta.hot) {
-  import.meta.hot.accept()
-  import.meta.hot.dispose(disposable[Symbol.dispose])
-}
 
 function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {
@@ -32,20 +27,27 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
 
     // If no token is present, provide the app with no user or token
     if (Option.isNone(token)) {
+      const user = yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
+
       return yield* _(
         app,
         // CurrentUser is the client representation of the current user
-        CurrentUser.tag.provideEffect(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
+        // We add take(1) to ensure that the templates will finish emitting.
+        CurrentUser.tag.provide(RefSubject.take(user, 1))
       )
     }
+
+    const user = yield* _(
+      Users.current(),
+      Effect.exit,
+      Effect.map(AsyncData.fromExit),
+      Effect.flatMap(RefSubject.of)
+    )
 
     // Otherwise, provide the app with the current user and token
     return yield* _(
       app,
-      CurrentUser.tag.provideEffect(
-        // A RefSubject is lazily-instantiated, so this Service will not be called unless the app needs it
-        RefSubject.make(Users.current().pipe(Effect.exit, Effect.map(AsyncData.fromExit)))
-      ),
+      CurrentUser.tag.provide(RefSubject.take(user, 1)),
       // CurrentJwt is the server representation of the current user
       CurrentJwt.provide(token.value)
     )

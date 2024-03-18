@@ -31,7 +31,7 @@ export function getHeadAndScript(
     ),
     ...styles.map(makeStylesheetLink)
   ].join("\n")
-  const scriptHtml = `<script ${useScript ? "" : `type="module"`} src=${file}></script>`
+  const scriptHtml = `<script ${useScript ? "async defer" : `type="module"`} src=${file}></script>`
 
   return {
     head: Fx.succeed(HtmlRenderEvent(headHtml)),
@@ -44,5 +44,5 @@ function makePreloadLink(rel: string, href: string, as?: string) {
 }
 
 function makeStylesheetLink(href: string) {
-  return `<link rel="stylesheet" href=${href} />`
+  return `<link rel="stylesheet" type="text/css" href=${href} />`
 }
