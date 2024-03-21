@@ -1,5 +1,5 @@
 import { JwtToken } from "@/model"
-import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@/ui/services"
+import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@/services"
 import { AsyncData } from "@typed/core"
 import { SchemaStorage } from "@typed/dom/Storage"
 import { Effect, Layer } from "effect"

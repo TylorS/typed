@@ -1,6 +1,6 @@
 {
-  "name": "@typed/router",
-  "version": "0.27.7",
+  "name": "@typed/server",
+  "version": "0.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -40,17 +40,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@typed/context": "workspace:*",
-    "@typed/dom": "workspace:*",
-    "@typed/environment": "workspace:*",
-    "@typed/fx": "workspace:*",
-    "@typed/guard": "workspace:*",
-    "@typed/navigation": "workspace:*",
+    "@effect/platform": "^0.48.12",
+    "@effect/schema": "^0.64.8",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
     "effect": "^2.4.9"
-  },
-  "devDependencies": {
-    "ts-toolbelt": "^9.6.0"
   }
 }

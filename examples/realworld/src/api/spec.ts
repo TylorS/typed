@@ -5,7 +5,7 @@ import { TagsSpec } from "@/api/tags"
 import { UsersSpec } from "@/api/users"
 import { Api } from "effect-http"
 
-export const Spec = Api.api({
+export const Spec = Api.make({
   title: "Realworld",
   servers: [`http://localhost:${import.meta.env.PROD ? "3000" : "5173"}/api`]
 }).pipe(

@@ -40,15 +40,15 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.48.8",
-    "@effect/schema": "^0.64.5",
+    "@effect/platform": "^0.48.12",
+    "@effect/schema": "^0.64.8",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/environment": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
-    "effect": "^2.4.7",
-    "typed-query-selector": "^2.11.1",
+    "effect": "^2.4.9",
+    "typed-query-selector": "^2.11.2",
     "udomdiff": "^1.1.0"
   },
   "peerDependencies": {
@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@vitest/browser": "^1.4.0",
-    "happy-dom": "13.8.6",
+    "happy-dom": "14.0.0",
     "vitest": "1.4.0"
   }
 }

@@ -1,2 +1,2 @@
-export * from "./routes"
+export * as routes from "./routes"
 export * from "./spec"

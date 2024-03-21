@@ -44,6 +44,9 @@
       "path": "packages/router"
     },
     {
+      "path": "packages/server"
+    },
+    {
       "path": "packages/storybook"
     },
     {

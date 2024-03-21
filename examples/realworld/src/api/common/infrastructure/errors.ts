@@ -28,7 +28,7 @@ export function handleExpectedErrors<
     case "Or":
     case "SourceUnavailable":
     case "Unsupported":
-      return new Unprocessable({ errors: [error.toString()] })
+      return new Unprocessable({ errors: [`Server configuration error`] })
     default:
       return error as Exclude<T, ExpectedErrors>
   }

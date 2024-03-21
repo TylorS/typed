@@ -3,43 +3,42 @@ import { getCurrentJwtToken } from "@/services/CurrentUser"
 import { Unauthorized, Unprocessable } from "@/services/errors"
 import { Effect, Unify } from "effect"
 import type { ClientError } from "effect-http"
+import type { Ignored } from "effect-http/ApiSchema"
 
-export type ClientResponseToSuccess<T> = T extends { readonly status: 200; readonly content: infer A } ? A :
-  T extends { readonly status: 201; readonly content: infer A } ? A
-  : T extends { readonly status: 401 } ? never :
-  T extends { readonly status: 422; readonly content: { readonly errors: ReadonlyArray<string> } } ? never
+export type ClientResponseToSuccess<T> = T extends { readonly status: 200; readonly body: infer A } ?
+  Exclude<A, Ignored> :
+  T extends { readonly status: 201; readonly body: infer A } ? Exclude<A, Ignored>
   : void
 
-export type ClientResponseToError<T> = T extends { readonly status: 401 } ? Unauthorized :
-  T extends { readonly status: 422; readonly content: { readonly errors: ReadonlyArray<string> } } ? Unprocessable :
-  never
-
 export function handleClientRequest<
-  T extends { readonly status: number },
+  T extends { readonly status: number; readonly body: any },
   E,
   R,
   O = ClientResponseToSuccess<T>
 >(
   effect: Effect.Effect<T, E | ClientError.ClientError, R>,
   f?: (response: ClientResponseToSuccess<T>) => O
-): Effect.Effect<O, Exclude<E, ClientError.ClientError> | ClientResponseToError<T>, R> {
+): Effect.Effect<O, Exclude<E, ClientError.ClientError>, R> {
   return effect.pipe(
     Effect.catchTag(
-      "ClientError" as any,
-      (error) => Effect.fail(new Unprocessable({ errors: [(error as ClientError.ClientError).message] }))
+      "ClientError",
+      Unify.unify((error: any) => {
+        if ("status" in error) {
+          switch (error.status) {
+            case 401:
+              return Effect.fail(new Unauthorized())
+            case 422:
+              return Effect.fail(new Unprocessable({ errors: (error.error as Unprocessable).errors }))
+          }
+        }
+        return Effect.fail(new Unprocessable({ errors: [error.message] }))
+      })
     ),
-    Effect.flatMap(Unify.unify((response: T) => {
-      if (response.status === 401) return Effect.fail(new Unauthorized())
-      if (response.status === 422) {
-        return Effect.fail(new Unprocessable((response as any).content.errors))
-      }
-
-      const content = (response as any).content
-
+    Effect.flatMap(Unify.unify(({ body }: T) => {
       if (f) {
-        return Effect.succeed(f(content))
+        return Effect.succeed(f(body))
       } else {
-        return Effect.succeed(content as O)
+        return Effect.succeed(body as O)
       }
     })) as any
   )

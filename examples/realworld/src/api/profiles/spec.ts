@@ -1,56 +1,52 @@
-import { security } from "@/api/common/security"
+import { add200, addJwtTokenSecurity, addUnauthorizedResponse, addUnprocessableResponse } from "@/api/common/spec"
 import { Profile } from "@/model"
-import { Api } from "effect-http"
+import { Api, ApiGroup } from "effect-http"
 import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
-export const ProfilesSpec = Api.apiGroup("Profiles").pipe(
-  Api.get(
-    "getProfile",
-    Routes.profiles.path,
-    {
-      request: {
-        params: Routes.profiles.schema
-      },
-      response: [
-        { status: 200, content: Schema.struct({ profile: Profile }) },
-        { status: 401 },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    }
-  ),
-  Api.post(
-    "follow",
-    Routes.follow.path,
-    {
-      request: {
-        params: Routes.follow.schema
-      },
-      response: [
-        { status: 200, content: Schema.struct({ profile: Profile }) },
-        { status: 401 },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    },
-    {
-      security
-    }
-  ),
-  Api.delete(
-    "unfollow",
-    Routes.follow.path,
-    {
-      request: {
-        params: Routes.follow.schema
-      },
-      response: [
-        { status: 200, content: Schema.struct({ profile: Profile }) },
-        { status: 401 },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    },
-    {
-      security
-    }
-  )
+export const getProfile = Api.get(
+  "getProfile",
+  Routes.profiles.path,
+  {
+    description: "Get a profile. Auth not required."
+  }
+).pipe(
+  Api.setRequestPath(Routes.profiles.schema),
+  add200(Schema.struct({ profile: Profile })),
+  addUnauthorizedResponse,
+  addUnprocessableResponse
+)
+
+export const follow = Api.post(
+  "follow",
+  Routes.follow.path,
+  {
+    description: "Follow a user. Auth is required."
+  }
+).pipe(
+  Api.setRequestPath(Routes.follow.schema),
+  add200(Schema.struct({ profile: Profile })),
+  addUnauthorizedResponse,
+  addUnprocessableResponse,
+  addJwtTokenSecurity
+)
+
+export const unfollow = Api.delete(
+  "unfollow",
+  Routes.follow.path,
+  {
+    description: "Unfollow a user. Auth is required."
+  }
+).pipe(
+  Api.setRequestPath(Routes.follow.schema),
+  add200(Schema.struct({ profile: Profile })),
+  addUnauthorizedResponse,
+  addUnprocessableResponse,
+  addJwtTokenSecurity
+)
+
+export const ProfilesSpec = ApiGroup.make("Profiles").pipe(
+  ApiGroup.addEndpoint(getProfile),
+  ApiGroup.addEndpoint(follow),
+  ApiGroup.addEndpoint(unfollow)
 )

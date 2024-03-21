@@ -40,11 +40,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.5",
+    "@effect/schema": "^0.64.8",
     "@typed/decoder": "workspace:*",
     "@typed/guard": "workspace:*",
     "@typed/path": "workspace:*",
-    "effect": "^2.4.7",
+    "effect": "^2.4.9",
     "path-to-regexp": "^6.2.1"
   },
   "peerDependencies": {

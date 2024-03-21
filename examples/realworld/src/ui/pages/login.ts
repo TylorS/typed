@@ -1,4 +1,12 @@
-import { html, Route } from "@typed/core"
+import { parseFormData } from "@/lib/Schema"
+import { CurrentUser, Users } from "@/services"
+import { Unprocessable } from "@/services/errors"
+import { LoginInput } from "@/services/Login"
+import { CurrentUserErrors } from "@/ui/services/CurrentUser"
+import { ArrayFormatter } from "@effect/schema"
+import { AsyncData, EventHandler, html, RefAsyncData, RefSubject, Route } from "@typed/core"
+import type { EventWithTarget } from "@typed/dom/EventTarget"
+import { Effect } from "effect"
 
 export const route = Route.fromPath("/login")
 
@@ -11,16 +19,14 @@ export const main = html`<div class="auth-page">
           <a href="/register">Need an account?</a>
         </p>
 
-        <ul class="error-messages">
-          <li>That email is already taken</li>
-        </ul>
-
-        <form>
+        ${CurrentUserErrors}
+        
+        <form onsubmit=${EventHandler.preventDefault(loginUser)}>
           <fieldset class="form-group">
-            <input class="form-control form-control-lg" type="text" placeholder="Email" />
+            <input name="email" class="form-control form-control-lg" type="text" placeholder="Email" />
           </fieldset>
           <fieldset class="form-group">
-            <input class="form-control form-control-lg" type="password" placeholder="Password" />
+            <input name="password" class="form-control form-control-lg" type="password" placeholder="Password" />
           </fieldset>
           <button class="btn btn-lg btn-primary pull-xs-right">Sign in</button>
         </form>
@@ -28,3 +34,23 @@ export const main = html`<div class="auth-page">
     </div>
   </div>
 </div>`
+
+function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
+  return Effect.gen(function*(_) {
+    const current = yield* _(CurrentUser)
+
+    // Only allow one login request at a time
+    if (AsyncData.isLoadingOrRefreshing(current)) return
+
+    const data = new FormData(ev.target)
+    const input = yield* _(data, parseFormData(LoginInput.fields))
+
+    yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
+  }).pipe(
+    Effect.catchAll((error) => {
+      const issues = ArrayFormatter.formatError(error)
+      const errors = issues.map((issue) => issue.message)
+      return RefSubject.set(CurrentUser, AsyncData.fail(new Unprocessable({ errors })))
+    })
+  )
+}

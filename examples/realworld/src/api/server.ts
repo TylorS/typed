@@ -1,9 +1,7 @@
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
-import { GetCurrentUser } from "@/services/GetCurrentUser"
-import { UpdateUser } from "@/services/UpdateUser"
 import { Effect, ReadonlyRecord } from "effect"
-import { RouterBuilder } from "effect-http"
+import { RouterBuilder, ServerError } from "effect-http"
 import { Spec } from "./spec"
 
 const STATUS_200 = { status: 200 } as const
@@ -16,30 +14,30 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "createComment",
-    ({ body: { comment }, params: { slug } }) =>
+    ({ body: { comment }, path: { slug } }) =>
       Comments.create(slug, comment).pipe(asStatus(201, "comment"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "deleteArticle",
-    ({ params: { slug } }) => Articles.delete({ slug }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.delete({ slug }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "deleteComment",
-    ({ params: { id, slug } }) =>
+    ({ path: { id, slug } }) =>
       Comments.delete(slug, { id }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "favorite",
-    ({ params: { slug } }) => Articles.favorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.favorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "follow",
-    ({ params: { username } }) =>
+    ({ path: { username } }) =>
       Profiles.follow(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getArticle",
-    ({ params: { slug } }) => Articles.get({ slug }).pipe(asStatus(200, "article"), catchUnprocessable)
+    ({ path: { slug } }) => Articles.get({ slug }).pipe(asStatus(200, "article"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "getArticles",
@@ -47,11 +45,11 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "getComments",
-    ({ params: { slug } }) => Comments.get(slug).pipe(asStatus(200, "comments"), catchUnprocessable)
+    ({ path: { slug } }) => Comments.get(slug).pipe(asStatus(200, "comments"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "getCurrentUser",
-    (_) => GetCurrentUser().pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
+    (_) => Users.current().pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getFeed",
@@ -59,8 +57,7 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "getProfile",
-    ({ params: { username } }) =>
-      Profiles.get(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
+    ({ path: { username } }) => Profiles.get(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getTags",
@@ -76,22 +73,21 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "unfavorite",
-    ({ params: { slug } }) =>
-      Articles.unfavorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.unfavorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "unfollow",
-    ({ params: { username } }) =>
+    ({ path: { username } }) =>
       Profiles.unfollow(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "updateArticle",
-    ({ body: { article }, params: { slug } }) =>
+    ({ body: { article }, path: { slug } }) =>
       Articles.update(slug, article).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "updateUser",
-    ({ body: { user } }) => UpdateUser(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
+    ({ body: { user } }) => Users.update(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.getRouter
 )
@@ -99,35 +95,39 @@ export const server = RouterBuilder.make(Spec).pipe(
 function asStatus<const S extends number, const K extends string>(status: S, key: K) {
   return <A, E, R>(
     effect: Effect.Effect<A, E, R>
-  ): Effect.Effect<{ readonly status: S; readonly content: { readonly [_ in K]: A } }, E, R> =>
-    Effect.map(effect, (content) => ({ status, content: ReadonlyRecord.singleton(key, content) } as const))
+  ): Effect.Effect<{ readonly status: S; readonly body: { readonly [_ in K]: A } }, E, R> =>
+    Effect.map(effect, (content) => ({ status, body: ReadonlyRecord.singleton(key, content) } as const))
 }
 
 function catchUnauthorized<R, E, A>(
   effect: Effect.Effect<R, E | Unauthorized, A>
-): Effect.Effect<R | { readonly status: 401 }, Exclude<E, { readonly _tag: "Unauthorized" }>, A> {
-  return Effect.catchTag(effect, "Unauthorized", () => Effect.succeed({ status: 401 } as const))
+): Effect.Effect<
+  R,
+  Exclude<E, { readonly _tag: "Unauthorized" }> | ServerError.ServerError,
+  A
+> {
+  return Effect.catchTag(effect, "Unauthorized", () => ServerError.unauthorizedError(undefined))
 }
 
 function catchUnprocessable<A, E, R>(
   effect: Effect.Effect<A, E | Unprocessable, R>
 ): Effect.Effect<
-  A | { readonly status: 422; readonly content: { readonly errors: ReadonlyArray<string> } },
-  Exclude<E, { readonly _tag: "Unprocessable" }>,
+  A,
+  Exclude<E, { readonly _tag: "Unprocessable" }> | ServerError.ServerError,
   R
 > {
   return Effect.catchTag(
     effect,
     "Unprocessable",
-    (e) => Effect.succeed({ status: 422, content: { errors: (e as Unprocessable).errors } } as const)
+    (e) => ServerError.makeJson(422, { errors: (e as Unprocessable).errors } as const)
   )
 }
 
 function catchUnauthorizedAndUnprocessable<R, E, A>(
   effect: Effect.Effect<R, E | Unauthorized | Unprocessable, A>
 ): Effect.Effect<
-  { readonly status: 401 } | { readonly status: 422; readonly content: { readonly errors: ReadonlyArray<string> } } | R,
-  Exclude<Exclude<E, { readonly _tag: "Unprocessable" }>, { readonly _tag: "Unauthorized" }>,
+  R,
+  Exclude<Exclude<E, { readonly _tag: "Unprocessable" }>, { readonly _tag: "Unauthorized" }> | ServerError.ServerError,
   A
 > {
   return catchUnauthorized(catchUnprocessable(effect))

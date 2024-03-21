@@ -1,57 +1,55 @@
-import { security } from "@/api/common/security"
+import {
+  add200,
+  add201,
+  addJwtTokenSecurity,
+  addUnauthorizedResponse,
+  addUnprocessableResponse
+} from "@/api/common/spec"
 import { Comment } from "@/model"
 import { CreateCommentInput } from "@/services/CreateComment"
-import { Api } from "effect-http"
+import { Api, ApiGroup } from "effect-http"
 import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
-export const CommentsSpec = Api.apiGroup("Comments").pipe(
-  Api.get(
-    "getComments",
-    Routes.comments.path,
-    {
-      request: {
-        params: Routes.comments.schema
-      },
-      response: [
-        { status: 200, content: Schema.struct({ comments: Schema.array(Comment) }) },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    }
-  ),
-  Api.post(
-    "createComment",
-    Routes.comments.path,
-    {
-      request: {
-        body: Schema.struct({ comment: CreateCommentInput }),
-        params: Routes.comments.schema
-      },
-      response: [
-        { status: 201, content: Schema.struct({ comment: Comment }) },
-        { status: 401 },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    },
-    {
-      security
-    }
-  ),
-  Api.delete(
-    "deleteComment",
-    Routes.comment.path,
-    {
-      request: {
-        params: Routes.comment.schema
-      },
-      response: [
-        { status: 200 },
-        { status: 401 },
-        { status: 422, content: Schema.struct({ errors: Schema.array(Schema.string) }) }
-      ]
-    },
-    {
-      security
-    }
-  )
+export const getComments = Api.get(
+  "getComments",
+  Routes.comments.path,
+  { "description": "Get comments for an article. Auth not required." }
+).pipe(
+  Api.setRequestPath(Routes.comments.schema),
+  add200(Schema.struct({ comments: Schema.array(Comment) })),
+  addUnprocessableResponse
+)
+
+export const createComment = Api.post(
+  "createComment",
+  Routes.comments.path,
+  { "description": "Create a comment. Auth is required" }
+).pipe(
+  Api.setRequestPath(Routes.comments.schema),
+  Api.setRequestBody(Schema.struct({ comment: CreateCommentInput })),
+  add201(Schema.struct({ comment: Comment })),
+  addUnauthorizedResponse,
+  addUnprocessableResponse,
+  addJwtTokenSecurity
+)
+
+export const deleteComment = Api.delete(
+  "deleteComment",
+  Routes.comment.path,
+  {
+    description: "Delete a comment. Auth is required"
+  }
+).pipe(
+  Api.setRequestPath(Routes.comment.schema),
+  add200(),
+  addUnauthorizedResponse,
+  addUnprocessableResponse,
+  addJwtTokenSecurity
+)
+
+export const CommentsSpec = ApiGroup.make("Comments").pipe(
+  ApiGroup.addEndpoint(getComments),
+  ApiGroup.addEndpoint(createComment),
+  ApiGroup.addEndpoint(deleteComment)
 )

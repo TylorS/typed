@@ -176,6 +176,18 @@
       "@typed/router/examples/*": [
         "packages/router/examples/*"
       ],
+      "@typed/server": [
+        "packages/server/src/index.ts"
+      ],
+      "@typed/server/*": [
+        "packages/server/src/*"
+      ],
+      "@typed/server/test/*": [
+        "packages/server/test/*"
+      ],
+      "@typed/server/examples/*": [
+        "packages/server/examples/*"
+      ],
       "@typed/storybook": [
         "packages/storybook/src/index.ts"
       ],
