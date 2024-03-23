@@ -2,11 +2,12 @@ import type { JwtToken, User } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import type { Unprocessable } from "@/services/errors"
 import { GetCurrentUser } from "@/services/GetCurrentUser"
-import { AsyncData, Context, RefAsyncData, RefSubject } from "@typed/core"
+import { AsyncData, Context, Fx, RefAsyncData, RefSubject } from "@typed/core"
 import { RedirectError } from "@typed/navigation"
 import { Effect, Option, Unify } from "effect"
 
 export const CurrentUser = RefSubject.tagged<AsyncData.AsyncData<User, Unauthorized | Unprocessable>>()("CurrentUser")
+
 export type CurrentUser = RefSubject.Identifier<typeof CurrentUser>
 
 export const getCurrentJwtToken = CurrentUser.pipe(
@@ -23,12 +24,19 @@ export const getCurrentJwtToken = CurrentUser.pipe(
   }))
 )
 
-export const isAuthenticated = RefAsyncData.isSuccess(CurrentUser)
+export const isAuthenticated = CurrentUser.pipe(
+  Fx.dropWhile(AsyncData.isLoadingOrRefreshing),
+  Fx.map(AsyncData.isSuccess),
+  Fx.takeOneIfNotDomEnvironment
+)
 
 export const isAuthenticatedGuard = <P>(params: P) =>
   Effect.flatMap(
-    isAuthenticated,
-    (b) => b ? Effect.succeedSome(params) : Effect.as(new RedirectError({ path: "/login" }), Option.none())
+    RefAsyncData.awaitLoadingOrRefreshing(CurrentUser),
+    (user) =>
+      AsyncData.isSuccess(user)
+        ? Effect.succeedSome(params)
+        : Effect.as(new RedirectError({ path: "/login" }), Option.none())
   )
 
 export const SaveJwtToken = Context.Fn<(token: JwtToken) => Effect.Effect<void>>()("SaveJwtToken")

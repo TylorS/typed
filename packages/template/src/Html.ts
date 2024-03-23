@@ -100,10 +100,7 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
             >(chunk, values, isStatic)
           )
         ),
-        (x) => {
-          console.log(x.valueOf())
-          return (x.valueOf() as string).length > 0
-        }
+        (x) => (x.valueOf() as string).length > 0
       )
     }
   }
