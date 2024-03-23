@@ -25,9 +25,9 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
     return `` as PathJoin<P>
   }
 
-  const [head, ...tail] = parts
+  const [head, ...tail] = parts.map(formatPart)
 
-  return (`${formatPart(head)}${pathJoin(...tail)}` || "/") as PathJoin<P>
+  return `${head || "/"}${tail.join("")}` as PathJoin<P>
 }
 
 /**
@@ -36,9 +36,6 @@ export const pathJoin = <P extends ReadonlyArray<string>>(...parts: P): PathJoin
  * @since 1.0.0
  */
 export const formatPart = (part: string) => {
-  part = removeLeadingSlash(part)
-  part = removeTrailingSlash(part)
-
   if (part.startsWith("{")) {
     return part
   }
@@ -46,6 +43,9 @@ export const formatPart = (part: string) => {
   if (part.startsWith("\\?")) {
     return part
   }
+
+  part = removeLeadingSlash(part)
+  part = removeTrailingSlash(part)
 
   return part === "" ? "" : `/${part}`
 }
@@ -56,7 +56,7 @@ export const formatPart = (part: string) => {
  */
 export type FormatPart<P extends string> = `` extends P ? P
   : RemoveSlash<P> extends `\\?${infer _}` ? RemoveSlash<P>
-  : RemoveSlash<P> extends `{${infer _}` ? RemoveSlash<P>
+  : P extends `{${infer _}` ? P
   : `/${RemoveSlash<P>}`
 
 type RemoveSlash<T> = RemoveLeadingSlash<RemoveTrailingSlash<T>>

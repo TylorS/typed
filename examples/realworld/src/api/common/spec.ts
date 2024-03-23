@@ -54,8 +54,19 @@ export const add200: <A = void, I = void, R = never>(
   Security extends ApiEndpoint.ApiSecurity.Any
 >(
   endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<200, A, ApiSchema.Ignored, R> | Response1, Security> =
-  <A, I, R>(schema?: Schema.Schema<A, I, R>) => Api.addResponse(ApiResponse.make(200, schema))
+) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<200, A, ApiSchema.Ignored, R>, Security> =
+  <A, I, R>(schema?: Schema.Schema<A, I, R>) => (endpoint) => Api.setResponse(ApiResponse.make(200, schema))(endpoint)
+
+export const add200WithCookies = <A, I, R>(schema?: Schema.Schema<A, I, R>) =>
+  Api.setResponse(ApiResponse.make(
+    200,
+    schema,
+    Schema.union(
+      Schema.struct({ "cookies": Schema.string }),
+      Schema.struct({ "set-cookie": Schema.string }),
+      Schema.struct({})
+    )
+  ))
 
 export const add201: <A, I, R>(
   schema: Schema.Schema<A, I, R>
@@ -66,8 +77,9 @@ export const add201: <A, I, R>(
   Security extends ApiEndpoint.ApiSecurity.Any
 >(
   endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<201, A, ApiSchema.Ignored, R> | Response1, Security> =
-  <A, I, R>(schema: Schema.Schema<A, I, R>) => Api.addResponse(ApiResponse.make(201, schema))
+) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<201, A, ApiSchema.Ignored, R>, Security> = <A, I, R>(
+  schema: Schema.Schema<A, I, R>
+) => Api.setResponse(ApiResponse.make(201, schema))
 
 export const addJwtTokenSecurity: <
   Id extends string,

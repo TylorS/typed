@@ -48,7 +48,7 @@
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
-    "effect": "^2.4.9"
+    "effect": "^2.4.11"
   },
   "devDependencies": {
     "ts-toolbelt": "^9.6.0"

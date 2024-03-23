@@ -19,6 +19,7 @@ import type * as Sink from "../Sink.js"
 export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
   const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
   const finished = new Set<number>()
+  const done = new Set<number>()
   let currentIndex = 0
 
   const drainBuffer = (index: number): Effect.Effect<void, never, R> => {
@@ -29,6 +30,8 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
   }
 
   const onSuccess = (index: number, value: A) => {
+    if (done.has(index)) return Effect.unit
+
     if (index === currentIndex) {
       const buffer = buffers[index]
 
@@ -39,15 +42,19 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
 
         return drainBuffer(index)
       }
-    } else {
+    } else if (index > currentIndex) {
       buffers[index].push(value)
-
-      return Effect.unit
     }
+
+    return Effect.unit
   }
 
   const onEnd = (index: number) => {
-    finished.add(index)
+    if (finished.has(index)) {
+      done.add(index)
+    } else {
+      finished.add(index)
+    }
 
     if (index === currentIndex && ++currentIndex < size) {
       return drainBuffer(currentIndex)

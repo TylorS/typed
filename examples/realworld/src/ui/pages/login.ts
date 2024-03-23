@@ -1,16 +1,28 @@
 import { parseFormData } from "@/lib/Schema"
-import { CurrentUser, Users } from "@/services"
+import { CurrentUser, isAuthenticated, Users } from "@/services"
 import { Unprocessable } from "@/services/errors"
 import { LoginInput } from "@/services/Login"
 import { CurrentUserErrors } from "@/ui/services/CurrentUser"
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, EventHandler, html, RefAsyncData, RefSubject, Route } from "@typed/core"
+import { AsyncData, EventHandler, Fx, html, Navigation, RefAsyncData, RefSubject, Route } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
+import { isDom } from "@typed/environment"
 import { Effect } from "effect"
 
 export const route = Route.fromPath("/login")
 
-export const main = html`<div class="auth-page">
+export const main = Fx.gen(function*(_) {
+  if (yield* _(isDom)) {
+    yield* _(
+      isAuthenticated,
+      Fx.if({
+        onFalse: Fx.fromEffect(Effect.logDebug("Not authenticated")),
+        onTrue: Fx.fromEffect(Navigation.navigate("/", { history: "replace" }))
+      }),
+      Fx.forkScoped
+    )
+  }
+  return html`<div class="auth-page">
   <div class="container page">
     <div class="row">
       <div class="col-md-6 col-xs-12 offset-md-3">
@@ -34,6 +46,7 @@ export const main = html`<div class="auth-page">
     </div>
   </div>
 </div>`
+})
 
 function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
   return Effect.gen(function*(_) {

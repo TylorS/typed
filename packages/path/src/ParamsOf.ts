@@ -58,5 +58,5 @@ type AstToParams<T, Params = {}> = T extends ModifierNode<infer M, infer S> ? Mo
 type ModifyParams<M extends Modifier, T> = {
   "?": Partial<T>
   "+": { readonly [K in keyof T]: readonly [T[K], ...Array<T[K]>] }
-  "*": { readonly [K in keyof T]: ReadonlyArray<T[K]> }
+  "*": { readonly [K in keyof T]?: ReadonlyArray<T[K]> }
 }[M]

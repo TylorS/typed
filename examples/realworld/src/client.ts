@@ -1,23 +1,16 @@
 import "./styles.css"
 
-// import { getCurrentUserData } from "@/services"
 import { isAuthenticated } from "@/services"
-import { fromWindow, Fx, hydrateToLayer } from "@typed/core"
+import { fromWindow, Fx, hydrateToLayer, Navigation } from "@typed/core"
 import { Storage } from "@typed/dom/Storage"
-import { RedirectError } from "@typed/navigation"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 import * as Ui from "./ui"
 
-Effect.gen(function*(_) {
-  // Initialize the current user
-  // yield* _(
-  //   getCurrentUserData,
-  //   Effect.forkScoped
-  // )
-
-  // Launch our UI application
+const main = Effect.gen(function*(_) {
   yield* _(Ui.router.notFound(onNotFound), Ui.layout, hydrateToLayer, Layer.launch)
-}).pipe(
+})
+
+main.pipe(
   Effect.provide(Ui.Live),
   Effect.provide(Storage.layer(localStorage)),
   Effect.provide(fromWindow(window, { rootElement: document.getElementById("app")! })),
@@ -29,9 +22,9 @@ Effect.gen(function*(_) {
 function onNotFound() {
   return Fx.fromEffect(Effect.gen(function*(_) {
     if (yield* _(isAuthenticated)) {
-      return yield* _(new RedirectError({ path: Ui.pages.home.route.path }))
+      return yield* _(new Navigation.RedirectError({ path: Ui.pages.home.route.path }))
     } else {
-      return yield* _(new RedirectError({ path: Ui.pages.login.route.path }))
+      return yield* _(new Navigation.RedirectError({ path: Ui.pages.login.route.path }))
     }
   }))
 }

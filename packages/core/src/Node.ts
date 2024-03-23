@@ -190,7 +190,9 @@ export const run = <A, E>(
   options?: RunForkOptions
 ): Disposable => {
   const program = effect.pipe(
-    Effect.tapErrorCause((cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : Effect.logError(cause)),
+    Effect.tapErrorCause((cause) =>
+      Cause.isInterruptedOnly(cause) ? Effect.unit : Effect.logError(`Application Failure`, cause)
+    ),
     Effect.provide(NodeContext.layer)
   )
   const keepAlive = setInterval(() => {}, 2 ** 31 - 1)

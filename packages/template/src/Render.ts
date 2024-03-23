@@ -16,7 +16,6 @@ import * as Effect from "effect/Effect"
 import { attachRoot, renderTemplate } from "./internal/render.js"
 import * as RenderContext from "./RenderContext.js"
 import { type RenderEvent } from "./RenderEvent.js"
-import type * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
 /**
@@ -76,20 +75,9 @@ export function render<R, E, T extends RenderEvent | null>(
  * @since 1.0.0
  */
 export function renderToLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<T, E, R>,
-  window: Window & GlobalThis = globalThis.window,
-  options?: DomServicesElementParams
-): Layer.Layer<
-  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
-  never,
-  | RenderQueue.RenderQueue
-  | Exclude<
-    Exclude<R, Scope.Scope>,
-    RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices
-  >
-> {
-  return Layer.provideMerge(
-    Fx.drainLayer(Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(e)))),
-    renderLayer(window, options)
+  rendered: Fx.Fx<T, E, R>
+): Layer.Layer<never, never, RenderContext.RenderContext | RenderTemplate | RootElement | Exclude<R, Scope.Scope>> {
+  return Fx.drainLayer(
+    Fx.switchMapCause(render(rendered), (e) => Fx.fromEffect(Effect.logError(`Rendering Failure`, e)))
   )
 }

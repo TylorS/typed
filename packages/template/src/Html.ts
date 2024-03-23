@@ -100,7 +100,10 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
             >(chunk, values, isStatic)
           )
         ),
-        (x) => (x.valueOf() as string).length > 0
+        (x) => {
+          console.log(x.valueOf())
+          return (x.valueOf() as string).length > 0
+        }
       )
     }
   }
@@ -195,10 +198,6 @@ function renderPart<E, R>(
 
       return s ? Option.some(HtmlRenderEvent(s)) : Option.none()
     })
-
-    if (isStatic === false && node._tag === "text-part") {
-      return Fx.append(Fx.prepend(html, HtmlRenderEvent(TEXT_START)), HtmlRenderEvent(TYPED_HOLE(node.index)))
-    }
 
     return html
   }

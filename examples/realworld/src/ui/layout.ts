@@ -1,6 +1,6 @@
 import { CurrentUser, isAuthenticated } from "@/services"
 import type { Path, Placeholder, RenderEvent } from "@typed/core"
-import { AsyncData, EventHandler, Fx, html, Navigation, Route, Router } from "@typed/core"
+import { EventHandler, Fx, html, Navigation, RefAsyncData, Route } from "@typed/core"
 import { Option } from "effect"
 import * as pages from "./pages"
 
@@ -20,20 +20,22 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
     <a class="navbar-brand" href="/">conduit</a>
     <ul class="nav navbar-nav pull-xs-right">
       ${NavLink("Home", pages.home.route)}
-      ${NavLink(html`<i class="mr-2 ion-compose"></i> New Article`, pages.editor.route)}
-      ${NavLink(html`<i class="mr-2 ion-gear-a"></i> Settings`, pages.settings.route)}
+      ${NavLink(Fx.take(html`<i class="mr-2 ion-compose"></i> New Article`, 1), pages.editor.route)}
+      ${NavLink(Fx.take(html`<i class="mr-2 ion-gear-a"></i> Settings`, 1), pages.settings.route)}
       ${
   CurrentUser.pipe(
-    Fx.map(AsyncData.toOption),
-    Fx.switchMap(Option.match({
-      onNone: () => Fx.succeed(null),
-      onSome: (user) =>
+    RefAsyncData.getSuccess,
+    Fx.takeOneIfNotDomEnvironment,
+    Fx.switchMap(
+      (user) =>
         NavLink(
-          html`<img src="${user.image}" class="user-pic" />${user.username}`,
-          pages.profile.route,
-          user
+          html`<img src=${Option.getOrElse(user.image, () => "")} class="user-pic" /> ${user.username}`,
+          pages.profile.route.route,
+          {
+            username: user.username
+          }
         )
-    }))
+    )
   )
 }
     </ul>
@@ -41,8 +43,11 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
 </nav>`
 
 const Header = Fx.if(
-  isAuthenticated,
-  { onFalse: UnauthenticatedHeader, onTrue: AuthenticatedHeader }
+  Fx.takeOneIfNotDomEnvironment(isAuthenticated),
+  {
+    onFalse: UnauthenticatedHeader,
+    onTrue: AuthenticatedHeader
+  }
 )
 
 const Footer = html`<footer>
@@ -61,17 +66,12 @@ function NavLink<E, R, P extends string, A = Path.ParamsOf<P>, E2 = never, R2 = 
 ) {
   const { route } = Route.asRouteGuard(input)
   const to: string = route.make(...params as any)
-  const className = Fx.when(Router.isActive(input, ...params), {
-    onTrue: "nav-link active",
-    onFalse: "nav-link"
-  })
 
   return html`<li class="nav-item">
     <a
-      class=${className} 
-      href=${to} 
-      onclick=${EventHandler.preventDefault(() => Navigation.navigate(to))}
-    >
+      class="nav-link" 
+      href="${to}"
+      onclick="${EventHandler.preventDefault(() => Navigation.navigate(to))}">
       ${content}
     </a>
   </li>`

@@ -39,7 +39,7 @@ describe(__filename, () => {
         // Optional params
         Test.check<ParamsOf<"/a/:b/c/:d?">, { readonly b: string; readonly d?: string }, Test.Pass>(),
         // Zero or more
-        Test.check<ParamsOf<"/a/:foo*">, { readonly foo: ReadonlyArray<string> }, Test.Pass>(),
+        Test.check<ParamsOf<"/a/:foo*">, { readonly foo?: ReadonlyArray<string> }, Test.Pass>(),
         // One or more
         Test.check<ParamsOf<"/a/:foo+">, { readonly foo: readonly [string, ...Array<string>] }, Test.Pass>(),
         // Unamed
@@ -47,7 +47,7 @@ describe(__filename, () => {
         // Optional unamed
         Test.check<ParamsOf<"/a/(.*)/(.*)?">, { readonly 0: string; readonly 1?: string }, Test.Pass>(),
         // Zero or more unamed
-        Test.check<ParamsOf<"/a/(.*)*">, { readonly 0: ReadonlyArray<string> }, Test.Pass>(),
+        Test.check<ParamsOf<"/a/(.*)*">, { readonly 0?: ReadonlyArray<string> }, Test.Pass>(),
         // One or more unamed
         Test.check<ParamsOf<"/a/(.*)+">, { readonly 0: readonly [string, ...Array<string>] }, Test.Pass>(),
         // Prefix
@@ -55,7 +55,7 @@ describe(__filename, () => {
         // Optional prefix
         Test.check<ParamsOf<"/a{-:foo}?">, { readonly foo?: string }, Test.Pass>(),
         // Zero or more prefix
-        Test.check<ParamsOf<"/a{-:foo}*">, { readonly foo: ReadonlyArray<string> }, Test.Pass>(),
+        Test.check<ParamsOf<"/a{-:foo}*">, { readonly foo?: ReadonlyArray<string> }, Test.Pass>(),
         // One or more prefix
         Test.check<ParamsOf<"/a{-:foo}+">, { readonly foo: readonly [string, ...Array<string>] }, Test.Pass>(),
         // Supported values
@@ -63,7 +63,7 @@ describe(__filename, () => {
         // Supported values with optional
         Test.check<ParamsOf<"/a/:foo(json|xml)?">, { readonly foo?: string }, Test.Pass>(),
         // Supported values with zero or more
-        Test.check<ParamsOf<"/a/:foo(json|xml)*">, { readonly foo: ReadonlyArray<string> }, Test.Pass>(),
+        Test.check<ParamsOf<"/a/:foo(json|xml)*">, { readonly foo?: ReadonlyArray<string> }, Test.Pass>(),
         // Supported values with one or more
         Test.check<
           ParamsOf<"/a/:foo(json|xml)+">,

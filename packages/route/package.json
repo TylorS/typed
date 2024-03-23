@@ -40,12 +40,14 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.8",
+    "@effect/schema": "^0.64.11",
     "@typed/decoder": "workspace:*",
     "@typed/guard": "workspace:*",
+    "@typed/id": "workspace:*",
     "@typed/path": "workspace:*",
-    "effect": "^2.4.9",
-    "path-to-regexp": "^6.2.1"
+    "effect": "^2.4.11",
+    "path-to-regexp": "^6.2.1",
+    "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {
     "@effect/schema": "^0.63.0",

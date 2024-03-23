@@ -9,7 +9,7 @@ import * as Fx from "@typed/fx/Fx"
 import { getRandomValues } from "@typed/id"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
-import { renderToLayer } from "@typed/template"
+import { renderLayer, renderToLayer } from "@typed/template"
 import * as RenderQueue from "@typed/template/RenderQueue"
 import { Cause, Effect, FiberId, Layer } from "effect"
 import type { TypedRenderer } from "./types"
@@ -41,11 +41,12 @@ export async function renderToCanvas(
       )
   )
 
-  const program = renderToLayer(renderable, window, { rootElement }).pipe(
+  const program = renderToLayer(renderable).pipe(
     Layer.provideMerge(Router.server("/")),
     Layer.provideMerge(Navigation.initialMemory({ url: "/" })),
+    Layer.provideMerge(renderLayer(window, { rootElement })),
+    Layer.provide(RenderQueue.mixed()),
     Layer.provideMerge(getRandomValues),
-    Layer.provideMerge(RenderQueue.sync),
     Layer.launch,
     Effect.catchAllCause(onCause)
   )

@@ -1273,7 +1273,7 @@ function runOrdered<
           Effect.flatMap(
             fx.run(
               Sink.make(
-                (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),
+                (cause) => Cause.isInterruptedOnly(cause) ? buffers.onEnd(i) : sink.onFailure(cause),
                 (a) => buffers.onSuccess(i, a)
               )
             ),

@@ -12,6 +12,9 @@ import { Effect, LogLevel, Option } from "effect"
 
 toHttpRouter(Ui.router, { layout: Ui.document }).pipe(
   Http.router.mount("/api", Api.server),
+  Http.router.catchAll(
+    () => Http.response.empty({ status: 303, headers: Http.headers.unsafeFromRecord({ location: "/login" }) })
+  ),
   withCurrentUserFromHeaders,
   Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
@@ -22,7 +25,12 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {
     const { headers } = yield* _(Http.request.ServerRequest)
     const token = Http.headers.get(headers, "authorization").pipe(
-      Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
+      Option.map((authorization) => JwtToken(authorization.split(" ")[1])),
+      Option.orElse(() =>
+        Http.headers.get(headers, "cookie").pipe(
+          Option.flatMap((cookie) => findJwtTokenInCookies(cookie.split("; "), "conduit-creds"))
+        )
+      )
     )
 
     // If no token is present, provide the app with no user or token
@@ -41,15 +49,23 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
       Users.current(),
       Effect.exit,
       Effect.map(AsyncData.fromExit),
-      Effect.flatMap(RefSubject.of)
+      Effect.flatMap(RefSubject.of),
+      // CurrentJwt is the server representation of the current user
+      CurrentJwt.provide(token.value)
     )
 
     // Otherwise, provide the app with the current user and token
     return yield* _(
       app,
       CurrentUser.tag.provide(RefSubject.take(user, 1)),
-      // CurrentJwt is the server representation of the current user
       CurrentJwt.provide(token.value)
     )
   })
+}
+
+function findJwtTokenInCookies(cookies: Array<string>, key: string) {
+  return Option.map(
+    Option.fromNullable(cookies.find((cookie) => cookie.startsWith(`${key}=`))?.split("=")[1]),
+    JwtToken
+  )
 }

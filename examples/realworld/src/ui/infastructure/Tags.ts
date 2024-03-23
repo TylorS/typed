@@ -1,7 +1,12 @@
 import { client } from "@/api/client"
 import { Tags } from "@/services"
 import { handleClientRequest } from "@/ui/infastructure/_client"
+import { Effect } from "effect"
 
 export const TagsLive = Tags.implement({
-  get: () => handleClientRequest(client.getTags({}), (r) => r.tags)
+  get: () =>
+    Effect.map(
+      handleClientRequest(client.getTags({})),
+      (r) => r.tags
+    )
 })

@@ -17,6 +17,9 @@
       "path": "../guard"
     },
     {
+      "path": "../id"
+    },
+    {
       "path": "../path"
     }
   ]

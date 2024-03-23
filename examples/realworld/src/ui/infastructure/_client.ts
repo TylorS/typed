@@ -3,26 +3,28 @@ import { getCurrentJwtToken } from "@/services/CurrentUser"
 import { Unauthorized, Unprocessable } from "@/services/errors"
 import { Effect, Unify } from "effect"
 import type { ClientError } from "effect-http"
-import type { Ignored } from "effect-http/ApiSchema"
 
-export type ClientResponseToSuccess<T> = T extends { readonly status: 200; readonly body: infer A } ?
-  Exclude<A, Ignored> :
-  T extends { readonly status: 201; readonly body: infer A } ? Exclude<A, Ignored>
-  : void
+type ExtractBody<A> = A extends { readonly body: infer B } ? B : A
 
 export function handleClientRequest<
-  T extends { readonly status: number; readonly body: any },
-  E,
-  R,
-  O = ClientResponseToSuccess<T>
+  A,
+  E extends { readonly message: string },
+  S extends number,
+  R
 >(
-  effect: Effect.Effect<T, E | ClientError.ClientError, R>,
-  f?: (response: ClientResponseToSuccess<T>) => O
-): Effect.Effect<O, Exclude<E, ClientError.ClientError>, R> {
-  return effect.pipe(
+  effect: Effect.Effect<A, E | ClientError.ClientError<S>, R>
+): Effect.Effect<
+  ExtractBody<A>,
+  | Exclude<E, ClientError.ClientError<S>>
+  | (S extends 422 ? Unprocessable : never)
+  | (S extends 401 ? Unauthorized : never),
+  R
+> {
+  return Effect.map(
     Effect.catchTag(
+      effect,
       "ClientError",
-      Unify.unify((error: any) => {
+      Unify.unify((error) => {
         if ("status" in error) {
           switch (error.status) {
             case 401:
@@ -34,14 +36,10 @@ export function handleClientRequest<
         return Effect.fail(new Unprocessable({ errors: [error.message] }))
       })
     ),
-    Effect.flatMap(Unify.unify(({ body }: T) => {
-      if (f) {
-        return Effect.succeed(f(body))
-      } else {
-        return Effect.succeed(body as O)
-      }
-    })) as any
-  )
+    // TODO: This is honestly a hacky way to handle client requests, but the return types of the client are not quite correct
+    // as it thinks that it returns `A`, but it's still `{ body: A }` so we need to extract the body here unsafely
+    (r) => (r as any).body as A
+  ) as any
 }
 
 export const withJwtToken = <A, E, R>(f: (jwtToken: JwtToken) => Effect.Effect<A, E, R>) =>

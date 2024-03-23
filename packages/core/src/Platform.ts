@@ -21,6 +21,7 @@ import { getHeadAndScript } from "./Vite.js"
 
 import type { PlatformError } from "@effect/platform/Error"
 import * as Navigation from "@typed/navigation"
+import type { RouteInput } from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
@@ -31,6 +32,7 @@ import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
  */
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
   readonly request: Http.request.ServerRequest
+  readonly route: RouteInput<any, any, any, any>
   readonly guards: ReadonlyArray.NonEmptyReadonlyArray<Router.RouteMatch<any, any, any, any, any, any, any>>
 }> {}
 
@@ -134,7 +136,7 @@ export function toHttpRouter<
               return yield* _(htmlResponse(template))
             }
           }
-          return yield* _(Effect.fail(new GuardsNotMatched({ request, guards })))
+          return yield* _(Effect.fail(new GuardsNotMatched({ request, route, guards })))
         }).pipe(
           Effect.provide(
             Layer.mergeAll(

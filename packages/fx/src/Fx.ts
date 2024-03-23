@@ -2246,7 +2246,12 @@ export const at: {
 export function drainLayer<FXS extends ReadonlyArray<Fx<any, never, any>>>(
   ...fxs: FXS
 ): Layer.Layer<never, never, Exclude<Fx.Context<FXS[number]>, Scope.Scope>> {
-  return Layer.scopedDiscard(Effect.forkWithErrorHandler(core.drain(core.mergeAll(fxs)), Effect.logError))
+  return Layer.scopedDiscard(
+    Effect.forkWithErrorHandler(
+      core.drain(core.mergeAll(fxs)),
+      (e) => Effect.logError(`Error originating from Fx.drainLayer`, Cause.fail(e))
+    )
+  )
 }
 
 /**
@@ -2570,4 +2575,18 @@ export function promise<A>(f: (signal: AbortSignal) => Promise<A>) {
  */
 export function promiseFx<A, E = never, R = never>(f: (signal: AbortSignal) => Promise<Fx<A, E, R>>) {
   return fromFxEffect(Effect.promise(f))
+}
+
+const void_ = succeed<void>(undefined)
+const null_ = succeed<null>(null)
+
+export {
+  /**
+   * @since 2.0.0
+   */
+  null_ as null,
+  /**
+   * @since 2.0.0
+   */
+  void_ as void
 }

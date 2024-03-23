@@ -1,4 +1,9 @@
-import { add200, addJwtTokenSecurity, addUnauthorizedResponse, addUnprocessableResponse } from "@/api/common/spec"
+import {
+  add200WithCookies,
+  addJwtTokenSecurity,
+  addUnauthorizedResponse,
+  addUnprocessableResponse
+} from "@/api/common/spec"
 import { User } from "@/model"
 import { LoginInput } from "@/services/Login"
 import { RegisterInput } from "@/services/Register"
@@ -15,7 +20,7 @@ export const login = Api.post(
   }
 ).pipe(
   Api.setRequestBody(Schema.struct({ user: LoginInput })),
-  add200(Schema.struct({ user: User })),
+  add200WithCookies(Schema.struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse
 )
@@ -27,7 +32,7 @@ export const getCurrentUser = Api.get(
     description: "Get current user"
   }
 ).pipe(
-  add200(Schema.struct({ user: User })),
+  add200WithCookies(Schema.struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -41,7 +46,7 @@ export const register = Api.post(
   }
 ).pipe(
   Api.setRequestBody(Schema.struct({ user: RegisterInput })),
-  add200(Schema.struct({ user: User })),
+  add200WithCookies(Schema.struct({ user: User })),
   addUnprocessableResponse
 )
 
@@ -53,7 +58,7 @@ export const updateUser = Api.put(
   }
 ).pipe(
   Api.setRequestBody(Schema.struct({ user: UpdateUserInput })),
-  add200(Schema.struct({ user: User })),
+  add200WithCookies(Schema.struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity

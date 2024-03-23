@@ -61,8 +61,7 @@ export type Prefix<P extends string, A extends string> = `{${P}${A}}`
  * @category Constructor
  * @since 1.0.0
  */
-export const prefix = <P extends string, A extends Param<string> | Unnamed>(prefix: P, param: A) =>
-  `{${prefix}${param}}` as Prefix<P, A>
+export const prefix = <P extends string, A extends string>(prefix: P, param: A) => `{${prefix}${param}}` as Prefix<P, A>
 
 /**
  * Construct query params
