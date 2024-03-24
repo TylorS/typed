@@ -5,7 +5,7 @@ import * as HttpClient from "@effect/platform/HttpClient"
 import * as Http from "@effect/platform/HttpServer"
 import { Effect, Option } from "effect"
 import type { ApiEndpoint, ApiRequest } from "effect-http"
-import { Api, ApiResponse, ApiSchema, Representation, Security } from "effect-http"
+import { Api, ApiResponse, ApiSchema, Security } from "effect-http"
 
 const jwtTokenSchema = Schema.string.pipe(
   Schema.transform(JwtToken, (f) => JwtToken(f.split(" ")[1]), (t) => `Token ${t}`)
@@ -44,9 +44,9 @@ export const addUnauthorizedResponse: <
 ) => ApiEndpoint.ApiEndpoint<
   Id,
   Request,
-  ApiResponse.ApiResponse<401, ApiSchema.Ignored, ApiSchema.Ignored, never> | Response1,
+  ApiResponse.ApiResponse<401, ApiSchema.Ignored, {}, never> | Response1,
   Security
-> = Api.addResponse(ApiResponse.make(401, ApiSchema.Ignored, ApiSchema.Ignored, [Representation.json]))
+> = Api.addResponse(ApiResponse.make(401, ApiSchema.Ignored, Schema.struct({})))
 
 export const addUnprocessableResponse: <
   Id extends string,
