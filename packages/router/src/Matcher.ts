@@ -30,7 +30,7 @@ export interface RouteMatcher<out A, out E, out R> {
     E3 = never,
     R3 = never
   >(
-    route: P | Route.RouteInput<P, B, E2, R2>,
+    route: P | Route.RouteInput<P, B, E2, R2> | Route.RouteDecoder<P, B, any, E2, R2>,
     f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
   ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
@@ -43,7 +43,7 @@ export interface RouteMatcher<out A, out E, out R> {
     E3 = never,
     R3 = never
   >(
-    route: P | Route.RouteInput<P, B, E2, R2>,
+    route: P | Route.RouteInput<P, B, E2, R2> | Route.RouteDecoder<P, B, any, E2, R2>,
     f: (b: B) => C
   ) => RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>>
 
@@ -110,14 +110,14 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
   }
 
   match<P extends string, B, E2, R2, C, E3, R3>(
-    route: P | Route.RouteInput<P, B, E2, R2>,
+    route: P | Route.RouteInput<P, B, E2, R2> | Route.RouteDecoder<P, B, any, E2, R2>,
     f: (ref: RefSubject.RefSubject<B>) => Fx.Fx<C, E3, R3>
   ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>> {
     return new RouteMatcherImpl<any, any, any>([...this.guards, RouteMatch(getRouteGuard(route), f)])
   }
 
   to<P extends string, B, E2, R2, C, E3, R3>(
-    route: P | Route.RouteInput<P, B, E2, R2>,
+    route: P | Route.RouteInput<P, B, E2, R2> | Route.RouteDecoder<P, B, any, E2, R2>,
     f: (b: B) => C
   ): RouteMatcher<A | C, E | E2 | E3, R | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>> {
     return this.match(route, Fx.map(f))
@@ -188,12 +188,12 @@ class RouteMatcherImpl<A, E, R> implements RouteMatcher<A, E, R> {
 }
 
 function getRouteGuard<P extends string, A, E, R>(
-  route: P | Route.RouteInput<P, A, E, R>
+  route: P | Route.RouteInput<P, A, E, R> | Route.RouteDecoder<P, A, any, E, R>
 ): Route.RouteGuard<P, A, E, R> {
   if (typeof route === "string") {
     return Route.asRouteGuard(Route.fromPath(route))
   } else {
-    return Route.asRouteGuard(route)
+    return Route.asRouteGuard(route as Route.RouteInput<P, A, E, R>)
   }
 }
 

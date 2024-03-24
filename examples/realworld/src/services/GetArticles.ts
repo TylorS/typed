@@ -3,7 +3,7 @@ import type { Article } from "@/model"
 import { ArticleTag, Username } from "@/model"
 import type { Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
-import type { Effect } from "effect"
+import { type Effect, Option } from "effect"
 
 export const GetArticlesInput = Schema.struct({
   tag: Schema.optionalOrNull(ArticleTag),
@@ -14,6 +14,14 @@ export const GetArticlesInput = Schema.struct({
 }).pipe(
   Schema.identifier("GetArticlesInput")
 )
+
+export const defaultGetArticlesInput: GetArticlesInput = {
+  tag: Option.none(),
+  author: Option.none(),
+  favorited: Option.none(),
+  limit: Option.none(),
+  offset: Option.none()
+}
 
 export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
 

@@ -4,11 +4,11 @@ import * as pages from "./pages"
 
 export const router = Router
   .match(pages.login.route, () => pages.login.main)
-  .match(pages.article.route.route, () => html`<div>Article</div>`)
+  .match(pages.article.route, pages.article.main)
   .match(pages.register.route, () => pages.register.main)
-  .match(pages.settings.route, () => html`<div>Settings</div>`)
-  .match(pages.editArticle.route.route, () => html`<div>Edit Article</div>`)
-  .match(pages.editor.route, () => html`<div>Editor</div>`)
-  .match(pages.profile.route.route, () => html`<div>Profile</div>`)
-  .match(pages.profileFavorites.route.route, () => html`<div>Profile Favorites</div>`)
-  .match(pages.home.route, () => html`<div>Home</div>`)
+  .match(pages.settings.route, () => pages.settings.main)
+  .match(pages.editArticle.route, () => pages.editArticle.main)
+  .match(pages.editor.route, () => pages.editor.main)
+  .match(pages.profile.route, pages.profile.main)
+  .match(pages.profileFavorites.route, pages.profileFavorites.main)
+  .match(pages.home.route, () => pages.home.main)
