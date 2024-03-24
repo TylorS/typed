@@ -34,9 +34,15 @@ export interface Route<in out P extends string> extends Pipeable.Pipeable, Guard
 
   readonly match: (path: string) => Option.Option<typedPath.ParamsOf<P>>
 
-  readonly make: <const Params extends typedPath.ParamsOf<P> = typedPath.ParamsOf<P>>(
-    ...params: [keyof Params] extends [never] ? readonly [{}?] : readonly [Params]
-  ) => typedPath.Interpolate<P, Params>
+  readonly make: {
+    <const Params extends typedPath.ParamsList<P> = typedPath.ParamsList<P>>(
+      ...params: Params
+    ): typedPath.Interpolate<P, Extract<Params[0], typedPath.ParamsOf<P>>>
+
+    <const Params extends typedPath.ParamsOf<P> = typedPath.ParamsOf<P>>(
+      params: Params
+    ): typedPath.Interpolate<P, Params>
+  }
 
   readonly concat: <P2 extends string>(
     route: Route<P2>,
