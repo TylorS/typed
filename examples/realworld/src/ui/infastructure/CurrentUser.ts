@@ -20,7 +20,8 @@ export const CurrentUserLive = CurrentUser.make(
       handleClientRequest,
       Effect.map((r) => r.user),
       Effect.tapErrorCause(() => RemoveJwtToken()),
-      asyncDataRequest
+      asyncDataRequest,
+      Fx.switchMapError(() => Fx.succeed(AsyncData.noData()))
     )
   })
 )
