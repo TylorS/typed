@@ -262,11 +262,11 @@ importers:
         specifier: 2.4.11
         version: 2.4.11
       effect-http:
-        specifier: ^0.60.0
-        version: 0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
+        specifier: ^0.60.1
+        version: 0.60.1(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
       effect-http-node:
-        specifier: ^0.8.0
-        version: 0.8.0(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.0)(effect@2.4.11)
+        specifier: ^0.8.1
+        version: 0.8.1(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.1)(effect@2.4.11)
       effect-log:
         specifier: ^0.30.12
         version: 0.30.12(effect@2.4.11)
@@ -302,8 +302,8 @@ importers:
         specifier: ^5.12.0
         version: 5.12.0(rollup@4.13.0)
       schema-openapi:
-        specifier: ^0.33.7
-        version: 0.33.7(@effect/schema@0.64.11)(effect@2.4.11)
+        specifier: ^0.34.0
+        version: 0.34.0(@effect/schema@0.64.11)(effect@2.4.11)
       terser:
         specifier: ^5.29.2
         version: 5.29.2
@@ -7228,25 +7228,25 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  /effect-http-node@0.8.0(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.0)(effect@2.4.11):
-    resolution: {integrity: sha512-v+gE9cOCpIYUWPBqVi/3n7LczZazrha8PsamyTpgCl41um5wafogRmvLYj09CqkhaoWcXgD/Ipc9GmdS9ZOlaQ==}
+  /effect-http-node@0.8.1(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.1)(effect@2.4.11):
+    resolution: {integrity: sha512-/CQJHdAUXHHh7QJYNu7bq1nyrHYZ8C2/BdQHXUF1DwLW9gXmj1/OakaYf4fWlRR2IROyu5+cR1xYvj5Cf21qgQ==}
     peerDependencies:
       '@effect/platform': ^0.48.15
       '@effect/platform-node': ^0.45.17
       '@effect/schema': ^0.64.11
       effect: ^2.4.11
-      effect-http: ^0.60.0
+      effect-http: ^0.60.1
     dependencies:
       '@effect/platform': 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/platform-node': 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
       '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
-      effect-http: 0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
+      effect-http: 0.60.1(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
       swagger-ui-dist: 5.12.0
     dev: false
 
-  /effect-http@0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11):
-    resolution: {integrity: sha512-sPRiTVumxs4h+iSaEOwk2c4aQp5eDD294Au+7YfboragXlKNq+Fp7YgM/NA+T/aeTzMCz+7qtG+FLNPBNrkZKw==}
+  /effect-http@0.60.1(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11):
+    resolution: {integrity: sha512-u9iHxvLAUlUkl8KbnogNrMpuVuDL3XOH8VkbX6u8r0ppHFhwBLp4ezCT/QoGKdUZkcpoyQ2Ef6mhOXxUiiXRFA==}
     peerDependencies:
       '@effect/platform': ^0.48.15
       '@effect/schema': ^0.64.11
@@ -7255,7 +7255,7 @@ packages:
       '@effect/platform': 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
-      schema-openapi: 0.33.7(@effect/schema@0.64.11)(effect@2.4.11)
+      schema-openapi: 0.34.0(@effect/schema@0.64.11)(effect@2.4.11)
     dev: false
 
   /effect-log@0.30.12(effect@2.4.11):
@@ -11241,8 +11241,8 @@ packages:
       loose-envify: 1.4.0
     dev: true
 
-  /schema-openapi@0.33.7(@effect/schema@0.64.11)(effect@2.4.11):
-    resolution: {integrity: sha512-rUI7wXVJYPDcsxogLRBx+G3q46Fg/Fw9nZnDN0UXd9pm+WYhF39oTyfgoSvQfFJflG6FRF+wPOKF2TjcxTbj5A==}
+  /schema-openapi@0.34.0(@effect/schema@0.64.11)(effect@2.4.11):
+    resolution: {integrity: sha512-/XWKM55Xt0OIKOrsGrXF+v7+S2ymvufDe288pqdKKGdqSHrPjtTNmdlLZ7V+UiJBjeYeSm4EofQuMorYT+wgvA==}
     peerDependencies:
       '@effect/schema': ^0.64.11
       effect: ^2.4.11
