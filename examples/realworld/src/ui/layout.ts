@@ -1,6 +1,6 @@
 import { CurrentUser, isAuthenticated } from "@/services"
 import type { Path, Placeholder, RenderEvent } from "@typed/core"
-import { EventHandler, Fx, html, Navigation, RefAsyncData, Route } from "@typed/core"
+import { EventHandler, Fx, html, Navigation, RefAsyncData, Route, Router } from "@typed/core"
 import { Option } from "effect"
 import * as pages from "./pages"
 
@@ -25,7 +25,6 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
       ${
   CurrentUser.pipe(
     RefAsyncData.getSuccess,
-    Fx.takeOneIfNotDomEnvironment,
     Fx.switchMap(
       (user) =>
         NavLink(
@@ -65,11 +64,16 @@ function NavLink<E, R, P extends string, A = Path.ParamsOf<P>, E2 = never, R2 = 
   ...params: Path.ParamsList<P>
 ) {
   const { route } = Route.asRouteGuard(input)
-  const to: string = route.make(...params as any)
+  const to = route.make(...params)
+  const isActive = Router.isActive(route, ...params)
+  const className = Fx.when(isActive, {
+    onFalse: "nav-link",
+    onTrue: "nav-link active"
+  })
 
   return html`<li class="nav-item">
     <a
-      class="nav-link" 
+      class="${className}" 
       href="${to}"
       onclick="${EventHandler.preventDefault(() => Navigation.navigate(to))}">
       ${content}
