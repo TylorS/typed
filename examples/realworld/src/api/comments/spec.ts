@@ -2,6 +2,7 @@ import {
   add200,
   add201,
   addJwtTokenSecurity,
+  addOptionalJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
 } from "@/api/common/spec"
@@ -18,7 +19,8 @@ export const getComments = Api.get(
 ).pipe(
   Api.setRequestPath(Routes.comments.schema),
   add200(Schema.struct({ comments: Schema.array(Comment) })),
-  addUnprocessableResponse
+  addUnprocessableResponse,
+  addOptionalJwtTokenSecurity
 )
 
 export const createComment = Api.post(

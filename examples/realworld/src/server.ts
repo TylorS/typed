@@ -11,10 +11,17 @@ import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 
 toHttpRouter(Ui.router, { layout: Ui.document }).pipe(
-  Http.router.mount("/api", Api.server),
   Http.router.catchAll(
-    () => Http.response.empty({ status: 303, headers: Http.headers.unsafeFromRecord({ location: "/login" }) })
+    (_) =>
+      Http.response.empty({
+        status: 303,
+        headers: Http.headers.unsafeFromRecord({
+          location: _._tag === "RedirectError" ? _.path.toString() : "/login"
+        })
+      })
   ),
+  Http.router.mountApp("/api", Api.server),
+  Http.router.catchTag("Unauthorized", (_) => Http.response.empty({ status: 401 })),
   withCurrentUserFromHeaders,
   Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
@@ -25,12 +32,7 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
   return Effect.gen(function*(_) {
     const { headers } = yield* _(Http.request.ServerRequest)
     const token = Http.headers.get(headers, "authorization").pipe(
-      Option.map((authorization) => JwtToken(authorization.split(" ")[1])),
-      Option.orElse(() =>
-        Http.headers.get(headers, "cookie").pipe(
-          Option.flatMap((cookie) => findJwtTokenInCookies(cookie.split("; "), "conduit-creds"))
-        )
-      )
+      Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
     )
 
     // If no token is present, provide the app with no user or token
@@ -61,11 +63,4 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
       CurrentJwt.provide(token.value)
     )
   })
-}
-
-function findJwtTokenInCookies(cookies: Array<string>, key: string) {
-  return Option.map(
-    Option.fromNullable(cookies.find((cookie) => cookie.startsWith(`${key}=`))?.split("=")[1]),
-    JwtToken
-  )
 }

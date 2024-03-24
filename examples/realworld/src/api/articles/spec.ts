@@ -2,6 +2,7 @@ import {
   add200,
   add201,
   addJwtTokenSecurity,
+  addOptionalJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
 } from "@/api/common/spec"
@@ -37,7 +38,8 @@ export const getArticles = Api.get(
 ).pipe(
   Api.setRequestQuery(GetArticlesInput),
   add200(Schema.struct({ articles: Schema.array(Article) })),
-  addUnprocessableResponse
+  addUnprocessableResponse,
+  addOptionalJwtTokenSecurity
 )
 
 export const getArticle = Api.get(
@@ -49,7 +51,8 @@ export const getArticle = Api.get(
 ).pipe(
   Api.setRequestPath(Routes.article.schema),
   add200(Schema.struct({ article: Article })),
-  addUnprocessableResponse
+  addUnprocessableResponse,
+  addOptionalJwtTokenSecurity
 )
 
 export const createArticle = Api.post(

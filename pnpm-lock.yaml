@@ -61,7 +61,7 @@ importers:
         version: 7.3.1(eslint@8.57.0)(typescript@5.4.3)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
-        version: 4.2.1(vite@5.2.3)
+        version: 4.2.1(vite@5.2.6)
       '@vitest/coverage-v8':
         specifier: ^1.4.0
         version: 1.4.0(vitest@1.4.0)
@@ -126,14 +126,14 @@ importers:
         specifier: ^3.10.5
         version: 3.10.5
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
       vite-plugin-tsconfig-paths:
         specifier: ^1.4.1
-        version: 1.4.1(typescript@5.4.3)(vite@5.2.3)
+        version: 1.4.1(typescript@5.4.3)(vite@5.2.6)
       vitest:
         specifier: 1.4.0
-        version: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1)
+        version: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6)
       zx:
         specifier: ^7.2.3
         version: 7.2.3
@@ -157,14 +157,14 @@ importers:
         version: 2.4.11
     devDependencies:
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.2.3)
+        version: 0.5.1(vite@5.2.6)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.3)
+        version: 4.3.2(typescript@5.4.3)(vite@5.2.6)
 
   examples/fx-tracing:
     dependencies:
@@ -206,7 +206,7 @@ importers:
         version: 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
       '@effect/schema':
         specifier: 0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@sqlfx/pg':
         specifier: ^0.46.0
         version: 0.46.0(@effect/schema@0.64.11)(effect@2.4.11)
@@ -262,14 +262,14 @@ importers:
         specifier: 2.4.11
         version: 2.4.11
       effect-http:
-        specifier: ^0.59.2
-        version: 0.59.2(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
+        specifier: ^0.60.0
+        version: 0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
       effect-http-node:
-        specifier: ^0.7.2
-        version: 0.7.2(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.59.2)(effect@2.4.11)
+        specifier: ^0.8.0
+        version: 0.8.0(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.0)(effect@2.4.11)
       effect-log:
-        specifier: ^0.30.11
-        version: 0.30.11(effect@2.4.11)
+        specifier: ^0.30.12
+        version: 0.30.12(effect@2.4.11)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -302,8 +302,8 @@ importers:
         specifier: ^5.12.0
         version: 5.12.0(rollup@4.13.0)
       schema-openapi:
-        specifier: ^0.33.6
-        version: 0.33.6(@effect/schema@0.64.11)(effect@2.4.11)
+        specifier: ^0.33.7
+        version: 0.33.7(@effect/schema@0.64.11)(effect@2.4.11)
       terser:
         specifier: ^5.29.2
         version: 5.29.2
@@ -312,16 +312,16 @@ importers:
         version: 4.7.1
       vavite:
         specifier: ^4.1.1
-        version: 4.1.1(vite@5.2.3)
+        version: 4.1.1(vite@5.2.6)
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.2.3)
+        version: 0.5.1(vite@5.2.6)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.3)
+        version: 4.3.2(typescript@5.4.3)(vite@5.2.6)
 
   examples/simple-ssr:
     dependencies:
@@ -367,7 +367,7 @@ importers:
         version: link:../../packages/ui/dist
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.3)
+        version: 4.3.2(typescript@5.4.3)(vite@5.2.6)
     devDependencies:
       '@storybook/addon-essentials':
         specifier: ^8.0.4
@@ -386,7 +386,7 @@ importers:
         version: 8.0.4
       '@storybook/html-vite':
         specifier: ^8.0.4
-        version: 8.0.4(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.3)
+        version: 8.0.4(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.6)
       '@storybook/test':
         specifier: ^8.0.4
         version: 8.0.4(vitest@1.4.0)
@@ -403,8 +403,8 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4(@babel/preset-env@7.24.3)(react-dom@18.2.0)(react@18.2.0)
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
   examples/todomvc:
     dependencies:
@@ -419,7 +419,7 @@ importers:
         version: 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
       '@effect/schema':
         specifier: 0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
@@ -459,7 +459,7 @@ importers:
     devDependencies:
       '@giacomorebonato/vavite':
         specifier: ^0.0.4
-        version: 0.0.4(vite@5.2.3)
+        version: 0.0.4(vite@5.2.6)
       mock-storage:
         specifier: ^1.1.0
         version: 1.1.0
@@ -473,32 +473,32 @@ importers:
         specifier: ^4.7.1
         version: 4.7.1
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.2.3)
+        version: 0.5.1(vite@5.2.6)
       vite-plugin-html:
         specifier: ^3.2.2
-        version: 3.2.2(vite@5.2.3)
+        version: 3.2.2(vite@5.2.6)
       vite-plugin-top-level-await:
         specifier: ^1.4.1
-        version: 1.4.1(vite@5.2.3)
+        version: 1.4.1(vite@5.2.6)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.3)
+        version: 4.3.2(typescript@5.4.3)(vite@5.2.6)
 
   packages/async-data:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect:
         specifier: ^2.4.11
         version: 2.4.11
       fast-check:
-        specifier: ^3.16.0
-        version: 3.16.0
+        specifier: ^3.17.0
+        version: 3.17.0
     publishDirectory: dist
 
   packages/compiler:
@@ -521,7 +521,7 @@ importers:
         version: 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../async-data/dist
@@ -575,18 +575,18 @@ importers:
         version: 2.4.11
       vavite:
         specifier: ^4.1.1
-        version: 4.1.1(vite@5.2.3)
+        version: 4.1.1(vite@5.2.6)
     devDependencies:
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     publishDirectory: dist
 
   packages/decoder:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect:
         specifier: ^2.4.11
         version: 2.4.11
@@ -596,7 +596,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -622,7 +622,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@effect/typeclass':
         specifier: 0.23.11
         version: 0.23.11(effect@2.4.11)
@@ -660,7 +660,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect:
         specifier: ^2.4.11
         version: 2.4.11
@@ -670,7 +670,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -686,7 +686,7 @@ importers:
         version: 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -707,11 +707,11 @@ importers:
         specifier: ^0.45.17
         version: 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
       '@virtualstate/navigation':
-        specifier: 1.0.1-alpha.200
-        version: 1.0.1-alpha.200
+        specifier: 1.0.1-alpha.201
+        version: 1.0.1-alpha.201
       happy-dom:
-        specifier: 14.3.1
-        version: 14.3.1
+        specifier: 14.3.6
+        version: 14.3.6
     publishDirectory: dist
 
   packages/path:
@@ -725,7 +725,7 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/decoder':
         specifier: workspace:*
         version: link:../decoder/dist
@@ -791,7 +791,7 @@ importers:
         version: 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/path':
         specifier: workspace:*
         version: link:../path/dist
@@ -810,10 +810,10 @@ importers:
     dependencies:
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@storybook/builder-vite':
         specifier: ^8.0.4
-        version: 8.0.4(typescript@5.4.3)(vite@5.2.3)
+        version: 8.0.4(typescript@5.4.3)(vite@5.2.6)
       '@storybook/types':
         specifier: ^8.0.4
         version: 8.0.4
@@ -871,7 +871,7 @@ importers:
         version: 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -901,11 +901,11 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(vitest@1.4.0)
       happy-dom:
-        specifier: 14.3.1
-        version: 14.3.1
+        specifier: 14.3.6
+        version: 14.3.6
       vitest:
         specifier: 1.4.0
-        version: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1)
+        version: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6)
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -917,7 +917,7 @@ importers:
         version: 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/schema':
         specifier: ^0.64.11
-        version: 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+        version: 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -960,27 +960,27 @@ importers:
         version: 5.12.0(rollup@4.13.0)
       vavite:
         specifier: ^4.1.1
-        version: 4.1.1(vite@5.2.3)
+        version: 4.1.1(vite@5.2.6)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@5.2.3)
+        version: 0.5.1(vite@5.2.6)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.3)
+        version: 4.3.2(typescript@5.4.3)(vite@5.2.6)
     devDependencies:
       rollup:
         specifier: ^4.13.0
         version: 4.13.0
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     publishDirectory: dist
 
   packages/vite-plugin-types:
     devDependencies:
       vite:
-        specifier: ^5.2.3
-        version: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+        specifier: ^5.2.6
+        version: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
   packages/wire:
     publishDirectory: dist
@@ -2670,7 +2670,7 @@ packages:
       '@effect/schema': ^0.64.11
       effect: ^2.4.11
     dependencies:
-      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
       find-my-way-ts: 0.1.1
       isomorphic-ws: 5.0.0(ws@8.16.0)
@@ -2689,14 +2689,14 @@ packages:
       fast-check: 3.15.0
     dev: true
 
-  /@effect/schema@0.64.11(effect@2.4.11)(fast-check@3.16.0):
+  /@effect/schema@0.64.11(effect@2.4.11)(fast-check@3.17.0):
     resolution: {integrity: sha512-n5FNgAc7mmWXR9cY3Ea44KciUv/I3tfWPIqK7cPyTIjGhJ7UP9vxfzmN66lct6QXOwL+AUC9Tx/HJ8mtE+zaGQ==}
     peerDependencies:
       effect: ^2.4.11
       fast-check: ^3.13.2
     dependencies:
       effect: 2.4.11
-      fast-check: 3.16.0
+      fast-check: 3.17.0
 
   /@effect/typeclass@0.23.11(effect@2.4.11):
     resolution: {integrity: sha512-3K2rOh3P+DCKDeCOFXTGzqfPGzuBKwni2IMQhjJj5Q6pJgKl7+pDcj2MLA5Oh8U4QnRU91dJAnSQ/0MYpcJ//g==}
@@ -3146,21 +3146,21 @@ packages:
     resolution: {integrity: sha512-cEee/Z+I12mZcFJshKcCqC8tuX5hG3s+d+9nZ3LabqKF1vKdF41B92pJVCBggjAGORAeOzyyDDKrZwIkLffeOQ==}
     dev: true
 
-  /@giacomorebonato/vavite@0.0.4(vite@5.2.3):
+  /@giacomorebonato/vavite@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-TllKdRdEmd4Jp9wrIAqV/RmOJNE0VSmG1x35RH4gwdEBAC0msMAW3DCSaOlUVgYNUZmZg8gLwjoqPnnL6ce12g==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      '@vavite-giacomorebonato/connect': 0.0.4(vite@5.2.3)
-      '@vavite-giacomorebonato/expose-vite-dev-server': 0.0.4(vite@5.2.3)
-      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.2.3)
-      '@vavite-giacomorebonato/multibuild-cli': 0.0.4(vite@5.2.3)
-      '@vavite-giacomorebonato/node-loader': 0.0.4(vite@5.2.3)
-      '@vavite-giacomorebonato/reloader': 0.0.4(vite@5.2.3)
+      '@vavite-giacomorebonato/connect': 0.0.4(vite@5.2.6)
+      '@vavite-giacomorebonato/expose-vite-dev-server': 0.0.4(vite@5.2.6)
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.2.6)
+      '@vavite-giacomorebonato/multibuild-cli': 0.0.4(vite@5.2.6)
+      '@vavite-giacomorebonato/node-loader': 0.0.4(vite@5.2.6)
+      '@vavite-giacomorebonato/reloader': 0.0.4(vite@5.2.6)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
   /@grpc/grpc-js@1.10.3:
@@ -4001,7 +4001,7 @@ packages:
       '@effect/schema': ^0.64.4
       effect: ^2.4.7
     dependencies:
-      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
     dev: false
 
@@ -4217,7 +4217,7 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/builder-vite@8.0.4(typescript@5.4.3)(vite@5.2.3):
+  /@storybook/builder-vite@8.0.4(typescript@5.4.3)(vite@5.2.6):
     resolution: {integrity: sha512-Whb001bGkoGQ6/byp9QTQJ4NO61Qa5bh1p5WEEMJ5wYvHm83b+B/IwwilUfU5mL9bJB/RjbwyKcSQqGP6AxMzA==}
     peerDependencies:
       '@preact/preset-vite': '*'
@@ -4250,7 +4250,7 @@ packages:
       magic-string: 0.30.8
       ts-dedent: 2.2.0
       typescript: 5.4.3
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -4428,7 +4428,7 @@ packages:
       '@types/semver': 7.5.8
       better-opn: 3.0.2
       chalk: 4.1.2
-      cli-table3: 0.6.3
+      cli-table3: 0.6.4
       compression: 1.7.4
       detect-port: 1.5.1
       express: 4.19.1
@@ -4507,11 +4507,11 @@ packages:
   /@storybook/global@5.0.0:
     resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==}
 
-  /@storybook/html-vite@8.0.4(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.3):
+  /@storybook/html-vite@8.0.4(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.6):
     resolution: {integrity: sha512-EQcYUVwnD8rytRGgVH/7xCgKQoX02XH7TMFj8zNOEI1bN1lxsFL1eN4oh1oH9R11syXA3AQLqfcWDBMd/ML1HQ==}
     engines: {node: '>=18.0.0'}
     dependencies:
-      '@storybook/builder-vite': 8.0.4(typescript@5.4.3)(vite@5.2.3)
+      '@storybook/builder-vite': 8.0.4(typescript@5.4.3)(vite@5.2.6)
       '@storybook/core-server': 8.0.4(react-dom@18.2.0)(react@18.2.0)
       '@storybook/html': 8.0.4
       '@storybook/node-logger': 8.0.4
@@ -4867,7 +4867,7 @@ packages:
       dom-accessibility-api: 0.6.3
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1)
+      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6)
     dev: true
 
   /@testing-library/user-event@14.5.2(@testing-library/dom@9.3.4):
@@ -4879,8 +4879,8 @@ packages:
       '@testing-library/dom': 9.3.4
     dev: true
 
-  /@tsconfig/node10@1.0.9:
-    resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
+  /@tsconfig/node10@1.0.10:
+    resolution: {integrity: sha512-PiaIWIoPvO6qm6t114ropMCagj6YAF24j9OkCA2mJDXFnlionEwhsBCJ8yek4aib575BI3OkART/90WsgHgLWw==}
     dev: true
 
   /@tsconfig/node12@1.0.11:
@@ -5460,37 +5460,37 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@vavite-giacomorebonato/connect@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/connect@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-JWdc6cCY6yqvDjraq4cnNEwWU24ggsDPAPHZKj3CfH/ETpIADLzvvrwUu43Z220PaGxDQt4rqZHrkkixKvKIqA==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.30
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite-giacomorebonato/expose-vite-dev-server@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/expose-vite-dev-server@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-+rWLDkQWi7do2DNhhAo/0JSk4ZCoT7lBc8mEDX9xQT7n2TfoSO7oXcodgJmMk075tLhKF3h5vdJnS+EbpSHdug==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite-giacomorebonato/multibuild-cli@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/multibuild-cli@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-j+WbdWk89dma0sx1BUqzBqRYXEtjawm+V9q7iK4ffVeQD7GazNj8BEWk20/FlTanHLiDZXQCijeDkGU+GgN1+Q==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.30
-      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.2.3)
+      '@vavite-giacomorebonato/multibuild': 0.0.4(vite@5.2.6)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite-giacomorebonato/multibuild@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/multibuild@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-103FSR+XdGcx6ouionZST8sGmHHQPA4i6vEzWLuHWdvOtkKag13mSX8OtUwMxZeLIYaEIGR6S2pZZaiWGRDS+g==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
@@ -5498,54 +5498,54 @@ packages:
       '@types/node': 20.11.30
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite-giacomorebonato/node-loader@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/node-loader@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-qMT6YH+uZYJgpofj5eqrSdRBanKc3djdg0ft6vdx4PSAxxukMKtbmQuEpXKW/j+jZZd9FhEthE1IbfDnJnzhag==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite-giacomorebonato/reloader@0.0.4(vite@5.2.3):
+  /@vavite-giacomorebonato/reloader@0.0.4(vite@5.2.6):
     resolution: {integrity: sha512-RajS2Y2x/7wVH8JHh+l+L5Pif2DvgehXoA128M1Ok07qONLdXqE25yAYaTGIDAMhuTR6TjbHKQG/4vLO2/qxQA==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /@vavite/connect@4.1.1(vite@5.2.3):
+  /@vavite/connect@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-UjJEPX9t1fPNJiDbTzzW/ZIorTipCWO9x9aQ0CkNqtH6+dKnaWI/a03gFiNU+7ybhYI1LxdY17ar10ns7DQ08Q==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.30
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
-  /@vavite/expose-vite-dev-server@4.1.1(vite@5.2.3):
+  /@vavite/expose-vite-dev-server@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-w+FsAF3OvjbITNkuMTxv/t28gGMWs8qngDGgk2OCdBcaQeyrdfAme0jIT4KrIx+GLQjwkzhoZXpQju/E3mbH+Q==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
-  /@vavite/multibuild-cli@4.1.1(vite@5.2.3):
+  /@vavite/multibuild-cli@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-5jixDRjUH8fE3FVVGvlDGTatGrga886RlArCf3IUUpYKkued2qrUcq/BqdxSy6WukY15OS+l5nIVRwm1wB8AIQ==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
       '@types/node': 20.11.30
-      '@vavite/multibuild': 4.1.1(vite@5.2.3)
+      '@vavite/multibuild': 4.1.1(vite@5.2.6)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
-  /@vavite/multibuild@4.1.1(vite@5.2.3):
+  /@vavite/multibuild@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-R+UJWT2wH598OsGNA/NHgUgtOGvyh9kqaDsP/twJa/OJSH+RWgzj+ONQPqbkAYqPYu0NgRb8rkQOK4QJwdLx0A==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
@@ -5553,36 +5553,36 @@ packages:
       '@types/node': 20.11.30
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
-  /@vavite/node-loader@4.1.1(vite@5.2.3):
+  /@vavite/node-loader@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-3vJ3lnO2yJYE+i7DlZuSc7jUT4z+Fe4yVaxlODHWn1lpkVsXjIz2TfTp6zEJGXZJlhY1SnIzZczfQzA3Gs/NZw==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
-  /@vavite/reloader@4.1.1(vite@5.2.3):
+  /@vavite/reloader@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-7gzjA9NIVu+eRFATlhWndDKFM78xtBl225AwsnKjhNxUyYES0dLMc7vjH6aFi37S1f/JRRDQDm+ghrCVTUz62A==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
   /@virtualstate/composite-key@1.0.0:
     resolution: {integrity: sha512-5G3RT87X1w39UQyBvqQpTfsxK9FjoKlXfonvIY9esAHe9d0vOWVGtbElJppwJKWzh508Ja6gWn7W7dWHwj50Jw==}
     dev: true
 
-  /@virtualstate/navigation@1.0.1-alpha.200:
-    resolution: {integrity: sha512-Vn4MTVneLA7Dhbaw8HhJ4Zr+DLXkoX8m5fwypLoTFpE/sih4EJDBErJN45tRwaaiAPiOmxnQg5NaZt4GvDs15w==}
+  /@virtualstate/navigation@1.0.1-alpha.201:
+    resolution: {integrity: sha512-PUFpM8xeoWEpnBalF3xcGKi+N57rzV7ls8uZ64+x7UfSaAO7n4k+jeJMeZuJwOp//CIQhbqCKNZrOL+YjVB89w==}
     dependencies:
       '@ungap/structured-clone': 1.2.0
       '@virtualstate/composite-key': 1.0.0
       uuid: 8.3.2
     dev: true
 
-  /@vitejs/plugin-react@4.2.1(vite@5.2.3):
+  /@vitejs/plugin-react@4.2.1(vite@5.2.6):
     resolution: {integrity: sha512-oojO9IDc4nCUUi8qIR11KoQm0XFFLIwsRBwHRR4d/88IWghn1y6ckz/bJ8GHDCsYEJee8mDzqtJxh15/cisJNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -5593,7 +5593,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.24.1(@babel/core@7.24.3)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5616,7 +5616,7 @@ packages:
       '@vitest/utils': 1.4.0
       magic-string: 0.30.8
       sirv: 2.0.4
-      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1)
+      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6)
     dev: true
 
   /@vitest/coverage-v8@1.4.0(vitest@1.4.0):
@@ -5638,7 +5638,7 @@ packages:
       strip-literal: 2.0.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1)
+      vitest: 1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -6399,8 +6399,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /cli-table3@0.6.3:
-    resolution: {integrity: sha512-w5Jac5SykAeZJKntOxJCrm63Eg5/4dhMWIcuTbo9rpE+brgaSZo0RuNJZeOyMgsUdhDeojvgyQLmjI+K50ZGyg==}
+  /cli-table3@0.6.4:
+    resolution: {integrity: sha512-Lm3L0p+/npIQWNIiyF/nAn7T5dnOwR3xNTHXYEBFBFVPXzCVNZ5lqEC/1eo/EVfpDsQ1I+TX4ORPQgp+UI0CRw==}
     engines: {node: 10.* || >= 12.*}
     dependencies:
       string-width: 4.2.3
@@ -7228,40 +7228,40 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  /effect-http-node@0.7.2(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.59.2)(effect@2.4.11):
-    resolution: {integrity: sha512-06ncXYaYy0C3SejQG3QEIOttKcfy6B4FpHalAjaobgTbY2RA/IvC7mhC8HKEcuNSQasOxBRkuBqodcmuilm1EA==}
+  /effect-http-node@0.8.0(@effect/platform-node@0.45.17)(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect-http@0.60.0)(effect@2.4.11):
+    resolution: {integrity: sha512-v+gE9cOCpIYUWPBqVi/3n7LczZazrha8PsamyTpgCl41um5wafogRmvLYj09CqkhaoWcXgD/Ipc9GmdS9ZOlaQ==}
     peerDependencies:
-      '@effect/platform': ^0.48.14
-      '@effect/platform-node': ^0.45.16
-      '@effect/schema': ^0.64.10
-      effect: ^2.4.10
-      effect-http: ^0.59.2
+      '@effect/platform': ^0.48.15
+      '@effect/platform-node': ^0.45.17
+      '@effect/schema': ^0.64.11
+      effect: ^2.4.11
+      effect-http: ^0.60.0
     dependencies:
       '@effect/platform': 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
       '@effect/platform-node': 0.45.17(@effect/platform@0.48.15)(effect@2.4.11)
-      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
-      effect-http: 0.59.2(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
+      effect-http: 0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11)
       swagger-ui-dist: 5.12.0
     dev: false
 
-  /effect-http@0.59.2(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11):
-    resolution: {integrity: sha512-rvxSqHMs2dhe8TEn8XN83S0rPLpnAL7lrvuSa8Ik3r2fhBTc7xCAuySdlhtdvowrIla6rvRM/FmvwvohFyhhTg==}
+  /effect-http@0.60.0(@effect/platform@0.48.15)(@effect/schema@0.64.11)(effect@2.4.11):
+    resolution: {integrity: sha512-sPRiTVumxs4h+iSaEOwk2c4aQp5eDD294Au+7YfboragXlKNq+Fp7YgM/NA+T/aeTzMCz+7qtG+FLNPBNrkZKw==}
     peerDependencies:
-      '@effect/platform': ^0.48.14
-      '@effect/schema': ^0.64.10
-      effect: ^2.4.10
+      '@effect/platform': ^0.48.15
+      '@effect/schema': ^0.64.11
+      effect: ^2.4.11
     dependencies:
       '@effect/platform': 0.48.15(@effect/schema@0.64.11)(effect@2.4.11)(ws@8.16.0)
-      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
-      schema-openapi: 0.33.6(@effect/schema@0.64.11)(effect@2.4.11)
+      schema-openapi: 0.33.7(@effect/schema@0.64.11)(effect@2.4.11)
     dev: false
 
-  /effect-log@0.30.11(effect@2.4.11):
-    resolution: {integrity: sha512-y8mXY1+pS0OAnPVpLfWKXDQCTdCHgXz0bTCq+muwYUsnP77WwvgZ+g2Y7WCtsDjwjixenzVV8YdUgbWCsPGB8w==}
+  /effect-log@0.30.12(effect@2.4.11):
+    resolution: {integrity: sha512-9WWmSBz64mytxBL5O5L8K52zVoghM/t091fwDOw9/oyzjm+DxukJQSTzaTkuT3DGtRmGQffHtiN+I1hsFog8gA==}
     peerDependencies:
-      effect: ^2.4.10
+      effect: ^2.4.11
     dependencies:
       effect: 2.4.11
     dev: false
@@ -7976,8 +7976,8 @@ packages:
       pure-rand: 6.1.0
     dev: true
 
-  /fast-check@3.16.0:
-    resolution: {integrity: sha512-k8GtQHi4pJoRQ1gVDFQno+/FVkowo/ehiz/aCj9O/D7HRWb1sSFzNrw+iPVU8QlWtH+jNwbuN+dDVg3QkS56DQ==}
+  /fast-check@3.17.0:
+    resolution: {integrity: sha512-9A7UiBENXxMBb40qY+xOcIcGdxF5CYbXJOU4b+omh773RIFcIQRejHEjjrzIHQFLIQXWgWQu3dl6FrWR9VpYRQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
       pure-rand: 6.1.0
@@ -8555,8 +8555,8 @@ packages:
     optionalDependencies:
       uglify-js: 3.17.4
 
-  /happy-dom@14.3.1:
-    resolution: {integrity: sha512-uv2mE7jUH0S3cTnDPqNQj+J+Z5wOevqzopc7e8URXtcCH2STubCjPFVyEJ1ONGSv/aL/uvNwo5WWjsinpWpADQ==}
+  /happy-dom@14.3.6:
+    resolution: {integrity: sha512-fUb3dn0iuyyxRGqwFoU5iy6wjozxt/Qw7zGeRMockbBlpOegrV7Y0HIYBMQw8X4s7qpu55Tu7cNFoRM8s9VW5A==}
     engines: {node: '>=16.0.0'}
     dependencies:
       entities: 4.5.0
@@ -11241,13 +11241,13 @@ packages:
       loose-envify: 1.4.0
     dev: true
 
-  /schema-openapi@0.33.6(@effect/schema@0.64.11)(effect@2.4.11):
-    resolution: {integrity: sha512-WntMl4dyr5LugAs+4NIGKcTtpfDmHtPGOmWNyMee9u836XRYP560Ed1/b2JQLYHWjAEhT00JAAzO1SUY+7UZjg==}
+  /schema-openapi@0.33.7(@effect/schema@0.64.11)(effect@2.4.11):
+    resolution: {integrity: sha512-rUI7wXVJYPDcsxogLRBx+G3q46Fg/Fw9nZnDN0UXd9pm+WYhF39oTyfgoSvQfFJflG6FRF+wPOKF2TjcxTbj5A==}
     peerDependencies:
-      '@effect/schema': ^0.64.10
-      effect: ^2.4.10
+      '@effect/schema': ^0.64.11
+      effect: ^2.4.11
     dependencies:
-      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.16.0)
+      '@effect/schema': 0.64.11(effect@2.4.11)(fast-check@3.17.0)
       effect: 2.4.11
 
   /semver@5.7.2:
@@ -12002,7 +12002,7 @@ packages:
         optional: true
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node10': 1.0.10
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
@@ -12449,21 +12449,21 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
-  /vavite@4.1.1(vite@5.2.3):
+  /vavite@4.1.1(vite@5.2.6):
     resolution: {integrity: sha512-OoEG1cJyMX6zfvXwO1Au506PUwMzRkeXrjxt6e6dnL9D8T3x7ZsC8HscHtL5u0orS10AMg5FPv1McBW5650e4w==}
     hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
     dependencies:
-      '@vavite/connect': 4.1.1(vite@5.2.3)
-      '@vavite/expose-vite-dev-server': 4.1.1(vite@5.2.3)
-      '@vavite/multibuild': 4.1.1(vite@5.2.3)
-      '@vavite/multibuild-cli': 4.1.1(vite@5.2.3)
-      '@vavite/node-loader': 4.1.1(vite@5.2.3)
-      '@vavite/reloader': 4.1.1(vite@5.2.3)
+      '@vavite/connect': 4.1.1(vite@5.2.6)
+      '@vavite/expose-vite-dev-server': 4.1.1(vite@5.2.6)
+      '@vavite/multibuild': 4.1.1(vite@5.2.6)
+      '@vavite/multibuild-cli': 4.1.1(vite@5.2.6)
+      '@vavite/node-loader': 4.1.1(vite@5.2.6)
+      '@vavite/reloader': 4.1.1(vite@5.2.6)
       cac: 6.7.14
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
 
   /vite-node@1.4.0(@types/node@20.11.30):
     resolution: {integrity: sha512-VZDAseqjrHgNd4Kh8icYHWzTKSCZMhia7GyHfhtzLW33fZlG9SwsB6CEhgyVOWkJfJ2pFLrp/Gj1FSfAiqH9Lw==}
@@ -12474,7 +12474,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -12486,7 +12486,7 @@ packages:
       - terser
     dev: true
 
-  /vite-plugin-compression@0.5.1(vite@5.2.3):
+  /vite-plugin-compression@0.5.1(vite@5.2.6):
     resolution: {integrity: sha512-5QJKBDc+gNYVqL/skgFAP81Yuzo9R+EAf19d+EtsMF/i8kFUpNi3J/H01QD3Oo8zBQn+NzoCIFkpPLynoOzaJg==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -12494,11 +12494,11 @@ packages:
       chalk: 4.1.2
       debug: 4.3.4
       fs-extra: 10.1.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - supports-color
 
-  /vite-plugin-html@3.2.2(vite@5.2.3):
+  /vite-plugin-html@3.2.2(vite@5.2.6):
     resolution: {integrity: sha512-vb9C9kcdzcIo/Oc3CLZVS03dL5pDlOFuhGlZYDCJ840BhWl/0nGeZWf3Qy7NlOayscY4Cm/QRgULCQkEZige5Q==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -12515,10 +12515,10 @@ packages:
       html-minifier-terser: 6.1.0
       node-html-parser: 5.4.2
       pathe: 0.2.0
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     dev: true
 
-  /vite-plugin-top-level-await@1.4.1(vite@5.2.3):
+  /vite-plugin-top-level-await@1.4.1(vite@5.2.6):
     resolution: {integrity: sha512-hogbZ6yT7+AqBaV6lK9JRNvJDn4/IJvHLu6ET06arNfo0t2IsyCaon7el9Xa8OumH+ESuq//SDf8xscZFE0rWw==}
     peerDependencies:
       vite: '>=2.8'
@@ -12526,24 +12526,24 @@ packages:
       '@rollup/plugin-virtual': 3.0.2
       '@swc/core': 1.4.8
       uuid: 9.0.1
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - '@swc/helpers'
       - rollup
     dev: true
 
-  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.4.3)(vite@5.2.3):
+  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.4.3)(vite@5.2.6):
     resolution: {integrity: sha512-pGpvsPGDpiM5z7I9ZhBe7H2WAH0gAC2Lh55rM3pE+84V2q7qojNO28wdUl4i/M4XUfJcilhyucmbc9D7IKqpXA==}
     peerDependencies:
       vite: '*'
     dependencies:
       typescript-paths: 1.5.1(typescript@5.4.3)
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - typescript
     dev: true
 
-  /vite-tsconfig-paths@4.3.2(typescript@5.4.3)(vite@5.2.3):
+  /vite-tsconfig-paths@4.3.2(typescript@5.4.3)(vite@5.2.6):
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
     peerDependencies:
       vite: '*'
@@ -12554,13 +12554,13 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.4.3)
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  /vite@5.2.3(@types/node@20.11.30)(terser@5.29.2):
-    resolution: {integrity: sha512-+i1oagbvkVIhEy9TnEV+fgXsng13nZM90JQbrcPrf6DvW2mXARlz+DK7DLiDP+qeKoD1FCVx/1SpFL1CLq9Mhw==}
+  /vite@5.2.6(@types/node@20.11.30)(terser@5.29.2):
+    resolution: {integrity: sha512-FPtnxFlSIKYjZ2eosBQamz4CbyrTizbZ3hnGJlh/wMtCrlp1Hah6AzBLjGI5I2urTfNnpovpHdrL6YRuBOPnCA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -12595,7 +12595,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitest@1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.1):
+  /vitest@1.4.0(@types/node@20.11.30)(@vitest/browser@1.4.0)(happy-dom@14.3.6):
     resolution: {integrity: sha512-gujzn0g7fmwf83/WzrDTnncZt2UiXP41mHuFYFrdwaLRVQ6JYQEiME2IfEjU3vcFL3VKa75XhI3lFgn+hfVsQw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -12631,7 +12631,7 @@ packages:
       chai: 4.4.1
       debug: 4.3.4
       execa: 8.0.1
-      happy-dom: 14.3.1
+      happy-dom: 14.3.6
       local-pkg: 0.5.0
       magic-string: 0.30.8
       pathe: 1.1.2
@@ -12640,7 +12640,7 @@ packages:
       strip-literal: 2.0.0
       tinybench: 2.6.0
       tinypool: 0.8.2
-      vite: 5.2.3(@types/node@20.11.30)(terser@5.29.2)
+      vite: 5.2.6(@types/node@20.11.30)(terser@5.29.2)
       vite-node: 1.4.0(@types/node@20.11.30)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:

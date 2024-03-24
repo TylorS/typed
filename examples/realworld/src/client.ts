@@ -21,7 +21,7 @@ main.pipe(
 
 function onNotFound() {
   return Fx.fromEffect(Effect.gen(function*(_) {
-    if (yield* _(isAuthenticated)) {
+    if (yield* _(Fx.first(isAuthenticated))) {
       return yield* _(new Navigation.RedirectError({ path: Ui.pages.home.route.path }))
     } else {
       return yield* _(new Navigation.RedirectError({ path: Ui.pages.login.route.path }))

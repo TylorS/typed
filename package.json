@@ -74,7 +74,7 @@
     "tsx": "^4.7.1",
     "typescript": "^5.4.3",
     "ultra-runner": "^3.10.5",
-    "vite": "^5.2.3",
+    "vite": "^5.2.6",
     "vite-plugin-tsconfig-paths": "^1.4.1",
     "vitest": "1.4.0",
     "zx": "^7.2.3"

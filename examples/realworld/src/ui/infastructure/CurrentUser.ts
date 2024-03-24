@@ -1,4 +1,5 @@
 import { client } from "@/api"
+import { addJwtTokenToRequest } from "@/api/common/spec"
 import { JwtToken } from "@/model"
 import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@/services"
 import { handleClientRequest } from "@/ui/infastructure/_client"
@@ -15,11 +16,11 @@ export const CurrentUserLive = CurrentUser.make(
       return Fx.succeed(AsyncData.noData())
     }
 
-    return asyncDataRequest(
-      client.getCurrentUser({}, { jwtToken: jwtToken.value }).pipe(
-        handleClientRequest,
-        Effect.map((r) => r.user)
-      )
+    return client.getCurrentUser({}, addJwtTokenToRequest(jwtToken.value)).pipe(
+      handleClientRequest,
+      Effect.map((r) => r.user),
+      Effect.tapErrorCause(() => RemoveJwtToken()),
+      asyncDataRequest
     )
   })
 )

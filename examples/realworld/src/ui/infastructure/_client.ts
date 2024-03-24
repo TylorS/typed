@@ -1,6 +1,7 @@
-import type { JwtToken } from "@/model"
+import { addJwtTokenToRequest, addOptionalJwtTokenToRequest } from "@/api/common/spec"
 import { getCurrentJwtToken } from "@/services/CurrentUser"
 import { Unauthorized, Unprocessable } from "@/services/errors"
+import type { ClientRequest } from "@effect/platform/Http/ClientRequest"
 import { Effect, Unify } from "effect"
 import type { ClientError } from "effect-http"
 
@@ -42,5 +43,13 @@ export function handleClientRequest<
   ) as any
 }
 
-export const withJwtToken = <A, E, R>(f: (jwtToken: JwtToken) => Effect.Effect<A, E, R>) =>
-  Effect.flatMap(getCurrentJwtToken, f)
+export const withJwtToken = <A, E, R>(f: (add: (request: ClientRequest) => ClientRequest) => Effect.Effect<A, E, R>) =>
+  Effect.flatMap(getCurrentJwtToken, (token) => f(addJwtTokenToRequest(token)))
+
+export const withOptionalJwtToken = <A, E, R>(
+  f: (add: (request: ClientRequest) => ClientRequest) => Effect.Effect<A, E, R>
+) =>
+  Effect.flatMap(
+    Effect.catchAllCause(Effect.asSome(getCurrentJwtToken), () => Effect.succeedNone),
+    (token) => f(addOptionalJwtTokenToRequest(token))
+  )

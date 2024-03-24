@@ -25,7 +25,7 @@
     "effect": "2.4.11"
   },
   "devDependencies": {
-    "vite": "^5.2.3",
+    "vite": "^5.2.6",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.3.2"
   }

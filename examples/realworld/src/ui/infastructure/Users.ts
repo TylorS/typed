@@ -5,12 +5,11 @@ import { Effect } from "effect"
 
 export const UsersLive = Users.implement({
   current: () =>
-    withJwtToken((jwtToken) => client.getCurrentUser({}, { jwtToken })).pipe(
+    withJwtToken((jwtToken) => client.getCurrentUser({}, jwtToken)).pipe(
       handleClientRequest,
       Effect.map((r) => r.user),
       Effect.tap((user) => SaveJwtToken(user.token))
     ),
-
   login: (input) =>
     handleClientRequest(client.login({ body: { user: input } })).pipe(
       Effect.map((r) => r.user),
@@ -22,7 +21,7 @@ export const UsersLive = Users.implement({
       Effect.tap((user) => SaveJwtToken(user.token))
     ),
   update: (input) =>
-    withJwtToken((jwtToken) => client.updateUser({ body: { user: input } }, { jwtToken })).pipe(
+    withJwtToken((jwtToken) => client.updateUser({ body: { user: input } }, jwtToken)).pipe(
       handleClientRequest,
       Effect.map((r) => r.user),
       Effect.tap((user) => SaveJwtToken(user.token))

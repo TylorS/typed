@@ -1,4 +1,10 @@
-import { add200, addJwtTokenSecurity, addUnauthorizedResponse, addUnprocessableResponse } from "@/api/common/spec"
+import {
+  add200,
+  addJwtTokenSecurity,
+  addOptionalJwtTokenSecurity,
+  addUnauthorizedResponse,
+  addUnprocessableResponse
+} from "@/api/common/spec"
 import { Profile } from "@/model"
 import { Api, ApiGroup } from "effect-http"
 import * as Schema from "lib/Schema"
@@ -14,7 +20,8 @@ export const getProfile = Api.get(
   Api.setRequestPath(Routes.profiles.schema),
   add200(Schema.struct({ profile: Profile })),
   addUnauthorizedResponse,
-  addUnprocessableResponse
+  addUnprocessableResponse,
+  addOptionalJwtTokenSecurity
 )
 
 export const follow = Api.post(

@@ -1,14 +1,12 @@
-import type { User } from "@/model"
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
-import { type Headers, unsafeFromRecord } from "@effect/platform/Http/Headers"
 import { Effect, ReadonlyRecord } from "effect"
 import { RouterBuilder, ServerError } from "effect-http"
 import { Spec } from "./spec"
 
 const STATUS_200 = { status: 200, body: undefined } as const
 
-export const server = RouterBuilder.make(Spec).pipe(
+export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/docs" }).pipe(
   RouterBuilder.handle(
     "createArticle",
     ({ body: { article } }) =>
@@ -51,7 +49,7 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "getCurrentUser",
-    (_) => Users.current().pipe(asStatusWithAuthToken(200), catchUnauthorizedAndUnprocessable)
+    (_) => Users.current().pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getFeed",
@@ -67,11 +65,11 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "login",
-    ({ body: { user } }) => Users.login(user).pipe(asStatusWithAuthToken(200), catchUnauthorizedAndUnprocessable)
+    ({ body: { user } }) => Users.login(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "register",
-    ({ body: { user } }) => Users.register(user).pipe(asStatusWithAuthToken(200), catchUnprocessable)
+    ({ body: { user } }) => Users.register(user).pipe(asStatus(200, "user"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "unfavorite",
@@ -89,9 +87,9 @@ export const server = RouterBuilder.make(Spec).pipe(
   ),
   RouterBuilder.handle(
     "updateUser",
-    ({ body: { user } }) => Users.update(user).pipe(asStatusWithAuthToken(200), catchUnauthorizedAndUnprocessable)
+    ({ body: { user } }) => Users.update(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.getRouter
+  RouterBuilder.build
 )
 
 function asStatus<const S extends number, const K extends string>(status: S, key: K) {
@@ -99,32 +97,6 @@ function asStatus<const S extends number, const K extends string>(status: S, key
     effect: Effect.Effect<A, E, R>
   ): Effect.Effect<{ readonly status: S; readonly body: { readonly [_ in K]: A } }, E, R> =>
     Effect.map(effect, (content) => ({ status, body: ReadonlyRecord.singleton(key, content) } as const))
-}
-
-function asStatusWithAuthToken<const S extends number>(status: S) {
-  return <E, R>(
-    effect: Effect.Effect<User, E, R>
-  ): Effect.Effect<
-    {
-      readonly status: S
-      readonly body: { readonly user: User }
-      readonly headers: Headers
-    },
-    E,
-    R
-  > =>
-    Effect.map(
-      effect,
-      (
-        content
-      ) => ({
-        status,
-        body: ReadonlyRecord.singleton("user", content),
-        headers: unsafeFromRecord({
-          "set-cookie": `conduit-creds=${content.token}; Path=/; HttpOnly; SameSite=Strict`
-        })
-      } as const)
-    )
 }
 
 function catchUnauthorized<R, E, A>(
