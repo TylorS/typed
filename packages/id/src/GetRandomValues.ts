@@ -16,7 +16,7 @@ export const GetRandomValues = Context.Fn<(length: number) => Effect.Effect<Uint
 /**
  * @since 1.0.0
  */
-export type GetRandomValues = Context.Fn.Identifier<typeof GetRandomValues>
+export interface GetRandomValues extends Context.Fn.Identifier<typeof GetRandomValues> {}
 
 const getRandomValuesWeb = (crypto: Crypto, length: number) => crypto.getRandomValues(new Uint8Array(length))
 

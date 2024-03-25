@@ -1,5 +1,4 @@
 import * as Router from "@typed/router"
-import { html } from "@typed/template"
 import * as pages from "./pages"
 
 export const router = Router

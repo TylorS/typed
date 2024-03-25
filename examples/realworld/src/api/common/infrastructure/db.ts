@@ -10,7 +10,10 @@ const PgLive = Pg.makeLayer(Config.all({
   password: Config.secret("VITE_DATABASE_PASSWORD")
 }))
 
-export const DbLive = Layer.provideMerge(
-  Migrator.makeLayer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
+export const DbLive = Layer.mergeAll(
+  Layer.provide(
+    Migrator.makeLayer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
+    PgLive
+  ),
   PgLive
 )

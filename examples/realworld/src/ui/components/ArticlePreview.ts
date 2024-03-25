@@ -1,9 +1,11 @@
 import type { Article } from "@/model"
 import { Fx, Navigation, RefSubject } from "@typed/core"
+import type { CurrentEnvironment } from "@typed/environment"
 import { html, many } from "@typed/template"
 import { Effect, Option } from "effect"
 
-export function ArticlePreview(article: RefSubject.RefSubject<Article>) {
+export function ArticlePreview(article: RefSubject.RefSubject<Article, never, CurrentEnvironment>) {
+  article = RefSubject.takeOneIfNotDomEnvironment(article)
   const userProfileHref = RefSubject.map(article, (a) => `/profile/${a.author.username}`)
   const userProfileImage = RefSubject.map(article, (a) => Option.getOrElse(a.author.image, () => ""))
   const userProfileName = RefSubject.map(article, (a) => a.author.username)
@@ -37,7 +39,7 @@ export function ArticlePreview(article: RefSubject.RefSubject<Article>) {
       tagList,
       (t) => t,
       (t) => html`<li class="tag-default tag-pill tag-outline">${t}</li>`
-    ).pipe(Fx.switchMapCause(() => html`<li>no tags</li>`))
+    ).pipe(Fx.switchMapCause(() => Fx.null))
   }
 
             </ul>

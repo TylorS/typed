@@ -23,8 +23,8 @@ toHttpRouter(Ui.router, { layout: Ui.document }).pipe(
   Http.router.mountApp("/api", Api.server),
   Http.router.catchTag("Unauthorized", (_) => Http.response.empty({ status: 401 })),
   withCurrentUserFromHeaders,
-  Effect.provide(Live),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
+  Effect.provide(Live),
   Node.run
 )
 
