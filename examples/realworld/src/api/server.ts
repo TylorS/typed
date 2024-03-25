@@ -1,6 +1,6 @@
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
-import { Effect, ReadonlyRecord } from "effect"
+import { Effect } from "effect"
 import { RouterBuilder, ServerError } from "effect-http"
 import { Spec } from "./spec"
 
@@ -10,12 +10,12 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
   RouterBuilder.handle(
     "createArticle",
     ({ body: { article } }) =>
-      Articles.create(article).pipe(asStatus(201, "article"), catchUnauthorizedAndUnprocessable)
+      Articles.create(article).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "createComment",
     ({ body: { comment }, path: { slug } }) =>
-      Comments.create(slug, comment).pipe(asStatus(201, "comment"), catchUnauthorizedAndUnprocessable)
+      Comments.create(slug, comment).pipe(Effect.bindTo("comment"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "deleteArticle",
@@ -28,76 +28,69 @@ export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/d
   ),
   RouterBuilder.handle(
     "favorite",
-    ({ path: { slug } }) => Articles.favorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.favorite(slug).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "follow",
     ({ path: { username } }) =>
-      Profiles.follow(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
+      Profiles.follow(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getArticle",
-    ({ path: { slug } }) => Articles.get({ slug }).pipe(asStatus(200, "article"), catchUnprocessable)
+    ({ path: { slug } }) => Articles.get({ slug }).pipe(Effect.bindTo("article"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "getArticles",
-    ({ query }) => Articles.list(query).pipe(asStatus(200, "articles"), catchUnprocessable)
+    ({ query }) => Articles.list(query).pipe(Effect.bindTo("articles"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "getComments",
-    ({ path: { slug } }) => Comments.get(slug).pipe(asStatus(200, "comments"), catchUnprocessable)
+    ({ path: { slug } }) => Comments.get(slug).pipe(Effect.bindTo("comments"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "getCurrentUser",
-    (_) => Users.current().pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
+    (_) => Users.current().pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getFeed",
-    ({ query }) => Articles.feed(query).pipe(asStatus(200, "articles"), catchUnauthorizedAndUnprocessable)
+    ({ query }) => Articles.feed(query).pipe(Effect.bindTo("articles"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getProfile",
-    ({ path: { username } }) => Profiles.get(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
+    ({ path: { username } }) => Profiles.get(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "getTags",
-    () => Tags.get().pipe(asStatus(200, "tags"), catchUnprocessable)
+    () => Tags.get().pipe(Effect.bindTo("tags"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "login",
-    ({ body: { user } }) => Users.login(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
+    ({ body: { user } }) => Users.login(user).pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "register",
-    ({ body: { user } }) => Users.register(user).pipe(asStatus(200, "user"), catchUnprocessable)
+    ({ body: { user } }) => Users.register(user).pipe(Effect.bindTo("user"), catchUnprocessable)
   ),
   RouterBuilder.handle(
     "unfavorite",
-    ({ path: { slug } }) => Articles.unfavorite(slug).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.unfavorite(slug).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "unfollow",
     ({ path: { username } }) =>
-      Profiles.unfollow(username).pipe(asStatus(200, "profile"), catchUnauthorizedAndUnprocessable)
+      Profiles.unfollow(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "updateArticle",
     ({ body: { article }, path: { slug } }) =>
-      Articles.update(slug, article).pipe(asStatus(200, "article"), catchUnauthorizedAndUnprocessable)
+      Articles.update(slug, article).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.handle(
     "updateUser",
-    ({ body: { user } }) => Users.update(user).pipe(asStatus(200, "user"), catchUnauthorizedAndUnprocessable)
+    ({ body: { user } }) => Users.update(user).pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
   RouterBuilder.build
 )
-
-function asStatus<const S extends number, const K extends string>(status: S, key: K) {
-  return <A, E, R>(
-    effect: Effect.Effect<A, E, R>
-  ): Effect.Effect<{ readonly status: S; readonly body: { readonly [_ in K]: A } }, E, R> =>
-    Effect.map(effect, (content) => ({ status, body: ReadonlyRecord.singleton(key, content) } as const))
-}
 
 function catchUnauthorized<R, E, A>(
   effect: Effect.Effect<R, E | Unauthorized, A>

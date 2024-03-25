@@ -40,8 +40,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.11",
-    "effect": "^2.4.11",
+    "@effect/schema": "^0.64.13",
+    "effect": "^2.4.13",
     "fast-check": "^3.17.0"
   }
 }

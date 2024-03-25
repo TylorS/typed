@@ -58,7 +58,7 @@
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "cac": "^6.7.14",
     "concurrently": "^8.2.2",
-    "effect": "^2.4.11",
+    "effect": "^2.4.13",
     "eslint": "^8.57.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-codegen": "0.28.0",

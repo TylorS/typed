@@ -18,10 +18,10 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.48.15",
-    "@effect/platform-browser": "^0.31.15",
-    "@effect/platform-node": "^0.45.17",
-    "@effect/schema": "0.64.11",
+    "@effect/platform": "^0.48.17",
+    "@effect/platform-browser": "^0.31.17",
+    "@effect/platform-node": "^0.45.19",
+    "@effect/schema": "0.64.13",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
     "@typed/dom": "workspace:*",
@@ -31,7 +31,7 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "2.4.11",
+    "effect": "2.4.13",
     "todomvc-app-css": "^2.4.3",
     "todomvc-common": "^1.0.5"
   },

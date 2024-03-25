@@ -16,11 +16,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.48.15",
-    "@effect/platform-node": "^0.45.17",
+    "@effect/platform": "^0.48.17",
+    "@effect/platform-node": "^0.45.19",
     "@typed/fx": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "2.4.11"
+    "effect": "2.4.13"
   },
   "devDependencies": {
     "tsx": "^4.7.1"

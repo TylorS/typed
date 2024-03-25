@@ -40,11 +40,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.48.15",
-    "@effect/schema": "^0.64.11",
+    "@effect/platform": "^0.48.17",
+    "@effect/schema": "^0.64.13",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
-    "effect": "^2.4.11"
+    "effect": "^2.4.13"
   }
 }
