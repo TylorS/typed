@@ -1,3 +1,5 @@
+import { ArrayFormatter, TreeFormatter } from "@effect/schema"
+import type { ParseIssue } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import type { NanoId } from "@typed/id/NanoId"
 import * as ID from "@typed/id/Schema"
@@ -5,8 +7,9 @@ import type { Uuid } from "@typed/id/Uuid"
 import type * as Path from "@typed/path"
 import * as AST from "@typed/route/AST"
 import type { Types } from "effect"
-import { Option, ReadonlyRecord } from "effect"
-import { dual } from "effect/Function"
+import { Data, Effect, Option, ReadonlyRecord } from "effect"
+import type { NoSuchElementException } from "effect/Cause"
+import { dual, flow, pipe } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import * as ptr from "path-to-regexp"
 import type { N } from "ts-toolbelt"
@@ -158,9 +161,6 @@ const variance_: Route.Variance<any, any> = {
 class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<P, S> {
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
 
-  private __match!: Route<P, S>["match"]
-  private __interpolate!: Route<P, S>["interpolate"]
-
   constructor(readonly ast: AST.AST) {
     this.pipe = this.pipe.bind(this)
     this.concat = this.concat.bind(this)
@@ -176,14 +176,16 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
     return (this.__schema ??= AST.toSchema(this.ast) as any) as any
   }
 
+  private __match!: Route<P, S>["match"]
   match(path: string) {
     const m = (this.__match ??= getMatch(this as any) as any)
     return m(path)
   }
 
-  interpolate: <P2 extends Path.ParamsOf<P>>(params: P2) => Path.Interpolate<P, P2> = <P2 extends Path.ParamsOf<P>>(
+  private __interpolate!: Route<P, S>["interpolate"]
+  interpolate<P2 extends Path.ParamsOf<P>>(
     params: P2
-  ) => {
+  ) {
     const i = (this.__interpolate ??= getInterpolate(this as any) as any)
     return i(params)
   }
@@ -223,7 +225,7 @@ export const make = <P extends string, S extends Schema.Schema.All>(
 /**
  * @since 1.0.0
  */
-export const lit = <const L extends string>(literal: L): Route<`/${L}`> => make(new AST.Literal(`/${literal}`))
+export const lit = <const L extends string>(literal: L): Route<L> => make(new AST.Literal(literal))
 
 /**
  * @since 1.0.0
@@ -382,7 +384,8 @@ export function getMatch<R extends Route.Any>(
   route: R,
   options?: Parameters<typeof ptr.match>[1]
 ): (path: string) => Option.Option<Route.Params<R>> {
-  const match: ptr.MatchFunction = ptr.match(route.path, { end: false, ...options })
+  const match: ptr.MatchFunction = ptr.match(route.path, { end: route.path === "/", ...options })
+
   return (path: string): Option.Option<Route.Params<R>> => {
     const matched = match(path)
 
@@ -398,5 +401,198 @@ export function getInterpolate<R extends Route.Any>(
   options?: Parameters<typeof ptr.compile>[1]
 ): <P extends Route.Params<R>>(params: P) => Route.Interpolate<R, P> {
   const interpolate = ptr.compile(route.path, options)
-  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => interpolate(params) as any
+
+  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => interpolate(params) || "/" as any
 }
+
+/**
+ * @since 1.0.0
+ */
+export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("RouteDecodeError")<{
+  readonly route: R
+  readonly issue: ParseIssue
+}> {
+  toJSON(): unknown {
+    return {
+      _tag: "RouteDecodeError",
+      route: this.route.path,
+      issue: ArrayFormatter.formatIssue(this.issue)
+    }
+  }
+
+  toString() {
+    return `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
+  }
+}
+
+/**
+ * @since 1.0.0
+ */
+export const decode: {
+  (path: string): <R extends Route.Any>(
+    route: R
+  ) => Effect.Effect<
+    Route.Output<R>,
+    NoSuchElementException | RouteDecodeError<R>,
+    Schema.Schema.Context<Route.Schema<R>>
+  >
+
+  <R extends Route.Any>(
+    route: R,
+    path: string
+  ): Effect.Effect<
+    Route.Output<R>,
+    NoSuchElementException | RouteDecodeError<R>,
+    Schema.Schema.Context<Route.Schema<R>>
+  >
+} = dual(2, function decode<R extends Route.Any>(
+  route: R,
+  path: string
+): Effect.Effect<Route.Output<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> {
+  const params = route.match(path) as Option.Option<Route.Params<R>>
+  const decode = flow(
+    Schema.decode(route.schema),
+    Effect.catchAll((error) => new RouteDecodeError({ route, issue: error.error }))
+  ) as (params: Route.Params<R>) => Effect.Effect<
+    Route.Output<R>,
+    RouteDecodeError<R>,
+    Route.Context<R>
+  >
+
+  return Effect.flatMap(params, decode)
+})
+
+/**
+ * @since 1.0.0
+ */
+export const decode_: {
+  <R extends Route.Any>(
+    route: R
+  ): (path: string) => Effect.Effect<
+    Route.Output<R>,
+    NoSuchElementException | RouteDecodeError<R>,
+    Schema.Schema.Context<Route.Schema<R>>
+  >
+
+  <R extends Route.Any>(
+    path: string,
+    route: R
+  ): Effect.Effect<
+    Route.Output<R>,
+    NoSuchElementException | RouteDecodeError<R>,
+    Schema.Schema.Context<Route.Schema<R>>
+  >
+} = dual(2, <R extends Route.Any>(
+  path: string,
+  route: R
+): Effect.Effect<Route.Output<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> =>
+  decode(route, path))
+
+/**
+ * @since 1.0.0
+ */
+export class RouteEncodeError<R extends Route.Any> extends Data.TaggedError("RouteEncodeError")<{
+  readonly route: R
+  readonly issue: ParseIssue
+}> {
+  toJSON(): unknown {
+    return {
+      _tag: "RouteEncodeError",
+      route: this.route.path,
+      issue: ArrayFormatter.formatIssue(this.issue)
+    }
+  }
+
+  toString() {
+    return `RouteEncodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
+  }
+}
+
+/**
+ * @since 1.0.0
+ */
+export const encode: {
+  <R extends Route.Any, O extends Route.Output<R>>(
+    params: O
+  ): (route: R) => Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
+
+  <R extends Route.Any, O extends Route.Output<R>>(
+    route: R,
+    params: O
+  ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
+} = dual(2, function<R extends Route.Any, O extends Route.Output<R>>(
+  route: R,
+  params: O
+): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>> {
+  return pipe(
+    params,
+    Schema.encode(route.schema as Route.Schema<R>),
+    Effect.catchAll((error) => new RouteEncodeError({ route, issue: error.error })),
+    Effect.map((params) => route.interpolate(params as Route.Params<R>))
+  ) as any
+})
+
+/**
+ * @since 1.0.0
+ */
+export const encode_: {
+  <R extends Route.Any, O extends Route.Output<R>>(
+    route: R
+  ): (params: O) => Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
+
+  <R extends Route.Any, O extends Route.Output<R>>(
+    params: O,
+    route: R
+  ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
+} = dual(2, <R extends Route.Any, O extends Route.Output<R>>(
+  params: O,
+  route: R
+): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>> =>
+  encode(route, params) as any)
+
+/**
+ * @since 1.0.0
+ */
+export const transform: {
+  <R extends Route.Any, S extends Schema.Schema.Any>(
+    toSchema: S,
+    from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
+    to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+  ): (route: R) => Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>>
+
+  <R extends Route.Any, S extends Schema.Schema.Any>(
+    route: R,
+    toSchema: S,
+    from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
+    to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+  ): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>>
+} = dual(4, function transform<R extends Route.Any, S extends Schema.Schema.Any>(
+  route: R,
+  toSchema: S,
+  from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
+  to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>> {
+  return schema(route as any, Schema.transform(route.schema, toSchema, from, to) as any) as any
+})
+
+export const transformOrFail: {
+  <R extends Route.Any, S extends Schema.Schema.Any, R2>(
+    toSchema: S,
+    from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+  ): (route: R) => Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>>
+
+  <R extends Route.Any, S extends Schema.Schema.Any, R2>(
+    route: R,
+    toSchema: S,
+    from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+  ): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>>
+} = dual(4, function transformOrFail<R extends Route.Any, S extends Schema.Schema.Any, R2>(
+  route: R,
+  toSchema: S,
+  from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+  to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>> {
+  return schema(route as any, Schema.transformOrFail(route.schema, toSchema, from, to) as any) as any
+})

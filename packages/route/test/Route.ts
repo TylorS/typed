@@ -61,4 +61,49 @@ describe("Route", () => {
     deepEqual(optional.match("/test"), Option.some({ test: "test" }))
     deepEqual(optional.match("/"), Option.some({}))
   })
+
+  it("can be decoded", async () => {
+    const test = Effect.gen(function*(_) {
+      deepEqual(yield* _(Route.decode(foobar, "/foo/foo-1/bar/bar-2")), { fooId: 1, barId: 2 })
+      deepEqual(yield* _(Route.decode(unnamed, "/test/123/test2/456")), { 0: "123", 1: "456" })
+      deepEqual(yield* _(Route.decode(param, "/test")), { test: "test" })
+      deepEqual(yield* _(Route.decode(zeroOrMore, "/test/test/")), { test: ["test", "test"] })
+      deepEqual(yield* _(Route.decode(oneOrMore, "/test")), { test: ["test"] })
+      deepEqual(yield* _(Route.decode(optional, "/test")), { test: "test" })
+      deepEqual(yield* _(Route.decode(optional, "/")), {})
+    })
+
+    await Effect.runPromise(test)
+  })
+
+  it("can be encoded", () => {
+    const test = Effect.gen(function*(_) {
+      deepEqual(yield* _(Route.encode(foobar, { fooId: 1, barId: 2 })), "/foo/foo-1/bar/bar-2")
+      deepEqual(yield* _(Route.encode(unnamed, { 0: "123", 1: "456" })), "/test/123/test2/456")
+      deepEqual(yield* _(Route.encode(param, { test: "test" })), "/test")
+      deepEqual(yield* _(Route.encode(zeroOrMore, { test: ["test", "test"] })), "/test/test")
+      deepEqual(yield* _(Route.encode(oneOrMore, { test: ["test"] })), "/test")
+      deepEqual(yield* _(Route.encode(optional, { test: "test" })), "/test")
+      deepEqual(yield* _(Route.encode(optional, {})), "/")
+    })
+
+    return Effect.runPromise(test)
+  })
+
+  it("transforms", async () => {
+    const foobarTransformed = foobar.pipe(
+      Route.transform(
+        Schema.struct({ foo: Schema.number.pipe(Schema.int()), bar: Schema.number.pipe(Schema.int()) }),
+        ({ barId, fooId }) => ({ foo: fooId, bar: barId } as const),
+        ({ bar, foo }) => ({ fooId: foo, barId: bar })
+      )
+    )
+
+    const test = Effect.gen(function*(_) {
+      deepEqual(yield* _(Route.decode(foobarTransformed, "/foo/foo-1/bar/bar-2")), { foo: 1, bar: 2 })
+      deepEqual(yield* _(Route.encode(foobarTransformed, { foo: 1, bar: 2 })), "/foo/foo-1/bar/bar-2")
+    })
+
+    await Effect.runPromise(test)
+  })
 })
