@@ -1,6 +1,6 @@
 import { Schema } from "@effect/schema"
 import * as Route from "@typed/route/Route"
-import { deepStrictEqual } from "assert"
+import { deepEqual } from "assert"
 import { Effect, Option } from "effect"
 
 describe("Route", () => {
@@ -8,19 +8,19 @@ describe("Route", () => {
   const bar = Route.lit("bar").concat(Route.end.concat(Route.int("barId").prefix("bar-")))
   const foobar = foo.concat(bar)
 
-  const unnamed = Route.lit("test").concat(Route.unnamed).concat(Route.lit("test2")).concat(Route.unnamed)
+  const unnamed = Route.lit(`test`).concat(Route.unnamed).concat(Route.lit("test2")).concat(Route.unnamed)
   const param = Route.param("test")
   const zeroOrMore = param.zeroOrMore()
   const oneOrMore = param.oneOrMore()
   const optional = param.optional()
 
   it("generates paths", () => {
-    deepStrictEqual(foobar.path, "/foo/{foo-:fooId}/bar/{bar-:barId}")
-    deepStrictEqual(unnamed.path, "/test/(.*)/test2/(.*)")
-    deepStrictEqual(param.path, "/:test")
-    deepStrictEqual(zeroOrMore.path, "/:test*")
-    deepStrictEqual(oneOrMore.path, "/:test+")
-    deepStrictEqual(optional.path, "/:test?")
+    deepEqual(foobar.path, "/foo/{foo-:fooId}/bar/{bar-:barId}")
+    deepEqual(unnamed.path, "/test/(.*)/test2/(.*)")
+    deepEqual(param.path, "/:test")
+    deepEqual(zeroOrMore.path, "/:test*")
+    deepEqual(oneOrMore.path, "/:test+")
+    deepEqual(optional.path, "/:test?")
   })
 
   it("generates schemas", async () => {
@@ -31,45 +31,34 @@ describe("Route", () => {
     const decodeOneOrMore = Schema.decode(oneOrMore.schema)
     const decodeOptional = Schema.decode(optional.schema)
     const test = Effect.gen(function*(_) {
-      deepStrictEqual(yield* _(decodeFoobar({ fooId: "1", barId: "2" })), { fooId: 1, barId: 2 })
-      deepStrictEqual(yield* _(decodeUnnamed({ 0: "123", 1: "456" })), { 0: "123", 1: "456" })
-      deepStrictEqual(yield* _(decodeParam({ test: "test" })), { test: "test" })
-      deepStrictEqual(yield* _(decodeZeroOrMore({ test: ["test", "test"] })), { test: ["test", "test"] })
-      deepStrictEqual(yield* _(decodeOneOrMore({ test: ["test"] })), { test: ["test"] })
-      deepStrictEqual(yield* _(decodeOptional({ test: "test" })), { test: "test" })
-      deepStrictEqual(yield* _(decodeOptional({})), {})
+      deepEqual(yield* _(decodeFoobar({ fooId: "1", barId: "2" })), { fooId: 1, barId: 2 })
+      deepEqual(yield* _(decodeUnnamed({ 0: "123", 1: "456" })), { 0: "123", 1: "456" })
+      deepEqual(yield* _(decodeParam({ test: "test" })), { test: "test" })
+      deepEqual(yield* _(decodeZeroOrMore({ test: ["test", "test"] })), { test: ["test", "test"] })
+      deepEqual(yield* _(decodeOneOrMore({ test: ["test"] })), { test: ["test"] })
+      deepEqual(yield* _(decodeOptional({ test: "test" })), { test: "test" })
+      deepEqual(yield* _(decodeOptional({})), {})
     })
 
     await Effect.runPromise(test)
   })
 
-  it("can be guarded", async () => {
-    const fooBarGuarded = Route.guard(
-      foobar,
-      (params) => params.fooId === 1 ? Effect.succeedSome(params) : Effect.succeedNone
-    )
+  it("interpolates paths", () => {
+    deepEqual(foobar.interpolate({ fooId: "1", barId: "2" }), "/foo/foo-1/bar/bar-2")
+    deepEqual(unnamed.interpolate({ 0: "123", 1: "456" }), "/test/123/test2/456")
+    deepEqual(param.interpolate({ test: "test" }), "/test")
+    deepEqual(zeroOrMore.interpolate({ test: ["test", "test"] }), "/test/test")
+    deepEqual(oneOrMore.interpolate({ test: ["test"] }), "/test")
+    deepEqual(optional.interpolate({ test: "test" }), "/test")
+  })
 
-    const unnamedGuarded = Route.guard(
-      unnamed,
-      (params) => params[0] === "foo" ? Effect.succeedSome(params) : Effect.succeedNone
-    )
-
-    const zeroOrMoreGuarded = Route.guard(
-      zeroOrMore,
-      (params) => params.test?.length === 2 ? Effect.succeedSome(params) : Effect.succeedNone
-    )
-
-    const test = Effect.gen(function*(_) {
-      deepStrictEqual(yield* _(fooBarGuarded("/foo/foo-1/bar/bar-2")), Option.some({ fooId: 1, barId: 2 }))
-      deepStrictEqual(yield* _(fooBarGuarded("/foo/foo-2/bar/bar-2")), Option.none())
-      deepStrictEqual(yield* _(unnamedGuarded("/test/foo/test2/bar")), Option.some({ 0: "foo", 1: "bar" }))
-      deepStrictEqual(yield* _(unnamedGuarded("/test/bar/test2/foo")), Option.none())
-
-      deepStrictEqual(yield* _(zeroOrMoreGuarded("/test/test")), Option.some({ test: ["test", "test"] }))
-      deepStrictEqual(yield* _(zeroOrMoreGuarded("/test")), Option.none())
-      deepStrictEqual(yield* _(zeroOrMoreGuarded("/")), Option.none())
-    })
-
-    await Effect.runPromise(test)
+  it("matches paths", () => {
+    deepEqual(foobar.match("/foo/foo-1/bar/bar-2"), Option.some({ fooId: "1", barId: "2" }))
+    deepEqual(unnamed.match("/test/123/test2/456"), Option.some({ 0: "123", 1: "456" }))
+    deepEqual(param.match("/test"), Option.some({ test: "test" }))
+    deepEqual(zeroOrMore.match("/test/test"), Option.some({ test: ["test", "test"] }))
+    deepEqual(oneOrMore.match("/test"), Option.some({ test: ["test"] }))
+    deepEqual(optional.match("/test"), Option.some({ test: "test" }))
+    deepEqual(optional.match("/"), Option.some({}))
   })
 })

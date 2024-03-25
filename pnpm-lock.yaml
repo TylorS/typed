@@ -716,6 +716,15 @@ importers:
 
   packages/path:
     dependencies:
+      '@effect/platform':
+        specifier: ^0.48.17
+        version: 0.48.17(@effect/schema@0.64.13)(effect@2.4.13)(ws@8.16.0)
+      '@effect/schema':
+        specifier: ^0.64.13
+        version: 0.64.13(effect@2.4.13)(fast-check@3.17.0)
+      effect:
+        specifier: ^2.4.13
+        version: 2.4.13
       ts-toolbelt:
         specifier: ^9.6.0
         version: 9.6.0

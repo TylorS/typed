@@ -1,14 +1,11 @@
-import { TreeFormatter } from "@effect/schema"
-import type { ParseError, ParseIssue } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
-import type { Guard } from "@typed/guard"
 import type { NanoId } from "@typed/id/NanoId"
 import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
 import type * as Path from "@typed/path"
 import * as AST from "@typed/route/AST"
 import type { Types } from "effect"
-import { Data, Effect, Option, ReadonlyRecord } from "effect"
+import { Option, ReadonlyRecord } from "effect"
 import { dual } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import * as ptr from "path-to-regexp"
@@ -37,6 +34,10 @@ export interface Route<
   readonly path: P
 
   readonly schema: [S] extends [never] ? Route.Schema<this> : S
+
+  readonly match: (path: string) => Option.Option<Path.ParamsOf<P>>
+
+  readonly interpolate: <P2 extends Path.ParamsOf<P>>(params: P2) => Path.Interpolate<P, P2>
 
   readonly concat: <R2 extends Route.Any>(
     right: R2
@@ -81,7 +82,6 @@ export namespace Route {
    */
   export type Path<T> = [T] extends [never] ? never
     : T extends Route<infer P, infer _> ? P
-    : T extends RouteGuard<Route<infer P, infer _X>, infer _, infer __, infer ___> ? P
     : never
 
   /**
@@ -89,8 +89,6 @@ export namespace Route {
    */
   export type Schema<T> = [T] extends [never] ? never
     : T extends Route<infer _, infer S> ? [S] extends [never] ? SchemaFromPath<_> : S
-    : T extends RouteGuard<Route<infer _X, infer S>, infer _, infer __, infer ___> ?
-      [S] extends [never] ? SchemaFromPath<_X> : S
     : never
 
   /**
@@ -159,6 +157,10 @@ const variance_: Route.Variance<any, any> = {
 
 class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<P, S> {
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
+
+  private __match!: Route<P, S>["match"]
+  private __interpolate!: Route<P, S>["interpolate"]
+
   constructor(readonly ast: AST.AST) {
     this.pipe = this.pipe.bind(this)
     this.concat = this.concat.bind(this)
@@ -172,6 +174,18 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
   private __schema!: any
   get schema() {
     return (this.__schema ??= AST.toSchema(this.ast) as any) as any
+  }
+
+  match(path: string) {
+    const m = (this.__match ??= getMatch(this as any) as any)
+    return m(path)
+  }
+
+  interpolate: <P2 extends Path.ParamsOf<P>>(params: P2) => Path.Interpolate<P, P2> = <P2 extends Path.ParamsOf<P>>(
+    params: P2
+  ) => {
+    const i = (this.__interpolate ??= getInterpolate(this as any) as any)
+    return i(params)
   }
 
   pipe() {
@@ -368,8 +382,7 @@ export function getMatch<R extends Route.Any>(
   route: R,
   options?: Parameters<typeof ptr.match>[1]
 ): (path: string) => Option.Option<Route.Params<R>> {
-  const match: ptr.MatchFunction = ptr.match(route.path, { end: route.path === "/", ...options })
-
+  const match: ptr.MatchFunction = ptr.match(route.path, { end: false, ...options })
   return (path: string): Option.Option<Route.Params<R>> => {
     const matched = match(path)
 
@@ -385,97 +398,5 @@ export function getInterpolate<R extends Route.Any>(
   options?: Parameters<typeof ptr.compile>[1]
 ): <P extends Route.Params<R>>(params: P) => Route.Interpolate<R, P> {
   const interpolate = ptr.compile(route.path, options)
-
   return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => interpolate(params) as any
 }
-
-/**
- * @since 1.0.0
- */
-export const RouteGuardTypeId = Symbol.for("@typed/route/RouteGuard")
-/**
- * @since 1.0.0
- */
-export type RouteGuardTypeId = typeof RouteGuardTypeId
-
-/**
- * @since 1.0.0
- */
-export interface RouteGuard<Route extends Route.Any, A, E, R> extends Guard<string, A, E, R> {
-  readonly [RouteGuardTypeId]: RouteGuardTypeId
-  readonly route: Route
-  readonly path: Route.Path<Route>
-  readonly schema: Route.Schema<Route>
-  readonly guard: Guard<Route.Output<Route>, A, E, R>
-}
-
-/**
- * @since 1.0.0
- */
-export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("RouteDecodeError")<{
-  readonly route: R
-  readonly issue: ParseIssue
-}> {
-  toJSON(): unknown {
-    return {
-      _tag: "RouteDecodeError",
-      route: this.route.path,
-      issue: TreeFormatter.formatIssue(this.issue)
-    }
-  }
-
-  toString() {
-    return `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
-  }
-}
-
-/**
- * @since 1.0.0
- */
-export function RouteGuard<Route extends Route.Any, A, E, R>(
-  route: Route,
-  guard: Guard<Route.Output<Route>, A, E, R>
-): RouteGuard<Route, A, E | RouteDecodeError<Route>, Route.Context<Route> | R> {
-  const match = getMatch(route)
-  const decode: (u: unknown) => Effect.Effect<Route.Output<Route>, ParseError, Route.Context<Route>> = Schema
-    .decodeUnknown(route.schema)
-  const routeGuard = (input: string) => {
-    const matched = match(input)
-    if (Option.isNone(matched)) {
-      return Effect.succeedNone
-    } else {
-      return Effect.matchEffect(decode(matched.value), {
-        onFailure: (issue) => new RouteDecodeError({ route, issue: issue.error }),
-        onSuccess: guard
-      })
-    }
-  }
-
-  return Object.assign(
-    routeGuard,
-    {
-      [RouteGuardTypeId]: RouteGuardTypeId,
-      route,
-      path: route.path,
-      schema: route.schema,
-      guard
-    } as const
-  )
-}
-
-/**
- * @since 1.0.0
- */
-export const guard: {
-  <Route extends Route.Any, A, E, R>(
-    guard: Guard<Route.Output<Route>, A, E, R>
-  ): (route: Route) => RouteGuard<Route, A, RouteDecodeError<Route> | E, R | Route.Context<Route>>
-
-  <Route extends Route.Any, A, E, R>(
-    route: Route,
-    guard: Guard<Route.Output<Route>, A, E, R>
-  ): RouteGuard<Route, A, RouteDecodeError<Route> | E, R | Route.Context<Route>>
-} = dual(2, <Route extends Route.Any, A, E, R>(
-  route: Route,
-  guard: Guard<Route.Output<Route>, A, E, R>
-): RouteGuard<Route, A, E | RouteDecodeError<Route>, R | Route.Context<Route>> => RouteGuard(route, guard))
