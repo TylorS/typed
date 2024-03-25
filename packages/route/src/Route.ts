@@ -8,10 +8,9 @@ import type { Uuid } from "@typed/id/Uuid"
 import type * as Path from "@typed/path"
 import * as AST from "@typed/route/AST"
 import type { Types } from "effect"
-import { Data, Effect, ReadonlyRecord } from "effect"
+import { Data, Effect, Option, ReadonlyRecord } from "effect"
 import { dual } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
-import { unify } from "effect/Unify"
 import * as ptr from "path-to-regexp"
 import type { N } from "ts-toolbelt"
 
@@ -64,7 +63,7 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Any = Route<any, any> | Route<never, any> | Route<any, never> | Route<never, never>
+  export type Any = Route<any, any> | Route<any, never>
 
   /**
    * @since 1.0.0
@@ -80,13 +79,18 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Path<T> = T extends Route<infer P, infer _> ? P : never
+  export type Path<T> = [T] extends [never] ? never
+    : T extends Route<infer P, infer _> ? P
+    : T extends RouteGuard<Route<infer P, infer _X>, infer _, infer __, infer ___> ? P
+    : never
 
   /**
    * @since 1.0.0
    */
-  export type Schema<T> = [T] extends [never] ? never :
-    T extends Route<infer _, infer S> ? [S] extends [never] ? SchemaFromPath<_> : S
+  export type Schema<T> = [T] extends [never] ? never
+    : T extends Route<infer _, infer S> ? [S] extends [never] ? SchemaFromPath<_> : S
+    : T extends RouteGuard<Route<infer _X, infer S>, infer _, infer __, infer ___> ?
+      [S] extends [never] ? SchemaFromPath<_X> : S
     : never
 
   /**
@@ -103,6 +107,11 @@ export namespace Route {
    * @since 1.0.0
    */
   export type Context<R extends Route.Any> = Schema.Schema.Context<Schema<R>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type Interpolate<R extends Route.Any, P extends Route.Params<R>> = Path.Interpolate<Route.Path<R>, P>
 
   /**
    * @since 1.0.0
@@ -355,6 +364,34 @@ export const getSchema = <R extends Route.Any>(route: R): Route.Schema<R> => AST
 /**
  * @since 1.0.0
  */
+export function getMatch<R extends Route.Any>(
+  route: R,
+  options?: Parameters<typeof ptr.match>[1]
+): (path: string) => Option.Option<Route.Params<R>> {
+  const match: ptr.MatchFunction = ptr.match(route.path, { end: route.path === "/", ...options })
+
+  return (path: string): Option.Option<Route.Params<R>> => {
+    const matched = match(path)
+
+    return matched === false ? Option.none() : Option.some(matched.params as Route.Params<R>)
+  }
+}
+
+/**
+ * @since 1.0.0
+ */
+export function getInterpolate<R extends Route.Any>(
+  route: R,
+  options?: Parameters<typeof ptr.compile>[1]
+): <P extends Route.Params<R>>(params: P) => Route.Interpolate<R, P> {
+  const interpolate = ptr.compile(route.path, options)
+
+  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => interpolate(params) as any
+}
+
+/**
+ * @since 1.0.0
+ */
 export const RouteGuardTypeId = Symbol.for("@typed/route/RouteGuard")
 /**
  * @since 1.0.0
@@ -382,13 +419,13 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
   toJSON(): unknown {
     return {
       _tag: "RouteDecodeError",
-      route: getPath(this.route),
+      route: this.route.path,
       issue: TreeFormatter.formatIssue(this.issue)
     }
   }
 
   toString() {
-    return `RouteDecodeError: ${getPath(this.route)} ${TreeFormatter.formatIssue(this.issue)}`
+    return `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
   }
 }
 
@@ -399,30 +436,28 @@ export function RouteGuard<Route extends Route.Any, A, E, R>(
   route: Route,
   guard: Guard<Route.Output<Route>, A, E, R>
 ): RouteGuard<Route, A, E | RouteDecodeError<Route>, Route.Context<Route> | R> {
-  const path = getPath(route)
-  const match = ptr.match(path, { end: path === "/" })
-  const schema = getSchema(route)
+  const match = getMatch(route)
   const decode: (u: unknown) => Effect.Effect<Route.Output<Route>, ParseError, Route.Context<Route>> = Schema
-    .decodeUnknown(schema)
-  const routeGuard = unify((input: string) => {
+    .decodeUnknown(route.schema)
+  const routeGuard = (input: string) => {
     const matched = match(input)
-    if (matched === false) {
+    if (Option.isNone(matched)) {
       return Effect.succeedNone
     } else {
-      return Effect.matchEffect(decode(matched.params), {
+      return Effect.matchEffect(decode(matched.value), {
         onFailure: (issue) => new RouteDecodeError({ route, issue: issue.error }),
         onSuccess: guard
       })
     }
-  })
+  }
 
   return Object.assign(
     routeGuard,
     {
       [RouteGuardTypeId]: RouteGuardTypeId,
       route,
-      path,
-      schema,
+      path: route.path,
+      schema: route.schema,
       guard
     } as const
   )
