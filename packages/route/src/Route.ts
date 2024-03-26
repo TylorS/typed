@@ -1,18 +1,20 @@
 import { ArrayFormatter, TreeFormatter } from "@effect/schema"
+import type { LiteralValue } from "@effect/schema/AST"
 import type { ParseIssue } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import type { NanoId } from "@typed/id/NanoId"
 import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
 import type * as Path from "@typed/path"
-import * as AST from "@typed/route/AST"
 import type { Types } from "effect"
 import { Data, Effect, Option, ReadonlyRecord } from "effect"
+import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual, flow, pipe } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import * as ptr from "path-to-regexp"
 import type { N } from "ts-toolbelt"
+import * as AST from "./AST.js"
 
 /**
  * @since 1.0.0
@@ -97,7 +99,12 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Output<R extends Route.Any> = Schema.Schema.Type<Schema<R>>
+  export type Type<R extends Route.Any> = Schema.Schema.Type<Schema<R>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type Encoded<R extends Route.Any> = Schema.Schema.Encoded<Schema<R>>
 
   /**
    * @since 1.0.0
@@ -161,7 +168,13 @@ const variance_: Route.Variance<any, any> = {
 class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<P, S> {
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
 
-  constructor(readonly ast: AST.AST) {
+  constructor(
+    readonly ast: AST.AST,
+    readonly options?: {
+      readonly match?: Parameters<typeof ptr.match>[1]
+      readonly interpolate?: Parameters<typeof ptr.compile>[1]
+    }
+  ) {
     this.pipe = this.pipe.bind(this)
     this.concat = this.concat.bind(this)
   }
@@ -178,7 +191,7 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
 
   private __match!: Route<P, S>["match"]
   match(path: string) {
-    const m = (this.__match ??= getMatch(this as any) as any)
+    const m = (this.__match ??= getMatch(this as any, this.options?.match) as any)
     return m(path)
   }
 
@@ -186,7 +199,7 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
   interpolate<P2 extends Path.ParamsOf<P>>(
     params: P2
   ) {
-    const i = (this.__interpolate ??= getInterpolate(this as any) as any)
+    const i = (this.__interpolate ??= getInterpolate(this as any, this.options?.interpolate) as any)
     return i(params)
   }
 
@@ -219,8 +232,12 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
  * @since 1.0.0
  */
 export const make = <P extends string, S extends Schema.Schema.All>(
-  ast: AST.AST
-): Route<P, S> => new RouteImpl(ast)
+  ast: AST.AST,
+  options?: {
+    readonly match?: Parameters<typeof ptr.match>[1]
+    readonly interpolate?: Parameters<typeof ptr.compile>[1]
+  }
+): Route<P, S> => new RouteImpl(ast, options)
 
 /**
  * @since 1.0.0
@@ -240,46 +257,108 @@ export const param = <const Name extends string>(name: Name): Route<Path.Param<N
 /**
  * @since 1.0.0
  */
-export const num = <const Name extends string>(
-  name: Name
-): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }>> =>
-  schema(
-    param(name),
-    Schema.struct(ReadonlyRecord.singleton(name, Schema.NumberFromString)) as any
-  )
+export const paramWithSchema: {
+  <A, R = never>(
+    schema: Schema.Schema<A, string, R>
+  ): <const Name extends string>(
+    name: Name
+  ) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>>
+
+  <const Name extends string, A, R = never>(
+    name: Name,
+    schema: Schema.Schema<A, string, R>
+  ): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>>
+} = dual(2, <const Name extends string, A, R = never>(
+  name: Name,
+  schema: Schema.Schema<A, string, R>
+): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>> =>
+  withSchema(param(name), Schema.struct(ReadonlyRecord.singleton(name, schema)) as any))
 
 /**
  * @since 1.0.0
  */
-export const int = <const Name extends string>(
+export const number: <const Name extends string>(
   name: Name
-): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }>> =>
-  schema(
-    param(name),
-    Schema.struct(ReadonlyRecord.singleton(name, Schema.NumberFromString.pipe(Schema.int()))) as any
-  )
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(Schema.NumberFromString)
 
 /**
  * @since 1.0.0
  */
-export const uuid = <const Name extends string>(
+export const integer: <const Name extends string>(
   name: Name
-): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: Uuid }, { readonly [_ in Name]: string }>> =>
-  schema(
-    param(name),
-    Schema.struct(ReadonlyRecord.singleton(name, ID.uuid)) as any
-  )
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(Schema.NumberFromString.pipe(Schema.int()))
 
 /**
  * @since 1.0.0
  */
-export const nanoId = <const Name extends string>(
+export const uuid: <const Name extends string>(
   name: Name
-): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: NanoId }, { readonly [_ in Name]: string }>> =>
-  schema(
-    param(name),
-    Schema.struct(ReadonlyRecord.singleton(name, ID.nanoId)) as any
-  )
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: Uuid }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(ID.uuid)
+
+/**
+ * @since 1.0.0
+ */
+export const nanoId: <const Name extends string>(
+  name: Name
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: NanoId }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(ID.nanoId)
+
+/**
+ * @since 1.0.0
+ */
+export const bigint: <const Name extends string>(
+  name: Name
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: bigint }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(Schema.bigint)
+
+/**
+ * @since 1.0.0
+ */
+export const bigDecimal: <const Name extends string>(
+  name: Name
+) => Route<
+  Path.Param<Name>,
+  Schema.Schema<{ readonly [_ in Name]: BigDecimal }, { readonly [_ in Name]: string }, never>
+> = paramWithSchema(Schema.BigDecimal)
+
+/**
+ * @since 1.0.0
+ */
+export const base64Url: <const Name extends string>(
+  name: Name
+) => Route<
+  Path.Param<Name>,
+  Schema.Schema<{ readonly [_ in Name]: Uint8Array }, { readonly [_ in Name]: string }, never>
+> = paramWithSchema(Schema.Base64Url)
+
+/**
+ * @since 1.0.0
+ */
+export const boolean: <const Name extends string>(
+  name: Name
+) => Route<
+  Path.Param<Name>,
+  Schema.Schema<{ readonly [_ in Name]: boolean }, { readonly [_ in Name]: string }, never>
+> = paramWithSchema(Schema.parseJson(Schema.boolean))
+
+/**
+ * @since 1.0.0
+ */
+export const ulid: <const Name extends string>(
+  name: Name
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: string }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(Schema.ULID)
+
+/**
+ * @since 1.0.0
+ */
+export const date: <const Name extends string>(
+  name: Name
+) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: Date }, { readonly [_ in Name]: string }, never>> =
+  paramWithSchema(Schema.Date)
 
 /**
  * @since 1.0.0
@@ -350,17 +429,17 @@ export const concat: {
 /**
  * @since 1.0.0
  */
-export const schema: {
-  <R extends Route<any, never>, S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>>(
+export const withSchema: {
+  <R extends Route.Any, S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>>(
     schema: S
   ): (route: R) => Route.UpdateSchema<R, S>
 
-  <R extends Route<any, never>, S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>>(
+  <R extends Route.Any, S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>>(
     route: R,
     schema: S
   ): Route.UpdateSchema<R, S>
 } = dual(2, <
-  R extends Route<any, never>,
+  R extends Route.Any,
   S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>
 >(
   route: R,
@@ -384,7 +463,7 @@ export function getMatch<R extends Route.Any>(
   route: R,
   options?: Parameters<typeof ptr.match>[1]
 ): (path: string) => Option.Option<Route.Params<R>> {
-  const match: ptr.MatchFunction = ptr.match(route.path, { end: route.path === "/", ...options })
+  const match: ptr.MatchFunction = ptr.match(route.path, { end: false, ...options })
 
   return (path: string): Option.Option<Route.Params<R>> => {
     const matched = match(path)
@@ -432,29 +511,29 @@ export const decode: {
   (path: string): <R extends Route.Any>(
     route: R
   ) => Effect.Effect<
-    Route.Output<R>,
+    Route.Type<R>,
     NoSuchElementException | RouteDecodeError<R>,
-    Schema.Schema.Context<Route.Schema<R>>
+    Route.Context<R>
   >
 
   <R extends Route.Any>(
     route: R,
     path: string
   ): Effect.Effect<
-    Route.Output<R>,
+    Route.Type<R>,
     NoSuchElementException | RouteDecodeError<R>,
-    Schema.Schema.Context<Route.Schema<R>>
+    Route.Context<R>
   >
 } = dual(2, function decode<R extends Route.Any>(
   route: R,
   path: string
-): Effect.Effect<Route.Output<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> {
+): Effect.Effect<Route.Type<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> {
   const params = route.match(path) as Option.Option<Route.Params<R>>
   const decode = flow(
     Schema.decode(route.schema),
     Effect.catchAll((error) => new RouteDecodeError({ route, issue: error.error }))
   ) as (params: Route.Params<R>) => Effect.Effect<
-    Route.Output<R>,
+    Route.Type<R>,
     RouteDecodeError<R>,
     Route.Context<R>
   >
@@ -469,24 +548,23 @@ export const decode_: {
   <R extends Route.Any>(
     route: R
   ): (path: string) => Effect.Effect<
-    Route.Output<R>,
+    Route.Type<R>,
     NoSuchElementException | RouteDecodeError<R>,
-    Schema.Schema.Context<Route.Schema<R>>
+    Route.Context<R>
   >
 
   <R extends Route.Any>(
     path: string,
     route: R
   ): Effect.Effect<
-    Route.Output<R>,
+    Route.Type<R>,
     NoSuchElementException | RouteDecodeError<R>,
-    Schema.Schema.Context<Route.Schema<R>>
+    Route.Context<R>
   >
 } = dual(2, <R extends Route.Any>(
   path: string,
   route: R
-): Effect.Effect<Route.Output<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> =>
-  decode(route, path))
+): Effect.Effect<Route.Type<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> => decode(route, path))
 
 /**
  * @since 1.0.0
@@ -512,15 +590,15 @@ export class RouteEncodeError<R extends Route.Any> extends Data.TaggedError("Rou
  * @since 1.0.0
  */
 export const encode: {
-  <R extends Route.Any, O extends Route.Output<R>>(
+  <R extends Route.Any, O extends Route.Type<R>>(
     params: O
   ): (route: R) => Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
 
-  <R extends Route.Any, O extends Route.Output<R>>(
+  <R extends Route.Any, O extends Route.Type<R>>(
     route: R,
     params: O
   ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
-} = dual(2, function<R extends Route.Any, O extends Route.Output<R>>(
+} = dual(2, function<R extends Route.Any, O extends Route.Type<R>>(
   route: R,
   params: O
 ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>> {
@@ -536,15 +614,15 @@ export const encode: {
  * @since 1.0.0
  */
 export const encode_: {
-  <R extends Route.Any, O extends Route.Output<R>>(
+  <R extends Route.Any, O extends Route.Type<R>>(
     route: R
   ): (params: O) => Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
 
-  <R extends Route.Any, O extends Route.Output<R>>(
+  <R extends Route.Any, O extends Route.Type<R>>(
     params: O,
     route: R
   ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>>
-} = dual(2, <R extends Route.Any, O extends Route.Output<R>>(
+} = dual(2, <R extends Route.Any, O extends Route.Type<R>>(
   params: O,
   route: R
 ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>> =>
@@ -553,46 +631,145 @@ export const encode_: {
 /**
  * @since 1.0.0
  */
+export const updateSchema: {
+  <R extends Route.Any, S extends Schema.Schema.Any>(
+    f: (s: Route.Schema<R>) => S
+  ): (route: R) => Route.UpdateSchema<R, S>
+  <R extends Route.Any, S extends Schema.Schema.Any>(route: R, f: (s: Route.Schema<R>) => S): Route.UpdateSchema<R, S>
+} = dual(2, <R extends Route.Any, S extends Schema.Schema.Any>(
+  route: R,
+  f: (s: Route.Schema<R>) => S
+): Route.UpdateSchema<R, S> => withSchema<R, S>(route, f(route.schema)))
+
+/**
+ * @since 1.0.0
+ */
 export const transform: {
   <R extends Route.Any, S extends Schema.Schema.Any>(
     toSchema: S,
-    from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
-    to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+    from: (o: Route.Type<R>) => Schema.Schema.Encoded<S>,
+    to: (s: Schema.Schema.Encoded<S>) => Route.Type<R>
   ): (route: R) => Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>>
 
   <R extends Route.Any, S extends Schema.Schema.Any>(
     route: R,
     toSchema: S,
-    from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
-    to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+    from: (o: Route.Type<R>) => Schema.Schema.Encoded<S>,
+    to: (s: Schema.Schema.Encoded<S>) => Route.Type<R>
   ): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>>
 } = dual(4, function transform<R extends Route.Any, S extends Schema.Schema.Any>(
   route: R,
   toSchema: S,
-  from: (o: Route.Output<R>) => Schema.Schema.Encoded<S>,
-  to: (s: Schema.Schema.Encoded<S>) => Route.Output<R>
+  from: (o: Route.Type<R>) => Schema.Schema.Encoded<S>,
+  to: (s: Schema.Schema.Encoded<S>) => Route.Type<R>
 ): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>> {
-  return schema(route as any, Schema.transform(route.schema, toSchema, from, to) as any) as any
+  return updateSchema(route, Schema.transform(toSchema, from, to))
 })
 
+/**
+ * @since 1.0.0
+ */
 export const transformOrFail: {
   <R extends Route.Any, S extends Schema.Schema.Any, R2>(
     toSchema: S,
-    from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
-    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+    from: (o: Route.Type<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Type<R>, ParseIssue, R2>
   ): (route: R) => Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>>
 
   <R extends Route.Any, S extends Schema.Schema.Any, R2>(
     route: R,
     toSchema: S,
-    from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
-    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+    from: (o: Route.Type<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+    to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Type<R>, ParseIssue, R2>
   ): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>>
 } = dual(4, function transformOrFail<R extends Route.Any, S extends Schema.Schema.Any, R2>(
   route: R,
   toSchema: S,
-  from: (o: Route.Output<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
-  to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Output<R>, ParseIssue, R2>
+  from: (o: Route.Type<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
+  to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Type<R>, ParseIssue, R2>
 ): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>> {
-  return schema(route as any, Schema.transformOrFail(route.schema, toSchema, from, to) as any) as any
+  return updateSchema(route, Schema.transformOrFail(toSchema, from, to))
+})
+
+/**
+ * @since 1.0.0
+ */
+export const attachPropertySignature: {
+  <K extends string, V extends symbol | LiteralValue>(
+    key: K,
+    value: V
+  ): <R extends Route.Any>(route: R) => Route.UpdateSchema<
+    R,
+    Schema.Schema<
+      Route.Type<R> & { readonly [_ in K]: V },
+      Route.Encoded<R>,
+      Route.Context<R>
+    >
+  >
+
+  <R extends Route.Any, K extends string, V extends symbol | LiteralValue>(
+    route: R,
+    key: K,
+    value: V
+  ): Route.UpdateSchema<
+    R,
+    Schema.Schema<
+      Route.Type<R> & { readonly [_ in K]: V },
+      Route.Encoded<R>,
+      Route.Context<R>
+    >
+  >
+} = dual(3, function attachPropertySignature<
+  R extends Route.Any,
+  K extends string,
+  V extends LiteralValue | symbol
+>(route: R, key: K, value: V): Route.UpdateSchema<
+  R,
+  Schema.Schema<
+    Route.Type<R> & { readonly [_ in K]: V },
+    Route.Encoded<R>,
+    Route.Context<R>
+  >
+> {
+  return updateSchema(route, Schema.attachPropertySignature(key, value)) as any
+})
+
+/**
+ * @since 1.0.0
+ */
+export const addTag: {
+  <const T extends string>(
+    tag: T
+  ): <R extends Route.Any>(route: R) => Route.UpdateSchema<
+    R,
+    Schema.Schema<
+      Route.Type<R> & { readonly _tag: T },
+      Route.Encoded<R>,
+      Route.Context<R>
+    >
+  >
+
+  <R extends Route.Any, const T extends string>(
+    route: R,
+    tag: T
+  ): Route.UpdateSchema<
+    R,
+    Schema.Schema<
+      Route.Type<R> & { readonly _tag: T },
+      Route.Encoded<R>,
+      Route.Context<R>
+    >
+  >
+} = dual(2, function addTag<R extends Route.Any, const T extends string>(
+  route: R,
+  tag: T
+): Route.UpdateSchema<
+  R,
+  Schema.Schema<
+    Route.Type<R> & { readonly _tag: T },
+    Route.Encoded<R>,
+    Route.Context<R>
+  >
+> {
+  return attachPropertySignature(route, "_tag", tag)
 })

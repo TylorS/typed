@@ -4,8 +4,8 @@ import { deepEqual } from "assert"
 import { Effect, Option } from "effect"
 
 describe("Route", () => {
-  const foo = Route.lit("foo").concat(Route.end.concat(Route.int("fooId").prefix("foo-")))
-  const bar = Route.lit("bar").concat(Route.end.concat(Route.int("barId").prefix("bar-")))
+  const foo = Route.lit("foo").concat(Route.end.concat(Route.integer("fooId").prefix("foo-")))
+  const bar = Route.lit("bar").concat(Route.end.concat(Route.integer("barId").prefix("bar-")))
   const foobar = foo.concat(bar)
 
   const unnamed = Route.lit(`test`).concat(Route.unnamed).concat(Route.lit("test2")).concat(Route.unnamed)
@@ -100,8 +100,8 @@ describe("Route", () => {
     )
 
     const test = Effect.gen(function*(_) {
-      deepEqual(yield* _(Route.decode(foobarTransformed, "/foo/foo-1/bar/bar-2")), { foo: 1, bar: 2 })
-      deepEqual(yield* _(Route.encode(foobarTransformed, { foo: 1, bar: 2 })), "/foo/foo-1/bar/bar-2")
+      deepEqual(yield* _(foobarTransformed, Route.decode("/foo/foo-1/bar/bar-2")), { foo: 1, bar: 2 })
+      deepEqual(yield* _(foobarTransformed, Route.encode({ foo: 1, bar: 2 })), "/foo/foo-1/bar/bar-2")
     })
 
     await Effect.runPromise(test)
