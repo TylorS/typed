@@ -13,14 +13,13 @@ import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
 
-import type { ParamsList, ParamsOf } from "@typed/path"
 import * as Route from "@typed/route"
 
 /**
  * @since 1.0.0
  */
-export interface CurrentRoute<P extends string = string> {
-  readonly route: Route.Route<P>
+export interface CurrentRoute {
+  readonly route: Route.Route.Any
   readonly parent: Option.Option<CurrentRoute>
 }
 
@@ -32,12 +31,12 @@ export const CurrentRoute: Context.Tagged<CurrentRoute> = Context.Tagged<Current
 /**
  * @since 1.0.0
  */
-export function make<const P extends string>(
-  route: P | Route.Route<P>,
+export function make<R extends Route.Route.Any>(
+  route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
-): CurrentRoute<P> {
+): CurrentRoute {
   return {
-    route: getRoute(route),
+    route,
     parent
   }
 }
@@ -45,15 +44,11 @@ export function make<const P extends string>(
 /**
  * @since 1.0.0
  */
-export function layer<const P extends string>(
-  route: P | Route.Route<P>,
+export function layer<R extends Route.Route.Any>(
+  route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): Layer.Layer<CurrentRoute> {
-  return CurrentRoute.layer(make(route, parent) as any)
-}
-
-function getRoute<P extends string>(route: P | Route.Route<P>): Route.Route<P> {
-  return typeof route === "string" ? Route.fromPath(route) : route
+  return CurrentRoute.layer(make(route, parent))
 }
 
 /**
@@ -102,43 +97,41 @@ export const withCurrentRoute: {
 
 const makeHref_ = (
   currentPath: string,
-  currentRoute: Route.Route<any>,
-  route: Route.Route<any>,
-  ...params: ParamsList<string>
+  currentRoute: Route.Route.Any,
+  route: Route.Route.Any,
+  params: Route.Route.Params<typeof route>
 ): Option.Option<string> => {
   const currentMatch = currentRoute.match(currentPath)
   if (Option.isNone(currentMatch)) return Option.none()
 
   const fullRoute = currentRoute.concat(route)
-  const fullParams = { ...currentMatch.value, ...params[0] }
+  const fullParams = { ...currentMatch.value, ...params }
 
-  return Option.some(fullRoute.make(fullParams as any))
+  return Option.some(fullRoute.interpolate(fullParams as any))
 }
 
 /**
  * @since 1.0.0
  */
-export function makeHref<const P extends string, A = ParamsOf<P>, E = never, R = never>(
-  pathOrRoute: Route.RouteInput<P, A, E, R> | P,
-  ...params: ParamsList<P>
+export function makeHref<const R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>
 ): RefSubject.Filtered<string, never, Navigation | CurrentRoute> {
-  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : Route.asRouteGuard(pathOrRoute).route
-
   return RefSubject.filterMapEffect(
     CurrentPath,
     (currentPath) =>
       Effect.map(
         CurrentRoute,
-        (currentRoute): Option.Option<string> => makeHref_(currentPath, currentRoute.route, route, ...params)
+        (currentRoute): Option.Option<string> => makeHref_(currentPath, currentRoute.route, route, params)
       )
   )
 }
 
 const isActive_ = (
   currentPath: string,
-  currentRoute: Route.Route<any>,
-  route: Route.Route<any>,
-  ...params: ParamsList<any>
+  currentRoute: Route.Route.Any,
+  route: Route.Route.Any,
+  params: Route.Route.Params<typeof route>
 ): boolean => {
   const currentMatch = currentRoute.match(currentPath)
 
@@ -148,20 +141,18 @@ const isActive_ = (
 
   if (fullRoute.path === "/") return currentPath === "/"
 
-  const fullParams = { ...currentMatch.value, ...params[0] }
-  const fullPath = fullRoute.make(fullParams as any)
+  const fullParams = { ...currentMatch.value, ...params }
+  const fullPath = fullRoute.interpolate(fullParams as any)
 
   return fullPath === currentPath || currentPath.startsWith(fullPath)
 }
 /**
  * @since 1.0.0
  */
-export function isActive<const P extends string, A = ParamsOf<P>, E = never, R = never>(
-  pathOrRoute: Route.RouteInput<P, A, E, R> | P,
-  ...[params]: ParamsList<P>
+export function isActive<R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute> {
-  const route = typeof pathOrRoute === "string" ? Route.fromPath(pathOrRoute) : Route.asRouteGuard(pathOrRoute).route
-
   return RefSubject.mapEffect(
     CurrentPath,
     (currentPath) =>
@@ -182,7 +173,7 @@ export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = Curr
     const baseHref = base ? getBasePathname(base.href) : "/"
 
     return {
-      route: Route.fromPath(baseHref),
+      route: Route.lit(baseHref),
       parent: Option.none()
     }
   })
@@ -201,7 +192,7 @@ function getBasePathname(base: string): string {
  * @since 1.0.0
  */
 export const server = (base: string = "/"): Layer.Layer<CurrentRoute> =>
-  CurrentRoute.layer({ route: Route.fromPath(base), parent: Option.none() })
+  CurrentRoute.layer({ route: Route.lit(base), parent: Option.none() })
 
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
   Object.fromEntries(destination.url.searchParams)

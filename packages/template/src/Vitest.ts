@@ -9,16 +9,19 @@ import type * as TestServices from "effect/TestServices"
 import * as vitest from "vitest"
 import * as RenderQueue from "./RenderQueue"
 
+const describeConcurrent = vitest.describe.concurrent
+const expect = vitest.expect
+
 export {
   /**
    * @since 1.0.0
    */
-  describe,
+  describeConcurrent as describe,
   /**
    * @since 1.0.0
    */
   expect
-} from "vitest"
+}
 
 /**
  * @since 1.0.0
@@ -28,7 +31,7 @@ export function it<E, A>(
   test: () => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue>,
   options?: vitest.TestOptions
 ) {
-  return vitest.it(
+  return vitest.it.concurrent(
     name,
     () =>
       test().pipe(
@@ -84,7 +87,7 @@ export function test<E, A>(
   }) => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue | TestServices.TestServices>,
   options?: vitest.TestOptions
 ) {
-  return vitest.it(
+  return vitest.it.concurrent(
     name,
     () =>
       TestClock.testClockWith((clock) => test({ clock })).pipe(

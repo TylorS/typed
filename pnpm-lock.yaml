@@ -327,7 +327,7 @@ importers:
     dependencies:
       '@effect/platform':
         specifier: ^0.48.17
-        version: 0.48.17(@effect/schema@0.64.13)(effect@2.4.13)(ws@8.16.0)
+        version: 0.48.17(@effect/schema@0.64.14)(effect@2.4.13)(ws@8.16.0)
       '@effect/platform-node':
         specifier: ^0.45.19
         version: 0.45.19(@effect/platform@0.48.17)(effect@2.4.13)
@@ -760,6 +760,12 @@ importers:
 
   packages/router:
     dependencies:
+      '@effect/platform':
+        specifier: ^0.48.17
+        version: 0.48.17(@effect/schema@0.64.14)(effect@2.4.13)(ws@8.16.0)
+      '@effect/schema':
+        specifier: ^0.64.14
+        version: 0.64.14(effect@2.4.13)(fast-check@3.17.0)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -813,6 +819,12 @@ importers:
       effect:
         specifier: ^2.4.13
         version: 2.4.13
+      effect-http:
+        specifier: ^0.60.3
+        version: 0.60.3(@effect/platform@0.48.17)(@effect/schema@0.64.13)(effect@2.4.13)
+      effect-http-node:
+        specifier: ^0.8.3
+        version: 0.8.3(@effect/platform-node@0.45.19)(@effect/platform@0.48.17)(@effect/schema@0.64.13)(effect-http@0.60.3)(effect@2.4.13)
     publishDirectory: dist
 
   packages/storybook:
@@ -899,6 +911,12 @@ importers:
       effect:
         specifier: ^2.4.13
         version: 2.4.13
+      html5-parser:
+        specifier: ^0.1.1
+        version: 0.1.1
+      html5parser:
+        specifier: ^2.0.2
+        version: 2.0.2
       typed-query-selector:
         specifier: ^2.11.2
         version: 2.11.2
@@ -2688,6 +2706,22 @@ packages:
     transitivePeerDependencies:
       - ws
 
+  /@effect/platform@0.48.17(@effect/schema@0.64.14)(effect@2.4.13)(ws@8.16.0):
+    resolution: {integrity: sha512-8rZmJux/tabWsGdBh9r1iqtmrdf4PFUaFmRCFpPnii+oG17aYrniewb9d9Dd75pqiAks0FTFZpUf+nLeRRvOvA==}
+    peerDependencies:
+      '@effect/schema': ^0.64.13
+      effect: ^2.4.13
+    dependencies:
+      '@effect/schema': 0.64.14(effect@2.4.13)(fast-check@3.17.0)
+      effect: 2.4.13
+      find-my-way-ts: 0.1.1
+      isomorphic-ws: 5.0.0(ws@8.16.0)
+      multipasta: 0.2.0
+      path-browserify: 1.0.1
+    transitivePeerDependencies:
+      - ws
+    dev: false
+
   /@effect/schema@0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0):
     resolution: {integrity: sha512-cfEyHLXPdzSKzJU/yYrPjFd0iVHPydh+NT0sgTe4bzXbcvOsKZuvQ86cAAwXN7lxY0N5cPes9ACxUxTdkEaNlw==}
     peerDependencies:
@@ -2706,6 +2740,16 @@ packages:
     dependencies:
       effect: 2.4.13
       fast-check: 3.17.0
+
+  /@effect/schema@0.64.14(effect@2.4.13)(fast-check@3.17.0):
+    resolution: {integrity: sha512-f/3glHpm+Qu7i6gK5FxNhxtXXB7NbQQ+r5kOXijFYGJIfUoYpF6GIjUxoKKRH9QLAeMaDeJLml076Yi3LTbUvg==}
+    peerDependencies:
+      effect: ^2.4.14
+      fast-check: ^3.13.2
+    dependencies:
+      effect: 2.4.13
+      fast-check: 3.17.0
+    dev: false
 
   /@effect/typeclass@0.23.13(effect@2.4.13):
     resolution: {integrity: sha512-kDuCvuqSlH38vt4oK1H0laTldEUGD6E5LhgygHn5A9jDr4j29HAnjtYFzIDC3SUF+tgLv74NBAoo/g/gmL7oDQ==}
@@ -8670,6 +8714,17 @@ packages:
       relateurl: 0.2.7
       terser: 5.29.2
     dev: true
+
+  /html5-parser@0.1.1:
+    resolution: {integrity: sha512-E9eAoZbLz0OgwfpUWiljQjg6+YAOm2L5R1KSP6yPYK1wdCtk/x5rF+17G6BX96SwgT+yisH8WsWX3Qh4pN6H5A==}
+    engines: {node: '>= 0.6.0'}
+    dev: false
+
+  /html5parser@2.0.2:
+    resolution: {integrity: sha512-L0y+IdTVxHsovmye8MBtFgBvWZnq1C9WnI/SmJszxoQjmUH1psX2uzDk21O5k5et6udxdGjwxkbmT9eVRoG05w==}
+    dependencies:
+      tslib: 2.6.2
+    dev: false
 
   /http-errors@2.0.0:
     resolution: {integrity: sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==}

@@ -2,8 +2,6 @@
  * @since 1.0.0
  */
 
-import "./internal/module-augmentation.js"
-
 /**
  * @since 1.0.0
  */
@@ -36,6 +34,9 @@ export namespace Placeholder {
     | Placeholder<A, never, any>
     | Placeholder<A>
     | Placeholder<A, any>
+    | null
+    | undefined
+    | void
 
   /**
    * @since 1.0.0
@@ -55,4 +56,35 @@ export namespace Placeholder {
   export type Success<T> = [T] extends [never] ? never
     : [T] extends [Placeholder<infer A, infer _E, infer _R>] ? A
     : never
+}
+
+/**
+ * @since 1.0.0
+ */
+declare global {
+  export interface String extends Placeholder<string> {}
+
+  export interface Number extends Placeholder<number> {}
+
+  export interface Boolean extends Placeholder<boolean> {}
+
+  export interface Symbol extends Placeholder<symbol> {}
+
+  export interface BigInt extends Placeholder<bigint> {}
+
+  export interface Array<T> extends
+    Placeholder<
+      Array<Placeholder.Success<T>>,
+      Placeholder.Error<T>,
+      Placeholder.Context<T>
+    >
+  {}
+
+  export interface ReadonlyArray<T> extends
+    Placeholder<
+      ReadonlyArray<Placeholder.Success<T>>,
+      Placeholder.Error<T>,
+      Placeholder.Context<T>
+    >
+  {}
 }

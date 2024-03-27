@@ -48,7 +48,6 @@
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
     "effect": "^2.4.13",
-    "typed-query-selector": "^2.11.2",
     "udomdiff": "^1.1.0"
   },
   "peerDependencies": {

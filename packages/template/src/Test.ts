@@ -113,8 +113,11 @@ export function testRender<E, R>(
 
     // Await the first render
     yield* _(
-      Fx.first(elementRef),
-      Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), options?.renderTimeout ?? 1000))
+      Effect.flatMap(
+        Effect.sleep(options?.renderTimeout ?? 1000),
+        (_) => Effect.dieMessage(`Rendering taking too long`)
+      ),
+      Effect.race(Fx.first(elementRef))
     )
 
     return test

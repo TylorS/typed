@@ -45,6 +45,8 @@
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
-    "effect": "^2.4.13"
+    "effect": "^2.4.13",
+    "effect-http": "^0.60.3",
+    "effect-http-node": "^0.8.3"
   }
 }
