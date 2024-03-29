@@ -29,9 +29,9 @@ const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Eff
 
 /* #region Routing */
 
-const allRoute = Route.fromPath("/", { match: { end: true } })
-const activeRoute = Route.fromPath("/active")
-const completedRoute = Route.fromPath("/completed")
+const allRoute = Route.home
+const activeRoute = Route.literal("/active")
+const completedRoute = Route.literal("/completed")
 
 // Expose conversion to route for the UI
 export const filterStateToPath = (state: Domain.FilterState) => {

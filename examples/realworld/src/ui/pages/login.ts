@@ -9,7 +9,7 @@ import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { isDom } from "@typed/environment"
 import { Effect } from "effect"
 
-export const route = Route.fromPath("/login")
+export const route = Route.literal("/login")
 
 export const main = Fx.gen(function*(_) {
   if (yield* _(isDom)) {

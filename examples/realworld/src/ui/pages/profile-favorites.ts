@@ -6,8 +6,8 @@ import { Schema } from "@effect/schema"
 import { Fx, html, many, RefSubject, Route } from "@typed/core"
 import { Option } from "effect"
 
-export const route = Route.fromPath("/profile/:username/favorites").pipe(
-  Route.decode(Schema.struct({ username: Username }))
+export const route = Route.literal("/profile/:username/favorites").pipe(
+  Route.withSchema(Schema.struct({ username: Username }))
 )
 
 export type Params = Schema.Schema.Type<typeof route.schema>

@@ -1,6 +1,7 @@
 import { CurrentEnvironment, Environment } from "@typed/environment"
 import * as Fx from "@typed/fx"
 import * as Navigation from "@typed/navigation"
+import * as Route from "@typed/route"
 import * as Router from "@typed/router"
 import { deepStrictEqual } from "assert"
 import type { ReadonlyArray } from "effect"
@@ -10,12 +11,15 @@ describe("Router", () => {
   function testRouter(urls: ReadonlyArray.NonEmptyReadonlyArray<string>, expected: ReadonlyArray<string>) {
     return Effect.gen(function*(_) {
       const router = Router
-        .to("/foo/:id", ({ id }) => `/foo/${id}`)
-        .to("/bar/:id", ({ id }) => `/bar/${id}`)
-        .to("/baz/:id", ({ id }) => `/baz/${id}`)
-        .redirect("/foo/123")
+        .to(Route.literal("/foo/:id"), ({ id }) => `/foo/${id}`)
+        .to(Route.literal("/bar/:id"), ({ id }) => `/bar/${id}`)
+        .to(Route.literal("/baz/:id"), ({ id }) => `/baz/${id}`)
 
-      const fiber = yield* _(Fx.take(router, expected.length), Fx.toReadonlyArray, Effect.fork)
+      const fiber = yield* _(
+        Fx.take(Router.redirectTo(router, Route.literal("/foo/:id"), { id: "123" }), expected.length),
+        Fx.toReadonlyArray,
+        Effect.fork
+      )
 
       yield* _(Effect.sleep(1))
 
@@ -44,7 +48,7 @@ describe("Router", () => {
   describe(Router.makeHref, () => {
     it("creates a path for a route", async () => {
       const test = Effect.gen(function*(_) {
-        const href = yield* _(Router.makeHref("/foo/:id", { id: "123" }))
+        const href = yield* _(Router.makeHref(Route.literal("/foo/:id"), { id: "123" }))
 
         deepStrictEqual(href, "/foo/123")
       }).pipe(Effect.provide(resources("/")), Effect.scoped)
@@ -58,7 +62,7 @@ describe("Router", () => {
       const test = Effect.gen(function*(_) {
         console.log("CurrentEntry", yield* _(Navigation.CurrentEntry))
         console.log("CurrentPath", yield* _(Navigation.CurrentPath))
-        const active = yield* _(Router.isActive("/foo/:id", { id: "123" }))
+        const active = yield* _(Router.isActive(Route.literal("/foo/:id"), { id: "123" }))
 
         expect(active).toBe(true)
       }).pipe(Effect.provide(resources("/foo/123")), Effect.scoped)
@@ -68,7 +72,7 @@ describe("Router", () => {
 
     it("returns false if the route is not active", async () => {
       const test = Effect.gen(function*(_) {
-        const active = yield* _(Router.isActive("/foo/:id", { id: "456" }))
+        const active = yield* _(Router.isActive(Route.literal("/foo/:id"), { id: "456" }))
 
         expect(active).toBe(false)
       }).pipe(Effect.provide(resources("/foo/123")), Effect.scoped)
@@ -80,6 +84,6 @@ describe("Router", () => {
 
 const resources = (url: string) =>
   Navigation.initialMemory({ url: `http://localhost${url}` }).pipe(
-    Layer.provideMerge(Router.layer("/")),
+    Layer.provideMerge(Router.layer(Route.end)),
     Layer.provideMerge(CurrentEnvironment.layer(Environment.dom.test))
   )

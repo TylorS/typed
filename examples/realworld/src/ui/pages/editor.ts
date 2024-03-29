@@ -1,7 +1,7 @@
 import { isAuthenticatedGuard } from "@/services"
 import { html, Route } from "@typed/core"
 
-export const route = Route.fromPath("/editor").pipe(Route.guard(isAuthenticatedGuard))
+export const route = Route.literal("/editor").pipe(isAuthenticatedGuard)
 
 export const main = html`<div class="editor-page">
   <div class="container page">

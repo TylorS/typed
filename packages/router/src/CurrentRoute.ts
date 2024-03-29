@@ -4,16 +4,15 @@
 
 import * as Context from "@typed/context"
 import * as Document from "@typed/dom/Document"
+import type * as Fx from "@typed/fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Destination } from "@typed/navigation"
 import { CurrentEntry, CurrentPath, getCurrentPathFromUrl, Navigation } from "@typed/navigation"
+import * as Route from "@typed/route"
 import type { Layer } from "effect"
-import * as Option from "effect/Option"
-
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
-
-import * as Route from "@typed/route"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.0.0
@@ -31,7 +30,7 @@ export const CurrentRoute: Context.Tagged<CurrentRoute> = Context.Tagged<Current
 /**
  * @since 1.0.0
  */
-export function make<R extends Route.Route.Any>(
+export function makeCurrentRoute<R extends Route.Route.Any>(
   route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): CurrentRoute {
@@ -48,7 +47,7 @@ export function layer<R extends Route.Route.Any>(
   route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): Layer.Layer<CurrentRoute> {
-  return CurrentRoute.layer(make(route, parent))
+  return CurrentRoute.layer(makeCurrentRoute(route, parent))
 }
 
 /**
@@ -72,26 +71,26 @@ export const CurrentParams: RefSubject.Filtered<
  * @since 1.0.0
  */
 export const withCurrentRoute: {
-  <P extends string>(
-    route: Route.Route<P>
+  <R extends Route.Route.Any>(
+    route: R
   ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 
-  <A, E, R, P extends string>(
+  <A, E, R, R_ extends Route.Route.Any>(
     effect: Effect.Effect<A, E, R>,
-    route: Route.Route<P>
+    route: R_
   ): Effect.Effect<A, E, Exclude<R, CurrentRoute>>
-} = dual(2, <A, E, R, P extends string>(
+} = dual(2, <A, E, R, R_ extends Route.Route.Any>(
   effect: Effect.Effect<A, E, R>,
-  route: Route.Route<P>
+  route: R_
 ): Effect.Effect<A, E, Exclude<R, CurrentRoute>> =>
   Effect.contextWithEffect((ctx) => {
     const parent = Context.getOption(ctx, CurrentRoute)
 
-    if (Option.isNone(parent)) return pipe(effect, CurrentRoute.provide(make(route) as any as CurrentRoute))
+    if (Option.isNone(parent)) return pipe(effect, CurrentRoute.provide(makeCurrentRoute(route)))
 
     return pipe(
       effect,
-      CurrentRoute.provide(make(parent.value.route.concat(route), parent) as CurrentRoute)
+      CurrentRoute.provide(makeCurrentRoute(parent.value.route.concat(route), parent))
     )
   }))
 
@@ -99,7 +98,7 @@ const makeHref_ = (
   currentPath: string,
   currentRoute: Route.Route.Any,
   route: Route.Route.Any,
-  params: Route.Route.Params<typeof route>
+  params: {} = {}
 ): Option.Option<string> => {
   const currentMatch = currentRoute.match(currentPath)
   if (Option.isNone(currentMatch)) return Option.none()
@@ -115,7 +114,7 @@ const makeHref_ = (
  */
 export function makeHref<const R extends Route.Route.Any>(
   route: R,
-  params: Route.Route.Params<R>
+  ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Filtered<string, never, Navigation | CurrentRoute> {
   return RefSubject.filterMapEffect(
     CurrentPath,
@@ -131,7 +130,7 @@ const isActive_ = (
   currentPath: string,
   currentRoute: Route.Route.Any,
   route: Route.Route.Any,
-  params: Route.Route.Params<typeof route>
+  params: {} = {}
 ): boolean => {
   const currentMatch = currentRoute.match(currentPath)
 
@@ -151,7 +150,7 @@ const isActive_ = (
  */
 export function isActive<R extends Route.Route.Any>(
   route: R,
-  params: Route.Route.Params<R>
+  ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute> {
   return RefSubject.mapEffect(
     CurrentPath,
@@ -166,6 +165,28 @@ export function isActive<R extends Route.Route.Any>(
 /**
  * @since 1.0.0
  */
+export function decode<R extends Route.Route.Any>(
+  route: R
+): Fx.RefSubject.Filtered<
+  Route.Route.Type<R>,
+  Route.RouteDecodeError<R>,
+  Navigation | CurrentRoute | Route.Route.Context<R>
+> {
+  return RefSubject.filteredFromTag(
+    Navigation,
+    (nav) =>
+      RefSubject.filterMapEffect(
+        nav.currentEntry,
+        (e) =>
+          Effect.flatMap(CurrentRoute, ({ route: parent }) =>
+            Effect.optionFromOptional(Route.decode(parent.concat(route) as R, getCurrentPathFromUrl(e.url))))
+      )
+  )
+}
+
+/**
+ * @since 1.0.0
+ */
 export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = CurrentRoute.layer(
   Effect.gen(function*(_) {
     const document = yield* _(Document.Document)
@@ -173,7 +194,7 @@ export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = Curr
     const baseHref = base ? getBasePathname(base.href) : "/"
 
     return {
-      route: Route.lit(baseHref),
+      route: Route.literal(baseHref),
       parent: Option.none()
     }
   })
@@ -192,7 +213,7 @@ function getBasePathname(base: string): string {
  * @since 1.0.0
  */
 export const server = (base: string = "/"): Layer.Layer<CurrentRoute> =>
-  CurrentRoute.layer({ route: Route.lit(base), parent: Option.none() })
+  CurrentRoute.layer({ route: Route.literal(base), parent: Option.none() })
 
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
   Object.fromEntries(destination.url.searchParams)

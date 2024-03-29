@@ -1,13 +1,15 @@
-import type { Path, Placeholder, RenderEvent } from "@typed/core"
-import { EventHandler, Fx, html, Navigation, Route, Router } from "@typed/core"
+import type { Placeholder, RenderEvent, Route } from "@typed/core"
+import { EventHandler, Fx, html, Navigation, Router } from "@typed/core"
+import type { MatchInput } from "@typed/router"
+import { asRouteGuard } from "@typed/router"
 
-export function NavLink<E, R, P extends string, A = Path.ParamsOf<P>, E2 = never, R2 = never>(
+export function NavLink<E, R, I extends MatchInput.Any>(
   content: Placeholder<string | RenderEvent, E, R>,
-  input: Route.RouteInput<P, A, E2, R2>,
-  ...params: Path.ParamsList<P>
+  input: I,
+  ...params: Route.Route.ParamsList<MatchInput.Route<I>>
 ) {
-  const { route } = Route.asRouteGuard(input)
-  const to = route.make(...params)
+  const { route } = asRouteGuard(input)
+  const to = route.interpolate(params[0] ?? {})
   const isActive = Router.isActive(route, ...params)
   const className = Fx.when(isActive, {
     onFalse: "nav-link",
@@ -16,9 +18,10 @@ export function NavLink<E, R, P extends string, A = Path.ParamsOf<P>, E2 = never
 
   return html`<li class="nav-item">
     <a
-      class="${className}" 
-      href="${to}"
-      onclick="${EventHandler.preventDefault(() => Navigation.navigate(to))}">
+      onclick=${EventHandler.preventDefault(() => Navigation.navigate(to))} 
+      class=${className}
+      href=${to}
+    >
       ${content}
     </a>
   </li>`

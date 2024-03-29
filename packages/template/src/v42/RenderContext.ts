@@ -55,7 +55,7 @@ export function getTemplateCache<T>(
   templateCache: RenderContext["templateCache"],
   key: TemplateStringsArray
 ): Option.Option<T> {
-  return Option.fromNullable(templateCache.get(key) as T | undefined)
+  return templateCache.has(key) ? Option.some(templateCache.get(key) as T) : Option.none()
 }
 
 /**

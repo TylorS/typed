@@ -2,7 +2,6 @@ import { CurrentUser } from "@/services"
 import { Fx, html, many, RefAsyncData } from "@typed/core"
 
 export const CurrentUserErrors = CurrentUser.pipe(
-  Fx.takeOneIfNotDomEnvironment,
   RefAsyncData.matchAsyncData({
     NoData: Fx.null,
     Loading: () => Fx.null,

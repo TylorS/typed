@@ -4,11 +4,11 @@ import { deepEqual } from "assert"
 import { Effect, Option } from "effect"
 
 describe("Route", () => {
-  const foo = Route.lit("foo").concat(Route.end.concat(Route.integer("fooId").prefix("foo-")))
-  const bar = Route.lit("bar").concat(Route.end.concat(Route.integer("barId").prefix("bar-")))
+  const foo = Route.literal("foo").concat(Route.end.concat(Route.integer("fooId").prefix("foo-")))
+  const bar = Route.literal("bar").concat(Route.end.concat(Route.integer("barId").prefix("bar-")))
   const foobar = foo.concat(bar)
 
-  const unnamed = Route.lit(`test`).concat(Route.unnamed).concat(Route.lit("test2")).concat(Route.unnamed)
+  const unnamed = Route.literal(`test`).concat(Route.unnamed).concat(Route.literal("test2")).concat(Route.unnamed)
   const param = Route.param("test")
   const zeroOrMore = param.zeroOrMore()
   const oneOrMore = param.oneOrMore()

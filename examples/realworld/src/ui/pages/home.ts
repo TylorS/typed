@@ -1,39 +1,30 @@
-import { Articles, isAuthenticated, Tags } from "@/services"
-import { defaultGetArticlesInput, GetArticlesInput } from "@/services/GetArticles"
+import { Articles, Tags } from "@/services"
+import { defaultGetArticlesInput } from "@/services/GetArticles"
 import { ArticlePreview } from "@/ui/components/ArticlePreview"
 import { NavLink } from "@/ui/components/NavLink"
-import { Schema } from "@effect/schema"
 import { Fx, Navigation, RefArray, RefSubject } from "@typed/core"
 import * as Route from "@typed/route"
 import { EventHandler, html, many } from "@typed/template"
-import { Effect, pipe } from "effect"
+import { Effect } from "effect"
 
-export const route = Route.fromPath("/", { match: { end: true } })
+export const route = Route.home
 
-const parseQueryParams = (params: URLSearchParams) =>
-  pipe(
-    {
-      tag: params.get("tag"),
-      author: params.get("author"),
-      favorited: params.get("favorited"),
-      limit: params.get("limit"),
-      offset: params.get("offset")
-    },
-    Schema.decode(GetArticlesInput),
-    Effect.catchAll(() => Effect.succeed(defaultGetArticlesInput))
-  )
+// const parseQueryParams = (params: URLSearchParams) =>
+//   pipe(
+//     {
+//       tag: params.get("tag"),
+//       author: params.get("author"),
+//       favorited: params.get("favorited"),
+//       limit: params.get("limit"),
+//       offset: params.get("offset")
+//     },
+//     Schema.decode(GetArticlesInput),
+//     Effect.catchAll(() => Effect.succeed(defaultGetArticlesInput))
+//   )
 
 export const main = Fx.gen(function*(_) {
-  const params = RefSubject.takeOneIfNotDomEnvironment(
-    yield* _(
-      Navigation.CurrentEntry,
-      Fx.mapEffect((e) => parseQueryParams(e.url.searchParams)),
-      (_) => RefSubject.make(_)
-    )
-  )
-
-  const articles = RefSubject.mapEffect(params, Articles.list)
-  const tagsList = RefSubject.takeOneIfNotDomEnvironment(yield* _(RefArray.make(Tags.get())))
+  const articles = yield* _(Articles.list(defaultGetArticlesInput))
+  const tagsList = yield* _(RefArray.make(Tags.get()))
 
   return html`<div class="home-page">
     <div class="banner">
@@ -49,17 +40,11 @@ export const main = Fx.gen(function*(_) {
     <div class="col-md-9">
       <div class="feed-toggle">
         <ul class="outline-active nav nav-pills">
-            ${
-    Fx.if(isAuthenticated, {
-      onFalse: Fx.null,
-      onTrue: NavLink("Your Feed", route)
-    })
-  }
           ${NavLink("Global Feed", route)}
         </ul>
       </div>
 
-      ${many(articles, (a) => a.id, ArticlePreview)}
+      ${articles.map(ArticlePreview)}
 
       <ul class="pagination">
         <li class="page-item active">

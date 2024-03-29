@@ -2,7 +2,7 @@ import { isAuthenticatedGuard } from "@/services"
 import * as Route from "@typed/route"
 import { html } from "@typed/template"
 
-export const route = Route.fromPath("/settings").pipe(Route.guard(isAuthenticatedGuard))
+export const route = Route.literal("/settings").pipe(isAuthenticatedGuard)
 
 export const main = html`<div class="settings-page">
   <div class="container page">

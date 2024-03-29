@@ -2,7 +2,10 @@
  * @since 1.0.0
  */
 
+import * as Fx from "@typed/fx"
 import "./internal/module-augmentation.js"
+import type { Scope } from "effect"
+import { Effect } from "effect"
 
 /**
  * @since 1.0.0
@@ -55,4 +58,14 @@ export namespace Placeholder {
   export type Success<T> = [T] extends [never] ? never
     : [T] extends [Placeholder<infer A, infer _E, infer _R>] ? A
     : never
+
+  export function asRef<A, E = never, R = never>(
+    placeholder: Fx.Fx<A, E, R> | Effect.Effect<A, E, R> | Placeholder<A, E, R> | A
+  ): Effect.Effect<Fx.RefSubject.RefSubject<A, E, never>, never, Scope.Scope | R> {
+    if (Fx.isFx(placeholder) || Effect.isEffect(placeholder)) {
+      return Fx.RefSubject.make(placeholder)
+    } else {
+      return Fx.RefSubject.of(placeholder as A)
+    }
+  }
 }

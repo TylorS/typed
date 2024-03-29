@@ -228,7 +228,7 @@ function toSchema_<A extends AST>(ast: A): Schema.Schema.All {
   const schemas = toSchemas(ast)
 
   if (schemas.length === 0) {
-    return Schema.record(Schema.union(Schema.string, Schema.number), Schema.unknown)
+    return Schema.record(Schema.string, Schema.unknown)
   }
 
   return schemas.reduce(Schema.extend)

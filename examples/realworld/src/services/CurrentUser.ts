@@ -2,9 +2,12 @@ import type { JwtToken, User } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import type { Unprocessable } from "@/services/errors"
 import { GetCurrentUser } from "@/services/GetCurrentUser"
+import type { Route } from "@typed/core"
 import { AsyncData, Context, Fx, RefAsyncData, RefSubject } from "@typed/core"
 import { RedirectError } from "@typed/navigation"
-import { Effect, Option, Unify } from "effect"
+import { RouteGuard } from "@typed/router"
+import type { Option } from "effect"
+import { Effect, Unify } from "effect"
 
 export const CurrentUser = RefSubject.tagged<AsyncData.AsyncData<User, Unauthorized | Unprocessable>>()("CurrentUser")
 
@@ -27,17 +30,18 @@ export const getCurrentJwtToken = CurrentUser.pipe(
 export const isAuthenticated = CurrentUser.pipe(
   Fx.dropWhile(AsyncData.isLoadingOrRefreshing),
   Fx.map(AsyncData.isSuccess),
-  Fx.takeOneIfNotDomEnvironment
+  Fx.takeOneIfDomEnvironment
 )
 
-export const isAuthenticatedGuard = <P>(params: P) =>
-  Effect.flatMap(
-    RefAsyncData.awaitLoadingOrRefreshing(CurrentUser),
-    (user) =>
-      AsyncData.isSuccess(user)
-        ? Effect.succeedSome(params)
-        : Effect.as(new RedirectError({ path: "/login" }), Option.none())
-  )
+export const isAuthenticatedGuard = <R extends Route.Route.Any>(route: R) =>
+  RouteGuard.flatMap(RouteGuard.fromRoute(route), (params) =>
+    Effect.flatMap(
+      RefAsyncData.awaitLoadingOrRefreshing(CurrentUser),
+      (user) =>
+        AsyncData.isSuccess(user)
+          ? Effect.succeedSome(params)
+          : new RedirectError({ path: "/login" })
+    ))
 
 export const SaveJwtToken = Context.Fn<(token: JwtToken) => Effect.Effect<void>>()("SaveJwtToken")
 

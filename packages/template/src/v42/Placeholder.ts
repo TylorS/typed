@@ -2,6 +2,8 @@
  * @since 1.0.0
  */
 
+import type { Types } from "effect"
+
 /**
  * @since 1.0.0
  */
@@ -14,11 +16,11 @@ export type PlaceholderTypeId = typeof PlaceholderTypeId
 /**
  * @since 1.0.0
  */
-export interface Placeholder<A = unknown, E = never, R = never> {
+export interface Placeholder<out A = unknown, out E = never, out R = never> {
   readonly [PlaceholderTypeId]: {
-    readonly _R: (_: never) => R
-    readonly _E: (_: never) => E
-    readonly _A: (_: never) => A
+    readonly _R: Types.Covariant<R>
+    readonly _E: Types.Covariant<E>
+    readonly _A: Types.Covariant<A>
   }
 }
 

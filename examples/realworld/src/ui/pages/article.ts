@@ -3,11 +3,11 @@ import { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import { html } from "@typed/template"
 
-export const route = Route.fromPath("/article/:slug").pipe(
-  Route.decode(Schema.struct({ slug: ArticleSlug }))
+export const route = Route.literal("/article/:slug").pipe(
+  Route.withSchema(Schema.struct({ slug: ArticleSlug }))
 )
 
-export type Params = Route.Output<typeof route>
+export type Params = Route.Route.Type<typeof route>
 
 export const main = () =>
   html`<div class="article-page">

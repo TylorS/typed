@@ -24,7 +24,7 @@ describe("Link", () => {
         deepStrictEqual(element.textContent, "Hello")
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
+        Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
     // Vitest.test("works with Effect as Links", () =>
@@ -50,7 +50,7 @@ describe("Link", () => {
         deepStrictEqual(element.textContent, "Hello")
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
+        Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
     Vitest.test("works with non-relative links", () =>
@@ -63,7 +63,7 @@ describe("Link", () => {
         deepStrictEqual(element.textContent, "Hello")
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
+        Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
     Vitest.test("updates the current URL when clicked", () =>
@@ -77,7 +77,7 @@ describe("Link", () => {
         deepStrictEqual(url.href, initialUrl + "/test")
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
+        Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
     Vitest.test("sets other anchor attributes", () =>
@@ -91,7 +91,7 @@ describe("Link", () => {
         deepStrictEqual(element.textContent, "Hello")
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo"))
+        Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
     Vitest.test.only("renders to html", () =>
@@ -105,7 +105,7 @@ describe("Link", () => {
         deepStrictEqual(html, `<a class="nav-link" href="/test">Hello</a>`)
       }).pipe(
         Effect.provide(Navigation.initialMemory({ url: initialUrl })),
-        Router.withCurrentRoute(Route.fromPath("/foo")),
+        Router.withCurrentRoute(Route.literal("/foo")),
         Effect.provide(staticLayer)
       ))
   })

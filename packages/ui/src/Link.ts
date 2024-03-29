@@ -5,6 +5,7 @@ import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
+import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
 import { makeHref } from "@typed/router"
 import * as EventHandler from "@typed/template/EventHandler"
@@ -55,7 +56,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
     const reloadDocument = yield* _(Placeholder.asRef(props.reloadDocument ?? false))
     const href = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
-      ([rel, to]) => rel ? makeHref(to) : Effect.succeed(to)
+      ([rel, to]) => rel ? makeHref(Route.literal(to)) : Effect.succeed(to)
     )
     const navigate = Effect.gen(function*(_) {
       const replace = yield* _(replaceRef)

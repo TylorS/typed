@@ -29,8 +29,8 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
     Fx.switchMap(
       (user) =>
         NavLink(
-          html`<img src=${Option.getOrElse(user.image, () => "")} class="user-pic" /> ${user.username}`,
-          pages.profile.route.route,
+          html`<img src="${Option.getOrElse(user.image, () => "")}" class="user-pic" /> ${user.username}`,
+          pages.profile.route,
           {
             username: user.username
           }
@@ -43,7 +43,7 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
 </nav>`
 
 const Header = Fx.if(
-  Fx.takeOneIfNotDomEnvironment(isAuthenticated),
+  isAuthenticated,
   {
     onFalse: UnauthenticatedHeader,
     onTrue: AuthenticatedHeader

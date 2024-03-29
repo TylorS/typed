@@ -150,12 +150,12 @@ export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subj
   protected onCause(cause: Cause.Cause<E>) {
     if (this.sinks.size === 0) return Effect.unit
     else if (this.sinks.size === 1) {
-      const [sink, ctx] = this.sinks.values().next().value
-      return runSinkCause(sink, ctx, cause)
+      const [sink, ctx, scope] = this.sinks.values().next().value
+      return runSinkCause(sink, ctx, scope, cause)
     } else {
       return Effect.forEach(
         this.sinks,
-        ([sink, ctx]) => runSinkCause(sink, ctx, cause),
+        ([sink, ctx, scope]) => runSinkCause(sink, ctx, scope, cause),
         DISCARD
       )
     }
@@ -166,8 +166,16 @@ function runSinkEvent<A, E>(sink: Sink<A, E, any>, ctx: Context.Context<any>, a:
   return Effect.provide(Effect.catchAllCause(sink.onSuccess(a), sink.onFailure), ctx)
 }
 
-function runSinkCause<A, E>(sink: Sink<A, E, any>, ctx: Context.Context<any>, cause: Cause.Cause<E>) {
-  return Effect.provide(Effect.catchAllCause(sink.onFailure(cause), () => Effect.unit), ctx)
+function runSinkCause<A, E>(
+  sink: Sink<A, E, any>,
+  ctx: Context.Context<any>,
+  scope: Scope.CloseableScope,
+  cause: Cause.Cause<E>
+) {
+  return Effect.provide(
+    Effect.catchAllCause(sink.onFailure(cause), (error) => Scope.close(scope, Exit.failCause(error))),
+    ctx
+  )
 }
 
 /**

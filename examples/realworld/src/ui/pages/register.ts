@@ -8,7 +8,7 @@ import { AsyncData, EventHandler, html, RefAsyncData, RefSubject, Route } from "
 import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { Effect } from "effect"
 
-export const route = Route.fromPath("/register")
+export const route = Route.literal("/register")
 
 export const main = html`<div class="auth-page">
   <div class="container page">

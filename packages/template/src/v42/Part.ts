@@ -28,7 +28,9 @@ export abstract class Part<A> {
 }
 
 export namespace Part {
-  export type Value<T> = [T] extends [Part<infer A>] ? A : [T] extends [StaticPart<infer A>] ? A : never
+  export type Any = Part<any>
+
+  export type Value<T> = T extends Part<infer A> ? A : T extends StaticPart<infer A> ? A : never
 
   export function string<const T extends string>(
     tag: T,
@@ -102,12 +104,12 @@ export class StaticPart<A> {
   constructor(readonly value: A) {}
 }
 
-export abstract class PartGroup<Parts extends ReadonlyArray<Part<any> | StaticPart<any>>, A> {
+export abstract class PartGroup<T extends string, Parts extends ReadonlyArray<Part<any> | StaticPart<any>>, A> {
   private _values: Map<number, Part.Value<Parts[number]>> = new Map()
   private _expected: number
   private _current: Option.Option<A> = Option.none()
 
-  constructor(readonly parts: Parts) {
+  constructor(readonly _tag: T, readonly parts: Parts) {
     this._expected = parts.length
 
     parts.forEach((part, index) => {
@@ -150,24 +152,29 @@ export abstract class PartGroup<Parts extends ReadonlyArray<Part<any> | StaticPa
 }
 
 export namespace PartGroup {
-  export type Any = PartGroup<ReadonlyArray<Part<any> | StaticPart<any>>, any>
+  export type Any = PartGroup<any, ReadonlyArray<Part<any> | StaticPart<any>>, any>
 
-  export type Value<T> = [T] extends [PartGroup<infer _Parts, infer A>] ? A : never
+  export type Value<T> = [T] extends [PartGroup<infer _, infer _Parts, infer A>] ? A : never
 
-  export function string<Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>>(
+  export function string<
+    T extends string,
+    Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>
+  >(
+    tag: T,
     parts: Parts,
     separator: string,
     setValue: (value: string) => void
-  ): StringPartGroup<Parts> {
-    return new StringPartGroup(parts, separator, setValue)
+  ): StringPartGroup<T, Parts> {
+    return new StringPartGroup(tag, parts, separator, setValue)
   }
 }
 
-export class StringPartGroup<Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>>
-  extends PartGroup<Parts, string>
-{
-  constructor(parts: Parts, readonly separator: string, readonly setValue: (value: string) => void) {
-    super(parts)
+export class StringPartGroup<
+  T extends string,
+  Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>
+> extends PartGroup<T, Parts, string> {
+  constructor(tag: T, parts: Parts, readonly separator: string, readonly setValue: (value: string) => void) {
+    super(tag, parts)
   }
 
   prepare(values: { readonly [K in keyof Parts]: Part.Value<Parts[K]> }): string {

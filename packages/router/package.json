@@ -40,8 +40,8 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.48.17",
-    "@effect/schema": "^0.64.14",
+    "@effect/platform": "^0.48.21",
+    "@effect/schema": "^0.64.15",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/environment": "workspace:*",
@@ -50,7 +50,7 @@
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
-    "effect": "^2.4.13"
+    "effect": "^2.4.15"
   },
   "devDependencies": {
     "ts-toolbelt": "^9.6.0"

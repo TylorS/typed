@@ -12,6 +12,7 @@ import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual, flow, pipe } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
+import { hasProperty } from "effect/Predicate"
 import * as ptr from "path-to-regexp"
 import type { N } from "ts-toolbelt"
 import * as AST from "./AST.js"
@@ -114,6 +115,11 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
+  export type ParamsList<R extends Route.Any> = Path.ParamsList<Route.Path<R>>
+
+  /**
+   * @since 1.0.0
+   */
   export type Context<R extends Route.Any> = Schema.Schema.Context<Schema<R>>
 
   /**
@@ -158,6 +164,13 @@ export namespace Route {
    * @since 1.0.0
    */
   export type SchemaFromPath<P extends string> = Schema.Schema<Path.ParamsOf<P>>
+}
+
+/**
+ * @since 1.0.0
+ */
+export function isRoute(value: unknown): value is Route.Any {
+  return hasProperty(value, RouteTypeId)
 }
 
 const variance_: Route.Variance<any, any> = {
@@ -242,12 +255,17 @@ export const make = <P extends string, S extends Schema.Schema.All>(
 /**
  * @since 1.0.0
  */
-export const lit = <const L extends string>(literal: L): Route<L> => make(new AST.Literal(literal))
+export const literal = <const L extends string>(literal: L): Route<L> => make(new AST.Literal(literal))
 
 /**
  * @since 1.0.0
  */
 export const end: Route<"/"> = make(new AST.Literal("/"))
+
+/**
+ * @since 1.0.0
+ */
+export const home: Route<"/"> = make(new AST.Literal("/"), { match: { end: true } })
 
 /**
  * @since 1.0.0

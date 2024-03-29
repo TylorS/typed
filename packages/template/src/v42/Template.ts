@@ -1,28 +1,26 @@
-import type { Runtime, Scope } from "effect"
-import type { Part, PartGroup } from "./Part.js"
+import type { Cause, Context, Effect, Scope } from "effect"
+import type { FiberRefs } from "effect/FiberRefs"
+import type { RuntimeFlags } from "effect/RuntimeFlags"
+import type { CloseableScope } from "effect/Scope"
 import type { Placeholder } from "./Placeholder.js"
 import type { RenderContext } from "./RenderContext.js"
 import type { RenderQueue } from "./RenderQueue.js"
 
 export class Template<
-  in out T,
-  out Parts extends ReadonlyArray<Part<any> | PartGroup<any, any>>,
-  out Values extends ReadonlyArray<Placeholder.Any>,
-  in R
+  Entry,
+  Values extends ReadonlyArray<Placeholder.Any>
 > {
   constructor(
-    readonly template: T,
-    readonly parts: Parts,
+    readonly entry: Entry,
     readonly values: Values,
-    readonly runtime: Runtime.Runtime<R | RenderContext | RenderQueue | Scope.Scope>
+    readonly onCause: (cause: Cause.Cause<unknown>) => Effect.Effect<unknown>,
+    readonly context: Context.Context<RenderContext | RenderQueue | Scope.Scope>,
+    readonly fiberRefs: FiberRefs,
+    readonly runtimeFlags: RuntimeFlags,
+    readonly scope: CloseableScope
   ) {}
 }
 
 export namespace Template {
-  export type Any = Template<
-    any,
-    ReadonlyArray<Part<any> | PartGroup<any, any>>,
-    ReadonlyArray<Placeholder.Any>,
-    any
-  >
+  export type Any = Template<any, ReadonlyArray<Placeholder.Any>>
 }

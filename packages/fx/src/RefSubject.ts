@@ -239,13 +239,18 @@ export function fromFx<A, E, R>(
     Effect.bind("core", ({ deferredRef }) => makeCore(deferredRef, options)),
     Effect.tap(({ core, deferredRef }) =>
       Effect.forkIn(
-        fx.run(Sink.make(
-          (cause) =>
-            Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.failCause(cause))), () =>
-              core.subject.onFailure(cause)),
-          (value) =>
-            Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.succeed(value))), () => setCore(core, value))
-        )),
+        Effect.zipRight(
+          fx.run(Sink.make(
+            (cause) =>
+              Effect.flatMap(
+                Effect.sync(() => deferredRef.done(Exit.failCause(cause))),
+                () => core.subject.onFailure(cause)
+              ),
+            (value) =>
+              Effect.flatMap(Effect.sync(() => deferredRef.done(Exit.succeed(value))), () => setCore(core, value))
+          )),
+          interruptCore(core)
+        ),
         core.scope
       )
     ),
