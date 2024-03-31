@@ -16,11 +16,11 @@ export type PlaceholderTypeId = typeof PlaceholderTypeId
 /**
  * @since 1.0.0
  */
-export interface Placeholder<out A = unknown, out E = never, out R = never> {
-  readonly [PlaceholderTypeId]: {
-    readonly _R: Types.Covariant<R>
-    readonly _E: Types.Covariant<E>
+export abstract class Placeholder<out A = unknown, out E = never, out R = never> {
+  readonly [PlaceholderTypeId]!: {
     readonly _A: Types.Covariant<A>
+    readonly _E: Types.Covariant<E>
+    readonly _R: Types.Covariant<R>
   }
 }
 

@@ -1,183 +1,133 @@
-import * as Equal from "effect/Equal"
-import * as Option from "effect/Option"
-import { isNotNullable } from "effect/Predicate"
+import type { EventHandler } from "@typed/template/v42/EventHandler.js"
+import type { ReadonlyRecord } from "effect/ReadonlyRecord"
+import type { StaticPart } from "./internal/part.js"
+import * as internal from "./internal/part.js"
+import type { Template } from "./Template.js"
 
-export abstract class Part<A> {
-  abstract readonly _tag: string
+export type Parts = Array<Part | SparsePart>
 
-  protected _value: Option.Option<A> = Option.none()
+export type Part =
+  | AttributePart
+  | BooleanAttributePart
+  | ClassNamePart
+  | CommentPart
+  | TextPart
+  | PropertyPart
+  | NodePart
+  | RefPart
+  | DataPart
+  | EventPart
+  | SpreadPart
 
+export type SparsePart =
+  | SparseAttributePart
+  | SparseClassNamePart
+  | SparseCommentPart
+
+export class AttributePart extends internal.StringPart<"Attribute"> {
+  constructor(index: number, setValue: (value: string | undefined | null) => void) {
+    super("Attribute", index, setValue)
+  }
+}
+
+export class BooleanAttributePart extends internal.BooleanPart<"BooleanAttribute"> {
+  constructor(index: number, setValue: (value: boolean | undefined | null) => void) {
+    super("BooleanAttribute", index, setValue)
+  }
+}
+
+export class ClassNamePart extends internal.StringPart<"ClassName"> {
+  constructor(index: number, setValue: (value: string | undefined | null) => void) {
+    super("ClassName", index, setValue)
+  }
+}
+
+export class CommentPart extends internal.StringPart<"Comment"> {
+  constructor(index: number, setValue: (value: string | undefined | null) => void) {
+    super("Comment", index, setValue)
+  }
+}
+
+export class TextPart extends internal.StringPart<"Text"> {
+  constructor(index: number, setValue: (value: string | undefined | null) => void) {
+    super("Text", index, setValue)
+  }
+}
+
+export class PropertyPart extends internal.UnknownPart<"Property"> {
+  constructor(index: number, setValue: (value: unknown) => void) {
+    super("Property", index, setValue)
+  }
+}
+
+export class NodePart extends internal.Part<Node | Template | ReadonlyArray<Node | Template>> {
+  readonly _tag = "Node" as const
+
+  constructor(
+    index: number,
+    readonly setValue: (value: Node | Template | ReadonlyArray<Node | Template>) => void
+  ) {
+    super(index)
+  }
+}
+
+export class RefPart {
+  readonly _tag = "Ref" as const
   constructor(readonly index: number) {}
+}
 
-  fromUnkown(u: unknown): A {
-    return u as A
-  }
+export class DataPart extends internal.Part<ReadonlyRecord<string, string | null | undefined>> {
+  readonly _tag = "Data" as const
 
-  abstract setValue(value: A): void
-
-  update(input: unknown): boolean {
-    const value = this.fromUnkown(input)
-    if (Option.isNone(this._value) || !Equal.equals(this._value.value, value)) {
-      this._value = Option.some(value)
-      this.setValue(value)
-      return true
-    } else {
-      return false
-    }
+  constructor(index: number, readonly setValue: (value: ReadonlyRecord<string, string | null | undefined>) => void) {
+    super(index)
   }
 }
 
-export namespace Part {
-  export type Any = Part<any>
+export class EventPart extends internal.Part<EventHandler | null | undefined> {
+  readonly _tag = "Event" as const
 
-  export type Value<T> = T extends Part<infer A> ? A : T extends StaticPart<infer A> ? A : never
+  constructor(index: number, readonly setValue: (value: EventHandler) => void) {
+    super(index)
+  }
+}
 
-  export function string<const T extends string>(
-    tag: T,
-    index: number,
+export class SparseAttributePart
+  extends internal.StringPartGroup<"SparseAttribute", ReadonlyArray<AttributePart | StaticPart<string>>>
+{
+  constructor(
+    parts: ReadonlyArray<AttributePart | StaticPart<string>>,
     setValue: (value: string | undefined | null) => void
-  ): StringPart<T> {
-    return new StringPart(tag, index, setValue)
-  }
-
-  export function unknown<const T extends string>(
-    tag: T,
-    index: number,
-    setValue: (value: unknown) => void
-  ): UnknownPart<T> {
-    return new UnknownPart(tag, index, setValue)
-  }
-
-  export function boolean<const T extends string>(
-    tag: T,
-    index: number,
-    setValue: (value: boolean) => void
-  ): BooleanPart<T> {
-    return new BooleanPart(tag, index, setValue)
+  ) {
+    super("SparseAttribute", parts, "", setValue)
   }
 }
 
-export class StringPart<T extends string> extends Part<string | undefined | null> {
-  constructor(readonly _tag: T, readonly index: number, readonly setValue: (value: string | undefined | null) => void) {
-    super(index)
-  }
-
-  fromUnkown(u: unknown): string | undefined | null {
-    switch (typeof u) {
-      case "bigint":
-      case "boolean":
-      case "number":
-      case "string":
-      case "symbol":
-        return String(u)
-      case "undefined":
-        return u as undefined
-      case "function":
-      case "object":
-        return u === null ? null : unexpected(`Unexpected "${typeof u}" value`)
-    }
+export class SparseClassNamePart
+  extends internal.StringPartGroup<"SparseClassName", ReadonlyArray<AttributePart | StaticPart<string>>>
+{
+  constructor(
+    parts: ReadonlyArray<AttributePart | StaticPart<string>>,
+    setValue: (value: string | undefined | null) => void
+  ) {
+    super("SparseClassName", parts, " ", setValue)
   }
 }
 
-const unexpected = (message: string) => {
-  throw new TypeError(message)
-}
-
-export class UnknownPart<T extends string> extends Part<unknown> {
-  constructor(readonly _tag: T, readonly index: number, readonly setValue: (value: unknown) => void) {
-    super(index)
+export class SparseCommentPart
+  extends internal.StringPartGroup<"SparseComment", ReadonlyArray<CommentPart | StaticPart<string>>>
+{
+  constructor(
+    parts: ReadonlyArray<CommentPart | StaticPart<string>>,
+    setValue: (value: string | undefined | null) => void
+  ) {
+    super("SparseComment", parts, "", setValue)
   }
 }
 
-export class BooleanPart<T extends string> extends Part<boolean> {
-  constructor(readonly _tag: T, readonly index: number, readonly setValue: (value: boolean) => void) {
-    super(index)
-  }
+export class SpreadPart {
+  readonly _tag = "Spread" as const
 
-  fromUnkown(u: unknown): boolean {
-    return !!u
-  }
-}
-
-export class StaticPart<A> {
-  readonly _tag = "Static" as const
-  constructor(readonly value: A) {}
-}
-
-export abstract class PartGroup<T extends string, Parts extends ReadonlyArray<Part<any> | StaticPart<any>>, A> {
-  private _values: Map<number, Part.Value<Parts[number]>> = new Map()
-  private _expected: number
-  private _current: Option.Option<A> = Option.none()
-
-  constructor(readonly _tag: T, readonly parts: Parts) {
-    this._expected = parts.length
-
-    parts.forEach((part, index) => {
-      if (part instanceof StaticPart) {
-        this._values.set(index, part.value)
-      } else {
-        part.setValue = (value) => {
-          this._values.set(index, value)
-          if (this.shouldEmit()) {
-            this.emit()
-          }
-        }
-      }
-    })
-
-    if (this.shouldEmit()) {
-      this.emit()
-    }
-  }
-
-  protected abstract prepare(values: { readonly [K in keyof Parts]: Part.Value<Parts[K]> }): A
-
-  protected abstract setValue(value: A): void
-
-  private shouldEmit() {
-    return this._values.size === this._expected
-  }
-
-  private emit() {
-    const values = Array.from({ length: this._expected }, (_, index) => this._values.get(index)!) as {
-      readonly [K in keyof Parts]: Part.Value<Parts[K]>
-    }
-    const value = this.prepare(values)
-
-    if (Option.isNone(this._current) || (Option.isSome(this._current) && !Equal.equals(this._current.value, value))) {
-      this._current = Option.some(value)
-      this.setValue(value)
-    }
-  }
-}
-
-export namespace PartGroup {
-  export type Any = PartGroup<any, ReadonlyArray<Part<any> | StaticPart<any>>, any>
-
-  export type Value<T> = [T] extends [PartGroup<infer _, infer _Parts, infer A>] ? A : never
-
-  export function string<
-    T extends string,
-    Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>
-  >(
-    tag: T,
-    parts: Parts,
-    separator: string,
-    setValue: (value: string) => void
-  ): StringPartGroup<T, Parts> {
-    return new StringPartGroup(tag, parts, separator, setValue)
-  }
-}
-
-export class StringPartGroup<
-  T extends string,
-  Parts extends ReadonlyArray<Part<string | null | undefined> | StaticPart<string>>
-> extends PartGroup<T, Parts, string> {
-  constructor(tag: T, parts: Parts, readonly separator: string, readonly setValue: (value: string) => void) {
-    super(tag, parts)
-  }
-
-  prepare(values: { readonly [K in keyof Parts]: Part.Value<Parts[K]> }): string {
-    return values.filter(isNotNullable).join(this.separator)
+  constructor(readonly index: number) {
   }
 }

@@ -5,22 +5,16 @@ import type { CloseableScope } from "effect/Scope"
 import type { Placeholder } from "./Placeholder.js"
 import type { RenderContext } from "./RenderContext.js"
 import type { RenderQueue } from "./RenderQueue.js"
+import type { TemplateEntry } from "./TemplateEntry.js"
 
-export class Template<
-  Entry,
-  Values extends ReadonlyArray<Placeholder.Any>
-> {
+export class Template {
   constructor(
-    readonly entry: Entry,
-    readonly values: Values,
+    readonly entry: TemplateEntry,
+    readonly values: ReadonlyArray<Placeholder.Any>,
     readonly onCause: (cause: Cause.Cause<unknown>) => Effect.Effect<unknown>,
     readonly context: Context.Context<RenderContext | RenderQueue | Scope.Scope>,
     readonly fiberRefs: FiberRefs,
     readonly runtimeFlags: RuntimeFlags,
     readonly scope: CloseableScope
   ) {}
-}
-
-export namespace Template {
-  export type Any = Template<any, ReadonlyArray<Placeholder.Any>>
 }

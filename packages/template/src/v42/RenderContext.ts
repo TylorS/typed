@@ -5,7 +5,9 @@
 
 import * as Context from "@typed/context"
 import type { Layer } from "effect"
-import { Effect, Option } from "effect"
+import { Effect } from "effect"
+import type { RenderCache } from "./RenderCache.js"
+import type { TemplateEntry } from "./TemplateEntry.js"
 
 /**
  * The context in which templates are rendered within
@@ -15,12 +17,12 @@ export interface RenderContext {
   /**
    * Cache for root Node's being rendered into.
    */
-  readonly renderCache: WeakMap<object, unknown>
+  readonly renderCache: WeakMap<object, RenderCache>
 
   /**
    * Cache for individual templates.
    */
-  readonly templateCache: WeakMap<TemplateStringsArray, unknown>
+  readonly templateCache: WeakMap<TemplateStringsArray, TemplateEntry>
 }
 
 /**
@@ -39,23 +41,6 @@ export function make(): RenderContext {
     renderCache: new WeakMap(),
     templateCache: new WeakMap()
   }
-}
-
-/**
- * @since 1.0.0
- */
-export function getRenderCache<T>(renderCache: RenderContext["renderCache"], key: object): Option.Option<T> {
-  return renderCache.has(key) ? Option.some(renderCache.get(key) as T) : Option.none()
-}
-
-/**
- * @since 1.0.0
- */
-export function getTemplateCache<T>(
-  templateCache: RenderContext["templateCache"],
-  key: TemplateStringsArray
-): Option.Option<T> {
-  return templateCache.has(key) ? Option.some(templateCache.get(key) as T) : Option.none()
 }
 
 /**
