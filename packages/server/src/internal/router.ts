@@ -11,7 +11,7 @@ import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
 import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../RouteHandler.js"
 import type { Mount, Router } from "../Router.js"
 
-export const RouterTypeId = Symbol.for("@typed/server/Router")
+export const RouterTypeId = Symbol.for("@typed/http/Router")
 export type RouterTypeId = typeof RouterTypeId
 
 export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
@@ -53,7 +53,7 @@ const routesAlphaOrder = pipe(
 const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
 const getParentRoute = Effect.serviceOption(CurrentRoute)
 
-const setup = Effect.gen(function*(_) {
+export const setupRouteContext = Effect.gen(function*(_) {
   const request = yield* _(ServerRequest)
   const existingParams = yield* _(getCurrentParamsOption)
   const parentRoute = yield* _(getParentRoute)
@@ -83,7 +83,7 @@ function toHttpApp<E, R>(
     })
   }
 
-  const runMounts = ({ existingParams, parentRoute, path, url }: Effect.Effect.Success<typeof setup>) =>
+  const runMounts = ({ existingParams, parentRoute, path, url }: Effect.Effect.Success<typeof setupRouteContext>) =>
     Effect.gen(function*(_) {
       for (const mount of router.mounts) {
         const response = yield* _(
@@ -107,7 +107,7 @@ function toHttpApp<E, R>(
 
   if (hasMounts) {
     return Effect.gen(function*(_) {
-      const data = yield* _(setup)
+      const data = yield* _(setupRouteContext)
 
       // Check mounts first
       const response = yield* _(runMounts(data))
@@ -141,7 +141,7 @@ function toHttpApp<E, R>(
     })
   } else {
     return Effect.gen(function*(_) {
-      const { existingParams, parentRoute, path, request, url } = yield* _(setup)
+      const { existingParams, parentRoute, path, request, url } = yield* _(setupRouteContext)
       const routes = routesByMethod[request.method]
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
@@ -168,7 +168,7 @@ function toHttpApp<E, R>(
   }
 }
 
-function runRouteMatcher<E, R>(
+export function runRouteMatcher<E, R>(
   input: MatchInput.Any,
   handler: Default<R, E>,
   path: string,
@@ -177,7 +177,7 @@ function runRouteMatcher<E, R>(
   parent: Option.Option<CurrentRoute>
 ): Effect.Effect<
   Option.Option<ServerResponse>,
-  E | RouteNotFound,
+  E,
   Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest
 > {
   const { guard, route } = asRouteGuard(input)

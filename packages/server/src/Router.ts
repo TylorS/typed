@@ -1,12 +1,13 @@
 import type { Default } from "@effect/platform/Http/App"
 import type { Method } from "@effect/platform/Http/Method"
+import * as PlatformRouter from "@effect/platform/Http/Router"
 import type { RouteNotFound } from "@effect/platform/Http/ServerError"
 import type { Navigation } from "@typed/navigation"
 import type { CurrentRoute } from "@typed/router"
 import * as MatchInput from "@typed/router/MatchInput"
-import { Chunk } from "effect"
+import { Chunk, Effect, Option } from "effect"
 import { dual } from "effect/Function"
-import { RouterImpl, type RouterTypeId } from "./internal/router.js"
+import { RouterImpl, type RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
 import * as RouteHandler from "./RouteHandler.js"
 
 /**
@@ -247,3 +248,42 @@ export const mount: {
       Chunk.map(router.mounts, (m) => ({ prefix: MatchInput.concat(prefix, m.prefix), app: m.app }))
     )
   ))
+
+/**
+ * Note this will only function properly if your route's paths are compatible with the platform router.
+ *
+ * @since 1.0.0
+ */
+export const toPlatformRouter = <E, R>(
+  router: Router<E, R>
+): PlatformRouter.Router<R, E | RouteHandler.RouteNotMatched> => {
+  let platformRouter: PlatformRouter.Router<
+    R,
+    E | RouteHandler.RouteNotMatched
+  > = PlatformRouter.empty
+
+  for (const mount of router.mounts) {
+    platformRouter = PlatformRouter.mountApp(
+      platformRouter,
+      // TODO: Maybe we should do a best-effort to convert the path to a platform compatible path
+      MatchInput.getPath(mount.prefix),
+      Effect.gen(function*(_) {
+        const ctx = yield* _(setupRouteContext)
+        const response = yield* _(
+          runRouteMatcher<E, R>(mount.prefix, mount.app, ctx.path, ctx.url, ctx.existingParams, ctx.parentRoute)
+        )
+        if (Option.isSome(response)) {
+          return response.value
+        }
+
+        return yield* _(new RouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix }))
+      })
+    )
+  }
+
+  for (const routeHandler of router.routes) {
+    platformRouter = RouteHandler.toPlatformRoute(routeHandler)(platformRouter)
+  }
+
+  return platformRouter
+}

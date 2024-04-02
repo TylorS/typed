@@ -1,8 +1,6 @@
-import * as PlatformRouter from "@effect/platform/Http/Router"
 import * as ServerRequest from "@effect/platform/Http/ServerRequest"
 import * as ServerResponse from "@effect/platform/Http/ServerResponse"
 import { html } from "@effect/platform/Http/ServerResponse"
-import { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import { getCurrentParams } from "@typed/server/RouteHandler"
 import * as Router from "@typed/server/Router"
@@ -93,24 +91,7 @@ describe("Router", () => {
   })
 
   it("tiny microbenchmark", async () => {
-    const platformRouter = PlatformRouter.empty.pipe(
-      PlatformRouter.get(
-        fooRoute.path,
-        Effect.gen(function*(_) {
-          const { params } = yield* _(PlatformRouter.RouteContext)
-          const decoded = yield* _(params, Schema.decodeUnknown(fooRoute.schema))
-          return yield* _(ServerResponse.html`<div>Foo: ${decoded.fooId}</div>`)
-        })
-      ),
-      PlatformRouter.get(
-        barRoute.path,
-        Effect.gen(function*(_) {
-          const { params } = yield* _(PlatformRouter.RouteContext)
-          const decoded = yield* _(params, Schema.decodeUnknown(barRoute.schema))
-          return yield* _(ServerResponse.html`<div>Bar: ${decoded.barId}</div>`)
-        })
-      )
-    )
+    const platformRouter = Router.toPlatformRouter(router)
 
     function makePlatformRequest(url: string, init?: RequestInit) {
       const request = ServerRequest.fromWeb(new Request(url, init))
@@ -135,7 +116,7 @@ describe("Router", () => {
   })
 })
 
-const timed = <E>(name: string, effect: Effect.Effect<unknown, E>, iterations: number = 1000) =>
+const timed = <E>(name: string, effect: Effect.Effect<unknown, E>, iterations: number = 100) =>
   Effect.gen(function*(_) {
     const runs: Array<number> = []
     for (let i = 0; i < iterations; i++) {

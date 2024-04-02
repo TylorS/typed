@@ -13,6 +13,9 @@
   ],
   "references": [
     {
+      "path": "../navigation"
+    },
+    {
       "path": "../path"
     },
     {

@@ -39,6 +39,11 @@ export namespace MatchInput {
   /**
    * @since 1.0.0
    */
+  export type Path<T> = Route.Route.Path<Route<T>>
+
+  /**
+   * @since 1.0.0
+   */
   export type Success<T> = T extends Route.Route<infer _P, infer _S> ? Route.Route.Type<T>
     : T extends RouteGuard.RouteGuard<Route.Route<infer _P, infer _S>, infer A, infer _E, infer _R> ? A
     : never
@@ -56,6 +61,11 @@ export namespace MatchInput {
   export type Context<T> = T extends Route.Route<infer _P, infer _S> ? Route.Route.Context<T>
     : T extends RouteGuard.RouteGuard<Route.Route<infer _P, infer _S>, infer _A, infer _E, infer R> ? R
     : never
+
+  /**
+   * @since 1.0.0
+   */
+  export type Schema<T> = Route.Route.Schema<MatchInput.Route<T>>
 }
 
 /**
@@ -203,3 +213,13 @@ export function concat<L extends MatchInput.Any, R extends MatchInput.Any>(
 /**
  * @since 1.0.0
  */
+export function getSchema<I extends MatchInput.Any>(input: I): MatchInput.Schema<I> {
+  return asRouteGuard<I>(input).route.schema
+}
+
+/**
+ * @since 1.0.0
+ */
+export function getPath<I extends MatchInput.Any>(input: I): MatchInput.Path<I> {
+  return asRouteGuard<I>(input).route.path
+}

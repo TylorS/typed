@@ -1,6 +1,7 @@
 import type { Default } from "@effect/platform/Http/App"
 import * as Headers from "@effect/platform/Http/Headers"
 import type { Method } from "@effect/platform/Http/Method"
+import * as PlatformRouter from "@effect/platform/Http/Router"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import { Tagged } from "@typed/context"
@@ -52,7 +53,7 @@ export interface CurrentParams<I extends Router.MatchInput.Any> {
 }
 
 const CurrentParams = Tagged<CurrentParams<Router.MatchInput.Any>, CurrentParams<Router.MatchInput.Any>>(
-  "@typed/server/CurrentParams"
+  "@typed/http/CurrentParams"
 )
 
 /**
@@ -167,6 +168,42 @@ export const all: <I extends Router.MatchInput.Any, E, R>(
 /**
  * @since 1.0.0
  */
+export function getUrlFromServerRequest(request: ServerRequest): URL {
+  const { headers } = request
+  const host = Headers.get(headers, "x-forwarded-host").pipe(
+    Option.orElse(() => Headers.get(headers, "host")),
+    Option.getOrElse(() => "localhost")
+  )
+  const protocol = Headers.get(headers, "x-forwarded-proto").pipe(
+    Option.orElse(() => Headers.get(headers, "protocol")),
+    Option.getOrElse(() => "http")
+  )
+
+  return new URL(request.url, `${protocol}://${host}`)
+}
+
+/**
+ * @since 1.0.0
+ */
+export class RouteNotMatched extends Data.TaggedError("RouteNotMatched")<{
+  readonly request: ServerRequest
+  readonly route: Router.MatchInput.Any
+}> {}
+
+/**
+ * @since 1.0.0
+ */
+export function toPlatformRoute<I extends RouteHandler.Any>(
+  handler: I
+): <R, E>(
+  self: PlatformRouter.Router<R, E>
+) => PlatformRouter.Router<R | RouteHandler.Context<I>, E | RouteHandler.Error<I>> {
+  return PlatformRouter.route(handler.method)(Router.getPath(handler.route), toHttpApp(handler))
+}
+
+/**
+ * @since 1.0.0
+ */
 export function toHttpApp<I extends RouteHandler.Any>(
   { handler, route: input }: I,
   parent?: Router.CurrentRoute
@@ -203,28 +240,3 @@ export function toHttpApp<I extends RouteHandler.Any>(
     )
   })
 }
-
-/**
- * @since 1.0.0
- */
-export function getUrlFromServerRequest(request: ServerRequest): URL {
-  const { headers } = request
-  const host = Headers.get(headers, "x-forwarded-host").pipe(
-    Option.orElse(() => Headers.get(headers, "host")),
-    Option.getOrElse(() => "localhost")
-  )
-  const protocol = Headers.get(headers, "x-forwarded-proto").pipe(
-    Option.orElse(() => Headers.get(headers, "protocol")),
-    Option.getOrElse(() => "http")
-  )
-
-  return new URL(request.url, `${protocol}://${host}`)
-}
-
-/**
- * @since 1.0.0
- */
-export class RouteNotMatched extends Data.TaggedError("RouteNotMatched")<{
-  readonly request: ServerRequest
-  readonly route: Router.MatchInput.Any
-}> {}

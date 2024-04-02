@@ -1,22 +1,93 @@
-import { ApiGroup } from "effect-http"
+export {
+  /**
+   * @since 1.0.0
+   */
+  addEndpoint,
+  /**
+   * @since 1.0.0
+   */
+  addResponse,
+  /**
+   * @since 1.0.0
+   */
+  ApiGroup,
+  /**
+   * @since 1.0.0
+   */
+  make,
+  /**
+   * @since 1.0.0
+   */
+  Options,
+  /**
+   * @since 1.0.0
+   */
+  setRequest,
+  /**
+   * @since 1.0.0
+   */
+  setRequestBody,
+  /**
+   * @since 1.0.0
+   */
+  setRequestHeaders,
+  /**
+   * @since 1.0.0
+   */
+  setRequestPath,
+  /**
+   * @since 1.0.0
+   */
+  setRequestQuery,
+  /**
+   * @since 1.0.0
+   */
+  setResponse,
+  /**
+   * @since 1.0.0
+   */
+  setResponseBody,
+  /**
+   * @since 1.0.0
+   */
+  setResponseHeaders,
+  /**
+   * @since 1.0.0
+   */
+  setResponseRepresentations,
+  /**
+   * @since 1.0.0
+   */
+  setResponseStatus,
+  /**
+   * @since 1.0.0
+   */
+  setSecurity
+} from "effect-http/ApiGroup"
 
-ApiGroup.addEndpoint
-ApiGroup.addResponse
-ApiGroup.delete
-ApiGroup.endpoint
-ApiGroup.get
-ApiGroup.make
-ApiGroup.patch
-ApiGroup.post
-ApiGroup.put
-ApiGroup.setRequest
-ApiGroup.setRequestBody
-ApiGroup.setRequestHeaders
-ApiGroup.setRequestPath
-ApiGroup.setRequestQuery
-ApiGroup.setResponse
-ApiGroup.setResponseBody
-ApiGroup.setResponseHeaders
-ApiGroup.setResponseRepresentations
-ApiGroup.setResponseStatus
-ApiGroup.setSecurity
+export {
+  /**
+   * @since 1.0.0
+   */
+  delete,
+  /**
+   * @since 1.0.0
+   */
+  get,
+  /**
+   * @since 1.0.0
+   */
+  make as endpoint,
+  /**
+   * @since 1.0.0
+   */
+  patch,
+  /**
+   * @since 1.0.0
+   */
+  post,
+  /**
+   * @since 1.0.0
+   */
+  put
+} from "./ApiEndpoint.js"

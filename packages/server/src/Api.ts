@@ -1,24 +1,97 @@
-import { Api } from "effect-http"
+export {
+  /**
+   * @since 1.0.0
+   */
+  addEndpoint,
+  /**
+   * @since 1.0.0
+   */
+  addGroup,
+  /**
+   * @since 1.0.0
+   */
+  addResponse,
+  /**
+   * @since 1.0.0
+   */
+  getEndpoint,
+  /**
+   * @since 1.0.0
+   */
+  make
+} from "effect-http/Api"
 
-Api.addEndpoint
-Api.addGroup
-Api.addResponse
-Api.delete
-Api.endpoint
-Api.get
-Api.getEndpoint
-Api.make
-Api.patch
-Api.post
-Api.put
-Api.setRequest
-Api.setRequestBody
-Api.setRequestHeaders
-Api.setRequestPath
-Api.setRequestQuery
-Api.setResponse
-Api.setResponseBody
-Api.setResponseHeaders
-Api.setResponseRepresentations
-Api.setResponseStatus
-Api.setSecurity
+export {
+  /**
+   * @since 1.0.0
+   */
+  delete,
+  /**
+   * @since 1.0.0
+   */
+  get,
+  /**
+   * @since 1.0.0
+   */
+  make as endpoint,
+  /**
+   * @since 1.0.0
+   */
+  patch,
+  /**
+   * @since 1.0.0
+   */
+  post,
+  /**
+   * @since 1.0.0
+   */
+  put,
+  /**
+   * @since 1.0.0
+   */
+  setRequest,
+  /**
+   * @since 1.0.0
+   */
+  setRequestBody,
+  /**
+   * @since 1.0.0
+   */
+  setRequestHeaders,
+  /**
+   * @since 1.0.0
+   */
+  setRequestPath,
+  /**
+   * @since 1.0.0
+   */
+  setRequestQuery,
+  /**
+   * @since 1.0.0
+   */
+  setRequestRoute,
+  /**
+   * @since 1.0.0
+   */
+  setResponse,
+  /**
+   * @since 1.0.0
+   */
+  setResponseBody,
+  /**
+   * @since 1.0.0
+   */
+  setResponseHeaders,
+  /**
+   * @since 1.0.0
+   */
+  setResponseRepresentations,
+  /**
+   * @since 1.0.0
+   */
+  setResponseStatus,
+  /**
+   * @since 1.0.0
+   */
+  setSecurity
+} from "./ApiEndpoint.js"
