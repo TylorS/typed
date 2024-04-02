@@ -4,9 +4,9 @@ import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
 import { asRouteGuard, CurrentRoute, type MatchInput } from "@typed/router"
-import { Effect, Effectable, Layer, Option } from "effect"
+import { Effect, Effectable, Layer, Option, Order, pipe } from "effect"
 import type { Chunk } from "effect/Chunk"
-import { groupBy } from "effect/ReadonlyArray"
+import { groupBy, sortBy } from "effect/ReadonlyArray"
 import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
 import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../RouteHandler.js"
 import type { Mount, Router } from "../Router.js"
@@ -40,6 +40,29 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   }
 }
 
+const routePartsOrder: Order.Order<RouteHandler<any, any, any>> = pipe(
+  Order.number,
+  Order.mapInput((route: RouteHandler<any, any, any>) => route.route.path.split("/").length)
+)
+
+const routesAlphaOrder = pipe(
+  Order.string,
+  Order.mapInput((route: RouteHandler<any, any, any>) => route.route.path)
+)
+
+const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+const getParentRoute = Effect.serviceOption(CurrentRoute)
+
+const setup = Effect.gen(function*(_) {
+  const request = yield* _(ServerRequest)
+  const existingParams = yield* _(getCurrentParamsOption)
+  const parentRoute = yield* _(getParentRoute)
+  const url = getUrlFromServerRequest(request)
+  const path = Navigation.getCurrentPathFromUrl(url)
+
+  return { request, url, path, existingParams, parentRoute } as const
+})
+
 function toHttpApp<E, R>(
   router: Router<E, R>
 ): Effect.Effect<
@@ -48,68 +71,109 @@ function toHttpApp<E, R>(
   | Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
   | ServerRequest
 > {
-  const routesByMethod = groupBy(router.routes, (route) => route.method)
+  const routesByMethod = groupBy(router.routes.pipe(sortBy(routePartsOrder, routesAlphaOrder)), (route) => route.method)
+  const hasMounts = router.mounts.length > 0
 
-  return Effect.flatMap(ServerRequest, (request) => {
-    const url = getUrlFromServerRequest(request)
-    const path = Navigation.getCurrentPathFromUrl(url)
-    const navigation = Navigation.initialMemory({ url })
+  // Translate "all" routes to all methods for quick lookup
+  if ("*" in routesByMethod) {
+    allMethods.forEach((method) => {
+      routesByMethod[method].push(...routesByMethod["*"])
+      // Re-sort the routes
+      routesByMethod[method] = pipe(routesByMethod[method], sortBy(routePartsOrder, routesAlphaOrder))
+    })
+  }
 
-    return Effect.gen(function*(_) {
-      const existingParams = yield* _(getCurrentParamsOption)
-      const parentRoute = yield* _(Effect.serviceOption(CurrentRoute))
-
-      // Check mounts first
+  const runMounts = ({ existingParams, parentRoute, path, url }: Effect.Effect.Success<typeof setup>) =>
+    Effect.gen(function*(_) {
       for (const mount of router.mounts) {
         const response = yield* _(
           runRouteMatcher<E, R>(
             mount.prefix,
             mount.app,
             path,
-            navigation,
+            url,
             existingParams,
-            url.searchParams,
             parentRoute
           )
         )
 
         if (Option.isSome(response)) {
-          return response.value
+          return response
         }
       }
 
-      // Check routes
-      for (const { handler, route } of routesByMethod[request.method] || []) {
-        const response = yield* _(
-          runRouteMatcher(
-            route,
-            handler,
-            path,
-            navigation,
-            existingParams,
-            url.searchParams,
-            parentRoute
-          )
-        )
+      return Option.none()
+    })
 
-        if (Option.isSome(response)) {
-          return response.value
+  if (hasMounts) {
+    return Effect.gen(function*(_) {
+      const data = yield* _(setup)
+
+      // Check mounts first
+      const response = yield* _(runMounts(data))
+      if (Option.isSome(response)) {
+        return response.value
+      }
+
+      const { existingParams, parentRoute, path, request, url } = data
+      const routes = routesByMethod[request.method]
+      if (routes !== undefined) {
+        for (const { handler, route } of routes) {
+          const response = yield* _(
+            runRouteMatcher(
+              route,
+              handler,
+              path,
+              url,
+              existingParams,
+              parentRoute
+            )
+          )
+
+          if (Option.isSome(response)) {
+            return response.value
+          }
+        }
+      }
+
+      // No route found
+      return yield* _(new RouteNotFound({ request: data.request }))
+    })
+  } else {
+    return Effect.gen(function*(_) {
+      const { existingParams, parentRoute, path, request, url } = yield* _(setup)
+      const routes = routesByMethod[request.method]
+      if (routes !== undefined) {
+        for (const { handler, route } of routes) {
+          const response = yield* _(
+            runRouteMatcher(
+              route,
+              handler,
+              path,
+              url,
+              existingParams,
+              parentRoute
+            )
+          )
+
+          if (Option.isSome(response)) {
+            return response.value
+          }
         }
       }
 
       // No route found
       return yield* _(new RouteNotFound({ request }))
     })
-  })
+  }
 }
 
 function runRouteMatcher<E, R>(
   input: MatchInput.Any,
   handler: Default<R, E>,
   path: string,
-  navigation: Layer.Layer<Navigation.Navigation>,
+  url: URL,
   existingParams: Option.Option<CurrentParams<any>>,
-  queryParams: URLSearchParams,
   parent: Option.Option<CurrentRoute>
 ): Effect.Effect<
   Option.Option<ServerResponse>,
@@ -124,8 +188,6 @@ function runRouteMatcher<E, R>(
     return Effect.succeedNone
   }
 
-  const currentRouteLayer = CurrentRoute.layer({ route, parent })
-
   // Check if the route's params are valid, decode, etc
   return Effect.flatMap(guard(path), (params) => {
     // If the route's params are invalid, return None
@@ -135,14 +197,14 @@ function runRouteMatcher<E, R>(
     }
 
     const layer = Layer.mergeAll(
-      navigation,
-      currentRouteLayer,
+      Navigation.initialMemory({ url }),
+      CurrentRoute.layer({ route, parent }),
       currentParamsLayer<typeof route>({
         params: Option.match(existingParams, {
           onNone: () => params.value,
           onSome: (existing) => ({ ...existing, ...params.value })
         }),
-        queryParams
+        queryParams: url.searchParams
       })
     )
 
