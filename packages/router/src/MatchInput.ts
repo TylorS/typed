@@ -6,6 +6,7 @@ import type * as Schema from "@effect/schema/Schema"
 import type { Guard } from "@typed/guard"
 import * as Route from "@typed/route"
 import type { Effect, Option } from "effect"
+import { dual } from "effect/Function"
 import * as RouteGuard from "./RouteGuard.js"
 
 /**
@@ -69,50 +70,136 @@ export function asRouteGuard<I extends MatchInput.Any>(
 /**
  * @since 1.0.0
  */
-export function map<I extends MatchInput.Any, A>(
+export const map: {
+  <I extends MatchInput.Any, A>(
+    f: (a: MatchInput.Success<I>) => A
+  ): (input: I) => RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>>
+
+  <I extends MatchInput.Any, A>(
+    input: I,
+    f: (a: MatchInput.Success<I>) => A
+  ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>>
+} = dual(2, function map<I extends MatchInput.Any, A>(
   input: I,
   f: (a: MatchInput.Success<I>) => A
 ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>> {
-  return RouteGuard.map(asRouteGuard<I>(input), f) as any
-}
+  return RouteGuard.map<
+    RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>,
+    A
+  >(asRouteGuard<I>(input), f)
+})
 
 /**
  * @since 1.0.0
  */
-export function mapEffect<I extends MatchInput.Any, A, E2, R2>(
+export const mapEffect: {
+  <I extends MatchInput.Any, A, E2, R2>(
+    f: (a: MatchInput.Success<I>) => Effect.Effect<A, E2, R2>
+  ): (input: I) => RouteGuard.RouteGuard<MatchInput.Route<I>, A, E2 | MatchInput.Error<I>, R2 | MatchInput.Context<I>>
+
+  <I extends MatchInput.Any, A, E2, R2>(
+    input: I,
+    f: (a: MatchInput.Success<I>) => Effect.Effect<A, E2, R2>
+  ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, E2 | MatchInput.Error<I>, R2 | MatchInput.Context<I>>
+} = dual(2, function mapEffect<I extends MatchInput.Any, A, E2, R2>(
   input: I,
   f: (a: MatchInput.Success<I>) => Effect.Effect<A, E2, R2>
 ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I> | E2, MatchInput.Context<I> | R2> {
-  return RouteGuard.mapEffect(asRouteGuard<I>(input), f) as any
-}
+  return RouteGuard.mapEffect<
+    RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>,
+    A,
+    E2,
+    R2
+  >(asRouteGuard<I>(input), f)
+})
 
 /**
  * @since 1.0.0
  */
-export function filter<I extends MatchInput.Any>(
+export const filter: {
+  <I extends MatchInput.Any>(
+    f: (a: MatchInput.Success<I>) => boolean
+  ): (
+    input: I
+  ) => RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>
+
+  <I extends MatchInput.Any>(
+    input: I,
+    f: (a: MatchInput.Success<I>) => boolean
+  ): RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>
+} = dual(2, function filter<I extends MatchInput.Any>(
   input: I,
   f: (a: MatchInput.Success<I>) => boolean
 ): RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>> {
-  return RouteGuard.filter(asRouteGuard<I>(input), f) as any
-}
+  return RouteGuard.filter<
+    RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>
+  >(asRouteGuard<I>(input), f)
+})
 
 /**
  * @since 1.0.0
  */
-export function filterMap<I extends MatchInput.Any, A>(
+export const filterMap: {
+  <I extends MatchInput.Any, A>(
+    f: (a: MatchInput.Success<I>) => Option.Option<A>
+  ): (input: I) => RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>>
+
+  <I extends MatchInput.Any, A>(
+    input: I,
+    f: (a: MatchInput.Success<I>) => Option.Option<A>
+  ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>>
+} = dual(2, function filterMap<I extends MatchInput.Any, A>(
   input: I,
   f: (a: MatchInput.Success<I>) => Option.Option<A>
 ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I>, MatchInput.Context<I>> {
-  return RouteGuard.filterMap(asRouteGuard<I>(input), f) as any
+  return RouteGuard.filterMap<
+    RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>,
+    A
+  >(asRouteGuard<I>(input), f)
+})
+
+/**
+ * @since 1.0.0
+ */
+export const flatMap: {
+  <I extends MatchInput.Any, A, E2, R2>(
+    guard: Guard<MatchInput.Success<I>, A, E2, R2>
+  ): (input: I) => RouteGuard.RouteGuard<MatchInput.Route<I>, A, E2 | MatchInput.Error<I>, R2 | MatchInput.Context<I>>
+
+  <I extends MatchInput.Any, A, E2, R2>(
+    input: I,
+    guard: Guard<MatchInput.Success<I>, A, E2, R2>
+  ): RouteGuard.RouteGuard<MatchInput.Route<I>, A, E2 | MatchInput.Error<I>, R2 | MatchInput.Context<I>>
+} = dual(2, function flatMap<I extends MatchInput.Any, A, E2, R2>(
+  input: I,
+  guard: Guard<MatchInput.Success<I>, A, E2, R2>
+): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I> | E2, MatchInput.Context<I> | R2> {
+  return RouteGuard.flatMap<
+    RouteGuard.RouteGuard<MatchInput.Route<I>, MatchInput.Success<I>, MatchInput.Error<I>, MatchInput.Context<I>>,
+    A,
+    E2,
+    R2
+  >(asRouteGuard<I>(input), guard)
+})
+
+/**
+ * @since 1.0.0
+ */
+export function concat<L extends MatchInput.Any, R extends MatchInput.Any>(
+  left: L,
+  right: R
+): RouteGuard.RouteGuard<
+  Route.Route.Concat<MatchInput.Route<L>, MatchInput.Route<R>>,
+  MatchInput.Success<L> & MatchInput.Success<R>,
+  MatchInput.Error<L> | MatchInput.Error<R>,
+  MatchInput.Context<L> | MatchInput.Context<R>
+> {
+  return RouteGuard.concat<
+    RouteGuard.RouteGuard<MatchInput.Route<L>, MatchInput.Success<L>, MatchInput.Error<L>, MatchInput.Context<L>>,
+    RouteGuard.RouteGuard<MatchInput.Route<R>, MatchInput.Success<R>, MatchInput.Error<R>, MatchInput.Context<R>>
+  >(asRouteGuard<L>(left), asRouteGuard<R>(right))
 }
 
 /**
  * @since 1.0.0
  */
-export function flatMap<I extends MatchInput.Any, A, E2, R2>(
-  input: I,
-  guard: Guard<MatchInput.Success<I>, A, E2, R2>
-): RouteGuard.RouteGuard<MatchInput.Route<I>, A, MatchInput.Error<I> | E2, MatchInput.Context<I> | R2> {
-  // @ts-expect-error
-  return RouteGuard.flatMap(asRouteGuard<I>(input), guard) as any
-}

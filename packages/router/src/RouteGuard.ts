@@ -4,8 +4,9 @@
 
 import * as Guard from "@typed/guard"
 import * as Route from "@typed/route"
-import type { Option, Types } from "effect"
-import { Effect, flow } from "effect"
+import type { Types } from "effect"
+import { Effect, flow, Option } from "effect"
+import { dual } from "effect/Function"
 
 /**
  * @since 1.0.0
@@ -77,49 +78,132 @@ export function fromRoute<R extends Route.Route.Any>(
 /**
  * @since 1.0.0
  */
-export function map<R extends RouteGuard.Any, C>(
+export const map: {
+  <R extends RouteGuard.Any, C>(
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => C
+  ): (self: R) => RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>>
+
+  <R extends RouteGuard.Any, C>(
+    self: R,
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => C
+  ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>>
+} = dual(2, function map<R extends RouteGuard.Any, C>(
   self: R,
   f: (b: Types.NoInfer<RouteGuard.Success<R>>) => C
 ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>> {
   return make(self.route, Guard.map(self.guard, f)) as any
-}
+})
 
 /**
  * @since 1.0.0
  */
-export function mapEffect<R extends RouteGuard.Any, C, E3, R3>(
+export const mapEffect: {
+  <R extends RouteGuard.Any, C, E3, R3>(
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Effect.Effect<C, E3, R3>
+  ): (self: R) => RouteGuard<RouteGuard.Route<R>, C, E3 | RouteGuard.Error<R>, R3 | RouteGuard.Context<R>>
+
+  <R extends RouteGuard.Any, C, E3, R3>(
+    self: R,
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Effect.Effect<C, E3, R3>
+  ): RouteGuard<RouteGuard.Route<R>, C, E3 | RouteGuard.Error<R>, R3 | RouteGuard.Context<R>>
+} = dual(2, function mapEffect<R extends RouteGuard.Any, C, E3, R3>(
   self: R,
   f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Effect.Effect<C, E3, R3>
 ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R> | E3, RouteGuard.Context<R> | R3> {
   return make(self.route, Guard.mapEffect(self.guard, f)) as any
-}
+})
 
 /**
  * @since 1.0.0
  */
-export function filter<R extends RouteGuard.Any>(
+export const filter: {
+  <R extends RouteGuard.Any>(f: (b: Types.NoInfer<RouteGuard.Success<R>>) => boolean): (self: R) => R
+  <R extends RouteGuard.Any>(self: R, f: (b: Types.NoInfer<RouteGuard.Success<R>>) => boolean): R
+} = dual(2, function filter<R extends RouteGuard.Any>(
   self: R,
   f: (b: Types.NoInfer<RouteGuard.Success<R>>) => boolean
 ): R {
   return make(self.route, Guard.filter(self.guard, f)) as any
-}
+})
 
 /**
  * @since 1.0.0
  */
-export function filterMap<R extends RouteGuard.Any, C>(
+export const filterMap: {
+  <R extends RouteGuard.Any, C>(
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Option.Option<C>
+  ): (self: R) => RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>>
+
+  <R extends RouteGuard.Any, C>(
+    self: R,
+    f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Option.Option<C>
+  ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>>
+} = dual(2, function filterMap<R extends RouteGuard.Any, C>(
   self: R,
   f: (b: Types.NoInfer<RouteGuard.Success<R>>) => Option.Option<C>
 ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R>, RouteGuard.Context<R>> {
   return make(self.route, Guard.filterMap(self.guard, f)) as any
-}
+})
 
 /**
  * @since 1.0.0
  */
-export function flatMap<R extends RouteGuard.Any, C, E3, R3>(
+export const flatMap: {
+  <R extends RouteGuard.Any, C, E3, R3>(
+    guard: Guard.Guard<RouteGuard.Success<R>, C, E3, R3>
+  ): (self: R) => RouteGuard<RouteGuard.Route<R>, C, E3 | RouteGuard.Error<R>, R3 | RouteGuard.Context<R>>
+
+  <R extends RouteGuard.Any, C, E3, R3>(
+    self: R,
+    guard: Guard.Guard<RouteGuard.Success<R>, C, E3, R3>
+  ): RouteGuard<RouteGuard.Route<R>, C, E3 | RouteGuard.Error<R>, R3 | RouteGuard.Context<R>>
+} = dual(2, function flatMap<R extends RouteGuard.Any, C, E3, R3>(
   self: R,
   guard: Guard.Guard<RouteGuard.Success<R>, C, E3, R3>
 ): RouteGuard<RouteGuard.Route<R>, C, RouteGuard.Error<R> | E3, RouteGuard.Context<R> | R3> {
   return make(self.route, Guard.compose(self.guard, guard)) as any
-}
+})
+
+/**
+ * @since 1.0.0
+ */
+export const concat: {
+  <R extends RouteGuard.Any>(
+    other: R
+  ): <L extends RouteGuard.Any>(self: L) => RouteGuard<
+    Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+    RouteGuard.Success<L> & RouteGuard.Success<R>,
+    RouteGuard.Error<L> | RouteGuard.Error<R>,
+    RouteGuard.Context<L> | RouteGuard.Context<R>
+  >
+
+  <L extends RouteGuard.Any, R extends RouteGuard.Any>(
+    self: L,
+    other: R
+  ): RouteGuard<
+    Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+    RouteGuard.Success<L> & RouteGuard.Success<R>,
+    RouteGuard.Error<L> | RouteGuard.Error<R>,
+    RouteGuard.Context<L> | RouteGuard.Context<R>
+  >
+} = dual(2, function concat<L extends RouteGuard.Any, R extends RouteGuard.Any>(
+  self: L,
+  other: R
+): RouteGuard<
+  Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+  RouteGuard.Success<L> & RouteGuard.Success<R>,
+  RouteGuard.Error<L> | RouteGuard.Error<R>,
+  RouteGuard.Context<L> | RouteGuard.Context<R>
+> {
+  return make(Route.concat<L["route"], R["route"]>(self.route, other.route), (input) =>
+    Effect.Do.pipe(
+      Effect.bind("a", () => self.guard(input)),
+      Effect.bind("b", () => other.guard(input)),
+      Effect.map((options) =>
+        Option.map(
+          Option.all(options),
+          ({ a, b }) => ({ ...a, ...b }) as RouteGuard.Success<L> & RouteGuard.Success<R>
+        )
+      )
+    ))
+})

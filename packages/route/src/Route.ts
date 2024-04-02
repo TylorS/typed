@@ -141,6 +141,14 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
+  export type Concat<I extends Route.Any, I2 extends Route.Any> = Route<
+    Path.PathJoin<[Path<I>, Path<I2>]>,
+    ConcatSchemas<Schema<I>, Schema<I2>>
+  >
+
+  /**
+   * @since 1.0.0
+   */
   export type ConcatSchemas<S1 extends Schema.Schema.All, S2 extends Schema.Schema.All> = [S1] extends [never] ? S2 :
     [S2] extends [never] ? S1 :
     Schema.Schema<
@@ -429,20 +437,16 @@ export const prefix: {
 export const concat: {
   <R extends Route.Any>(right: R): <L extends Route.Any>(
     left: L
-  ) => Route<Path.PathJoin<[Route.Path<L>, Route.Path<R>]>, Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>>
+  ) => Route.Concat<L, R>
 
   <L extends Route.Any, R extends Route.Any>(
     left: L,
     right: R
-  ): Route<Path.PathJoin<[Route.Path<L>, Route.Path<R>]>, Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>>
+  ): Route.Concat<L, R>
 } = dual(2, <L extends Route.Any, R extends Route.Any>(
   left: L,
   right: R
-): Route<Path.PathJoin<[Route.Path<L>, Route.Path<R>]>, Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>> =>
-  make(new AST.Concat(left.ast, right.ast)) as Route<
-    Path.PathJoin<[Route.Path<L>, Route.Path<R>]>,
-    Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>
-  >)
+): Route.Concat<L, R> => make(new AST.Concat(left.ast, right.ast)) as Route.Concat<L, R>)
 
 /**
  * @since 1.0.0
@@ -509,6 +513,12 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
   readonly route: R
   readonly issue: ParseIssue
 }> {
+  constructor(props: { readonly route: R; readonly issue: ParseIssue }) {
+    super(props)
+
+    Object.assign(this, { message: `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}` })
+  }
+
   toJSON(): unknown {
     return {
       _tag: "RouteDecodeError",
@@ -518,7 +528,7 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
   }
 
   toString() {
-    return `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
+    return this.message
   }
 }
 

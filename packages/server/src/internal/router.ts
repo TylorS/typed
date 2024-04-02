@@ -21,7 +21,7 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
 > implements Router<E | E2, R | R2> {
   readonly [RouterTypeId]: RouterTypeId = RouterTypeId
 
-  private readonly httpApp: Effect.Effect<
+  private _httpApp!: Effect.Effect<
     ServerResponse,
     E | E2 | RouteNotFound,
     | Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
@@ -33,12 +33,10 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
     readonly mounts: Chunk<Mount<E, R>>
   ) {
     super()
-
-    this.httpApp = toHttpApp<E | E2, R | R2>(this)
   }
 
   commit() {
-    return this.httpApp
+    return this._httpApp ||= toHttpApp<E | E2, R | R2>(this)
   }
 }
 
