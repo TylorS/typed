@@ -69,7 +69,7 @@ export type LayoutTemplate<
  * @since 1.0.0
  */
 export function toHttpRouter<
-  M extends Router.RouteMatch.RouteMatch<Route.Any, any, any, any, RenderEvent, any, any>,
+  M extends Router.RouteMatch.RouteMatch<Route.Any, any, any, any, RenderEvent | null, any, any>,
   E2 = never,
   R2 = never
 >(
