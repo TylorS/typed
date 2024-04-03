@@ -2,8 +2,8 @@ import { addJwtTokenToRequest, addOptionalJwtTokenToRequest } from "@/api/common
 import { getCurrentJwtToken } from "@/services/CurrentUser"
 import { Unauthorized, Unprocessable } from "@/services/errors"
 import type { ClientRequest } from "@effect/platform/Http/ClientRequest"
+import type { ClientError } from "@typed/server"
 import { Effect, Unify } from "effect"
-import type { ClientError } from "effect-http"
 
 export function handleClientRequest<
   A,

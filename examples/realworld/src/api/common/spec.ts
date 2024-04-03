@@ -3,9 +3,9 @@ import { JwtToken } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import * as HttpClient from "@effect/platform/HttpClient"
 import * as Http from "@effect/platform/HttpServer"
+import type { ApiEndpoint, ApiRequest, ApiSchema } from "@typed/server"
+import { Api, ApiResponse, Security } from "@typed/server"
 import { Effect, Option } from "effect"
-import type { ApiEndpoint, ApiRequest, ApiSchema } from "effect-http"
-import { Api, ApiResponse, Security } from "effect-http"
 
 const jwtTokenSchema = Schema.string.pipe(
   Schema.transform(JwtToken, (f) => JwtToken(f.split(" ")[1]), (t) => `Token ${t}`)

@@ -35,6 +35,7 @@
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
+    "@typed/server": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
     "bcrypt": "^5.1.1",

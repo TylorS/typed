@@ -1,95 +1,95 @@
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
+import { ServerError, ServerRouterBuilder } from "@typed/server"
 import { Effect } from "effect"
-import { RouterBuilder, ServerError } from "effect-http"
 import { Spec } from "./spec"
 
 const STATUS_200 = { status: 200, body: undefined } as const
 
-export const server = RouterBuilder.make(Spec, { enableDocs: true, docsPath: "/docs" }).pipe(
-  RouterBuilder.handle(
+export const server = ServerRouterBuilder.make(Spec, { enableDocs: true, docsPath: "/docs" }).pipe(
+  ServerRouterBuilder.handle(
     "createArticle",
     ({ body: { article } }) =>
       Articles.create(article).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "createComment",
     ({ body: { comment }, path: { slug } }) =>
       Comments.create(slug, comment).pipe(Effect.bindTo("comment"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "deleteArticle",
     ({ path: { slug } }) => Articles.delete({ slug }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "deleteComment",
     ({ path: { id, slug } }) =>
       Comments.delete(slug, { id }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "favorite",
     ({ path: { slug } }) => Articles.favorite(slug).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "follow",
     ({ path: { username } }) =>
       Profiles.follow(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getArticle",
     ({ path: { slug } }) => Articles.get({ slug }).pipe(Effect.bindTo("article"), catchUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getArticles",
     ({ query }) => Articles.list(query).pipe(Effect.bindTo("articles"), catchUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getComments",
     ({ path: { slug } }) => Comments.get(slug).pipe(Effect.bindTo("comments"), catchUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getCurrentUser",
     (_) => Users.current().pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getFeed",
     ({ query }) => Articles.feed(query).pipe(Effect.bindTo("articles"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getProfile",
     ({ path: { username } }) => Profiles.get(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "getTags",
     () => Tags.get().pipe(Effect.bindTo("tags"), catchUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "login",
     ({ body: { user } }) => Users.login(user).pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "register",
     ({ body: { user } }) => Users.register(user).pipe(Effect.bindTo("user"), catchUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "unfavorite",
     ({ path: { slug } }) => Articles.unfavorite(slug).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "unfollow",
     ({ path: { username } }) =>
       Profiles.unfollow(username).pipe(Effect.bindTo("profile"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "updateArticle",
     ({ body: { article }, path: { slug } }) =>
       Articles.update(slug, article).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.handle(
+  ServerRouterBuilder.handle(
     "updateUser",
     ({ body: { user } }) => Users.update(user).pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
-  RouterBuilder.build
+  ServerRouterBuilder.getRouter
 )
 
 function catchUnauthorized<R, E, A>(

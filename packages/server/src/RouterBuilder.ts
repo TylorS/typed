@@ -5,6 +5,7 @@ import * as Route from "@typed/route"
 import { Effect, type Pipeable } from "effect"
 import type { Api, Route as EffectHttpRoute, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
 import { ApiEndpoint, ApiRequest, ApiSchema, ServerError } from "effect-http"
+import { dual } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
 import * as ServerRequestParser from "./internal/serverRequestParser.js"
 import * as ServerResponseEncoder from "./internal/serverResponseEncoder.js"
@@ -61,7 +62,52 @@ export const make: <A extends Api.Api.Any>(
  * @category constructors
  * @since 1.0.0
  */
-export function handle<
+export const handle: {
+  <
+    E,
+    R,
+    RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any,
+    Id extends ApiEndpoint.ApiEndpoint.Id<RemainingEndpoints>,
+    E2,
+    R2
+  >(
+    id: Id,
+    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+  ): (builder: RouterBuilder<E, R, RemainingEndpoints>) => RouterBuilder<
+    | E
+    | RouteHandler.RouteHandler.Error<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >,
+    | R
+    | RouteHandler.RouteHandler.Context<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >,
+    ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
+  >
+
+  <
+    E,
+    R,
+    RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any,
+    Id extends ApiEndpoint.ApiEndpoint.Id<RemainingEndpoints>,
+    E2,
+    R2
+  >(
+    builder: RouterBuilder<E, R, RemainingEndpoints>,
+    id: Id,
+    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+  ): RouterBuilder<
+    | E
+    | RouteHandler.RouteHandler.Error<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >,
+    | R
+    | RouteHandler.RouteHandler.Context<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >,
+    ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
+  >
+} = dual(3, function handle<
   E,
   R,
   RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any,
@@ -76,7 +122,17 @@ export function handle<
     R2,
     E2
   >
-) {
+): RouterBuilder<
+  | E
+  | RouteHandler.RouteHandler.Error<
+    HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+  >,
+  | R
+  | RouteHandler.RouteHandler.Context<
+    HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+  >,
+  ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
+> {
   const remainingEndpoints = builder.remainingEndpoints.slice(0)
   const index = builder.remainingEndpoints.findIndex((endpoint) => ApiEndpoint.getId(endpoint) === id)
   const endpoint = builder.remainingEndpoints[index]
@@ -88,23 +144,25 @@ export function handle<
 
   return {
     ...builder,
-    remainingEndpoints,
+    remainingEndpoints: remainingEndpoints as any,
     router
   }
-}
+})
 
-const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
-  endpoint: Endpoint,
-  fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
-  options?: Partial<Options>
-) => RouteHandler.RouteHandler<
+type HandlerFromEndpoint<Endpoint extends ApiEndpoint.ApiEndpoint.Any, E, R> = RouteHandler.RouteHandler<
   Route.Route<
     PathInput,
     Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<Endpoint>>, Schema.Schema.All>
   >,
   E,
   R
-> = <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
+>
+
+const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
+  endpoint: Endpoint,
+  fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
+  options?: Partial<Options>
+) => HandlerFromEndpoint<Endpoint, E, R> = <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
   endpoint: Endpoint,
   fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
   options?: Partial<Options>
@@ -147,4 +205,13 @@ const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
       })
     )
   )
+}
+
+/**
+ * @since 1.0.0
+ */
+export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+  builder: RouterBuilder<E, R, RemainingEndpoints>
+): Router.Router<E, R> {
+  return builder.router
 }

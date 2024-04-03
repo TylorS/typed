@@ -8,16 +8,15 @@ import {
 } from "@/api/common/spec"
 import { Comment } from "@/model"
 import { CreateCommentInput } from "@/services/CreateComment"
-import { Api, ApiGroup } from "effect-http"
+import { Api, ApiGroup } from "@typed/server"
 import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const getComments = Api.get(
   "getComments",
-  Routes.comments.path,
+  Routes.comments,
   { "description": "Get comments for an article. Auth not required." }
 ).pipe(
-  Api.setRequestPath(Routes.comments.schema),
   add200(Schema.struct({ comments: Schema.array(Comment) })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
@@ -25,10 +24,9 @@ export const getComments = Api.get(
 
 export const createComment = Api.post(
   "createComment",
-  Routes.comments.path,
+  Routes.comments,
   { "description": "Create a comment. Auth is required" }
 ).pipe(
-  Api.setRequestPath(Routes.comments.schema),
   Api.setRequestBody(Schema.struct({ comment: CreateCommentInput })),
   add201(Schema.struct({ comment: Comment })),
   addUnauthorizedResponse,
@@ -38,12 +36,11 @@ export const createComment = Api.post(
 
 export const deleteComment = Api.delete(
   "deleteComment",
-  Routes.comment.path,
+  Routes.comment,
   {
     description: "Delete a comment. Auth is required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.comment.schema),
   add200(),
   addUnauthorizedResponse,
   addUnprocessableResponse,

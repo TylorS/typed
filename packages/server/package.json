@@ -42,6 +42,7 @@
   "dependencies": {
     "@effect/platform": "^0.48.21",
     "@effect/schema": "^0.64.15",
+    "@typed/context": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",

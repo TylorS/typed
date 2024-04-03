@@ -1,12 +1,12 @@
 import { add200, addUnprocessableResponse } from "@/api/common/spec"
 import { ArticleTagList } from "@/model"
-import { Api, ApiGroup } from "effect-http"
+import { Api, ApiGroup } from "@typed/server"
 import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const getTags = Api.get(
   "getTags",
-  Routes.tags.path,
+  Routes.tags,
   {
     description: "Get tags. Auth not required."
   }

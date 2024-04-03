@@ -249,6 +249,9 @@ importers:
       '@typed/router':
         specifier: workspace:*
         version: link:../../packages/router/dist
+      '@typed/server':
+        specifier: workspace:*
+        version: link:../../packages/server/dist
       '@typed/template':
         specifier: workspace:*
         version: link:../../packages/template/dist
@@ -804,6 +807,9 @@ importers:
       '@effect/schema':
         specifier: ^0.64.15
         version: 0.64.15(effect@2.4.15)(fast-check@3.17.1)
+      '@typed/context':
+        specifier: workspace:*
+        version: link:../context/dist
       '@typed/navigation':
         specifier: workspace:*
         version: link:../navigation/dist

@@ -12,12 +12,12 @@ import { CreateArticleInput } from "@/services/CreateArticle"
 import { GetArticlesInput } from "@/services/GetArticles"
 import { GetFeedInput } from "@/services/GetFeed"
 import { UpdateArticleInput } from "@/services/UpdateArticle"
-import { Api, ApiGroup } from "effect-http"
+import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 
 export const getFeed = Api.get(
   "getFeed",
-  Routes.feed.path,
+  Routes.feed,
   {
     description: "Get most recent articles from users you follow. Use query parameters to limit. Auth is required."
   }
@@ -31,7 +31,7 @@ export const getFeed = Api.get(
 
 export const getArticles = Api.get(
   "getArticles",
-  Routes.articles.path,
+  Routes.articles,
   {
     description: "Get most recent articles globally. Use query parameters to filter results. Auth is optional."
   }
@@ -44,12 +44,11 @@ export const getArticles = Api.get(
 
 export const getArticle = Api.get(
   "getArticle",
-  Routes.article.path,
+  Routes.article,
   {
     description: "Get an article. Auth not required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.article.schema),
   add200(Schema.struct({ article: Article })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
@@ -57,7 +56,7 @@ export const getArticle = Api.get(
 
 export const createArticle = Api.post(
   "createArticle",
-  Routes.articles.path,
+  Routes.articles,
   {
     description: "Create an article. Auth is required"
   }
@@ -71,12 +70,11 @@ export const createArticle = Api.post(
 
 export const updateArticle = Api.put(
   "updateArticle",
-  Routes.article.path,
+  Routes.article,
   {
     description: "Update an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.article.schema),
   Api.setRequestBody(Schema.struct({ article: UpdateArticleInput })),
   add200(Schema.struct({ article: Article })),
   addUnauthorizedResponse,
@@ -86,12 +84,11 @@ export const updateArticle = Api.put(
 
 export const deleteArticle = Api.delete(
   "deleteArticle",
-  Routes.article.path,
+  Routes.article,
   {
     description: "Delete an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.article.schema),
   add200(),
   addUnauthorizedResponse,
   addUnprocessableResponse,
@@ -100,12 +97,11 @@ export const deleteArticle = Api.delete(
 
 export const favorite = Api.post(
   "favorite",
-  Routes.favorites.path,
+  Routes.favorites,
   {
     description: "Favorite an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.article.schema),
   add200(Schema.struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
@@ -114,12 +110,11 @@ export const favorite = Api.post(
 
 export const unfavorite = Api.delete(
   "unfavorite",
-  Routes.favorites.path,
+  Routes.favorites,
   {
     description: "Unfavorite an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestPath(Routes.article.schema),
   add200(Schema.struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,

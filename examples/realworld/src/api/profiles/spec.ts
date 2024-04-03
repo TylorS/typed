@@ -6,18 +6,17 @@ import {
   addUnprocessableResponse
 } from "@/api/common/spec"
 import { Profile } from "@/model"
-import { Api, ApiGroup } from "effect-http"
+import { Api, ApiGroup } from "@typed/server"
 import * as Schema from "lib/Schema"
 import * as Routes from "./routes"
 
 export const getProfile = Api.get(
   "getProfile",
-  Routes.profiles.path,
+  Routes.profiles,
   {
     description: "Get a profile. Auth not required."
   }
 ).pipe(
-  Api.setRequestPath(Routes.profiles.schema),
   add200(Schema.struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
@@ -26,12 +25,11 @@ export const getProfile = Api.get(
 
 export const follow = Api.post(
   "follow",
-  Routes.follow.path,
+  Routes.follow,
   {
     description: "Follow a user. Auth is required."
   }
 ).pipe(
-  Api.setRequestPath(Routes.follow.schema),
   add200(Schema.struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
@@ -40,12 +38,11 @@ export const follow = Api.post(
 
 export const unfollow = Api.delete(
   "unfollow",
-  Routes.follow.path,
+  Routes.follow,
   {
     description: "Unfollow a user. Auth is required."
   }
 ).pipe(
-  Api.setRequestPath(Routes.follow.schema),
   add200(Schema.struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,

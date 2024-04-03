@@ -1,4 +1,4 @@
-import { Client } from "effect-http"
+import { Client } from "@typed/server"
 import { Spec } from "./spec"
 
 export const client = Client.make(Spec, {

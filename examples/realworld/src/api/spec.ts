@@ -3,7 +3,7 @@ import { CommentsSpec } from "@/api/comments"
 import { ProfilesSpec } from "@/api/profiles"
 import { TagsSpec } from "@/api/tags"
 import { UsersSpec } from "@/api/users"
-import { Api } from "effect-http"
+import { Api } from "@typed/server"
 
 export const Spec = Api.make({
   title: "Realworld",
