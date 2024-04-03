@@ -28,6 +28,27 @@ export interface RouterBuilder<E, R, RemainingEndpoints extends ApiEndpoint.ApiE
   readonly options: Options
 }
 
+/**
+ * @since 1.0.0
+ */
+export namespace RouterBuilder {
+  /**
+   * @since 1.0.0
+   */
+  export type Error<T> = T extends RouterBuilder<infer E, any, any> ? E : never
+
+  /**
+   * @since 1.0.0
+   */
+  export type Context<T> = T extends RouterBuilder<any, infer R, any> ? R : never
+
+  /**
+   * @since 1.0.0
+   */
+  export type RemainingEndpoints<T> = T extends RouterBuilder<any, any, infer RemainingEndpoints> ? RemainingEndpoints
+    : never
+}
+
 const DEFAULT_OPTIONS: Options = {
   parseOptions: { errors: "first", onExcessProperty: "ignore" },
   enableDocs: true,
@@ -123,14 +144,18 @@ export const handle: {
     E2
   >
 ): RouterBuilder<
-  | E
-  | RouteHandler.RouteHandler.Error<
-    HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
-  >,
-  | R
-  | RouteHandler.RouteHandler.Context<
-    HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
-  >,
+  [
+    | E
+    | RouteHandler.RouteHandler.Error<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >
+  ] extends [infer _] ? _ : never,
+  [
+    | R
+    | RouteHandler.RouteHandler.Context<
+      HandlerFromEndpoint<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
+    >
+  ] extends [infer _] ? _ : never,
   ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
 > {
   const remainingEndpoints = builder.remainingEndpoints.slice(0)
@@ -146,7 +171,7 @@ export const handle: {
     ...builder,
     remainingEndpoints: remainingEndpoints as any,
     router
-  }
+  } as any
 })
 
 type HandlerFromEndpoint<Endpoint extends ApiEndpoint.ApiEndpoint.Any, E, R> = RouteHandler.RouteHandler<
@@ -212,6 +237,12 @@ const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
  */
 export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E, R, RemainingEndpoints>
-): Router.Router<E, R> {
-  return builder.router
+): Router.Router<
+  // Flatten the error type to remove duplicates of computed RouteDecodeError<Route<PathInput, never>>
+  E extends Route.RouteDecodeError<Route.Route<PathInput>>
+    ? Exclude<E, Route.RouteDecodeError<Route.Route<PathInput>>> | Route.RouteDecodeError<Route.Route<PathInput>>
+    : E,
+  R
+> {
+  return builder.router as any
 }
