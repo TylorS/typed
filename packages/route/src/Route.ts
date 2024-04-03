@@ -1,5 +1,5 @@
 import { ArrayFormatter, TreeFormatter } from "@effect/schema"
-import type { LiteralValue } from "@effect/schema/AST"
+import type * as SchemaAST from "@effect/schema/AST"
 import type { ParseIssue } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import type { NanoId } from "@typed/id/NanoId"
@@ -33,13 +33,18 @@ export type RouteTypeId = typeof RouteTypeId
 export interface Route<
   P extends string,
   S extends Schema.Schema.All = never
-> extends Pipeable {
+> extends
+  Pipeable,
+  Schema.Schema<
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Type<S>,
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Encoded<S>,
+    [S] extends [never] ? never : Schema.Schema.Context<S>
+  >
+{
   readonly [RouteTypeId]: Route.Variance<P, S>
-  readonly ast: AST.AST
+  readonly routeAst: AST.AST
 
   readonly path: P
-
-  readonly schema: [S] extends [never] ? Route.Schema<this> : S
 
   readonly match: (path: string) => Option.Option<Path.ParamsOf<P>>
 
@@ -100,12 +105,12 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Type<R extends Route.Any> = Schema.Schema.Type<Schema<R>>
+  export type Type<R extends Route.Any> = Schema.Schema.Type<R>
 
   /**
    * @since 1.0.0
    */
-  export type Encoded<R extends Route.Any> = Schema.Schema.Encoded<Schema<R>>
+  export type Encoded<R extends Route.Any> = Schema.Schema.Encoded<R>
 
   /**
    * @since 1.0.0
@@ -120,7 +125,7 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Context<R extends Route.Any> = Schema.Schema.Context<Schema<R>>
+  export type Context<R extends Route.Any> = Schema.Schema.Context<R>
 
   /**
    * @since 1.0.0
@@ -143,7 +148,7 @@ export namespace Route {
    */
   export type Concat<I extends Route.Any, I2 extends Route.Any> = Route<
     Path.PathJoin<[Path<I>, Path<I2>]>,
-    ConcatSchemas<Schema<I>, Schema<I2>>
+    ConcatSchemas<I, I2>
   >
 
   /**
@@ -186,11 +191,22 @@ const variance_: Route.Variance<any, any> = {
   _S: (_) => _
 }
 
+const schemaVariance_: Schema.Schema.Variance<any, any, any>[Schema.TypeId] = {
+  _A: (_) => _,
+  _I: (_) => _,
+  _R: (_) => _
+}
+
 class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<P, S> {
+  readonly [Schema.TypeId]: Schema.Schema.Variance<
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Type<S>,
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Encoded<S>,
+    [S] extends [never] ? never : Schema.Schema.Context<S>
+  >[Schema.TypeId] = schemaVariance_
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
 
   constructor(
-    readonly ast: AST.AST,
+    readonly routeAst: AST.AST,
     readonly options?: {
       readonly match?: Parameters<typeof ptr.match>[1]
       readonly interpolate?: Parameters<typeof ptr.compile>[1]
@@ -202,12 +218,12 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
 
   private __path!: any
   get path(): P {
-    return this.__path ??= AST.toPath(this.ast) as P
+    return this.__path ??= AST.toPath(this.routeAst) as P
   }
 
   private __schema!: any
-  get schema() {
-    return (this.__schema ??= AST.toSchema(this.ast) as any) as any
+  get ast(): SchemaAST.AST {
+    return (this.__schema ??= AST.toSchema(this.routeAst) as any).ast
   }
 
   private __match!: Route<P, S>["match"]
@@ -229,23 +245,33 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
   }
 
   concat<R2 extends Route.Any>(right: R2) {
-    return make(new AST.Concat(this.ast, right.ast)) as any
+    return make(new AST.Concat(this.routeAst, right.routeAst)) as any
   }
 
   optional() {
-    return make(new AST.Optional(this.ast)) as any
+    return make(new AST.Optional(this.routeAst)) as any
   }
 
   oneOrMore() {
-    return make(new AST.OneOrMore(this.ast)) as any
+    return make(new AST.OneOrMore(this.routeAst)) as any
   }
 
   zeroOrMore() {
-    return make(new AST.ZeroOrMore(this.ast)) as any
+    return make(new AST.ZeroOrMore(this.routeAst)) as any
   }
 
   prefix<P2 extends string>(prefix: P2) {
-    return make(new AST.Prefix(prefix, this.ast)) as any
+    return make(new AST.Prefix(prefix, this.routeAst)) as any
+  }
+
+  annotations(
+    annotations: Schema.Annotations.Schema<[S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Type<S>>
+  ): Schema.Schema<
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Type<S>,
+    [S] extends [never] ? Path.ParamsOf<P> : Schema.Schema.Encoded<S>,
+    [S] extends [never] ? never : Schema.Schema.Context<S>
+  > {
+    return Schema.annotations(this, annotations as any)
   }
 }
 
@@ -397,7 +423,7 @@ export const unnamed: Route<Path.Unnamed> = make(new AST.UnnamedParam())
 export const zeroOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>> =>
-  make(new AST.ZeroOrMore(route.ast)) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
+  make(new AST.ZeroOrMore(route.routeAst)) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
 
 /**
  * @since 1.0.0
@@ -405,13 +431,13 @@ export const zeroOrMore = <R extends Route<any, never>>(
 export const oneOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>> =>
-  make(new AST.OneOrMore(route.ast)) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
+  make(new AST.OneOrMore(route.routeAst)) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
 
 /**
  * @since 1.0.0
  */
 export const optional = <R extends Route<any, never>>(route: R): Route.UpdatePath<R, Path.Optional<Route.Path<R>>> =>
-  make(new AST.Optional(route.ast)) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
+  make(new AST.Optional(route.routeAst)) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
 
 /**
  * @since 1.0.0
@@ -425,10 +451,11 @@ export const prefix: {
   ...args: [P] | [P, R]
 ): any => {
   if (args.length === 1) {
-    return (route: R) => make(new AST.Prefix(args[0], route.ast)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
+    return (route: R) =>
+      make(new AST.Prefix(args[0], route.routeAst)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
   }
 
-  return make(new AST.Prefix(args[0], args[1].ast)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
+  return make(new AST.Prefix(args[0], args[1].routeAst)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
 }
 
 /**
@@ -446,7 +473,7 @@ export const concat: {
 } = dual(2, <L extends Route.Any, R extends Route.Any>(
   left: L,
   right: R
-): Route.Concat<L, R> => make(new AST.Concat(left.ast, right.ast)) as Route.Concat<L, R>)
+): Route.Concat<L, R> => make(new AST.Concat(left.routeAst, right.routeAst)) as Route.Concat<L, R>)
 
 /**
  * @since 1.0.0
@@ -466,17 +493,12 @@ export const withSchema: {
 >(
   route: R,
   schema: S
-): Route.UpdateSchema<R, S> => make(new AST.WithSchema(route.ast, schema)) as Route.UpdateSchema<R, S>)
+): Route.UpdateSchema<R, S> => make(new AST.WithSchema(route.routeAst, schema)) as Route.UpdateSchema<R, S>)
 
 /**
  * @since 1.0.0
  */
-export const getPath = <R extends Route.Any>(route: R): Route.Path<R> => AST.toPath(route.ast) as Route.Path<R>
-
-/**
- * @since 1.0.0
- */
-export const getSchema = <R extends Route.Any>(route: R): Route.Schema<R> => AST.toSchema(route.ast) as Route.Schema<R>
+export const getPath = <R extends Route.Any>(route: R): Route.Path<R> => AST.toPath(route.routeAst) as Route.Path<R>
 
 /**
  * @since 1.0.0
@@ -558,7 +580,7 @@ export const decode: {
 ): Effect.Effect<Route.Type<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> {
   const params = route.match(path) as Option.Option<Route.Params<R>>
   const decode = flow(
-    Schema.decode(route.schema),
+    Schema.decode(route as Route.Schema<R>),
     Effect.catchAll((error) => new RouteDecodeError({ route, issue: error.error }))
   ) as (params: Route.Params<R>) => Effect.Effect<
     Route.Type<R>,
@@ -632,7 +654,7 @@ export const encode: {
 ): Effect.Effect<Route.Interpolate<R, Route.Params<R>>, RouteEncodeError<R>, Route.Context<R>> {
   return pipe(
     params,
-    Schema.encode(route.schema as Route.Schema<R>),
+    Schema.encode(route as Route.Schema<R>),
     Effect.catchAll((error) => new RouteEncodeError({ route, issue: error.error })),
     Effect.map((params) => route.interpolate(params as Route.Params<R>))
   ) as any
@@ -667,7 +689,7 @@ export const updateSchema: {
 } = dual(2, <R extends Route.Any, S extends Schema.Schema.Any>(
   route: R,
   f: (s: Route.Schema<R>) => S
-): Route.UpdateSchema<R, S> => withSchema<R, S>(route, f(route.schema)))
+): Route.UpdateSchema<R, S> => withSchema<R, S>(route, f(route as Route.Schema<R>)))
 
 /**
  * @since 1.0.0
@@ -691,7 +713,7 @@ export const transform: {
   from: (o: Route.Type<R>) => Schema.Schema.Encoded<S>,
   to: (s: Schema.Schema.Encoded<S>) => Route.Type<R>
 ): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>> {
-  return updateSchema(route, Schema.transform(toSchema, from, to))
+  return updateSchema(route, Schema.transform(toSchema, from, to)) as any
 })
 
 /**
@@ -716,14 +738,14 @@ export const transformOrFail: {
   from: (o: Route.Type<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
   to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Type<R>, ParseIssue, R2>
 ): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>> {
-  return updateSchema(route, Schema.transformOrFail(toSchema, from, to))
+  return updateSchema(route, Schema.transformOrFail(toSchema, from, to)) as any
 })
 
 /**
  * @since 1.0.0
  */
 export const attachPropertySignature: {
-  <K extends string, V extends symbol | LiteralValue>(
+  <K extends string, V extends symbol | SchemaAST.LiteralValue>(
     key: K,
     value: V
   ): <R extends Route.Any>(route: R) => Route.UpdateSchema<
@@ -735,7 +757,7 @@ export const attachPropertySignature: {
     >
   >
 
-  <R extends Route.Any, K extends string, V extends symbol | LiteralValue>(
+  <R extends Route.Any, K extends string, V extends symbol | SchemaAST.LiteralValue>(
     route: R,
     key: K,
     value: V
@@ -750,7 +772,7 @@ export const attachPropertySignature: {
 } = dual(3, function attachPropertySignature<
   R extends Route.Any,
   K extends string,
-  V extends LiteralValue | symbol
+  V extends SchemaAST.LiteralValue | symbol
 >(route: R, key: K, value: V): Route.UpdateSchema<
   R,
   Schema.Schema<
