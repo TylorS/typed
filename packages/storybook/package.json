@@ -40,7 +40,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.15",
+    "@effect/schema": "^0.64.18",
     "@storybook/builder-vite": "^8.0.5",
     "@storybook/types": "^8.0.5",
     "@typed/async-data": "workspace:*",
@@ -57,6 +57,6 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "^2.4.15"
+    "effect": "^2.4.17"
   }
 }

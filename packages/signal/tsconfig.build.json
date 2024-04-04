@@ -13,19 +13,10 @@
   ],
   "references": [
     {
+      "path": "../async-data"
+    },
+    {
       "path": "../context"
-    },
-    {
-      "path": "../navigation"
-    },
-    {
-      "path": "../path"
-    },
-    {
-      "path": "../route"
-    },
-    {
-      "path": "../router"
     }
   ]
 }

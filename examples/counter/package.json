@@ -22,10 +22,10 @@
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "2.4.15"
+    "effect": "2.4.17"
   },
   "devDependencies": {
-    "vite": "^5.2.6",
+    "vite": "^5.2.8",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.3.2"
   }

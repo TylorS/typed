@@ -187,6 +187,18 @@
       "@typed/server/examples/*": [
         "packages/server/build/examples/*"
       ],
+      "@typed/signal": [
+        "packages/signal/build/esm/index.js"
+      ],
+      "@typed/signal/*": [
+        "packages/signal/build/esm/*"
+      ],
+      "@typed/signal/test/*": [
+        "packages/signal/build/test/*"
+      ],
+      "@typed/signal/examples/*": [
+        "packages/signal/build/examples/*"
+      ],
       "@typed/storybook": [
         "packages/storybook/build/esm/index.js"
       ],
@@ -355,6 +367,9 @@
     "packages/server/build/esm/**/*",
     "packages/server/build/test/**/*",
     "packages/server/build/examples/**/*",
+    "packages/signal/build/esm/**/*",
+    "packages/signal/build/test/**/*",
+    "packages/signal/build/examples/**/*",
     "packages/storybook/build/esm/**/*",
     "packages/storybook/build/test/**/*",
     "packages/storybook/build/examples/**/*",
