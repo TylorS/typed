@@ -1,0 +1,83 @@
+<svg fill="none" viewBox="0 0 150 72" width="150" height="72" xmlns="http://www.w3.org/2000/svg">
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <h1 class="typewriter"></h1>
+
+      <style>
+        .typewriter, .typewriter::after {
+            color: #fff;
+        }
+        .typewriter::after {
+          content: '';
+          white-space: nowrap;
+          /* Keeps the content on a single line */
+          border-right: 12px solid #03a062ff;
+          /* The typwriter cursor */
+          animation: typing 7.5s steps(100, end) infinite,
+            blink-caret 0.5s step-end infinite;
+          animation-delay: 0.5s;
+          font-size: 32px;
+          font-weight: 700;
+          height: 32px;
+          letter-spacing: 0.15rem;
+          font-family: 'Jetbrains Mono';
+        }
+
+        /* The typing effect */
+        @keyframes typing {
+
+          0%,
+          89%,
+          100% {
+            content: '';
+          }
+
+          5%,
+          86% {
+            content: 'T';
+          }
+
+          10%,
+          83% {
+            content: 'Ty';
+          }
+
+          15%,
+          80% {
+            content: 'Typ';
+          }
+
+          20%,
+          78% {
+            content: 'Type';
+          }
+
+          25%,
+          75% {
+            content: 'Typed';
+          }
+        }
+
+        /* The typewriter cursor effect */
+        @keyframes blink-caret {
+
+          from,
+          to {
+            border-color: #03a06200;
+          }
+
+          50% {
+            border-color: #03a062ff;
+          }
+        }
+        
+        @media(prefers-color-scheme: light) {
+          .typewriter::after {
+            color: #161616;
+          }
+        }
+      </style>
+      
+    </div>
+  </foreignObject>
+</svg>

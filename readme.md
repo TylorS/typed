@@ -1,4 +1,4 @@
-# Typed
+<img src="typed.svg" alt="css-in-readme">
 
 Typed is your Effect-native, push-based reactive programming toolkit with an emphasis on front-end web development and its supporting use-cases.
 
