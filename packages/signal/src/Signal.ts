@@ -1,16 +1,37 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
 import * as Context from "@typed/context"
-import type { Types } from "effect"
-import { Effect, Effectable, Scope } from "effect"
-import { Signals } from "./Signals.js"
+import type { Layer, Scope, Types } from "effect"
+import { Effect, Effectable } from "effect"
+import type { Cause } from "effect/Cause"
+import { constant, dual } from "effect/Function"
 import { hasProperty } from "effect/Predicate"
-import { constant } from "effect/Function"
-
-export const SignalTypeId = Symbol.for("@typed/signal/Signal")
-export type SignalTypeId = typeof SignalTypeId
+import type { ComputedTypeId } from "./internal/type-id.js"
+import { SignalTypeId } from "./internal/type-id.js"
+import { Signals } from "./Signals.js"
 
 export interface Signal<A, E = never, R = never> extends Effect.Effect<A, E | AsyncData.Loading, R> {
   readonly [SignalTypeId]: Signal.Variance<A, E, R>
+  /* Get is the effect interface */
+
+  // Sync modify
+  modify<B>(f: (a: A) => readonly [B, A]): Effect.Effect<B, E | AsyncData.Loading, R>
+  set(a: A): Effect.Effect<A, never, R>
+
+  // Effect modify
+  modifyEffect<B, E2, R2>(
+    f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
+  ): Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2>
+
+  // Underlying AsyncData state
+
+  data: Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+
+  runUpdates: <B, E2, R2>(
+    f: (params: {
+      get: Effect.Effect<AsyncData.AsyncData<A, E>>
+      set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
+    }) => Effect.Effect<B, E2, R2>
+  ) => Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2>
 }
 
 export namespace Signal {
@@ -22,11 +43,18 @@ export namespace Signal {
     readonly _R: Types.Covariant<R>
   }
 
-  export const TaggedSignalTypeId = Symbol.for("@typed/signal/Tagged")
-  export type TaggedSignalTypeId = typeof TaggedSignalTypeId
+  export type Context<T> = T extends Signal<infer _A, infer _E, infer R> ? R : never
 
-  export interface Tagged<I, A, E> extends Signal<A, E, I> { 
+  export type Error<T> = T extends Signal<infer _A, infer E, infer _R> ? E : never
+
+  export type Success<T> = T extends Signal<infer A, infer _E, infer _R> ? A : never
+
+  export interface Tagged<I, A, E> extends Signal<A, E, I> {
     readonly tag: Context.Tagged<I, Signal<A, E>>
+    readonly make: <R2>(initial: Effect.Effect<A, E, R2>) => Layer.Layer<I, never, R2 | Signals>
+    readonly provide: <R2>(initial: Effect.Effect<A, E, R2>) => <B, E2, R3>(
+      effect: Effect.Effect<B, E2, R3>
+    ) => Effect.Effect<B, E2, R2 | Signals | Exclude<R3, I>>
   }
 }
 
@@ -36,76 +64,212 @@ export function make<A, E, R>(
   return Signals.withEffect((signals) => signals.make(initial))
 }
 
-export function get<A, E, R>(signal: Signal<A, E, R>): Effect.Effect<A, E | AsyncData.Loading, R> {
+export function get<A, E, R>(signal: Signal<A, E, R> | Computed<A, E, R>): Effect.Effect<A, E | AsyncData.Loading, R> {
   return signal
 }
 
-export function getData<A, E, R>(signal: Signal<A, E, R>): Effect.Effect<AsyncData.AsyncData<A, E>, never, Signals | R> {
-  return Signals.withEffect((signals) => signals.getData(signal))
-}
+export const modify: {
+  <A, B>(f: (a: A) => readonly [B, A]): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, AsyncData.Loading | E, R>
 
-export function modify<A, E, R, B>(
+  <A, E, R, B>(signal: Signal<A, E, R>, f: (a: A) => readonly [B, A]): Effect.Effect<B, AsyncData.Loading | E, R>
+} = dual(2, function modify<A, E, R, B>(
   signal: Signal<A, E, R>,
   f: (a: A) => readonly [B, A]
-): Effect.Effect<B, E | AsyncData.Loading, R | Signals> {
-  return Signals.withEffect((signals) => signals.modify(signal, f))
-}
+): Effect.Effect<B, E | AsyncData.Loading, R> {
+  return signal.modify(f)
+})
 
-export function modifyEffect<A, E, R, B, E2, R2>(
+export const modifyEffect: {
+  <A, B, E2, R2>(
+    f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
+  ): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, E | E2 | AsyncData.Loading, R>
+
+  <A, E, R, B, E2, R2>(
+    signal: Signal<A, E, R>,
+    f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
+  ): Effect.Effect<B, AsyncData.Loading | E | E2, R | R2>
+} = dual(2, function modifyEffect<A, E, R, B, E2, R2>(
   signal: Signal<A, E, R>,
   f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
-): Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2 | Signals> {
-  return Signals.withEffect((signals) => signals.modifyEffect(signal, f))
+): Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2> {
+  return signal.modifyEffect(f)
+})
+
+export function data<A, E, R>(
+  signal: Signal<A, E, R>
+): Effect.Effect<AsyncData.AsyncData<A, E>, never, R> {
+  return signal.data
 }
 
-export function modifyData<A, E, R, B>(
-  signal: Signal<A, E, R>,
-  f: (data: AsyncData.AsyncData<E, A>) => readonly [B, AsyncData.AsyncData<E, A>]
-): Effect.Effect<B, never, R | Signals> {
-  return Signals.withEffect((signals) => signals.modifyData(signal, f))
-}
+export const runUpdates: {
+  <A, E, B, E2, R2>(
+    f: (
+      params: {
+        get: Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
+        set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
+      }
+    ) => Effect.Effect<B, E2, R2>
+  ): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, E | E2 | AsyncData.Loading, R>
 
-export function modifyDataEffect<A, E, R, B, E2, R2>(
+  <A, E, R, B, E2, R2>(
+    signal: Signal<A, E, R>,
+    f: (
+      params: {
+        get: Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
+        set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
+      }
+    ) => Effect.Effect<B, E2, R2>
+  ): Effect.Effect<B, AsyncData.Loading | E | E2, R | R2>
+} = dual(2, function runUpdates<A, E, R, B, E2, R2>(
   signal: Signal<A, E, R>,
-  f: (data: AsyncData.AsyncData<E, A>) => Effect.Effect<readonly [B, AsyncData.AsyncData<E, A>], E2, R2>
-): Effect.Effect<B, E2, R | R2 | Signals> {
-  return Signals.withEffect((signals) => signals.modifyDataEffect(signal, f))
-}
+  f: (params: {
+    get: Effect.Effect<AsyncData.AsyncData<A, E>>
+    set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
+  }) => Effect.Effect<B, E2, R2>
+): Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2> {
+  return signal.runUpdates(f)
+})
+
+export const update: {
+  <A>(f: (a: A) => A): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<A, AsyncData.Loading | E, R>
+  <A, E, R>(signal: Signal<A, E, R>, f: (a: A) => A): Effect.Effect<A, AsyncData.Loading | E, R>
+} = dual(2, function update<A, E, R>(
+  signal: Signal<A, E, R>,
+  f: (a: A) => A
+): Effect.Effect<A, E | AsyncData.Loading, R> {
+  return modify(signal, (a: A) => {
+    const a2 = f(a)
+    return [a2, a2]
+  })
+})
+
+export const updateEffect: {
+  <A, E2, R2>(
+    f: (a: A) => Effect.Effect<A, E2, R2>
+  ): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<A, AsyncData.Loading | E | E2, R | R2>
+  <A, E, R, E2, R2>(
+    signal: Signal<A, E, R>,
+    f: (a: A) => Effect.Effect<A, E2, R2>
+  ): Effect.Effect<A, AsyncData.Loading | E | E2, R | R2>
+} = dual(2, function updateEffect<A, E, R, E2, R2>(
+  signal: Signal<A, E, R>,
+  f: (a: A) => Effect.Effect<A, E2, R2>
+): Effect.Effect<A, E | E2 | AsyncData.Loading, R | R2> {
+  return modifyEffect(signal, (a: A) => Effect.map(f(a), (a2) => [a2, a2]))
+})
 
 export function isSignal(u: unknown): u is Signal.Any {
   return hasProperty(u, SignalTypeId)
 }
 
 export function isTaggedSignal(u: unknown): u is Signal.Tagged<any, any, any> {
-  return hasProperty(u, Signal.TaggedSignalTypeId)
+  return isSignal(u) && hasProperty(u, "tag") && hasProperty(u, "make")
 }
 
-export function tagged<A, E>(): {
+export function tagged<A, E = never>(): {
   <const I extends Context.IdentifierConstructor<any>>(
     identifier: (id: typeof Context.id) => I
   ): Signal.Tagged<Context.IdentifierOf<I>, A, E>
 
   <const I>(identifier: I): Signal.Tagged<Context.IdentifierOf<I>, A, E>
 } {
-  return <I extends Context.IdentifierInput<any>>(identifier: I): Signal.Tagged<I, A, E> =>
-    new TaggedSignal(identifier)
+  return <I extends Context.IdentifierInput<any>>(identifier: I): Signal.Tagged<I, A, E> => new TaggedSignal(identifier)
 }
 
 const Variance: Signal.Variance<any, any, any> = {
   _A: (_) => _,
   _E: (_) => _,
-  _R: (_) => _,
+  _R: (_) => _
 }
 
-class TaggedSignal<I, A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loading, I> implements Signal.Tagged<I, A, E> {
+class TaggedSignal<I, A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loading, I>
+  implements Signal.Tagged<I, A, E>
+{
   readonly [SignalTypeId]: Signal.Variance<A, E, I> = Variance
-  readonly [Signal.TaggedSignalTypeId] = Signal.TaggedSignalTypeId
   readonly tag: Context.Tagged<I, Signal<A, E>>
   readonly commit: () => Effect.Effect<A, E | AsyncData.Loading, I>
 
   constructor(identifier: Context.IdentifierInput<I>) {
     super()
     this.tag = Context.Tagged(identifier as any)
-    this.commit = constant(this.tag.withEffect(s => s))
+    this.commit = constant(Effect.flatten(this.tag))
+  }
+
+  modify<B>(f: (a: A) => readonly [B, A]) {
+    return this.tag.withEffect((signal) => signal.modify(f))
+  }
+
+  modifyEffect<B, E2, R2>(
+    f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
+  ) {
+    return this.tag.withEffect((signal) => signal.modifyEffect(f))
+  }
+
+  set(a: A): Effect.Effect<A, never, I> {
+    return this.tag.withEffect((signal) => signal.set(a))
+  }
+
+  get data() {
+    return this.tag.withEffect((signal) => signal.data)
+  }
+
+  runUpdates<B, E2, R2>(
+    f: (params: {
+      get: Effect.Effect<AsyncData.AsyncData<A, E>>
+      set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
+    }) => Effect.Effect<B, E2, R2>
+  ) {
+    return this.tag.withEffect((signal) => signal.runUpdates(f))
+  }
+
+  make<R2>(initial: Effect.Effect<A, E, R2>) {
+    return this.tag.scoped(make(initial))
+  }
+
+  provide<R2>(initial: Effect.Effect<A, E, R2>) {
+    return Effect.provide(this.make(initial))
   }
 }
+
+export interface Computed<A, E = never, R = never> extends Effect.Effect<A, E | AsyncData.Loading, R> {
+  readonly [ComputedTypeId]: Computed.Variance<A, E, R>
+  readonly priority: number
+}
+
+export namespace Computed {
+  export type Any = Computed<any, any, any>
+
+  export interface Variance<A, E, R> {
+    readonly _A: Types.Covariant<A>
+    readonly _E: Types.Covariant<E>
+    readonly _R: Types.Covariant<R>
+  }
+}
+
+export function compute<A, E, R>(
+  effect: Effect.Effect<A, E, R>,
+  options?: { readonly priority?: number }
+): Effect.Effect<Computed<A, E>, never, R | Signals | Scope.Scope> {
+  return Signals.withEffect((signals) => signals.compute(effect, options))
+}
+
+export const fail: {
+  <E>(e: E): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+
+  <A, E, R>(signal: Signal<A, E, R>, e: E): Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+} = dual(2, function fail<A, E, R>(signal: Signal<A, E, R>, e: E) {
+  return runUpdates(signal, ({ set }) => set(AsyncData.fail(e)))
+})
+
+export const failCause: {
+  <E>(
+    cause: Cause<E>
+  ): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+
+  <A, E, R>(
+    signal: Signal<A, E, R>,
+    cause: Cause<E>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+} = dual(2, function failCause<A, E, R>(signal: Signal<A, E, R>, cause: Cause<E>) {
+  return runUpdates(signal, ({ set }) => set(AsyncData.failCause(cause)))
+})

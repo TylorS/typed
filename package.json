@@ -78,5 +78,8 @@
     "vite-plugin-tsconfig-paths": "^1.4.1",
     "vitest": "1.4.0",
     "zx": "^7.2.3"
+  },
+  "dependencies": {
+    "@effect/vitest": "^0.2.6"
   }
 }
