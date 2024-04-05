@@ -365,10 +365,7 @@ function updateReadersAndWriters(signalsCtx: SignalsCtx, current: ComputedImpl<a
       signalsCtx.writers.set(signalsCtx.computing, writers)
     }
     writers.add(current)
-
-    if (signalsCtx.computing instanceof ComputedImpl) {
-      signalsCtx.computing.state.versions.set(current, current.state.version)
-    }
+    signalsCtx.computing.state.versions.set(current, current.state.version)
   }
 }
 
@@ -434,16 +431,10 @@ function updateComputedValue(
 ): Effect.Effect<any, never, Scope.Scope> {
   computed.state.scheduled = true
   return Effect.gen(function*(_) {
-    updateReadersAndWriters(signalsCtx, computed)
-
-    const prev = signalsCtx.computing
-    signalsCtx.computing = computed
-
     if (shouldInitComputedValue(signalsCtx, computed)) {
       yield* _(initComputedValue(computed))
     }
 
-    signalsCtx.computing = prev
     computed.state.scheduled = false
   })
 }
