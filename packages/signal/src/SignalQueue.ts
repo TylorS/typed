@@ -14,7 +14,7 @@ import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleC
 /**
  * @since 1.0.0
  */
-export const DEFAULT_PRIORITY = 10
+export const DEFAULT_PRIORITY = 20
 
 /**
  * The context in which templates are rendered within
@@ -62,6 +62,11 @@ export const unsafeMakeMicrotaskSignalQueue = (scope: Scope.Scope): SignalQueue 
 /**
  * @since 1.0.0
  */
+export const unsafeMakeMacrotaskSignalQueue = (scope: Scope.Scope): SignalQueue => new MacroTaskImpl(scope)
+
+/**
+ * @since 1.0.0
+ */
 export const unsafeMakeSyncSignalQueue = (): SignalQueue => new SyncImpl()
 
 /**
@@ -89,10 +94,22 @@ export const microtaskQueue: Layer.Layer<SignalQueue> = SignalQueue.scoped(
 /**
  * @since 1.0.0
  */
+export const macrotaskQueue: Layer.Layer<SignalQueue> = SignalQueue.scoped(
+  Effect.scopeWith((scope) => Effect.succeed(unsafeMakeMacrotaskSignalQueue(scope)))
+)
+
+/**
+ * @since 1.0.0
+ */
 export const syncQueue: Layer.Layer<SignalQueue> = SignalQueue.layer(Effect.sync(unsafeMakeSyncSignalQueue))
 
-const MICRO_TASK_END = DEFAULT_PRIORITY - 1
-const RAF_END = DEFAULT_PRIORITY + 9
+const SCALE = 10
+
+const MACRO_TASK_END = DEFAULT_PRIORITY - 1
+const MACRO_TASK_START = MACRO_TASK_END - (SCALE - 1)
+const MICRO_TASK_END = MACRO_TASK_END - SCALE
+const MICRO_TASK_START = MICRO_TASK_END - (SCALE - 1)
+const RAF_END = DEFAULT_PRIORITY + (SCALE - 1)
 const IDLE_START = RAF_END + 1
 
 /**
@@ -100,11 +117,43 @@ const IDLE_START = RAF_END + 1
  */
 export const mixedQueue = (options?: IdleRequestOptions): Layer.Layer<SignalQueue> =>
   SignalQueue.scoped(Effect.scopeWith((scope) => {
+    // Test for support of various scheduling APIs
+    const supportsMicrotask = typeof globalThis.queueMicrotask === "function"
+    const supportsIdle = typeof globalThis.requestIdleCallback === "function"
+    const supportsRaf = typeof globalThis.requestAnimationFrame === "function"
+
+    // we assume setTimeout and clearTimeout are always available
+    // so if we don't have support for others, this will be the fallback
+    // and priority ranges will be computed accordingly. We do this
+    // to ensure there are not multiple competing setTimouts as fallbacks
+    // within each implementation of SingalQueue causing unnecessary
+    // work and making it difficult to reason about the order of execution.
+    let macroTaskStart = MACRO_TASK_START
+    let macroTaskEnd = MACRO_TASK_END
+    let rafEnd = RAF_END
+
+    // if we don't support microtask, expand the macro task range
+    // to include the microtask range
+    if (!supportsMicrotask) {
+      macroTaskStart = MICRO_TASK_START
+    }
+
+    // if we don't support idle, set the raf end to include the idle range
+    if (!supportsIdle) {
+      rafEnd = Number.MAX_SAFE_INTEGER
+    }
+
+    // if we don't support raf, set the macro task end to include the raf range
+    if (!supportsRaf) {
+      macroTaskEnd = rafEnd
+    }
+
     const queues: Array<readonly [priorityRange: readonly [number, number], SignalQueue]> = [
       [[-1, -1], new SyncImpl()],
-      [[0, MICRO_TASK_END], new MicroTaskImpl(scope)],
-      [[DEFAULT_PRIORITY, RAF_END], new RafImpl(scope)],
-      [[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, options)]
+      ...(supportsMicrotask ? [[[MICRO_TASK_START, MICRO_TASK_END], new MicroTaskImpl(scope)] as const] : []),
+      [[macroTaskStart, macroTaskEnd], new MacroTaskImpl(scope)],
+      ...(supportsRaf ? [[[DEFAULT_PRIORITY, rafEnd], new RafImpl(scope)] as const] : []),
+      ...(supportsIdle ? [[[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, options)] as const] : [])
     ]
 
     return Effect.succeed(new MixedImpl(queues))
@@ -120,6 +169,11 @@ export const Priority = {
    * Priority.MicroTask(0-9)
    */
   MicroTask: (priority: number) => Math.min(Math.max(0, priority), MICRO_TASK_END),
+  /**
+   * @example
+   * Priority.MacroTask(0-9)
+   */
+  MacroTask: (priority: number) => Math.min(Math.max(MACRO_TASK_START, MACRO_TASK_START + priority), MACRO_TASK_END),
   /**
    * @example
    * Priority.Raf(0-9)
@@ -314,6 +368,31 @@ class MicroTaskImpl extends BaseImpl implements SignalQueue {
     return Effect.sync(() => {
       this.scheduled = false
       id && this._clear(id)
+    })
+  })
+
+  private runAllTasks = Effect.gen(this, function*(_) {
+    const iterator = this.queue.entries()
+    while (yield* _(this.runTasks(iterator))) {
+      // Continue
+    }
+
+    this.scheduled = false
+  })
+}
+
+class MacroTaskImpl extends BaseImpl implements SignalQueue {
+  constructor(
+    readonly scope: Scope.Scope
+  ) {
+    super(scope)
+  }
+
+  run: Effect.Effect<void> = Effect.async((cb) => {
+    const id = setTimeout(() => cb(this.runAllTasks))
+    return Effect.sync(() => {
+      this.scheduled = false
+      id && clearTimeout(id)
     })
   })
 
