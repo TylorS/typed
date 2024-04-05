@@ -276,7 +276,7 @@ function getComputedValue(
     } else {
       return Effect.ensuring(computed.state.value as Effect.Effect<any, any>, reset)
     }
-  }) // Seems like bad inference of the context because of all the any types :-(
+  })
 }
 
 function shouldInitComputedValue(
