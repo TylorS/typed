@@ -1,11 +1,11 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
 import { get, Tagged } from "@typed/context"
-import { Effect, Effectable, Scope } from "effect"
+import { Effect, Effectable, ExecutionStrategy, Exit, Scope } from "effect"
 import * as Fiber from "effect/Fiber"
 import { constant } from "effect/Function"
 import { type Computed, type Signal } from "../Signal"
 import type { SignalTask } from "../SignalQueue"
-import { SignalQueue } from "../SignalQueue"
+import { DEFAULT_PRIORITY, SignalQueue } from "../SignalQueue"
 import type { Signals } from "../Signals"
 import { ComputedTypeId, SignalTypeId } from "./type-id"
 
@@ -17,7 +17,7 @@ type SignalsCtx = {
   options: SignalsOptions
   readers: Map<SignalImpl<any, any> | ComputedImpl<any, any, any>, Set<ComputedImpl<any, any, any>>>
   writers: Map<
-    SignalImpl<any, any> | ComputedImpl<any, any, any>,
+    ComputedImpl<any, any, any>,
     Set<ComputedImpl<any, any, any> | SignalImpl<any, any>>
   >
 }
@@ -40,6 +40,7 @@ type ComputedState = {
   version: number
   versions: Map<SignalImpl<any, any> | ComputedImpl<any, any, any>, number>
   scheduled: boolean
+  innerScope: Scope.CloseableScope | null
 }
 
 export type SignalsOptions = {
@@ -87,6 +88,10 @@ function makeSignal<A, E, R>(
       scheduled: false
     }
 
+    if (!AsyncData.isNoData(signalState.value)) {
+      signalState.version = 1
+    }
+
     return new SignalImpl<A, E>(signalsCtx, signalState)
   })
 }
@@ -95,7 +100,7 @@ function makeSignal<A, E, R>(
 function initialFromEffect<A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): AsyncData.AsyncData<E, A> {
-  const tag = (effect as any)._tag
+  const tag = (effect as any)._tag || (effect as any)._op
 
   switch (tag) {
     case "Success":
@@ -108,6 +113,8 @@ function initialFromEffect<A, E, R>(
       return AsyncData.success((effect as any).right)
     case "Some":
       return AsyncData.success((effect as any).value)
+    case "Sync":
+      return AsyncData.success((effect as any).effect_instruction_i0())
     default:
       return AsyncData.noData()
   }
@@ -139,7 +146,7 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
     return this.state.lock(Effect.gen(this, function*(_) {
       const value = yield* _(this._get)
       const [b, a] = f(value)
-      yield* _(setValue(this.signals, this, AsyncData.success(a)))
+      yield* _(setValue(this, AsyncData.success(a)))
       return b
     }))
   }
@@ -150,13 +157,13 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
     return this.state.lock(Effect.gen(this, function*(_) {
       const value = yield* _(this._get)
       const [b, a] = yield* _(f(value))
-      yield* _(setValue(this.signals, this, AsyncData.success(a)))
+      yield* _(setValue(this, AsyncData.success(a)))
       return b
     }))
   }
 
   set(a: A): Effect.Effect<A> {
-    return this.state.lock(Effect.as(setValue(this.signals, this, AsyncData.success(a)), a))
+    return this.state.lock(Effect.as(setValue(this, AsyncData.success(a)), a))
   }
 
   runUpdates<B, E2, R2>(
@@ -165,10 +172,16 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
       set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
     }) => Effect.Effect<B, E2, R2>
   ): Effect.Effect<B, E | E2 | AsyncData.Loading, R2> {
-    return this.state.lock(f({
-      get: this.data,
-      set: (a) => Effect.as(setValue(this.signals, this, AsyncData.success(a)), a)
-    }))
+    return Effect.flatMap(
+      this.data,
+      () =>
+        this.state.lock(
+          f({
+            get: this.data,
+            set: (a) => Effect.as(setValue(this, AsyncData.success(a)), a)
+          })
+        )
+    )
   }
 }
 
@@ -180,12 +193,13 @@ function makeComputed<A, E>(
 ): Computed<A, E> {
   const computedState: ComputedState = {
     effect,
-    priority: options?.priority ?? 0,
+    priority: options?.priority ?? DEFAULT_PRIORITY,
     value: AsyncData.noData(),
     version: -1,
     versions: new Map(),
     scope,
-    scheduled: false
+    scheduled: false,
+    innerScope: null
   }
 
   return new ComputedImpl<A, E, never>(signalsCtx, computedState)
@@ -204,13 +218,13 @@ function getSignalValue(
       return current.value
     } else if (AsyncData.isNoData(current)) {
       const loading = AsyncData.loading()
-      yield* _(setValue(signalsCtx, signal, loading))
+      yield* _(setValue(signal, loading))
 
       signal.state.fiber = yield* _(
         signal.state.initial,
         Effect.onExit((exit) => {
           signal.state.fiber = null
-          return setValue(signalsCtx, signal, AsyncData.fromExit(exit))
+          return setValue(signal, AsyncData.fromExit(exit))
         }),
         Effect.forkIn(signal.state.scope),
         Effect.interruptible
@@ -258,7 +272,7 @@ function getComputedValue(
   signalsCtx: SignalsCtx,
   computed: ComputedImpl<any, any, any>
 ): Effect.Effect<any, any> {
-  return Effect.suspend(() => {
+  return Effect.gen(function*(_) {
     updateReadersAndWriters(signalsCtx, computed)
 
     const prev = signalsCtx.computing
@@ -269,12 +283,14 @@ function getComputedValue(
     })
 
     if (shouldInitComputedValue(signalsCtx, computed)) {
-      return initComputedValue(signalsCtx, computed).pipe(
-        (_) => Effect.flatten<any, any, never, any, never>(_ as Effect.Effect<any, any>),
-        Effect.ensuring(reset)
+      return yield* _(
+        initComputedValue(computed).pipe(
+          (_) => Effect.flatten(_ as any as Effect.Effect<Exit.Exit<any, any>, any>),
+          Effect.ensuring(reset)
+        )
       )
     } else {
-      return Effect.ensuring(computed.state.value as Effect.Effect<any, any>, reset)
+      return yield* _(Effect.ensuring(computed.state.value as any as Exit.Exit<any, any>, reset))
     }
   })
 }
@@ -285,41 +301,50 @@ function shouldInitComputedValue(
 ): boolean {
   if (computed.state.value._tag === "NoData") return true
 
+  let shouldRecompute = false
+
   // If any of the dependencies have changed, we need to recompute
   const dependencies = signalsCtx.writers.get(computed)
   if (dependencies) {
     for (const dep of dependencies) {
-      if (!computed.state.versions.has(dep)) return true
-      const version = computed.state.versions.get(dep)!
-      const depVersion = dep.state.version
-      if (version !== depVersion) return true
+      if (computed.state.versions.has(dep)) {
+        const version = computed.state.versions.get(dep)!
+        const depVersion = dep.state.version
+        if (version !== depVersion) {
+          shouldRecompute = true
+        }
+        computed.state.versions.set(dep, depVersion)
+      } else {
+        shouldRecompute = true
+      }
     }
   }
 
-  return false
+  return shouldRecompute
 }
 
 function initComputedValue(
-  signalsCtx: SignalsCtx,
   computed: ComputedImpl<any, any, any>
 ): Effect.Effect<AsyncData.AsyncData<any, any>> {
   return Effect.gen(function*(_) {
     const loading = AsyncData.loading()
 
-    yield* _(setValue(signalsCtx, computed, loading))
+    yield* _(setValue(computed, loading))
 
-    const exit = yield* _(computed.state.effect, Effect.exit)
+    // If there's a previously existing inner scope, we need to close it
+    // This enables Computed values to be of Fibers and other resources which use Scope
+    // to manage their resources
+    if (computed.state.innerScope) {
+      const fiberId = yield* _(Effect.fiberId)
+      yield* _(Scope.close(computed.state.innerScope, Exit.interrupt(fiberId)))
+    }
+    const innerScope = computed.state.innerScope = yield* _(
+      Scope.fork(computed.state.scope, ExecutionStrategy.sequential)
+    )
+    const exit = yield* _(computed.state.effect, Effect.provideService(Scope.Scope, innerScope), Effect.exit)
     const data = AsyncData.fromExit(exit)
 
-    yield* _(setValue(signalsCtx, computed, data))
-
-    // Keep track of the current version that computed is written from
-    const writers = signalsCtx.writers.get(computed)
-    if (writers !== undefined) {
-      for (const dep of writers) {
-        computed.state.versions.set(dep, dep.state.version)
-      }
-    }
+    yield* _(setValue(computed, data))
 
     return data
   })
@@ -340,31 +365,14 @@ function updateReadersAndWriters(signalsCtx: SignalsCtx, current: ComputedImpl<a
       signalsCtx.writers.set(signalsCtx.computing, writers)
     }
     writers.add(current)
+
+    if (signalsCtx.computing instanceof ComputedImpl) {
+      signalsCtx.computing.state.versions.set(current, current.state.version)
+    }
   }
 }
 
-function updateComputedValue(
-  signalsCtx: SignalsCtx,
-  computed: ComputedImpl<any, any, any>
-): Effect.Effect<any, never, Scope.Scope> {
-  return Effect.gen(function*(_) {
-    updateReadersAndWriters(signalsCtx, computed)
-
-    const prev = signalsCtx.computing
-    signalsCtx.computing = computed
-
-    const value = shouldInitComputedValue(signalsCtx, computed)
-      ? yield* _(initComputedValue(signalsCtx, computed))
-      : computed.state.value
-
-    signalsCtx.computing = prev
-
-    return value
-  })
-}
-
 function setValue(
-  signalsCtx: SignalsCtx,
   current: ComputedImpl<any, any, any> | SignalImpl<any, any>,
   value: AsyncData.AsyncData<any, any>
 ): Effect.Effect<void> {
@@ -374,28 +382,40 @@ function setValue(
     current.state.value = value
     current.state.version++
 
-    // Ensure only one update is scheduled at a time
-    if (current.state.scheduled) return
-
-    const readers = signalsCtx.readers.get(current)
-
-    if (readers !== undefined) {
-      current.state.scheduled = true
-
+    if (current.signals.readers.has(current)) {
       yield* _(
         Effect.forEach(
-          readers,
+          depthFirstReaders(current),
           (reader) =>
-            signalsCtx.queue.add(updateComputedTask(signalsCtx, reader), reader.priority).pipe(
-              Effect.provideService(Scope.Scope, reader.state.scope)
+            reader.state.scheduled ? Effect.unit : Effect.provideService(
+              current.signals.queue.add(updateComputedTask(current.signals, reader), reader.priority),
+              Scope.Scope,
+              reader.state.scope
             )
-        ),
-        Effect.ensuring(Effect.sync(() => {
-          current.state.scheduled = false
-        }))
+        )
       )
     }
   })
+}
+
+function depthFirstReaders(
+  current: ComputedImpl<any, any, any> | SignalImpl<any, any>
+): Set<ComputedImpl<any, any, any>> {
+  const visited = new Set<ComputedImpl<any, any, any>>()
+
+  const toProcess = [...current.signals.readers.get(current) ?? []]
+  while (toProcess.length > 0) {
+    const reader = toProcess.shift()!
+    if (visited.has(reader) || reader.state.scheduled) continue
+    visited.add(reader)
+
+    const readers = current.signals.readers.get(reader)
+    if (readers !== undefined) {
+      toProcess.push(...readers)
+    }
+  }
+
+  return visited
 }
 
 function updateComputedTask(
@@ -406,4 +426,24 @@ function updateComputedTask(
     key: computed,
     task: Effect.provideService(updateComputedValue(signalsCtx, computed), Scope.Scope, computed.state.scope)
   }
+}
+
+function updateComputedValue(
+  signalsCtx: SignalsCtx,
+  computed: ComputedImpl<any, any, any>
+): Effect.Effect<any, never, Scope.Scope> {
+  computed.state.scheduled = true
+  return Effect.gen(function*(_) {
+    updateReadersAndWriters(signalsCtx, computed)
+
+    const prev = signalsCtx.computing
+    signalsCtx.computing = computed
+
+    if (shouldInitComputedValue(signalsCtx, computed)) {
+      yield* _(initComputedValue(computed))
+    }
+
+    signalsCtx.computing = prev
+    computed.state.scheduled = false
+  })
 }
