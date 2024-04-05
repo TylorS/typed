@@ -1,4 +1,3 @@
-import type * as AsyncData from "@typed/async-data/AsyncData"
 import type { Effect } from "effect"
 import { Effectable } from "effect"
 import { constant } from "effect/Function"
@@ -13,13 +12,11 @@ const ComputedVariance: Computed.Variance<any, any, never> = {
   _R: (_) => _
 }
 
-export class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E | AsyncData.Loading, R | Signals>
-  implements Computed<A, E, R>
-{
+export class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R | Signals> implements Computed<A, E, R> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, R> = ComputedVariance
 
-  readonly get: Effect.Effect<A, E | AsyncData.Loading, R | Signals>
-  readonly commit: () => Effect.Effect<A, E | AsyncData.Loading, R | Signals>
+  readonly get: Effect.Effect<A, E, R | Signals>
+  readonly commit: () => Effect.Effect<A, E, R | Signals>
 
   constructor(
     readonly effect: Effect.Effect<A, E, R>,

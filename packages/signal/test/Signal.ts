@@ -175,4 +175,17 @@ describe("Signal", () => {
       Effect.provide(Signal.mixedQueue()),
       Effect.scoped
     ))
+
+  it.effect("allows recovering from errors", () =>
+    Effect.gen(function*(_) {
+      const count = yield* _(Signal.make<number, string>(Effect.fail("error")))
+      const double = count.pipe(
+        Signal.map((x) => x * 2),
+        Signal.catchAll(() => Effect.succeed(0))
+      )
+
+      expect(yield* _(double)).toEqual(0)
+      yield* _(count.set(1))
+      expect(yield* _(double)).toEqual(2)
+    }).pipe(provideEnv))
 })

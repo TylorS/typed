@@ -6,11 +6,15 @@ import type { Cause } from "effect/Cause"
 import { constant, dual } from "effect/Function"
 import { hasProperty } from "effect/Predicate"
 import type { Concurrency } from "effect/Types"
+import { unify } from "effect/Unify"
 import { ComputedImpl } from "./internal/computed.js"
 import type { ComputedTypeId } from "./internal/type-id.js"
 import { SignalTypeId } from "./internal/type-id.js"
 import { Signals } from "./Signals.js"
 
+/**
+ * @since 1.0.0
+ */
 export interface Signal<A, E = never, R = never> extends Effect.Effect<A, E | AsyncData.Loading, R> {
   readonly [SignalTypeId]: Signal.Variance<A, E, R>
   /* Get is the effect interface */
@@ -36,21 +40,42 @@ export interface Signal<A, E = never, R = never> extends Effect.Effect<A, E | As
   ) => Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2>
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Signal {
+  /**
+   * @since 1.0.0
+   */
   export type Any = Signal<any, any, any>
 
+  /**
+   * @since 1.0.0
+   */
   export interface Variance<A, E, R> {
     readonly _A: Types.Invariant<A>
     readonly _E: Types.Invariant<E>
     readonly _R: Types.Covariant<R>
   }
 
+  /**
+   * @since 1.0.0
+   */
   export type Context<T> = T extends Signal<infer _A, infer _E, infer R> ? R : never
 
+  /**
+   * @since 1.0.0
+   */
   export type Error<T> = T extends Signal<infer _A, infer E, infer _R> ? E : never
 
+  /**
+   * @since 1.0.0
+   */
   export type Success<T> = T extends Signal<infer A, infer _E, infer _R> ? A : never
 
+  /**
+   * @since 1.0.0
+   */
   export interface Tagged<I, A, E> extends Signal<A, E, I> {
     readonly tag: Context.Tagged<I, Signal<A, E>>
     readonly make: <R2>(initial: Effect.Effect<A, E, R2>) => Layer.Layer<I, never, R2 | Signals>
@@ -60,12 +85,18 @@ export namespace Signal {
   }
 }
 
-export function make<A, E, R>(
+/**
+ * @since 1.0.0
+ */
+export function make<A, E = never, R = never>(
   initial: Effect.Effect<A, E, R>
 ): Effect.Effect<Signal<A, E>, never, R | Scope.Scope | Signals> {
   return Signals.withEffect((signals) => signals.make(initial))
 }
 
+/**
+ * @since 1.0.0
+ */
 export const modify: {
   <A, B>(f: (a: A) => readonly [B, A]): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, AsyncData.Loading | E, R>
 
@@ -77,6 +108,9 @@ export const modify: {
   return signal.modify(f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const modifyEffect: {
   <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
@@ -93,12 +127,18 @@ export const modifyEffect: {
   return signal.modifyEffect(f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export function data<A, E, R>(
   signal: Signal<A, E, R>
 ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R> {
   return signal.data
 }
 
+/**
+ * @since 1.0.0
+ */
 export const runUpdates: {
   <A, E, B, E2, R2>(
     f: (
@@ -128,6 +168,9 @@ export const runUpdates: {
   return signal.runUpdates(f)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const update: {
   <A>(f: (a: A) => A): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<A, AsyncData.Loading | E, R>
   <A, E, R>(signal: Signal<A, E, R>, f: (a: A) => A): Effect.Effect<A, AsyncData.Loading | E, R>
@@ -141,6 +184,9 @@ export const update: {
   })
 })
 
+/**
+ * @since 1.0.0
+ */
 export const updateEffect: {
   <A, E2, R2>(
     f: (a: A) => Effect.Effect<A, E2, R2>
@@ -156,14 +202,23 @@ export const updateEffect: {
   return modifyEffect(signal, (a: A) => Effect.map(f(a), (a2) => [a2, a2]))
 })
 
+/**
+ * @since 1.0.0
+ */
 export function isSignal(u: unknown): u is Signal.Any {
   return hasProperty(u, SignalTypeId)
 }
 
+/**
+ * @since 1.0.0
+ */
 export function isTaggedSignal(u: unknown): u is Signal.Tagged<any, any, any> {
   return isSignal(u) && hasProperty(u, "tag") && hasProperty(u, "make")
 }
 
+/**
+ * @since 1.0.0
+ */
 export function tagged<A, E = never>(): {
   <const I extends Context.IdentifierConstructor<any>>(
     identifier: (id: typeof Context.id) => I
@@ -229,15 +284,27 @@ class TaggedSignal<I, A, E> extends Effectable.StructuralClass<A, E | AsyncData.
   }
 }
 
-export interface Computed<A, E = never, R = never> extends Effect.Effect<A, E | AsyncData.Loading, R | Signals> {
+/**
+ * @since 1.0.0
+ */
+export interface Computed<A, E = never, R = never> extends Effect.Effect<A, E, R | Signals> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, R>
   readonly effect: Effect.Effect<A, E, R>
   readonly priority: number
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace Computed {
+  /**
+   * @since 1.0.0
+   */
   export type Any = Computed<any, any, any>
 
+  /**
+   * @since 1.0.0
+   */
   export interface Variance<A, E, R> {
     readonly _A: Types.Covariant<A>
     readonly _E: Types.Covariant<E>
@@ -245,17 +312,26 @@ export namespace Computed {
   }
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface ComputedOptions {
   readonly priority: number
 }
 
+/**
+ * @since 1.0.0
+ */
 export function compute<A, E, R>(
   effect: Effect.Effect<A, E, R>,
   options?: Partial<ComputedOptions>
-): Computed<A, Exclude<E, AsyncData.Loading>, Exclude<R, Signals>> {
+): Computed<A, E, Exclude<R, Signals>> {
   return new ComputedImpl(effect, options?.priority) as any
 }
 
+/**
+ * @since 1.0.0
+ */
 export const fail: {
   <E>(e: E): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
 
@@ -264,6 +340,9 @@ export const fail: {
   return runUpdates(signal, ({ set }) => set(AsyncData.fail(e)))
 })
 
+/**
+ * @since 1.0.0
+ */
 export const failCause: {
   <E>(
     cause: Cause<E>
@@ -277,6 +356,9 @@ export const failCause: {
   return runUpdates(signal, ({ set }) => set(AsyncData.failCause(cause)))
 })
 
+/**
+ * @since 1.0.0
+ */
 export function launch<A, E, R>(
   computed: Computed<A, E, R>
 ): Effect.Effect<never, never, R | Signals> {
@@ -285,27 +367,33 @@ export function launch<A, E, R>(
 
 const isEffectDataFirst = (args: IArguments) => Effect.isEffect(args[0])
 
+/**
+ * @since 1.0.0
+ */
 export const map: {
   <A, B>(
     f: (a: A) => B,
     options?: Partial<ComputedOptions>
   ): <E, R>(
     effect: Effect.Effect<A, E, R>
-  ) => Computed<B, Exclude<E, AsyncData.Loading>, Exclude<R, Signals>>
+  ) => Computed<B, E, Exclude<R, Signals>>
 
   <A, E, R, B>(
     effect: Effect.Effect<A, E, R>,
     f: (a: NoInfer<A>) => B,
     options?: Partial<ComputedOptions>
-  ): Computed<B, Exclude<E, AsyncData.Loading>, Exclude<R, Signals>>
+  ): Computed<B, E, Exclude<R, Signals>>
 } = dual(isEffectDataFirst, function map<A, E, R, B>(
   effect: Effect.Effect<A, E, R>,
   f: (a: A) => B,
   options?: Partial<ComputedOptions>
-): Computed<B, Exclude<E, AsyncData.Loading>, Exclude<R, Signals>> {
+): Computed<B, E, Exclude<R, Signals>> {
   return compute(Effect.map(effect, f), options)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const mapEffect: {
   <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<B, E2, R2>,
@@ -329,6 +417,9 @@ export const mapEffect: {
 
 const is2EffectDataFirst = (args: IArguments) => Effect.isEffect(args[0]) && Effect.isEffect(args[1])
 
+/**
+ * @since 1.0.0
+ */
 export const zipWith: {
   <A, B, E2, R2, C>(
     signalB: Effect.Effect<B, E2, R2>,
@@ -336,7 +427,7 @@ export const zipWith: {
     options?: Partial<ComputedOptions>
   ): <E, R>(signalA: Effect.Effect<A, E, R>) => Computed<
     C,
-    Exclude<E | E2, AsyncData.Loading>,
+    E | E2,
     Exclude<R | R2, Signals>
   >
 
@@ -347,7 +438,7 @@ export const zipWith: {
     options?: Partial<ComputedOptions>
   ): Computed<
     C,
-    Exclude<E | E2, AsyncData.Loading>,
+    E | E2,
     Exclude<R | R2, Signals>
   >
 } = dual(is2EffectDataFirst, function zipWith<A, E, R, B, E2, R2, C>(
@@ -355,17 +446,20 @@ export const zipWith: {
   signalB: Effect.Effect<B, E2, R2>,
   f: (a: A, b: B) => C,
   options?: Partial<ComputedOptions>
-): Computed<C, Exclude<E | E2, AsyncData.Loading>, Exclude<R | R2, Signals>> {
+): Computed<C, E | E2, Exclude<R | R2, Signals>> {
   return compute(Effect.zipWith(signalA, signalB, f), options)
 })
 
+/**
+ * @since 1.0.0
+ */
 export const zip: {
   <A, B, E2, R2>(
     signalB: Effect.Effect<B, E2, R2>,
     options?: Partial<ComputedOptions>
   ): <E, R>(signalA: Effect.Effect<A, E, R>) => Computed<
     readonly [A, B],
-    Exclude<E | E2, AsyncData.Loading>,
+    E | E2,
     Exclude<R | R2, Signals>
   >
 
@@ -373,15 +467,18 @@ export const zip: {
     signalA: Effect.Effect<A, E, R>,
     signalB: Effect.Effect<B, E2, R2>,
     options?: Partial<ComputedOptions>
-  ): Computed<readonly [A, B], Exclude<E | E2, AsyncData.Loading>, Exclude<R | R2, Signals>>
+  ): Computed<readonly [A, B], E | E2, Exclude<R | R2, Signals>>
 } = dual(is2EffectDataFirst, function zip<A, E, R, B, E2, R2>(
   signalA: Effect.Effect<A, E, R>,
   signalB: Effect.Effect<B, E2, R2>,
   options?: Partial<ComputedOptions>
-): Computed<readonly [A, B], Exclude<E | E2, AsyncData.Loading>, Exclude<R | R2, Signals>> {
+): Computed<readonly [A, B], E | E2, Exclude<R | R2, Signals>> {
   return compute(Effect.zip(signalA, signalB), options)
 })
 
+/**
+ * @since 1.0.0
+ */
 export function all<
   const Arg extends Iterable<Effect.Effect<any, any, any>> | Record<string, Effect.Effect<any, any, any>>,
   O extends {
@@ -392,8 +489,199 @@ export function all<
   } & Partial<ComputedOptions>
 >(arg: Arg, options?: O): Computed<
   Effect.Effect.Success<Effect.All.Return<Arg, O>>,
-  Exclude<Effect.Effect.Error<Effect.All.Return<Arg, O>>, AsyncData.Loading>,
+  Effect.Effect.Error<Effect.All.Return<Arg, O>>,
   Exclude<Effect.Effect.Context<Effect.All.Return<Arg, O>>, Signals>
 > {
   return compute(Effect.all(arg, options) as any, options) as any
 }
+
+/**
+ * Recovers from all causes
+ *
+ * @since 1.0.0
+ * @category error handling
+ */
+export const catchAllCause: {
+  <E, B, E2, R2>(
+    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): <A, R>(signal: Effect.Effect<A, E, R>) => Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
+
+  <A, E, R, B, E2, R2>(
+    signal: Effect.Effect<A, E, R>,
+    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
+} = dual(isEffectDataFirst, function catchAllCause<A, E, R, B, E2, R2>(
+  signal: Effect.Effect<A, E, R>,
+  f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
+  options?: Partial<ComputedOptions>
+): Computed<A | B, E2, Exclude<R | R2, Signals>> {
+  return compute(Effect.catchAllCause(signal, f), options)
+})
+
+/**
+ * Recovers from all errors
+ *
+ * @since 1.0.0
+ * @category error handling
+ */
+export const catchAll: {
+  <E, B, E2, R2>(
+    f: (error: E) => Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): <A, R>(signal: Effect.Effect<A, E, R>) => Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
+
+  <A, E, R, B, E2, R2>(
+    signal: Effect.Effect<A, E, R>,
+    f: (error: E) => Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
+} = dual(isEffectDataFirst, function catchAll<A, E, R, B, E2, R2>(
+  signal: Effect.Effect<A, E, R>,
+  f: (error: E) => Effect.Effect<B, E2, R2>,
+  options?: Partial<ComputedOptions>
+): Computed<A | B, E2, Exclude<R | R2, Signals>> {
+  return compute(Effect.catchAll(signal, f), options)
+})
+
+/**
+ * Recovers from the specified tagged error.
+ *
+ * @since 1.0.0
+ * @category error handling
+ */
+export const catchTag: {
+  <K extends E extends { _tag: string } ? E["_tag"] : never, E, A1, E1, R1>(
+    k: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
+  ): <A, R>(
+    self: Effect.Effect<A, E, R>
+  ) => Computed<A1 | A, Exclude<E1 | Exclude<E, { _tag: K }>, AsyncData.Loading>, Exclude<R1 | R, Signals>>
+  <A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
+    self: Effect.Effect<A, E, R>,
+    k: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
+  ): Computed<A | A1, Exclude<E1 | Exclude<E, { _tag: K }>, AsyncData.Loading>, Exclude<R | R1, Signals>>
+} = dual(
+  isEffectDataFirst,
+  function catchTag<A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
+    self: Effect.Effect<A, E, R>,
+    k: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>,
+    options?: Partial<ComputedOptions>
+  ) {
+    return compute(Effect.catchTag(self, k, f), options)
+  }
+)
+
+/**
+ * Recovers from the specified tagged errors.
+ *
+ * @since 1.0.0
+ * @category error handling
+ */
+export const catchTags: {
+  <
+    E,
+    Cases extends
+      & {
+        [K in Extract<E, { _tag: string }>["_tag"]]+?:
+          ((error: Extract<E, { _tag: K }>) => Effect.Effect<any, any, any>)
+      }
+      & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
+  >(
+    cases: Cases,
+    options?: Partial<ComputedOptions>
+  ): <A, R>(
+    self: Effect.Effect<A, E, R>
+  ) => Computed<
+    | A
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<infer A, any, any> ? A : never
+    }[keyof Cases],
+    | Exclude<E, { _tag: keyof Cases }>
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
+    }[keyof Cases],
+    | R
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
+    }[keyof Cases]
+  >
+  <
+    R,
+    E,
+    A,
+    Cases extends
+      & {
+        [K in Extract<E, { _tag: string }>["_tag"]]+?:
+          ((error: Extract<E, { _tag: K }>) => Effect.Effect<any, any, any>)
+      }
+      & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
+  >(
+    self: Effect.Effect<A, E, R>,
+    cases: Cases,
+    options?: Partial<ComputedOptions>
+  ): Computed<
+    | A
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<infer A, any, any> ? A : never
+    }[keyof Cases],
+    | Exclude<E, { _tag: keyof Cases }>
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
+    }[keyof Cases],
+    | R
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
+    }[keyof Cases]
+  >
+} = dual(isEffectDataFirst, function catchTags<
+  A,
+  E,
+  R,
+  Cases extends
+    & {
+      [K in Extract<E, { _tag: string }>["_tag"]]+?: ((error: Extract<E, { _tag: K }>) => Effect.Effect<any, any, any>)
+    }
+    & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
+>(
+  self: Effect.Effect<A, E, R>,
+  cases: Cases,
+  options?: Partial<ComputedOptions>
+) {
+  return compute(Effect.catchTags(self, cases), options)
+})
+
+/**
+ * Recover from AsyncData.Loading error
+ * @since 1.0.0
+ */
+export const catchLoading: {
+  <A1, E1, R1>(
+    f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>,
+    options?: Partial<ComputedOptions>
+  ): <A, E, R>(
+    signal: Effect.Effect<A, E, R>
+  ) => Computed<A | A1, E1 | Exclude<E, AsyncData.Loading>, Exclude<R | R1, Signals>>
+
+  <A, E, R, A1, E1, R1>(
+    signal: Effect.Effect<A, E, R>,
+    f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>
+  ): Computed<A | A1, E1 | Exclude<E, AsyncData.Loading>, Exclude<R | R1, Signals>>
+} = dual(isEffectDataFirst, function catchLoading<A, E, R, A1, E1, R1>(
+  signal: Effect.Effect<A, E, R>,
+  f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>,
+  options?: Partial<ComputedOptions>
+) {
+  return catchAll(
+    signal,
+    unify((error) =>
+      AsyncData.isAsyncData<A, E>(error) && AsyncData.isLoading(error)
+        ? f(error)
+        : Effect.fail(error as Exclude<E, AsyncData.Loading>)
+    ),
+    options
+  )
+})

@@ -24,24 +24,24 @@ type SignalsCtx = {
 }
 
 type SignalState = {
+  fiber: Fiber.Fiber<any, any> | null
   initial: Effect.Effect<any, any>
   lock: <B, E2, R2>(effect: Effect.Effect<B, E2, R2>) => Effect.Effect<B, E2, R2>
-  value: AsyncData.AsyncData<any, any>
-  scope: Scope.Scope
-  fiber: Fiber.Fiber<any, any> | null
-  version: number
   scheduled: boolean
+  scope: Scope.Scope
+  value: AsyncData.AsyncData<any, any>
+  version: number
 }
 
 type ComputedState = {
   effect: Effect.Effect<any, any>
+  innerScope: Scope.CloseableScope | null
   priority: number
+  scheduled: boolean
   scope: Scope.Scope
   value: AsyncData.AsyncData<any, any>
   version: number
   versions: Map<SignalImpl<any, any> | ComputedImpl<any, any, any>, number>
-  scheduled: boolean
-  innerScope: Scope.CloseableScope | null
 }
 
 export type SignalsOptions = {
@@ -92,13 +92,13 @@ function makeSignal<A, E, R>(
   return Effect.gen(function*(_) {
     const context = yield* _(Effect.context<R | Scope.Scope>())
     const signalState: SignalState = {
-      initial: Effect.provide(initial, context),
-      value: initialFromEffect(initial),
-      lock: Effect.unsafeMakeSemaphore(1).withPermits(1),
       fiber: null,
+      initial: Effect.provide(initial, context),
+      lock: Effect.unsafeMakeSemaphore(1).withPermits(1),
+      scheduled: false,
       scope: get(context, Scope.Scope),
-      version: -1,
-      scheduled: false
+      value: initialFromEffect(initial),
+      version: -1
     }
 
     if (!AsyncData.isNoData(signalState.value)) {
@@ -209,13 +209,13 @@ function makeComputed<A, E>(
 ): ComputedImpl<A, E, never> {
   const computedState: ComputedState = {
     effect,
+    innerScope: null,
     priority: options?.priority ?? DEFAULT_PRIORITY,
+    scheduled: false,
+    scope,
     value: initialFromEffect(effect),
     version: 0,
-    versions: new Map(),
-    scope,
-    scheduled: false,
-    innerScope: null
+    versions: new Map()
   }
 
   if (!AsyncData.isNoData(computedState.value)) {
