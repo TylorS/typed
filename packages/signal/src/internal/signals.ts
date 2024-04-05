@@ -419,15 +419,29 @@ function depthFirstReaders(
 ): Set<ComputedImpl<any, any, any>> {
   const visited = new Set<ComputedImpl<any, any, any>>()
 
-  const toProcess = [...current.signals.readers.get(current) ?? []]
-  while (toProcess.length > 0) {
-    const reader = toProcess.shift()!
-    if (visited.has(reader) || reader.state.scheduled) continue
-    visited.add(reader)
+  const roots = current.signals.readers.get(current)
+  if (roots === undefined) return visited
 
-    const readers = current.signals.readers.get(reader)
-    if (readers !== undefined) {
-      toProcess.push(...readers)
+  for (const root of roots) {
+    const maxPriority = root.priority
+    const toProcess = [root]
+    while (toProcess.length > 0) {
+      const reader = toProcess.shift()!
+      if (
+        // Already visited
+        visited.has(reader) ||
+        // Already scheduled
+        reader.state.scheduled ||
+        // Only take those of the same priority or less for the initial batch
+        // If there are higher priorities (lower conceptually), they will be scheduled in the next batch
+        reader.priority > maxPriority
+      ) continue
+
+      visited.add(reader)
+      const readers = current.signals.readers.get(reader)
+      if (readers !== undefined) {
+        toProcess.push(...readers)
+      }
     }
   }
 
