@@ -1,5 +1,5 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
-import { get, Tagged } from "@typed/context"
+import { get, Tagged, unsafeGet } from "@typed/context"
 import { Effect, Effectable, ExecutionStrategy, Exit, Scope } from "effect"
 import * as Fiber from "effect/Fiber"
 import { constant } from "effect/Function"
@@ -14,6 +14,7 @@ export const tag = Tagged<Signals>("@typed/signal/Signals")
 type SignalsCtx = {
   computing: ComputedImpl<any, any, any> | null
   queue: SignalQueue
+  computeds: WeakMap<Computed.Any, ComputedImpl<any, any, any>>
   options: SignalsOptions
   readers: Map<SignalImpl<any, any> | ComputedImpl<any, any, any>, Set<ComputedImpl<any, any, any>>>
   writers: Map<
@@ -55,18 +56,30 @@ export const layer = (options?: Partial<SignalsOptions>) =>
     }
     const signalsCtx: SignalsCtx = {
       computing: null,
+      computeds: new WeakMap(),
       readers: new Map(),
       writers: new Map(),
       queue,
       options: optionsWithDefaults
     }
 
+    const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>, options?: { priority?: number }) =>
+      Effect.contextWith((ctx) =>
+        makeComputed(signalsCtx, Effect.provide(effect, ctx) as any, unsafeGet(ctx, Scope.Scope), options)
+      )
+
     const signals: Signals = {
       make: <A, E, R>(initial: Effect.Effect<A, E, R>) => makeSignal(signalsCtx, initial),
-      compute: <A, E, R>(effect: Effect.Effect<A, E, R>, options?: { priority?: number }) =>
-        Effect.contextWith((ctx) =>
-          makeComputed(signalsCtx, Effect.provide(effect, ctx) as any, get(ctx, Scope.Scope), options)
-        )
+      getComputed: (computed) => {
+        const existing = signalsCtx.computeds.get(computed)
+        if (existing === undefined) {
+          return makeComputedImpl(computed.effect, { priority: computed.priority }).pipe(
+            Effect.tap((c) => signalsCtx.computeds.set(computed, c as any as ComputedImpl<any, any, any>)),
+            Effect.flatten
+          )
+        }
+        return existing.commit()
+      }
     }
 
     return signals
@@ -139,7 +152,10 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
 
     this._get = Effect.provideService(getSignalValue(signals, this), Scope.Scope, state.scope)
     this.commit = constant(this._get)
-    this.data = Effect.sync(() => this.state.value)
+    this.data = Effect.matchCause(this._get, {
+      onFailure: () => this.state.value,
+      onSuccess: () => this.state.value
+    })
   }
 
   modify<B>(f: (a: A) => readonly [B, A]): Effect.Effect<B, E | AsyncData.Loading, never> {
@@ -190,16 +206,20 @@ function makeComputed<A, E>(
   effect: Effect.Effect<A, E>,
   scope: Scope.Scope,
   options: { priority?: number } | undefined
-): Computed<A, E> {
+): ComputedImpl<A, E, never> {
   const computedState: ComputedState = {
     effect,
     priority: options?.priority ?? DEFAULT_PRIORITY,
-    value: AsyncData.noData(),
-    version: -1,
+    value: initialFromEffect(effect),
+    version: 0,
     versions: new Map(),
     scope,
     scheduled: false,
     innerScope: null
+  }
+
+  if (!AsyncData.isNoData(computedState.value)) {
+    computedState.version = 1
   }
 
   return new ComputedImpl<A, E, never>(signalsCtx, computedState)
@@ -248,7 +268,7 @@ const ComputedVariance: Computed.Variance<any, any, never> = {
   _R: (_) => _
 }
 
-class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R> implements Computed<A, E, R> {
+class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, never> = ComputedVariance
 
   readonly commit: () => Effect.Effect<A, E, R>
@@ -326,7 +346,7 @@ function initComputedValue(
   computed: ComputedImpl<any, any, any>
 ): Effect.Effect<AsyncData.AsyncData<any, any>> {
   return Effect.gen(function*(_) {
-    const loading = AsyncData.loading()
+    const loading = AsyncData.startLoading(computed.state.value)
 
     yield* _(setValue(computed, loading))
 
@@ -346,7 +366,7 @@ function initComputedValue(
     yield* _(setValue(computed, data))
 
     return data
-  })
+  }).pipe(Effect.onInterrupt(() => setValue(computed, AsyncData.stopLoading(computed.state.value))))
 }
 
 function updateReadersAndWriters(signalsCtx: SignalsCtx, current: ComputedImpl<any, any, any> | SignalImpl<any, any>) {

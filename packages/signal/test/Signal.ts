@@ -55,10 +55,10 @@ describe("Signal", () => {
     Effect.gen(function*(_) {
       const count = yield* _(Signal.make(Effect.succeed(0)))
       let called = 0
-      const computed = yield* _(Signal.compute(Effect.map(count, (x) => {
+      const computed = Signal.map(count, (x) => {
         called++
         return x + 1
-      })))
+      })
 
       expect(yield* _(computed)).toEqual(1)
       expect(called).toEqual(1)
@@ -75,9 +75,9 @@ describe("Signal", () => {
   it.effect("Computed signals with dependencies", () =>
     Effect.gen(function*(_) {
       const count = yield* _(Signal.make(Effect.succeed(0)))
-      const double = yield* _(Signal.compute(Effect.map(count, (x) => x * 2)))
-      const triple = yield* _(Signal.compute(Effect.map(double, (x) => x * 3)))
-      const computed = yield* _(Signal.compute(Effect.zipWith(double, triple, (x, y) => x + y)))
+      const double = Signal.map(count, (x) => x * 2)
+      const triple = Signal.map(double, (x) => x * 3)
+      const computed = Signal.zipWith(double, triple, (x, y) => x + y)
 
       expect(yield* _(computed)).toEqual(0)
       yield* _(count, Signal.update((n) => n + 1))
@@ -89,9 +89,9 @@ describe("Signal", () => {
   it.effect("computeds should work with asynchronous scheduling queues", () =>
     Effect.gen(function*(_) {
       const count = yield* _(Signal.make(Effect.succeed(0)))
-      const double = yield* _(Signal.compute(Effect.map(count, (x) => x * 2)))
-      const triple = yield* _(Signal.compute(Effect.map(double, (x) => x * 3)))
-      const computed = yield* _(Signal.compute(Effect.zipWith(double, triple, (x, y) => x + y)))
+      const double = Signal.map(count, (x) => x * 2)
+      const triple = Signal.map(double, (x) => x * 3)
+      const computed = Signal.zipWith(double, triple, (x, y) => x + y)
 
       expect(yield* _(computed)).toEqual(0)
       yield* _(count, Signal.update((n) => n + 1))
@@ -114,29 +114,35 @@ describe("Signal", () => {
           return 0
         })
       ))
-      const double = yield* _(Signal.compute(
-        Effect.map(count, (x) => {
+      const double = Signal.map(
+        count,
+        (x) => {
           calls.push("double")
           return x * 2
-        }),
-        { priority: Signal.Priority.Idle(0) }
-      ))
-      const triple = yield* _(Signal.compute(
-        Effect.map(double, (x) => {
+        },
+        {
+          priority: Signal.Priority.Idle(0)
+        }
+      )
+      const triple = Signal.map(
+        double,
+        (x) => {
           calls.push("triple")
           return x * 3
-        }),
+        },
         { priority: Signal.Priority.Raf(0) }
-      ))
-      const computed = yield* _(Signal.compute(
-        Effect.zipWith(double, triple, (x, y) => {
+      )
+      const computed = Signal.zipWith(
+        double,
+        triple,
+        (x, y) => {
           calls.push("computed")
           return x + y
-        }),
+        },
         {
           priority: Signal.Priority.MacroTask(0)
         }
-      ))
+      )
 
       // Will always operate the same regardless of priority when directly sampling
       expect(yield* _(computed)).toEqual(0)
