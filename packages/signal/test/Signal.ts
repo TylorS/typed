@@ -71,4 +71,18 @@ describe("Signal", () => {
       yield* _(TestClock.adjust(1))
       expect(called).toEqual(3)
     }).pipe(provideEnv))
+
+  it.effect("Computed signals with dependencies", () =>
+    Effect.gen(function*(_) {
+      const count = yield* _(Signal.make(Effect.succeed(0)))
+      const double = yield* _(Signal.compute(Effect.map(count, (x) => x * 2)))
+      const triple = yield* _(Signal.compute(Effect.map(double, (x) => x * 3)))
+      const computed = yield* _(Signal.compute(Effect.zipWith(double, triple, (x, y) => x + y)))
+
+      expect(yield* _(computed)).toEqual(0)
+      yield* _(count, Signal.update((n) => n + 1))
+      expect(yield* _(computed)).toEqual(8)
+      yield* _(count, Signal.update((n) => n + 1))
+      expect(yield* _(computed)).toEqual(16)
+    }).pipe(provideEnv))
 })
