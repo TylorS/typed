@@ -22,7 +22,7 @@
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "2.4.17"
+    "effect": "2.4.18"
   },
   "devDependencies": {
     "vite": "^5.2.8",

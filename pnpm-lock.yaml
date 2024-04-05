@@ -40,7 +40,7 @@ importers:
         version: 0.0.7(@babel/preset-env@7.24.4)
       '@effect/docgen':
         specifier: ^0.4.0
-        version: 0.4.0(tsx@4.7.1)(typescript@5.4.3)
+        version: 0.4.0(tsx@4.7.2)(typescript@5.4.4)
       '@effect/eslint-plugin':
         specifier: ^0.1.2
         version: 0.1.2
@@ -55,10 +55,10 @@ importers:
         version: 20.12.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.5.0
-        version: 7.5.0(@typescript-eslint/parser@7.5.0)(eslint@8.57.0)(typescript@5.4.3)
+        version: 7.5.0(@typescript-eslint/parser@7.5.0)(eslint@8.57.0)(typescript@5.4.4)
       '@typescript-eslint/parser':
         specifier: ^7.5.0
-        version: 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+        version: 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       '@vitejs/plugin-react':
         specifier: ^4.2.1
         version: 4.2.1(vite@5.2.8)
@@ -78,8 +78,8 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -91,7 +91,7 @@ importers:
         version: 0.28.0(eslint@8.57.0)
       eslint-plugin-deprecation:
         specifier: ^2.0.0
-        version: 2.0.0(eslint@8.57.0)(typescript@5.4.3)
+        version: 2.0.0(eslint@8.57.0)(typescript@5.4.4)
       eslint-plugin-import:
         specifier: ^2.29.1
         version: 2.29.1(@typescript-eslint/parser@7.5.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
@@ -103,7 +103,7 @@ importers:
         version: 1.5.0(eslint@8.57.0)
       madge:
         specifier: ^6.1.0
-        version: 6.1.0(typescript@5.4.3)
+        version: 6.1.0(typescript@5.4.4)
       rimraf:
         specifier: ^5.0.5
         version: 5.0.5
@@ -112,16 +112,16 @@ importers:
         version: 0.3.4
       syncpack:
         specifier: 12.3.0
-        version: 12.3.0(typescript@5.4.3)
+        version: 12.3.0(typescript@5.4.4)
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@types/node@20.12.4)(typescript@5.4.3)
+        version: 10.9.2(@types/node@20.12.4)(typescript@5.4.4)
       tsx:
-        specifier: ^4.7.1
-        version: 4.7.1
+        specifier: ^4.7.2
+        version: 4.7.2
       typescript:
-        specifier: ^5.4.3
-        version: 5.4.3
+        specifier: ^5.4.4
+        version: 5.4.4
       ultra-runner:
         specifier: ^3.10.5
         version: 3.10.5
@@ -130,10 +130,10 @@ importers:
         version: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
       vite-plugin-tsconfig-paths:
         specifier: ^1.4.1
-        version: 1.4.1(typescript@5.4.3)(vite@5.2.8)
+        version: 1.4.1(typescript@5.4.4)(vite@5.2.8)
       vitest:
         specifier: 1.4.0
-        version: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0)
+        version: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1)
       zx:
         specifier: ^7.2.3
         version: 7.2.3
@@ -153,8 +153,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/template/dist
       effect:
-        specifier: 2.4.17
-        version: 2.4.17
+        specifier: 2.4.18
+        version: 2.4.18
     devDependencies:
       vite:
         specifier: ^5.2.8
@@ -164,13 +164,13 @@ importers:
         version: 0.5.1(vite@5.2.8)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.8)
+        version: 4.3.2(typescript@5.4.4)(vite@5.2.8)
 
   examples/fx-tracing:
     dependencies:
       '@effect/opentelemetry':
-        specifier: ^0.31.27
-        version: 0.31.27(@opentelemetry/api@1.8.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)(@opentelemetry/semantic-conventions@1.23.0)(effect@2.4.17)
+        specifier: ^0.31.28
+        version: 0.31.28(@opentelemetry/api@1.8.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)(@opentelemetry/semantic-conventions@1.23.0)(effect@2.4.18)
       '@opentelemetry/exporter-trace-otlp-http':
         specifier: ^0.50.0
         version: 0.50.0(@opentelemetry/api@1.8.0)
@@ -193,26 +193,26 @@ importers:
         specifier: workspace:*
         version: link:../../packages/fx/dist
       effect:
-        specifier: 2.4.17
-        version: 2.4.17
+        specifier: 2.4.18
+        version: 2.4.18
 
   examples/realworld:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/platform-node':
-        specifier: ^0.45.26
-        version: 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.45.27
+        version: 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
       '@effect/schema':
-        specifier: 0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: 0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@sqlfx/pg':
         specifier: ^0.46.1
-        version: 0.46.1(@effect/schema@0.64.18)(effect@2.4.17)
+        version: 0.46.1(@effect/schema@0.64.19)(effect@2.4.18)
       '@sqlfx/sql':
         specifier: ^0.46.1
-        version: 0.46.1(@effect/schema@0.64.18)(effect@2.4.17)
+        version: 0.46.1(@effect/schema@0.64.19)(effect@2.4.18)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../../packages/async-data/dist
@@ -262,17 +262,17 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1
       effect:
-        specifier: 2.4.17
-        version: 2.4.17
+        specifier: 2.4.18
+        version: 2.4.18
       effect-http:
-        specifier: ^0.60.5
-        version: 0.60.5(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect@2.4.17)
+        specifier: ^0.60.6
+        version: 0.60.6(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect@2.4.18)
       effect-http-node:
-        specifier: ^0.8.6
-        version: 0.8.6(@effect/platform-node@0.45.26)(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect-http@0.60.5)(effect@2.4.17)
+        specifier: ^0.8.7
+        version: 0.8.7(@effect/platform-node@0.45.27)(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect-http@0.60.6)(effect@2.4.18)
       effect-log:
-        specifier: ^0.30.14
-        version: 0.30.14(effect@2.4.17)
+        specifier: ^0.30.15
+        version: 0.30.15(effect@2.4.18)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -305,14 +305,14 @@ importers:
         specifier: ^5.12.0
         version: 5.12.0(rollup@4.14.0)
       schema-openapi:
-        specifier: ^0.34.4
-        version: 0.34.4(@effect/schema@0.64.18)(effect@2.4.17)
+        specifier: ^0.34.5
+        version: 0.34.5(@effect/schema@0.64.19)(effect@2.4.18)
       terser:
         specifier: ^5.30.3
         version: 5.30.3
       tsx:
-        specifier: ^4.7.1
-        version: 4.7.1
+        specifier: ^4.7.2
+        version: 4.7.2
       vavite:
         specifier: ^4.1.1
         version: 4.1.1(vite@5.2.8)
@@ -324,16 +324,16 @@ importers:
         version: 0.5.1(vite@5.2.8)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.8)
+        version: 4.3.2(typescript@5.4.4)(vite@5.2.8)
 
   examples/simple-ssr:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/platform-node':
-        specifier: ^0.45.26
-        version: 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.45.27
+        version: 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
       '@typed/fx':
         specifier: workspace:*
         version: link:../../packages/fx/dist
@@ -341,12 +341,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/template/dist
       effect:
-        specifier: 2.4.17
-        version: 2.4.17
+        specifier: 2.4.18
+        version: 2.4.18
     devDependencies:
       tsx:
-        specifier: ^4.7.1
-        version: 4.7.1
+        specifier: ^4.7.2
+        version: 4.7.2
 
   examples/storybook:
     dependencies:
@@ -370,7 +370,7 @@ importers:
         version: link:../../packages/ui/dist
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.8)
+        version: 4.3.2(typescript@5.4.4)(vite@5.2.8)
     devDependencies:
       '@storybook/addon-essentials':
         specifier: ^8.0.5
@@ -389,7 +389,7 @@ importers:
         version: 8.0.5
       '@storybook/html-vite':
         specifier: ^8.0.5
-        version: 8.0.5(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.8)
+        version: 8.0.5(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.4)(vite@5.2.8)
       '@storybook/test':
         specifier: ^8.0.5
         version: 8.0.5(vitest@1.4.0)
@@ -412,17 +412,17 @@ importers:
   examples/todomvc:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/platform-browser':
-        specifier: ^0.31.24
-        version: 0.31.24(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.31.25
+        version: 0.31.25(@effect/platform@0.48.25)(effect@2.4.18)
       '@effect/platform-node':
-        specifier: ^0.45.26
-        version: 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.45.27
+        version: 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
       '@effect/schema':
-        specifier: 0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: 0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../../packages/context/dist
@@ -451,8 +451,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui/dist
       effect:
-        specifier: 2.4.17
-        version: 2.4.17
+        specifier: 2.4.18
+        version: 2.4.18
       todomvc-app-css:
         specifier: ^2.4.3
         version: 2.4.3
@@ -473,8 +473,8 @@ importers:
         specifier: ^5.30.3
         version: 5.30.3
       tsx:
-        specifier: ^4.7.1
-        version: 4.7.1
+        specifier: ^4.7.2
+        version: 4.7.2
       vite:
         specifier: ^5.2.8
         version: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
@@ -489,16 +489,16 @@ importers:
         version: 1.4.1(vite@5.2.8)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.8)
+        version: 4.3.2(typescript@5.4.4)(vite@5.2.8)
 
   packages/async-data:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       fast-check:
         specifier: ^3.17.1
         version: 3.17.1
@@ -510,21 +510,21 @@ importers:
   packages/context:
     dependencies:
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/core:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/platform-node':
-        specifier: ^0.45.26
-        version: 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.45.27
+        version: 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../async-data/dist
@@ -574,8 +574,8 @@ importers:
         specifier: workspace:*
         version: link:../vite-plugin-types
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       vavite:
         specifier: ^4.1.1
         version: 4.1.1(vite@5.2.8)
@@ -588,24 +588,24 @@ importers:
   packages/decoder:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/dom:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       typed-query-selector:
         specifier: ^2.11.2
         version: 2.11.2
@@ -617,18 +617,18 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/fx:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@effect/typeclass':
-        specifier: 0.23.17
-        version: 0.23.17(effect@2.4.17)
+        specifier: 0.23.18
+        version: 0.23.18(effect@2.4.18)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../async-data/dist
@@ -639,8 +639,8 @@ importers:
         specifier: workspace:*
         version: link:../guard/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       fast-deep-equal:
         specifier: ^3.1.3
         version: 3.1.3
@@ -662,34 +662,34 @@ importers:
   packages/guard:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/id:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/navigation:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -703,31 +703,31 @@ importers:
         specifier: workspace:*
         version: link:../id/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     devDependencies:
       '@effect/platform-node':
-        specifier: ^0.45.26
-        version: 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
+        specifier: ^0.45.27
+        version: 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
       '@virtualstate/navigation':
         specifier: 1.0.1-alpha.201
         version: 1.0.1-alpha.201
       happy-dom:
-        specifier: 14.4.0
-        version: 14.4.0
+        specifier: 14.5.1
+        version: 14.5.1
     publishDirectory: dist
 
   packages/path:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       ts-toolbelt:
         specifier: ^9.6.0
         version: 9.6.0
@@ -736,8 +736,8 @@ importers:
   packages/route:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/decoder':
         specifier: workspace:*
         version: link:../decoder/dist
@@ -751,8 +751,8 @@ importers:
         specifier: workspace:*
         version: link:../path/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       path-to-regexp:
         specifier: ^6.2.1
         version: 6.2.1
@@ -764,8 +764,8 @@ importers:
   packages/router:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -791,8 +791,8 @@ importers:
         specifier: workspace:*
         version: link:../route/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     devDependencies:
       ts-toolbelt:
         specifier: ^9.6.0
@@ -802,11 +802,11 @@ importers:
   packages/server:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -823,14 +823,14 @@ importers:
         specifier: workspace:*
         version: link:../router/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       effect-http:
-        specifier: ^0.60.5
-        version: 0.60.5(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect@2.4.17)
+        specifier: ^0.60.6
+        version: 0.60.6(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect@2.4.18)
       effect-http-node:
-        specifier: ^0.8.6
-        version: 0.8.6(@effect/platform-node@0.45.26)(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect-http@0.60.5)(effect@2.4.17)
+        specifier: ^0.8.7
+        version: 0.8.7(@effect/platform-node@0.45.27)(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect-http@0.60.6)(effect@2.4.18)
     publishDirectory: dist
 
   packages/signal:
@@ -842,18 +842,18 @@ importers:
         specifier: workspace:*
         version: link:../context/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/storybook:
     dependencies:
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@storybook/builder-vite':
         specifier: ^8.0.5
-        version: 8.0.5(typescript@5.4.3)(vite@5.2.8)
+        version: 8.0.5(typescript@5.4.4)(vite@5.2.8)
       '@storybook/types':
         specifier: ^8.0.5
         version: 8.0.5
@@ -900,18 +900,18 @@ importers:
         specifier: workspace:*
         version: link:../ui/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/template:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -928,8 +928,8 @@ importers:
         specifier: workspace:*
         version: link:../wire/dist
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
       html5parser:
         specifier: ^2.0.2
         version: 2.0.2
@@ -944,11 +944,11 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(vitest@1.4.0)
       happy-dom:
-        specifier: 14.4.0
-        version: 14.4.0
+        specifier: 14.5.1
+        version: 14.5.1
       vitest:
         specifier: 1.4.0
-        version: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0)
+        version: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1)
     publishDirectory: dist
 
   packages/tsconfig: {}
@@ -956,11 +956,11 @@ importers:
   packages/ui:
     dependencies:
       '@effect/platform':
-        specifier: ^0.48.24
-        version: 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+        specifier: ^0.48.25
+        version: 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@effect/schema':
-        specifier: ^0.64.18
-        version: 0.64.18(effect@2.4.17)(fast-check@3.17.1)
+        specifier: ^0.64.19
+        version: 0.64.19(effect@2.4.18)(fast-check@3.17.1)
       '@typed/context':
         specifier: workspace:*
         version: link:../context/dist
@@ -989,8 +989,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       effect:
-        specifier: ^2.4.17
-        version: 2.4.17
+        specifier: ^2.4.18
+        version: 2.4.18
     publishDirectory: dist
 
   packages/vite-plugin:
@@ -1009,7 +1009,7 @@ importers:
         version: 0.5.1(vite@5.2.8)
       vite-tsconfig-paths:
         specifier: ^4.3.2
-        version: 4.3.2(typescript@5.4.3)(vite@5.2.8)
+        version: 4.3.2(typescript@5.4.4)(vite@5.2.8)
     devDependencies:
       rollup:
         specifier: ^4.14.0
@@ -2626,7 +2626,7 @@ packages:
       - supports-color
     dev: true
 
-  /@effect/docgen@0.4.0(tsx@4.7.1)(typescript@5.4.3):
+  /@effect/docgen@0.4.0(tsx@4.7.2)(typescript@5.4.4):
     resolution: {integrity: sha512-bmAyBY021kAliCRuTNDHXdtA0tCWKMVDcWg4IU9i31DnSX1aCQs60HT+PbVZUFS4MqnIsrfmyFHDfyLfSAUB4Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
@@ -2638,8 +2638,8 @@ packages:
       glob: 10.3.12
       markdown-toc: github.com/effect-ts/markdown-toc/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5
       prettier: 3.2.5
-      tsx: 4.7.1
-      typescript: 5.4.3
+      tsx: 4.7.2
+      typescript: 5.4.4
     dev: true
 
   /@effect/eslint-plugin@0.1.2:
@@ -2654,8 +2654,8 @@ packages:
     resolution: {integrity: sha512-BnlM8LlaqCAYgdRfxlbR7gXGh/FD1scL1fPgNVJEPoOM08od1jtJz+iKhwfaud8TPnnhZR+TED2h5ynjanLeCQ==}
     dev: true
 
-  /@effect/opentelemetry@0.31.27(@opentelemetry/api@1.8.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)(@opentelemetry/semantic-conventions@1.23.0)(effect@2.4.17):
-    resolution: {integrity: sha512-J8TAlENAFL8qezI+Fm3NWeVHbBPe9EXoiiq6WGuNiZyvnO4E5DcFoy5TUzPf46twpld/bnYacnz+fVLklJZuDg==}
+  /@effect/opentelemetry@0.31.28(@opentelemetry/api@1.8.0)(@opentelemetry/resources@1.23.0)(@opentelemetry/sdk-trace-base@1.23.0)(@opentelemetry/semantic-conventions@1.23.0)(effect@2.4.18):
+    resolution: {integrity: sha512-ygMgCQwIINgNhrIds5pBOW3BKBnTIo8ULb/ckAccCFvWQepkqaWkS/02o8Seb1wcqHVNbOBoZlFX3krgxLNTIQ==}
     peerDependencies:
       '@opentelemetry/api': ^1.6
       '@opentelemetry/resources': ^1.17
@@ -2664,7 +2664,7 @@ packages:
       '@opentelemetry/sdk-trace-node': ^1.17
       '@opentelemetry/sdk-trace-web': ^1.17
       '@opentelemetry/semantic-conventions': ^1.17
-      effect: ^2.4.17
+      effect: ^2.4.18
     peerDependenciesMeta:
       '@opentelemetry/sdk-metrics':
         optional: true
@@ -2679,40 +2679,40 @@ packages:
       '@opentelemetry/resources': 1.23.0(@opentelemetry/api@1.8.0)
       '@opentelemetry/sdk-trace-base': 1.23.0(@opentelemetry/api@1.8.0)
       '@opentelemetry/semantic-conventions': 1.23.0
-      effect: 2.4.17
+      effect: 2.4.18
     dev: false
 
-  /@effect/platform-browser@0.31.24(@effect/platform@0.48.24)(effect@2.4.17):
-    resolution: {integrity: sha512-s8r2DxMnvA7Mkd6GSJhT68kg7VGfIqWew9YItOovbaJWUQVQ2OUB14Y7x/fBGsmRJgLeXeQsKlGPRtrDICz4gg==}
+  /@effect/platform-browser@0.31.25(@effect/platform@0.48.25)(effect@2.4.18):
+    resolution: {integrity: sha512-JIybTvi6FmNX2riE4ytp/1QHbTkJblhG3vW02o27XKqT7zCh8f0AUA55wnR7HXn29ALoIekj90gSNEQoppW1XA==}
     peerDependencies:
-      '@effect/platform': ^0.48.24
-      effect: ^2.4.17
+      '@effect/platform': ^0.48.25
+      effect: ^2.4.18
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
-      effect: 2.4.17
+      '@effect/platform': 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
+      effect: 2.4.18
       multipasta: 0.2.0
     dev: false
 
-  /@effect/platform-node-shared@0.3.24(@effect/platform@0.48.24)(effect@2.4.17):
-    resolution: {integrity: sha512-k89ZgccPnuU1UBCDfrEqJLMzy4v4RWmNv/G1UGORCtQ19XXFRZgOY/Xy0NWvA36shg+lC32RZS1XV08a+h8zJg==}
+  /@effect/platform-node-shared@0.3.25(@effect/platform@0.48.25)(effect@2.4.18):
+    resolution: {integrity: sha512-sJRz6WalSKP7GxhW6/0EtKyFQ7DfmI0/ZbSbfELZre/45t7TPIxz5zxtRpaA+3di9sjpYBk4G6bti2bBJdQsPg==}
     peerDependencies:
-      '@effect/platform': ^0.48.24
-      effect: ^2.4.17
+      '@effect/platform': ^0.48.25
+      effect: ^2.4.18
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
+      '@effect/platform': 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
       '@parcel/watcher': 2.4.1
-      effect: 2.4.17
+      effect: 2.4.18
       multipasta: 0.2.0
 
-  /@effect/platform-node@0.45.26(@effect/platform@0.48.24)(effect@2.4.17):
-    resolution: {integrity: sha512-UtWcgLKrnKFfAuJBaKd1hhOgWMtlqYKQju0ihQcOtCOeI4ZfPt9eWE26pcZwYzVik99xNkMmVj2YBmy7P7UPUQ==}
+  /@effect/platform-node@0.45.27(@effect/platform@0.48.25)(effect@2.4.18):
+    resolution: {integrity: sha512-tIaW4FyZh9qucyPRrGj2HUy35Euz5wgHFmnN3RnEo0+IuPbwKJLqSSg4D3ScXn4gASM0qJmpNzYArXbC90TRAA==}
     peerDependencies:
-      '@effect/platform': ^0.48.24
-      effect: ^2.4.17
+      '@effect/platform': ^0.48.25
+      effect: ^2.4.18
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
-      '@effect/platform-node-shared': 0.3.24(@effect/platform@0.48.24)(effect@2.4.17)
-      effect: 2.4.17
+      '@effect/platform': 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
+      '@effect/platform-node-shared': 0.3.25(@effect/platform@0.48.25)(effect@2.4.18)
+      effect: 2.4.18
       mime: 3.0.0
       undici: 6.11.1
       ws: 8.16.0
@@ -2720,16 +2720,16 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /@effect/platform@0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0):
-    resolution: {integrity: sha512-3XQSYTNnaWZfhomBbwYlSlb0iVVwArN5ZZzJYRkm3gTDKjzhnlVD3oWbfvjeCdZ5OYCY5AAjjG/OEK8/EY7UXg==}
+  /@effect/platform@0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0):
+    resolution: {integrity: sha512-oawPfBWpikvIszxbdVeWrSSJWFUqjze+lEUcBHZfr5LSPq+7uM786Y+9ngjSUKjwCK9eUP2COOqDVWZd2/IDXA==}
     peerDependencies:
-      '@effect/schema': ^0.64.18
-      effect: ^2.4.17
+      '@effect/schema': ^0.64.19
+      effect: ^2.4.18
     dependencies:
-      '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.17.1)
-      effect: 2.4.17
+      '@effect/schema': 0.64.19(effect@2.4.18)(fast-check@3.17.1)
+      effect: 2.4.18
       find-my-way-ts: 0.1.1
-      isomorphic-ws: 5.0.0(ws@8.16.0)
+      isows: 1.0.4(ws@8.16.0)
       multipasta: 0.2.0
       path-browserify: 1.0.1
     transitivePeerDependencies:
@@ -2745,21 +2745,21 @@ packages:
       fast-check: 3.15.0
     dev: true
 
-  /@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.17.1):
-    resolution: {integrity: sha512-utMVAjcKqmNlkJ8hzdXf3FWBOsekKbe3xhYzWLLLFCpdbTMkCFeN52l1QRXTk7rla87sNTYdMA+xcES9maOEog==}
+  /@effect/schema@0.64.19(effect@2.4.18)(fast-check@3.17.1):
+    resolution: {integrity: sha512-mV/qexSXdY6S62wO+SW7ASxwnjclmtIupmObu7nbcTzVPkgy/9Elgsd3xIXIcEByJVXvtl9ReBHOL+0IwiJU5A==}
     peerDependencies:
-      effect: ^2.4.17
+      effect: ^2.4.18
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.4.17
+      effect: 2.4.18
       fast-check: 3.17.1
 
-  /@effect/typeclass@0.23.17(effect@2.4.17):
-    resolution: {integrity: sha512-MbaXSnQ3WbGPDO2TCTuN46bsElFKe/StglnZ8eNcwETKyMDPM/x6pXbeTpPtCnVJ5bedZb120az5i8vaGlmCnw==}
+  /@effect/typeclass@0.23.18(effect@2.4.18):
+    resolution: {integrity: sha512-CUwdy2teJttvs3BGyujBVfcLJIxhFUdWpYCN9PKTxc0f3U79Mucd+z5RR4+KywGPidUb8T8ClA6qFZLLtTAOQA==}
     peerDependencies:
-      effect: ^2.4.17
+      effect: ^2.4.18
     dependencies:
-      effect: 2.4.17
+      effect: 2.4.18
     dev: false
 
   /@emotion/use-insertion-effect-with-fallbacks@1.0.1(react@18.2.0):
@@ -4053,26 +4053,26 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
-  /@sqlfx/pg@0.46.1(@effect/schema@0.64.18)(effect@2.4.17):
+  /@sqlfx/pg@0.46.1(@effect/schema@0.64.19)(effect@2.4.18):
     resolution: {integrity: sha512-PBbnYYVexpKdJf1JHW1/NY5FN4kGhRd5o9qaqNUxv1tNCXKGURt7+gfTLr5L2RpfvpOH17AwHguNtUrlFvK7Jw==}
     peerDependencies:
       effect: ^2.4.7
     dependencies:
-      '@sqlfx/sql': 0.46.1(@effect/schema@0.64.18)(effect@2.4.17)
-      effect: 2.4.17
+      '@sqlfx/sql': 0.46.1(@effect/schema@0.64.19)(effect@2.4.18)
+      effect: 2.4.18
       postgres: 3.4.3
     transitivePeerDependencies:
       - '@effect/schema'
     dev: false
 
-  /@sqlfx/sql@0.46.1(@effect/schema@0.64.18)(effect@2.4.17):
+  /@sqlfx/sql@0.46.1(@effect/schema@0.64.19)(effect@2.4.18):
     resolution: {integrity: sha512-Puw1yYJTibhDOwF/LgO6r8ICA2WPLS7/7pNCQtSMfX47X8KbMLdrw7CvXA03D//P31N9QRXtJRcX3Jqc+iU8tQ==}
     peerDependencies:
       '@effect/schema': ^0.64.4
       effect: ^2.4.7
     dependencies:
-      '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.17.1)
-      effect: 2.4.17
+      '@effect/schema': 0.64.19(effect@2.4.18)(fast-check@3.17.1)
+      effect: 2.4.18
     dev: false
 
   /@storybook/addon-actions@8.0.5:
@@ -4287,7 +4287,7 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/builder-vite@8.0.5(typescript@5.4.3)(vite@5.2.8):
+  /@storybook/builder-vite@8.0.5(typescript@5.4.4)(vite@5.2.8):
     resolution: {integrity: sha512-tKNxobC9tlYyUAayxoiOOnoMbg4RxoAwPOpPLnQYUfHLw1ecp/g8sGD6tisyFONyOIv7uF9gbzWLUfMjn9F2sw==}
     peerDependencies:
       '@preact/preset-vite': '*'
@@ -4317,9 +4317,9 @@ packages:
       express: 4.19.2
       find-cache-dir: 3.3.2
       fs-extra: 11.2.0
-      magic-string: 0.30.8
+      magic-string: 0.30.9
       ts-dedent: 2.2.0
-      typescript: 5.4.3
+      typescript: 5.4.4
       vite: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
     transitivePeerDependencies:
       - encoding
@@ -4577,15 +4577,15 @@ packages:
   /@storybook/global@5.0.0:
     resolution: {integrity: sha512-FcOqPAXACP0I3oJ/ws6/rrPT9WGhu915Cg8D02a9YxLo0DE9zI+a9A5gRGvmQ09fiWPukqI8ZAEoQEdWUKMQdQ==}
 
-  /@storybook/html-vite@8.0.5(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.3)(vite@5.2.8):
+  /@storybook/html-vite@8.0.5(react-dom@18.2.0)(react@18.2.0)(typescript@5.4.4)(vite@5.2.8):
     resolution: {integrity: sha512-qJsQQ4QCKZ8XVg5opo6dm1vfjVLWsFgKnyK0981W1rKk5eMsGy5+sok/kdL2bsTdDapwQsa3UfZ23sy5BPTAyw==}
     engines: {node: '>=18.0.0'}
     dependencies:
-      '@storybook/builder-vite': 8.0.5(typescript@5.4.3)(vite@5.2.8)
+      '@storybook/builder-vite': 8.0.5(typescript@5.4.4)(vite@5.2.8)
       '@storybook/core-server': 8.0.5(react-dom@18.2.0)(react@18.2.0)
       '@storybook/html': 8.0.5
       '@storybook/node-logger': 8.0.5
-      magic-string: 0.30.8
+      magic-string: 0.30.9
     transitivePeerDependencies:
       - '@preact/preset-vite'
       - bufferutil
@@ -4769,8 +4769,8 @@ packages:
       '@types/express': 4.17.21
       file-system-cache: 2.3.0
 
-  /@swc/core-darwin-arm64@1.4.11:
-    resolution: {integrity: sha512-C1j1Qp/IHSelVWdEnT7f0iONWxQz6FAqzjCF2iaL+0vFg4V5f2nlgrueY8vj5pNNzSGhrAlxsMxEIp4dj1MXkg==}
+  /@swc/core-darwin-arm64@1.4.12:
+    resolution: {integrity: sha512-BZUUq91LGJsLI2BQrhYL3yARkcdN4TS3YGNS6aRYUtyeWrGCTKHL90erF2BMU2rEwZLLkOC/U899R4o4oiSHfA==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [darwin]
@@ -4778,8 +4778,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-darwin-x64@1.4.11:
-    resolution: {integrity: sha512-0TTy3Ni8ncgaMCchSQ7FK8ZXQLlamy0FXmGWbR58c+pVZWYZltYPTmheJUvVcR0H2+gPAymRKyfC0iLszDALjg==}
+  /@swc/core-darwin-x64@1.4.12:
+    resolution: {integrity: sha512-Wkk8rq1RwCOgg5ybTlfVtOYXLZATZ+QjgiBNM7pIn03A5/zZicokNTYd8L26/mifly2e74Dz34tlIZBT4aTGDA==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
@@ -4787,8 +4787,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-arm-gnueabihf@1.4.11:
-    resolution: {integrity: sha512-XJLB71uw0rog4DjYAPxFGAuGCBQpgJDlPZZK6MTmZOvI/1t0+DelJ24IjHIxk500YYM26Yv47xPabqFPD7I2zQ==}
+  /@swc/core-linux-arm-gnueabihf@1.4.12:
+    resolution: {integrity: sha512-8jb/SN67oTQ5KSThWlKLchhU6xnlAlnmnLCCOKK1xGtFS6vD+By9uL+qeEY2krV98UCRTf68WSmC0SLZhVoz5A==}
     engines: {node: '>=10'}
     cpu: [arm]
     os: [linux]
@@ -4796,8 +4796,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-arm64-gnu@1.4.11:
-    resolution: {integrity: sha512-vYQwzJvm/iu052d5Iw27UFALIN5xSrGkPZXxLNMHPySVko2QMNNBv35HLatkEQHbQ3X+VKSW9J9SkdtAvAVRAQ==}
+  /@swc/core-linux-arm64-gnu@1.4.12:
+    resolution: {integrity: sha512-DhW47DQEZKCdSq92v5F03rqdpjRXdDMqxfu4uAlZ9Uo1wJEGvY23e1SNmhji2sVHsZbBjSvoXoBLk0v00nSG8w==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -4805,8 +4805,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-arm64-musl@1.4.11:
-    resolution: {integrity: sha512-eV+KduiRYUFjPsvbZuJ9aknQH9Tj0U2/G9oIZSzLx/18WsYi+upzHbgxmIIHJ2VJgfd7nN40RI/hMtxNsUzR/g==}
+  /@swc/core-linux-arm64-musl@1.4.12:
+    resolution: {integrity: sha512-PR57pT3TssnCRvdsaKNsxZy9N8rFg9AKA1U7W+LxbZ/7Z7PHc5PjxF0GgZpE/aLmU6xOn5VyQTlzjoamVkt05g==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -4814,8 +4814,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-x64-gnu@1.4.11:
-    resolution: {integrity: sha512-WA1iGXZ2HpqM1OR9VCQZJ8sQ1KP2or9O4bO8vWZo6HZJIeoQSo7aa9waaCLRpkZvkng1ct/TF/l6ymqSNFXIzQ==}
+  /@swc/core-linux-x64-gnu@1.4.12:
+    resolution: {integrity: sha512-HLZIWNHWuFIlH+LEmXr1lBiwGQeCshKOGcqbJyz7xpqTh7m2IPAxPWEhr/qmMTMsjluGxeIsLrcsgreTyXtgNA==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -4823,8 +4823,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-linux-x64-musl@1.4.11:
-    resolution: {integrity: sha512-UkVJToKf0owwQYRnGvjHAeYVDfeimCEcx0VQSbJoN7Iy0ckRZi7YPlmWJU31xtKvikE2bQWCOVe0qbSDqqcWXA==}
+  /@swc/core-linux-x64-musl@1.4.12:
+    resolution: {integrity: sha512-M5fBAtoOcpz2YQAFtNemrPod5BqmzAJc8pYtT3dVTn1MJllhmLHlphU8BQytvoGr1PHgJL8ZJBlBGdt70LQ7Mw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -4832,8 +4832,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-win32-arm64-msvc@1.4.11:
-    resolution: {integrity: sha512-35khwkyly7lF5NDSyvIrukBMzxPorgc5iTSDfVO/LvnmN5+fm4lTlrDr4tUfTdOhv3Emy7CsKlsNAeFRJ+Pm+w==}
+  /@swc/core-win32-arm64-msvc@1.4.12:
+    resolution: {integrity: sha512-K8LjjgZ7VQFtM+eXqjfAJ0z+TKVDng3r59QYn7CL6cyxZI2brLU3lNknZcUFSouZD+gsghZI/Zb8tQjVk7aKDQ==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
@@ -4841,8 +4841,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-win32-ia32-msvc@1.4.11:
-    resolution: {integrity: sha512-Wx8/6f0ufgQF2pbVPsJ2dAmFLwIOW+xBE5fxnb7VnEbGkTgP1qMDWiiAtD9rtvDSuODG3i1AEmAak/2HAc6i6A==}
+  /@swc/core-win32-ia32-msvc@1.4.12:
+    resolution: {integrity: sha512-hflO5LCxozngoOmiQbDPyvt6ODc5Cu9AwTJP9uH/BSMPdEQ6PCnefuUOJLAKew2q9o+NmDORuJk+vgqQz9Uzpg==}
     engines: {node: '>=10'}
     cpu: [ia32]
     os: [win32]
@@ -4850,8 +4850,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core-win32-x64-msvc@1.4.11:
-    resolution: {integrity: sha512-0xRFW6K9UZQH2NVC/0pVB0GJXS45lY24f+6XaPBF1YnMHd8A8GoHl7ugyM5yNUTe2AKhSgk5fJV00EJt/XBtdQ==}
+  /@swc/core-win32-x64-msvc@1.4.12:
+    resolution: {integrity: sha512-3A4qMtddBDbtprV5edTB/SgJn9L+X5TL7RGgS3eWtEgn/NG8gA80X/scjf1v2MMeOsrcxiYhnemI2gXCKuQN2g==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
@@ -4859,8 +4859,8 @@ packages:
     dev: true
     optional: true
 
-  /@swc/core@1.4.11:
-    resolution: {integrity: sha512-WKEakMZxkVwRdgMN4AMJ9K5nysY8g8npgQPczmjBeNK5In7QEAZAJwnyccrWwJZU0XjVeHn2uj+XbOKdDW17rg==}
+  /@swc/core@1.4.12:
+    resolution: {integrity: sha512-QljRxTaUajSLB9ui93cZ38/lmThwIw/BPxjn+TphrYN6LPU3vu9/ykjgHtlpmaXDDcngL4K5i396E7iwwEUxYg==}
     engines: {node: '>=10'}
     requiresBuild: true
     peerDependencies:
@@ -4872,16 +4872,16 @@ packages:
       '@swc/counter': 0.1.3
       '@swc/types': 0.1.6
     optionalDependencies:
-      '@swc/core-darwin-arm64': 1.4.11
-      '@swc/core-darwin-x64': 1.4.11
-      '@swc/core-linux-arm-gnueabihf': 1.4.11
-      '@swc/core-linux-arm64-gnu': 1.4.11
-      '@swc/core-linux-arm64-musl': 1.4.11
-      '@swc/core-linux-x64-gnu': 1.4.11
-      '@swc/core-linux-x64-musl': 1.4.11
-      '@swc/core-win32-arm64-msvc': 1.4.11
-      '@swc/core-win32-ia32-msvc': 1.4.11
-      '@swc/core-win32-x64-msvc': 1.4.11
+      '@swc/core-darwin-arm64': 1.4.12
+      '@swc/core-darwin-x64': 1.4.12
+      '@swc/core-linux-arm-gnueabihf': 1.4.12
+      '@swc/core-linux-arm64-gnu': 1.4.12
+      '@swc/core-linux-arm64-musl': 1.4.12
+      '@swc/core-linux-x64-gnu': 1.4.12
+      '@swc/core-linux-x64-musl': 1.4.12
+      '@swc/core-win32-arm64-msvc': 1.4.12
+      '@swc/core-win32-ia32-msvc': 1.4.12
+      '@swc/core-win32-x64-msvc': 1.4.12
     dev: true
 
   /@swc/counter@0.1.3:
@@ -4937,7 +4937,7 @@ packages:
       dom-accessibility-api: 0.6.3
       lodash: 4.17.21
       redent: 3.0.0
-      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0)
+      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1)
     dev: true
 
   /@testing-library/user-event@14.5.2(@testing-library/dom@9.3.4):
@@ -5054,8 +5054,8 @@ packages:
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
 
-  /@types/express-serve-static-core@4.17.43:
-    resolution: {integrity: sha512-oaYtiBirUOPQGSWNGPWnzyAFJ0BP3cwvN4oWZQY+zUBwpVIGsKUkpBpSztp74drYcjavs7SKFZ4DX1V2QeN8rg==}
+  /@types/express-serve-static-core@4.19.0:
+    resolution: {integrity: sha512-bGyep3JqPCRry1wq+O5n7oiBgGWmeIJXPjXXCo8EK0u8duZGSYar7cGqd3ML2JUsLGeB7fmc06KYo9fLGWqPvQ==}
     dependencies:
       '@types/node': 20.12.4
       '@types/qs': 6.9.14
@@ -5066,7 +5066,7 @@ packages:
     resolution: {integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==}
     dependencies:
       '@types/body-parser': 1.19.5
-      '@types/express-serve-static-core': 4.17.43
+      '@types/express-serve-static-core': 4.19.0
       '@types/qs': 6.9.14
       '@types/serve-static': 1.15.7
 
@@ -5256,7 +5256,7 @@ packages:
       '@types/yargs-parser': 21.0.3
     dev: true
 
-  /@typescript-eslint/eslint-plugin@7.5.0(@typescript-eslint/parser@7.5.0)(eslint@8.57.0)(typescript@5.4.3):
+  /@typescript-eslint/eslint-plugin@7.5.0(@typescript-eslint/parser@7.5.0)(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-HpqNTH8Du34nLxbKgVMGljZMG0rJd2O9ecvr2QLYp+7512ty1j42KnsFwspPXg1Vh8an9YImf6CokUBltisZFQ==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -5268,10 +5268,10 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.10.0
-      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       '@typescript-eslint/scope-manager': 7.5.0
-      '@typescript-eslint/type-utils': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
-      '@typescript-eslint/utils': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/type-utils': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
+      '@typescript-eslint/utils': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       '@typescript-eslint/visitor-keys': 7.5.0
       debug: 4.3.4
       eslint: 8.57.0
@@ -5279,13 +5279,13 @@ packages:
       ignore: 5.3.1
       natural-compare: 1.4.0
       semver: 7.6.0
-      ts-api-utils: 1.3.0(typescript@5.4.3)
-      typescript: 5.4.3
+      ts-api-utils: 1.3.0(typescript@5.4.4)
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/parser@7.5.0(eslint@8.57.0)(typescript@5.4.3):
+  /@typescript-eslint/parser@7.5.0(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-cj+XGhNujfD2/wzR1tabNsidnYRaFfEkcULdcIyVBYcXjBvBKOes+mpMBP7hMpOyk+gBcfXsrg4NBGAStQyxjQ==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -5297,11 +5297,11 @@ packages:
     dependencies:
       '@typescript-eslint/scope-manager': 7.5.0
       '@typescript-eslint/types': 7.5.0
-      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.3)
+      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.4)
       '@typescript-eslint/visitor-keys': 7.5.0
       debug: 4.3.4
       eslint: 8.57.0
-      typescript: 5.4.3
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5322,7 +5322,7 @@ packages:
       '@typescript-eslint/visitor-keys': 7.5.0
     dev: true
 
-  /@typescript-eslint/type-utils@7.5.0(eslint@8.57.0)(typescript@5.4.3):
+  /@typescript-eslint/type-utils@7.5.0(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-A021Rj33+G8mx2Dqh0nMO9GyjjIBK3MqgVgZ2qlKf6CJy51wY/lkkFqq3TqqnH34XyAHUkq27IjlUkWlQRpLHw==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -5332,12 +5332,12 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.3)
-      '@typescript-eslint/utils': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.4)
+      '@typescript-eslint/utils': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       debug: 4.3.4
       eslint: 8.57.0
-      ts-api-utils: 1.3.0(typescript@5.4.3)
-      typescript: 5.4.3
+      ts-api-utils: 1.3.0(typescript@5.4.4)
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5404,7 +5404,7 @@ packages:
       - supports-color
     dev: true
 
-  /@typescript-eslint/typescript-estree@6.21.0(typescript@5.4.3):
+  /@typescript-eslint/typescript-estree@6.21.0(typescript@5.4.4):
     resolution: {integrity: sha512-6npJTkZcO+y2/kr+z0hc4HwNfrrP4kNYh57ek7yCNlrBjWQ1Y0OS7jiZTkgumrvkX5HkEKXFZkkdFNkaW2wmUQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5420,13 +5420,13 @@ packages:
       is-glob: 4.0.3
       minimatch: 9.0.3
       semver: 7.6.0
-      ts-api-utils: 1.3.0(typescript@5.4.3)
-      typescript: 5.4.3
+      ts-api-utils: 1.3.0(typescript@5.4.4)
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/typescript-estree@7.5.0(typescript@5.4.3):
+  /@typescript-eslint/typescript-estree@7.5.0(typescript@5.4.4):
     resolution: {integrity: sha512-YklQQfe0Rv2PZEueLTUffiQGKQneiIEKKnfIqPIOxgM9lKSZFCjT5Ad4VqRKj/U4+kQE3fa8YQpskViL7WjdPQ==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -5442,13 +5442,13 @@ packages:
       is-glob: 4.0.3
       minimatch: 9.0.3
       semver: 7.6.0
-      ts-api-utils: 1.3.0(typescript@5.4.3)
-      typescript: 5.4.3
+      ts-api-utils: 1.3.0(typescript@5.4.4)
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@typescript-eslint/utils@6.21.0(eslint@8.57.0)(typescript@5.4.3):
+  /@typescript-eslint/utils@6.21.0(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-NfWVaC8HP9T8cbKQxHcsJBY5YE1O33+jpMwN45qzWWaPDZgLIbo12toGMWnmhvCpd3sIxkpDw3Wv1B3dYrbDQQ==}
     engines: {node: ^16.0.0 || >=18.0.0}
     peerDependencies:
@@ -5459,7 +5459,7 @@ packages:
       '@types/semver': 7.5.8
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/types': 6.21.0
-      '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.4.3)
+      '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.4.4)
       eslint: 8.57.0
       semver: 7.6.0
     transitivePeerDependencies:
@@ -5467,7 +5467,7 @@ packages:
       - typescript
     dev: true
 
-  /@typescript-eslint/utils@7.5.0(eslint@8.57.0)(typescript@5.4.3):
+  /@typescript-eslint/utils@7.5.0(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-3vZl9u0R+/FLQcpy2EHyRGNqAS/ofJ3Ji8aebilfJe+fobK8+LbIFmrHciLVDxjDoONmufDcnVSF38KwMEOjzw==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -5478,7 +5478,7 @@ packages:
       '@types/semver': 7.5.8
       '@typescript-eslint/scope-manager': 7.5.0
       '@typescript-eslint/types': 7.5.0
-      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.3)
+      '@typescript-eslint/typescript-estree': 7.5.0(typescript@5.4.4)
       eslint: 8.57.0
       semver: 7.6.0
     transitivePeerDependencies:
@@ -5676,9 +5676,9 @@ packages:
         optional: true
     dependencies:
       '@vitest/utils': 1.4.0
-      magic-string: 0.30.8
+      magic-string: 0.30.9
       sirv: 2.0.4
-      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0)
+      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1)
     dev: true
 
   /@vitest/coverage-v8@1.4.0(vitest@1.4.0):
@@ -5693,14 +5693,14 @@ packages:
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 5.0.4
       istanbul-reports: 3.1.7
-      magic-string: 0.30.8
+      magic-string: 0.30.9
       magicast: 0.3.3
       picocolors: 1.0.0
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0)
+      vitest: 1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5732,7 +5732,7 @@ packages:
   /@vitest/snapshot@1.4.0:
     resolution: {integrity: sha512-saAFnt5pPIA5qDGxOHxJ/XxhMFKkUSBJmVt5VgDsAqPTX6JP326r5C/c9UuCMPoXNzuudTPsYDZCoJ5ilpqG2A==}
     dependencies:
-      magic-string: 0.30.8
+      magic-string: 0.30.9
       pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
@@ -6260,7 +6260,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001605
-      electron-to-chromium: 1.4.726
+      electron-to-chromium: 1.4.727
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.23.0)
     dev: true
@@ -6676,7 +6676,7 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cosmiconfig@9.0.0(typescript@5.4.3):
+  /cosmiconfig@9.0.0(typescript@5.4.4):
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -6689,7 +6689,7 @@ packages:
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
-      typescript: 5.4.3
+      typescript: 5.4.4
     dev: true
 
   /create-require@1.1.1:
@@ -7290,50 +7290,50 @@ packages:
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  /effect-http-node@0.8.6(@effect/platform-node@0.45.26)(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect-http@0.60.5)(effect@2.4.17):
-    resolution: {integrity: sha512-xtlX/UL/Qy6ESvifyv8ZvCMgRiQhexpL2rKaeWQ+zqwjIffWmOB5/LB+l2GMKgwtjeHl5E7J9100pXJwswe8Og==}
+  /effect-http-node@0.8.7(@effect/platform-node@0.45.27)(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect-http@0.60.6)(effect@2.4.18):
+    resolution: {integrity: sha512-wTo8eR+zwwJ4BLpyfA5fgZXy6otU4RV8atPuvcjavX8XCYnow4vzu254q76hW7ppXxlBTl+0zLSE+a4L0QyEzA==}
     peerDependencies:
-      '@effect/platform': ^0.48.21
-      '@effect/platform-node': ^0.45.23
-      '@effect/schema': ^0.64.15
-      effect: ^2.4.15
-      effect-http: ^0.60.5
+      '@effect/platform': ^0.48.24
+      '@effect/platform-node': ^0.45.26
+      '@effect/schema': ^0.64.18
+      effect: ^2.4.17
+      effect-http: ^0.60.6
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
-      '@effect/platform-node': 0.45.26(@effect/platform@0.48.24)(effect@2.4.17)
-      '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.17.1)
-      effect: 2.4.17
-      effect-http: 0.60.5(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect@2.4.17)
+      '@effect/platform': 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
+      '@effect/platform-node': 0.45.27(@effect/platform@0.48.25)(effect@2.4.18)
+      '@effect/schema': 0.64.19(effect@2.4.18)(fast-check@3.17.1)
+      effect: 2.4.18
+      effect-http: 0.60.6(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect@2.4.18)
       swagger-ui-dist: 5.13.0
     dev: false
 
-  /effect-http@0.60.5(@effect/platform@0.48.24)(@effect/schema@0.64.18)(effect@2.4.17):
-    resolution: {integrity: sha512-boWNaTfpBDKyQkKZD3dFLua7LlIJm7yeHpQycOpZWu7SjmD0YZNug61a0bkNP9raUGE/hXDTxcSldQTxLBd8/g==}
+  /effect-http@0.60.6(@effect/platform@0.48.25)(@effect/schema@0.64.19)(effect@2.4.18):
+    resolution: {integrity: sha512-XIpO0a2rR7fyCuN0SHMoIAc25BNW3HYe9jaV/pnINbgwKXtm3nb6u7lr55hrxzbzHEGGshX0JwrXJAa6QOBXDQ==}
     peerDependencies:
-      '@effect/platform': ^0.48.21
-      '@effect/schema': ^0.64.15
-      effect: ^2.4.15
+      '@effect/platform': ^0.48.24
+      '@effect/schema': ^0.64.18
+      effect: ^2.4.17
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18)(effect@2.4.17)(ws@8.16.0)
-      '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.17.1)
-      effect: 2.4.17
-      schema-openapi: 0.34.4(@effect/schema@0.64.18)(effect@2.4.17)
+      '@effect/platform': 0.48.25(@effect/schema@0.64.19)(effect@2.4.18)(ws@8.16.0)
+      '@effect/schema': 0.64.19(effect@2.4.18)(fast-check@3.17.1)
+      effect: 2.4.18
+      schema-openapi: 0.34.5(@effect/schema@0.64.19)(effect@2.4.18)
     dev: false
 
-  /effect-log@0.30.14(effect@2.4.17):
-    resolution: {integrity: sha512-PBapZKuZWmA9xLIsuprJuRIFXGkt8hj0TQxsqp2C9lyQb8iIFmI42AqQJBhneEDa4mNDhKdZ4jnkG5Tm+RlWKA==}
+  /effect-log@0.30.15(effect@2.4.18):
+    resolution: {integrity: sha512-MdM9lBhjZtejefZC+TT/LdEsfQuf+xFh5FWQVGlsj5FQLI8nZTbKhRyVOypWZpZyIorYxEcnJYa9fR3z4YCacw==}
     peerDependencies:
-      effect: ^2.4.15
+      effect: ^2.4.17
     dependencies:
-      effect: 2.4.17
+      effect: 2.4.18
     dev: false
 
   /effect@2.0.0-next.62:
     resolution: {integrity: sha512-fJhLzf5oouL4WZP314ZJgZz5Bel7OHTY+YFxO06sW1mSvqJz0s28y7jDHr5zhtTNM1YRvzbeLYUYfNaJYKqx1A==}
     dev: true
 
-  /effect@2.4.17:
-    resolution: {integrity: sha512-laxKfBOFrD9cZoxuQaYlGektelNn1cLRK9/i+lTTjRKDZB9/gRbnIt4XrG95pa+M3MiFlNHzMn/nBsppkmrt1A==}
+  /effect@2.4.18:
+    resolution: {integrity: sha512-8nNzkhSzFLhG9YxowXKawlk4+b3zwwOsbZwaaYhy1OjZGcEgcE6i0ywMFieXNSfOtsQ8swV1+5hvF+VBEtwwqg==}
 
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
@@ -7343,8 +7343,8 @@ packages:
       jake: 10.8.7
     dev: true
 
-  /electron-to-chromium@1.4.726:
-    resolution: {integrity: sha512-xtjfBXn53RORwkbyKvDfTajtnTp0OJoPOIBzXvkNbb7+YYvCHJflba3L7Txyx/6Fov3ov2bGPr/n5MTixmPhdQ==}
+  /electron-to-chromium@1.4.727:
+    resolution: {integrity: sha512-brpv4KTeC4g0Fx2FeIKytLd4UGn1zBQq5Lauy7zEWT9oqkaj5mgsxblEZIAOf1HHLlXxzr6adGViiBy5Z39/CA==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -7677,7 +7677,7 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       debug: 3.2.7
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
@@ -7717,17 +7717,17 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-deprecation@2.0.0(eslint@8.57.0)(typescript@5.4.3):
+  /eslint-plugin-deprecation@2.0.0(eslint@8.57.0)(typescript@5.4.4):
     resolution: {integrity: sha512-OAm9Ohzbj11/ZFyICyR5N6LbOIvQMp7ZU2zI7Ej0jIc8kiGUERXPNMfw2QqqHD1ZHtjMub3yPZILovYEYucgoQ==}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
       typescript: ^4.2.4 || ^5.0.0
     dependencies:
-      '@typescript-eslint/utils': 6.21.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/utils': 6.21.0(eslint@8.57.0)(typescript@5.4.4)
       eslint: 8.57.0
       tslib: 2.6.2
-      tsutils: 3.21.0(typescript@5.4.3)
-      typescript: 5.4.3
+      tsutils: 3.21.0(typescript@5.4.4)
+      typescript: 5.4.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -7742,7 +7742,7 @@ packages:
       '@typescript-eslint/parser':
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.3)
+      '@typescript-eslint/parser': 7.5.0(eslint@8.57.0)(typescript@5.4.4)
       array-includes: 3.1.8
       array.prototype.findlastindex: 1.2.5
       array.prototype.flat: 1.3.2
@@ -8617,8 +8617,8 @@ packages:
     optionalDependencies:
       uglify-js: 3.17.4
 
-  /happy-dom@14.4.0:
-    resolution: {integrity: sha512-H/vV0+/rGhdQeKGjvMVE4X0/pHNmymEnyGvo0nx9TYfo5DwByOqrnOpLRsepwROEkM0vi1ddw9yJW3sBzwzK1A==}
+  /happy-dom@14.5.1:
+    resolution: {integrity: sha512-nCmCszZnhHHvcY3gDqLNZrU71QzCT1sI2OUQy2YSn3omMYWe+QHSTO1PfS/1r6fds6zt6GI7L1tRIxo7RgC8lg==}
     engines: {node: '>=16.0.0'}
     dependencies:
       entities: 4.5.0
@@ -9198,8 +9198,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /isomorphic-ws@5.0.0(ws@8.16.0):
-    resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
+  /isows@1.0.4(ws@8.16.0):
+    resolution: {integrity: sha512-hEzjY+x9u9hPmBom9IIAqdJCwNLax+xrPb51vEPpERoFlIxgmZcHzsT5jKG06nvInKOBGvReAVz80Umed5CczQ==}
     peerDependencies:
       ws: '*'
     dependencies:
@@ -9687,7 +9687,7 @@ packages:
     hasBin: true
     dev: true
 
-  /madge@6.1.0(typescript@5.4.3):
+  /madge@6.1.0(typescript@5.4.4):
     resolution: {integrity: sha512-irWhT5RpFOc6lkzGHKLihonCVgM0YtfNUh4IrFeW3EqHpnt/JHUG3z26j8PeJEktCGB4tmGOOOJi1Rl/ACWucQ==}
     engines: {node: '>=14'}
     hasBin: true
@@ -9718,14 +9718,14 @@ packages:
       rc: 1.2.8
       stream-to-array: 2.3.0
       ts-graphviz: 1.8.2
-      typescript: 5.4.3
+      typescript: 5.4.4
       walkdir: 0.4.1
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /magic-string@0.30.8:
-    resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==}
+  /magic-string@0.30.9:
+    resolution: {integrity: sha512-S1+hd+dIrC8EZqKyT9DstTH/0Z+f76kmmvZnkfQVmOpDEF9iVgdYif3Q/pIWHmCoo59bQVGW0kVL3e2nl+9+Sw==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -11318,14 +11318,14 @@ packages:
       loose-envify: 1.4.0
     dev: true
 
-  /schema-openapi@0.34.4(@effect/schema@0.64.18)(effect@2.4.17):
-    resolution: {integrity: sha512-MSCyFaNbW4L4lIqOIoMbo+d9qs4N6d2cqHKuNx7Xk3xbDbYNeeKD1daHBXcCtb5cj0h9++Mf9yc86JF33fhQcg==}
+  /schema-openapi@0.34.5(@effect/schema@0.64.19)(effect@2.4.18):
+    resolution: {integrity: sha512-jkK3zNqUTD6w0d0EuskwtqI4n53qnCbs7Q4IzErcOhv6fas6vGJ0hdAHoNSXYFVRljbxc3G4kj2gTFQNEJJNZA==}
     peerDependencies:
-      '@effect/schema': ^0.64.16
-      effect: ^2.4.15
+      '@effect/schema': ^0.64.18
+      effect: ^2.4.17
     dependencies:
-      '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.17.1)
-      effect: 2.4.17
+      '@effect/schema': 0.64.19(effect@2.4.18)(fast-check@3.17.1)
+      effect: 2.4.18
 
   /semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
@@ -11838,7 +11838,7 @@ packages:
     resolution: {integrity: sha512-uaWhh6j18IIs5tOX0arvIBnVINAzpTXaQXkr7qAk8zoupegJVg0UU/5+S/FgsgVCnzVsJ9d7QLjIxkswEeTg0Q==}
     dev: false
 
-  /syncpack@12.3.0(typescript@5.4.3):
+  /syncpack@12.3.0(typescript@5.4.4):
     resolution: {integrity: sha512-Gz2uGn96OmGfVVlKztvFac1EJYjP+WptQ2ohA6Uf48C6qLkhSayhkdujKQ6q7bGOTy8HSGI0iDfwfCJu6wvRig==}
     engines: {node: '>=16'}
     hasBin: true
@@ -11846,7 +11846,7 @@ packages:
       '@effect/schema': 0.56.1(effect@2.0.0-next.62)(fast-check@3.15.0)
       chalk: 4.1.2
       commander: 11.1.0
-      cosmiconfig: 9.0.0(typescript@5.4.3)
+      cosmiconfig: 9.0.0(typescript@5.4.4)
       effect: 2.0.0-next.62
       enquirer: 2.4.1
       fast-check: 3.15.0
@@ -12046,13 +12046,13 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /ts-api-utils@1.3.0(typescript@5.4.3):
+  /ts-api-utils@1.3.0(typescript@5.4.4):
     resolution: {integrity: sha512-UQMIo7pb8WRomKR1/+MFVLTroIvDVtMX3K6OUir8ynLyzB8Jeriont2bTAtmNPa1ekAgN7YPDyf6V+ygrdU+eQ==}
     engines: {node: '>=16'}
     peerDependencies:
       typescript: '>=4.2.0'
     dependencies:
-      typescript: 5.4.3
+      typescript: 5.4.4
     dev: true
 
   /ts-dedent@2.2.0:
@@ -12064,7 +12064,7 @@ packages:
     engines: {node: '>=14.16'}
     dev: true
 
-  /ts-node@10.9.2(@types/node@20.12.4)(typescript@5.4.3):
+  /ts-node@10.9.2(@types/node@20.12.4)(typescript@5.4.4):
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
     hasBin: true
     peerDependencies:
@@ -12090,7 +12090,7 @@ packages:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.4.3
+      typescript: 5.4.4
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
@@ -12098,7 +12098,7 @@ packages:
   /ts-toolbelt@9.6.0:
     resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
 
-  /tsconfck@3.0.3(typescript@5.4.3):
+  /tsconfck@3.0.3(typescript@5.4.4):
     resolution: {integrity: sha512-4t0noZX9t6GcPTfBAbIbbIU4pfpCwh0ueq3S4O/5qXI1VwK1outmxhe9dOiEWqMz3MW2LKgDTpqWV+37IWuVbA==}
     engines: {node: ^18 || >=20}
     hasBin: true
@@ -12108,7 +12108,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      typescript: 5.4.3
+      typescript: 5.4.4
 
   /tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
@@ -12149,18 +12149,18 @@ packages:
       typescript: 4.9.5
     dev: true
 
-  /tsutils@3.21.0(typescript@5.4.3):
+  /tsutils@3.21.0(typescript@5.4.4):
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
     peerDependencies:
       typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta'
     dependencies:
       tslib: 1.14.1
-      typescript: 5.4.3
+      typescript: 5.4.4
     dev: true
 
-  /tsx@4.7.1:
-    resolution: {integrity: sha512-8d6VuibXHtlN5E3zFkgY8u4DX7Y3Z27zvvPKVmLon/D4AjuKzarkUBTLDBgj9iTQ0hg5xM7c/mYiRVM+HETf0g==}
+  /tsx@4.7.2:
+    resolution: {integrity: sha512-BCNd4kz6fz12fyrgCTEdZHGJ9fWTGeUzXmQysh0RVocDY3h4frk05ZNCXSy4kIenF7y/QnrdiVpTsyNRn6vlAw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     dependencies:
@@ -12288,12 +12288,12 @@ packages:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
     dev: true
 
-  /typescript-paths@1.5.1(typescript@5.4.3):
+  /typescript-paths@1.5.1(typescript@5.4.4):
     resolution: {integrity: sha512-lYErSLCON2MSplVV5V/LBgD4UNjMgY3guATdFCZY2q1Nr6OZEu4q6zX/rYMsG1TaWqqQSszg6C9EU7AGWMDrIw==}
     peerDependencies:
       typescript: ^4.7.2 || ^5
     dependencies:
-      typescript: 5.4.3
+      typescript: 5.4.4
     dev: true
 
   /typescript@3.9.10:
@@ -12308,8 +12308,8 @@ packages:
     hasBin: true
     dev: true
 
-  /typescript@5.4.3:
-    resolution: {integrity: sha512-KrPd3PKaCLr78MalgiwJnA25Nm8HAmdwN3mYUYZgG/wizIo9EainNVQI9/yDavtVFRN2h3k8uf3GLHuhDMgEHg==}
+  /typescript@5.4.4:
+    resolution: {integrity: sha512-dGE2Vv8cpVvw28v8HCPqyb08EzbBURxDpuhJvTrusShUfGnhHBafDsLdS1EhhxyL6BJQE+2cT3dDPAv+MQ6oLw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -12605,7 +12605,7 @@ packages:
       vite: '>=2.8'
     dependencies:
       '@rollup/plugin-virtual': 3.0.2
-      '@swc/core': 1.4.11
+      '@swc/core': 1.4.12
       uuid: 9.0.1
       vite: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
     transitivePeerDependencies:
@@ -12613,18 +12613,18 @@ packages:
       - rollup
     dev: true
 
-  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.4.3)(vite@5.2.8):
+  /vite-plugin-tsconfig-paths@1.4.1(typescript@5.4.4)(vite@5.2.8):
     resolution: {integrity: sha512-pGpvsPGDpiM5z7I9ZhBe7H2WAH0gAC2Lh55rM3pE+84V2q7qojNO28wdUl4i/M4XUfJcilhyucmbc9D7IKqpXA==}
     peerDependencies:
       vite: '*'
     dependencies:
-      typescript-paths: 1.5.1(typescript@5.4.3)
+      typescript-paths: 1.5.1(typescript@5.4.4)
       vite: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
     transitivePeerDependencies:
       - typescript
     dev: true
 
-  /vite-tsconfig-paths@4.3.2(typescript@5.4.3)(vite@5.2.8):
+  /vite-tsconfig-paths@4.3.2(typescript@5.4.4)(vite@5.2.8):
     resolution: {integrity: sha512-0Vd/a6po6Q+86rPlntHye7F31zA2URZMbH8M3saAZ/xR9QoGN/L21bxEGfXdWmFdNkqPpRdxFT7nmNe12e9/uA==}
     peerDependencies:
       vite: '*'
@@ -12634,7 +12634,7 @@ packages:
     dependencies:
       debug: 4.3.4
       globrex: 0.1.2
-      tsconfck: 3.0.3(typescript@5.4.3)
+      tsconfck: 3.0.3(typescript@5.4.4)
       vite: 5.2.8(@types/node@20.12.4)(terser@5.30.3)
     transitivePeerDependencies:
       - supports-color
@@ -12676,7 +12676,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitest@1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.4.0):
+  /vitest@1.4.0(@types/node@20.12.4)(@vitest/browser@1.4.0)(happy-dom@14.5.1):
     resolution: {integrity: sha512-gujzn0g7fmwf83/WzrDTnncZt2UiXP41mHuFYFrdwaLRVQ6JYQEiME2IfEjU3vcFL3VKa75XhI3lFgn+hfVsQw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -12712,9 +12712,9 @@ packages:
       chai: 4.4.1
       debug: 4.3.4
       execa: 8.0.1
-      happy-dom: 14.4.0
+      happy-dom: 14.5.1
       local-pkg: 0.5.0
-      magic-string: 0.30.8
+      magic-string: 0.30.9
       pathe: 1.1.2
       picocolors: 1.0.0
       std-env: 3.7.0

@@ -42,6 +42,6 @@
   "dependencies": {
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
-    "effect": "^2.4.17"
+    "effect": "^2.4.18"
   }
 }
