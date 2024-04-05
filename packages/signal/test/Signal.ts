@@ -98,7 +98,11 @@ describe("Signal", () => {
       expect(yield* _(computed)).toEqual(8)
       yield* _(count, Signal.update((n) => n + 1))
       expect(yield* _(computed)).toEqual(16)
-    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
+    }).pipe(
+      Effect.provide(Signal.layer()),
+      Effect.provide(Signal.mixedQueue()),
+      Effect.scoped
+    ))
 
   it.live("computeds can utilize priority", () =>
     Effect.gen(function*(_) {
@@ -149,5 +153,20 @@ describe("Signal", () => {
         ...depTree,
         ...depTree
       ])
-    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
+    }).pipe(
+      Effect.provide(Signal.layer()),
+      Effect.provide(Signal.mixedQueue()),
+      Effect.scoped
+    ))
+
+  it.effect("waitForExit allows skipping loading states while initiating a signal", () =>
+    Effect.gen(function*(_) {
+      const delay = 10
+      const count = yield* _(Signal.make(Effect.delay(Effect.succeed(0), delay)))
+      expect(yield* _(count)).toEqual(0)
+    }).pipe(
+      Effect.provide(Signal.layer({ waitForExit: true })),
+      Effect.provide(Signal.mixedQueue()),
+      Effect.scoped
+    ))
 })

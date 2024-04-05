@@ -220,14 +220,13 @@ function getSignalValue(
       const loading = AsyncData.loading()
       yield* _(setValue(signal, loading))
 
-      signal.state.fiber = yield* _(
-        signal.state.initial,
+      signal.state.fiber = signal.state.initial.pipe(
         Effect.onExit((exit) => {
           signal.state.fiber = null
           return setValue(signal, AsyncData.fromExit(exit))
         }),
-        Effect.forkIn(signal.state.scope),
-        Effect.interruptible
+        Effect.interruptible,
+        (_) => Effect.runFork(_, { scope: signal.state.scope })
       )
 
       if (signalsCtx.options.waitForExit) {
