@@ -188,4 +188,60 @@ describe("Signal", () => {
       yield* _(count.set(1))
       expect(yield* _(double)).toEqual(2)
     }).pipe(provideEnv))
+
+  it("multicasts computed values to multiple listeners ", () =>
+    Effect.gen(function*(_) {
+      const count = yield* _(Signal.make<number>(Effect.succeed(0)))
+      const calls: Array<string> = []
+      const double = count.pipe(
+        Signal.tap(() => calls.push("double")),
+        Signal.map((x) => x * 2)
+      )
+
+      const a = double.pipe(
+        Signal.setPriority(Signal.Priority.Idle(0)),
+        Signal.tap(() => calls.push("idle"))
+      )
+      const b = double.pipe(
+        Signal.setPriority(Signal.Priority.Raf(0)),
+        Signal.tap(() => calls.push("raf"))
+      )
+      const c = double.pipe(
+        Signal.setPriority(Signal.Priority.MacroTask(0)),
+        Signal.tap(() => calls.push("macro"))
+      )
+      const d = double.pipe(
+        Signal.setPriority(Signal.Priority.MicroTask(0)),
+        Signal.tap(() => calls.push("micro"))
+      )
+      const e = double.pipe(
+        Signal.setPriority(Signal.Priority.Sync),
+        Signal.tap(() => calls.push("sync"))
+      )
+      const all = yield* _(Signal.all([a, b, c, d, e], { concurrency: "unbounded" }))
+
+      expect(all).toEqual([0, 0, 0, 0, 0])
+
+      // Will always operate the same regardless of priority when directly sampling
+      const initial = ["double", "idle", "raf", "macro", "micro", "sync"]
+      expect(calls).toEqual(initial)
+
+      // trigger async updates by not calling "yield* _(all)"
+      yield* _(count.set(1))
+
+      // Wait for all async updates to complete
+      yield* _(Effect.sleep(5))
+
+      expect(calls).toEqual([
+        ...initial,
+        // only 1 call of double, despite multiple tasks to verify no updates are needed
+        "double",
+        // Async scheduling will utilize priority
+        "sync",
+        "micro",
+        "macro",
+        "raf",
+        "idle"
+      ])
+    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped, Effect.runPromise))
 })

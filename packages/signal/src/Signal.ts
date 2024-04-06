@@ -8,8 +8,7 @@ import { hasProperty } from "effect/Predicate"
 import type { Concurrency } from "effect/Types"
 import { unify } from "effect/Unify"
 import { ComputedImpl } from "./internal/computed.js"
-import type { ComputedTypeId } from "./internal/type-id.js"
-import { SignalTypeId } from "./internal/type-id.js"
+import { ComputedTypeId, SignalTypeId } from "./internal/type-id.js"
 import { Signals } from "./Signals.js"
 
 /**
@@ -332,6 +331,13 @@ export function compute<A, E, R>(
 /**
  * @since 1.0.0
  */
+export function isComputed(u: unknown): u is Computed.Any {
+  return hasProperty(u, ComputedTypeId)
+}
+
+/**
+ * @since 1.0.0
+ */
 export const fail: {
   <E>(e: E): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
 
@@ -413,6 +419,30 @@ export const mapEffect: {
   options?: Partial<ComputedOptions>
 ): Computed<B, E | E2, R | R2> {
   return compute(Effect.flatMap(effect, f), options)
+})
+
+/**
+ * @since 1.0.0
+ */
+export const tap: {
+  <A, B, E2 = never, R2 = never>(
+    f: (a: A) => B | Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): <E, R>(
+    effect: Effect.Effect<A, E, R>
+  ) => Computed<A, E | E2, R | R2>
+
+  <A, E, R, B, E2 = never, R2 = never>(
+    effect: Effect.Effect<A, E, R>,
+    f: (a: NoInfer<A>) => B | Effect.Effect<B, E2, R2>,
+    options?: Partial<ComputedOptions>
+  ): Computed<A, E | E2, R | R2>
+} = dual(isEffectDataFirst, function tap<A, E, R, B, E2 = never, R2 = never>(
+  effect: Effect.Effect<A, E, R>,
+  f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>,
+  options?: Partial<ComputedOptions>
+): Computed<A, E | E2, R | R2> {
+  return compute(Effect.tap(effect, f), options)
 })
 
 const is2EffectDataFirst = (args: IArguments) => Effect.isEffect(args[0]) && Effect.isEffect(args[1])
@@ -684,4 +714,14 @@ export const catchLoading: {
     ),
     options
   )
+})
+
+export const setPriority: {
+  (priority: number): <A, E, R>(computed: Computed<A, E, R>) => Computed<A, E, R>
+  <A, E, R>(computed: Computed<A, E, R>, priority: number): Computed<A, E, R>
+} = dual(2, function setPriority<A, E, R>(
+  computed: Computed<A, E, R>,
+  priority: number
+): Computed<A, E, R> {
+  return new ComputedImpl(computed.effect, priority)
 })
