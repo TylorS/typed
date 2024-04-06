@@ -403,7 +403,7 @@ function setValue(
         Effect.forEach(
           depthFirstReaders(current),
           (reader) =>
-            reader.state.scheduled ? Effect.unit : Effect.provideService(
+            Effect.provideService(
               current.signals.queue.add(updateComputedTask(current.signals, reader), reader.priority),
               Scope.Scope,
               reader.state.scope
