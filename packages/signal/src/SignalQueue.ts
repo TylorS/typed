@@ -153,7 +153,7 @@ export const mixedQueue = (options?: IdleRequestOptions): Layer.Layer<SignalQueu
       [[-1, -1], new SyncImpl()],
       ...(supportsMicrotask ? [[[MICRO_TASK_START, MICRO_TASK_END], new MicroTaskImpl(scope)] as const] : []),
       [[macroTaskStart, macroTaskEnd], new MacroTaskImpl(scope)],
-      ...(supportsRaf ? [[[DEFAULT_PRIORITY, rafEnd], new RafImpl(scope)] as const] : []),
+      ...(supportsRaf ? [[[RAF_START, rafEnd], new RafImpl(scope)] as const] : []),
       ...(supportsIdle ? [[[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, options)] as const] : [])
     ]
 
