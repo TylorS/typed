@@ -373,8 +373,6 @@ export function launch<A, E, R>(
   return Layer.launch(Layer.scopedDiscard(Effect.ignoreLogged(computed)))
 }
 
-const isEffectDataFirst = (args: IArguments) => Effect.isEffect(args[0])
-
 /**
  * @since 1.0.0
  */
@@ -546,7 +544,7 @@ export const catchAll: {
     signal: Effect.Effect<A, E, R>,
     f: (error: E) => Effect.Effect<B, E2, R2>
   ): Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
-} = dual(isEffectDataFirst, function catchAll<A, E, R, B, E2, R2>(
+} = dual(2, function catchAll<A, E, R, B, E2, R2>(
   signal: Effect.Effect<A, E, R>,
   f: (error: E) => Effect.Effect<B, E2, R2>
 ): Computed<A | B, E2, Exclude<R | R2, Signals>> {
@@ -572,7 +570,7 @@ export const catchTag: {
     f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
   ): Computed<A | A1, Exclude<E1 | Exclude<E, { _tag: K }>, AsyncData.Loading>, Exclude<R | R1, Signals>>
 } = dual(
-  isEffectDataFirst,
+  3,
   function catchTag<A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
     self: Effect.Effect<A, E, R>,
     k: K,
@@ -642,7 +640,7 @@ export const catchTags: {
       [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
     }[keyof Cases]
   >
-} = dual(isEffectDataFirst, function catchTags<
+} = dual(2, function catchTags<
   A,
   E,
   R,
@@ -673,7 +671,7 @@ export const catchLoading: {
     signal: Effect.Effect<A, E, R>,
     f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>
   ): Computed<A | A1, E1 | Exclude<E, AsyncData.Loading>, Exclude<R | R1, Signals>>
-} = dual(isEffectDataFirst, function catchLoading<A, E, R, A1, E1, R1>(
+} = dual(2, function catchLoading<A, E, R, A1, E1, R1>(
   signal: Effect.Effect<A, E, R>,
   f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>
 ) {
