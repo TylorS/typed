@@ -13,13 +13,15 @@ import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleC
 
 const SCALE = 10
 
-const RAF_START = SCALE * 2
+const SYNC = -1
+const MICRO_TASK_START = 0
+const MICRO_TASK_END = MICRO_TASK_START + (SCALE - 1)
+const MACRO_TASK_START = MICRO_TASK_END + 1
+const MACRO_TASK_END = MACRO_TASK_START + (SCALE - 1)
+const RAF_START = MACRO_TASK_END + 1
 const RAF_END = RAF_START + (SCALE - 1)
-const MACRO_TASK_END = RAF_START - 1
-const MACRO_TASK_START = MACRO_TASK_END - (SCALE - 1)
-const MICRO_TASK_END = MACRO_TASK_END - SCALE
-const MICRO_TASK_START = MICRO_TASK_END - (SCALE - 1)
 const IDLE_START = RAF_END + 1
+const IDLE_END = Number.MAX_SAFE_INTEGER
 
 /**
  * @since 1.0.0
@@ -127,7 +129,7 @@ export const mixedQueue = (options?: IdleRequestOptions): Layer.Layer<SignalQueu
     // so if we don't have support for others, this will be the fallback
     // and priority ranges will be computed accordingly. We do this
     // to ensure there are not multiple competing setTimouts as fallbacks
-    // within each implementation of SingalQueue causing unnecessary
+    // within each implementation of SignalQueue causing unnecessary
     // work and making it difficult to reason about the order of execution.
     let macroTaskStart = MACRO_TASK_START
     let macroTaskEnd = MACRO_TASK_END
@@ -141,7 +143,7 @@ export const mixedQueue = (options?: IdleRequestOptions): Layer.Layer<SignalQueu
 
     // if we don't support idle, set the raf end to include the idle range
     if (!supportsIdle) {
-      rafEnd = Number.MAX_SAFE_INTEGER
+      rafEnd = IDLE_END
     }
 
     // if we don't support raf, set the macro task end to include the raf range
@@ -150,11 +152,11 @@ export const mixedQueue = (options?: IdleRequestOptions): Layer.Layer<SignalQueu
     }
 
     const queues: Array<readonly [priorityRange: readonly [number, number], SignalQueue]> = [
-      [[-1, -1], new SyncImpl()],
+      [[SYNC, SYNC], new SyncImpl()],
       ...(supportsMicrotask ? [[[MICRO_TASK_START, MICRO_TASK_END], new MicroTaskImpl(scope)] as const] : []),
       [[macroTaskStart, macroTaskEnd], new MacroTaskImpl(scope)],
       ...(supportsRaf ? [[[RAF_START, rafEnd], new RafImpl(scope)] as const] : []),
-      ...(supportsIdle ? [[[IDLE_START, Number.MAX_SAFE_INTEGER], new IdleImpl(scope, options)] as const] : [])
+      ...(supportsIdle ? [[[IDLE_START, IDLE_END], new IdleImpl(scope, options)] as const] : [])
     ]
 
     return Effect.succeed(new MixedImpl(queues))
