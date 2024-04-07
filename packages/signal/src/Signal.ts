@@ -157,7 +157,7 @@ export const runUpdates: {
         set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
       }
     ) => Effect.Effect<B, E2, R2>
-  ): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, E | E2 | AsyncData.Loading, R>
+  ): <E, R>(signal: Signal<A, E, R>) => Effect.Effect<B, E2, R>
 
   <A, E, R, B, E2, R2>(
     signal: Signal<A, E, R>,
@@ -167,14 +167,14 @@ export const runUpdates: {
         set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
       }
     ) => Effect.Effect<B, E2, R2>
-  ): Effect.Effect<B, AsyncData.Loading | E | E2, R | R2>
+  ): Effect.Effect<B, E2, R | R2>
 } = dual(2, function runUpdates<A, E, R, B, E2, R2>(
   signal: Signal<A, E, R>,
   f: (params: {
     get: Effect.Effect<AsyncData.AsyncData<A, E>>
     set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
   }) => Effect.Effect<B, E2, R2>
-): Effect.Effect<B, E | E2 | AsyncData.Loading, R | R2> {
+): Effect.Effect<B, E2, R | R2> {
   return signal.runUpdates(f)
 })
 
@@ -354,12 +354,12 @@ export const fail: {
 export const failCause: {
   <E>(
     cause: Cause<E>
-  ): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+  ): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, E, R>
 
   <A, E, R>(
     signal: Signal<A, E, R>,
     cause: Cause<E>
-  ): Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, E, R>
 } = dual(2, function failCause<A, E, R>(signal: Signal<A, E, R>, cause: Cause<E>) {
   return runUpdates(signal, ({ set }) => set(AsyncData.failCause(cause)))
 })
@@ -563,12 +563,12 @@ export const catchTag: {
     f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
   ): <A, R>(
     self: Effect.Effect<A, E, R>
-  ) => Computed<A1 | A, Exclude<E1 | Exclude<E, { _tag: K }>, AsyncData.Loading>, Exclude<R1 | R, Signals>>
+  ) => Computed<A1 | A, E1 | Exclude<E, { _tag: K }>, Exclude<R1 | R, Signals>>
   <A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
     self: Effect.Effect<A, E, R>,
     k: K,
     f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
-  ): Computed<A | A1, Exclude<E1 | Exclude<E, { _tag: K }>, AsyncData.Loading>, Exclude<R | R1, Signals>>
+  ): Computed<A | A1, E1 | Exclude<E, { _tag: K }>, Exclude<R | R1, Signals>>
 } = dual(
   3,
   function catchTag<A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
