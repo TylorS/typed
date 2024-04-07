@@ -1,7 +1,7 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
 import { get, Tagged } from "@typed/context"
-import type { Exit } from "effect"
-import { Chunk, Effect, Effectable, FiberRef, Scope } from "effect"
+import type { Clock } from "effect"
+import { Chunk, Effect, Effectable, Exit, FiberRef, Scope } from "effect"
 import * as Fiber from "effect/Fiber"
 import { constant } from "effect/Function"
 import type { Computed, Signal, SignalOptions } from "../Signal.js"
@@ -15,6 +15,7 @@ export const tag = Tagged<Signals>("@typed/signal/Signals")
 const Computing = FiberRef.unsafeMake<Chunk.Chunk<ComputedImpl<any, any, any>>>(Chunk.empty())
 
 type SignalsCtx = {
+  clock: Clock.Clock
   queue: SignalQueue
   computeds: WeakMap<Computed.Any, ComputedImpl<any, any, any>>
   options: SignalsOptions
@@ -41,37 +42,42 @@ export type SignalsOptions = {
 }
 
 export const layer = (options?: Partial<SignalsOptions>) =>
-  tag.layer(SignalQueue.with((queue) => {
-    const optionsWithDefaults: SignalsOptions = {
-      waitForExit: false,
-      ...options
-    }
-    const signalsCtx: SignalsCtx = {
-      computeds: new WeakMap(),
-      readers: new WeakMap(),
-      queue,
-      options: optionsWithDefaults
-    }
-
-    const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-      Effect.contextWith((ctx) => makeComputed(signalsCtx, Effect.provide(effect, ctx) as any))
-
-    const signals: Signals = {
-      make: <A, E, R>(initial: Effect.Effect<A, E, R>) => makeSignal(signalsCtx, initial),
-      getComputed: (computed) => {
-        const existing = signalsCtx.computeds.get(computed)
-        if (existing === undefined) {
-          return makeComputedImpl(computed.effect).pipe(
-            Effect.tap((c) => signalsCtx.computeds.set(computed, c)),
-            Effect.flatten
-          )
-        }
-        return existing.commit()
+  tag.layer(Effect.clockWith((clock) =>
+    SignalQueue.with((queue) => {
+      const optionsWithDefaults: SignalsOptions = {
+        waitForExit: false,
+        ...options
       }
-    }
+      const signalsCtx: SignalsCtx = {
+        clock,
+        computeds: new WeakMap(),
+        readers: new WeakMap(),
+        queue,
+        options: optionsWithDefaults
+      }
 
-    return signals
-  }))
+      const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+        Effect.contextWith((ctx) =>
+          makeComputed(signalsCtx, Effect.provide(effect, ctx) as any, clock.unsafeCurrentTimeMillis())
+        )
+
+      const signals: Signals = {
+        make: <A, E, R>(initial: Effect.Effect<A, E, R>) => makeSignal(signalsCtx, initial),
+        getComputed: (computed) => {
+          const existing = signalsCtx.computeds.get(computed)
+          if (existing === undefined) {
+            return makeComputedImpl(computed.effect).pipe(
+              Effect.tap((c) => signalsCtx.computeds.set(computed, c)),
+              Effect.flatten
+            )
+          }
+          return existing.commit()
+        }
+      }
+
+      return signals
+    })
+  ))
 
 function makeSignal<A, E, R>(
   signalsCtx: SignalsCtx,
@@ -85,7 +91,7 @@ function makeSignal<A, E, R>(
       lock: Effect.unsafeMakeSemaphore(1).withPermits(1),
       priority: options?.priority ?? DEFAULT_PRIORITY,
       scope: get(context, Scope.Scope),
-      value: initialFromEffect(initial)
+      value: initialFromEffect(initial, signalsCtx.clock.unsafeCurrentTimeMillis())
     }
 
     return new SignalImpl<A, E>(signalsCtx, signalState)
@@ -94,23 +100,24 @@ function makeSignal<A, E, R>(
 
 // Fast Path for synchronous effects
 function initialFromEffect<A, E, R>(
-  effect: Effect.Effect<A, E, R>
+  effect: Effect.Effect<A, E, R>,
+  timestamp: number
 ): AsyncData.AsyncData<E, A> {
   const tag = (effect as any)._op
 
   switch (tag) {
     case "Success":
-      return AsyncData.success((effect as any).effect_instruction_i0)
+      return AsyncData.success((effect as any).effect_instruction_i0, { timestamp })
     case "Failure":
-      return AsyncData.failCause((effect as any).effect_instruction_i0)
+      return AsyncData.failCause((effect as any).effect_instruction_i0, { timestamp })
     case "Left":
-      return AsyncData.fail((effect as any).left)
+      return AsyncData.fail((effect as any).left, { timestamp })
     case "Right":
-      return AsyncData.success((effect as any).right)
+      return AsyncData.success((effect as any).right, { timestamp })
     case "Some":
-      return AsyncData.success((effect as any).value)
+      return AsyncData.success((effect as any).value, { timestamp })
     case "Sync":
-      return AsyncData.success((effect as any).effect_instruction_i0())
+      return AsyncData.success((effect as any).effect_instruction_i0(), { timestamp })
     default:
       return AsyncData.noData()
   }
@@ -181,12 +188,13 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
 
 function makeComputed<A, E>(
   signalsCtx: SignalsCtx,
-  effect: Effect.Effect<A, E>
+  effect: Effect.Effect<A, E>,
+  timestamp: number
 ): ComputedImpl<A, E, never> {
   const computedState: ComputedState = {
     effect,
     needsUpdate: true,
-    value: initialFromEffect(effect)
+    value: initialFromEffect(effect, timestamp)
   }
 
   return new ComputedImpl<A, E, never>(signalsCtx, computedState)
@@ -205,15 +213,20 @@ function getSignalValue(
 }
 
 function initSignalValue(signal: SignalImpl<any, any>) {
-  const loading = AsyncData.loading()
-
+  const clock = signal.signals.clock
+  const loading = AsyncData.loading({ timestamp: clock.unsafeCurrentTimeMillis() })
   return Effect.flatMap(setValue(signal, loading), () => {
     signal.state.fiber = signal.state.initial.pipe(
       Effect.onExit((exit) => {
         signal.state.fiber = null
-        return setValue(signal, AsyncData.fromExit(exit))
+        return setValue(
+          signal,
+          Exit.match(exit, {
+            onFailure: (cause) => AsyncData.failCause(cause, { timestamp: clock.unsafeCurrentTimeMillis() }),
+            onSuccess: (value) => AsyncData.success(value, { timestamp: clock.unsafeCurrentTimeMillis() })
+          })
+        )
       }),
-      Effect.interruptible,
       (_) => Effect.runFork(_, { scope: signal.state.scope })
     )
     return Effect.if(signal.signals.options.waitForExit, {
@@ -272,20 +285,24 @@ function getComputedValue(
 function initComputedValue(
   computed: ComputedImpl<any, any, any>
 ): Effect.Effect<AsyncData.AsyncData<any, any>> {
-  return Effect.suspend(() => {
-    computed.state.needsUpdate = false
-    const loading = AsyncData.startLoading(computed.state.value)
+  computed.state.needsUpdate = false
+  const clock = computed.signals.clock
+  const loading = AsyncData.startLoading(computed.state.value, { timestamp: clock.unsafeCurrentTimeMillis() })
 
-    return setValue(computed, loading).pipe(
-      Effect.zipRight(Effect.exit(computed.state.effect)),
-      Effect.map(AsyncData.fromExit),
-      Effect.tap((data) => setValue(computed, data)),
-      Effect.onInterrupt(() => {
-        computed.state.needsUpdate = true
-        return setValue(computed, AsyncData.stopLoading(computed.state.value))
+  return setValue(computed, loading).pipe(
+    Effect.zipRight(Effect.exit(computed.state.effect)),
+    Effect.map((exit) =>
+      Exit.match(exit, {
+        onFailure: (cause) => AsyncData.failCause(cause, { timestamp: clock.unsafeCurrentTimeMillis() }),
+        onSuccess: (value) => AsyncData.success(value, { timestamp: clock.unsafeCurrentTimeMillis() })
       })
-    )
-  })
+    ),
+    Effect.onInterrupt(() => {
+      computed.state.needsUpdate = true
+      return setValue(computed, AsyncData.stopLoading(computed.state.value))
+    }),
+    Effect.tap((data) => setValue(computed, data))
+  )
 }
 
 function updateReaders(current: ComputedImpl<any, any, any> | SignalImpl<any, any>) {

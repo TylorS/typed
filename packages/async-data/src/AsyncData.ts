@@ -457,17 +457,20 @@ export const flatMap: {
 /**
  * @since 1.0.0
  */
-export const startLoading = <A, E>(data: AsyncData<A, E>): AsyncData<A, E> => {
+export const startLoading = <A, E>(
+  data: AsyncData<A, E>,
+  options?: OptionalPartial<LoadingOptions>
+): AsyncData<A, E> => {
   if (isSuccess(data)) {
-    return Option.isSome(data.refreshing) ? data : success(data.value, { ...data, refreshing: loading() })
+    return Option.isSome(data.refreshing) ? data : success(data.value, { ...data, refreshing: loading(options) })
   } else if (isFailure(data)) {
     return Option.isSome(data.refreshing)
       ? data
-      : failCause(data.cause, { ...data, refreshing: loading() })
+      : failCause(data.cause, { ...data, refreshing: loading(options) })
   } else if (isOptimistic(data)) {
-    return optimistic(startLoading(data.previous), data.value, data)
+    return optimistic(startLoading(data.previous, options), data.value, data)
   } else {
-    return loading()
+    return loading(options)
   }
 }
 
@@ -476,9 +479,9 @@ export const startLoading = <A, E>(data: AsyncData<A, E>): AsyncData<A, E> => {
  */
 export const stopLoading = <A, E>(data: AsyncData<A, E>): AsyncData<A, E> => {
   if (isSuccess(data)) {
-    return Option.isSome(data.refreshing) ? success(data.value) : data
+    return Option.isSome(data.refreshing) ? success(data.value, { timestamp: data.timestamp }) : data
   } else if (isFailure(data)) {
-    return Option.isSome(data.refreshing) ? failCause(data.cause) : data
+    return Option.isSome(data.refreshing) ? failCause(data.cause, { timestamp: data.timestamp }) : data
   } else if (isOptimistic(data)) {
     return optimistic(stopLoading(data.previous), data.value, data)
   } else {
