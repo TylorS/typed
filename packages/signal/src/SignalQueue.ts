@@ -11,10 +11,20 @@ import { dual } from "effect/Function"
 import * as Scope from "effect/Scope"
 import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback.js"
 
+const SCALE = 10
+
+const RAF_START = SCALE * 2
+const RAF_END = RAF_START + (SCALE - 1)
+const MACRO_TASK_END = RAF_START - 1
+const MACRO_TASK_START = MACRO_TASK_END - (SCALE - 1)
+const MICRO_TASK_END = MACRO_TASK_END - SCALE
+const MICRO_TASK_START = MICRO_TASK_END - (SCALE - 1)
+const IDLE_START = RAF_END + 1
+
 /**
  * @since 1.0.0
  */
-export const DEFAULT_PRIORITY = 20
+export const DEFAULT_PRIORITY = MICRO_TASK_START
 
 /**
  * The context in which templates are rendered within
@@ -102,15 +112,6 @@ export const macrotaskQueue: Layer.Layer<SignalQueue> = SignalQueue.scoped(
  * @since 1.0.0
  */
 export const syncQueue: Layer.Layer<SignalQueue> = SignalQueue.layer(Effect.sync(unsafeMakeSyncSignalQueue))
-
-const SCALE = 10
-
-const MACRO_TASK_END = DEFAULT_PRIORITY - 1
-const MACRO_TASK_START = MACRO_TASK_END - (SCALE - 1)
-const MICRO_TASK_END = MACRO_TASK_END - SCALE
-const MICRO_TASK_START = MICRO_TASK_END - (SCALE - 1)
-const RAF_END = DEFAULT_PRIORITY + (SCALE - 1)
-const IDLE_START = RAF_END + 1
 
 /**
  * @since 1.0.0

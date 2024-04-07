@@ -1,6 +1,6 @@
 import { describe, it } from "@effect/vitest"
 import * as Signal from "@typed/signal"
-import { deepEqual, ok } from "assert"
+import { ok } from "assert"
 import { Effect, Either, flow, Option } from "effect"
 import * as TestClock from "effect/TestClock"
 
@@ -104,67 +104,6 @@ describe("Signal", () => {
       Effect.scoped
     ))
 
-  it.live("computeds can utilize priority", () =>
-    Effect.gen(function*(_) {
-      const calls: Array<"count" | "double" | "triple" | "computed"> = []
-
-      const count = yield* _(Signal.make(
-        Effect.sync(() => {
-          calls.push("count")
-          return 0
-        })
-      ))
-      const double = Signal.map(
-        count,
-        (x) => {
-          calls.push("double")
-          return x * 2
-        },
-        {
-          priority: Signal.Priority.Idle(0)
-        }
-      )
-      const triple = Signal.map(
-        double,
-        (x) => {
-          calls.push("triple")
-          return x * 3
-        },
-        { priority: Signal.Priority.Raf(0) }
-      )
-      const computed = Signal.zipWith(
-        double,
-        triple,
-        (x, y) => {
-          calls.push("computed")
-          return x + y
-        },
-        {
-          priority: Signal.Priority.MacroTask(0)
-        }
-      )
-
-      // Will always operate the same regardless of priority when directly sampling
-      expect(yield* _(computed)).toEqual(0)
-      yield* _(count, Signal.update((n) => n + 1))
-      expect(yield* _(computed)).toEqual(8)
-      yield* _(count, Signal.update((n) => n + 1))
-      expect(yield* _(computed)).toEqual(16)
-
-      const depTree = ["double", "triple", "computed"]
-
-      deepEqual(calls, [
-        "count",
-        ...depTree,
-        ...depTree,
-        ...depTree
-      ])
-    }).pipe(
-      Effect.provide(Signal.layer()),
-      Effect.provide(Signal.mixedQueue()),
-      Effect.scoped
-    ))
-
   it.effect("waitForExit allows skipping loading states while initiating a signal", () =>
     Effect.gen(function*(_) {
       const delay = 10
@@ -199,31 +138,25 @@ describe("Signal", () => {
       )
 
       const a = double.pipe(
-        Signal.setPriority(Signal.Priority.Idle(0)),
-        Signal.tap(() => calls.push("idle"))
+        Signal.tap(() => calls.push("a"))
       )
       const b = double.pipe(
-        Signal.setPriority(Signal.Priority.Raf(0)),
-        Signal.tap(() => calls.push("raf"))
+        Signal.tap(() => calls.push("b"))
       )
       const c = double.pipe(
-        Signal.setPriority(Signal.Priority.MacroTask(0)),
-        Signal.tap(() => calls.push("macro"))
+        Signal.tap(() => calls.push("c"))
       )
       const d = double.pipe(
-        Signal.setPriority(Signal.Priority.MicroTask(0)),
-        Signal.tap(() => calls.push("micro"))
+        Signal.tap(() => calls.push("d"))
       )
       const e = double.pipe(
-        Signal.setPriority(Signal.Priority.Sync),
-        Signal.tap(() => calls.push("sync"))
+        Signal.tap(() => calls.push("e"))
       )
       const all = yield* _(Signal.all([a, b, c, d, e], { concurrency: "unbounded" }))
 
       expect(all).toEqual([0, 0, 0, 0, 0])
 
-      // Will always operate the same regardless of priority when directly sampling
-      const initial = ["double", "idle", "raf", "macro", "micro", "sync"]
+      const initial = ["double", "a", "b", "c", "d", "e"]
       expect(calls).toEqual(initial)
 
       // trigger async updates by not calling "yield* _(all)"
@@ -234,14 +167,7 @@ describe("Signal", () => {
 
       expect(calls).toEqual([
         ...initial,
-        // only 1 call of double, despite multiple tasks to verify no updates are needed
-        "double",
-        // Async scheduling will utilize priority
-        "sync",
-        "micro",
-        "macro",
-        "raf",
-        "idle"
+        ...initial
       ])
     }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped, Effect.runPromise))
 })

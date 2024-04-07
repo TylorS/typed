@@ -2,7 +2,6 @@ import type { Effect } from "effect"
 import { Effectable } from "effect"
 import { constant } from "effect/Function"
 import type { Computed } from "../Signal"
-import { DEFAULT_PRIORITY } from "../SignalQueue"
 import { Signals } from "../Signals"
 import { ComputedTypeId } from "./type-id"
 
@@ -19,8 +18,7 @@ export class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R | 
   readonly commit: () => Effect.Effect<A, E, R | Signals>
 
   constructor(
-    readonly effect: Effect.Effect<A, E, R>,
-    readonly priority: number = DEFAULT_PRIORITY
+    readonly effect: Effect.Effect<A, E, R>
   ) {
     super()
 

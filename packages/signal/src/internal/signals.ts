@@ -1,5 +1,5 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
-import { get, Tagged, unsafeGet } from "@typed/context"
+import { get, Tagged } from "@typed/context"
 import type { Exit } from "effect"
 import { Chunk, Effect, Effectable, FiberRef, Scope } from "effect"
 import * as Fiber from "effect/Fiber"
@@ -32,9 +32,7 @@ type SignalState = {
 
 type ComputedState = {
   effect: Effect.Effect<any, any>
-  priority: number
   needsUpdate: boolean
-  scope: Scope.Scope
   value: AsyncData.AsyncData<any, any>
 }
 
@@ -55,17 +53,15 @@ export const layer = (options?: Partial<SignalsOptions>) =>
       options: optionsWithDefaults
     }
 
-    const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>, options?: { priority?: number }) =>
-      Effect.contextWith((ctx) =>
-        makeComputed(signalsCtx, Effect.provide(effect, ctx) as any, unsafeGet(ctx, Scope.Scope), options)
-      )
+    const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+      Effect.contextWith((ctx) => makeComputed(signalsCtx, Effect.provide(effect, ctx) as any))
 
     const signals: Signals = {
       make: <A, E, R>(initial: Effect.Effect<A, E, R>) => makeSignal(signalsCtx, initial),
       getComputed: (computed) => {
         const existing = signalsCtx.computeds.get(computed)
         if (existing === undefined) {
-          return makeComputedImpl(computed.effect, { priority: computed.priority }).pipe(
+          return makeComputedImpl(computed.effect).pipe(
             Effect.tap((c) => signalsCtx.computeds.set(computed, c)),
             Effect.flatten
           )
@@ -100,7 +96,7 @@ function makeSignal<A, E, R>(
 function initialFromEffect<A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): AsyncData.AsyncData<E, A> {
-  const tag = (effect as any)._tag || (effect as any)._op
+  const tag = (effect as any)._op
 
   switch (tag) {
     case "Success":
@@ -185,15 +181,11 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
 
 function makeComputed<A, E>(
   signalsCtx: SignalsCtx,
-  effect: Effect.Effect<A, E>,
-  scope: Scope.Scope,
-  options?: { priority?: number }
+  effect: Effect.Effect<A, E>
 ): ComputedImpl<A, E, never> {
   const computedState: ComputedState = {
     effect,
     needsUpdate: true,
-    priority: options?.priority ?? DEFAULT_PRIORITY,
-    scope,
     value: initialFromEffect(effect)
   }
 
@@ -243,7 +235,6 @@ class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R> {
 
   readonly commit: () => Effect.Effect<A, E, R>
   readonly data: Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
-  readonly priority: number
 
   private _get: Effect.Effect<A, E, R>
 
@@ -253,7 +244,6 @@ class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R> {
     this._get = getComputedValue(this)
     this.commit = constant(this._get)
     this.data = Effect.sync(() => this.state.value)
-    this.priority = this.state.priority
   }
 }
 
@@ -332,9 +322,9 @@ function notify(current: SignalImpl<any, any>) {
         depthFirstReaders(current),
         (reader) =>
           Effect.provideService(
-            current.signals.queue.add(updateComputedTask(reader), reader.priority),
+            current.signals.queue.add(updateComputedTask(reader), current.state.priority),
             Scope.Scope,
-            reader.state.scope
+            current.state.scope
           )
       )
     )
@@ -351,7 +341,7 @@ function depthFirstReaders(
   if (roots === undefined) return visited
 
   // Sort by priority for synchronous updates
-  const toProcess = [...roots].sort((a, b) => a.priority - b.priority)
+  const toProcess = [...roots]
 
   while (toProcess.length > 0) {
     const reader = toProcess.shift()!
@@ -366,7 +356,7 @@ function depthFirstReaders(
     visited.add(reader)
     const readers = index.get(reader)
     if (readers !== undefined) {
-      toProcess.push(...[...readers].sort((a, b) => a.priority - b.priority))
+      toProcess.push(...readers)
     }
   }
 
@@ -378,13 +368,13 @@ function updateComputedTask(
 ): SignalTask {
   return {
     key: computed,
-    task: Effect.provideService(updateComputedValue(computed), Scope.Scope, computed.state.scope)
+    task: updateComputedValue(computed)
   }
 }
 
 function updateComputedValue(
   computed: ComputedImpl<any, any, any>
-): Effect.Effect<any, never, Scope.Scope> {
+): Effect.Effect<any> {
   return Effect.suspend(() => {
     if (computed.state.needsUpdate) {
       return initComputedValue(computed)

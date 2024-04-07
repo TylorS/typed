@@ -300,7 +300,6 @@ class TaggedSignal<I, A, E> extends Effectable.StructuralClass<A, E | AsyncData.
 export interface Computed<A, E = never, R = never> extends Effect.Effect<A, E, R | Signals> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, R>
   readonly effect: Effect.Effect<A, E, R>
-  readonly priority: number
 }
 
 /**
@@ -333,10 +332,9 @@ export interface ComputedOptions {
  * @since 1.0.0
  */
 export function compute<A, E, R>(
-  effect: Effect.Effect<A, E, R>,
-  options?: Partial<ComputedOptions>
+  effect: Effect.Effect<A, E, R>
 ): Computed<A, E, Exclude<R, Signals>> {
-  return new ComputedImpl(effect, options?.priority) as any
+  return new ComputedImpl(effect) as any
 }
 
 /**
@@ -389,23 +387,20 @@ const isEffectDataFirst = (args: IArguments) => Effect.isEffect(args[0])
  */
 export const map: {
   <A, B>(
-    f: (a: A) => B,
-    options?: Partial<ComputedOptions>
+    f: (a: A) => B
   ): <E, R>(
     effect: Effect.Effect<A, E, R>
   ) => Computed<B, E, Exclude<R, Signals>>
 
   <A, E, R, B>(
     effect: Effect.Effect<A, E, R>,
-    f: (a: NoInfer<A>) => B,
-    options?: Partial<ComputedOptions>
+    f: (a: NoInfer<A>) => B
   ): Computed<B, E, Exclude<R, Signals>>
-} = dual(isEffectDataFirst, function map<A, E, R, B>(
+} = dual(2, function map<A, E, R, B>(
   effect: Effect.Effect<A, E, R>,
-  f: (a: A) => B,
-  options?: Partial<ComputedOptions>
+  f: (a: A) => B
 ): Computed<B, E, Exclude<R, Signals>> {
-  return compute(Effect.map(effect, f), options)
+  return compute(Effect.map(effect, f))
 })
 
 /**
@@ -413,23 +408,20 @@ export const map: {
  */
 export const mapEffect: {
   <A, B, E2, R2>(
-    f: (a: A) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (a: A) => Effect.Effect<B, E2, R2>
   ): <E, R>(
     effect: Effect.Effect<A, E, R>
   ) => Computed<B, E | E2, R | R2>
 
   <A, E, R, B, E2, R2>(
     effect: Effect.Effect<A, E, R>,
-    f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>
   ): Computed<B, E | E2, R | R2>
-} = dual(isEffectDataFirst, function mapEffect<A, E, R, B, E2, R2>(
+} = dual(2, function mapEffect<A, E, R, B, E2, R2>(
   effect: Effect.Effect<A, E, R>,
-  f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>,
-  options?: Partial<ComputedOptions>
+  f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>
 ): Computed<B, E | E2, R | R2> {
-  return compute(Effect.flatMap(effect, f), options)
+  return compute(Effect.flatMap(effect, f))
 })
 
 /**
@@ -437,26 +429,21 @@ export const mapEffect: {
  */
 export const tap: {
   <A, B, E2 = never, R2 = never>(
-    f: (a: A) => B | Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (a: A) => B | Effect.Effect<B, E2, R2>
   ): <E, R>(
     effect: Effect.Effect<A, E, R>
   ) => Computed<A, E | E2, R | R2>
 
   <A, E, R, B, E2 = never, R2 = never>(
     effect: Effect.Effect<A, E, R>,
-    f: (a: NoInfer<A>) => B | Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (a: NoInfer<A>) => B | Effect.Effect<B, E2, R2>
   ): Computed<A, E | E2, R | R2>
-} = dual(isEffectDataFirst, function tap<A, E, R, B, E2 = never, R2 = never>(
+} = dual(2, function tap<A, E, R, B, E2 = never, R2 = never>(
   effect: Effect.Effect<A, E, R>,
-  f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>,
-  options?: Partial<ComputedOptions>
+  f: (a: NoInfer<A>) => Effect.Effect<B, E2, R2>
 ): Computed<A, E | E2, R | R2> {
-  return compute(Effect.tap(effect, f), options)
+  return compute(Effect.tap(effect, f))
 })
-
-const is2EffectDataFirst = (args: IArguments) => Effect.isEffect(args[0]) && Effect.isEffect(args[1])
 
 /**
  * @since 1.0.0
@@ -464,8 +451,7 @@ const is2EffectDataFirst = (args: IArguments) => Effect.isEffect(args[0]) && Eff
 export const zipWith: {
   <A, B, E2, R2, C>(
     signalB: Effect.Effect<B, E2, R2>,
-    f: (a: A, b: B) => C,
-    options?: Partial<ComputedOptions>
+    f: (a: A, b: B) => C
   ): <E, R>(signalA: Effect.Effect<A, E, R>) => Computed<
     C,
     E | E2,
@@ -475,20 +461,18 @@ export const zipWith: {
   <A, E, R, B, E2, R2, C>(
     signalA: Effect.Effect<A, E, R>,
     signalB: Effect.Effect<B, E2, R2>,
-    f: (a: A, b: B) => C,
-    options?: Partial<ComputedOptions>
+    f: (a: A, b: B) => C
   ): Computed<
     C,
     E | E2,
     Exclude<R | R2, Signals>
   >
-} = dual(is2EffectDataFirst, function zipWith<A, E, R, B, E2, R2, C>(
+} = dual(3, function zipWith<A, E, R, B, E2, R2, C>(
   signalA: Effect.Effect<A, E, R>,
   signalB: Effect.Effect<B, E2, R2>,
-  f: (a: A, b: B) => C,
-  options?: Partial<ComputedOptions>
+  f: (a: A, b: B) => C
 ): Computed<C, E | E2, Exclude<R | R2, Signals>> {
-  return compute(Effect.zipWith(signalA, signalB, f), options)
+  return compute(Effect.zipWith(signalA, signalB, f))
 })
 
 /**
@@ -496,25 +480,21 @@ export const zipWith: {
  */
 export const zip: {
   <A, B, E2, R2>(
-    signalB: Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    signalB: Effect.Effect<B, E2, R2>
   ): <E, R>(signalA: Effect.Effect<A, E, R>) => Computed<
     readonly [A, B],
     E | E2,
     Exclude<R | R2, Signals>
   >
-
   <A, E, R, B, E2, R2>(
     signalA: Effect.Effect<A, E, R>,
-    signalB: Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    signalB: Effect.Effect<B, E2, R2>
   ): Computed<readonly [A, B], E | E2, Exclude<R | R2, Signals>>
-} = dual(is2EffectDataFirst, function zip<A, E, R, B, E2, R2>(
+} = dual(2, function zip<A, E, R, B, E2, R2>(
   signalA: Effect.Effect<A, E, R>,
-  signalB: Effect.Effect<B, E2, R2>,
-  options?: Partial<ComputedOptions>
+  signalB: Effect.Effect<B, E2, R2>
 ): Computed<readonly [A, B], E | E2, Exclude<R | R2, Signals>> {
-  return compute(Effect.zip(signalA, signalB), options)
+  return compute(Effect.zip(signalA, signalB))
 })
 
 /**
@@ -533,7 +513,7 @@ export function all<
   Effect.Effect.Error<Effect.All.Return<Arg, O>>,
   Exclude<Effect.Effect.Context<Effect.All.Return<Arg, O>>, Signals>
 > {
-  return compute(Effect.all(arg, options) as any, options) as any
+  return compute(Effect.all(arg, options) as any) as any
 }
 
 /**
@@ -544,21 +524,18 @@ export function all<
  */
 export const catchAllCause: {
   <E, B, E2, R2>(
-    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>
   ): <A, R>(signal: Effect.Effect<A, E, R>) => Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
 
   <A, E, R, B, E2, R2>(
     signal: Effect.Effect<A, E, R>,
-    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>
   ): Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
-} = dual(isEffectDataFirst, function catchAllCause<A, E, R, B, E2, R2>(
+} = dual(2, function catchAllCause<A, E, R, B, E2, R2>(
   signal: Effect.Effect<A, E, R>,
-  f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>,
-  options?: Partial<ComputedOptions>
+  f: (cause: Cause<E>) => Effect.Effect<B, E2, R2>
 ): Computed<A | B, E2, Exclude<R | R2, Signals>> {
-  return compute(Effect.catchAllCause(signal, f), options)
+  return compute(Effect.catchAllCause(signal, f))
 })
 
 /**
@@ -569,21 +546,18 @@ export const catchAllCause: {
  */
 export const catchAll: {
   <E, B, E2, R2>(
-    f: (error: E) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (error: E) => Effect.Effect<B, E2, R2>
   ): <A, R>(signal: Effect.Effect<A, E, R>) => Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
 
   <A, E, R, B, E2, R2>(
     signal: Effect.Effect<A, E, R>,
-    f: (error: E) => Effect.Effect<B, E2, R2>,
-    options?: Partial<ComputedOptions>
+    f: (error: E) => Effect.Effect<B, E2, R2>
   ): Computed<A | B, E2, Exclude<R, Signals> | Exclude<R2, Signals>>
 } = dual(isEffectDataFirst, function catchAll<A, E, R, B, E2, R2>(
   signal: Effect.Effect<A, E, R>,
-  f: (error: E) => Effect.Effect<B, E2, R2>,
-  options?: Partial<ComputedOptions>
+  f: (error: E) => Effect.Effect<B, E2, R2>
 ): Computed<A | B, E2, Exclude<R | R2, Signals>> {
-  return compute(Effect.catchAll(signal, f), options)
+  return compute(Effect.catchAll(signal, f))
 })
 
 /**
@@ -609,10 +583,9 @@ export const catchTag: {
   function catchTag<A, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, R1, E1, A1>(
     self: Effect.Effect<A, E, R>,
     k: K,
-    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>,
-    options?: Partial<ComputedOptions>
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<A1, E1, R1>
   ) {
-    return compute(Effect.catchTag(self, k, f), options)
+    return compute(Effect.catchTag(self, k, f))
   }
 )
 
@@ -632,8 +605,7 @@ export const catchTags: {
       }
       & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
   >(
-    cases: Cases,
-    options?: Partial<ComputedOptions>
+    cases: Cases
   ): <A, R>(
     self: Effect.Effect<A, E, R>
   ) => Computed<
@@ -662,8 +634,7 @@ export const catchTags: {
       & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
   >(
     self: Effect.Effect<A, E, R>,
-    cases: Cases,
-    options?: Partial<ComputedOptions>
+    cases: Cases
   ): Computed<
     | A
     | {
@@ -689,10 +660,9 @@ export const catchTags: {
     & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
 >(
   self: Effect.Effect<A, E, R>,
-  cases: Cases,
-  options?: Partial<ComputedOptions>
+  cases: Cases
 ) {
-  return compute(Effect.catchTags(self, cases), options)
+  return compute(Effect.catchTags(self, cases))
 })
 
 /**
@@ -701,8 +671,7 @@ export const catchTags: {
  */
 export const catchLoading: {
   <A1, E1, R1>(
-    f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>,
-    options?: Partial<ComputedOptions>
+    f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>
   ): <A, E, R>(
     signal: Effect.Effect<A, E, R>
   ) => Computed<A | A1, E1 | Exclude<E, AsyncData.Loading>, Exclude<R | R1, Signals>>
@@ -713,8 +682,7 @@ export const catchLoading: {
   ): Computed<A | A1, E1 | Exclude<E, AsyncData.Loading>, Exclude<R | R1, Signals>>
 } = dual(isEffectDataFirst, function catchLoading<A, E, R, A1, E1, R1>(
   signal: Effect.Effect<A, E, R>,
-  f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>,
-  options?: Partial<ComputedOptions>
+  f: (loading: AsyncData.Loading) => Effect.Effect<A1, E1, R1>
 ) {
   return catchAll(
     signal,
@@ -722,17 +690,6 @@ export const catchLoading: {
       AsyncData.isAsyncData<A, E>(error) && AsyncData.isLoading(error)
         ? f(error)
         : Effect.fail(error as Exclude<E, AsyncData.Loading>)
-    ),
-    options
+    )
   )
-})
-
-export const setPriority: {
-  (priority: number): <A, E, R>(computed: Computed<A, E, R>) => Computed<A, E, R>
-  <A, E, R>(computed: Computed<A, E, R>, priority: number): Computed<A, E, R>
-} = dual(2, function setPriority<A, E, R>(
-  computed: Computed<A, E, R>,
-  priority: number
-): Computed<A, E, R> {
-  return new ComputedImpl(computed.effect, priority)
 })
