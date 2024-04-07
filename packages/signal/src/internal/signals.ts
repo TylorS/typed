@@ -155,7 +155,10 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
   modify<B>(f: (a: A) => readonly [B, A]): Effect.Effect<B, E | AsyncData.Loading, never> {
     return this.state.lock(Effect.flatMap(this._get, (value) => {
       const [b, a] = f(value)
-      return Effect.as(setValue(this, AsyncData.success(a)), b)
+      return Effect.as(
+        setValue(this, AsyncData.success(a, { timestamp: this.signals.clock.unsafeCurrentTimeMillis() })),
+        b
+      )
     }))
   }
 
@@ -163,12 +166,23 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
     f: (a: A) => Effect.Effect<readonly [B, A], E2, R2>
   ): Effect.Effect<B, E | E2 | AsyncData.Loading, R2> {
     return this.state.lock(
-      Effect.flatMap(Effect.flatMap(this._get, f), ([b, a]) => Effect.as(setValue(this, AsyncData.success(a)), b))
+      Effect.flatMap(
+        Effect.flatMap(this._get, f),
+        ([b, a]) =>
+          Effect.as(
+            setValue(this, AsyncData.success(a, { timestamp: this.signals.clock.unsafeCurrentTimeMillis() })),
+            b
+          )
+      )
     )
   }
 
   set(a: A): Effect.Effect<A> {
-    return this.state.lock(Effect.as(setValue(this, AsyncData.success(a)), a))
+    return this.state.lock(
+      Effect.suspend(() =>
+        Effect.as(setValue(this, AsyncData.success(a, { timestamp: this.signals.clock.unsafeCurrentTimeMillis() })), a)
+      )
+    )
   }
 
   runUpdates<B, E2, R2>(
@@ -183,7 +197,11 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
         this.state.lock(
           f({
             get: this.data,
-            set: (a) => Effect.as(setValue(this, AsyncData.success(a)), a)
+            set: (a) =>
+              Effect.as(
+                setValue(this, AsyncData.success(a, { timestamp: this.signals.clock.unsafeCurrentTimeMillis() })),
+                a
+              )
           })
         )
     )
@@ -350,7 +368,7 @@ function notify(current: SignalImpl<any, any>) {
         depthFirstReaders(current),
         (reader) =>
           Effect.provideService(
-            current.signals.queue.add(updateComputedTask(reader), current.state.priority),
+            current.signals.queue.add(updateComputedTask(reader, current.state.priority)),
             Scope.Scope,
             current.state.scope
           )
@@ -392,11 +410,13 @@ function depthFirstReaders(
 }
 
 function updateComputedTask(
-  computed: ComputedImpl<any, any>
+  computed: ComputedImpl<any, any>,
+  priority: number
 ): SignalTask {
   return {
     key: computed,
-    task: updateComputedValue(computed)
+    task: updateComputedValue(computed),
+    priority
   }
 }
 
