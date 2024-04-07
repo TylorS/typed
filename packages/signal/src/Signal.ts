@@ -324,13 +324,6 @@ export namespace Computed {
 /**
  * @since 1.0.0
  */
-export interface ComputedOptions {
-  readonly priority: number
-}
-
-/**
- * @since 1.0.0
- */
 export function compute<A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): Computed<A, E, Exclude<R, Signals>> {
@@ -507,7 +500,7 @@ export function all<
     readonly batching?: boolean | "inherit" | undefined
     readonly discard?: boolean | undefined
     readonly mode?: "default" | "validate" | "either" | undefined
-  } & Partial<ComputedOptions>
+  }
 >(arg: Arg, options?: O): Computed<
   Effect.Effect.Success<Effect.All.Return<Arg, O>>,
   Effect.Effect.Error<Effect.All.Return<Arg, O>>,
