@@ -580,7 +580,7 @@ export const getEquivalence = <A, E>(
 /**
  * @since 1.0.0
  */
-export function fromExit<A, E>(exit: Exit.Exit<A, E>): AsyncData<A, E> {
+export function fromExit<A, E>(exit: Exit.Exit<A, E>): Success<A> | Failure<E> {
   return Exit.match(exit, {
     onFailure: (cause) => failCause(cause),
     onSuccess: (value) => success(value)
@@ -590,7 +590,7 @@ export function fromExit<A, E>(exit: Exit.Exit<A, E>): AsyncData<A, E> {
 /**
  * @since 1.0.0
  */
-export function fromEither<A, E = never>(either: Either.Either<A, E>): AsyncData<A, E> {
+export function fromEither<A, E = never>(either: Either.Either<A, E>): Success<A> | Failure<E> {
   return Either.match(either, {
     onLeft: (e) => fail(e),
     onRight: (a) => success(a)

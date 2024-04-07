@@ -77,7 +77,10 @@ export namespace Signal {
    */
   export interface Tagged<I, A, E> extends Signal<A, E, I> {
     readonly tag: Context.Tagged<I, Signal<A, E>>
-    readonly make: <R2>(initial: Effect.Effect<A, E, R2>) => Layer.Layer<I, never, R2 | Signals>
+    readonly make: <R2>(
+      initial: Effect.Effect<A, E, R2>,
+      options?: Partial<SignalOptions>
+    ) => Layer.Layer<I, never, R2 | Signals>
     readonly provide: <R2>(initial: Effect.Effect<A, E, R2>) => <B, E2, R3>(
       effect: Effect.Effect<B, E2, R3>
     ) => Effect.Effect<B, E2, R2 | Signals | Exclude<R3, I>>
@@ -87,10 +90,18 @@ export namespace Signal {
 /**
  * @since 1.0.0
  */
+export interface SignalOptions {
+  readonly priority: number
+}
+
+/**
+ * @since 1.0.0
+ */
 export function make<A, E = never, R = never>(
-  initial: Effect.Effect<A, E, R>
+  initial: Effect.Effect<A, E, R>,
+  options?: Partial<SignalOptions>
 ): Effect.Effect<Signal<A, E>, never, R | Scope.Scope | Signals> {
-  return Signals.withEffect((signals) => signals.make(initial))
+  return Signals.withEffect((signals) => signals.make(initial, options))
 }
 
 /**
@@ -274,8 +285,8 @@ class TaggedSignal<I, A, E> extends Effectable.StructuralClass<A, E | AsyncData.
     return this.tag.withEffect((signal) => signal.runUpdates(f))
   }
 
-  make<R2>(initial: Effect.Effect<A, E, R2>) {
-    return this.tag.scoped(make(initial))
+  make<R2>(initial: Effect.Effect<A, E, R2>, options?: Partial<SignalOptions>) {
+    return this.tag.scoped(make(initial, options))
   }
 
   provide<R2>(initial: Effect.Effect<A, E, R2>) {
