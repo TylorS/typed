@@ -24,7 +24,7 @@ const IDLE_START = RAF_END + 1
 /**
  * @since 1.0.0
  */
-export const DEFAULT_PRIORITY = MICRO_TASK_START
+export const DEFAULT_PRIORITY = MACRO_TASK_END
 
 /**
  * The context in which templates are rendered within
