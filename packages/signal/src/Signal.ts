@@ -341,9 +341,9 @@ export function isComputed(u: unknown): u is Computed.Any {
  * @since 1.0.0
  */
 export const fail: {
-  <E>(e: E): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+  <E>(e: E): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 
-  <A, E, R>(signal: Signal<A, E, R>, e: E): Effect.Effect<AsyncData.AsyncData<A, E>, AsyncData.Loading | E, R>
+  <A, E, R>(signal: Signal<A, E, R>, e: E): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 } = dual(2, function fail<A, E, R>(signal: Signal<A, E, R>, e: E) {
   return runUpdates(signal, ({ set }) => set(AsyncData.fail(e)))
 })
@@ -354,12 +354,12 @@ export const fail: {
 export const failCause: {
   <E>(
     cause: Cause<E>
-  ): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, E, R>
+  ): <A, R>(signal: Signal<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 
   <A, E, R>(
     signal: Signal<A, E, R>,
     cause: Cause<E>
-  ): Effect.Effect<AsyncData.AsyncData<A, E>, E, R>
+  ): Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
 } = dual(2, function failCause<A, E, R>(signal: Signal<A, E, R>, cause: Cause<E>) {
   return runUpdates(signal, ({ set }) => set(AsyncData.failCause(cause)))
 })
