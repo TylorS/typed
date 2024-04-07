@@ -13,14 +13,14 @@ import { ComputedTypeId, SignalTypeId } from "./type-id.js"
 
 export const tag = Tagged<Signals>("@typed/signal/Signals")
 
-const Computing = FiberRef.unsafeMake<Chunk.Chunk<ComputedImpl<any, any, any>>>(Chunk.empty())
+const Computing = FiberRef.unsafeMake<Chunk.Chunk<ComputedImpl<any, any>>>(Chunk.empty())
 
 type SignalsCtx = {
   clock: Clock.Clock
   queue: SignalQueue
-  computeds: WeakMap<Computed.Any, ComputedImpl<any, any, any>>
+  computeds: WeakMap<Computed.Any, ComputedImpl<any, any>>
   options: SignalsOptions
-  readers: WeakMap<SignalImpl<any, any> | ComputedImpl<any, any, any>, Set<ComputedImpl<any, any, any>>>
+  readers: WeakMap<SignalImpl<any, any> | ComputedImpl<any, any>, Set<ComputedImpl<any, any>>>
 }
 
 type SignalState = {
@@ -195,7 +195,7 @@ function makeComputed<A, E, R>(
   effect: Effect.Effect<A, E, R>,
   ctx: Context<R>,
   timestamp: number
-): ComputedImpl<A, E, never> {
+): ComputedImpl<A, E> {
   const computedState: ComputedState = {
     effect,
     needsUpdate: true,
@@ -203,7 +203,7 @@ function makeComputed<A, E, R>(
     value: initialFromEffect(effect, timestamp)
   }
 
-  return new ComputedImpl<A, E, never>(signalsCtx, computedState)
+  return new ComputedImpl<A, E>(signalsCtx, computedState)
 }
 
 function getSignalValue(
@@ -248,25 +248,28 @@ const ComputedVariance: Computed.Variance<any, any, never> = {
   _R: (_) => _
 }
 
-class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R> {
+class ComputedImpl<A, E> extends Effectable.StructuralClass<A, E> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, never> = ComputedVariance
 
-  readonly commit: () => Effect.Effect<A, E, R>
+  readonly commit: () => Effect.Effect<A, E>
   readonly data: Effect.Effect<AsyncData.AsyncData<A, E>, never, never>
 
-  private _get: Effect.Effect<A, E, R>
+  private _get: Effect.Effect<A, E>
 
   constructor(readonly signals: SignalsCtx, readonly state: ComputedState) {
     super()
 
     this._get = getComputedValue(this)
     this.commit = constant(this._get)
-    this.data = Effect.sync(() => this.state.value)
+    this.data = Effect.matchCause(this._get, {
+      onFailure: () => this.state.value,
+      onSuccess: () => this.state.value
+    })
   }
 }
 
 function getComputedValue(
-  computed: ComputedImpl<any, any, any>
+  computed: ComputedImpl<any, any>
 ): Effect.Effect<any, any> {
   return Effect.zipRight(
     updateReaders(computed),
@@ -277,9 +280,9 @@ function getComputedValue(
           return Effect.tapErrorCause(Effect.flatten(initComputedValue(computed)), () =>
             Effect.sync(() => {
               computed.state.needsUpdate = true
-            })) as any as Exit.Exit<any, any>
+            })) as any as Effect.Effect<any, any>
         } else {
-          return computed.state.value as any as Exit.Exit<any, any>
+          return computed.state.value as Effect.Effect<any, any>
         }
       }),
       Computing,
@@ -289,7 +292,7 @@ function getComputedValue(
 }
 
 function initComputedValue(
-  computed: ComputedImpl<any, any, any>
+  computed: ComputedImpl<any, any>
 ): Effect.Effect<AsyncData.AsyncData<any, any>> {
   computed.state.needsUpdate = false
   const clock = computed.signals.clock
@@ -314,7 +317,7 @@ function initComputedValue(
   )
 }
 
-function updateReaders(current: ComputedImpl<any, any, any> | SignalImpl<any, any>) {
+function updateReaders(current: ComputedImpl<any, any> | SignalImpl<any, any>) {
   return Effect.map(FiberRef.get(Computing), (stack) => {
     if (Chunk.isNonEmpty(stack)) {
       const computing = Chunk.unsafeLast(stack)
@@ -329,7 +332,7 @@ function updateReaders(current: ComputedImpl<any, any, any> | SignalImpl<any, an
 }
 
 function setValue(
-  current: ComputedImpl<any, any, any> | SignalImpl<any, any>,
+  current: ComputedImpl<any, any> | SignalImpl<any, any>,
   value: AsyncData.AsyncData<any, any>
 ): Effect.Effect<AsyncData.AsyncData<any, any>> {
   if (AsyncData.dataEqual(current.state.value, value)) return Effect.succeed(value)
@@ -358,9 +361,9 @@ function notify(current: SignalImpl<any, any>) {
 }
 
 function depthFirstReaders(
-  current: ComputedImpl<any, any, any> | SignalImpl<any, any>
-): Set<ComputedImpl<any, any, any>> {
-  const visited = new Set<ComputedImpl<any, any, any>>()
+  current: ComputedImpl<any, any> | SignalImpl<any, any>
+): Set<ComputedImpl<any, any>> {
+  const visited = new Set<ComputedImpl<any, any>>()
   const index = current.signals.readers
   const roots = index.get(current)
   if (roots === undefined) return visited
@@ -389,7 +392,7 @@ function depthFirstReaders(
 }
 
 function updateComputedTask(
-  computed: ComputedImpl<any, any, any>
+  computed: ComputedImpl<any, any>
 ): SignalTask {
   return {
     key: computed,
@@ -398,7 +401,7 @@ function updateComputedTask(
 }
 
 function updateComputedValue(
-  computed: ComputedImpl<any, any, any>
+  computed: ComputedImpl<any, any>
 ): Effect.Effect<any> {
   return Effect.suspend(() => {
     if (computed.state.needsUpdate) {
