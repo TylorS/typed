@@ -128,7 +128,7 @@ describe("Signal", () => {
       expect(yield* _(double)).toEqual(2)
     }).pipe(provideEnv))
 
-  it("multicasts computed values to multiple listeners ", () =>
+  it.live("multicasts computed values to multiple listeners ", () =>
     Effect.gen(function*(_) {
       const count = yield* _(Signal.make<number>(Effect.succeed(0)))
       const calls: Array<string> = []
@@ -169,5 +169,5 @@ describe("Signal", () => {
         ...initial,
         ...initial
       ])
-    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped, Effect.runPromise))
+    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
 })

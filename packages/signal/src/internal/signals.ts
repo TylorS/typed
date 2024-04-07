@@ -195,14 +195,13 @@ function makeComputed<A, E>(
 function getSignalValue(
   signal: SignalImpl<any, any>
 ): Effect.Effect<any, any, Scope.Scope> {
-  return Effect.flatMap(updateReaders(signal), () =>
-    AsyncData.match(signal.state.value, {
-      NoData: () => initSignalValue(signal),
-      Loading: (_) => signal.signals.options.waitForExit ? Fiber.join(signal.state.fiber!) : _,
-      Failure: Effect.failCause,
-      Success: Effect.succeed,
-      Optimistic: Effect.succeed
-    }))
+  return Effect.flatMap(updateReaders(signal), () => {
+    if (AsyncData.isNoData(signal.state.value)) return initSignalValue(signal)
+    if (AsyncData.isLoading(signal.state.value) && signal.signals.options.waitForExit) {
+      return Fiber.join(signal.state.fiber!)
+    }
+    return signal.state.value
+  })
 }
 
 function initSignalValue(signal: SignalImpl<any, any>) {
