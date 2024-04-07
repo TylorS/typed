@@ -176,7 +176,7 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
       get: Effect.Effect<AsyncData.AsyncData<A, E>>
       set: (a: AsyncData.AsyncData<A, E>) => Effect.Effect<AsyncData.AsyncData<A, E>>
     }) => Effect.Effect<B, E2, R2>
-  ): Effect.Effect<B, E | E2 | AsyncData.Loading, R2> {
+  ): Effect.Effect<B, E2, R2> {
     return Effect.flatMap(
       this.data,
       () =>
