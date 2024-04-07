@@ -1,4 +1,5 @@
 import * as AsyncData from "@typed/async-data/AsyncData"
+import type { Context } from "@typed/context"
 import { get, Tagged } from "@typed/context"
 import type { Clock } from "effect"
 import { Chunk, Effect, Effectable, Exit, FiberRef, Scope } from "effect"
@@ -32,7 +33,8 @@ type SignalState = {
 }
 
 type ComputedState = {
-  effect: Effect.Effect<any, any>
+  context: Context<any>
+  effect: Effect.Effect<any, any, any>
   needsUpdate: boolean
   value: AsyncData.AsyncData<any, any>
 }
@@ -56,23 +58,25 @@ export const layer = (options?: Partial<SignalsOptions>) =>
         options: optionsWithDefaults
       }
 
-      const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-        Effect.contextWith((ctx) =>
-          makeComputed(signalsCtx, Effect.provide(effect, ctx) as any, clock.unsafeCurrentTimeMillis())
-        )
+      const makeComputedImpl = <A, E, R>(effect: Effect.Effect<A, E, R>, ctx: Context<R>) =>
+        makeComputed(signalsCtx, effect, ctx, clock.unsafeCurrentTimeMillis())
 
       const signals: Signals = {
         make: <A, E, R>(initial: Effect.Effect<A, E, R>) => makeSignal(signalsCtx, initial),
-        getComputed: (computed) => {
-          const existing = signalsCtx.computeds.get(computed)
-          if (existing === undefined) {
-            return makeComputedImpl(computed.effect).pipe(
-              Effect.tap((c) => signalsCtx.computeds.set(computed, c)),
-              Effect.flatten
-            )
-          }
-          return existing.commit()
-        }
+
+        getComputed: (computed) =>
+          Effect.contextWithEffect((ctx) => {
+            let impl = signalsCtx.computeds.get(computed)
+            if (impl === undefined) {
+              impl = makeComputedImpl(computed.effect, ctx)
+              signalsCtx.computeds.set(computed, impl)
+
+              return impl.commit()
+            } else {
+              impl.state.context = ctx
+            }
+            return impl.commit()
+          })
       }
 
       return signals
@@ -186,14 +190,16 @@ class SignalImpl<A, E> extends Effectable.StructuralClass<A, E | AsyncData.Loadi
   }
 }
 
-function makeComputed<A, E>(
+function makeComputed<A, E, R>(
   signalsCtx: SignalsCtx,
-  effect: Effect.Effect<A, E>,
+  effect: Effect.Effect<A, E, R>,
+  ctx: Context<R>,
   timestamp: number
 ): ComputedImpl<A, E, never> {
   const computedState: ComputedState = {
     effect,
     needsUpdate: true,
+    context: ctx,
     value: initialFromEffect(effect, timestamp)
   }
 
@@ -293,15 +299,18 @@ function initComputedValue(
     Effect.zipRight(Effect.exit(computed.state.effect)),
     Effect.map((exit) =>
       Exit.match(exit, {
-        onFailure: (cause) => AsyncData.failCause(cause, { timestamp: clock.unsafeCurrentTimeMillis() }),
-        onSuccess: (value) => AsyncData.success(value, { timestamp: clock.unsafeCurrentTimeMillis() })
+        onFailure: (cause): AsyncData.AsyncData<any, any> =>
+          AsyncData.failCause(cause, { timestamp: clock.unsafeCurrentTimeMillis() }),
+        onSuccess: (value): AsyncData.AsyncData<any, any> =>
+          AsyncData.success(value, { timestamp: clock.unsafeCurrentTimeMillis() })
       })
     ),
     Effect.onInterrupt(() => {
       computed.state.needsUpdate = true
       return setValue(computed, AsyncData.stopLoading(computed.state.value))
     }),
-    Effect.tap((data) => setValue(computed, data))
+    Effect.tap((data) => setValue(computed, data)),
+    Effect.provide(computed.state.context)
   )
 }
 
