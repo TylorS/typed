@@ -408,10 +408,6 @@ class MacroTaskImpl extends BaseImpl implements SignalQueue {
 }
 
 class SyncImpl implements SignalQueue {
-  constructor() {
-    this.add.bind(this)
-  }
-
   add({ task }: SignalTask) {
     return task
   }
@@ -424,8 +420,6 @@ class MixedImpl implements SignalQueue {
     readonly queues: Array<readonly [priorityRange: readonly [number, number], SignalQueue]>
   ) {
     this.queues.sort(([a], [b]) => a[0] - b[0])
-
-    this.add.bind(this)
   }
 
   add(task: SignalTask, priority: number) {
