@@ -5,9 +5,7 @@
 
 import * as Context from "@typed/context"
 import type { Layer } from "effect"
-import { FiberRef } from "effect"
 import * as Effect from "effect/Effect"
-import { dual } from "effect/Function"
 import * as Scope from "effect/Scope"
 import { cancelIdleCallback, requestIdleCallback } from "./internal/requestIdleCallback.js"
 
@@ -39,13 +37,8 @@ export const SignalQueue: Context.Tagged<SignalQueue, SignalQueue> = Context.Tag
 /**
  * @since 1.0.0
  */
-export const currentPriority: FiberRef.FiberRef<number> = FiberRef.unsafeMake(DEFAULT_PRIORITY)
-
-/**
- * @since 1.0.0
- */
 export interface SignalQueue {
-  readonly add: (task: SignalTask, priority: number) => Effect.Effect<void, never, Scope.Scope>
+  readonly add: (task: SignalTask) => Effect.Effect<void, never, Scope.Scope>
 }
 
 /**
@@ -232,18 +225,18 @@ abstract class BaseImpl implements SignalQueue {
     this.add.bind(this)
   }
 
-  add(task: SignalTask, priority: number) {
+  add(task: SignalTask) {
     return Effect.suspend(() => {
-      this.queue.add(task.key, task, priority)
+      this.queue.add(task.key, task, task.priority)
 
       return Effect.zipRight(
         Effect.addFinalizer(() =>
           Effect.sync(() => {
-            const currentTask = this.queue.get(task.key, priority)
+            const currentTask = this.queue.get(task.key, task.priority)
 
             // If the current task is still the same we'll delete it from the queue
             if (currentTask === task) {
-              this.queue.delete(task.key, priority)
+              this.queue.delete(task.key, task.priority)
             }
           })
         ),
@@ -424,14 +417,14 @@ class MixedImpl implements SignalQueue {
     this.queues.sort(([a], [b]) => a[0] - b[0])
   }
 
-  add(task: SignalTask, priority: number) {
-    let queue = this.getQueueForPriority(priority)
+  add(task: SignalTask) {
+    let queue = this.getQueueForPriority(task.priority)
 
     if (queue === undefined) {
       queue = this.queues[this.queues.length - 1][1]
     }
 
-    return queue.add(task, priority)
+    return queue.add(task)
   }
 
   private getQueueForPriority(priority: number) {
@@ -450,23 +443,6 @@ class MixedImpl implements SignalQueue {
   }
 }
 
-/**
- * @since 1.0.0
- */
-export const currentPriorityWith = <A, E, R>(f: (priority: number) => Effect.Effect<A, E, R>) =>
-  Effect.flatMap(FiberRef.get(currentPriority), f)
-
-/**
- * @since 1.0.0
- */
-export const withCurrentPriority: {
-  (priority: number): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
-  <A, E, R>(effect: Effect.Effect<A, E, R>, priority: number): Effect.Effect<A, E, R>
-} = dual(
-  2,
-  <A, E, R>(effect: Effect.Effect<A, E, R>, priority: number) => Effect.locally(effect, currentPriority, priority)
-)
-
 const whenIdle = (options?: IdleRequestOptions): Effect.Effect<IdleDeadline, never, Scope.Scope> =>
   Effect.asyncEffect((resume) => {
     const id = requestIdleCallback((deadline) => resume(Effect.succeed(deadline)), options)
@@ -481,4 +457,5 @@ function shouldContinue(deadline: IdleDeadline): boolean {
 export interface SignalTask {
   readonly key: unknown
   readonly task: Effect.Effect<unknown>
+  readonly priority: number
 }
