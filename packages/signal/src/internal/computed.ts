@@ -13,8 +13,6 @@ const ComputedVariance: Computed.Variance<any, any, never> = {
 
 export class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R | Signals> implements Computed<A, E, R> {
   readonly [ComputedTypeId]: Computed.Variance<A, E, R> = ComputedVariance
-
-  readonly get: Effect.Effect<A, E, R | Signals>
   readonly commit: () => Effect.Effect<A, E, R | Signals>
 
   constructor(
@@ -22,7 +20,6 @@ export class ComputedImpl<A, E, R> extends Effectable.StructuralClass<A, E, R | 
   ) {
     super()
 
-    this.get = Signals.withEffect((s) => s.getComputed<A, E, R>(this))
-    this.commit = constant(this.get)
+    this.commit = constant(Signals.withEffect((s) => s.getComputed<A, E, R>(this)))
   }
 }
