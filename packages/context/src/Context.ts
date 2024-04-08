@@ -194,6 +194,10 @@ export {
   pick,
   /**
    * @since 1.0.0
+   */
+  TagClass,
+  /**
+   * @since 1.0.0
    * @category symbol
    */
   type TagTypeId,
