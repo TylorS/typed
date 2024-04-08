@@ -172,32 +172,36 @@ describe("Signal", () => {
       ])
     }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
 
-  it.live("uses the latest provided context for updates", () =>
-    Effect.gen(function*(_) {
-      const Increment = Context.Fn<(n: number) => Effect.Effect<number>>()("Increment")
-      const IncrementBy1 = Increment.provideImplementation((n) => Effect.succeed(n + 1))
-      const IncrementBy2 = Increment.provideImplementation((n) => Effect.succeed(n + 2))
+  it.live("uses the latest provided context for updates", () => {
+    const Increment = Context.Fn<(n: number) => Effect.Effect<number>>()("Increment")
 
+    return Effect.gen(function*(_) {
       const count = yield* _(Signal.make<number>(Effect.succeed(0)))
       const incremented = count.pipe(Signal.mapEffect(Increment))
 
-      expect(yield* _(incremented, IncrementBy1)).toEqual(1)
+      expect(yield* _(incremented)).toEqual(1)
 
       yield* _(count.set(1))
       yield* _(Effect.sleep(5))
 
       // increment by 1 was used to calculate the value
-      expect(yield* _(incremented, IncrementBy2)).toEqual(2)
+      expect(yield* _(incremented, Increment.provideImplementation((n) => Effect.succeed(n + 2)))).toEqual(2)
 
       yield* _(count.set(2))
       yield* _(Effect.sleep(5))
 
       // increment by 2 was used to calculate the value
-      expect(yield* _(incremented, IncrementBy1)).toEqual(4)
+      expect(yield* _(incremented)).toEqual(4)
 
       yield* _(count.set(42))
 
       // increment by 1 was used to calculate the value
-      expect(yield* _(incremented, IncrementBy1)).toEqual(43)
-    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
+      expect(yield* _(incremented)).toEqual(43)
+    }).pipe(
+      Effect.provide(Signal.layer()),
+      Effect.provide(Signal.mixedQueue()),
+      Increment.provideImplementation((n) => Effect.succeed(n + 1)),
+      Effect.scoped
+    )
+  })
 })
