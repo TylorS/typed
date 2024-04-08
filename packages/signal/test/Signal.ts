@@ -1,4 +1,5 @@
 import { describe, it } from "@effect/vitest"
+import * as Context from "@typed/context"
 import * as Signal from "@typed/signal"
 import { ok } from "assert"
 import { Effect, Either, flow, Option } from "effect"
@@ -169,5 +170,34 @@ describe("Signal", () => {
         ...initial,
         ...initial
       ])
+    }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
+
+  it.live("uses the latest provided context for updates", () =>
+    Effect.gen(function*(_) {
+      const Increment = Context.Fn<(n: number) => Effect.Effect<number>>()("Increment")
+      const IncrementBy1 = Increment.provideImplementation((n) => Effect.succeed(n + 1))
+      const IncrementBy2 = Increment.provideImplementation((n) => Effect.succeed(n + 2))
+
+      const count = yield* _(Signal.make<number>(Effect.succeed(0)))
+      const incremented = count.pipe(Signal.mapEffect(Increment))
+
+      expect(yield* _(incremented, IncrementBy1)).toEqual(1)
+
+      yield* _(count.set(1))
+      yield* _(Effect.sleep(5))
+
+      // increment by 1 was used to calculate the value
+      expect(yield* _(incremented, IncrementBy2)).toEqual(2)
+
+      yield* _(count.set(2))
+      yield* _(Effect.sleep(5))
+
+      // increment by 2 was used to calculate the value
+      expect(yield* _(incremented, IncrementBy1)).toEqual(4)
+
+      yield* _(count.set(42))
+
+      // increment by 1 was used to calculate the value
+      expect(yield* _(incremented, IncrementBy1)).toEqual(43)
     }).pipe(Effect.provide(Signal.layer()), Effect.provide(Signal.mixedQueue()), Effect.scoped))
 })
