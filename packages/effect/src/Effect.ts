@@ -29,8 +29,8 @@ export function sync<A>(f: () => A): Effect<never, A> {
   return gen(() => new OfGenerator(f()))
 }
 
-export function service<T, X = any>(kind: string) {
-  return class Service<I = X> implements Pipeable {
+export function service<T, X = unknown>(kind: string) {
+  return class Service<I extends X = X> implements Pipeable {
     readonly ___HKT___!: never
 
     static readonly kind = kind
@@ -38,8 +38,11 @@ export function service<T, X = any>(kind: string) {
 
     constructor(readonly input: I) {}
 
-    static make<T extends new(...args: any) => any, const I>(this: T, input: I): InstanceType<T> & { input: I } {
-      return new this(input)
+    static make<T extends new<I extends X>(input: I) => any, const I extends X>(
+      this: T,
+      input: I
+    ): InstanceType<T> {
+      return new this<I>(input)
     }
 
     readonly [Symbol.iterator] = (): Generator<this | HKT.Context<T, this["input"]>, HKT.Output<T, this["input"]>> =>

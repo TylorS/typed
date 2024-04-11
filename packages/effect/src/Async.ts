@@ -4,7 +4,7 @@ import type * as Exit from "./Exit.js"
 import type * as Fail from "./Fail.js"
 import { type Scope } from "./Scope.js"
 
-export class Async<I extends AsyncCommand = AsyncCommand> extends Effect.service<Async.HKT, AsyncCommand>("Async")<I> {}
+export class Async extends Effect.service<Async.HKT, AsyncCommand>("Async") {}
 
 export type AsyncCommand = Async.CallbackCommand<any, any> | Async.ForkCommand<any, any>
 

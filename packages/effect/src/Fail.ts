@@ -2,7 +2,7 @@ import { type Cause, Expected, findError } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isRight } from "./Either.js"
 
-export class Fail<in out E> extends Effect.service<never>("Fail")<Cause<E>> {}
+export class Fail<const out E> extends Effect.service<never>("Fail")<Cause<E>> {}
 
 export const failCause = <E = never>(e: Cause<E>): Effect.Effect<Fail<E>, never> => new Fail(e)
 

@@ -1,10 +1,8 @@
 import * as Effect from "./Effect.js"
 
-export class Scope<I extends ScopeCommand<any, any> = ScopeCommand<any, any>>
-  extends Effect.service<Scope.HKT, ScopeCommand<any, any>>("Scope")<I>
-{}
+export class Scope extends Effect.service<Scope.HKT, ScopeCommand>("Scope") {}
 
-export type ScopeCommand<R, A> = Scope.Add | Scope.Extend<R, A> | Scope.IsInterruptible
+export type ScopeCommand<R = any, A = any> = Scope.Add | Scope.Extend<R, A> | Scope.IsInterruptible
 
 export namespace Scope {
   export interface Add {
