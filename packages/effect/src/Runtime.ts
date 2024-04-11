@@ -52,6 +52,10 @@ async function runForkLoop<E, A>(
     let result = iterator.next()
 
     while (!result.done) {
+      if (parent.interruptible && parent.isDisposed) {
+        return resolve(left(new Interrupted()))
+      }
+
       const instruction = result.value
       if (Effect.isService(instruction, Async.Async)) {
         const cmd = instruction.input
@@ -65,7 +69,13 @@ async function runForkLoop<E, A>(
           Disposable.syncDispose(ref)
 
           if (isLeft(exit)) {
-            return resolve(left(parent.isDisposed ? new Sequential(new Interrupted(), exit.left) : exit.left))
+            return resolve(
+              left(parent.interruptible && parent.isDisposed ? new Sequential(new Interrupted(), exit.left) : exit.left)
+            )
+          }
+
+          if (parent.interruptible && parent.isDisposed) {
+            return resolve(left(new Interrupted()))
           }
 
           result = iterator.next(exit.right)
@@ -80,9 +90,21 @@ async function runForkLoop<E, A>(
           result = iterator.next(parent.interruptible)
         } else {
           const exit = await runForkInternal(cmd.i0, parent.extend(cmd.interruptible))
+
           if (isLeft(exit)) {
-            return resolve(left(exit.left as Cause<E>))
+            return resolve(
+              left(
+                parent.interruptible && parent.isDisposed
+                  ? new Sequential(new Interrupted(), exit.left as Cause<E>)
+                  : exit.left as Cause<E>
+              )
+            )
           }
+
+          if (parent.interruptible && parent.isDisposed) {
+            return resolve(left(new Interrupted()))
+          }
+
           result = iterator.next(exit.right)
         }
       } else {
@@ -90,7 +112,7 @@ async function runForkLoop<E, A>(
       }
     }
 
-    resolve(parent.isDisposed ? left(new Interrupted()) : right(result.value))
+    resolve(right(result.value))
   } catch (u) {
     resolve(left(new Unexpected(u)))
   } finally {
