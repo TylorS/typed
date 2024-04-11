@@ -1,5 +1,5 @@
 import * as Async from "./Async.js"
-import { Expected, Interrupted, Unexpected } from "./Cause.js"
+import { Expected, Interrupted, Sequential, Unexpected } from "./Cause.js"
 import type { Cause } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isLeft, left, right } from "./Either"
@@ -55,36 +55,22 @@ async function runForkLoop<E, A>(
       const instruction = result.value
       if (Effect.isService(instruction, Async.Async)) {
         const cmd = instruction.input
-        switch (cmd._tag) {
-          case "Callback": {
-            const { promise, resolve } = withResolvers<Exit.Exit<any, any>>()
-            const inner = cmd.i0(makeResume(resolve))
-            const ref = parent.add(inner)
-            const exit = await promise
 
-            Disposable.syncDispose(ref)
-            if (Disposable.isSyncDisposable(inner!)) {
-              Disposable.syncDispose(inner!)
-            } else {
-              await Disposable.asyncDispose(inner!)
-            }
+        if (cmd._tag === "Callback") {
+          const { promise, resolve } = withResolvers<Exit.Exit<any, any>>()
+          const inner = cmd.i0(makeResume(resolve))
+          const ref = parent.add(inner)
+          const exit = await promise
 
-            if (parent.isDisposed) {
-              return resolve(left(new Interrupted()))
-            }
+          Disposable.syncDispose(ref)
 
-            if (isLeft(exit)) {
-              return resolve(left(exit.left))
-            }
-
-            result = iterator.next(exit.right)
-            break
+          if (isLeft(exit)) {
+            return resolve(left(parent.isDisposed ? new Sequential(new Interrupted(), exit.left) : exit.left))
           }
-          case "Fork": {
-            const process = runForkInternal(cmd.i0, parent.extend())
-            result = iterator.next(process)
-            break
-          }
+
+          result = iterator.next(exit.right)
+        } else {
+          result = iterator.next(runForkInternal(cmd.i0, parent.extend()))
         }
       } else if (Effect.isService(instruction, Scope)) {
         const cmd = instruction.input
