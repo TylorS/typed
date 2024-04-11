@@ -92,7 +92,6 @@ async function runForkLoop<E, A>(
         } else {
           const child = parent.extend(cmd.interruptible)
           const exit = await runForkInternal(cmd.i0, child)
-          child.hasCompleted()
           await asyncDispose(child)
           if (isLeft(exit)) {
             return resolve(left(exit.left as Cause<E>))
