@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.19",
-    "@storybook/builder-vite": "^8.0.5",
-    "@storybook/types": "^8.0.5",
+    "@effect/schema": "^0.64.20",
+    "@storybook/builder-vite": "^8.0.8",
+    "@storybook/types": "^8.0.8",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",

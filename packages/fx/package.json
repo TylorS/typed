@@ -46,7 +46,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.64.19",
+    "@effect/schema": "^0.64.20",
     "@effect/typeclass": "0.23.18",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
