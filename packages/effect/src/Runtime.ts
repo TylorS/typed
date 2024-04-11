@@ -1,5 +1,5 @@
 import * as Async from "./Async.js"
-import { Expected, Interrupted, Sequential, Unexpected } from "./Cause.js"
+import { Expected, Interrupted, Unexpected } from "./Cause.js"
 import type { Cause } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isLeft, left, right } from "./Either"
@@ -65,9 +65,7 @@ async function runForkLoop<E, A>(
           Disposable.syncDispose(ref)
 
           if (isLeft(exit)) {
-            return resolve(
-              left(parent.interruptible && parent.isDisposed ? new Sequential(new Interrupted(), exit.left) : exit.left)
-            )
+            return resolve(left(exit.left))
           }
 
           if (parent.interruptible && parent.isDisposed) {
@@ -88,13 +86,7 @@ async function runForkLoop<E, A>(
           const exit = await runForkInternal(cmd.i0, parent.extend(cmd.interruptible))
 
           if (isLeft(exit)) {
-            return resolve(
-              left(
-                parent.interruptible && parent.isDisposed
-                  ? new Sequential(new Interrupted(), exit.left as Cause<E>)
-                  : exit.left as Cause<E>
-              )
-            )
+            return resolve(left(exit.left as Cause<E>))
           }
 
           if (parent.interruptible && parent.isDisposed) {
