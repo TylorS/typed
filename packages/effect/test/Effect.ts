@@ -31,7 +31,7 @@ describe("Effect", () => {
           console.log("running timeout")
           ran = true
           return resume.succeed(42)
-        }, 1000)
+        }, 100)
         return Effect.disposable(() => {
           console.log("clearing timeout")
           return clearTimeout(id)
