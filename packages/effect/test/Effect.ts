@@ -1,6 +1,7 @@
 import * as Effect from "@typed/effect"
 import * as Either from "@typed/effect/Either"
 import { describe, it } from "vitest"
+import { Interrupted } from "../src/Cause"
 import { asyncDispose } from "../src/internal/disposables"
 
 describe("Effect", () => {
@@ -50,6 +51,6 @@ describe("Effect", () => {
 
     expect(ran).toBe(true)
 
-    expect(await process).toEqual(Either.right(46))
+    expect(await process).toEqual(Either.left(new Interrupted()))
   })
 })

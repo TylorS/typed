@@ -1,11 +1,11 @@
 import * as Async from "./Async.js"
-import { Expected, Unexpected } from "./Cause.js"
+import { Expected, Interrupted, Unexpected } from "./Cause.js"
 import type { Cause } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isLeft, left, right } from "./Either"
 import type * as Exit from "./Exit.js"
 import type * as Fail from "./Fail.js"
-import { asyncDispose, DisposableSet, isSyncDisposable, syncDispose } from "./internal/disposables.js"
+import * as Disposable from "./internal/disposables.js"
 import { withResolvers } from "./internal/withResolvers.js"
 import { Scope } from "./Scope.js"
 
@@ -27,26 +27,26 @@ export const runFork = <A, E = never>(
   effect: Effect.Effect<Async.Async | Scope | Fail.Fail<E>, A>,
   interruptible: boolean = true
 ): Async.Process<E, A> => {
-  return runForkInternal(effect, new DisposableSet(interruptible))
+  return runForkInternal(effect, new Disposable.DisposableSet(interruptible))
 }
 
 const runForkInternal = <E, A>(
   effect: Effect.Effect<Async.Async | Scope | Fail.Fail<E>, A>,
-  disposable: DisposableSet
+  disposable: Disposable.DisposableSet
 ): Async.Process<E, A> => {
   const { promise, resolve } = withResolvers<Exit.Exit<E, A>>()
 
   runForkLoop(effect[Symbol.iterator](), resolve, disposable)
 
   return Object.assign(promise, {
-    [Symbol.asyncDispose]: () => asyncDispose(disposable)
+    [Symbol.asyncDispose]: () => Disposable.asyncDispose(disposable)
   })
 }
 
 async function runForkLoop<E, A>(
   iterator: Iterator<Async.Async | Scope | Fail.Fail<E>, A, any>,
   resolve: (exit: Exit.Exit<E, A>) => void,
-  parent: DisposableSet
+  parent: Disposable.DisposableSet
 ): Promise<void> {
   try {
     let result = iterator.next()
@@ -62,11 +62,15 @@ async function runForkLoop<E, A>(
             const ref = parent.add(inner)
             const exit = await promise
 
-            syncDispose(ref)
-            if (isSyncDisposable(inner!)) {
-              syncDispose(inner!)
+            Disposable.syncDispose(ref)
+            if (Disposable.isSyncDisposable(inner!)) {
+              Disposable.syncDispose(inner!)
             } else {
-              await asyncDispose(inner!)
+              await Disposable.asyncDispose(inner!)
+            }
+
+            if (parent.isDisposed) {
+              return resolve(left(new Interrupted()))
             }
 
             if (isLeft(exit)) {
@@ -100,12 +104,12 @@ async function runForkLoop<E, A>(
       }
     }
 
-    resolve(right(result.value))
+    resolve(parent.isDisposed ? left(new Interrupted()) : right(result.value))
   } catch (u) {
     resolve(left(new Unexpected(u)))
   } finally {
     parent.hasCompleted()
-    await asyncDispose(parent)
+    await Disposable.asyncDispose(parent)
   }
 }
 
