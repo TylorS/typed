@@ -52,10 +52,6 @@ async function runForkLoop<E, A>(
     let result = iterator.next()
 
     while (!result.done) {
-      if (parent.interruptible && parent.isDisposed) {
-        return resolve(left(new Interrupted()))
-      }
-
       const instruction = result.value
       if (Effect.isService(instruction, Async.Async)) {
         const cmd = instruction.input
