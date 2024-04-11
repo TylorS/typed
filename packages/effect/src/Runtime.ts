@@ -9,12 +9,12 @@ import * as Disposable from "./internal/disposables.js"
 import { withResolvers } from "./internal/withResolvers.js"
 import { Scope } from "./Scope.js"
 
-const iterator = <R, A>(effect: Effect.Effect<R, A>): Iterator<R, A, any> => effect[Symbol.iterator]()
+const getIterator = <R, A>(effect: Effect.Effect<R, A>): Iterator<R, A, any> => effect[Symbol.iterator]()
 
-export const runSync = <A>(effect: Effect.Effect<never, A>): A => iterator(effect).next().value
+export const runSync = <A>(effect: Effect.Effect<never, A>): A => getIterator(effect).next().value
 
 export const runSyncExit = <E, A>(effect: Effect.Effect<Fail.Fail<E>, A>): Exit.Exit<E, A> => {
-  const iterator = effect[Symbol.iterator]()
+  const iterator = getIterator(effect)
   const result = iterator.next()
   if (result.done) {
     return right(result.value)
