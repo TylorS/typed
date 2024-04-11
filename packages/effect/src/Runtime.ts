@@ -51,7 +51,6 @@ async function runForkLoop<E, A>(
 ): Promise<void> {
   try {
     let result = iterator.next()
-    let disposableStack = new Stack(parent, null)
 
     while (!result.done) {
       const instruction = result.value
@@ -61,7 +60,7 @@ async function runForkLoop<E, A>(
           case "Callback": {
             const { promise, resolve } = withResolvers<Exit.Exit<any, any>>()
             const inner = cmd.i0(makeResume(resolve))
-            const ref = disposableStack.value.add(inner)
+            const ref = parent.add(inner)
             const exit = await promise
 
             syncDispose(ref)
@@ -79,7 +78,7 @@ async function runForkLoop<E, A>(
             break
           }
           case "Fork": {
-            const process = runForkInternal(cmd.i0, disposableStack.value.extend())
+            const process = runForkInternal(cmd.i0, parent.extend())
             result = iterator.next(process)
             break
           }
@@ -87,17 +86,14 @@ async function runForkLoop<E, A>(
       } else if (Effect.isService(instruction, Scope)) {
         const cmd = instruction.input as ScopeCommand<any, any>
         if (cmd._tag === "Add") {
-          result = iterator.next(disposableStack.value.add(cmd.i0))
+          result = iterator.next(parent.add(cmd.i0))
         } else if (cmd._tag === "IsInterruptible") {
-          result = iterator.next(disposableStack.value.interruptible)
+          result = iterator.next(parent.interruptible)
         } else {
-          const parent = disposableStack
-          const child = parent.value.extend(cmd.interruptible)
-          disposableStack = new Stack(child, disposableStack)
+          const child = parent.extend(cmd.interruptible)
           const exit = await runForkInternal(cmd.i0, child)
           child.hasCompleted()
           await asyncDispose(child)
-          disposableStack = parent
           if (isLeft(exit)) {
             return resolve(left(exit.left as Cause<E>))
           }
@@ -125,8 +121,4 @@ function makeResume<E, A>(resolve: (exit: Exit.Exit<E, A>) => void): Async.Async
     unexpected: (u) => resolve(left(new Unexpected(u))),
     succeed: (a) => resolve(right(a))
   }
-}
-
-class Stack<A> {
-  constructor(readonly value: A, readonly parent: Stack<A> | null) {}
 }
