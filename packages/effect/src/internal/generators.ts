@@ -56,7 +56,16 @@ export class MapGenerator<R, A, B> implements Generator<R, B> {
   }
 
   throw(e: any): IteratorResult<R, B> {
-    throw e
+    const result = this.i0.throw?.(e)
+    if (result === undefined) {
+      throw e
+    }
+
+    if (result.done) {
+      return { done: true, value: this.i1(result.value as A) }
+    }
+
+    return result
   }
 
   return(value: B): IteratorResult<R, B> {
