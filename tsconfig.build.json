@@ -20,6 +20,9 @@
       "path": "packages/dom"
     },
     {
+      "path": "packages/effect"
+    },
+    {
       "path": "packages/environment"
     },
     {

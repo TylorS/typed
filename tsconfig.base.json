@@ -80,6 +80,18 @@
       "@typed/dom/examples/*": [
         "packages/dom/examples/*"
       ],
+      "@typed/effect": [
+        "packages/effect/src/index.ts"
+      ],
+      "@typed/effect/*": [
+        "packages/effect/src/*"
+      ],
+      "@typed/effect/test/*": [
+        "packages/effect/test/*"
+      ],
+      "@typed/effect/examples/*": [
+        "packages/effect/examples/*"
+      ],
       "@typed/environment": [
         "packages/environment/src/index.ts"
       ],

@@ -615,6 +615,9 @@ importers:
         version: 2.11.2
     publishDirectory: dist
 
+  packages/effect:
+    publishDirectory: dist
+
   packages/environment:
     dependencies:
       '@typed/context':
