@@ -1,6 +1,5 @@
 import * as Async from "./Async.js"
 import { Expected, Interrupted, Unexpected } from "./Cause.js"
-import type { Cause } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isLeft, left, right } from "./Either"
 import type * as Exit from "./Exit.js"
@@ -34,21 +33,21 @@ export const runFork = <A, F extends Fail.Fail<any> = never>(
 
 const runForkInternal = <E, A>(
   effect: Effect.Effect<Async.Async | Scope | Fail.Fail<E>, A>,
-  disposable: Disposable.DisposableSet
+  scope: Disposable.DisposableSet
 ): Async.Process<E, A> => {
   const { promise, resolve } = withResolvers<Exit.Exit<E, A>>()
 
-  runForkLoop(getIterator(effect), resolve, disposable)
+  runForkLoop(getIterator(effect), resolve, scope)
 
   return Object.assign(promise, {
-    [Symbol.asyncDispose]: () => Disposable.asyncDispose(disposable)
+    [Symbol.asyncDispose]: () => Disposable.asyncDispose(scope)
   })
 }
 
 async function runForkLoop<E, A>(
   iterator: Iterator<Async.Async | Scope | Fail.Fail<E>, A, any>,
   resolve: (exit: Exit.Exit<E, A>) => void,
-  parent: Disposable.DisposableSet
+  scope: Disposable.DisposableSet
 ): Promise<void> {
   try {
     let result = iterator.next()
@@ -61,37 +60,33 @@ async function runForkLoop<E, A>(
         if (cmd._tag === "Callback") {
           const { promise, resolve } = withResolvers<Exit.Exit<any, any>>()
           const inner = cmd.i0(makeResume(resolve))
-          const ref = parent.add(inner)
+          const ref = scope.add(inner)
           const exit = await promise
 
           Disposable.syncDispose(ref)
 
           if (isLeft(exit)) {
             return resolve(left(exit.left))
-          }
-
-          if (parent.interruptible && parent.isDisposed) {
+          } else if (scope.interruptible && scope.isDisposed) {
             return resolve(left(new Interrupted()))
           }
 
           result = iterator.next(exit.right)
         } else {
-          result = iterator.next(runForkInternal(cmd.i0, parent.extend()))
+          result = iterator.next(runForkInternal(cmd.i0, scope.extend()))
         }
       } else if (Effect.isService(instruction, Scope)) {
         const cmd = instruction.input
         if (cmd._tag === "Add") {
-          result = iterator.next(parent.add(cmd.i0))
+          result = iterator.next(scope.add(cmd.i0))
         } else if (cmd._tag === "IsInterruptible") {
-          result = iterator.next(parent.interruptible)
+          result = iterator.next(scope.interruptible)
         } else {
-          const exit = await runForkInternal(cmd.i0, parent.extend(cmd.interruptible))
+          const exit = await runForkInternal<E, any>(cmd.i0, scope.extend(cmd.interruptible))
 
           if (isLeft(exit)) {
-            return resolve(left(exit.left as Cause<E>))
-          }
-
-          if (parent.interruptible && parent.isDisposed) {
+            return resolve(left(exit.left))
+          } else if (scope.interruptible && scope.isDisposed) {
             return resolve(left(new Interrupted()))
           }
 
@@ -106,8 +101,8 @@ async function runForkLoop<E, A>(
   } catch (u) {
     resolve(left(new Unexpected(u)))
   } finally {
-    parent.hasCompleted()
-    await Disposable.asyncDispose(parent)
+    scope.hasCompleted()
+    await Disposable.asyncDispose(scope)
   }
 }
 
