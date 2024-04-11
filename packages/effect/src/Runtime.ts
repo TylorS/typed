@@ -36,7 +36,7 @@ const runForkInternal = <E, A>(
 ): Async.Process<E, A> => {
   const { promise, resolve } = withResolvers<Exit.Exit<E, A>>()
 
-  runForkLoop(effect[Symbol.iterator](), resolve, disposable)
+  runForkLoop(getIterator(effect), resolve, disposable)
 
   return Object.assign(promise, {
     [Symbol.asyncDispose]: () => Disposable.asyncDispose(disposable)
