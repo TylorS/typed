@@ -13,7 +13,9 @@ const getIterator = <R, A>(effect: Effect.Effect<R, A>): Iterator<R, A, any> => 
 
 export const runSync = <A>(effect: Effect.Effect<never, A>): A => getIterator(effect).next().value
 
-export const runSyncExit = <E, A>(effect: Effect.Effect<Fail.Fail<E>, A>): Exit.Exit<E, A> => {
+export const runSyncExit = <A, F extends Fail.Fail<any>>(
+  effect: Effect.Effect<F, A>
+): Exit.Exit<Fail.Fail.Error<F>, A> => {
   const iterator = getIterator(effect)
   const result = iterator.next()
   if (result.done) {
@@ -23,10 +25,10 @@ export const runSyncExit = <E, A>(effect: Effect.Effect<Fail.Fail<E>, A>): Exit.
   }
 }
 
-export const runFork = <A, E = never>(
-  effect: Effect.Effect<Async.Async | Scope | Fail.Fail<E>, A>,
+export const runFork = <A, F extends Fail.Fail<any> = never>(
+  effect: Effect.Effect<Async.Async | Scope | F, A>,
   interruptible: boolean = true
-): Async.Process<E, A> => {
+): Async.Process<Fail.Fail.Error<F>, A> => {
   return runForkInternal(effect, new Disposable.DisposableSet(interruptible))
 }
 

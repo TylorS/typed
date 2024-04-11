@@ -1,15 +1,17 @@
-import { type Cause, findError } from "./Cause.js"
+import { type Cause, Expected, findError } from "./Cause.js"
 import * as Effect from "./Effect.js"
 import { isRight } from "./Either.js"
 
-export class Fail<out E> extends Effect.service<never>("Fail")<Cause<E>> {}
+export class Fail<in out E> extends Effect.service<never>("Fail")<Cause<E>> {}
 
 export const failCause = <E = never>(e: Cause<E>): Effect.Effect<Fail<E>, never> => new Fail(e)
+
+export const fail = <E>(error: E) => failCause(new Expected(error))
 
 export namespace Fail {
   export type ExcludeAll<T> = T extends Fail<infer _> ? never : T
   export type Exclude<T, E> = T extends Fail<infer A> ? A extends E ? never : T : T
-  export type Error<T> = [T] extends [Fail<infer E>] ? E : never
+  export type Error<T> = T extends Fail<infer E> ? E : never
 }
 
 export const catchAllCause = <R, E, A, R2, B>(
