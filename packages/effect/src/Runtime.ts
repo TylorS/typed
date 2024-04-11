@@ -7,7 +7,6 @@ import type * as Exit from "./Exit.js"
 import type * as Fail from "./Fail.js"
 import { asyncDispose, DisposableSet, isSyncDisposable, syncDispose } from "./internal/disposables.js"
 import { withResolvers } from "./internal/withResolvers.js"
-import type { ScopeCommand } from "./Scope.js"
 import { Scope } from "./Scope.js"
 
 const iterator = <R, A>(effect: Effect.Effect<R, A>): Iterator<R, A, any> => effect[Symbol.iterator]()
@@ -84,14 +83,13 @@ async function runForkLoop<E, A>(
           }
         }
       } else if (Effect.isService(instruction, Scope)) {
-        const cmd = instruction.input as ScopeCommand<any, any>
+        const cmd = instruction.input
         if (cmd._tag === "Add") {
           result = iterator.next(parent.add(cmd.i0))
         } else if (cmd._tag === "IsInterruptible") {
           result = iterator.next(parent.interruptible)
         } else {
-          const child = parent.extend(cmd.interruptible)
-          const exit = await runForkInternal(cmd.i0, child)
+          const exit = await runForkInternal(cmd.i0, parent.extend(cmd.interruptible))
           if (isLeft(exit)) {
             return resolve(left(exit.left as Cause<E>))
           }
