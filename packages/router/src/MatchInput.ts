@@ -213,6 +213,13 @@ export function concat<L extends MatchInput.Any, R extends MatchInput.Any>(
 /**
  * @since 1.0.0
  */
+export function getRoute<I extends MatchInput.Any>(input: I): MatchInput.Route<I> {
+  return asRouteGuard<I>(input).route
+}
+
+/**
+ * @since 1.0.0
+ */
 export function getSchema<I extends MatchInput.Any>(input: I): MatchInput.Schema<I> {
   return asRouteGuard<I>(input).route.schema
 }

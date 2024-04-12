@@ -22,7 +22,7 @@ import { TEXT_START, TYPED_HOLE } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
 import type { Renderable } from "./Renderable.js"
 import * as RenderContext from "./RenderContext.js"
-import { HtmlRenderEvent, isRenderEvent } from "./RenderEvent.js"
+import { HtmlRenderEvent, isHtmlRenderEvent } from "./RenderEvent.js"
 import type { RenderEvent } from "./RenderEvent.js"
 import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
@@ -89,19 +89,16 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
 
     if (values.length === 0) {
-      return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value))
+      return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value, true))
     } else {
-      return Fx.filter(
-        Fx.mergeOrdered(
-          entry.chunks.map((chunk) =>
+      return Fx.filter(Fx.mergeOrdered(
+          entry.chunks.map((chunk, i) =>
             renderChunk<
               Placeholder.Error<Values[number]>,
               Placeholder.Context<readonly [] extends Values ? never : Values[number]>
-            >(chunk, values, isStatic)
+            >(chunk, values, isStatic, i === entry.chunks.length - 1)
           )
-        ),
-        (x) => (x.valueOf() as string).length > 0
-      )
+        ), x => (x.valueOf()).length > 0)
     }
   }
 }
@@ -109,47 +106,51 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
 function renderChunk<E, R>(
   chunk: HtmlChunk,
   values: ReadonlyArray<Renderable<any, any>>,
-  isStatic: boolean
-): Fx.Fx<RenderEvent, E, R> {
+  isStatic: boolean,
+  done: boolean
+): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   if (chunk._tag === "text") {
-    return Fx.succeed(HtmlRenderEvent(chunk.value))
+    return Fx.succeed(HtmlRenderEvent(chunk.value, done))
   } else if (chunk._tag === "part") {
-    return renderPart<E, R>(chunk, values, isStatic)
+    return renderPart<E, R>(chunk, values, isStatic, done)
   } else {
-    return renderSparsePart<E, R>(chunk, values) as Fx.Fx<RenderEvent, E, R>
+    return renderSparsePart<E, R>(chunk, values, done) as Fx.Fx<HtmlRenderEvent, E, R>
   }
 }
 
-function renderNode<E, R>(renderable: Renderable<any, any>, isStatic: boolean): Fx.Fx<RenderEvent, E, R> {
+function renderNode<E, R>(renderable: Renderable<any, any>, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   switch (typeof renderable) {
     case "string":
     case "number":
     case "boolean":
     case "bigint":
-      return Fx.succeed(HtmlRenderEvent((isStatic ? "" : TEXT_START) + renderable.toString()))
+      return Fx.succeed(HtmlRenderEvent((isStatic ? "" : TEXT_START) + renderable.toString(), done))
     case "undefined":
     case "object":
-      return renderObject(renderable, isStatic)
+      return renderObject(renderable, isStatic, done)
     default:
       return Fx.empty
   }
 }
 
-function renderObject<E, R>(renderable: object | null | undefined, isStatic: boolean) {
+function renderObject<E, R>(renderable: object | null | undefined, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   if (renderable === null || renderable === undefined) {
-    return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START))
+    return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START, done))
   } else if (Array.isArray(renderable)) {
-    return Fx.mergeOrdered(renderable.map((r) => renderNode(r, isStatic))) as any
-  } else if (Fx.isFx<R, E, Renderable>(renderable)) {
-    // @ts-ignore Types are to deep to infer
-    return Fx.concatMap(takeOneIfNotRenderEvent(renderable), (r) => renderNode(r, isStatic) as any)
+    return Fx.mergeOrdered(renderable.map((r, i) => renderNode(r, isStatic, done && i === renderable.length - 1))) as any
+  } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
+    return takeOneIfNotRenderEvent(renderable, isStatic, done)
   } else if (Effect.isEffect(renderable)) {
     return Fx.switchMap(
       Fx.fromEffect(renderable as Effect.Effect<Renderable, E, R>),
-      (r) => renderNode<E, R>(r, isStatic)
+      (r) => renderNode<E, R>(r, isStatic, done)
     )
-  } else if (isRenderEvent(renderable)) {
-    return Fx.succeed(renderable)
+  } else if (isHtmlRenderEvent(renderable)) {
+    if (done) {
+      return Fx.succeed(renderable)
+    } else {
+      return Fx.succeed(HtmlRenderEvent(renderable.html, done))
+    }
   } else {
     return Fx.empty
   }
@@ -158,24 +159,25 @@ function renderObject<E, R>(renderable: object | null | undefined, isStatic: boo
 function renderPart<E, R>(
   chunk: PartChunk,
   values: ReadonlyArray<Renderable<any, any>>,
-  isStatic: boolean
-): Fx.Fx<RenderEvent, E, R> {
+  isStatic: boolean,
+  done: boolean,
+): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   const { node, render } = chunk
   const renderable: Renderable<any, any> = values[node.index]
 
   // Refs and events are not rendered into HTML
   if (isDirective<E, R>(renderable)) {
-    return Fx.make<RenderEvent, E, R>((sink: Sink.Sink<RenderEvent, E>) => {
+    return Fx.make<HtmlRenderEvent, E, R>((sink: Sink.Sink<HtmlRenderEvent, E>) => {
       const part = partNodeToPart(
         node,
-        (value) => sink.onSuccess(HtmlRenderEvent(render(value)))
+        (value) => sink.onSuccess(HtmlRenderEvent(render(value), done))
       )
 
       return Effect.catchAllCause(renderable(part), sink.onFailure)
     })
   } else if (node._tag === "node") {
-    if (isStatic) return renderNode<E, R>(renderable, isStatic)
-    return Fx.append(renderNode<E, R>(renderable, isStatic), HtmlRenderEvent(TYPED_HOLE(node.index)))
+    if (isStatic) return renderNode<E, R>(renderable, isStatic, done)
+    return Fx.append(renderNode<E, R>(renderable, isStatic, false), HtmlRenderEvent(TYPED_HOLE(node.index), done))
   } else if (node._tag === "properties") {
     if (renderable == null) return Fx.empty
     return Fx.map(
@@ -185,15 +187,15 @@ function renderPart<E, R>(
         ),
         1
       ),
-      (x) => HtmlRenderEvent(render(x))
+      (x) => HtmlRenderEvent(render(x), done)
     ) as any
   } else {
-    if (renderable === null) return Fx.succeed(HtmlRenderEvent(render(renderable)))
+    if (renderable === null) return Fx.succeed(HtmlRenderEvent(render(renderable), done))
 
     const html = Fx.filterMap(Fx.take(unwrapRenderable<E, R>(renderable), 1), (value) => {
       const s = render(value)
 
-      return s ? Option.some(HtmlRenderEvent(s)) : Option.none()
+      return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
     })
 
     return html
@@ -202,7 +204,8 @@ function renderPart<E, R>(
 
 function renderSparsePart<E, R>(
   chunk: SparsePartChunk,
-  values: ReadonlyArray<Renderable<any, any>>
+  values: ReadonlyArray<Renderable<any, any>>,
+  done: boolean,
 ): Fx.Fx<RenderEvent, E, R> {
   const { node, render } = chunk
 
@@ -228,18 +231,27 @@ function renderSparsePart<E, R>(
       ),
       1
     ),
-    (value) => HtmlRenderEvent(render(value))
+    (value) => HtmlRenderEvent(render(value), done)
   )
 }
 
-function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>): Fx.Fx<A, E, R> {
-  return Fx.make<A, E, R>((sink) =>
+function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R> {
+  return Fx.make<HtmlRenderEvent, E, R>((sink) =>
     Sink.withEarlyExit(sink, (sink) =>
       fx.run(
         Sink.make(
           sink.onFailure,
-          (event) =>
-            isRenderEvent(event) ? sink.onSuccess(event) : Effect.zipRight(sink.onSuccess(event), sink.earlyExit)
+          (event) => {
+            if (isHtmlRenderEvent(event)) {
+              if (done) {
+                return sink.onSuccess(event)
+              } else {
+                return sink.onSuccess(HtmlRenderEvent(event.html, false))
+              }
+            }
+
+            return Effect.zipRight(sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + (event as any).toString(), done)), sink.earlyExit)
+          }
         )
       ))
   )

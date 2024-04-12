@@ -67,7 +67,8 @@ type RenderPartMap = {
   readonly [K in Template.PartNode["_tag"] | Template.SparsePartNode["_tag"]]: (
     part: Extract<Template.PartNode | Template.SparsePartNode, { _tag: K }>,
     node: Node,
-    ctx: RenderPartContext
+    ctx: RenderPartContext,
+    _?: any
   ) => null | Effect.Effect<void, any, any> | Array<Effect.Effect<void, any, any>>
 }
 
@@ -122,11 +123,10 @@ const RenderPartMap: RenderPartMap = {
       () => ctx.expected++
     )
   },
-  "className-part": (templatePart, node, ctx) => {
+  "className-part": (templatePart, node, ctx, classNames = new Set((node as HTMLElement).classList)) => {
     const { queue, refCounter, values } = ctx
     const element = node as HTMLElement | SVGElement
     const renderable = values[templatePart.index]
-    let classNames: Set<string> = new Set(element.classList)
     const setValue = (value: string | Array<string> | null | undefined) => {
       if (isNullOrUndefined(value)) {
         element.classList.remove(...classNames)
@@ -322,6 +322,7 @@ const RenderPartMap: RenderPartMap = {
       for (const [key, value] of entries) {
         const index = ++ctx.spreadIndex
         const match = keyToPartType(key)
+        console.log("match", match, key, value)
 
         switch (match[0]) {
           case "attr": {
@@ -488,18 +489,22 @@ const RenderPartMap: RenderPartMap = {
   },
   "sparse-class-name": (templatePart, node, ctx) => {
     const element = node as HTMLElement | SVGElement
-
     const effects = templatePart.nodes.flatMap((node) => {
       if (node._tag === "text") {
         const split = splitClassNames(node.value)
         if (split.length > 0) element.classList.add(...split)
         return []
       } else {
-        const eff = RenderPartMap[node._tag](node, element, ctx)
+        // TODO: We really need to proxy these all through a single ClassNamePart to properly manage classNames
+        const eff = RenderPartMap[node._tag](node, element, ctx, new Set())
         if (eff === null) return []
         return Array.isArray(eff) ? eff : [eff]
       }
     })
+
+    if (effects.length === 0) { 
+      return null
+    }
 
     return effects
   },
@@ -584,7 +589,7 @@ const RenderPartMap: RenderPartMap = {
       )
     )
   }
-}
+} satisfies RenderPartMap
 
 const SPACE_REGEXP = /\s+/g
 

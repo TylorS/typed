@@ -1,5 +1,5 @@
 import type { Schema } from "@effect/schema/Schema"
-import { getSchema, type MatchInput } from "@typed/router"
+import {  getSchema, type MatchInput } from "@typed/router"
 import { ApiRequest } from "effect-http"
 
 export * from "effect-http/ApiRequest"

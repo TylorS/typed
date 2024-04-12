@@ -35,16 +35,18 @@ export function DomRenderEvent(rendered: Rendered): DomRenderEvent {
 export type HtmlRenderEvent = {
   readonly _tag: "html"
   readonly html: string
+  readonly done: boolean,
   readonly valueOf: () => string
 }
 
 /**
  * @since 1.0.0
  */
-export function HtmlRenderEvent(html: string): HtmlRenderEvent {
+export function HtmlRenderEvent(html: string, done: boolean,): HtmlRenderEvent {
   return {
     _tag: "html",
     html,
+    done,
     valueOf: () => html
   }
 }
@@ -54,6 +56,13 @@ export function HtmlRenderEvent(html: string): HtmlRenderEvent {
  */
 export function isRenderEvent(value: unknown): value is RenderEvent {
   return isTaggedObject(value) && (value._tag === "html" || value._tag === "dom")
+}
+
+/**
+ * @since 1.0.0
+ */
+export function isHtmlRenderEvent(value: unknown): value is HtmlRenderEvent {
+  return isTaggedObject(value) && value._tag === "html"
 }
 
 function isTaggedObject(

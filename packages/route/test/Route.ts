@@ -24,12 +24,12 @@ describe("Route", () => {
   })
 
   it("generates schemas", async () => {
-    const decodeFoobar = Schema.decode(foobar)
-    const decodeUnnamed = Schema.decode(unnamed)
-    const decodeParam = Schema.decode(param)
-    const decodeZeroOrMore = Schema.decode(zeroOrMore)
-    const decodeOneOrMore = Schema.decode(oneOrMore)
-    const decodeOptional = Schema.decode(optional)
+    const decodeFoobar = Schema.decode(foobar.schema)
+    const decodeUnnamed = Schema.decode(unnamed.schema)
+    const decodeParam = Schema.decode(param.schema)
+    const decodeZeroOrMore = Schema.decode(zeroOrMore.schema)
+    const decodeOneOrMore = Schema.decode(oneOrMore.schema)
+    const decodeOptional = Schema.decode(optional.schema)
     const test = Effect.gen(function*(_) {
       deepEqual(yield* _(decodeFoobar({ fooId: "1", barId: "2" })), { fooId: 1, barId: 2 })
       deepEqual(yield* _(decodeUnnamed({ 0: "123", 1: "456" })), { 0: "123", 1: "456" })

@@ -55,10 +55,10 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
         return Fx.fromFxEffect(
           Effect.map(Fx.first(values), (values) =>
             Fx.mergeOrdered(
-              values.map((value) =>
+              values.map((value, i) =>
                 Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => {
                   const key = getKey(value)
-                  return Fx.append(f(RefSubject.take(ref, 1), key), HtmlRenderEvent(MANY_HOLE(key)))
+                  return Fx.append(Fx.map(f(RefSubject.take(ref, 1), key), r => HtmlRenderEvent((r as HtmlRenderEvent).html, false)), HtmlRenderEvent(MANY_HOLE(key), i === values.length - 1))
                 }))
               )
             ))
@@ -67,8 +67,6 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
     )
   )
 }
-
-type TODO = any
 
 /**
  * @since 1.0.0
@@ -86,9 +84,9 @@ export const manyAsyncData: {
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
-      Loading: (todo: TODO) => Loading
-      Failure: (data: RefSubject.Computed<E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<A>, computed: TODO) => Success
+      Loading: (data: RefSubject.Filtered<Progress>) => Loading
+      Failure: (data: RefSubject.Computed<E1>) => Failure
+      Success: (value: RefSubject.Computed<A>) => Success
     }
   ): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
@@ -113,9 +111,9 @@ export const manyAsyncData: {
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
-      Loading: (data: TODO) => Loading
-      Failure: (data: RefSubject.Computed<E1>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<A>, computed: TODO) => Success
+      Loading: (data: RefSubject.Filtered<Progress>) => Loading
+      Failure: (data: RefSubject.Computed<E1>) => Failure
+      Success: (value: RefSubject.Computed<A>) => Success
     }
   ): Fx.Fx<
     Fx.Fx.Success<NoData | Loading | Failure | Success>,

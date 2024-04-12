@@ -10,7 +10,7 @@ let currentTokenIndex = 0
 let tokens: Array<IToken> = []
 let hash: string
 let parts: Array<readonly [PartNode | SparsePartNode, Chunk.Chunk<number>]> = []
-let path: PathStack
+// let path: PathStack
 
 function init(template: ReadonlyArray<string>) {
   const html = templateWithParts(template)
@@ -18,7 +18,7 @@ function init(template: ReadonlyArray<string>) {
   tokens = tokenize(html)
   currentTokenIndex = 0
   parts = []
-  path = new PathStack()
+  // path = new PathStack()
 }
 
 export function parse(template: ReadonlyArray<string>): ParsedTemplate {
@@ -50,6 +50,8 @@ function parseNode(): ParsedNode {
     case TokenKind.OpenTagEnd:
     case TokenKind.Whitespace:
   }
+
+  throw new Error("Unexpected token")
 }
 
 function templateWithParts(template: ReadonlyArray<string>): string {
@@ -71,29 +73,29 @@ function templateWithParts(template: ReadonlyArray<string>): string {
   return output
 }
 
-class PathStack {
-  chunk: Chunk.Chunk<number> = Chunk.empty()
-  count = 0
+// class PathStack {
+//   chunk: Chunk.Chunk<number> = Chunk.empty()
+//   count = 0
 
-  inc() {
-    this.count++
-  }
+//   inc() {
+//     this.count++
+//   }
 
-  push(): void {
-    this.chunk = this.toChunk()
-    this.count = 0
-  }
+//   push(): void {
+//     this.chunk = this.toChunk()
+//     this.count = 0
+//   }
 
-  pop(): void {
-    this.count = Chunk.unsafeLast(this.chunk)
-    this.chunk = Chunk.dropRight(this.chunk, 1)
-  }
+//   pop(): void {
+//     this.count = Chunk.unsafeLast(this.chunk)
+//     this.chunk = Chunk.dropRight(this.chunk, 1)
+//   }
 
-  toChunk(): Chunk.Chunk<number> {
-    return Chunk.append(this.chunk, this.count)
-  }
+//   toChunk(): Chunk.Chunk<number> {
+//     return Chunk.append(this.chunk, this.count)
+//   }
 
-  previousChunk() {
-    return this.chunk
-  }
-}
+//   previousChunk() {
+//     return this.chunk
+//   }
+// }

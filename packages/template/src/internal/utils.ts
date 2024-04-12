@@ -78,7 +78,7 @@ export function adjustTime(input?: Duration.DurationInput) {
 }
 
 export function keyToPartType(key: string) {
-  switch (key) {
+  switch (key[0]) {
     case "?":
       return ["boolean", key.slice(1)] as const
     case ".": {
