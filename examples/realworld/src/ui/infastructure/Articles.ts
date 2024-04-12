@@ -11,7 +11,7 @@ export const ArticlesLive = Articles.implement({
   create: (input) =>
     Effect.map(
       handleClientRequest(
-        withJwtToken((jwtToken) => client.createArticle({ body: { article: input } }, jwtToken))
+        withJwtToken((jwtToken) => client.createArticle({ path: {}, body: { article: input } }, jwtToken))
       ),
       (r) => r.article
     ),
@@ -28,12 +28,12 @@ export const ArticlesLive = Articles.implement({
     ),
   list: (input) =>
     Effect.map(
-      handleClientRequest(withOptionalJwtToken((jwtToken) => client.getArticles({ query: input }, jwtToken))),
+      handleClientRequest(withOptionalJwtToken((jwtToken) => client.getArticles({  path: {}, query: input }, jwtToken))),
       (r) => r.articles
     ),
   feed: (input) =>
     Effect.map(
-      handleClientRequest(withJwtToken((jwtToken) => client.getFeed({ query: input }, jwtToken))),
+      handleClientRequest(withJwtToken((jwtToken) => client.getFeed({ path: {},  query: input }, jwtToken))),
       (r) => r.articles
     ),
   favorite: (slug) =>

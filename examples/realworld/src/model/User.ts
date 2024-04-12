@@ -27,4 +27,4 @@ export const User = Schema.struct({
   image: Schema.optionFromNullable(Image)
 }).pipe(Schema.identifier("User"))
 
-export type User = Schema.Schema.Type<typeof User>
+export interface User extends Schema.Schema.Type<typeof User> { }

@@ -15,4 +15,4 @@ export const Comment = Schema.struct({
   updatedAt: Schema.Date
 }).pipe(Schema.identifier("Comment"))
 
-export type Comment = Schema.Schema.Type<typeof Comment>
+export interface Comment extends Schema.Schema.Type<typeof Comment> {}

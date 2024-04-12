@@ -46,4 +46,4 @@ export const Article = Schema.struct({
   Schema.identifier("Article")
 )
 
-export type Article = Schema.Schema.Type<typeof Article>
+export interface Article extends Schema.Schema.Type<typeof Article> {}

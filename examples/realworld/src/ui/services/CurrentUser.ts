@@ -2,6 +2,7 @@ import { CurrentUser } from "@/services"
 import { Fx, html, many, RefAsyncData } from "@typed/core"
 
 export const CurrentUserErrors = CurrentUser.pipe(
+  Fx.tap(_ => console.log(_)),
   RefAsyncData.matchAsyncData({
     NoData: Fx.null,
     Loading: () => Fx.null,

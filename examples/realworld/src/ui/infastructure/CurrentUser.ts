@@ -16,7 +16,9 @@ export const CurrentUserLive = CurrentUser.make(
       return Fx.succeed(AsyncData.noData())
     }
 
-    return client.getCurrentUser({}, addJwtTokenToRequest(jwtToken.value)).pipe(
+    console.log("Getting current user")
+
+    return client.getCurrentUser({ path: {} }, addJwtTokenToRequest(jwtToken.value)).pipe(
       handleClientRequest,
       Effect.map((r) => r.user),
       Effect.tapErrorCause(() => RemoveJwtToken()),

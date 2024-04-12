@@ -10,17 +10,19 @@ import * as Node from "@typed/core/Node"
 import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
 
-toHttpRouter(Ui.router, { layout: Ui.document }).pipe(
-  Http.router.catchAll(
-    (_) =>
-      Http.response.empty({
-        status: 303,
-        headers: Http.headers.unsafeFromRecord({
-          location: _._tag === "RedirectError" ? _.path.toString() : "/login"
-        })
+const uiRouter = Http.router.catchAll(
+  toHttpRouter(Ui.router, { layout: Ui.document }),
+  (_) =>
+    Http.response.empty({
+      status: 303,
+      headers: Http.headers.unsafeFromRecord({
+        location: _._tag === "RedirectError" ? _.path.toString() : "/login"
       })
-  ),
-  Http.router.mountApp("/api", Api.server),
+    })
+)
+
+uiRouter.pipe(
+  Http.router.mount("/api", Api.server),
   Http.router.catchTag("Unauthorized", (_) => Http.response.empty({ status: 401 })),
   withCurrentUserFromHeaders,
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
@@ -38,7 +40,6 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
     // If no token is present, provide the app with no user or token
     if (Option.isNone(token)) {
       const user = yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
-
       return yield* _(
         app,
         // CurrentUser is the client representation of the current user
@@ -51,7 +52,7 @@ function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
       Users.current(),
       Effect.exit,
       Effect.map(AsyncData.fromExit),
-      Effect.flatMap(RefSubject.of),
+      Effect.flatMap(_ => RefSubject.of<RefSubject.Success<typeof CurrentUser>>(_)),
       // CurrentJwt is the server representation of the current user
       CurrentJwt.provide(token.value)
     )

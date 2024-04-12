@@ -6,7 +6,7 @@ import { Effect } from "effect"
 export const TagsLive = Tags.implement({
   get: () =>
     Effect.map(
-      handleClientRequest(client.getTags({})),
+      handleClientRequest(client.getTags({ path: {}, })),
       (r) => r.tags
     )
 })

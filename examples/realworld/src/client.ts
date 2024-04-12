@@ -1,7 +1,7 @@
 import "./styles.css"
 
 import { isAuthenticated } from "@/services"
-import { fromWindow, Fx, hydrateToLayer, Navigation, Router } from "@typed/core"
+import { fromWindow, Fx, renderToLayer, Navigation, Router } from "@typed/core"
 import { Storage } from "@typed/dom/Storage"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 import * as Ui from "./ui"
@@ -14,8 +14,8 @@ const onNotFound = Effect.gen(function*(_) {
   }
 })
 
-const main = Effect.gen(function*(_) {
-  yield* _(Ui.router, Router.notFoundWith(onNotFound), Ui.layout, hydrateToLayer, Layer.launch)
+const main = Effect.gen(function* (_) {
+  yield* _(Ui.router, Router.notFoundWith(onNotFound), Fx.tap(x => console.log(x)), Ui.layout, renderToLayer, Layer.launch)
 })
 
 main.pipe(
