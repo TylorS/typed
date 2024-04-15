@@ -44,7 +44,7 @@
     "vite": "^5.1.5"
   },
   "devDependencies": {
-    "rollup": "^4.14.1",
+    "rollup": "^4.14.2",
     "vite": "^5.2.8"
   },
   "dependencies": {
