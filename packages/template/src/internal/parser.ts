@@ -13,6 +13,7 @@ import {
   PART_REGEX,
   PART_STRING
 } from "./chunks.js"
+import { convertCharacterEntities } from './character-entities.js'
 
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization
@@ -287,12 +288,12 @@ class ParserImpl implements Parser {
       this._skipWhitespace = false
       return [this.addPartWithPrevious(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
-      return this._skipWhitespace ? [] : (this.path.inc(), [new Template.TextNode(next.match[1])])
+      return this._skipWhitespace ? [] : (this.path.inc(), [new Template.TextNode(convertCharacterEntities(next.match[1]))])
     } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
       return parseTextAndParts(next.match[1], (i) => this.addPartWithPrevious(new Template.NodePart(i)))
     } else {
       this.path.inc()
-      return [new Template.TextNode(this.nextChar())]
+      return [new Template.TextNode(convertCharacterEntities(this.nextChar()))]
     }
   }
 
@@ -532,17 +533,17 @@ class ParserImpl implements Parser {
         this.consumeAmount(8)
         const part = this.parsePartToken((i) => this.addPartWithPrevious(new Template.TextPartNode(i)))
 
-        return text === "" ? Continue([part]) : Continue([new Template.TextNode(text), part])
+        return text === "" ? Continue([part]) : Continue([new Template.TextNode(convertCharacterEntities(text)), part])
       }
       case "elementClose": {
         this.consumeClosingTag(tagName)
         return Break(
-          text ? [new Template.TextNode(text)] : undefined
+          text ? [new Template.TextNode(convertCharacterEntities(text))] : undefined
         )
       }
       case "elementOpen": // In this case we make the assumption that you forgot to close this element
         return Break(
-          text ? [new Template.TextNode(text)] : undefined
+          text ? [new Template.TextNode(convertCharacterEntities(text))] : undefined
         )
     }
   }
@@ -705,7 +706,7 @@ export function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<
   const out: Array<Template.TextNode | T> = []
 
   if (!PART_REGEX.test(s)) {
-    return [new Template.TextNode(s)]
+    return [new Template.TextNode(convertCharacterEntities(s))]
   }
 
   while (pos < s.length) {
@@ -713,7 +714,7 @@ export function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<
       out.push(f(parseInt(next.match[2], 10)))
       pos += next.length
     } else if ((next = getTextUntilPart(s, pos))) {
-      out.push(new Template.TextNode(next.match[1]))
+      out.push(new Template.TextNode(convertCharacterEntities(next.match[1])))
 
       pos += next.length
     } else {
@@ -722,7 +723,7 @@ export function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<
   }
 
   if (pos < s.length) {
-    out.push(new Template.TextNode(s.slice(pos)))
+    out.push(new Template.TextNode(convertCharacterEntities(s.slice(pos))))
   }
 
   return out

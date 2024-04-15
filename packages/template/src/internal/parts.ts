@@ -30,6 +30,7 @@ import type {
 } from "../Part.js"
 import { DEFAULT_PRIORITY, type RenderQueue } from "../RenderQueue.js"
 import { findHoleComment } from "./utils.js"
+import { convertCharacterEntities } from "./character-entities.js"
 
 const strictEq = Equivalence.strict<any>()
 
@@ -341,18 +342,19 @@ export class TextPartImpl extends base("text") implements TextPart {
     const text = document.createTextNode("")
     element.insertBefore(text, comment)
 
-    return new TextPartImpl(
-      index,
-      ({ part, value }, priority) => queue.add(part, () => text.nodeValue = value ?? null, priority),
-      text.nodeValue,
-      strictEq
-    )
+    return TextPartImpl.fromText(text, index, queue)
   }
 
   static fromText(text: Text, index: number, queue: RenderQueue) {
     return new TextPartImpl(
       index,
-      ({ part, value }, priority) => queue.add(part, () => text.nodeValue = value ?? null, priority),
+      ({ part, value }, priority) => queue.add(part, () => {
+        if (value) {
+          text.nodeValue = convertCharacterEntities(value)
+        } else {
+          text.nodeValue = null
+        }
+      }, priority),
       text.nodeValue,
       strictEq
     )
