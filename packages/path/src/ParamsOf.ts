@@ -30,6 +30,13 @@ export type ParamsOf<T extends string> = A.Equals<T, string> extends 1 ? {}
   : ToParams<ParseSegments<PathToSegments<T>>>
 
 /**
+ * @since 1.0.0
+ */
+export type HasParams<T extends string> = A.Equals<T, string> extends 1 ? false :
+  [ParamsOf<T>] extends [infer R] ? [keyof R] extends [never] ? false : true
+  : false
+
+/**
  * ParamsList
  * @since 1.0.0
  */
