@@ -250,7 +250,11 @@ function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>, isStatic: boolean,
               }
             }
 
-            return Effect.zipRight(sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + (event as any).toString(), done)), sink.earlyExit)
+            if (event === null || event === undefined) { 
+              return sink.earlyExit
+            }
+
+            return Effect.zipRight(sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + String(event), done)), sink.earlyExit)
           }
         )
       ))

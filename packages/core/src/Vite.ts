@@ -34,8 +34,8 @@ export function getHeadAndScript(
   const scriptHtml = `<script ${useScript ? "async defer" : `type="module"`} src="${file}"></script>`
 
   return {
-    head: Fx.succeed(HtmlRenderEvent(headHtml)),
-    script: Fx.succeed(HtmlRenderEvent(scriptHtml))
+    head: Fx.succeed(HtmlRenderEvent(headHtml, true)),
+    script: Fx.succeed(HtmlRenderEvent(scriptHtml, true))
   }
 }
 

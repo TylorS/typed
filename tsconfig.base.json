@@ -200,18 +200,6 @@
       "@typed/server/examples/*": [
         "packages/server/examples/*"
       ],
-      "@typed/signal": [
-        "packages/signal/src/index.ts"
-      ],
-      "@typed/signal/*": [
-        "packages/signal/src/*"
-      ],
-      "@typed/signal/test/*": [
-        "packages/signal/test/*"
-      ],
-      "@typed/signal/examples/*": [
-        "packages/signal/examples/*"
-      ],
       "@typed/storybook": [
         "packages/storybook/src/index.ts"
       ],

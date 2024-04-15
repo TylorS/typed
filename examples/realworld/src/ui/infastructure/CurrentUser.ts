@@ -4,26 +4,24 @@ import { JwtToken } from "@/model"
 import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@/services"
 import { handleClientRequest } from "@/ui/infastructure/_client"
 import { Schema } from "@effect/schema"
-import { AsyncData, Fx } from "@typed/core"
+import { AsyncData } from "@typed/core"
 import { SchemaStorage } from "@typed/dom/Storage"
-import { asyncDataRequest } from "@typed/fx/AsyncData"
 import { Effect, Layer, Option } from "effect"
 
 export const CurrentUserLive = CurrentUser.make(
-  Fx.gen(function*(_) {
+  Effect.gen(function* (_) {
     const jwtToken = yield* _(ReadJwtToken())
     if (Option.isNone(jwtToken)) {
-      return Fx.succeed(AsyncData.noData())
+      return AsyncData.noData()
     }
 
-    console.log("Getting current user")
-
-    return client.getCurrentUser({ path: {} }, addJwtTokenToRequest(jwtToken.value)).pipe(
+    return yield* _(
+      client.getCurrentUser({ path: {} }, addJwtTokenToRequest(jwtToken.value)),
       handleClientRequest,
       Effect.map((r) => r.user),
       Effect.tapErrorCause(() => RemoveJwtToken()),
-      asyncDataRequest,
-      Fx.switchMapError(() => Fx.succeed(AsyncData.noData()))
+      Effect.exit,
+      Effect.map(AsyncData.fromExit)
     )
   })
 )

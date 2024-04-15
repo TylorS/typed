@@ -1,27 +1,34 @@
 import { CurrentUser } from "@/services"
-import { Fx, html, many, RefAsyncData } from "@typed/core"
+import { AsyncData, Fx, html } from "@typed/core"
+import { Either } from "effect"
+import { failureOrCause } from "effect/Cause"
 
 export const CurrentUserErrors = CurrentUser.pipe(
-  Fx.tap(_ => console.log(_)),
-  RefAsyncData.matchAsyncData({
-    NoData: Fx.null,
+  Fx.switchMap(_ => Fx.unify(AsyncData.match(_, {
+    NoData: () => Fx.null,
     Loading: () => Fx.null,
-    Failure: Fx.matchTags({
-      Unauthorized: () =>
-        html`<ul class="error-messages">
-        <li>Invalid email or password</li>
-      </ul>`,
-      Unprocessable: (error) =>
-        html`<ul class="error-messages">
-        ${
-          many(
-            Fx.map(error, (e) => e.errors),
-            (e) => e,
-            (e) => html`<li>${e}</li>`
-          )
-        }
-      </ul>`
-    }),
-    Success: () => Fx.null
-  })
+    Failure: (cause) => {
+      return failureOrCause(cause).pipe(
+        Either.match({
+          onLeft: (error) => {
+            switch (error._tag) {
+              case "Unauthorized":
+                return html`<ul class="error-messages">
+                  <li>Invalid email or password</li>
+                </ul>`
+              case "Unprocessable":
+                return html`<ul class="error-messages">
+                  ${
+                    error.errors.map(e => html`<li>${e}</li>`)
+                  }
+                </ul>`
+            }
+          },
+          onRight: () => Fx.null
+        })
+      )
+    },
+    Success: () => Fx.null,
+    Optimistic: () => Fx.null
+  })))
 )

@@ -65,7 +65,7 @@ export const main = (params: RefSubject.RefSubject<Params>) => {
     many(
       articles,
       (a) => a.id,
-      ArticlePreview
+      Fx.switchMap(ArticlePreview),
     ).pipe(
       Fx.switchMapCause((_) => Fx.null)
     )

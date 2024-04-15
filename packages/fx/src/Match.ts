@@ -193,10 +193,7 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
                             MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
                               ? Effect.unit
                               : sink.onFailure(cause),
-                          (value) => {
-                            console.log(value)
-                            return MutableRef.get(hasEnded) ? Effect.unit : sink.onSuccess(Option.some(value))
-                          }
+                          (value) => MutableRef.get(hasEnded) ? Effect.unit : sink.onSuccess(Option.some(value))
                         )
                       )
                   )

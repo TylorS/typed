@@ -149,7 +149,7 @@ const textChildMatches = {
   elementClose: isElementCloseToken
 }
 
-class PathStack {
+export class PathStack {
   chunk: Chunk.Chunk<number> = Chunk.empty()
   count = 0
 
@@ -670,7 +670,7 @@ class ParserImpl implements Parser {
   }
 }
 
-function templateWithParts(template: ReadonlyArray<string>): string {
+export function templateWithParts(template: ReadonlyArray<string>): string {
   const length = template.length
   const lastIndex = length - 1
 
@@ -699,7 +699,7 @@ function unsafeParsePartIndex(text: string): number {
   return parseInt(next.match[2], 10)
 }
 
-function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Template.TextNode | T> {
+export function parseTextAndParts<T>(s: string, f: (index: number) => T): Array<Template.TextNode | T> {
   let next: TextChunk | undefined
   let pos: number = 0
   const out: Array<Template.TextNode | T> = []

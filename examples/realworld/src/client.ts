@@ -1,9 +1,9 @@
 import "./styles.css"
 
 import { isAuthenticated } from "@/services"
-import { fromWindow, Fx, renderToLayer, Navigation, Router } from "@typed/core"
+import { fromWindow, Fx, Navigation, Router, hydrateToLayer } from "@typed/core"
 import { Storage } from "@typed/dom/Storage"
-import { Effect, Layer, Logger, LogLevel } from "effect"
+import { Effect, Layer, Logger, LogLevel, pipe } from "effect"
 import * as Ui from "./ui"
 
 const onNotFound = Effect.gen(function*(_) {
@@ -14,11 +14,10 @@ const onNotFound = Effect.gen(function*(_) {
   }
 })
 
-const main = Effect.gen(function* (_) {
-  yield* _(Ui.router, Router.notFoundWith(onNotFound), Fx.tap(x => console.log(x)), Ui.layout, renderToLayer, Layer.launch)
-})
+const main = pipe(Ui.router, Router.notFoundWith(onNotFound), Ui.layout, hydrateToLayer, Layer.launch)
 
-main.pipe(
+pipe(
+  main,
   Effect.provide(Ui.Live),
   Effect.provide(Storage.layer(localStorage)),
   Effect.provide(fromWindow(window, { rootElement: document.getElementById("app")! })),

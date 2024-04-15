@@ -50,9 +50,6 @@
       "path": "packages/server"
     },
     {
-      "path": "packages/signal"
-    },
-    {
       "path": "packages/storybook"
     },
     {

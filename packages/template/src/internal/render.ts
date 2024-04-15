@@ -322,8 +322,6 @@ const RenderPartMap: RenderPartMap = {
       for (const [key, value] of entries) {
         const index = ++ctx.spreadIndex
         const match = keyToPartType(key)
-        console.log("match", match, key, value)
-
         switch (match[0]) {
           case "attr": {
             const eff = matchSettablePart(
