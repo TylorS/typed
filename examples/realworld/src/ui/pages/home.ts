@@ -27,53 +27,56 @@ export const main = Fx.gen(function*(_) {
   const tagsList = yield* _(RefArray.make(Tags.get()))
 
   return html`<div class="home-page">
-    <div class="banner">
-      <div class="container">
-        <h1 class="logo-font">conduit</h1>
-        <p>A place to share your knowledge.</p>
-      </div>
+  <div class="banner">
+    <div class="container">
+      <h1 class="logo-font">conduit</h1>
+      <p>A place to share your knowledge.</p>
     </div>
   </div>
 
-<div class="container page">
-  <div class="row">
-    <div class="col-md-9">
-      <div class="feed-toggle">
-        <ul class="outline-active nav nav-pills">
-          ${NavLink("Global Feed", route)}
+  <div class="container page">
+    <div class="row">
+      <div class="col-md-9">
+        <div class="feed-toggle">
+          <ul class="outline-active nav nav-pills">
+            <li class="nav-item">
+              ${NavLink("Global Feed", route)}
+            </li>
+          </ul>
+        </div>
+
+        ${articles.map(ArticlePreview)}
+
+        <ul class="pagination">
+          <li class="page-item active">
+            <a class="page-link" href="">1</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="">2</a>
+          </li>
         </ul>
       </div>
 
-      ${articles.map(ArticlePreview)}
+      <div class="col-md-3">
+        <div class="sidebar">
+          <p>Popular Tags</p>
 
-      <ul class="pagination">
-        <li class="page-item active">
-          <a class="page-link" href="">1</a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="">2</a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="col-md-3">
-      <div class="sidebar">
-        <p>Popular Tags</p>
-
-        <div class="tag-list">
+          <div class="tag-list">
             ${
-    many(
-      tagsList,
-      (t) => t,
-      (t) => {
-        const href = RefSubject.map(t, (t) => `/?tag=${t}`)
-        const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
-        return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
-      }
-    ).pipe(
-      Fx.switchMapCause(() => Fx.null)
-    )
-  }        </div>
+      many(
+        tagsList,
+        (t) => t,
+        (t) => {
+          const href = RefSubject.map(t, (t) => `/?tag=${t}`)
+          const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
+          return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
+        }
+      ).pipe(
+        Fx.switchMapCause(() => Fx.null)
+      )
+    } 
+          </div>
+        </div>
       </div>
     </div>
   </div>
