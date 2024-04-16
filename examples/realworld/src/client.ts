@@ -1,7 +1,7 @@
 import "./styles.css"
 
 import { isAuthenticated } from "@/services"
-import { fromWindow, Fx, Navigation, Router, hydrateToLayer } from "@typed/core"
+import { hydrateFromWindow, Fx, Navigation, Router, hydrateToLayer } from "@typed/core"
 import { Storage } from "@typed/dom/Storage"
 import { Effect, Layer, Logger, LogLevel, pipe } from "effect"
 import * as Ui from "./ui"
@@ -20,7 +20,7 @@ pipe(
   main,
   Effect.provide(Ui.Live),
   Effect.provide(Storage.layer(localStorage)),
-  Effect.provide(fromWindow(window, { rootElement: document.getElementById("app")! })),
+  Effect.provide(hydrateFromWindow(window, { rootElement: document.getElementById("app")! })),
   Logger.withMinimumLogLevel(LogLevel.Debug),
   Effect.scoped,
   Effect.runPromise
