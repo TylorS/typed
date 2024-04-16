@@ -717,7 +717,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           // so event listeners are kept attached to the current Scope.
           Effect.zipRight(Effect.never),
           // Close our scope whenever the current Fiber is interrupted
-          Effect.ensuring(Scope.close(scope, Exit.unit))
+          Effect.onExit((exit) => Scope.close(scope, exit))
         )
       })
     })
@@ -792,7 +792,7 @@ function unwrapRenderable<E, R>(renderable: unknown): Fx.Fx<any, E, R> {
 export function attachRoot<T extends RenderEvent | null>(
   cache: RenderContext["renderCache"],
   where: HTMLElement,
-  what: RenderEvent | null // TODO: Should we support HTML RenderEvents here too?
+  what: RenderEvent | null // TODO: Should we support HTML RenderEvents here too?,
 ): Effect.Effect<ToRendered<T>> {
   return Effect.sync(() => {
     const wire = what?.valueOf() as ToRendered<T>

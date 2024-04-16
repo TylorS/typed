@@ -10,7 +10,7 @@ import { indexRefCounter2 } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
-import { Either, ExecutionStrategy, Exit, Runtime } from "effect"
+import { Either, ExecutionStrategy, Runtime } from "effect"
 import * as Scope from "effect/Scope"
 import { RenderQueue } from "../RenderQueue.js"
 import type { Template } from "../Template.js"
@@ -124,15 +124,12 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
         // Emit our DomRenderEvent
         yield* _(sink.onSuccess(DomRenderEvent(wire)))
 
-        // Stop hydrating
-        hydrateCtx.hydrate = false
-
         yield* _(
           // Ensure our templates last forever in the DOM environment
           // so event listeners are kept attached to the current Scope.
           Effect.never,
           // Close our scope whenever the current Fiber is interrupted
-          Effect.ensuring(Scope.close(scope, Exit.unit))
+          Effect.onExit((exit) => Scope.close(scope, exit))
         )
       })
     )
@@ -219,6 +216,7 @@ export function findTemplateResultPartChildNodes(
     childNodes
   })
 }
+
 
 export function findManyChildNodes(
   childNodes: Array<Node>,
