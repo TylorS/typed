@@ -221,7 +221,7 @@ export function compileCauseEffectOperatorSink<R>(
             op.f(a),
             Sink.make(
               (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
-              (b) => b ? sink.onFailure(a) : Effect.unit
+              (b) => b ? sink.onFailure(a) : Effect.void
             )
           ),
         sink.onSuccess
@@ -234,7 +234,7 @@ export function compileCauseEffectOperatorSink<R>(
             Sink.make(
               (cause2) => sink.onFailure(Cause.sequential(a, cause2)),
               Option.match({
-                onNone: () => Effect.unit,
+                onNone: () => Effect.void,
                 onSome: sink.onFailure
               })
             )

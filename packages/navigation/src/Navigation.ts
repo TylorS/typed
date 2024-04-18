@@ -83,30 +83,32 @@ export const Navigation: Tagged<Navigation> = Tagged<Navigation, Navigation>("@t
 
 const urlSchema_ = Schema.instanceOf(URL).pipe(Schema.equivalence((a, b) => a.href === b.href))
 
-const urlSchema = Schema.string.pipe(
+const urlSchema = Schema.String.pipe(
   Schema.transformOrFail(
     urlSchema_,
-    (s) =>
-      Effect.suspend(() => {
-        try {
-          return Effect.succeed(new URL(s))
-        } catch {
-          return Effect.fail(new ParseResult.Type(urlSchema_.ast, s, `Expected a URL`))
-        }
-      }),
-    (url) => Effect.succeed(url.toString())
+    {
+      decode: (s) =>
+        Effect.suspend(() => {
+          try {
+            return Effect.succeed(new URL(s))
+          } catch {
+            return Effect.fail(new ParseResult.Type(urlSchema_.ast, s, `Expected a URL`))
+          }
+        }),
+      encode: (url) => Effect.succeed(url.toString())
+    }
   )
 )
 
 /**
  * @since 1.0.0
  */
-export const Destination = Schema.struct({
+export const Destination = Schema.Struct({
   id: IdSchema.uuid,
   key: IdSchema.uuid,
   url: urlSchema,
-  state: Schema.unknown,
-  sameDocument: Schema.boolean
+  state: Schema.Unknown,
+  sameDocument: Schema.Boolean
 })
 
 /**
@@ -135,7 +137,7 @@ export interface ProposedDestination extends Schema.Schema.Type<typeof ProposedD
 /**
  * @since 1.0.0
  */
-export const NavigationType = Schema.literal("push", "replace", "reload", "traverse")
+export const NavigationType = Schema.Literal("push", "replace", "reload", "traverse")
 /**
  * @since 1.0.0
  */
@@ -144,10 +146,10 @@ export type NavigationType = Schema.Schema.Type<typeof NavigationType>
 /**
  * @since 1.0.0
  */
-export const Transition = Schema.struct({
+export const Transition = Schema.Struct({
   type: NavigationType,
   from: Destination,
-  to: Schema.union(ProposedDestination, Destination)
+  to: Schema.Union(ProposedDestination, Destination)
 })
 
 /**
@@ -162,12 +164,12 @@ export interface Transition extends Schema.Schema.Type<typeof Transition> {}
 /**
  * @since 1.0.0
  */
-export const BeforeNavigationEvent = Schema.struct({
+export const BeforeNavigationEvent = Schema.Struct({
   type: NavigationType,
   from: Destination,
-  delta: Schema.number,
-  to: Schema.union(ProposedDestination, Destination),
-  info: Schema.unknown
+  delta: Schema.Number,
+  to: Schema.Union(ProposedDestination, Destination),
+  info: Schema.Unknown
 })
 
 /**
@@ -182,10 +184,10 @@ export interface BeforeNavigationEvent extends Schema.Schema.Type<typeof BeforeN
 /**
  * @since 1.0.0
  */
-export const NavigationEvent = Schema.struct({
+export const NavigationEvent = Schema.Struct({
   type: NavigationType,
   destination: Destination,
-  info: Schema.unknown
+  info: Schema.Unknown
 })
 
 /**
@@ -268,10 +270,10 @@ export interface NavigateOptions {
 /**
  * @since 1.0.0
  */
-export const FileSchemaFrom = Schema.struct({
-  _id: Schema.literal("File"),
-  name: Schema.string,
-  data: Schema.string // Base64 encoded
+export const FileSchemaFrom = Schema.Struct({
+  _id: Schema.Literal("File"),
+  name: Schema.String,
+  data: Schema.String // Base64 encoded
 })
 
 /**
@@ -288,35 +290,39 @@ const encodeBase64 = ParseResult.encode(Schema.Base64)
 export const FileSchema = FileSchemaFrom.pipe(
   Schema.transformOrFail(
     Schema.instanceOf(File),
-    ({ data, name }) => Effect.map(decodeBase64(data), (buffer) => new File([buffer], name)),
-    (file) =>
-      Effect.promise(() => file.arrayBuffer()).pipe(
-        Effect.flatMap((buffer) => encodeBase64(new Uint8Array(buffer))),
-        Effect.map((data): FileSchemaFrom => ({ _id: "File", name: file.name, data }))
-      )
+    {
+      decode: ({ data, name }) => Effect.map(decodeBase64(data), (buffer) => new File([buffer], name)),
+      encode: (file) =>
+        Effect.promise(() => file.arrayBuffer()).pipe(
+          Effect.flatMap((buffer) => encodeBase64(new Uint8Array(buffer))),
+          Effect.map((data): FileSchemaFrom => ({ _id: "File", name: file.name, data }))
+        )
+    }
   )
 )
 
 /**
  * @since 1.0.0
  */
-export const FormDataSchema = Schema.record(Schema.string, Schema.union(Schema.string, FileSchema)).pipe(
+export const FormDataSchema = Schema.Record(Schema.String, Schema.Union(Schema.String, FileSchema)).pipe(
   Schema.transform(
     Schema.instanceOf(FormData),
-    (formData) => {
-      const data = new FormData()
+    {
+      decode: (formData) => {
+        const data = new FormData()
 
-      for (const [key, value] of Object.entries(formData)) {
-        if (value instanceof File) {
-          data.append(key, value, value.name)
-        } else {
-          data.append(key, value)
+        for (const [key, value] of Object.entries(formData)) {
+          if (value instanceof File) {
+            data.append(key, value, value.name)
+          } else {
+            data.append(key, value)
+          }
         }
-      }
 
-      return data
-    },
-    (formData) => Object.fromEntries(formData.entries())
+        return data
+      },
+      encode: (formData) => Object.fromEntries(formData.entries())
+    }
   )
 )
 
@@ -325,11 +331,11 @@ const optionNullable = { as: "Option", nullable: true } as const
 /**
  * @since 1.0.0
  */
-export const FormInputSchema = Schema.struct({
-  name: Schema.optional(Schema.string, optionNullable),
-  action: Schema.optional(Schema.string, optionNullable),
-  method: Schema.optional(Schema.string, optionNullable),
-  encoding: Schema.optional(Schema.string, optionNullable),
+export const FormInputSchema = Schema.Struct({
+  name: Schema.optional(Schema.String, optionNullable),
+  action: Schema.optional(Schema.String, optionNullable),
+  method: Schema.optional(Schema.String, optionNullable),
+  encoding: Schema.optional(Schema.String, optionNullable),
   data: FormDataSchema
 })
 
@@ -346,7 +352,7 @@ export interface FormInput extends Schema.Schema.Type<typeof FormInputSchema> {}
 /**
  * @since 1.0.0
  */
-export const FormDataEvent = Schema.extend(Schema.struct({ from: Destination }), FormInputSchema)
+export const FormDataEvent = Schema.extend(Schema.Struct({ from: Destination }), FormInputSchema)
 
 /**
  * @since 1.0.0

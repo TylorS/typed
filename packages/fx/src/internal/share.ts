@@ -45,7 +45,7 @@ export class Share<A, E, R, R2> extends FxBase<A, E, R | R2 | Scope.Scope> {
       (fork) =>
         Effect.flatMap(
           fork(
-            Effect.onExit(this.i1.run(sink), () => this._RefCount.decrement() === 0 ? this.interrupt() : Effect.unit)
+            Effect.onExit(this.i1.run(sink), () => this._RefCount.decrement() === 0 ? this.interrupt() : Effect.void)
           ),
           () => this.initialize()
         ),
@@ -72,7 +72,7 @@ export class Share<A, E, R, R2> extends FxBase<A, E, R | R2 | Scope.Scope> {
         return Option.match(
           MutableRef.get(this._FxFiber),
           {
-            onNone: () => Effect.unit,
+            onNone: () => Effect.void,
             onSome: Fiber.join
           }
         )

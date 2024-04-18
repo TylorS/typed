@@ -214,7 +214,7 @@ describe("AsyncData", () => {
   describe("Schema", () => {
     describe(AsyncDataSchema.asyncDataFromJson, () => {
       it("encodes/decodes AsyncData JSON", async () => {
-        const schema = AsyncDataSchema.asyncDataFromJson(Schema.bigint, Schema.NumberFromString)
+        const schema = AsyncDataSchema.asyncDataFromJson(Schema.BigInt, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {
@@ -247,9 +247,9 @@ describe("AsyncData", () => {
       })
     })
 
-    describe(AsyncDataSchema.asyncDataFromSelf, () => {
+    describe(AsyncDataSchema.AsyncDataFromSelf, () => {
       it("encodes/decodes AsyncData values", async () => {
-        const schema = AsyncDataSchema.asyncDataFromSelf(Schema.bigint, Schema.NumberFromString)
+        const schema = AsyncDataSchema.AsyncDataFromSelf(Schema.BigInt, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {
@@ -277,9 +277,9 @@ describe("AsyncData", () => {
       })
     })
 
-    describe(AsyncDataSchema.asyncData, () => {
+    describe(AsyncDataSchema.AsyncData, () => {
       it("encodes/decodes AsyncData from JSON", async () => {
-        const schema = AsyncDataSchema.asyncData(Schema.bigint, Schema.NumberFromString)
+        const schema = AsyncDataSchema.AsyncData(Schema.BigInt, Schema.NumberFromString)
         const timestamp = Date.now()
 
         const test = Effect.gen(function*(_) {

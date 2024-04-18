@@ -128,7 +128,7 @@ describe("Html", () => {
   })
 
   it.concurrent("renders with event attributes", async () => {
-    await testHtmlChunks(html`<div @click=${make(() => Effect.unit)}></div>`, [`<div></div>`])
+    await testHtmlChunks(html`<div @click=${make(() => Effect.void)}></div>`, [`<div></div>`])
   })
 
   it.concurrent("renders with property attributes", async () => {
@@ -199,7 +199,7 @@ describe("Html", () => {
   it.concurrent(`renders with event directives`, async () => {
     await testHtmlChunks(
       html`<div
-        @click=${Directive.event(() => Effect.unit)}
+        @click=${Directive.event(() => Effect.void)}
       ></div>`,
       [`<div></div>`]
     )

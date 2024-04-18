@@ -10,7 +10,7 @@ describe("RenderQueue", () => {
       let i = 0
 
       const queue = yield* _(RenderQueue.RenderQueue)
-      const testPart = Parts.CommentPartImpl.server(0, () => Effect.unit)
+      const testPart = Parts.CommentPartImpl.server(0, () => Effect.void)
 
       const add1 = () => i++
 

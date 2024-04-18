@@ -44,21 +44,21 @@
     "@changesets/cli": "^2.27.1",
     "@effect/babel-plugin": "^0.2.0",
     "@effect/build-utils": "^0.7.6",
-    "@effect/codemod": "^0.0.7",
-    "@effect/docgen": "^0.4.2",
+    "@effect/codemod": "^0.0.9",
+    "@effect/docgen": "^0.4.3",
     "@effect/eslint-plugin": "^0.1.2",
     "@effect/language-service": "0.1.0",
     "@types/chai": "^4.3.14",
     "@types/node": "^20.12.7",
-    "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/parser": "^7.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.5.0",
     "@vitest/expect": "^1.5.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "cac": "^6.7.14",
     "concurrently": "^8.2.2",
-    "effect": "^2.4.18",
+    "effect": "^3.0.1",
     "eslint": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-codegen": "0.28.0",
@@ -74,12 +74,12 @@
     "tsx": "^4.7.2",
     "typescript": "^5.4.5",
     "ultra-runner": "^3.10.5",
-    "vite": "^5.2.8",
+    "vite": "^5.2.9",
     "vite-plugin-tsconfig-paths": "^1.4.1",
     "vitest": "1.5.0",
     "zx": "^8.0.1"
   },
   "dependencies": {
-    "@effect/vitest": "^0.2.6"
+    "@effect/vitest": "^0.3.1"
   }
 }

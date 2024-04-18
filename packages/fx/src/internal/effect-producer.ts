@@ -94,7 +94,7 @@ export function runEffect<A, E, R, B, E2, R2>(
           Effect.asyncEffect((resume) => {
             const onFailure = (cause: Cause.Cause<E | E2>) => Effect.succeed(resume(Effect.failCause(cause)))
 
-            return Effect.asUnit(Effect.matchCauseEffect(
+            return Effect.asVoid(Effect.matchCauseEffect(
               Effect.scheduleFrom(
                 producer.input,
                 i,
@@ -103,7 +103,7 @@ export function runEffect<A, E, R, B, E2, R2>(
                   (a) => Effect.catchAllCause(f(a), onFailure)
                 )
               ),
-              { onFailure, onSuccess: () => Effect.succeed(resume(Effect.unit)) }
+              { onFailure, onSuccess: () => Effect.succeed(resume(Effect.void)) }
             ))
           })
       )

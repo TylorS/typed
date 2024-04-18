@@ -16,7 +16,7 @@ import { dual, identity } from "effect/Function"
 import * as Layer from "effect/Layer"
 import { sum } from "effect/Number"
 import * as Option from "effect/Option"
-import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyArray from "effect/Array"
 import * as Scope from "effect/Scope"
 import { type Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
@@ -598,7 +598,7 @@ export const runUpdates: {
                 Effect.tapErrorCause(Unify.unify((cause) =>
                   Cause.isInterruptedOnly(cause)
                     ? options.onInterrupt(initial)
-                    : Effect.unit
+                    : Effect.void
                 ))
               )
           )
@@ -612,7 +612,7 @@ export const runUpdates: {
             Effect.tapErrorCause(Unify.unify((cause) =>
               Cause.isInterruptedOnly(cause)
                 ? Effect.flatMap(ref.get, options.onInterrupt)
-                : Effect.unit
+                : Effect.void
             ))
           )
         )
@@ -778,7 +778,7 @@ function onFailureCore<A, E, R, R2>(core: RefSubjectCore<A, E, R, R2>, cause: Ca
     if (core.deferredRef.done(exit)) {
       return sendEvent(core, exit)
     } else {
-      return Effect.unit
+      return Effect.void
     }
   })
 }
@@ -788,7 +788,7 @@ function interruptCore<A, E, R, R2>(core: RefSubjectCore<A, E, R, R2>): Effect.E
     core.deferredRef.reset()
 
     const closeScope = Scope.close(core.scope, Exit.interrupt(id))
-    const interruptFiber = core._fiber ? Fiber.interrupt(core._fiber) : Effect.unit
+    const interruptFiber = core._fiber ? Fiber.interrupt(core._fiber) : Effect.void
     const interruptSubject = core.subject.interrupt
 
     return Effect.all([closeScope, interruptFiber, interruptSubject], { discard: true })
@@ -809,7 +809,7 @@ function deleteCore<A, E, R, R2>(
     return core.subject.subscriberCount.pipe(
       Effect.provide(core.runtime.context),
       Effect.flatMap(
-        (count: number) => count > 0 && !core._fiber ? initializeCore(core, false) : Effect.unit
+        (count: number) => count > 0 && !core._fiber ? initializeCore(core, false) : Effect.void
       ),
       Effect.zipRight(Effect.asSome(current.value))
     )

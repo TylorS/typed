@@ -6,7 +6,7 @@ import * as Navigation from "@typed/navigation"
 import { asRouteGuard, CurrentRoute, type MatchInput } from "@typed/router"
 import { Effect, Effectable, Layer, Option, Order, pipe } from "effect"
 import type { Chunk } from "effect/Chunk"
-import { groupBy, sortBy } from "effect/ReadonlyArray"
+import { groupBy, sortBy } from "effect/Array"
 import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
 import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../RouteHandler.js"
 import type { Mount, Router } from "../Router.js"
@@ -170,7 +170,7 @@ function toHttpApp<E, R>(
 
 export function runRouteMatcher<E, R>(
   input: MatchInput.Any,
-  handler: Default<R, E>,
+  handler: Default<E, R>,
   path: string,
   url: URL,
   existingParams: Option.Option<CurrentParams<any>>,

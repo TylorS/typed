@@ -41,7 +41,7 @@ export function comparison(name: string, tests: {
 
 const runRxjs = (observable: rxjs.Observable<any>) =>
   Effect.async<void>((resume) => {
-    observable.subscribe({ complete: () => resume(Effect.unit) })
+    observable.subscribe({ complete: () => resume(Effect.void) })
   })
 
 const runMost = (stream: mostTypes.Stream<any>) => Effect.promise(() => mostCore.runEffects(stream, mostScheduler))

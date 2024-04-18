@@ -26,11 +26,11 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
     const effect = Effect.forEach(buffers[index], sink.onSuccess)
     buffers[index] = []
 
-    return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.unit)
+    return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.void)
   }
 
   const onSuccess = (index: number, value: A) => {
-    if (done.has(index)) return Effect.unit
+    if (done.has(index)) return Effect.void
 
     if (index === currentIndex) {
       const buffer = buffers[index]
@@ -46,7 +46,7 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
       buffers[index].push(value)
     }
 
-    return Effect.unit
+    return Effect.void
   }
 
   const onEnd = (index: number) => {
@@ -59,7 +59,7 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
     if (index === currentIndex && ++currentIndex < size) {
       return drainBuffer(currentIndex)
     } else {
-      return Effect.unit
+      return Effect.void
     }
   }
 
@@ -119,7 +119,7 @@ export function withSwitchFork<A, E, R>(
   return withScopedFork(
     (fork, scope) =>
       Effect.flatMap(
-        SynchronizedRef.make<Fiber.Fiber<unknown>>(Fiber.unit),
+        SynchronizedRef.make<Fiber.Fiber<unknown>>(Fiber.void),
         (ref) => runSwitchFork(ref, fork, scope, f)
       ),
     executionStrategy
@@ -171,7 +171,7 @@ export function withExhaustFork<A, E, R>(
                     )
                   )
             ), scope),
-          () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
+          () => Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.void)
         )
     )
   }, executionStrategy)
@@ -191,7 +191,7 @@ export function withExhaustLatestFork<A, E, R>(
         const reset = Ref.set(ref, undefined)
 
         // Wait for the current fiber to finish
-        const awaitNext = Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.unit)
+        const awaitNext = Effect.flatMap(Ref.get(ref), (fiber) => fiber ? Fiber.join(fiber) : Effect.void)
 
         // Run the next value that's be saved for replay if it exists
 
@@ -199,7 +199,7 @@ export function withExhaustLatestFork<A, E, R>(
           Ref.get(nextEffect),
           (next) => {
             if (Option.isNone(next)) {
-              return Effect.unit
+              return Effect.void
             }
 
             return Effect.all([
@@ -270,7 +270,7 @@ export function withBoundedFork(capacity: number) {
                   )
                 )
               ), scope),
-            () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.unit)
+            () => Effect.flatMap(Ref.get(ref), (fibers) => fibers.size > 0 ? Fiber.joinAll(fibers) : Effect.void)
           )
       ), executionStrategy)
   }
@@ -362,7 +362,7 @@ export function tupleSink<A extends ReadonlyArray<any>, E, R, B, E2, R2>(
       if (values.size === expected) {
         return sink.onSuccess(getValues())
       } else {
-        return Effect.unit
+        return Effect.void
       }
     })
   })
@@ -392,7 +392,7 @@ export function withDebounceFork<A, E, R>(
             ),
             () =>
               SynchronizedRef.get(ref).pipe(Effect.flatMap(Option.match({
-                onNone: () => Effect.unit,
+                onNone: () => Effect.void,
                 onSome: Fiber.join
               })))
           )
@@ -429,7 +429,7 @@ export class RingBuffer<A> {
   ) {
     switch (this._size) {
       case 0:
-        return Effect.unit
+        return Effect.void
       case 1:
         return f(this._buffer[0], 0)
       case 2:
@@ -458,7 +458,7 @@ export class RingBuffer<A> {
 
 export function awaitScopeClose(scope: Scope.Scope) {
   return Effect.asyncEffect<unknown, never, never, never, never, never>((cb) =>
-    Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.unit)))
+    Scope.addFinalizerExit(scope, () => Effect.sync(() => cb(Effect.void)))
   )
 }
 
@@ -491,7 +491,7 @@ export class MulticastEffect<A, E, R> extends Effectable.Class<A, E, R> {
       if (this._fiber) {
         return Fiber.interruptFork(this._fiber)
       } else {
-        return Effect.unit
+        return Effect.void
       }
     })
   }

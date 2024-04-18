@@ -7,7 +7,7 @@ import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
 import type * as Path from "@typed/path"
 import type { Types } from "effect"
-import { Data, Effect, Option, ReadonlyRecord } from "effect"
+import { Data, Effect, Option, Record } from "effect"
 import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
 import { dual, flow, pipe } from "effect/Function"
@@ -299,7 +299,7 @@ export const paramWithSchema: {
   name: Name,
   schema: Schema.Schema<A, string, R>
 ): Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>> =>
-  withSchema(param(name), Schema.struct(ReadonlyRecord.singleton(name, schema)) as any))
+  withSchema(param(name), Schema.Struct(Record.singleton(name, schema)) as any))
 
 /**
  * @since 1.0.0
@@ -336,10 +336,10 @@ export const nanoId: <const Name extends string>(
 /**
  * @since 1.0.0
  */
-export const bigint: <const Name extends string>(
+export const BigInt: <const Name extends string>(
   name: Name
 ) => Route<Path.Param<Name>, Schema.Schema<{ readonly [_ in Name]: bigint }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Schema.bigint)
+  paramWithSchema(Schema.BigInt)
 
 /**
  * @since 1.0.0
@@ -369,7 +369,7 @@ export const boolean: <const Name extends string>(
 ) => Route<
   Path.Param<Name>,
   Schema.Schema<{ readonly [_ in Name]: boolean }, { readonly [_ in Name]: string }, never>
-> = paramWithSchema(Schema.parseJson(Schema.boolean))
+> = paramWithSchema(Schema.parseJson(Schema.Boolean))
 
 /**
  * @since 1.0.0
@@ -688,7 +688,7 @@ export const transform: {
   from: (o: Route.Type<R>) => Schema.Schema.Encoded<S>,
   to: (s: Schema.Schema.Encoded<S>) => Route.Type<R>
 ): Route.UpdateSchema<R, Schema.transform<Route.Schema<R>, S>> {
-  return updateSchema(route, Schema.transform(toSchema, from, to)) as any
+  return updateSchema(route, Schema.transform(toSchema, { decode: from, encode: to })) as any
 })
 
 /**
@@ -713,7 +713,7 @@ export const transformOrFail: {
   from: (o: Route.Type<R>) => Effect.Effect<Schema.Schema.Encoded<S>, ParseIssue, R2>,
   to: (s: Schema.Schema.Encoded<S>) => Effect.Effect<Route.Type<R>, ParseIssue, R2>
 ): Route.UpdateSchema<R, Schema.transformOrFail<Route.Schema<R>, S, R2>> {
-  return updateSchema(route, Schema.transformOrFail(toSchema, from, to)) as any
+  return updateSchema(route, Schema.transformOrFail(toSchema, { decode: from, encode: to })) as any
 })
 
 /**

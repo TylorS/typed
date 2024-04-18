@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import { type EventWithTarget, isUsingKeyModifier } from "@typed/dom/EventTarget"
-import { type Effect, unit } from "effect/Effect"
+import * as Effect from "effect/Effect"
 import type { Placeholder } from "./Placeholder.js"
 
 /**
@@ -19,7 +19,7 @@ export type EventHandlerTypeId = typeof EventHandlerTypeId
  */
 export interface EventHandler<Ev extends Event = Event, E = never, R = never> extends Placeholder<never, E, R> {
   readonly [EventHandlerTypeId]: EventHandlerTypeId
-  readonly handler: (event: Ev) => Effect<unknown, E, R>
+  readonly handler: (event: Ev) => Effect.Effect<unknown, E, R>
   readonly options: AddEventListenerOptions | undefined
 }
 
@@ -40,7 +40,7 @@ export type EventOf<T> = T extends EventHandler<infer Ev, infer _E, infer _R> ? 
  * @since 1.0.0
  */
 export function make<Ev extends Event, E = never, R = never>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R> {
   return {
@@ -54,7 +54,7 @@ export function make<Ev extends Event, E = never, R = never>(
  * @since 1.0.0
  */
 export function preventDefault<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R> {
   return make((ev) => (ev.preventDefault(), handler(ev)), options)
@@ -64,7 +64,7 @@ export function preventDefault<R, E, Ev extends Event>(
  * @since 1.0.0
  */
 export function stopPropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R> {
   return make((ev) => (ev.stopPropagation(), handler(ev)), options)
@@ -74,7 +74,7 @@ export function stopPropagation<R, E, Ev extends Event>(
  * @since 1.0.0
  */
 export function stopImmediatePropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R> {
   return make((ev) => (ev.stopImmediatePropagation(), handler(ev)), options)
@@ -85,7 +85,7 @@ export function stopImmediatePropagation<R, E, Ev extends Event>(
  */
 export function target<T extends HTMLElement>() {
   return <R, E, Ev extends Event>(
-    handler: (event: EventWithTarget<T, Ev>) => Effect<unknown, E, R>,
+    handler: (event: EventWithTarget<T, Ev>) => Effect.Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<EventWithTarget<T, Ev>, E, R> => {
     return make(handler, options)
@@ -97,8 +97,8 @@ export function target<T extends HTMLElement>() {
  */
 export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
   return <E, R>(
-    handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect<unknown, E, R>,
+    handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect.Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<KeyboardEvent, E, R> =>
-    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : unit, options)
+    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : Effect.void, options)
 }

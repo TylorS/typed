@@ -14,7 +14,7 @@ import * as RouteHandler from "./RouteHandler.js"
  * @since 1.0.0
  */
 export interface Router<E, R>
-  extends Default<Exclude<R, CurrentRoute | RouteHandler.CurrentParams<any> | Navigation>, E | RouteNotFound>
+  extends Default<E | RouteNotFound, Exclude<R, CurrentRoute | RouteHandler.CurrentParams<any> | Navigation>>
 {
   readonly [RouterTypeId]: RouterTypeId
   readonly routes: Chunk.Chunk<RouteHandler.RouteHandler<MatchInput.MatchInput.Any, E, R>>
@@ -26,7 +26,7 @@ export interface Router<E, R>
  */
 export interface Mount<E, R> {
   readonly prefix: MatchInput.MatchInput.Any
-  readonly app: Default<R, E>
+  readonly app: Default<E, R>
 }
 
 /**
@@ -199,20 +199,20 @@ export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
  * @since 1.0.0
  */
 export const mountApp: {
-  <Prefix extends MatchInput.MatchInput.Any, R2, E2>(
+  <Prefix extends MatchInput.MatchInput.Any, E2, R2>(
     prefix: Prefix,
-    app: Default<R2, E2>
+    app: Default<E2, R2>
   ): <E, R>(router: Router<E, R>) => Router<E2 | E, R2 | R>
 
-  <E, R, Prefix extends MatchInput.MatchInput.Any, R2, E2>(
+  <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
     router: Router<E, R>,
     prefix: Prefix,
-    app: Default<R2, E2>
+    app: Default<E2, R2>
   ): Router<E | E2, R | R2>
-} = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any, R2, E2>(
+} = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
   router: Router<E, R>,
   prefix: Prefix,
-  app: Default<R2, E2>
+  app: Default<E2, R2>
 ): Router<E | E2, R | R2> =>
   new RouterImpl<E | E2, R | R2, E, R>(
     router.routes,
@@ -256,10 +256,10 @@ export const mount: {
  */
 export const toPlatformRouter = <E, R>(
   router: Router<E, R>
-): PlatformRouter.Router<R, E | RouteHandler.RouteNotMatched> => {
+): PlatformRouter.Router<E | RouteHandler.RouteNotMatched, R> => {
   let platformRouter: PlatformRouter.Router<
-    R,
-    E | RouteHandler.RouteNotMatched
+    E | RouteHandler.RouteNotMatched,
+    R
   > = PlatformRouter.empty
 
   for (const mount of router.mounts) {

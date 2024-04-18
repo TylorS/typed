@@ -569,7 +569,7 @@ describe(__filename, () => {
         yield* _(
           blockNavigation,
           Fx.tapEffect(Option.match({
-            onNone: () => Effect.unit,
+            onNone: () => Effect.void,
             onSome: (blocking) => {
               didBlock = true
               return blocking.cancel

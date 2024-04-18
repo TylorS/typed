@@ -6,11 +6,11 @@ import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
-import { ReadonlyRecord } from "effect"
+import { Record } from "effect"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import { join } from "effect/ReadonlyArray"
+import { join } from "effect/Array"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
 import type { ServerEntry } from "./Entry.js"
@@ -183,7 +183,7 @@ function renderPart<E, R>(
     return Fx.map(
       Fx.take(
         Fx.struct(
-          ReadonlyRecord.map(renderable as any, (v) => unwrapRenderable(v as any)) as any
+          Record.map(renderable as any, (v) => unwrapRenderable(v as any)) as any
         ),
         1
       ),

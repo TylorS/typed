@@ -32,7 +32,7 @@ function schedulePull<A, E, R, R2, R3>(
         Cause.failureOrCause(cause).pipe(
           Either.match({
             onLeft: Option.match({
-              onNone: () => Effect.sync(() => resume(Effect.unit)),
+              onNone: () => Effect.sync(() => resume(Effect.void)),
               onSome: (e: E) => sink.onFailure(Cause.fail(e))
             }),
             onRight: sink.onFailure
@@ -41,7 +41,7 @@ function schedulePull<A, E, R, R2, R3>(
       onSuccess: (chunk: Chunk.Chunk<A>) => Effect.forEach(chunk, sink.onSuccess, { discard: true })
     }).pipe(
       f,
-      Effect.flatMap(() => Effect.sync(() => resume(Effect.unit)))
+      Effect.flatMap(() => Effect.sync(() => resume(Effect.void)))
     )
   )
 }

@@ -3,10 +3,10 @@ import * as Decoder from "@typed/decoder"
 import * as Effect from "effect/Effect"
 
 describe("Decoder", () => {
-  const schema = Schema.struct({
-    id: Schema.string,
-    name: Schema.string,
-    age: Schema.number
+  const schema = Schema.Struct({
+    id: Schema.String,
+    name: Schema.String,
+    age: Schema.Number
   })
 
   const decoder = Decoder.fromSchema(schema)

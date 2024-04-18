@@ -170,7 +170,7 @@ function renderSparseAttr(
 
       if (values.size === nodes.length) return setAttribute(getValue().join(""))
 
-      return Effect.unit
+      return Effect.void
     })
   }
 
@@ -217,7 +217,7 @@ function renderSparseClassName(
 
       if (values.size === nodes.length) return setClassName(getValue().join(""))
 
-      return Effect.unit
+      return Effect.void
     })
   }
 
@@ -263,7 +263,7 @@ function renderSparseComment(
 
       if (values.size === nodes.length) return setComment(getValue().join(""))
 
-      return Effect.unit
+      return Effect.void
     })
   }
 

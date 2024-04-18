@@ -4,7 +4,7 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"
-import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyArray from "effect/Array"
 import type { Scope } from "effect/Scope"
 import type { ElementSource } from "../ElementSource.js"
 import type { EventHandler } from "../EventHandler.js"
@@ -58,7 +58,7 @@ const base = <T extends Part["_tag"]>(tag: T) => (class Base {
     const value = this.getValue(input) as any
 
     if (this.eq(previous as any, value as any)) {
-      return Effect.unit
+      return Effect.void
     }
 
     return Effect.flatMap(
@@ -403,7 +403,7 @@ const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
 
   update = (value: this["value"], priority: number = DEFAULT_PRIORITY) => {
     if (this.eq(this.value as any, value as any)) {
-      return Effect.unit
+      return Effect.void
     }
 
     return this.commit({

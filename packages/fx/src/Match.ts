@@ -12,7 +12,7 @@ import * as Fiber from "effect/Fiber"
 import { identity } from "effect/Function"
 import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
-import { isNonEmptyReadonlyArray, reduce } from "effect/ReadonlyArray"
+import { isNonEmptyReadonlyArray, reduce } from "effect/Array"
 import * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 import { withScopedFork } from "./internal/helpers.js"
@@ -191,9 +191,9 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
                         Sink.make(
                           (cause) =>
                             MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
-                              ? Effect.unit
+                              ? Effect.void
                               : sink.onFailure(cause),
-                          (value) => MutableRef.get(hasEnded) ? Effect.unit : sink.onSuccess(Option.some(value))
+                          (value) => MutableRef.get(hasEnded) ? Effect.void : sink.onSuccess(Option.some(value))
                         )
                       )
                   )

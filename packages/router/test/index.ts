@@ -4,11 +4,11 @@ import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import * as Router from "@typed/router"
 import { deepStrictEqual } from "assert"
-import type { ReadonlyArray } from "effect"
+import type { Array } from "effect"
 import { Effect, Layer } from "effect"
 
 describe("Router", () => {
-  function testRouter(urls: ReadonlyArray.NonEmptyReadonlyArray<string>, expected: ReadonlyArray<string>) {
+  function testRouter(urls: Array.NonEmptyReadonlyArray<string>, expected: ReadonlyArray<string>) {
     return Effect.gen(function*(_) {
       const router = Router
         .to(Route.literal("/foo/:id"), ({ id }) => `/foo/${id}`)

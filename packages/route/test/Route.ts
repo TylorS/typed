@@ -93,7 +93,7 @@ describe("Route", () => {
   it("transforms", async () => {
     const foobarTransformed = foobar.pipe(
       Route.transform(
-        Schema.struct({ foo: Schema.number.pipe(Schema.int()), bar: Schema.number.pipe(Schema.int()) }),
+        Schema.Struct({ foo: Schema.Number.pipe(Schema.int()), bar: Schema.Number.pipe(Schema.int()) }),
         ({ barId, fooId }) => ({ foo: fooId, bar: barId } as const),
         ({ bar, foo }) => ({ fooId: foo, barId: bar })
       )

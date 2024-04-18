@@ -1,4 +1,4 @@
-import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyArray from "effect/Array"
 
 import * as Effect from "effect/Effect"
 import { flow } from "effect/Function"
@@ -95,11 +95,11 @@ export function compileCauseSyncOperatorSink<R>(
 ): Sink.Sink<any, any, R> {
   return matchSyncOperator(operator, {
     Map: (op) => Sink.make((a) => sink.onFailure(op.f(a)), sink.onSuccess),
-    Filter: (op) => Sink.make((a) => op.f(a) ? sink.onFailure(a) : Effect.unit, sink.onSuccess),
+    Filter: (op) => Sink.make((a) => op.f(a) ? sink.onFailure(a) : Effect.void, sink.onSuccess),
     FilterMap: (op) =>
       Sink.make((a) =>
         Option.match(op.f(a), {
-          onNone: () => Effect.unit,
+          onNone: () => Effect.void,
           onSome: sink.onFailure
         }), sink.onSuccess)
   })

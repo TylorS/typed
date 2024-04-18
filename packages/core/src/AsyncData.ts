@@ -13,4 +13,4 @@ export * from "@typed/async-data/AsyncData"
  * [Schema documentation](https://tylors.github.io/typed/async-data/Schema.ts.html)
  * @since 1.0.0
  */
-export * from "@typed/async-data/Schema"
+export * as Schema from "@typed/async-data/Schema"

@@ -87,7 +87,7 @@ export function makeEventSource(): EventSource {
         const listener = (ev: Event) =>
           run(
             Effect.forEach(handlers, ([el, handler]) =>
-              ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.unit)
+              ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.void)
           )
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
         disposables.push(disposable(() => element.removeEventListener(event, listener)))
@@ -107,7 +107,7 @@ export function makeEventSource(): EventSource {
             Effect.forEach(handlers, ([el, handler]) =>
               ev.target === el || el.contains(ev.target as Node)
                 ? handler.handler(proxyCurrentTargetForCaptureEvents(ev, el))
-                : Effect.unit)
+                : Effect.void)
           )
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
         disposables.push(disposable(() => element.removeEventListener(event, listener)))
@@ -123,7 +123,7 @@ export function makeEventSource(): EventSource {
     const elements = getElements(rendered)
 
     if (elements.length === 0 || (!hasBubbleListeners && !hasCaptureListeners)) {
-      return Effect.unit
+      return Effect.void
     }
 
     return Effect.flatMap(Effect.runtime<never>(), (runtime) => {
@@ -150,7 +150,7 @@ export function makeEventSource(): EventSource {
         scope,
         Effect.suspend(() => {
           disposables.forEach(dispose)
-          if (fibers.size === 0) return Effect.unit
+          if (fibers.size === 0) return Effect.void
           return Fiber.interruptAll(fibers.values())
         })
       )

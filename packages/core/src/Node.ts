@@ -191,7 +191,7 @@ export const run = <A, E>(
 ): Disposable => {
   const program = effect.pipe(
     Effect.tapErrorCause((cause) =>
-      Cause.isInterruptedOnly(cause) ? Effect.unit : Effect.logError(`Application Failure`, cause)
+      Cause.isInterruptedOnly(cause) ? Effect.void : Effect.logError(`Application Failure`, cause)
     ),
     Effect.provide(NodeContext.layer)
   )

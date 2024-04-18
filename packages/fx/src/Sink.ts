@@ -98,10 +98,10 @@ export function withEarlyExit<A, E, R, B, R2>(
   return Effect.asyncEffect((resume: (effect: Effect.Effect<void>) => void) => {
     const earlyExit: WithEarlyExit<A, E, R> = {
       ...sink,
-      earlyExit: Effect.sync(() => resume(Effect.unit))
+      earlyExit: Effect.sync(() => resume(Effect.void))
     }
 
-    return Effect.asUnit(Effect.matchCauseEffect(f(earlyExit), {
+    return Effect.asVoid(Effect.matchCauseEffect(f(earlyExit), {
       onFailure: (cause) => sink.onFailure(cause),
       onSuccess: () => earlyExit.earlyExit
     }))
@@ -163,7 +163,7 @@ class FilterSink<A, E, R> implements Sink<A, E, R> {
 
   onSuccess(value: A) {
     if (this.predicate(value)) return this.sink.onSuccess(value)
-    else return Effect.unit
+    else return Effect.void
   }
 }
 
@@ -190,7 +190,7 @@ class FilterMapSink<A, E, R, B> implements Sink<A, E, R> {
   onSuccess(value: A) {
     const option = this.f(value)
     if (Option.isSome(option)) return this.sink.onSuccess(option.value)
-    else return Effect.unit
+    else return Effect.void
   }
 }
 
@@ -264,7 +264,7 @@ class FilterMapEffectSink<A, E, R, B, E2, R2> implements Sink<B, E2, R | R2> {
       onFailure: (cause) => this.sink.onFailure(cause),
       onSuccess: (option) => {
         if (Option.isSome(option)) return this.sink.onSuccess(option.value)
-        else return Effect.unit
+        else return Effect.void
       }
     })
   }
@@ -303,7 +303,7 @@ class FilterEffectSink<A, E, R> implements Sink<A, E, R> {
       onFailure: (cause) => this.sink.onFailure(cause),
       onSuccess: (b) => {
         if (b) return this.sink.onSuccess(value)
-        else return Effect.unit
+        else return Effect.void
       }
     })
   }
@@ -457,7 +457,7 @@ class FilterMapLoopSink<A, E, R, B, C> implements Sink<A, E, R> {
     const [option, acc] = this.f(this.seed, value)
     this.seed = acc
     if (Option.isSome(option)) return this.sink.onSuccess(option.value)
-    else return Effect.unit
+    else return Effect.void
   }
 }
 
@@ -495,7 +495,7 @@ class FilterMapLoopCauseSink<A, E, R, B, C> implements Sink<A, E, R> {
     const [option, acc] = this.f(this.seed, cause)
     this.seed = acc
     if (Option.isSome(option)) return this.sink.onFailure(option.value)
-    else return Effect.unit
+    else return Effect.void
   }
 
   onSuccess(value: A) {
@@ -588,7 +588,7 @@ class FilterMapLoopEffectSink<A, E, R, B, R2, C> implements Sink<A, E, R | R2> {
       onSuccess: ([option, acc]) => {
         this.seed = acc
         if (Option.isSome(option)) return this.sink.onSuccess(option.value)
-        else return Effect.unit
+        else return Effect.void
       }
     })
   }
@@ -669,7 +669,7 @@ class FilterMapLoopCauseEffectSink<A, E, R, B, E2, R2, C> implements Sink<A, E, 
       onSuccess: ([option, acc]) => {
         this.seed = acc
         if (Option.isSome(option)) return this.sink.onFailure(option.value)
-        else return Effect.unit
+        else return Effect.void
       }
     })
   }
@@ -721,10 +721,10 @@ class SliceSink<A, E, R> implements Sink<A, E, R> {
   onSuccess(value: A) {
     if (this.drop > 0) {
       this.drop--
-      return Effect.unit
+      return Effect.void
     }
     if (this.take-- > 0) {
-      return Effect.tap(this.sink.onSuccess(value), () => this.take === 0 ? this.sink.earlyExit : Effect.unit)
+      return Effect.tap(this.sink.onSuccess(value), () => this.take === 0 ? this.sink.earlyExit : Effect.void)
     }
     return this.sink.earlyExit
   }
@@ -1019,7 +1019,7 @@ class FromTag<I, S, B, E2, R2> implements Sink<B, E2, I | R2> {
  */
 export function ignoreInterrupt<A, E, R>(sink: Sink<A, E, R>): Sink<A, E, R> {
   return make(
-    (cause) => Cause.isInterruptedOnly(cause) ? Effect.unit : sink.onFailure(cause),
+    (cause) => Cause.isInterruptedOnly(cause) ? Effect.void : sink.onFailure(cause),
     sink.onSuccess
   )
 }

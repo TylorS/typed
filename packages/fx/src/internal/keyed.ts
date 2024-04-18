@@ -89,7 +89,7 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
                   Effect.suspend(() => {
                     if (done === false) {
                       scheduled = true
-                      return Effect.unit
+                      return Effect.void
                     }
                     return scheduleNextEmit
                   })

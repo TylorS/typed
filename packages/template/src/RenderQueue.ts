@@ -196,7 +196,7 @@ abstract class BaseImpl implements RenderQueue {
   }
 
   scheduleNextRun = Effect.suspend(() => {
-    if (this.queue.isEmpty || this.scheduled) return Effect.unit
+    if (this.queue.isEmpty || this.scheduled) return Effect.void
 
     this.scheduled = true
 
@@ -257,7 +257,7 @@ class IdleImpl extends BaseImpl implements RenderQueue {
 
           this.scheduled = false
 
-          return Effect.unit
+          return Effect.void
         })
     )
   })
@@ -282,7 +282,7 @@ class RafImpl extends BaseImpl implements RenderQueue {
   run: Effect.Effect<void> = Effect.async((cb) => {
     const id = this._set(() => {
       this.runAllTasks()
-      return cb(Effect.unit)
+      return cb(Effect.void)
     })
     return Effect.sync(() => {
       this.scheduled = false
@@ -323,7 +323,7 @@ class MicroTaskImpl extends BaseImpl implements RenderQueue {
   run: Effect.Effect<void> = Effect.async((cb) => {
     const id = this._set(() => {
       this.runAllTasks()
-      return cb(Effect.unit)
+      return cb(Effect.void)
     })
     return Effect.sync(() => {
       this.scheduled = false

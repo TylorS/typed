@@ -97,7 +97,7 @@ export const getScrollRestoration: Effect.Effect<ScrollRestoration, never, Histo
 export const setScrollRestoration: (
   scrollRestoration: ScrollRestoration
 ) => Effect.Effect<void, never, History> = (scrollRestoration: ScrollRestoration) =>
-  Effect.asUnit(History.with((h) => (h.scrollRestoration = scrollRestoration)))
+  Effect.asVoid(History.with((h) => (h.scrollRestoration = scrollRestoration)))
 
 /**
  * Get the current scroll restoration behavior to "auto"

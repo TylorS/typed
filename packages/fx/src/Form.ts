@@ -266,7 +266,7 @@ export function derive<
         return Object.assign(form, {
           persist: Effect.matchEffect(form.decoded, {
             onFailure: (error: Fx.Error<typeof input> | ParseError) =>
-              isParseError(error) ? Effect.unit : input.onFailure(Cause.fail(error)),
+              isParseError(error) ? Effect.void : input.onFailure(Cause.fail(error)),
             onSuccess: (a: O) => input.onSuccess(a)
           })
         })
@@ -292,7 +292,7 @@ export function deriveInput<
         return Object.assign(form, {
           persist: Effect.matchEffect(form, {
             onFailure: (error: E | ParseError) =>
-              isParseError(error) ? Effect.unit : input.onFailure(Cause.fail(error)),
+              isParseError(error) ? Effect.void : input.onFailure(Cause.fail(error)),
             onSuccess: (a: I) => input.onSuccess(a)
           })
         })
@@ -375,7 +375,7 @@ function buildSchema<Entries extends Form.AnyEntries>(
     }
   }
 
-  return S.struct(schemas) as any
+  return S.Struct(schemas) as any
 }
 
 type DeriveEntries<R, E, I extends Readonly<Record<PropertyKey, any>>, O extends Readonly<Record<keyof I, any>>> = {

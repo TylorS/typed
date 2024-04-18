@@ -71,7 +71,7 @@ function runWithKey<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
         })
     ))
 
-    return Effect.flatMap(run, () => Option.isSome(previous) ? previous.value.ref.interrupt : Effect.unit)
+    return Effect.flatMap(run, () => Option.isSome(previous) ? previous.value.ref.interrupt : Effect.void)
   }, ExecutionStrategy.sequential)
 }
 

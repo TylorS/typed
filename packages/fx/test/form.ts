@@ -10,8 +10,8 @@ import { describe, it } from "vitest"
 
 describe.concurrent("Form", () => {
   describe("make", () => {
-    const Foo = Schema.struct({
-      id: Schema.string.pipe(
+    const Foo = Schema.Struct({
+      id: Schema.String.pipe(
         Schema.minLength(1),
         Schema.message(() => "Cannot be empty ID"),
         Schema.maxLength(20),
@@ -170,8 +170,8 @@ describe.concurrent("Form", () => {
     })
 
     it("allow deriving optional form states", async () => {
-      const Bar = Schema.struct({
-        baz: Schema.optional(Schema.string)
+      const Bar = Schema.Struct({
+        baz: Schema.optional(Schema.String)
       })
       const makeBarForm = Form.derive(Bar)
 
@@ -190,10 +190,10 @@ describe.concurrent("Form", () => {
     })
 
     it("allows nesting objects", async () => {
-      const Baz = Schema.struct({
-        quux: Schema.struct({
-          a: Schema.number,
-          b: Schema.boolean
+      const Baz = Schema.Struct({
+        quux: Schema.Struct({
+          a: Schema.Number,
+          b: Schema.Boolean
         })
       })
       const makeBazForm = Form.derive(Baz)

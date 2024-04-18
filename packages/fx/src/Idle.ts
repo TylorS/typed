@@ -260,7 +260,7 @@ class IdleQueueImpl<I> implements IdleQueue<I> {
 
     this.scheduleNextRun = Effect.provideService(
       Effect.suspend(() => {
-        if (this.queue.size === 0) return Effect.unit
+        if (this.queue.size === 0) return Effect.void
 
         this.scheduled = true
 

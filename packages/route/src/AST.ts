@@ -120,12 +120,12 @@ function toSchemas<A extends AST>(ast: A, ctx: { unnamed: number } = { unnamed: 
     case "UnnamedParam": {
       const key = ctx.unnamed++
       const fields: any = {}
-      fields[key] = Schema.string
+      fields[key] = Schema.String
 
-      return [Schema.struct(fields)]
+      return [Schema.Struct(fields)]
     }
     case "Param":
-      return [Schema.struct({ [ast.param]: Schema.string })]
+      return [Schema.Struct({ [ast.param]: Schema.String })]
     case "ZeroOrMore":
       return toSchemas(ast.param, ctx).map(zeroOrMoreSchema)
     case "OneOrMore":
@@ -165,7 +165,7 @@ function zeroOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema
         schema.ast.propertySignatures.map((s) =>
           new PropertySignature(
             s.name,
-            Schema.array(Schema.make(s.type)).ast,
+            Schema.Array(Schema.make(s.type)).ast,
             true,
             s.isReadonly,
             s.annotations
@@ -177,7 +177,7 @@ function zeroOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema
     )
   }
 
-  return Schema.array(schema as any)
+  return Schema.Array(schema as any)
 }
 
 function oneOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.All {
@@ -187,7 +187,7 @@ function oneOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.
         schema.ast.propertySignatures.map((s) =>
           new PropertySignature(
             s.name,
-            Schema.nonEmptyArray(Schema.make(s.type)).ast,
+            Schema.NonEmptyArray(Schema.make(s.type)).ast,
             s.isOptional,
             s.isReadonly,
             s.annotations
@@ -199,7 +199,7 @@ function oneOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.
     )
   }
 
-  return Schema.array(schema as any)
+  return Schema.Array(schema as any)
 }
 
 function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.All {
@@ -221,14 +221,14 @@ function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schem
     )
   }
 
-  return Schema.orUndefined(schema as any)
+  return Schema.UndefinedOr(schema as any)
 }
 
 function toSchema_<A extends AST>(ast: A): Schema.Schema.All {
   const schemas = toSchemas(ast)
 
   if (schemas.length === 0) {
-    return Schema.record(Schema.string, Schema.unknown)
+    return Schema.Record(Schema.String, Schema.Unknown)
   }
 
   return schemas.reduce(Schema.extend)

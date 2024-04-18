@@ -25,7 +25,7 @@ export const inputWithLabel = Fx.gen(function*($) {
       ref=${inputRef}
       ?disabled=${false}
       class="custom-input"
-      onchange=${EventHandler.make(() => Effect.unit)}
+      onchange=${EventHandler.make(() => Effect.void)}
     />
     <label class="custom-input-label" for="name">Name</label>
   </div>`

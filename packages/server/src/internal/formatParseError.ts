@@ -5,7 +5,7 @@ import * as Equivalence from "effect/Equivalence"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyArray from "effect/Array"
 
 const getDescription = AST.getAnnotation<AST.DescriptionAnnotation>(
   AST.DescriptionAnnotationId

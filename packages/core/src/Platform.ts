@@ -19,13 +19,13 @@ import assetManifest from "virtual:asset-manifest"
 import * as typedOptions from "virtual:typed-options"
 import { getHeadAndScript } from "./Vite.js"
 
-import type { PlatformError } from "@effect/platform/Error"
+import type { BadArgument, PlatformError } from "@effect/platform/Error"
 import * as Navigation from "@typed/navigation"
 import type { Route } from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
-import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
+import { Data, Effect, identity, Layer, Option, Array } from "effect"
 
 /**
  * @since 1.0.0
@@ -33,7 +33,7 @@ import { Data, Effect, identity, Layer, Option, ReadonlyArray } from "effect"
 export class GuardsNotMatched extends Data.TaggedError("@typed/router/GuardsNotMatched")<{
   readonly request: Http.request.ServerRequest
   readonly route: Route.Any
-  readonly matches: ReadonlyArray.NonEmptyReadonlyArray<Router.RouteMatch.RouteMatch.Any>
+  readonly matches: Array.NonEmptyReadonlyArray<Router.RouteMatch.RouteMatch.Any>
 }> {}
 
 /**
@@ -93,7 +93,7 @@ export function toHttpRouter<
     | ServerRequest,
     Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched
   > = Http.router.empty
-  const guardsByPath = ReadonlyArray.groupBy(matcher.matches, ({ route }) => route.path)
+  const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => route.path)
   const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
@@ -173,22 +173,22 @@ export function staticFiles(
       readonly immutable?: boolean
     }
   }
-): <R, E>(
-  self: Http.app.Default<R, E>
+): <E, R>(
+  self: Http.app.Default<E, R>
 ) => Effect.Effect<
   Http.response.ServerResponse,
-  E | PlatformError,
+  E  | BadArgument | PlatformError,
   ServerRequest | R | Http.platform.Platform | FileSystem | Path
 > {
   if (!enabled) {
-    return identity
+    return identity as any
   }
 
-  return <R, E>(
-    self: Http.app.Default<R, E>
+  return <E, R>(
+    self: Http.app.Default<E, R>
   ): Http.app.Default<
-    ServerRequest | Http.platform.Platform | FileSystem | Path | R,
-    E | PlatformError
+  E | BadArgument | PlatformError,
+  ServerRequest | Http.platform.Platform | FileSystem | Path | R
   > =>
     Effect.gen(function*(_) {
       const request = yield* _(Http.request.ServerRequest)

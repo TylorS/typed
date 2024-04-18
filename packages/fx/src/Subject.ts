@@ -134,7 +134,7 @@ export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subj
   readonly subscriberCount: Effect.Effect<number> = Effect.sync(() => this.sinks.size)
 
   protected onEvent(a: A) {
-    if (this.sinks.size === 0) return Effect.unit
+    if (this.sinks.size === 0) return Effect.void
     else if (this.sinks.size === 1) {
       const [sink, ctx] = this.sinks.values().next().value
       return runSinkEvent(sink, ctx, a)
@@ -148,7 +148,7 @@ export class SubjectImpl<A, E> extends FxBase<A, E, Scope.Scope> implements Subj
   }
 
   protected onCause(cause: Cause.Cause<E>) {
-    if (this.sinks.size === 0) return Effect.unit
+    if (this.sinks.size === 0) return Effect.void
     else if (this.sinks.size === 1) {
       const [sink, ctx, scope] = this.sinks.values().next().value
       return runSinkCause(sink, ctx, scope, cause)

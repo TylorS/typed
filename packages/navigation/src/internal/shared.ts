@@ -33,10 +33,10 @@ export type NavigationState = {
   readonly transition: Option.Option<Transition>
 }
 
-export const NavigationState = Schema.struct({
-  entries: Schema.array(Destination),
-  index: Schema.number,
-  transition: Schema.optionFromNullable(Transition)
+export const NavigationState = Schema.Struct({
+  entries: Schema.Array(Destination),
+  index: Schema.Number,
+  transition: Schema.OptionFromNullishOr(Transition, null)
 })
 
 export const getUrl = (origin: string, urlOrPath: string | URL): URL => {

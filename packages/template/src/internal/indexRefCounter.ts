@@ -20,7 +20,7 @@ export function indexRefCounter(expected: number): Effect.Effect<IndexRefCounter
         if (indexes.delete(index) && indexes.size === 0) {
           return done
         } else {
-          return Effect.unit
+          return Effect.void
         }
       })
     }
