@@ -5,7 +5,7 @@ import type { Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect/Effect"
 
-export const RegisterInput = Schema.struct({
+export const RegisterInput = Schema.Struct({
   email: Email,
   username: Username,
   password: Password

@@ -1,8 +1,8 @@
-import * as Pg from "@sqlfx/pg"
-import * as Migrator from "@sqlfx/pg/Migrator"
+import * as Pg from "@effect/sql-pg"
+import * as Migrator from "@effect/sql-pg/Migrator"
 import { Config, Layer } from "effect"
 
-const PgLive = Pg.makeLayer(Config.all({
+const PgLive = Pg.client.layer(Config.all({
   host: Config.string("VITE_DATABASE_HOST"),
   port: Config.number("VITE_DATABASE_PORT"),
   database: Config.string("VITE_DATABASE_NAME"),
@@ -12,7 +12,7 @@ const PgLive = Pg.makeLayer(Config.all({
 
 export const DbLive = Layer.mergeAll(
   Layer.provide(
-    Migrator.makeLayer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
+    Pg.migrator.layer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
     PgLive
   ),
   PgLive

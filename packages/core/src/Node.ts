@@ -124,8 +124,8 @@ const defaultCacheControl = (filePath: string) => {
 }
 
 export const listen: {
-  (options: Options): <R, E>(
-    app: Http.app.Default<R, E>
+  (options: Options): <E, R>(
+    app: Http.app.Default<E, R>
   ) => Effect.Effect<
     never,
     Http.error.ServeError,
@@ -144,8 +144,8 @@ export const listen: {
     >
   >
 
-  <R, E>(
-    app: Http.app.Default<R, E>,
+  <E, R>(
+    app: Http.app.Default<E, R>,
     options: Options
   ): Effect.Effect<
     never,
@@ -164,7 +164,7 @@ export const listen: {
       | RenderTemplate
     >
   >
-} = dual(2, function listen<R, E>(app: Http.app.Default<R, E>, options: Options) {
+} = dual(2, function listen<E, R>(app: Http.app.Default<E, R>, options: Options) {
   return app.pipe(
     staticFiles({
       serverOutputDirectory: options.serverDirectory,

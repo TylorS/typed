@@ -10,7 +10,7 @@ export const TodoId: Schema.brand<Schema.$string, "TodoId"> = Schema.string.pipe
 )
 export type TodoId = Schema.Schema.Type<typeof TodoId>
 
-export const Todo = Schema.struct({
+export const Todo = Schema.Struct({
   id: TodoId,
   text: Schema.string,
   completed: Schema.boolean,
@@ -19,7 +19,7 @@ export const Todo = Schema.struct({
 export interface TodoJson extends Schema.Schema.Encoded<typeof Todo> {}
 export interface Todo extends Schema.Schema.Type<typeof Todo> {}
 
-export const TodoList = Schema.array(Todo)
+export const TodoList = Schema.Array(Todo)
 export interface TodoListJson extends Schema.Schema.Encoded<typeof TodoList> {}
 export interface TodoList extends Schema.Schema.Type<typeof TodoList> {}
 

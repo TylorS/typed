@@ -5,7 +5,7 @@ import type { Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import { type Effect, Option } from "effect"
 
-export const GetArticlesInput = Schema.struct({
+export const GetArticlesInput = Schema.Struct({
   tag: Schema.optionalOrNull(ArticleTag),
   author: Schema.optionalOrNull(Username),
   favorited: Schema.optionalOrNull(Username),

@@ -22,7 +22,7 @@ import { HtmlRenderEvent, type RenderEvent } from "./RenderEvent.js"
 export function many<A, E, R, B extends PropertyKey, R2, E2>(
   values: Fx.Fx<ReadonlyArray<A>, E, R>,
   getKey: (a: NoInfer<A>) => B,
-  f: (a: RefSubject.RefSubject<NoInfer<A>>, key: B) => Fx.Fx<RenderEvent, E2, R2>
+  f: (a: RefSubject.RefSubject<A>, key: B) => Fx.Fx<RenderEvent, E2, R2>
 ): Fx.Fx<RenderEvent | ReadonlyArray<RenderEvent>, E | E2, R | R2 | Scope.Scope | RenderContext> {
   return Fx.fromFxEffect(
     Effect.contextWith(

@@ -4,7 +4,7 @@ import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
-export const GetFeedInput = Schema.struct({
+export const GetFeedInput = Schema.Struct({
   limit: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" }),
   offset: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" })
 }).pipe(

@@ -19,13 +19,13 @@ import {
 } from "@/model"
 import { Option } from "effect"
 
-export const DbUser = S.struct({
+export const DbUser = S.Struct({
   id: UserId,
   email: Email,
   username: Username,
   password: PasswordHash,
-  bio: S.nullable(Bio),
-  image: S.nullable(Image),
+  bio: S.NullOr(Bio),
+  image: S.NullOr(Image),
   created_at: S.ValidDateFromSelf,
   updated_at: S.ValidDateFromSelf
 })
@@ -43,7 +43,7 @@ export function dbUserToUser(user: Omit<DbUser, "password">, token: JwtToken): U
 
 export type DbUser = S.Schema.Type<typeof DbUser>
 
-export const DbArticle = S.struct({
+export const DbArticle = S.Struct({
   id: ArticleId,
   author_id: UserId,
   slug: ArticleSlug,
@@ -78,29 +78,29 @@ export const DbProfile = DbUser.pipe(S.pick("username", "email", "bio", "image")
 
 export type DbProfile = S.Schema.Type<typeof DbProfile>
 
-const DbProfileJoin = S.struct({
+const DbProfileJoin = S.Struct({
   author_username: Username,
   author_email: Email,
-  author_bio: S.nullable(Bio),
-  author_image: S.nullable(Image),
-  author_following: S.nullable(S.boolean)
+  author_bio: S.NullOr(Bio),
+  author_image: S.NullOr(Image),
+  author_following: S.NullOr(S.Boolean)
 })
 
 type DbProfileJoin = S.Schema.Type<typeof DbProfileJoin>
 
 export const DbArticleWithFavoritesAndTags = DbArticle.pipe(
   S.extend(
-    S.struct({
+    S.Struct({
       ...DbProfileJoin.fields,
       favorites_count: S.NumberFromString,
-      favorited: S.nullable(S.boolean),
-      tag_list: S.array(ArticleTag)
+      favorited: S.NullOr(S.Boolean),
+      tag_list: S.Array(ArticleTag)
     })
   )
 )
 export type DbArticleWithFavoritesAndTags = S.Schema.Type<typeof DbArticleWithFavoritesAndTags>
 
-export const DbComment = S.struct({
+export const DbComment = S.Struct({
   id: CommentId,
   article_id: ArticleId,
   author_id: UserId,
@@ -135,35 +135,35 @@ function dbProfileJoinToProfile(db: DbProfileJoin): Profile {
   }
 }
 
-export const DbTag = S.struct({
+export const DbTag = S.Struct({
   id: S.nanoId,
   name: ArticleTag
 })
 
 export type DbTag = S.Schema.Type<typeof DbTag>
 
-export const DbArticleTag = S.struct({
+export const DbArticleTag = S.Struct({
   article_id: ArticleId,
   tag_id: ArticleTag
 })
 
 export type DbArticleTag = S.Schema.Type<typeof DbArticleTag>
 
-export const DbFavorite = S.struct({
+export const DbFavorite = S.Struct({
   user_id: UserId,
   article_id: ArticleId
 })
 
 export type DbFavorite = S.Schema.Type<typeof DbFavorite>
 
-export const DbFollow = S.struct({
+export const DbFollow = S.Struct({
   follower_id: UserId,
   followee_id: UserId
 })
 
 export type DbFollow = S.Schema.Type<typeof DbFollow>
 
-export const DbJwtToken = S.struct({
+export const DbJwtToken = S.Struct({
   id: S.nanoId,
   user_id: UserId,
   token: JwtToken,

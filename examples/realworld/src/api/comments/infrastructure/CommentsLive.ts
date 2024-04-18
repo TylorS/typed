@@ -7,7 +7,7 @@ import { ArticleId, ArticleSlug, CommentId } from "@/model"
 import { Comments } from "@/services"
 import type { CreateCommentInput } from "@/services/CreateComment"
 import { Schema } from "@effect/schema"
-import * as Pg from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import { makeNanoId } from "@typed/id"
 import { Clock, Effect, Option } from "effect"
 
@@ -16,24 +16,25 @@ export const CommentsLive = Comments.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getOptionalCurrentJwtUser)
 
-      const sql = yield* _(Pg.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const dbComments = yield* _(
         slug,
-        sql.schema(ArticleSlug, DbCommentWithAuthor, (s) =>
-          sql`
+        Pg.schema.findAll({
+          Request: ArticleSlug,
+          Result: DbCommentWithAuthor, execute: (s) =>
+            sql`
           SELECT c.*, u.username as author_username, u.bio as author_bio, u.image as author_image, u.email as author_email, 
-                  ${
-            Option.match(user, {
+                  ${Option.match(user, {
               onNone: () => sql`false as author_following`,
               onSome: (u) =>
                 sql`exists (select 1 from follows f where f.follower_id = ${u.id} and f.followed_id = u.id) as author_following`
             })
-          }
+              }
           FROM comments c
           JOIN users u ON c.author_id = u.id
           LEFT JOIN articles a ON c.article_id = a.id
           WHERE a.slug = ${s};
-        `)
+        `})
       )
 
       return dbComments.map(dbCommentToComment)
@@ -41,7 +42,7 @@ export const CommentsLive = Comments.implement({
   create: (slug, input) =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const comment = yield* _(createDbComment(user, slug, input))
 
       yield* _(
@@ -59,7 +60,7 @@ export const CommentsLive = Comments.implement({
     }).pipe(catchExpectedErrors),
   delete: (_, { id }) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
+      const sql = yield* _(Pg.client.PgClient)
       const user = yield* _(getCurrentJwtUser)
       yield* _(sql`DELETE FROM comments WHERE id = ${id} AND author_id = ${user.id};`)
     }).pipe(catchExpectedErrors)
@@ -85,13 +86,15 @@ function createDbComment(user: User, slug: ArticleSlug, input: CreateCommentInpu
 
 function getArticleIdBySlug(slug: ArticleSlug) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+    const sql = yield* _(Pg.client.PgClient)
     const { id } = yield* _(
       slug,
-      sql.schemaSingle(
-        ArticleSlug,
-        Schema.struct({ id: ArticleId }),
-        (s) => sql`select id from articles where slug = ${s}`
+      Pg.schema.single(
+        {
+          Request: ArticleSlug,
+          Result: Schema.Struct({ id: ArticleId }),
+          execute: (s) => sql`select id from articles where slug = ${s}`
+        }
       )
     )
 

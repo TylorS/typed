@@ -84,14 +84,14 @@ export function toHttpRouter<
     environment?: "server" | "static"
   }
 ): Http.router.Router<
+  Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
   | ServerRequest
-  | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>,
-  Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched
+  | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 > {
   let router: Http.router.Router<
+    Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
     | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
-    | ServerRequest,
-    Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched
+    | ServerRequest
   > = Http.router.empty
   const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => route.path)
   const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
@@ -177,7 +177,7 @@ export function staticFiles(
   self: Http.app.Default<E, R>
 ) => Effect.Effect<
   Http.response.ServerResponse,
-  E  | BadArgument | PlatformError,
+  E | BadArgument | PlatformError,
   ServerRequest | R | Http.platform.Platform | FileSystem | Path
 > {
   if (!enabled) {
@@ -235,7 +235,7 @@ function gzipHeaders(filePath: string, cacheControl?: (filePath: string) => { ma
 function cacheControlHeaders(
   filePath: string,
   cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }
-) {
+): { "Cache-Control"?: string } {
   if (!cacheControl) {
     return {}
   }

@@ -4,7 +4,7 @@ import * as Route from "@typed/route"
 import { html } from "@typed/template"
 
 export const route = Route.literal("/article/:slug").pipe(
-  Route.withSchema(Schema.struct({ slug: ArticleSlug }))
+  Route.withSchema(Schema.Struct({ slug: ArticleSlug }))
 )
 
 export type Params = Route.Route.Type<typeof route>

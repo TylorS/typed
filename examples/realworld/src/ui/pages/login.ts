@@ -61,7 +61,7 @@ function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
     yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
   }).pipe(
     Effect.catchAll((error) => {
-      const issues = ArrayFormatter.formatError(error)
+      const issues = ArrayFormatter.formatErrorSync(error)
       const errors = issues.map((issue) => issue.message)
       return RefSubject.set(CurrentUser, AsyncData.fail(new Unprocessable({ errors })))
     })

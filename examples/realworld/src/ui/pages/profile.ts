@@ -8,7 +8,7 @@ import * as Route from "@typed/route"
 import { Option } from "effect"
 
 export const route = Route.literal("/profile/:username").pipe(
-  Route.withSchema(Schema.struct({ username: Username }))
+  Route.withSchema(Schema.Struct({ username: Username }))
 )
 
 export type Params = Schema.Schema.Type<typeof route.schema>
@@ -66,7 +66,8 @@ export const main = (params: RefSubject.RefSubject<Params>) => {
     many(
       articles,
       (a) => a.id,
-      ArticlePreview
+      // TODO: ArticlePreview should accept an article
+      Fx.switchMap(ArticlePreview),
     ).pipe(
       Fx.switchMapCause((_) => Fx.null)
     )

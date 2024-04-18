@@ -11,7 +11,7 @@ export const getTags = Api.get(
     description: "Get tags. Auth not required."
   }
 ).pipe(
-  add200(Schema.struct({ tags: ArticleTagList })),
+  add200(Schema.Struct({ tags: ArticleTagList })),
   addUnprocessableResponse
 )
 

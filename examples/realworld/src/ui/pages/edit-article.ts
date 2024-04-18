@@ -6,7 +6,7 @@ import type { RouteGuard } from "@typed/router"
 import { html } from "@typed/template"
 
 export const route = Route.literal("/editor/:slug").pipe(
-  Route.withSchema(Schema.struct({ slug: ArticleSlug })),
+  Route.withSchema(Schema.Struct({ slug: ArticleSlug })),
   isAuthenticatedGuard
 )
 

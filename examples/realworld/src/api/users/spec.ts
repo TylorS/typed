@@ -14,8 +14,8 @@ export const login = Api.post(
     description: "Login a user"
   }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ user: LoginInput })),
-  add200(Schema.struct({ user: User })),
+  Api.setRequestBody(Schema.Struct({ user: LoginInput })),
+  add200(Schema.Struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse
 )
@@ -27,7 +27,7 @@ export const getCurrentUser = Api.get(
     description: "Get current user"
   }
 ).pipe(
-  add200(Schema.struct({ user: User })),
+  add200(Schema.Struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -40,8 +40,8 @@ export const register = Api.post(
     description: "Register a user"
   }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ user: RegisterInput })),
-  add200(Schema.struct({ user: User })),
+  Api.setRequestBody(Schema.Struct({ user: RegisterInput })),
+  add200(Schema.Struct({ user: User })),
   addUnprocessableResponse
 )
 
@@ -52,8 +52,8 @@ export const updateUser = Api.put(
     description: "Update a user. Auth is required."
   }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ user: UpdateUserInput })),
-  add200(Schema.struct({ user: User })),
+  Api.setRequestBody(Schema.Struct({ user: UpdateUserInput })),
+  add200(Schema.Struct({ user: User })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity

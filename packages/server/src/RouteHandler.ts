@@ -195,9 +195,9 @@ export class RouteNotMatched extends Data.TaggedError("RouteNotMatched")<{
  */
 export function toPlatformRoute<I extends RouteHandler.Any>(
   handler: I
-): <R, E>(
-  self: PlatformRouter.Router<R, E>
-) => PlatformRouter.Router<R | RouteHandler.Context<I>, E | RouteHandler.Error<I>> {
+): <E, R>(
+  self: PlatformRouter.Router<E, R>
+) => PlatformRouter.Router<E | RouteHandler.Error<I>, R | RouteHandler.Context<I>> {
   return PlatformRouter.route(handler.method)(Router.getPath(handler.route), toHttpApp(handler))
 }
 
@@ -208,8 +208,8 @@ export function toHttpApp<I extends RouteHandler.Any>(
   { handler, route: input }: I,
   parent?: Router.CurrentRoute
 ): Default<
-  RouteHandler.Context<I>,
-  RouteHandler.Error<I>
+  RouteHandler.Error<I>,
+  RouteHandler.Context<I>
 > {
   const { guard, route } = Router.asRouteGuard<I["route"]>(input)
   const currentRouteLayer = Router.CurrentRoute.layer({ route, parent: Option.fromNullable(parent) })

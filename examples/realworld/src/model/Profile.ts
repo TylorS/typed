@@ -3,7 +3,7 @@ import { User } from "./User"
 
 export const Profile = User.pipe(
   Schema.omit("id", "token"),
-  Schema.extend(Schema.struct({ following: Schema.boolean })),
+  Schema.extend(Schema.Struct({ following: Schema.Boolean })),
   Schema.identifier("Profile")
 )
 

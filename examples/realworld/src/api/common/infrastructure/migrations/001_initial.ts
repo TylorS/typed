@@ -1,8 +1,8 @@
-import * as Pg from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import * as Effect from "effect/Effect"
 
 export default Effect.flatMap(
-  Pg.tag,
+  Pg.client.PgClient,
   (sql) =>
     sql`
       -- Users

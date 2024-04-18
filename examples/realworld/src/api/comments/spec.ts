@@ -17,7 +17,7 @@ export const getComments = Api.get(
   Routes.comments,
   { "description": "Get comments for an article. Auth not required." }
 ).pipe(
-  add200(Schema.struct({ comments: Schema.array(Comment) })),
+  add200(Schema.Struct({ comments: Schema.Array(Comment) })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
 )
@@ -27,8 +27,8 @@ export const createComment = Api.post(
   Routes.comments,
   { "description": "Create a comment. Auth is required" }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ comment: CreateCommentInput })),
-  add201(Schema.struct({ comment: Comment })),
+  Api.setRequestBody(Schema.Struct({ comment: CreateCommentInput })),
+  add201(Schema.Struct({ comment: Comment })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity

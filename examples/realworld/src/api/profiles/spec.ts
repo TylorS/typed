@@ -17,7 +17,7 @@ export const getProfile = Api.get(
     description: "Get a profile. Auth not required."
   }
 ).pipe(
-  add200(Schema.struct({ profile: Profile })),
+  add200(Schema.Struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
@@ -30,7 +30,7 @@ export const follow = Api.post(
     description: "Follow a user. Auth is required."
   }
 ).pipe(
-  add200(Schema.struct({ profile: Profile })),
+  add200(Schema.Struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -43,7 +43,7 @@ export const unfollow = Api.delete(
     description: "Unfollow a user. Auth is required."
   }
 ).pipe(
-  add200(Schema.struct({ profile: Profile })),
+  add200(Schema.Struct({ profile: Profile })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity

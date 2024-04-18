@@ -30,7 +30,7 @@ uiRouter.pipe(
   Node.run
 )
 
-function withCurrentUserFromHeaders<R, E>(app: HttpServer.router.Router<R, E>) {
+function withCurrentUserFromHeaders<E, R>(app: HttpServer.router.Router<E, R>) {
   return Effect.gen(function*(_) {
     const { headers } = yield* _(Http.request.ServerRequest)
     const token = Http.headers.get(headers, "authorization").pipe(

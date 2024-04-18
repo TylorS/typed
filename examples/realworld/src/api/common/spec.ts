@@ -7,8 +7,8 @@ import type { ApiEndpoint, ApiRequest, ApiSchema } from "@typed/server"
 import { Api, ApiResponse, Security } from "@typed/server"
 import { Effect, Option } from "effect"
 
-const jwtTokenSchema = Schema.string.pipe(
-  Schema.transform(JwtToken, (f) => JwtToken(f.split(" ")[1]), (t) => `Token ${t}`)
+const jwtTokenSchema = Schema.String.pipe(
+  Schema.transform(JwtToken, { decode: (f) => JwtToken(f.split(" ")[1]), encode: (t) => `Token ${t}` })
 )
 
 const getJwtTokenFromHeader = Http.request.ServerRequest.pipe(
@@ -61,7 +61,7 @@ export const addUnprocessableResponse: <
   ApiResponse.ApiResponse<422, { readonly errors: ReadonlyArray<string> }, ApiSchema.Ignored, never> | Response1,
   Security
 > = Api.addResponse(
-  ApiResponse.make(422, Schema.struct({ errors: Schema.array(Schema.string) }))
+  ApiResponse.make(422, Schema.Struct({ errors: Schema.Array(Schema.String) }))
 )
 
 export const add200: <A = void, I = void, R = never>(

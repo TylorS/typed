@@ -4,7 +4,7 @@ import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 import * as Schema from "lib/Schema"
 
-export const DeleteArticleInput = Schema.struct({ slug: ArticleSlug }).pipe(Schema.identifier("DeleteArticleInput"))
+export const DeleteArticleInput = Schema.Struct({ slug: ArticleSlug }).pipe(Schema.identifier("DeleteArticleInput"))
 export type DeleteArticleInput = Schema.Schema.Type<typeof DeleteArticleInput>
 
 export type DeleteArticleError = Unauthorized | Unprocessable

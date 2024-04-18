@@ -23,7 +23,7 @@ export const getFeed = Api.get(
   }
 ).pipe(
   Api.setRequestQuery(GetFeedInput),
-  add200(Schema.struct({ articles: Schema.array(Article) })),
+  add200(Schema.Struct({ articles: Schema.Array(Article) })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -37,7 +37,7 @@ export const getArticles = Api.get(
   }
 ).pipe(
   Api.setRequestQuery(GetArticlesInput),
-  add200(Schema.struct({ articles: Schema.array(Article) })),
+  add200(Schema.Struct({ articles: Schema.Array(Article) })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
 )
@@ -49,7 +49,7 @@ export const getArticle = Api.get(
     description: "Get an article. Auth not required"
   }
 ).pipe(
-  add200(Schema.struct({ article: Article })),
+  add200(Schema.Struct({ article: Article })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
 )
@@ -61,8 +61,8 @@ export const createArticle = Api.post(
     description: "Create an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ article: CreateArticleInput })),
-  add201(Schema.struct({ article: Article })),
+  Api.setRequestBody(Schema.Struct({ article: CreateArticleInput })),
+  add201(Schema.Struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -75,8 +75,8 @@ export const updateArticle = Api.put(
     description: "Update an article. Auth is required"
   }
 ).pipe(
-  Api.setRequestBody(Schema.struct({ article: UpdateArticleInput })),
-  add200(Schema.struct({ article: Article })),
+  Api.setRequestBody(Schema.Struct({ article: UpdateArticleInput })),
+  add200(Schema.Struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -102,7 +102,7 @@ export const favorite = Api.post(
     description: "Favorite an article. Auth is required"
   }
 ).pipe(
-  add200(Schema.struct({ article: Article })),
+  add200(Schema.Struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -115,7 +115,7 @@ export const unfavorite = Api.delete(
     description: "Unfavorite an article. Auth is required"
   }
 ).pipe(
-  add200(Schema.struct({ article: Article })),
+  add200(Schema.Struct({ article: Article })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity

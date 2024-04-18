@@ -12,7 +12,7 @@ import { Users } from "@/services"
 import { Unauthorized, Unprocessable } from "@/services/errors"
 import type { RegisterInput } from "@/services/Register"
 import { Schema } from "@effect/schema"
-import * as Pg from "@sqlfx/pg"
+import * as Pg from "@effect/sql-pg"
 import { makeNanoId } from "@typed/id"
 import { Clock, Config, Effect, Layer, Option } from "effect"
 import jwt from "jsonwebtoken"
@@ -27,7 +27,7 @@ export const UsersLive = Users.implement({
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.tag)
+       const sql = yield* _(Pg.client.PgClient)
       const existingUser = yield* _(getDbUserByEmail(input.email))
       if (Option.isSome(existingUser)) {
         return yield* _(new Unprocessable({ errors: ["Email already exists"] }))
@@ -36,7 +36,9 @@ export const UsersLive = Users.implement({
       const inputUser = yield* _(dbUserFromRegisterInput(input))
       const user = yield* _(
         inputUser,
-        sql.schemaSingle(DbUser, DbUser, (t) => sql`insert into users ${sql.insert(t)} returning *;`)
+        Pg.schema.single({
+          Request: DbUser, Result: DbUser, execute: (t) => sql`insert into users ${sql.insert(t)} returning *;`
+        })
       )
       const { token } = yield* _(creatJwtTokenForUser(user))
 
@@ -65,7 +67,7 @@ export const UsersLive = Users.implement({
   update: (user) =>
     Effect.gen(function*(_) {
       const current = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.tag)
+       const sql = yield* _(Pg.client.PgClient)
       const now = new Date(yield* _(Clock.currentTimeMillis))
       const [rawUser] = yield* _(
         sql`update users set 
@@ -87,10 +89,14 @@ export const UsersLive = Users.implement({
 
 function getDbUserByEmail(email: Email) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+     const sql = yield* _(Pg.client.PgClient)
     return yield* _(
       email,
-      sql.schemaSingleOption(Email, DbUser, (t) => sql`select * from users where email = ${t}`)
+      Pg.schema.findOne({
+        Request: Email,
+        Result: DbUser,
+        execute: (t) => sql`select * from users where email = ${t}`
+      })
     )
   }).pipe(Effect.catchAllCause(() => Effect.succeedNone))
 }
@@ -116,14 +122,16 @@ function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
 
 function getUnexpiredJwtTokenForUser(user: DbUser) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+     const sql = yield* _(Pg.client.PgClient)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     return yield* _(
       user.id,
-      sql.schemaSingleOption(
-        UserId,
-        DbJwtToken,
-        (t) => sql`select * from jwt_tokens where user_id = ${t} and created_at > ${now} - interval '7 days'`
+      Pg.schema.findOne(
+        {
+          Request: UserId,
+          Result: DbJwtToken,
+          execute: (t) => sql`select * from jwt_tokens where user_id = ${t} and created_at > ${now} - interval '7 days'`
+        }
       )
     )
   }).pipe(Effect.catchAllCause(() => Effect.succeedNone))
@@ -131,7 +139,7 @@ function getUnexpiredJwtTokenForUser(user: DbUser) {
 
 function creatJwtTokenForUser(user: DbUser) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.tag)
+    const sql = yield* _(Pg.client.PgClient)
     const id = yield* _(makeNanoId)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
@@ -144,9 +152,14 @@ function creatJwtTokenForUser(user: DbUser) {
       created_at: now
     }
 
-    return yield* _(
+    yield* _(
       jwtToken,
-      sql.schemaSingle(DbJwtToken, DbJwtToken, (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`)
+      Pg.schema.void({
+        Request: DbJwtToken,
+        execute: (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`
+      })
     )
+
+    return jwtToken
   })
 }
