@@ -29,10 +29,9 @@ import {
   TextOnlyElement,
   TextPartNode
 } from "@typed/template/Template"
-import { toHtml } from "@typed/wire"
 import * as Chunk from "effect/Chunk"
 import { inspect } from "util"
-import { templateToHtmlChunks, TextChunk } from "../src/HtmlChunk"
+import { templateToHtmlChunks } from "../src/HtmlChunk"
 
 describe("Parser", () => {
   it("parses a simple template", () => {
