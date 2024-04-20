@@ -49,11 +49,19 @@ describe("Hydrate", () => {
 
   it("hydrates fragments", () =>
     Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(
+      const { elementRef, elements, window } = yield* _(
         testHydrate(
-          html`${html`<header>Header</header>`}<main>${html`<h1>Content</h1>`}</main>${html`<footer>Footer</footer>`}`,
+          html`${html`<header>Header</header>`}<main>${html`<h1>${html`<span>${"Content"}</span>`}</h1>`}</main>${html`<footer>Footer</footer>`}`,
           (rendered) => {
             ok(Array.isArray(rendered))
+            ok(rendered.length === 5)
+            const [header, /** HOLE */, main, footer /** HOLE */] = rendered
+
+            return {
+              header,
+              main,
+              footer
+            }
           }
         )
       )
@@ -68,6 +76,7 @@ describe("Hydrate", () => {
       ok(header instanceof window.HTMLElement)
       ok(header.tagName === "HEADER")
       ok(header.textContent === "Header")
+      ok(header === elements.header)
 
       ok(main instanceof window.HTMLElement)
       ok(main.tagName === "MAIN")
@@ -76,9 +85,11 @@ describe("Hydrate", () => {
       ok(main.firstChild.tagName === "H1")
       ok(main.firstChild.textContent === "Content")
       ok(isComment(main.childNodes[1])) // HOLE
+      ok(main === elements.main)
 
       ok(footer instanceof window.HTMLElement)
       ok(footer.tagName === "FOOTER")
       ok(footer.textContent === "Footer")
+      ok(footer === elements.footer)
     }))
 })

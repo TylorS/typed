@@ -23,7 +23,6 @@ import {
   SelfClosingElementNode,
   SparseAttrNode,
   SparseClassNameNode,
-  SparseCommentNode,
   Template,
   TextNode,
   TextOnlyElement,
@@ -487,7 +486,7 @@ describe("Parser2", () => {
 
   it("parses comments with hole", () => {
     const template = h`<!-- ${"test"} -->`
-    const part = new SparseCommentNode([new TextNode(" "), new CommentPartNode(0), new TextNode(" ")])
+    const part = new CommentPartNode(0)
     const expected = new Template([part], Parser.templateHash(template), [[part, Chunk.of(0)]])
 
     expect(Parser.parse(template)).toEqual(expected)

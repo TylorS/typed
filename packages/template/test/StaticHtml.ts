@@ -95,21 +95,21 @@ describe("Html", () => {
 
   it.concurrent("renders comments with interpolations", async () => {
     await testHtmlChunks(html`<div><!-- ${"Hello, world!"} --></div>`, [
-      "<div><!-- ",
-      "Hello, world!",
-      " --></div>"
+      "<div>",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
 
     await testHtmlChunks(html`<div><!-- ${Effect.succeed("Hello, world!")} --></div>`, [
-      "<div><!-- ",
-      "Hello, world!",
-      " --></div>"
+      "<div>",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
 
     await testHtmlChunks(html`<div><!-- ${Fx.succeed("Hello, world!")} --></div>`, [
-      "<div><!-- ",
-      "Hello, world!",
-      " --></div>"
+      "<div>",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
   })
 

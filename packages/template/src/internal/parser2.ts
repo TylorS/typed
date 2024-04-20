@@ -160,7 +160,10 @@ class Parser {
 
     // Comments
     if (name === "!--") {
-      return this.parseCommentNode()
+      const node = this.parseCommentNode()
+      this.path.inc()
+
+      return node
     }
 
     // Doctype
@@ -188,7 +191,7 @@ class Parser {
       return this.parseTextOnlyElementNode(name)
     }
 
-    let next = this.peek()
+    const next = this.peek()
 
     if (next === undefined) {
       throw new Error(`Unexpected end of template at element node ${name}`)
@@ -207,13 +210,6 @@ class Parser {
     this.consumeWhitespace()
 
     const attributes = this.parseAttributes()
-
-    next = this.peek()
-
-    if (next === undefined) {
-      throw new Error(`Unexpected end of template at element node ${name}`)
-    }
-
     this.path.push()
     const children = this.parseNodes()
     this.path.pop()
@@ -452,8 +448,8 @@ function parseTextAndParts<T>(
     if (part[0] === "{" && part[1] === "{") {
       out.push(f(parseInt(parts[++i], 10)))
       // If we encounter a part, we should not skip whitespace
-      skipWhitespace = false
-    } else if ((skipWhitespace ? part.trim() : part) === "") {
+      skipWhitespace = i + 1 === parts.length - 1
+    } else if (((skipWhitespace || i === 0) ? part.trim() : part) === "") {
       continue
     } else {
       out.push(new Template.TextNode(convertCharacterEntities(part)))

@@ -59,7 +59,7 @@ export function getPreviousTextSibling(node: Node | null) {
 }
 
 export function notIsEmptyTextNode(node: Node) {
-  if (node.nodeType === node.COMMENT_NODE) {
+  if (node.nodeType === node.TEXT_NODE) {
     return node.nodeValue?.trim() === ""
   }
 

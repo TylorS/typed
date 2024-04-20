@@ -59,20 +59,12 @@ export function getPreviousNodes(comment: Node, index: number) {
 export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
   Chunk.reduce(path, node, ({ childNodes }, index) => childNodes[index]) as Node
 
-export const findHydratePath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node => {
-  const out = Chunk.isEmpty(path)
-    ? node.parentNode as Node
-    : Chunk.reduce(
-      path,
-      node,
-      ({ childNodes }, index) => Array.from(childNodes).filter((x) => !isHoleComment(x))[index]
-    ) as Node
-
-  return out
-}
-
-const isHoleComment = (node: Node) =>
-  isComment(node) && (node.nodeValue?.startsWith("hole") ?? node.nodeValue?.startsWith("many") ?? false)
+export const findHydratePath = (node: ParentChildNodes, hash: string, path: Chunk.Chunk<number>): Node =>
+  Chunk.reduce(
+    path,
+    node,
+    ({ childNodes }, index) => Array.from(childNodes).filter((x) => !isCommentStartingWithValue(x, "hole"))[index]
+  ) as Node
 
 export interface ParentChildNodes {
   readonly parentNode: Node | null

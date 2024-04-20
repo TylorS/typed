@@ -368,7 +368,7 @@ describe("Render", () => {
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.Comment)
-        deepStrictEqual(rendered.data, " Hello, world! ")
+        deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     it("Fx", () =>
@@ -377,7 +377,7 @@ describe("Render", () => {
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.Comment)
-        deepStrictEqual(rendered.data, " Hello, world! ")
+        deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     test("directive", ({ clock }) =>
@@ -398,9 +398,9 @@ describe("Render", () => {
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.Comment)
-        deepStrictEqual(rendered.data, " Hello, world! ")
+        deepStrictEqual(rendered.data, "Hello, world!")
         yield* _(clock.adjust(100))
-        deepStrictEqual(rendered.data, " Goodbye, world! ")
+        deepStrictEqual(rendered.data, "Goodbye, world!")
       }))
   })
 

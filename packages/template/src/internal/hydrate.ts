@@ -21,7 +21,6 @@ import type { RenderPartContext } from "./render.js"
 import { getBrowserEntry, renderPart2, renderTemplate } from "./render.js"
 import {
   findHydratePath,
-  findPath,
   getPreviousNodes,
   isComment,
   isCommentStartingWithValue,
@@ -103,7 +102,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           // Connect our interpolated values to our template parts
           const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
           for (const [part, path] of template.parts) {
-            const eff = renderPart2(part, findHydratePath(where, path), ctx)
+            const eff = renderPart2(part, findHydratePath(where, template.hash, path), ctx)
             if (eff !== null) {
               effects.push(
                 ...(Array.isArray(eff) ? eff : [eff]) as Array<
@@ -203,7 +202,7 @@ export function findTemplateResultPartChildNodes(
   manyIndex?: string
 ): Either.Either<ParentChildNodes, CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError> {
   const [, path] = parentTemplate.parts[partIndex]
-  const parentNode = findPath(where, path) as HTMLElement
+  const parentNode = where.parentNode ?? findHydratePath(where, childTemplate.hash, path) as HTMLElement
   const childNodesEither = findPartChildNodes(parentNode, childTemplate.hash, partIndex)
   if (Either.isLeft(childNodesEither)) return Either.left(childNodesEither.left)
 

@@ -101,21 +101,21 @@ describe("Html", () => {
 
   it.concurrent("renders comments with interpolations", async () => {
     await testHtmlChunks(html`<div><!-- ${"Hello, world!"} --></div>`, [
-      "<div data-typed=\"...\"><!--",
-      "Hello, world!",
-      "--></div>"
+      "<div data-typed=\"...\">",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
 
     await testHtmlChunks(html`<div><!-- ${Effect.succeed("Hello, world!")} --></div>`, [
-      "<div data-typed=\"...\"><!--",
-      "Hello, world!",
-      "--></div>"
+      "<div data-typed=\"...\">",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
 
     await testHtmlChunks(html`<div><!-- ${Fx.succeed("Hello, world!")} --></div>`, [
-      "<div data-typed=\"...\"><!--",
-      "Hello, world!",
-      "--></div>"
+      "<div data-typed=\"...\">",
+      "<!--Hello, world!-->",
+      "</div>"
     ])
   })
 
@@ -282,7 +282,7 @@ describe("Html", () => {
     ])
   })
 
-  it.concurrent("render this template", async () => {
+  it.concurrent("properly handles nested elements", async () => {
     await testHtmlChunks(
       html`<div class="home-page">
   <div class="banner">
@@ -340,6 +340,27 @@ describe("Html", () => {
         TEXT_START,
         TYPED_HOLE(2),
         `</div></div></div></div></div></div>`
+      ]
+    )
+  })
+
+  it.concurrent("render this template", async () => {
+    await testHtmlChunks(
+      html`<li class="nav-item">
+    <a
+      onclick=${null} 
+      class=${null}
+      href=${null}
+    >
+      ${null}
+    </a>
+  </li>`,
+      [
+        `<li data-typed="..." class="nav-item"><a`,
+        `>`,
+        TEXT_START,
+        TYPED_HOLE(3),
+        `</a></li>`
       ]
     )
   })
