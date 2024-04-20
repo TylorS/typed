@@ -50,7 +50,7 @@ export namespace RouteGuard {
   export type UpdateSuccess<R extends RouteGuard.Any, B> = RouteGuard<
     Route<R>,
     B,
-    Route.RouteDecodeError<R['route']>,
+    Route.RouteDecodeError<R["route"]>,
     Route.Route.Context<Route<R>>
   >
 }
@@ -194,10 +194,12 @@ export const concat: {
   RouteGuard.Error<L> | RouteGuard.Error<R>,
   RouteGuard.Context<L> | RouteGuard.Context<R>
 > {
-  return make<  Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
-  RouteGuard.Success<L> & RouteGuard.Success<R>,
-  RouteGuard.Error<L> | RouteGuard.Error<R>,
-  RouteGuard.Context<L> | RouteGuard.Context<R>>(Route.concat<L["route"], R["route"]>(self.route, other.route), (input) =>
+  return make<
+    Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+    RouteGuard.Success<L> & RouteGuard.Success<R>,
+    RouteGuard.Error<L> | RouteGuard.Error<R>,
+    RouteGuard.Context<L> | RouteGuard.Context<R>
+  >(Route.concat<L["route"], R["route"]>(self.route, other.route), (input) =>
     Effect.Do.pipe(
       Effect.bind("a", () => self.guard(input)),
       Effect.bind("b", () => other.guard(input)),

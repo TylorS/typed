@@ -281,6 +281,68 @@ describe("Html", () => {
       "<div data-typed=\"...\">Hello, world!</div><div data-typed=\"...\">Goodbye, world!</div>"
     ])
   })
+
+  it.concurrent("render this template", async () => {
+    await testHtmlChunks(
+      html`<div class="home-page">
+  <div class="banner">
+    <div class="container">
+      <h1 class="logo-font">conduit</h1>
+      <p>A place to share your knowledge.</p>
+    </div>
+  </div>
+
+  <div class="container page">
+    <div class="row">
+      <div class="col-md-9">
+        <div class="feed-toggle">
+          <ul class="outline-active nav nav-pills">
+            <li class="nav-item">
+              ${null}
+            </li>
+          </ul>
+        </div>
+
+        ${null}
+
+        <ul class="pagination">
+          <li class="page-item active">
+            <a class="page-link" href="">1</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="">2</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-3">
+        <div class="sidebar">
+          <p>Popular Tags</p>
+
+          <div class="tag-list">
+            ${null} 
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`,
+      [
+        `<div data-typed="..." class="home-page"><div class="banner"><div class="container"><h1 class="logo-font">conduit</h1><p>A place to share your knowledge.</p></div></div><div class="container page"><div class="row"><div class="col-md-9"><div class="feed-toggle"><ul class="outline-active nav nav-pills"><li class="nav-item">`,
+        TEXT_START,
+        TYPED_HOLE(0),
+        `</li></ul></div>`,
+        TEXT_START,
+        TYPED_HOLE(1),
+        `<ul class="pagination"><li class="page-item active"><a class="page-link"`,
+        `>1</a></li><li class="page-item"><a class="page-link"`,
+        `>2</a></li></ul></div><div class="col-md-3"><div class="sidebar"><p>Popular Tags</p><div class="tag-list">`,
+        TEXT_START,
+        TYPED_HOLE(2),
+        `</div></div></div></div></div></div>`
+      ]
+    )
+  })
 })
 
 function provideResources<R, E, A>(effect: Effect.Effect<R, E, A>) {

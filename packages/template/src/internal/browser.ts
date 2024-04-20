@@ -2,9 +2,9 @@ import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
 import { isRenderEvent } from "../RenderEvent.js"
 import type { RenderQueue } from "../RenderQueue.js"
+import { convertCharacterEntities } from "./character-entities.js"
 import { NodePartImpl } from "./parts.js"
 import { findHoleComment, isCommentWithValue } from "./utils.js"
-import { convertCharacterEntities } from './character-entities.js'
 
 export function makeRenderNodePart(
   index: number,

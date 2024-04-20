@@ -33,9 +33,7 @@ export type RouteTypeId = typeof RouteTypeId
 export interface Route<
   P extends string,
   S extends Schema.Schema.All = never
-> extends
-  Pipeable
-{
+> extends Pipeable {
   readonly [RouteTypeId]: Route.Variance<P, S>
   readonly routeAst: AST.AST
 
@@ -102,12 +100,12 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Type<R extends Route.Any> = Schema.Schema.Type<R['schema']>
+  export type Type<R extends Route.Any> = Schema.Schema.Type<R["schema"]>
 
   /**
    * @since 1.0.0
    */
-  export type Encoded<R extends Route.Any> = Schema.Schema.Encoded<R['schema']>
+  export type Encoded<R extends Route.Any> = Schema.Schema.Encoded<R["schema"]>
 
   /**
    * @since 1.0.0
@@ -145,7 +143,7 @@ export namespace Route {
    */
   export type Concat<I extends Route.Any, I2 extends Route.Any> = Route<
     Path.PathJoin<[Path<I>, Path<I2>]>,
-    ConcatSchemas<I['schema'], I2['schema']>
+    ConcatSchemas<I["schema"], I2["schema"]>
   >
 
   /**

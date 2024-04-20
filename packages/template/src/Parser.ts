@@ -11,4 +11,4 @@ export {
    * @since 1.0.0
    */
   templateHash
-} from "./internal/parser.js"
+} from "./internal/parser2.js"

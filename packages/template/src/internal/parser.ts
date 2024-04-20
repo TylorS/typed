@@ -2,6 +2,7 @@ import * as Chunk from "effect/Chunk"
 import { globalValue } from "effect/GlobalValue"
 import * as Option from "effect/Option"
 import * as Template from "../Template.js"
+import { convertCharacterEntities } from "./character-entities.js"
 import type { TextChunk } from "./chunks.js"
 import {
   getClosingTagName,
@@ -13,7 +14,6 @@ import {
   PART_REGEX,
   PART_STRING
 } from "./chunks.js"
-import { convertCharacterEntities } from './character-entities.js'
 
 // TODO: Consider ways to surface useful errors and warnings.
 // TODO: Profile for performance optimization
@@ -133,7 +133,6 @@ const tagNameMatches = {
 const attributeMatches = {
   whitespace: isWhitespaceToken,
   equals: isEqualsToken,
-  closingTag: isElementCloseToken,
   openTagEnd: isOpenTagEndToken,
   selfClosingTagEnd: isSelfClosingTagEndToken
 } satisfies Predicates
@@ -169,6 +168,10 @@ export class PathStack {
   }
 
   toChunk(): Chunk.Chunk<number> {
+    if (Chunk.isEmpty(this.chunk)) {
+      return Chunk.of(this.count)
+    }
+
     return Chunk.append(this.chunk, this.count)
   }
 
@@ -288,7 +291,9 @@ class ParserImpl implements Parser {
       this._skipWhitespace = false
       return [this.addPartWithPrevious(new Template.NodePart(parseInt(next.match[2], 10)))]
     } else if ((next = this.chunk(getWhitespace))) { // Whitespace
-      return this._skipWhitespace ? [] : (this.path.inc(), [new Template.TextNode(convertCharacterEntities(next.match[1]))])
+      return this._skipWhitespace
+        ? []
+        : (this.path.inc(), [new Template.TextNode(convertCharacterEntities(next.match[1]))])
     } else if ((next = this.chunk(getTextUntilCloseBrace))) { // Text and parts
       return parseTextAndParts(next.match[1], (i) => this.addPartWithPrevious(new Template.NodePart(i)))
     } else {
@@ -409,12 +414,6 @@ class ParserImpl implements Parser {
       }
       case "selfClosingTagEnd": {
         this.consumeAmount(2)
-        this.context = "unknown"
-
-        return BREAK_ATTR
-      }
-      case "closingTag": {
-        this.consumeAmount(name.length)
         this.context = "unknown"
 
         return BREAK_ATTR
@@ -690,7 +689,7 @@ export function templateWithParts(template: ReadonlyArray<string>): string {
   return output
 }
 
-function unsafeParsePartIndex(text: string): number {
+export function unsafeParsePartIndex(text: string): number {
   const next = getStrictPart(text, 0)
 
   if (!next) {

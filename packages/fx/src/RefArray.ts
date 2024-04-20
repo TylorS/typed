@@ -4,13 +4,13 @@
  */
 
 import type * as C from "@typed/context"
+import * as ReadonlyArray from "effect/Array"
 import type * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import type { Equivalence } from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
 import type * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/Array"
 import type * as Scope from "effect/Scope"
 import type * as Fx from "./Fx.js"
 import * as RefSubject from "./RefSubject.js"

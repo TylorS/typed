@@ -2,6 +2,7 @@ import * as Fx from "@typed/fx"
 import { html, many } from "@typed/template"
 import { testHydrate } from "@typed/template/Test"
 import { describe, it } from "@typed/template/Vitest"
+import { isComment } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import { Effect } from "effect"
 
@@ -44,5 +45,40 @@ describe("Hydrate", () => {
 
       ok(rendered === ul)
       deepStrictEqual(listItems, Array.from(rendered.children))
+    }))
+
+  it("hydrates fragments", () =>
+    Effect.gen(function*(_) {
+      const { elementRef, window } = yield* _(
+        testHydrate(
+          html`${html`<header>Header</header>`}<main>${html`<h1>Content</h1>`}</main>${html`<footer>Footer</footer>`}`,
+          (rendered) => {
+            ok(Array.isArray(rendered))
+          }
+        )
+      )
+
+      const rendered = yield* _(elementRef)
+
+      ok(Array.isArray(rendered))
+      ok(rendered.length === 5)
+
+      const [header, /** HOLE */, main, footer /** HOLE */] = rendered
+
+      ok(header instanceof window.HTMLElement)
+      ok(header.tagName === "HEADER")
+      ok(header.textContent === "Header")
+
+      ok(main instanceof window.HTMLElement)
+      ok(main.tagName === "MAIN")
+      ok(main.childNodes.length === 2)
+      ok(main.firstChild instanceof window.HTMLElement)
+      ok(main.firstChild.tagName === "H1")
+      ok(main.firstChild.textContent === "Content")
+      ok(isComment(main.childNodes[1])) // HOLE
+
+      ok(footer instanceof window.HTMLElement)
+      ok(footer.tagName === "FOOTER")
+      ok(footer.textContent === "Footer")
     }))
 })

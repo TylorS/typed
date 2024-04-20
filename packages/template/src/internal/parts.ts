@@ -1,10 +1,10 @@
 import { isText } from "@typed/wire"
+import * as ReadonlyArray from "effect/Array"
 import type { Cause } from "effect/Cause"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"
-import * as ReadonlyArray from "effect/Array"
 import type { Scope } from "effect/Scope"
 import type { ElementSource } from "../ElementSource.js"
 import type { EventHandler } from "../EventHandler.js"
@@ -29,8 +29,8 @@ import type {
   TextPart
 } from "../Part.js"
 import { DEFAULT_PRIORITY, type RenderQueue } from "../RenderQueue.js"
-import { findHoleComment } from "./utils.js"
 import { convertCharacterEntities } from "./character-entities.js"
+import { findHoleComment } from "./utils.js"
 
 const strictEq = Equivalence.strict<any>()
 
@@ -348,13 +348,14 @@ export class TextPartImpl extends base("text") implements TextPart {
   static fromText(text: Text, index: number, queue: RenderQueue) {
     return new TextPartImpl(
       index,
-      ({ part, value }, priority) => queue.add(part, () => {
-        if (value) {
-          text.nodeValue = convertCharacterEntities(value)
-        } else {
-          text.nodeValue = null
-        }
-      }, priority),
+      ({ part, value }, priority) =>
+        queue.add(part, () => {
+          if (value) {
+            text.nodeValue = convertCharacterEntities(value)
+          } else {
+            text.nodeValue = null
+          }
+        }, priority),
       text.nodeValue,
       strictEq
     )

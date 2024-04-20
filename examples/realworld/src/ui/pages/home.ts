@@ -63,18 +63,18 @@ export const main = Fx.gen(function*(_) {
 
           <div class="tag-list">
             ${
-      many(
-        tagsList,
-        (t) => t,
-        (t) => {
-          const href = RefSubject.map(t, (t) => `/?tag=${t}`)
-          const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
-          return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
-        }
-      ).pipe(
-        Fx.switchMapCause(() => Fx.null)
-      )
-    } 
+    many(
+      tagsList,
+      (t) => t,
+      (t) => {
+        const href = RefSubject.map(t, (t) => `/?tag=${t}`)
+        const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
+        return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
+      }
+    ).pipe(
+      Fx.switchMapCause(() => Fx.null)
+    )
+  } 
           </div>
         </div>
       </div>

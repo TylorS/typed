@@ -234,7 +234,7 @@ function renderSparseClassName(
       parts.push(
         new ClassNamePartImpl(
           partIndex++,
-          ({ value }) => setValue(value?.join(" ") || null, i),
+          ({ value }) => setValue(value.join(" ").trim() || null, i),
           []
         )
       )

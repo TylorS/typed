@@ -255,7 +255,7 @@ export function testHydrate<R, E, Elements>(
               Cause.failureOrCause(cause).pipe(
                 Either.match({
                   onLeft: (error) => RefArray.append(errors, error),
-                  onRight: (cause) => errors.onFailure(cause)
+                  onRight: (cause) => elementRef[ElementRef.ElementRefTypeId].onFailure(cause)
                 })
               )
             ),

@@ -35,14 +35,14 @@ export function DomRenderEvent(rendered: Rendered): DomRenderEvent {
 export type HtmlRenderEvent = {
   readonly _tag: "html"
   readonly html: string
-  readonly done: boolean,
+  readonly done: boolean
   readonly valueOf: () => string
 }
 
 /**
  * @since 1.0.0
  */
-export function HtmlRenderEvent(html: string, done: boolean,): HtmlRenderEvent {
+export function HtmlRenderEvent(html: string, done: boolean): HtmlRenderEvent {
   return {
     _tag: "html",
     html,

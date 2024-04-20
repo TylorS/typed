@@ -353,7 +353,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function* (_) {
+          return Effect.gen(function*(_) {
             if (!isAsyncDataFrom<AI, EI>(input)) {
               return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
             }
@@ -393,7 +393,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function* (_) {
+          return Effect.gen(function*(_) {
             if (!isAsyncDataFrom<A, E>(input)) {
               return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
             }
@@ -420,7 +420,7 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
         }
 
         return parseAsyncData
-      },
+      }
     },
     {
       title: "AsyncDataFrom",
@@ -477,7 +477,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function* (_) {
+          return Effect.gen(function*(_) {
             if (!_AsyncData.isAsyncData<AI, EI>(input)) {
               return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
             }
@@ -528,7 +528,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function* (_) {
+          return Effect.gen(function*(_) {
             if (!_AsyncData.isAsyncData<A, E>(input)) {
               return yield* _(Effect.fail(new ParseResult.Forbidden(schema.ast, input)))
             }
@@ -566,7 +566,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
         }
 
         return parseAsyncData
-      },
+      }
     },
     {
       title: "AsyncData",

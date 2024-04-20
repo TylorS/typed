@@ -5,7 +5,6 @@ import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import { Effect, ExecutionStrategy, Runtime } from "effect"
 import type { Cause } from "effect/Cause"
-import type { Chunk } from "effect/Chunk"
 import * as Context from "effect/Context"
 import { hasProperty } from "effect/Predicate"
 import * as Scope from "effect/Scope"
@@ -30,7 +29,7 @@ import { type EventSource, makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
 import type { IndexRefCounter2 } from "./indexRefCounter.js"
 import { indexRefCounter2 } from "./indexRefCounter.js"
-import { parse } from "./parser.js"
+import { parse } from "./parser2.js"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -41,7 +40,6 @@ import {
   RefPartImpl,
   TextPartImpl
 } from "./parts.js"
-import type { ParentChildNodes } from "./utils.js"
 import { findPath, keyToPartType } from "./utils.js"
 
 /**
@@ -246,7 +244,7 @@ const RenderPartMap: RenderPartMap = {
     const handle = handlePart(
       renderable,
       Sink.make(
-        ctx.onCause,
+        (cause) => ctx.onCause(cause),
         (value) =>
           withCurrentPriority((priority) =>
             Effect.zipRight(part.update(value, priority), ctx.refCounter.release(templatePart.index))
@@ -500,7 +498,7 @@ const RenderPartMap: RenderPartMap = {
       }
     })
 
-    if (effects.length === 0) { 
+    if (effects.length === 0) {
       return null
     }
 
@@ -626,11 +624,10 @@ function diffClassNames(oldClassNames: Set<string>, newClassNames: Set<string>) 
  */
 export function renderPart2(
   part: Template.PartNode | Template.SparsePartNode,
-  content: ParentChildNodes,
-  path: Chunk<number>,
+  node: Node,
   ctx: RenderPartContext
 ): Effect.Effect<void, any, any> | Array<Effect.Effect<void, any, any>> | null {
-  return RenderPartMap[part._tag](part as any, findPath(content, path), ctx)
+  return RenderPartMap[part._tag](part as any, node, ctx)
 }
 
 /**
@@ -655,71 +652,74 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
     >((
       sink
     ) => {
-      return Effect.gen(function*(_) {
-        const runtime = yield* _(Effect.runtime<Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>>())
-        const runFork = Runtime.runFork(runtime)
-        const parentScope = Context.get(runtime.context, Scope.Scope)
-        const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
-        const queue = Context.get(runtime.context, RenderQueue)
-        const refCounter = yield* _(indexRefCounter2())
-        const content = document.importNode(entry.content, true)
-        const ctx: RenderPartContext = {
-          context: runtime.context,
-          document,
-          eventSource: makeEventSource(),
-          expected: 0,
-          queue,
-          refCounter,
-          renderContext,
-          onCause: sink.onFailure as any,
-          spreadIndex: values.length,
-          values
-        }
-
-        // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
-        for (const [part, path] of entry.template.parts) {
-          const eff = renderPart2(part, content, path, ctx)
-          if (eff !== null) {
-            effects.push(
-              ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
-              >
-            )
+      return Effect.catchAllCause(
+        Effect.gen(function*(_) {
+          const runtime = yield* _(Effect.runtime<Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>>())
+          const runFork = Runtime.runFork(runtime)
+          const parentScope = Context.get(runtime.context, Scope.Scope)
+          const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+          const queue = Context.get(runtime.context, RenderQueue)
+          const refCounter = yield* _(indexRefCounter2())
+          const content = document.importNode(entry.content, true)
+          const ctx: RenderPartContext = {
+            context: runtime.context,
+            document,
+            eventSource: makeEventSource(),
+            expected: 0,
+            queue,
+            refCounter,
+            renderContext,
+            onCause: sink.onFailure as any,
+            spreadIndex: values.length,
+            values
           }
-        }
 
-        // Fork any effects necessary
-        if (effects.length > 0) {
-          for (let i = 0; i < effects.length; ++i) {
-            runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
+          // Connect our interpolated values to our template parts
+          const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
+          for (const [part, path] of entry.template.parts) {
+            const eff = renderPart2(part, findPath(content, path), ctx)
+            if (eff !== null) {
+              effects.push(
+                ...(Array.isArray(eff) ? eff : [eff]) as Array<
+                  Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
+                >
+              )
+            }
           }
-        }
 
-        // If there's anything to wait on and it's not already done, wait for an initial value
-        // for all asynchronous sources.
-        if (ctx.expected > 0 && (yield* _(refCounter.expect(ctx.expected)))) {
-          yield* _(refCounter.wait)
-        }
+          // Fork any effects necessary
+          if (effects.length > 0) {
+            for (let i = 0; i < effects.length; ++i) {
+              runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
+            }
+          }
 
-        // Create a persistent wire from our content
-        const wire = persistent(document, content)
+          // If there's anything to wait on and it's not already done, wait for an initial value
+          // for all asynchronous sources.
+          if (ctx.expected > 0 && (yield* _(refCounter.expect(ctx.expected)))) {
+            yield* _(refCounter.wait)
+          }
 
-        // Setup our event listeners for our wire.
-        // We use the parentScope to allow event listeners to exist
-        // beyond the lifetime of the current Fiber, but no further than its parent template.
-        yield* _(ctx.eventSource.setup(wire, parentScope))
+          // Create a persistent wire from our content
+          const wire = persistent(document, content)
 
-        // Emit our DomRenderEvent
-        yield* _(
-          sink.onSuccess(DomRenderEvent(wire)),
-          // Ensure our templates last forever in the DOM environment
-          // so event listeners are kept attached to the current Scope.
-          Effect.zipRight(Effect.never),
-          // Close our scope whenever the current Fiber is interrupted
-          Effect.onExit((exit) => Scope.close(scope, exit))
-        )
-      })
+          // Setup our event listeners for our wire.
+          // We use the parentScope to allow event listeners to exist
+          // beyond the lifetime of the current Fiber, but no further than its parent template.
+          yield* _(ctx.eventSource.setup(wire, parentScope))
+
+          // Emit our DomRenderEvent
+          yield* _(
+            sink.onSuccess(DomRenderEvent(wire)),
+            // Ensure our templates last forever in the DOM environment
+            // so event listeners are kept attached to the current Scope.
+            Effect.zipRight(Effect.never),
+            // Close our scope whenever the current Fiber is interrupted
+            Effect.onExit((exit) => Scope.close(scope, exit))
+          )
+        }),
+        sink.onFailure
+      )
     })
   }
 

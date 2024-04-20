@@ -6,8 +6,8 @@ import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
 import { isComment, isHtmlElement, isWire } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
-import * as Effect from "effect/Effect"
 import { range } from "effect/Array"
+import * as Effect from "effect/Effect"
 
 describe("Render", () => {
   test("renders a simple template", () => {

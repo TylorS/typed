@@ -57,7 +57,10 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
               values.map((value, i) =>
                 Fx.fromFxEffect(Effect.map(RefSubject.of(value), (ref) => {
                   const key = getKey(value)
-                  return Fx.append(Fx.map(f(RefSubject.take(ref, 1), key), r => HtmlRenderEvent((r as HtmlRenderEvent).html, false)), HtmlRenderEvent(MANY_HOLE(key), i === values.length - 1))
+                  return Fx.append(
+                    Fx.map(f(RefSubject.take(ref, 1), key), (r) => HtmlRenderEvent((r as HtmlRenderEvent).html, false)),
+                    HtmlRenderEvent(MANY_HOLE(key), i === values.length - 1)
+                  )
                 }))
               )
             ))

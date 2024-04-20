@@ -7,16 +7,16 @@ import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
 import { TypeId } from "@typed/fx/TypeId"
 import { Record } from "effect"
+import { join } from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import { join } from "effect/Array"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
 import type { ServerEntry } from "./Entry.js"
 import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
 import { templateToHtmlChunks } from "./HtmlChunk.js"
-import { parse } from "./internal/parser.js"
+import { parse } from "./internal/parser2.js"
 import { partNodeToPart } from "./internal/server.js"
 import { TEXT_START, TYPED_HOLE } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
@@ -91,14 +91,17 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
     if (values.length === 0) {
       return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value, true))
     } else {
-      return Fx.filter(Fx.mergeOrdered(
+      return Fx.filter(
+        Fx.mergeOrdered(
           entry.chunks.map((chunk, i) =>
             renderChunk<
               Placeholder.Error<Values[number]>,
               Placeholder.Context<readonly [] extends Values ? never : Values[number]>
             >(chunk, values, isStatic, i === entry.chunks.length - 1)
           )
-        ), x => (x.valueOf()).length > 0)
+        ),
+        (x) => (x.valueOf()).length > 0
+      )
     }
   }
 }
@@ -118,7 +121,11 @@ function renderChunk<E, R>(
   }
 }
 
-function renderNode<E, R>(renderable: Renderable<any, any>, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
+function renderNode<E, R>(
+  renderable: Renderable<any, any>,
+  isStatic: boolean,
+  done: boolean
+): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   switch (typeof renderable) {
     case "string":
     case "number":
@@ -133,11 +140,17 @@ function renderNode<E, R>(renderable: Renderable<any, any>, isStatic: boolean, d
   }
 }
 
-function renderObject<E, R>(renderable: object | null | undefined, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
+function renderObject<E, R>(
+  renderable: object | null | undefined,
+  isStatic: boolean,
+  done: boolean
+): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   if (renderable === null || renderable === undefined) {
     return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START, done))
   } else if (Array.isArray(renderable)) {
-    return Fx.mergeOrdered(renderable.map((r, i) => renderNode(r, isStatic, done && i === renderable.length - 1))) as any
+    return Fx.mergeOrdered(
+      renderable.map((r, i) => renderNode(r, isStatic, done && i === renderable.length - 1))
+    ) as any
   } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
     return takeOneIfNotRenderEvent(renderable, isStatic, done)
   } else if (Effect.isEffect(renderable)) {
@@ -160,7 +173,7 @@ function renderPart<E, R>(
   chunk: PartChunk,
   values: ReadonlyArray<Renderable<any, any>>,
   isStatic: boolean,
-  done: boolean,
+  done: boolean
 ): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
   const { node, render } = chunk
   const renderable: Renderable<any, any> = values[node.index]
@@ -205,7 +218,7 @@ function renderPart<E, R>(
 function renderSparsePart<E, R>(
   chunk: SparsePartChunk,
   values: ReadonlyArray<Renderable<any, any>>,
-  done: boolean,
+  done: boolean
 ): Fx.Fx<RenderEvent, E, R> {
   const { node, render } = chunk
 
@@ -235,7 +248,11 @@ function renderSparsePart<E, R>(
   )
 }
 
-function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>, isStatic: boolean, done: boolean): Fx.Fx<HtmlRenderEvent, E, R> {
+function takeOneIfNotRenderEvent<A, E, R>(
+  fx: Fx.Fx<A, E, R>,
+  isStatic: boolean,
+  done: boolean
+): Fx.Fx<HtmlRenderEvent, E, R> {
   return Fx.make<HtmlRenderEvent, E, R>((sink) =>
     Sink.withEarlyExit(sink, (sink) =>
       fx.run(
@@ -250,11 +267,14 @@ function takeOneIfNotRenderEvent<A, E, R>(fx: Fx.Fx<A, E, R>, isStatic: boolean,
               }
             }
 
-            if (event === null || event === undefined) { 
+            if (event === null || event === undefined) {
               return sink.earlyExit
             }
 
-            return Effect.zipRight(sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + String(event), done)), sink.earlyExit)
+            return Effect.zipRight(
+              sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + String(event), done)),
+              sink.earlyExit
+            )
           }
         )
       ))

@@ -20,6 +20,7 @@ import { HydrateContext } from "./HydrateContext.js"
 import type { RenderPartContext } from "./render.js"
 import { getBrowserEntry, renderPart2, renderTemplate } from "./render.js"
 import {
+  findHydratePath,
   findPath,
   getPreviousNodes,
   isComment,
@@ -47,91 +48,94 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
     Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
   > => {
     return Fx.make((sink) =>
-      Effect.gen(function*(_) {
-        const runtime = yield* _(Effect.runtime<Placeholder.Context<Values[number]> | RenderQueue | Scope.Scope>())
-        const runFork = Runtime.runFork(runtime)
-        const hydrateCtx = unsafeGet(runtime.context, HydrateContext)
-        const parentScope = unsafeGet(runtime.context, Scope.Scope)
-        const queue = unsafeGet(runtime.context, RenderQueue)
-        const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+      Effect.catchAllCause(
+        Effect.gen(function*(_) {
+          const runtime = yield* _(Effect.runtime<Placeholder.Context<Values[number]> | RenderQueue | Scope.Scope>())
+          const runFork = Runtime.runFork(runtime)
+          const hydrateCtx = unsafeGet(runtime.context, HydrateContext)
+          const parentScope = unsafeGet(runtime.context, Scope.Scope)
+          const queue = unsafeGet(runtime.context, RenderQueue)
+          const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
 
-        // If we're not longer hydrating, just render normally
-        if (hydrateCtx.hydrate === false) {
-          return render_(templateStrings, values)
-        }
-
-        const either = getHydrateEntry({
-          ...hydrateCtx,
-          document,
-          renderContext,
-          strings: templateStrings
-        })
-
-        if (Either.isLeft(either)) {
-          hydrateCtx.hydrate = false
-          return render_(templateStrings, values)
-        }
-
-        const { template, where, wire } = either.right
-
-        if (values.length === 0) return yield* _(sink.onSuccess(DomRenderEvent(wire)), Effect.zipRight(Effect.never))
-
-        const makeHydrateContext = (index: number): HydrateContext => ({
-          where,
-          rootIndex: index,
-          parentTemplate: template,
-          hydrate: true
-        })
-
-        const refCounter = yield* _(indexRefCounter2())
-        const ctx: RenderPartContext = {
-          context: runtime.context,
-          document,
-          eventSource: makeEventSource(),
-          expected: 0,
-          queue,
-          refCounter,
-          renderContext,
-          onCause: sink.onFailure,
-          values,
-          makeHydrateContext,
-          spreadIndex: values.length
-        }
-
-        // Connect our interpolated values to our template parts
-        const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
-        for (const [part, path] of template.parts) {
-          const eff = renderPart2(part, where, path, ctx)
-          if (eff !== null) {
-            effects.push(
-              ...(Array.isArray(eff) ? eff : [eff]) as Array<
-                Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
-              >
-            )
+          // If we're not longer hydrating, just render normally
+          if (hydrateCtx.hydrate === false) {
+            return render_(templateStrings, values)
           }
-        }
 
-        // Fork any effects necessary
-        if (effects.length > 0) {
-          for (let i = 0; i < effects.length; i++) {
-            runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
+          const either = getHydrateEntry({
+            ...hydrateCtx,
+            document,
+            renderContext,
+            strings: templateStrings
+          })
+
+          if (Either.isLeft(either)) {
+            hydrateCtx.hydrate = false
+            return render_(templateStrings, values)
           }
-        }
 
-        // Set the element when it is ready
-        yield* _(ctx.eventSource.setup(wire, scope))
+          const { template, where, wire } = either.right
 
-        // Emit our DomRenderEvent
-        yield* _(sink.onSuccess(DomRenderEvent(wire)))
+          if (values.length === 0) return yield* _(sink.onSuccess(DomRenderEvent(wire)), Effect.zipRight(Effect.never))
 
-        yield* _(
-          // Ensure our templates last forever in the DOM environment
-          // so event listeners are kept attached to the current Scope.
-          Effect.never,
-          // Close our scope whenever the current Fiber is interrupted
-          Effect.onExit((exit) => Scope.close(scope, exit))
-        )
-      })
+          const makeHydrateContext = (index: number): HydrateContext => ({
+            where,
+            rootIndex: index,
+            parentTemplate: template,
+            hydrate: true
+          })
+
+          const refCounter = yield* _(indexRefCounter2())
+          const ctx: RenderPartContext = {
+            context: runtime.context,
+            document,
+            eventSource: makeEventSource(),
+            expected: 0,
+            queue,
+            refCounter,
+            renderContext,
+            onCause: sink.onFailure,
+            values,
+            makeHydrateContext,
+            spreadIndex: values.length
+          }
+
+          // Connect our interpolated values to our template parts
+          const effects: Array<Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>> = []
+          for (const [part, path] of template.parts) {
+            const eff = renderPart2(part, findHydratePath(where, path), ctx)
+            if (eff !== null) {
+              effects.push(
+                ...(Array.isArray(eff) ? eff : [eff]) as Array<
+                  Effect.Effect<void, never, Scope.Scope | Placeholder.Context<Values[number]>>
+                >
+              )
+            }
+          }
+
+          // Fork any effects necessary
+          if (effects.length > 0) {
+            for (let i = 0; i < effects.length; i++) {
+              runFork(Effect.catchAllCause(effects[i], sink.onFailure), { scope })
+            }
+          }
+
+          // Set the element when it is ready
+          yield* _(ctx.eventSource.setup(wire, scope))
+
+          // Emit our DomRenderEvent
+          yield* _(sink.onSuccess(DomRenderEvent(wire)))
+
+          yield* _(
+            // Ensure our templates last forever in the DOM environment
+            // so event listeners are kept attached to the current Scope.
+            Effect.never,
+            // Close our scope whenever the current Fiber is interrupted
+            Effect.onExit((exit) => Scope.close(scope, exit))
+          )
+        }),
+        sink.onFailure
+      )
     )
   }
 }
@@ -216,7 +220,6 @@ export function findTemplateResultPartChildNodes(
     childNodes
   })
 }
-
 
 export function findManyChildNodes(
   childNodes: Array<Node>,

@@ -211,3 +211,16 @@ export function isDocumentFragment(node: Rendered): node is DocumentFragment {
 export function isArray(node: Rendered): node is ReadonlyArray<Rendered> {
   return Array.isArray(node)
 }
+
+/**
+ * Convert to html
+ */
+export function toHtml(node: Rendered): string {
+  if (isArray(node)) return node.map(toHtml).join("")
+  if (isWire(node)) return toHtml(node.valueOf())
+  if (isElement(node)) return node.outerHTML
+  if (isText(node)) return node.data
+  if (isComment(node)) return `<!--${node.data}-->`
+  if (isDocumentFragment(node)) return Array.from(node.childNodes).map(toHtml).join("")
+  return node.nodeValue || ""
+}

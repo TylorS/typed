@@ -151,7 +151,7 @@ function selfClosingElementToHtmlChunks(
   hash?: string
 ): Array<HtmlChunk> {
   if (attributes.length === 0) {
-    return [new TextChunk(openTag(tagName, hash) + "/>")]
+    return [new TextChunk(openTag(tagName, hash) + " />")]
   }
 
   const chunks: Array<HtmlChunk> = [
@@ -238,7 +238,7 @@ const attrMap: AttrMap = {
     new SparsePartChunk(attr, (values) => {
       return values == null
         ? ``
-        : ` class="${Array.isArray(values) ? values.filter(isString).join(" ") : values}"`
+        : ` class="${Array.isArray(values) ? values.filter(isString).join("") : values}"`
     }),
   text: (attr) => new TextChunk(attr.value)
 }

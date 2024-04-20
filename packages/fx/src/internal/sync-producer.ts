@@ -1,4 +1,4 @@
-import { Effect, Option, Array } from "effect"
+import { Array, Effect, Option } from "effect"
 import type { Sink } from "../Sink.js"
 
 const DISCARD = { discard: true } as const

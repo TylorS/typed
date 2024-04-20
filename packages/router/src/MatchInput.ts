@@ -4,7 +4,7 @@
 
 import type * as Schema from "@effect/schema/Schema"
 import type { Guard } from "@typed/guard"
-import * as Path from "@typed/path"
+import type * as _Path from "@typed/path"
 import * as Route from "@typed/route"
 import type { Effect, Option } from "effect"
 import { dual } from "effect/Function"
@@ -47,11 +47,10 @@ export namespace MatchInput {
    */
   export type ParamsOf<T> = Route.Route.Params<Route<T>>
 
-
   /**
    * @since 1.0.0
    */
-  export type HasParams<T> = Route<T> extends Route.Route<infer P, infer _> ? Path.HasParams<P> : false
+  export type HasParams<T> = Route<T> extends Route.Route<infer P, infer _> ? _Path.HasParams<P> : false
 
   /**
    * @since 1.0.0

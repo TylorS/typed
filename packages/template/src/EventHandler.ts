@@ -100,5 +100,8 @@ export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
     handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect.Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<KeyboardEvent, E, R> =>
-    make((ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : Effect.void, options)
+    make(
+      (ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : Effect.void,
+      options
+    )
 }
