@@ -13,6 +13,8 @@ export function document<Content extends Fx.Fx<RenderEvent | null, any, any>>(
         <title>Conduit</title>
         <meta name="description" content="RealWorld Example App" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://code/iconicframework.com" >
+        <link rel="preconnect" href="https://fonts.googleapis.com" >
         <link
           href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
           rel="stylesheet"
