@@ -25,7 +25,7 @@ import type { Route } from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
 import type { Scope } from "effect"
-import { Data, Effect, identity, Layer, Option, Array } from "effect"
+import { Array, Data, Effect, identity, Layer, Option } from "effect"
 
 /**
  * @since 1.0.0
@@ -187,8 +187,8 @@ export function staticFiles(
   return <E, R>(
     self: Http.app.Default<E, R>
   ): Http.app.Default<
-  E | BadArgument | PlatformError,
-  ServerRequest | Http.platform.Platform | FileSystem | Path | R
+    E | BadArgument | PlatformError,
+    ServerRequest | Http.platform.Platform | FileSystem | Path | R
   > =>
     Effect.gen(function*(_) {
       const request = yield* _(Http.request.ServerRequest)
@@ -204,10 +204,12 @@ export function staticFiles(
       if (yield* _(isFile(fs, gzipFilePath))) {
         return yield* _(
           Http.response.file(gzipFilePath, {
-            headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl))
+            headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
+            contentType: getContentType(filePath)
           })
         )
       } else if (yield* _(isFile(fs, filePath))) {
+        // TODO: We should support gzip'ing files on the fly
         return yield* _(Http.response.file(filePath, {
           headers: Http.headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
         }))
@@ -226,8 +228,8 @@ function isFile(fs: FileSystem, path: string) {
 
 function gzipHeaders(filePath: string, cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }) {
   return {
-    "Content-Encoding": "gzip",
-    "Content-Type": getContentType(filePath.slice(0, -3)),
+    "content-encoding": "gzip",
+    "content-type": getContentType(filePath),
     ...cacheControlHeaders(filePath, cacheControl)
   }
 }
@@ -235,27 +237,27 @@ function gzipHeaders(filePath: string, cacheControl?: (filePath: string) => { ma
 function cacheControlHeaders(
   filePath: string,
   cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }
-): { "Cache-Control"?: string } {
+): { "cache-control"?: string } {
   if (!cacheControl) {
     return {}
   }
   const { immutable, maxAge } = cacheControl(filePath)
 
   return {
-    "Cache-Control": `${immutable ? "public, " : ""}max-age=${maxAge}`,
+    "cache-control": `${immutable ? "public, " : ""}max-age=${maxAge}`
   }
 }
 
 const mimeTypesToExtensions = {
   "application/atom+xml": ["atom"],
-  "application/java-archive": ["jar","war","ear"],
+  "application/java-archive": ["jar", "war", "ear"],
   "application/javascript": ["js"],
   "application/json": ["json"],
   "application/mac-binhex40": ["hqx"],
   "application/msword": ["doc"],
-  "application/octet-stream": ["bin","exe","dll","deb","dmg","iso","img","msi","msp","msm"],
+  "application/octet-stream": ["bin", "exe", "dll", "deb", "dmg", "iso", "img", "msi", "msp", "msm"],
   "application/pdf": ["pdf"],
-  "application/postscript": ["ps","eps","ai"],
+  "application/postscript": ["ps", "eps", "ai"],
   "application/rss+xml": ["rss"],
   "application/rtf": ["rtf"],
   "application/vnd.apple.mpegurl": ["m3u8"],
@@ -278,20 +280,20 @@ const mimeTypesToExtensions = {
   "application/x-java-archive-diff": ["jardiff"],
   "application/x-java-jnlp-file": ["jnlp"],
   "application/x-makeself": ["run"],
-  "application/x-perl": ["pl","pm"],
-  "application/x-pilot": ["prc","pdb"],
+  "application/x-perl": ["pl", "pm"],
+  "application/x-pilot": ["prc", "pdb"],
   "application/x-rar-compressed": ["rar"],
   "application/x-redhat-package-manager": ["rpm"],
   "application/x-sea": ["sea"],
   "application/x-shockwave-flash": ["swf"],
   "application/x-stuffit": ["sit"],
-  "application/x-tcl": ["tcl","tk"],
-  "application/x-x509-ca-cert": ["der","pem","crt"],
+  "application/x-tcl": ["tcl", "tk"],
+  "application/x-x509-ca-cert": ["der", "pem", "crt"],
   "application/x-xpinstall": ["xpi"],
   "application/xhtml+xml": ["xhtml"],
   "application/xspf+xml": ["xspf"],
   "application/zip": ["zip"],
-  "audio/midi": ["mid","midi","kar"],
+  "audio/midi": ["mid", "midi", "kar"],
   "audio/mpeg": ["mp3"],
   "audio/ogg": ["ogg"],
   "audio/x-m4a": ["m4a"],
@@ -300,35 +302,35 @@ const mimeTypesToExtensions = {
   "font/woff2": ["woff2"],
   "image/avif": ["avif"],
   "image/gif": ["gif"],
-  "image/jpeg": ["jpeg","jpg"],
+  "image/jpeg": ["jpeg", "jpg"],
   "image/png": ["png"],
-  "image/svg+xml": ["svg","svgz"],
-  "image/tiff": ["tif","tiff"],
+  "image/svg+xml": ["svg", "svgz"],
+  "image/tiff": ["tif", "tiff"],
   "image/vnd.wap.wbmp": ["wbmp"],
   "image/webp": ["webp"],
   "image/x-icon": ["ico"],
   "image/x-jng": ["jng"],
   "image/x-ms-bmp": ["bmp"],
   "text/css": ["css"],
-  "text/html": ["html","htm","shtml"],
+  "text/html": ["html", "htm", "shtml"],
   "text/mathml": ["mml"],
   "text/plain": ["txt"],
   "text/vnd.sun.j2me.app-descriptor": ["jad"],
   "text/vnd.wap.wml": ["wml"],
   "text/x-component": ["htc"],
   "text/xml": ["xml"],
-  "video/3gpp": ["3gpp","3gp"],
+  "video/3gpp": ["3gpp", "3gp"],
   "video/mp2t": ["ts"],
   "video/mp4": ["mp4"],
-  "video/mpeg": ["mpeg","mpg"],
+  "video/mpeg": ["mpeg", "mpg"],
   "video/quicktime": ["mov"],
   "video/webm": ["webm"],
   "video/x-flv": ["flv"],
   "video/x-m4v": ["m4v"],
   "video/x-mng": ["mng"],
-  "video/x-ms-asf": ["asx","asf"],
+  "video/x-ms-asf": ["asx", "asf"],
   "video/x-ms-wmv": ["wmv"],
-  "video/x-msvideo": ["avi"],
+  "video/x-msvideo": ["avi"]
 }
 
 const extensionsToMimeTypes = Object.entries(mimeTypesToExtensions).reduce(
@@ -344,7 +346,7 @@ const extensionsToMimeTypes = Object.entries(mimeTypesToExtensions).reduce(
 /**
  * @since 1.0.0
  */
-export const getContentType = (filePath: string) => { 
+export const getContentType = (filePath: string) => {
   const extension = filePath.split(".").pop() ?? ""
-  return extensionsToMimeTypes[extension] ?? "application/octet-stream"
+  return extensionsToMimeTypes[extension]
 }
