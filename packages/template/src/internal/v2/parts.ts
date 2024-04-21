@@ -96,7 +96,7 @@ export class ClassNamePartImpl extends base("className") implements Part.ClassNa
 
 const SPACE_REGEXP = /\s+/g
 
-function splitClassNames(value: string) {
+export function splitClassNames(value: string) {
   return value.split(SPACE_REGEXP).flatMap((a) => {
     const trimmed = a.trim()
     return trimmed.length > 0 ? [trimmed] : []

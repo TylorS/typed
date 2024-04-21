@@ -1,8 +1,11 @@
+import * as Fx from "@typed/fx"
+import type { Scope } from "effect"
+import { Effect } from "effect"
 import { identity } from "effect/Function"
 import type { ElementSource } from "../../ElementSource.js"
-import type { AttrPartNode, ClassNamePartNode, CommentPartNode, TextNode } from "../../Template.js"
+import type { AttrPartNode, ClassNamePartNode, CommentPartNode, PartNode, TextNode } from "../../Template.js"
 import { convertCharacterEntities } from "../character-entities.js"
-import type { AttributePart, ClassNamePart, CommentPart } from "./Part.js"
+import type { Part } from "./Part.js"
 import {
   AttributePartImpl,
   BooleanPartImpl,
@@ -11,19 +14,24 @@ import {
   DataPartImpl,
   PropertyPartImpl,
   RefPartImpl,
+  splitClassNames,
   TextPartImpl
 } from "./parts.js"
 
 export function makeAttributePart(
-  name: string,
   index: number,
   element: HTMLElement | SVGElement,
   attr: Attr
 ) {
+  const setValue = makeAttributeValueSetter(element, attr)
+  return new AttributePartImpl(attr.name, index, ({ value }) => setValue(value), attr.value)
+}
+
+export function makeAttributeValueSetter(element: HTMLElement | SVGElement, attr: Attr) {
   let isSet = false
   const setValue = (value: string | null | undefined) => {
     if (isNullOrUndefined(value)) {
-      element.removeAttribute(name)
+      element.removeAttribute(attr.name)
       isSet = false
     } else {
       attr.value = value
@@ -34,7 +42,7 @@ export function makeAttributePart(
     }
   }
 
-  return new AttributePartImpl(name, index, ({ value }) => setValue(value), element.getAttribute(name))
+  return setValue
 }
 
 export function makeBooleanAttributePart(
@@ -169,144 +177,99 @@ function diffDataSet(
   }
 }
 
-// Sparse parts
+export function makeSparsePartHandler<A extends PartNode, B extends Part, C, D, X, Z, ZE, ZR>(
+  parts: ReadonlyArray<A | TextNode>,
+  makePart: (index: number, setValue: (value: C) => void) => B,
+  handleText: (text: string) => D,
+  join: (values: ReadonlyArray<C | D>) => X,
+  setValue: (value: X) => Effect.Effect<Z, ZE, ZR>
+): Fx.Fx<Z, ZE, ZR | Scope.Scope> {
+  return Fx.mapEffect(
+    Fx.withEmitter<X>((sink) =>
+      Effect.zipRight(
+        Effect.sync(() => {
+          const values = new Map<number, C | D>()
+          const expected = parts.length
 
-export function handleSparseAttribute(
-  name: string,
+          const setValueIfReady = () => {
+            if (values.size === expected) {
+              return sink.succeed(join(Array.from(values.values())))
+            }
+          }
+
+          for (let i = 0; i < parts.length; ++i) {
+            const index = i
+            const part = parts[i]
+            if (part._tag === "text") {
+              values.set(i, handleText(part.value))
+            } else {
+              makePart(part.index, (value) => {
+                values.set(index, value)
+                setValueIfReady()
+              })
+            }
+          }
+        }),
+        Effect.never
+      )
+    ),
+    setValue
+  )
+}
+
+export function handleSparseAttribute<R>(
   element: HTMLElement | SVGElement,
   attr: Attr,
-  parts: ReadonlyArray<AttrPartNode | TextNode>
-) {
-  const expected = parts.length
-
-  let isSet = false
-  const setValue = (value: string) => {
-    if (value === "") {
-      element.removeAttribute(name)
-      isSet = false
-    } else {
-      attr.value = value
-      if (isSet === false) {
-        element.setAttributeNode(attr)
-        isSet = true
-      }
-    }
-  }
-
-  const values = new Map<number, string | null | undefined>()
-
-  const setValueIfReady = () => {
-    if (values.size === expected) {
-      let text = ""
-      for (let i = 0; i < parts.length; ++i) {
-        const value = values.get(i)
-        text += value || ""
-      }
-
-      setValue(text)
-    }
-  }
-
-  const out: Array<AttributePart> = []
-  for (let i = 0; i < parts.length; ++i) {
-    const index = i
-    const part = parts[i]
-    if (part._tag === "text") {
-      values.set(i, part.value)
-    } else {
-      out.push(
-        new AttributePartImpl(name, part.index, ({ value }) => {
-          values.set(index, value)
-          setValueIfReady()
-        }, null)
-      )
-    }
-  }
-
-  setValueIfReady()
-
-  return out
+  parts: ReadonlyArray<AttrPartNode | TextNode>,
+  schedule: (f: () => void) => Effect.Effect<void, never, R>
+): Effect.Effect<void, never, Scope.Scope | R> {
+  const set = makeAttributeValueSetter(element, attr)
+  return Fx.drain(makeSparsePartHandler(
+    parts,
+    (index, setValue: (value: string | null | undefined) => void) =>
+      new AttributePartImpl(attr.name, index, ({ value }) => setValue(value), attr.value),
+    (text) => text,
+    (values): string => values.flatMap((v) => isNullOrUndefined(v) ? [] : [v]).join(""),
+    (value) => schedule(() => set(value))
+  ))
 }
 
-export function handleSparseClassName(
+export function handleSparseClassName<R>(
   element: HTMLElement | SVGElement,
-  parts: ReadonlyArray<ClassNamePartNode | TextNode>
-) {
-  const expected = parts.length
-  const values = new Map<number, ReadonlyArray<string>>()
+  parts: ReadonlyArray<ClassNamePartNode | TextNode>,
+  schedule: (f: () => void) => Effect.Effect<void, never, R>
+): Effect.Effect<void, never, Scope.Scope | R> {
   let previous = Array.from(element.classList)
 
-  const setValueIfReady = () => {
-    if (values.size === expected) {
-      const next = Array.from(values.values()).flat(1)
-      const { added, removed } = diffStrings(previous, next)
-      element.classList.add(...added)
-      element.classList.remove(...removed)
-      previous = next
-    }
-  }
-
-  const out: Array<ClassNamePart> = []
-  for (let i = 0; i < parts.length; ++i) {
-    const index = i
-    const part = parts[i]
-    if (part._tag === "text") {
-      values.set(i, part.value ? part.value.split(" ") : [])
-    } else {
-      out.push(
-        new ClassNamePartImpl(
-          part.index,
-          ({ value }) => {
-            values.set(index, value)
-            setValueIfReady()
-          },
-          []
-        )
-      )
-    }
-  }
-
-  setValueIfReady()
-
-  return out
+  return Fx.drain(makeSparsePartHandler(
+    parts,
+    (index, setValue: (value: ReadonlyArray<string>) => void) =>
+      new ClassNamePartImpl(index, ({ value }) => setValue(value), previous),
+    splitClassNames,
+    (values) => values.flat(1),
+    (values) =>
+      schedule(() => {
+        const { added, removed } = diffStrings(previous, values)
+        element.classList.add(...added)
+        element.classList.remove(...removed)
+        previous = values
+      })
+  ))
 }
 
-export function handleSparseComment(
+export function handleSparseComment<R>(
   comment: Comment,
-  parts: ReadonlyArray<TextNode | CommentPartNode>
-) {
-  const expected = parts.length
-  const values = new Map<number, string | null | undefined>()
-  const setValueIfReady = () => {
-    if (values.size === expected) {
-      let text = ""
-      for (let i = 0; i < parts.length; ++i) {
-        const value = values.get(i)
-        text += value || ""
-      }
-      comment.textContent = text
-    }
-  }
-
-  const out: Array<CommentPart> = []
-  for (let i = 0; i < parts.length; ++i) {
-    const index = i
-    const part = parts[i]
-    if (part._tag === "text") {
-      values.set(i, part.value)
-    } else {
-      out.push(
-        new CommentPartImpl(part.index, ({ value }) => {
-          values.set(index, value)
-          setValueIfReady()
-        }, null)
-      )
-    }
-  }
-
-  setValueIfReady()
-
-  return out
+  parts: ReadonlyArray<CommentPartNode | TextNode>,
+  schedule: (f: () => void) => Effect.Effect<void, never, R>
+): Effect.Effect<void, never, Scope.Scope | R> {
+  return Fx.drain(makeSparsePartHandler(
+    parts,
+    (index, setValue: (value: string | null | undefined) => void) =>
+      new CommentPartImpl(index, ({ value }) => setValue(value), comment.textContent),
+    identity,
+    (values): string => values.flatMap((v) => isNullOrUndefined(v) ? [] : [v]).join(""),
+    (value) => schedule(() => (comment.textContent = value))
+  ))
 }
 
 // TODO: Node Part
@@ -314,7 +277,6 @@ export function handleSparseComment(
 // TODO: Handle spread attributes/properties
 // TODO: Helpers for attaching different data structures to parts
 // TODO: Helpers for directives
-// TODO: Sparse parts need some better support for scheduling updates together
 // TODO: RenderQueue should be updated to ensure the highest-priority is used for a given part
 // TODO: Hydration need to support nested fragments of elements
 // TODO: Need to be able to configure replacement parts
