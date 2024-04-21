@@ -140,4 +140,12 @@ export class PropertyPartImpl extends base("property") implements Part.PropertyP
 
 export class RefPartImpl extends base("ref") implements Part.RefPart {}
 
-export class TextPartImpl extends base("text") implements Part.TextPart {}
+export class TextPartImpl extends base("text") implements Part.TextPart {
+  constructor(index: number, commit: (params: CommitParams<"text">) => void, value: PartValue<"text">) {
+    super(index, commit, value, strictEq)
+  }
+
+  getValue(value: unknown) {
+    return isNullOrUndefined(value) ? value : renderToString(value)
+  }
+}
