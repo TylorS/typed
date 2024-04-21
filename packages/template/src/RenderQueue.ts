@@ -133,25 +133,29 @@ export const Priority = {
 } as const
 
 class PriorityQueue {
-  priorities: Map<number, Map<unknown, () => void>> = new Map()
+  tasks: Map<unknown, () => void> = new Map()
+  priority: Map<unknown, number> = new Map<unknown, number>()
+  priorities: Map<number, Set<unknown>> = new Map()
 
   add(part: unknown, task: () => void, priority: number) {
-    let set = this.priorities.get(priority)
+    this.tasks.set(part, task)
+    this.setPriority(part, priority)
+  }
 
-    if (set === undefined) {
-      set = new Map()
-      this.priorities.set(priority, set)
+  get(part: unknown) {
+    return this.tasks.get(part)
+  }
+
+  delete(part: unknown) {
+    this.tasks.delete(part)
+    const priority = this.priority.get(part)
+    if (priority === undefined) {
+      return false
+    } else {
+      this.priorities.get(priority)?.delete(part)
+      this.priority.delete(part)
+      return true
     }
-
-    set.set(part, task)
-  }
-
-  get(part: unknown, priority: number) {
-    return this.priorities.get(priority)?.get(part)
-  }
-
-  delete(part: unknown, priority: number) {
-    return this.priorities.get(priority)?.delete(part)
   }
 
   get isEmpty() {
@@ -162,8 +166,43 @@ class PriorityQueue {
     for (const priority of Array.from(this.priorities.keys()).sort((a, b) => a - b)) {
       const parts = this.priorities.get(priority)!
       this.priorities.delete(priority)
-      yield parts.values()
+      yield this.getTasks(parts)
     }
+  }
+
+  private getTasks(parts: Set<unknown>) {
+    return Array.from(parts.values()).flatMap((part) => {
+      const task = this.tasks.get(part)
+      if (task === undefined) return []
+      this.tasks.delete(part)
+      this.priority.delete(part)
+      return [task]
+    })
+  }
+
+  private setPriority(task: unknown, priority: number) {
+    const current = this.priority.get(task)
+    if (current === undefined) {
+      this.priority.set(task, priority)
+      this.addTaskToPriority(task, priority)
+      return priority
+    } else if (priority < current) {
+      this.priorities.get(current)?.delete(task)
+      this.priority.set(task, priority)
+      this.addTaskToPriority(task, priority)
+      return priority
+    } else {
+      return current
+    }
+  }
+
+  private addTaskToPriority(task: unknown, priority: number) {
+    let set = this.priorities.get(priority)
+    if (set === undefined) {
+      set = new Set()
+      this.priorities.set(priority, set)
+    }
+    set.add(task)
   }
 }
 
@@ -182,11 +221,10 @@ abstract class BaseImpl implements RenderQueue {
       return Effect.zipRight(
         Effect.addFinalizer(() =>
           Effect.sync(() => {
-            const currentTask = this.queue.get(part, priority)
-
+            const currentTask = this.queue.get(part)
             // If the current task is still the same we'll delete it from the queue
             if (currentTask === task) {
-              this.queue.delete(part, priority)
+              this.queue.delete(part)
             }
           })
         ),
@@ -208,7 +246,7 @@ abstract class BaseImpl implements RenderQueue {
 
   abstract run: Effect.Effect<void, never, Scope.Scope>
 
-  protected runTasks = (iterator: Iterator<Iterable<() => void>>) => {
+  protected runTasks = (iterator: Iterator<Array<() => void>>) => {
     const result = iterator.next()
 
     if (result.done) return false
