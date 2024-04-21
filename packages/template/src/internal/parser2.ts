@@ -441,6 +441,7 @@ function parseTextAndParts<T>(
 ): Array<Template.TextNode | T> {
   const out: Array<Template.TextNode | T> = []
   const parts = (skipWhitespace ? s.trim() : s).split(PART_REGEX)
+  const last = parts.length - 2
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
@@ -448,7 +449,7 @@ function parseTextAndParts<T>(
     if (part[0] === "{" && part[1] === "{") {
       out.push(f(parseInt(parts[++i], 10)))
       // If we encounter a part, we should not skip whitespace
-      skipWhitespace = i + 1 === parts.length - 1
+      skipWhitespace = i === last
     } else if (((skipWhitespace || i === 0) ? part.trim() : part) === "") {
       continue
     } else {
