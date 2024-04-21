@@ -29,7 +29,6 @@ import {
   TextPartNode
 } from "@typed/template/Template"
 import * as Chunk from "effect/Chunk"
-import { inspect } from "util"
 
 describe("Parser2", () => {
   it("parses a simple template", () => {
@@ -470,9 +469,6 @@ describe("Parser2", () => {
     )
 
     const actual = Parser.parse(template)
-
-    console.log(inspect(actual.parts, { depth: null }))
-    console.log(inspect(expected.parts, { depth: null }))
 
     expect(actual).toEqual(expected)
   })

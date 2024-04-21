@@ -30,8 +30,6 @@ import {
   TextPartNode
 } from "@typed/template/Template"
 import * as Chunk from "effect/Chunk"
-import { inspect } from "util"
-import { templateToHtmlChunks } from "../src/HtmlChunk"
 
 describe("Parser", () => {
   it("parses a simple template", () => {
@@ -841,58 +839,6 @@ c192 -183 322 -427 380 -715 22 -107 22 -146 -10 -621 -11 -164 0 -383 25
     )
 
     deepEqual(actual, expected)
-  })
-
-  it("does this", () => {
-    const template = h`
-<div class="home-page">
-  <div class="banner">
-    <div class="container">
-      <h1 class="logo-font">conduit</h1>
-      <p>A place to share your knowledge.</p>
-    </div>
-  </div>
-
-  <div class="container page">
-    <div class="row">
-      <div class="col-md-9">
-        <div class="feed-toggle">
-          <ul class="outline-active nav nav-pills">
-            <li class="nav-item">
-              ${null}
-            </li>
-          </ul>
-        </div>
-
-        ${null}
-
-        <ul class="pagination">
-          <li class="page-item active">
-            <a class="page-link" href="">1</a>
-          </li>
-          <li class="page-item">
-            <a class="page-link" href="">2</a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="col-md-3">
-        <div class="sidebar">
-          <p>Popular Tags</p>
-
-          <div class="tag-list">
-            ${null} 
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>`
-
-    const actual = Parser.parse(template)
-    const chunks = templateToHtmlChunks(actual, false)
-
-    console.log(inspect(chunks, { depth: 100 }))
   })
 })
 
