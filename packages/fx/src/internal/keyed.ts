@@ -69,9 +69,10 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
           state.previousValues = values
 
           let added = false
+          let scheduled = false
+          let done = false
 
           for (const patch of diffIterator(previous, values, options)) {
-            console.log(patch)
             if (patch._tag === "Remove") {
               yield* _(removeValue(state, patch))
             } else if (patch._tag === "Add") {
@@ -85,7 +86,13 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
                   parentScope,
                   options,
                   sink,
-                  scheduleNextEmit
+                  Effect.suspend(() => {
+                    if (done === false) {
+                      scheduled = true
+                      return Effect.void
+                    }
+                    return scheduleNextEmit
+                  })
                 )
               )
             } else {
@@ -93,7 +100,9 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
             }
           }
 
-          if (added === false) {
+          done = true
+
+          if (scheduled || added === false) {
             yield* _(scheduleNextEmit)
           } else {
             // Allow fibers to begin running if we're adding Fibers

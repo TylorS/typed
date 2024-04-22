@@ -14,7 +14,8 @@ import { Either, ExecutionStrategy, Runtime } from "effect"
 import * as Scope from "effect/Scope"
 import { RenderQueue } from "../RenderQueue.js"
 import type { Template } from "../Template.js"
-import { CouldNotFindCommentError, CouldNotFindManyCommentError, CouldNotFindRootElement } from "./errors.js"
+import type { CouldNotFindRootElement } from "./errors.js"
+import { CouldNotFindCommentError, CouldNotFindManyCommentError } from "./errors.js"
 import { makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
 import type { RenderPartContext } from "./render.js"
@@ -202,8 +203,9 @@ export function findTemplateResultPartChildNodes(
   manyIndex?: string
 ): Either.Either<ParentChildNodes, CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError> {
   const [, path] = parentTemplate.parts[partIndex]
-  const parentNode = where.parentNode ?? findHydratePath(where, path) as HTMLElement
-  const childNodesEither = findPartChildNodes(parentNode, childTemplate.hash, partIndex)
+  const parentNode = findHydratePath(where, path) as HTMLElement
+
+  const childNodesEither = findPartChildNodes(parentNode, partIndex)
   if (Either.isLeft(childNodesEither)) return Either.left(childNodesEither.left)
 
   const childNodes = childNodesEither.right
@@ -228,40 +230,20 @@ export function findManyChildNodes(
   if (Either.isLeft(either)) return Either.left(either.left)
 
   const [, index] = either.right
-  return Either.right(findPreviousManyComment(childNodes.slice(0, index)))
+  const toCheck = childNodes.slice(0, index)
+  const nodes = findPreviousManyComment(toCheck)
+
+  return Either.right(nodes)
 }
 
 export function findPartChildNodes(
   { childNodes }: ParentChildNodes,
-  hash: string,
   partIndex: number
 ): Either.Either<Array<Node>, CouldNotFindRootElement | CouldNotFindCommentError> {
   const either = findPartComment(childNodes, partIndex)
   if (Either.isLeft(either)) return Either.left(either.left)
-  const [comment, index] = either.right
-  const nodes: Array<Node> = []
-  const previousHoleValue = `hole${partIndex - 1}`
-
-  if (hash) {
-    for (let i = index; i > -1; --i) {
-      const node = childNodes[i]
-
-      if (partIndex > 0 && isCommentWithValue(node, previousHoleValue)) {
-        break
-      }
-      nodes.unshift(node)
-    }
-  } else {
-    return Either.right([...getPreviousNodes(comment, partIndex), comment])
-  }
-
-  if (nodes.length === 0) {
-    return Either.left(new CouldNotFindRootElement(partIndex))
-  }
-
-  nodes.push(comment)
-
-  return Either.right(nodes)
+  const [comment] = either.right
+  return Either.right([...getPreviousNodes(comment, partIndex), comment])
 }
 
 export function findPartComment(

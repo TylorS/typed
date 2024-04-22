@@ -147,7 +147,7 @@ function setupPart(
       case "event":
         return setupEventPart(part, node as any, ctx, ctx.values[part.index])
       case "node": {
-        const effect = setupNodePart(part, node as any, ctx)
+        const effect = setupNodePart(part, node as any, ctx, true)
         if (effect === null) return null
         return Effect.provideService(effect, HydrateContext, ctx.makeHydrateContext(part.index))
       }

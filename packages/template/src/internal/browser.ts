@@ -14,7 +14,7 @@ export function makeRenderNodePart(
   isHydrating: boolean
 ) {
   const comment = findHoleComment(parent, index)
-  let text: Text
+  let text: Text | null = isHydrating ? getPreviousTextSibling(comment) : null
   let nodes = isHydrating ? findPreviousNodes(comment, index) : []
 
   return new NodePartImpl(index, ({ part, value }, priority) => {
@@ -24,7 +24,7 @@ export function makeRenderNodePart(
         matchValue(
           value,
           (content) => {
-            if (text === undefined) {
+            if (text === null) {
               text = document.createTextNode("")
             }
             text.textContent = convertCharacterEntities(content)

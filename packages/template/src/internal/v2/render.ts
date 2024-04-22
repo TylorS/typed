@@ -194,7 +194,7 @@ function setupPart(
     case "event":
       return setupEventPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "node":
-      return setupNodePart(part, findPath(ctx.content, path) as Element, ctx)
+      return setupNodePart(part, findPath(ctx.content, path) as Element, ctx, false)
     case "properties":
       return setupPropertiesPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "property":
@@ -320,10 +320,11 @@ export function getEventHandler<E, R>(
 export function setupNodePart(
   { index }: Template.NodePart,
   parent: Element,
-  ctx: TemplateContext
+  ctx: TemplateContext,
+  isHydrating: boolean
 ) {
   const comment = findHoleComment(parent, index)
-  const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, false)
+  const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, isHydrating)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
 }

@@ -16,7 +16,7 @@ import {
 } from "./sync-parts.js"
 import type { SyncPart } from "./SyncPart.js"
 
-import { diffable, isComment } from "@typed/wire"
+import { diffable } from "@typed/wire"
 import udomdiff from "udomdiff"
 import type { Directive } from "../../Directive.js"
 import { isDirective } from "../../Directive.js"
@@ -301,7 +301,7 @@ export function makeNodePart(
   document: Document,
   isHydrating: boolean
 ) {
-  let text: Text
+  let text: Text | null = isHydrating ? getPreviousTextSibling(comment.previousSibling) : null
   let nodes = isHydrating ? findPreviousNodes(comment, index) : []
 
   return new NodePartImpl(
@@ -310,7 +310,7 @@ export function makeNodePart(
       matchNodeValue(
         value,
         (content) => {
-          if (text === undefined) {
+          if (text === null) {
             text = document.createTextNode("")
           }
           text.textContent = convertCharacterEntities(content)
@@ -333,7 +333,6 @@ export function getPreviousTextSibling(node: Node | null) {
     // During hydration there should be a comment to separate these values
     if (
       node.previousSibling &&
-      isComment(node.previousSibling) &&
       isCommentWithValue(node.previousSibling, "text")
     ) {
       return node as Text
@@ -349,7 +348,7 @@ function findPreviousNodes(comment: Comment, index: number) {
   const nodes: Array<Node> = []
 
   let node = comment.previousSibling
-  while (node && !isCommentWithValue(node, previousIndex) && !isCommentWithValue(node, "text")) {
+  while (node && !isCommentWithValue(node, previousIndex)) {
     nodes.unshift(node)
     node = node.previousSibling
   }

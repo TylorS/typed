@@ -74,10 +74,12 @@ function filterNestedTemplates(childNodes: ArrayLike<Node>, isRoot: boolean): Ar
     const node = childNodes[i]
 
     if (isComment(node)) {
-      if (node.nodeValue?.startsWith("typed-")) {
+      if (node.data.startsWith("typed-")) {
         inTemplate = true
-      } else if (node.nodeValue?.startsWith("/typed-")) {
+      } else if (node.data.startsWith("/typed-")) {
         inTemplate = false
+      } else if (node.data.startsWith("many")) {
+        continue
       } else {
         nodes.push(node)
       }

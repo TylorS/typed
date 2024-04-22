@@ -2,7 +2,7 @@ import * as Fx from "@typed/fx"
 import { html, many } from "@typed/template"
 import { testHydrate } from "@typed/template/Test"
 import { describe, it } from "@typed/template/Vitest"
-import { isComment } from "@typed/wire"
+import { isComment, toHtml } from "@typed/wire"
 import { deepEqual, deepStrictEqual, ok } from "assert"
 import { Effect } from "effect"
 
@@ -47,7 +47,6 @@ describe("Hydrate", () => {
       const rendered = yield* _(elementRef)
 
       ok(rendered instanceof window.HTMLUListElement)
-
       ok(rendered === ul)
       deepStrictEqual(listItems, Array.from(rendered.children))
     }))
