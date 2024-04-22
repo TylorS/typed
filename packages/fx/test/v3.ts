@@ -170,7 +170,7 @@ describe("V3", () => {
     })
 
     describe("Fx.keyed", () => {
-      it("allow keeping a reference to a running stream", async () => {
+      it.only("allow keeping a reference to a running stream", async () => {
         const test = Effect.gen(function*($) {
           const inputs = Fx.mergeAll([
             Fx.succeed([1, 2, 3]),
@@ -829,7 +829,7 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(parseError.left.error),
+            ArrayFormatter.formatIssueSync(parseError.left.error),
             [{
               _tag: "Type",
               message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
@@ -844,7 +844,7 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(parseError.left.error),
+            ArrayFormatter.formatIssueSync(parseError.left.error),
             [{
               _tag: "Refinement",
               message: "Cannot be empty ID",
@@ -861,7 +861,7 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(idParseError.left.error),
+            ArrayFormatter.formatIssueSync(idParseError.left.error),
             [{
               _tag: "Refinement",
               message: "Cannot be empty ID",
@@ -874,7 +874,7 @@ describe("V3", () => {
           ok(Either.isLeft(timestampParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(timestampParseError.left.error),
+            ArrayFormatter.formatIssueSync(timestampParseError.left.error),
             [{
               _tag: "Type",
               message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
@@ -889,7 +889,7 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(idParseError.left.error),
+            ArrayFormatter.formatIssueSync(idParseError.left.error),
             [{
               _tag: "Refinement",
               message: "ID cannot be longer than 20 characters",
@@ -1038,7 +1038,7 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(parseError.left.error),
+            ArrayFormatter.formatIssueSync(parseError.left.error),
             [{
               _tag: "Type",
               message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
@@ -1053,7 +1053,7 @@ describe("V3", () => {
           ok(Either.isLeft(parseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(parseError.left.error),
+            ArrayFormatter.formatIssueSync(parseError.left.error),
             [{
               _tag: "Refinement",
               message: "Cannot be empty ID",
@@ -1070,7 +1070,7 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(idParseError.left.error),
+            ArrayFormatter.formatIssueSync(idParseError.left.error),
             [{
               _tag: "Refinement",
               message: "Cannot be empty ID",
@@ -1083,7 +1083,7 @@ describe("V3", () => {
           ok(Either.isLeft(timestampParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(timestampParseError.left.error),
+            ArrayFormatter.formatIssueSync(timestampParseError.left.error),
             [{
               _tag: "Type",
               message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
@@ -1098,7 +1098,7 @@ describe("V3", () => {
           ok(Either.isLeft(idParseError))
 
           deepEqual(
-            ArrayFormatter.formatIssue(idParseError.left.error),
+            ArrayFormatter.formatIssueSync(idParseError.left.error),
             [{
               _tag: "Refinement",
               message: "ID cannot be longer than 20 characters",

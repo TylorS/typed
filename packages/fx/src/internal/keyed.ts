@@ -1,6 +1,6 @@
 import type { FiberId } from "effect"
 import { Context, Effect, ExecutionStrategy, Exit, Option, Scope } from "effect"
-import type { Fx, KeyedOptions } from "../Fx.js"
+import { type Fx, type KeyedOptions } from "../Fx.js"
 import * as RefSubject from "../RefSubject.js"
 import * as Sink from "../Sink.js"
 import type { Add, Moved, Remove, Update } from "./diff.js"
@@ -69,10 +69,9 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
           state.previousValues = values
 
           let added = false
-          let done = false
-          let scheduled = false
 
           for (const patch of diffIterator(previous, values, options)) {
+            console.log(patch)
             if (patch._tag === "Remove") {
               yield* _(removeValue(state, patch))
             } else if (patch._tag === "Add") {
@@ -86,13 +85,7 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
                   parentScope,
                   options,
                   sink,
-                  Effect.suspend(() => {
-                    if (done === false) {
-                      scheduled = true
-                      return Effect.void
-                    }
-                    return scheduleNextEmit
-                  })
+                  scheduleNextEmit
                 )
               )
             } else {
@@ -100,10 +93,11 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
             }
           }
 
-          done = true
-
-          if (scheduled || added === false) {
+          if (added === false) {
             yield* _(scheduleNextEmit)
+          } else {
+            // Allow fibers to begin running if we're adding Fibers
+            yield* _(Effect.sleep(1))
           }
         })
       }
@@ -117,7 +111,7 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
         )
       )
     },
-    options.debounce || 0
+    options.debounce || 1
   )
 }
 
