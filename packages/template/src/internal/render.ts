@@ -27,8 +27,8 @@ import type * as Template from "../Template.js"
 import { makeRenderNodePart } from "./browser.js"
 import { type EventSource, makeEventSource } from "./EventSource.js"
 import { HydrateContext } from "./HydrateContext.js"
-import type { IndexRefCounter2 } from "./indexRefCounter.js"
-import { indexRefCounter2 } from "./indexRefCounter.js"
+import type { IndexRefCounter } from "./indexRefCounter.js"
+import { makeRefCounter } from "./indexRefCounter.js"
 import { parse } from "./parser2.js"
 import {
   AttributePartImpl,
@@ -49,7 +49,7 @@ export type RenderPartContext = {
   readonly context: Context.Context<Scope.Scope>
   readonly document: Document
   readonly eventSource: EventSource
-  readonly refCounter: IndexRefCounter2
+  readonly refCounter: IndexRefCounter
   readonly renderContext: RenderContext
   readonly queue: RenderQueue
   readonly values: ReadonlyArray<Renderable<any, any>>
@@ -659,7 +659,7 @@ export const renderTemplate: (document: Document, renderContext: RenderContext) 
           const parentScope = Context.get(runtime.context, Scope.Scope)
           const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
           const queue = Context.get(runtime.context, RenderQueue)
-          const refCounter = yield* _(indexRefCounter2())
+          const refCounter = yield* _(makeRefCounter)
           const content = document.importNode(entry.content, true)
           const ctx: RenderPartContext = {
             context: runtime.context,

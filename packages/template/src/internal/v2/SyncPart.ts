@@ -2,33 +2,24 @@
  * @since 1.0.0
  */
 
-import type { Cause } from "effect/Cause"
-import type { Effect } from "effect/Effect"
-import type { ElementSource } from "../../ElementSource.js"
-import type { EventHandler } from "../../EventHandler.js"
-
-// TOOD: Add better APIs for interacting with parts
+/**
+ * @since 1.0.0
+ */
+export type SyncPart =
+  | AttributeSyncPart
+  | BooleanSyncPart
+  | ClassNameSyncPart
+  | CommentSyncPart
+  | DataSyncPart
+  | NodeSyncPart
+  | PropertySyncPart
+  | TextSyncPart
+  | PropertiesSyncPart
 
 /**
  * @since 1.0.0
  */
-export type Part =
-  | AttributePart
-  | BooleanPart
-  | ClassNamePart
-  | CommentPart
-  | DataPart
-  | EventPart
-  | NodePart
-  | PropertyPart
-  | RefPart
-  | TextPart
-  | PropertiesPart
-
-/**
- * @since 1.0.0
- */
-export interface AttributePart {
+export interface AttributeSyncPart {
   readonly _tag: "attribute"
   readonly name: string
   readonly value: string | null | undefined
@@ -40,7 +31,7 @@ export interface AttributePart {
 /**
  * @since 1.0.0
  */
-export interface BooleanPart {
+export interface BooleanSyncPart {
   readonly _tag: "boolean"
   readonly name: string
   readonly value: boolean | null | undefined
@@ -52,7 +43,7 @@ export interface BooleanPart {
 /**
  * @since 1.0.0
  */
-export interface ClassNamePart {
+export interface ClassNameSyncPart {
   readonly _tag: "className"
   readonly value: ReadonlyArray<string>
   readonly index: number
@@ -63,7 +54,7 @@ export interface ClassNamePart {
 /**
  * @since 1.0.0
  */
-export interface DataPart {
+export interface DataSyncPart {
   readonly _tag: "data"
   readonly value: Readonly<Record<string, string | undefined>> | null | undefined
   readonly index: number
@@ -74,20 +65,7 @@ export interface DataPart {
 /**
  * @since 1.0.0
  */
-export interface EventPart {
-  readonly _tag: "event"
-  readonly name: string
-  readonly source: ElementSource<any>
-  readonly value: null
-  readonly index: number
-  readonly onCause: (cause: Cause<unknown>) => Effect<unknown>
-  readonly addEventListener: (handler: EventHandler<Event>) => void
-}
-
-/**
- * @since 1.0.0
- */
-export interface PropertyPart {
+export interface PropertySyncPart {
   readonly _tag: "property"
   readonly name: string
   readonly value: unknown
@@ -99,16 +77,7 @@ export interface PropertyPart {
 /**
  * @since 1.0.0
  */
-export interface RefPart {
-  readonly _tag: "ref"
-  readonly value: ElementSource
-  readonly index: number
-}
-
-/**
- * @since 1.0.0
- */
-export interface CommentPart {
+export interface CommentSyncPart {
   readonly _tag: "comment"
   readonly value: string | null | undefined
   readonly index: number
@@ -119,7 +88,7 @@ export interface CommentPart {
 /**
  * @since 1.0.0
  */
-export interface TextPart {
+export interface TextSyncPart {
   readonly _tag: "text"
   readonly value: string | null | undefined
   readonly index: number
@@ -130,7 +99,7 @@ export interface TextPart {
 /**
  * @since 1.0.0
  */
-export interface NodePart {
+export interface NodeSyncPart {
   readonly _tag: "node"
   readonly value: unknown
   readonly index: number
@@ -141,7 +110,7 @@ export interface NodePart {
 /**
  * @since 1.0.0
  */
-export interface PropertiesPart {
+export interface PropertiesSyncPart {
   readonly _tag: "properties"
   readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
@@ -152,4 +121,4 @@ export interface PropertiesPart {
 /**
  * @since 1.0.0
  */
-export type Parts = ReadonlyArray<Part>
+export type SyncParts = ReadonlyArray<SyncPart>

@@ -252,7 +252,7 @@ describe("Html", () => {
 
   it.concurrent("renders full html template", async () => {
     await testHtmlChunks(
-      html`<html>
+      html`<!doctype html><html>
     <head>
       <title>@typed TodoMVC</title>
       <meta charset="utf-8" />
@@ -265,7 +265,7 @@ describe("Html", () => {
       <script async defer type="module" src="./index.ts"></script>
     </body>
   </html>`,
-      ["<html><head><title>@typed TodoMVC</title><meta charset=\"utf-8\"/><meta name=\"description\" content=\"@typed TodoMVC\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body><h1>Hello, world!</h1><script async defer type=\"module\" src=\"./index.ts\"></script></body></html>"]
+      ["<!DOCTYPE html><html><head><title>@typed TodoMVC</title><meta charset=\"utf-8\"/><meta name=\"description\" content=\"@typed TodoMVC\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body><h1>Hello, world!</h1><script async defer type=\"module\" src=\"./index.ts\"></script></body></html>"]
     )
   })
 })

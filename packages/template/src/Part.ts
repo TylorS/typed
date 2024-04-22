@@ -151,48 +151,4 @@ export interface PropertiesPart {
 /**
  * @since 1.0.0
  */
-export type SparsePart = SparseAttributePart | SparseClassNamePart | SparseCommentPart
-
-/**
- * @since 1.0.0
- */
-export interface SparseAttributePart {
-  readonly _tag: "sparse/attribute"
-  readonly name: string
-  readonly parts: ReadonlyArray<AttributePart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
-}
-
-/**
- * @since 1.0.0
- */
-export interface SparseClassNamePart {
-  readonly _tag: "sparse/className"
-  readonly parts: ReadonlyArray<ClassNamePart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
-}
-
-/**
- * @since 1.0.0
- */
-export interface SparseCommentPart {
-  readonly _tag: "sparse/comment"
-  readonly parts: ReadonlyArray<CommentPart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>, priority?: number) => Effect<void, never, Scope>
-}
-
-/**
- * @since 1.0.0
- */
-export interface StaticText {
-  readonly _tag: "static/text"
-  readonly value: string
-}
-
-/**
- * @since 1.0.0
- */
-export type Parts = ReadonlyArray<Part | SparsePart>
+export type Parts = ReadonlyArray<Part>

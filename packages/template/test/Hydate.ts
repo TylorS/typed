@@ -9,17 +9,20 @@ import { Effect } from "effect"
 describe("Hydrate", () => {
   it("hydrates a simple template", () =>
     Effect.gen(function*(_) {
-      const { elementRef, elements: { div } } = yield* _(
+      const { elementRef, elements: { div }, window } = yield* _(
         testHydrate(html`<div>Hello, world!</div>`, (rendered, window) => {
-          ok(rendered instanceof window.HTMLDivElement)
+          ok(Array.isArray(rendered))
+          // Hydration uses 2 comments to separate a template from its surrounding context
+          ok(rendered.length === 3)
+          ok(rendered[1] instanceof window.HTMLDivElement)
           return {
-            div: rendered
+            div: rendered[1]
           }
         })
       )
 
       const rendered = yield* _(elementRef)
-
+      ok(rendered instanceof window.HTMLDivElement)
       ok(rendered === div)
     }))
 
@@ -29,11 +32,13 @@ describe("Hydrate", () => {
         testHydrate(
           html`<ul>${many(Fx.succeed([1, 2, 3]), (x) => x, (ref) => html`<li>${ref}</li>`)}</ul>`,
           (rendered, window) => {
-            ok(rendered instanceof window.HTMLUListElement)
+            ok(Array.isArray(rendered))
+            ok(rendered.length === 3)
+            ok(rendered[1] instanceof window.HTMLUListElement)
 
             return {
-              ul: rendered,
-              listItems: Array.from(rendered.children)
+              ul: rendered[1],
+              listItems: Array.from(rendered[1].children)
             }
           }
         )
@@ -54,8 +59,8 @@ describe("Hydrate", () => {
           html`${html`<header>Header</header>`}<main>${html`<h1>${html`<span>${"Content"}</span>`}</h1>`}</main>${html`<footer>Footer</footer>`}`,
           (rendered) => {
             ok(Array.isArray(rendered))
-            ok(rendered.length === 5)
-            const [header, /** HOLE */, main, footer /** HOLE */] = rendered
+            ok(rendered.length === 7)
+            const [/*START*/, header, /** HOLE */, main, footer /** HOLE */ /** END */] = rendered
 
             return {
               header,

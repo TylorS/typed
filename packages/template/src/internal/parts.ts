@@ -1,5 +1,4 @@
 import { isText } from "@typed/wire"
-import * as ReadonlyArray from "effect/Array"
 import type { Cause } from "effect/Cause"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
@@ -21,11 +20,6 @@ import type {
   PropertiesPart,
   PropertyPart,
   RefPart,
-  SparseAttributePart,
-  SparseClassNamePart,
-  SparseCommentPart,
-  SparsePart,
-  StaticText,
   TextPart
 } from "../Part.js"
 import { DEFAULT_PRIORITY, type RenderQueue } from "../RenderQueue.js"
@@ -383,132 +377,4 @@ export class PropertiesPartImpl extends base("properties") implements Properties
     if (value == null) return null
     return Data.struct(value)
   }
-}
-
-const sparse = <T extends SparsePart["_tag"]>(tag: T) => (class Base {
-  readonly _tag: T = tag
-
-  constructor(
-    readonly commit: (
-      params: {
-        previous: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
-        value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>
-        part: Extract<SparsePart, { readonly _tag: T }>
-      },
-      priority: number
-    ) => Effect.Effect<void, never, Scope>,
-    public value: SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>,
-    readonly eq: Equivalence.Equivalence<SparseAttributeValues<Extract<SparsePart, { readonly _tag: T }>["parts"]>> =
-      equals
-  ) {}
-
-  update = (value: this["value"], priority: number = DEFAULT_PRIORITY) => {
-    if (this.eq(this.value as any, value as any)) {
-      return Effect.void
-    }
-
-    return this.commit({
-      previous: this.value,
-      value: this.value = value as any,
-      part: this
-    } as any, priority)
-  }
-})
-
-type SparseAttributeValues<T extends ReadonlyArray<AttributePart | ClassNamePart | CommentPart | StaticText>> =
-  ReadonlyArray<
-    SparseAttributeValue<T[number]>
-  >
-type SparseAttributeValue<T extends AttributePart | ClassNamePart | CommentPart | StaticText> = T["value"]
-
-export class SparseAttributePartImpl extends sparse("sparse/attribute") implements SparseAttributePart {
-  constructor(
-    readonly name: string,
-    readonly parts: ReadonlyArray<AttributePart | StaticText>,
-    commit: SparseAttributePartImpl["commit"]
-  ) {
-    super(commit, [], ReadonlyArray.getEquivalence(strictEq))
-  }
-
-  static browser(
-    name: string,
-    parts: ReadonlyArray<AttributePart | StaticText>,
-    element: HTMLElement | SVGElement,
-    queue: RenderQueue
-  ) {
-    return new SparseAttributePartImpl(
-      name,
-      parts,
-      ({ part, value }, priority) =>
-        queue.add(
-          part,
-          () => element.setAttribute(name, value.flatMap((s) => isNonEmptyString(s, true)).join("")),
-          priority
-        )
-    )
-  }
-}
-
-export class SparseClassNamePartImpl extends sparse("sparse/className") implements SparseClassNamePart {
-  constructor(
-    readonly parts: ReadonlyArray<ClassNamePart | StaticText>,
-    commit: SparseClassNamePartImpl["commit"],
-    values: Array<string | Array<string>>
-  ) {
-    super(commit, values, ReadonlyArray.getEquivalence(strictEq))
-  }
-
-  static browser(
-    parts: ReadonlyArray<ClassNamePart | StaticText>,
-    element: HTMLElement | SVGElement,
-    queue: RenderQueue,
-    values: Array<string | Array<string>> = []
-  ) {
-    return new SparseClassNamePartImpl(
-      parts,
-      ({ part, value }, priority) =>
-        queue.add(
-          part,
-          () => element.setAttribute("class", value.flatMap((s) => isNonEmptyString(s, true)).join(" ")),
-          priority
-        ),
-      values
-    )
-  }
-}
-
-export class SparseCommentPartImpl extends sparse("sparse/comment") implements SparseCommentPart {
-  constructor(
-    readonly parts: ReadonlyArray<CommentPart | StaticText>,
-    commit: SparseCommentPartImpl["commit"],
-    value: SparseCommentPartImpl["value"]
-  ) {
-    super(commit, value, ReadonlyArray.getEquivalence(strictEq))
-  }
-
-  static browser(comment: Comment, parts: ReadonlyArray<CommentPart | StaticText>, queue: RenderQueue) {
-    return new SparseCommentPartImpl(
-      parts,
-      ({ part, value }, priority) =>
-        queue.add(part, () => comment.nodeValue = value.flatMap((s) => isNonEmptyString(s, false)).join(""), priority),
-      []
-    )
-  }
-}
-
-export class StaticTextImpl implements StaticText {
-  readonly _tag = "static/text"
-
-  constructor(readonly value: string) {}
-}
-
-function isNonEmptyString(s: string | ReadonlyArray<string> | null | undefined, trim: boolean): Array<string> {
-  if (s == null) return []
-  if (Array.isArray(s)) return s.flatMap((s) => isNonEmptyString(s, trim))
-
-  const trimmed = trim ? (s as string).trim() : s
-
-  if (trimmed.length === 0) return []
-
-  return [trimmed as string]
 }

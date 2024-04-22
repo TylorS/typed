@@ -10,7 +10,7 @@ import * as Fx from "@typed/fx/Fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Sink from "@typed/fx/Sink"
-import { type Rendered } from "@typed/wire"
+import { isComment, type Rendered } from "@typed/wire"
 import { Layer } from "effect"
 import * as Cause from "effect/Cause"
 import type { DurationInput } from "effect/Duration"
@@ -259,7 +259,20 @@ export function testHydrate<R, E, Elements>(
                 })
               )
             ),
-          (rendered) => ElementRef.set(elementRef, rendered)
+          (rendered) => {
+            const elements = Array.isArray(rendered)
+              ? rendered.filter((x) =>
+                isComment(x) ? !(x.data.startsWith("typed") || x.data.startsWith("/typed")) : true
+              )
+              : rendered
+
+            return ElementRef.set(
+              elementRef,
+              Array.isArray(elements) && elements.length === 1
+                ? elements[0]
+                : elements
+            )
+          }
         )),
       Effect.provide(hydrateLayer(window)),
       Effect.forkScoped
@@ -288,4 +301,21 @@ export function testHydrate<R, E, Elements>(
 
     return test
   })
+}
+
+const typedTemplateStartCommentRegex =
+  /<!--typed-((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}={2}))-->/g
+const typedTemplateEndCommentRegex =
+  /<!--\/typed-((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}={2}))-->/g
+
+export function isTemplateStartComment(comment: Comment) {
+  return typedTemplateStartCommentRegex.test(`${comment.nodeValue}`)
+}
+
+export function isTemplateEndComment(comment: Comment) {
+  return typedTemplateEndCommentRegex.test(`${comment.nodeValue}`)
+}
+
+export function stripTypedTemplateComments(html: string) {
+  return html.replace(typedTemplateStartCommentRegex, "").replace(typedTemplateEndCommentRegex, "")
 }

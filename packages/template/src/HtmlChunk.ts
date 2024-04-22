@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import { TYPED_HASH } from "./Meta.js"
 import type {
   Attribute,
   ElementNode,
@@ -64,9 +63,25 @@ export type AttrValue = string | null | undefined | ReadonlyArray<AttrValue>
  * @since 1.0.0
  */
 export function templateToHtmlChunks({ hash, nodes }: Template, isStatic: boolean) {
-  const chunks = fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node, isStatic ? undefined : hash)))
+  if (isStatic) {
+    return fuseTextChunks(nodes.flatMap((node) => nodeToHtmlChunk(node)))
+  }
+
+  const chunks = fuseTextChunks([
+    templateStart(hash),
+    ...nodes.flatMap((node) => nodeToHtmlChunk(node, hash)),
+    templateEnd(hash)
+  ])
 
   return chunks
+}
+
+function templateStart(hash: string): HtmlChunk {
+  return new TextChunk(`<!--typed-${hash}-->`)
+}
+
+function templateEnd(hash: string): HtmlChunk {
+  return new TextChunk(`<!--/typed-${hash}-->`)
 }
 
 function fuseTextChunks(chunks: Array<HtmlChunk>): ReadonlyArray<HtmlChunk> {
@@ -124,19 +139,18 @@ function nodeToHtmlChunk(node: Node, hash?: string): Array<HtmlChunk> {
 }
 
 function elementToHtmlChunks(
-  { attributes, children, tagName }: ElementNode,
-  hash?: string
+  { attributes, children, tagName }: ElementNode
 ): Array<HtmlChunk> {
   if (attributes.length === 0) {
     return [
-      new TextChunk(openTag(tagName, hash) + ">"),
+      new TextChunk(openTag(tagName) + ">"),
       ...children.flatMap((c) => nodeToHtmlChunk(c)),
       new TextChunk(closeTag(tagName))
     ]
   }
 
   const chunks: Array<HtmlChunk> = [
-    new TextChunk(openTag(tagName, hash)),
+    new TextChunk(openTag(tagName)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk(">"),
     ...children.flatMap((c) => nodeToHtmlChunk(c)),
@@ -147,15 +161,14 @@ function elementToHtmlChunks(
 }
 
 function selfClosingElementToHtmlChunks(
-  { attributes, tagName }: SelfClosingElementNode,
-  hash?: string
+  { attributes, tagName }: SelfClosingElementNode
 ): Array<HtmlChunk> {
   if (attributes.length === 0) {
-    return [new TextChunk(openTag(tagName, hash) + " />")]
+    return [new TextChunk(openTag(tagName) + " />")]
   }
 
   const chunks: Array<HtmlChunk> = [
-    new TextChunk(openTag(tagName, hash)),
+    new TextChunk(openTag(tagName)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk(`/>`)
   ]
@@ -168,19 +181,18 @@ function textToHtmlChunks(text: Text): HtmlChunk {
 }
 
 function textOnlyElementToHtmlChunks(
-  { attributes, children, tagName }: TextOnlyElement,
-  hash?: string
+  { attributes, children, tagName }: TextOnlyElement
 ): Array<HtmlChunk> {
   if (attributes.length === 0) {
     return [
-      new TextChunk(openTag(tagName, hash) + ">"),
+      new TextChunk(openTag(tagName) + ">"),
       ...children.map((c) => textToHtmlChunks(c)),
       new TextChunk(closeTag(tagName))
     ]
   }
 
   const chunks: Array<HtmlChunk> = [
-    new TextChunk(openTag(tagName, hash)),
+    new TextChunk(openTag(tagName)),
     ...attributes.map((a) => attributeToHtmlChunk(a)),
     new TextChunk(">"),
     ...children.map((c) => textToHtmlChunks(c)),
@@ -259,10 +271,8 @@ function datasetToString(dataset: Readonly<Record<string, string | undefined>>) 
   return s.length === 0 ? "" : " " + s
 }
 
-function openTag(tagName: string, hash?: string): string {
-  if (hash === undefined) return `<${tagName}`
-
-  return `<${tagName} ${TYPED_HASH(hash)}`
+function openTag(tagName: string): string {
+  return `<${tagName}`
 }
 
 function closeTag(tagName: string): string {

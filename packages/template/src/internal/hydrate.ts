@@ -6,7 +6,7 @@ import type { RenderContext } from "../RenderContext.js"
 import type { RenderEvent } from "../RenderEvent.js"
 import { DomRenderEvent } from "../RenderEvent.js"
 import type { RenderTemplate } from "../RenderTemplate.js"
-import { indexRefCounter2 } from "./indexRefCounter.js"
+import { makeRefCounter } from "./indexRefCounter.js"
 
 import { unsafeGet } from "@typed/context"
 
@@ -84,7 +84,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
             hydrate: true
           })
 
-          const refCounter = yield* _(indexRefCounter2())
+          const refCounter = yield* _(makeRefCounter())
           const ctx: RenderPartContext = {
             context: runtime.context,
             document,

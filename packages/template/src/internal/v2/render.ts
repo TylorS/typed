@@ -1,283 +1,413 @@
+import * as Context from "@typed/Context"
 import * as Fx from "@typed/fx"
-import type { Scope } from "effect"
-import { Effect } from "effect"
-import { identity } from "effect/Function"
-import type { ElementSource } from "../../ElementSource.js"
-import type { AttrPartNode, ClassNamePartNode, CommentPartNode, PartNode, TextNode } from "../../Template.js"
-import { convertCharacterEntities } from "../character-entities.js"
-import type { Part } from "./Part.js"
-import {
-  AttributePartImpl,
-  BooleanPartImpl,
-  ClassNamePartImpl,
-  CommentPartImpl,
-  DataPartImpl,
-  PropertyPartImpl,
-  RefPartImpl,
-  splitClassNames,
-  TextPartImpl
-} from "./parts.js"
+import { persistent } from "@typed/wire"
+import type { Cause } from "effect"
+import { Effect, ExecutionStrategy, flow, Scope } from "effect"
+import type { Chunk } from "effect/Chunk"
+import { type Directive, isDirective } from "../../Directive.js"
+import * as ElementRef from "../../ElementRef.js"
+import * as ElementSource from "../../ElementSource.js"
+import * as EventHandler from "../../EventHandler.js"
+import type { Placeholder } from "../../Placeholder.js"
+import type { Renderable } from "../../Renderable.js"
+import type { RenderContext } from "../../RenderContext.js"
+import { DomRenderEvent, type RenderEvent } from "../../RenderEvent.js"
+import { DEFAULT_PRIORITY, RenderQueue } from "../../RenderQueue.js"
+import type { RenderTemplate } from "../../RenderTemplate.js"
+import type * as Template from "../../Template.js"
+import type { EventSource } from "../EventSource.js"
+import { makeEventSource } from "../EventSource.js"
+import type { IndexRefCounter } from "../indexRefCounter.js"
+import { makeRefCounter } from "../indexRefCounter.js"
+import { findPath } from "../utils.js"
+import { isNullOrUndefined } from "./helpers.js"
+import { EventPartImpl, syncPartToPart } from "./parts.js"
+import { getRenderEntry } from "./render-entry.js"
+import * as SyncPartsInternal from "./render-sync-parts.js"
+import type { SyncPart } from "./SyncPart.js"
 
-export function makeAttributePart(
-  index: number,
-  element: HTMLElement | SVGElement,
-  attr: Attr
-) {
-  const setValue = makeAttributeValueSetter(element, attr)
-  return new AttributePartImpl(attr.name, index, ({ value }) => setValue(value), attr.value)
+type RenderPartContext = {
+  expected: number
+
+  readonly content: DocumentFragment
+  readonly context: Context.Context<Scope.Scope>
+  readonly document: Document
+  readonly eventSource: EventSource
+  readonly parentScope: Scope.Scope
+  readonly queue: RenderQueue
+  readonly refCounter: IndexRefCounter
+  readonly renderContext: RenderContext
+  readonly scope: Scope.CloseableScope
+  readonly values: ReadonlyArray<Renderable<any, any>>
+  readonly onCause: (cause: Cause.Cause<any>) => Effect.Effect<unknown>
 }
 
-export function makeAttributeValueSetter(element: HTMLElement | SVGElement, attr: Attr) {
-  let isSet = false
-  const setValue = (value: string | null | undefined) => {
-    if (isNullOrUndefined(value)) {
-      element.removeAttribute(attr.name)
-      isSet = false
-    } else {
-      attr.value = value
-      if (isSet === false) {
-        element.setAttributeNode(attr)
-        isSet = true
-      }
+export const renderTemplate: (
+  document: Document,
+  renderContext: RenderContext
+) => RenderTemplate = (document, renderContext) =>
+<Values extends ReadonlyArray<Renderable<any, any>>>(
+  templateStrings: TemplateStringsArray,
+  values: Values
+) => {
+  const entry = getRenderEntry(document, renderContext, templateStrings)
+  if (entry.template.parts.length === 0) {
+    return Fx.succeed(DomRenderEvent(persistent(document, document.importNode(entry.content, true))))
+  }
+
+  return Fx.make<
+    RenderEvent,
+    Placeholder.Error<Values[number]>,
+    Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
+  >((sink) =>
+    Effect.catchAllCause(
+      Effect.gen(function*(_) {
+        // Create a context for rendering our template
+        const ctx = yield* _(
+          makeRenderPartContext<Values>(
+            entry.content,
+            document,
+            renderContext,
+            values,
+            sink.onFailure
+          )
+        )
+
+        // Setup all parts
+        const effects = setupParts(entry.template.parts, ctx)
+        if (effects.length > 0) {
+          yield* _(Effect.forEach(effects, flow(Effect.catchAllCause(sink.onFailure), Effect.forkIn(ctx.scope))))
+        }
+
+        // If there's anything to wait on and it's not already done, wait for an initial value
+        // for all asynchronous sources.
+        if (ctx.expected > 0 && (yield* _(ctx.refCounter.expect(ctx.expected)))) {
+          yield* _(ctx.refCounter.wait)
+        }
+
+        // Create a persistent wire from our content
+        const wire = persistent(document, ctx.content)
+
+        // Setup our event listeners for our wire.
+        // We use the parentScope to allow event listeners to exist
+        // beyond the lifetime of the current Fiber, but no further than its parent template.
+        yield* _(ctx.eventSource.setup(wire, ctx.parentScope))
+
+        yield* _(
+          // Emit our DomRenderEvent
+          sink.onSuccess(DomRenderEvent(wire)),
+          // Ensure our templates last forever in the DOM environment
+          // so event listeners are kept attached to the current Scope.
+          Effect.zipRight(Effect.never),
+          // Close our scope whenever the current Fiber is interrupted
+          Effect.onExit((exit) => Scope.close(ctx.scope, exit))
+        )
+      }),
+      sink.onFailure
+    )
+  )
+}
+
+function makeRenderPartContext<Values extends ReadonlyArray<Renderable<any, any>>>(
+  entry: DocumentFragment,
+  document: Document,
+  renderContext: RenderContext,
+  values: ReadonlyArray<Renderable<any, any>>,
+  onCause: (cause: Cause.Cause<Placeholder.Error<Values[number]>>) => Effect.Effect<unknown>
+): Effect.Effect<RenderPartContext, never, Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>> {
+  return Effect.gen(function*(_) {
+    const refCounter = yield* _(makeRefCounter)
+    const context = yield* _(Effect.context<Placeholder.Context<Values[number]> | Scope.Scope | RenderQueue>())
+    const queue = Context.get(context, RenderQueue)
+    const parentScope = Context.get(context, Scope.Scope)
+    const eventSource = makeEventSource()
+    const content = document.importNode(entry, true)
+    const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+    const renderPartContext: RenderPartContext = {
+      context: Context.add(context, Scope.Scope, scope),
+      expected: 0,
+      content,
+      document,
+      eventSource,
+      parentScope,
+      queue,
+      refCounter,
+      renderContext,
+      scope,
+      values,
+      onCause
+    }
+
+    return renderPartContext
+  })
+}
+
+function setupParts(parts: Template.Template["parts"], ctx: RenderPartContext) {
+  const effects: Array<Effect.Effect<void, any, any>> = []
+
+  for (const [part, path] of parts) {
+    const effect = setupPart(part, path, ctx)
+    if (effect) {
+      effects.push(effect)
     }
   }
 
-  return setValue
+  return effects
 }
 
-export function makeBooleanAttributePart(
-  name: string,
-  index: number,
-  element: HTMLElement | SVGElement
-) {
-  return new BooleanPartImpl(
-    name,
-    index,
-    ({ value }) => element.toggleAttribute(name, value === true),
-    element.hasAttribute(name)
-  )
-}
-
-export function makeClassNamePart(
-  index: number,
-  element: HTMLElement | SVGElement,
-  initial: ReadonlyArray<string> = Array.from(element.classList)
-) {
-  return new ClassNamePartImpl(
-    index,
-    ({ previous, value }) => {
-      const { added, removed } = diffStrings(previous, value)
-      element.classList.add(...added)
-      element.classList.remove(...removed)
-    },
-    initial
-  )
-}
-
-export function makeDataPart(index: number, element: HTMLElement | SVGElement) {
-  return new DataPartImpl(
-    index,
-    ({ previous, value }) => {
-      const diff = diffDataSet(previous, value)
-      if (diff) {
-        const { added, removed } = diff
-        removed.forEach((k) => delete element.dataset[k])
-        added.forEach(([k, v]) => element.dataset[k] = v)
-      }
-    },
-    element.dataset
-  )
-}
-
-export function makePropertyPart(name: string, index: number, element: HTMLElement | SVGElement) {
-  return new PropertyPartImpl(
-    name,
-    index,
-    ({ value }) => {
-      ;(element as any)[name] = value
-    },
-    element[name as keyof typeof element]
-  )
-}
-
-export function makeTextPart(index: number, text: Text) {
-  return new TextPartImpl(
-    index,
-    ({ value }) => {
-      if (value) {
-        text.nodeValue = convertCharacterEntities(value)
-      } else {
-        text.nodeValue = null
-      }
-    },
-    text.nodeValue
-  )
-}
-
-export function makeRefPart(index: number, ref: ElementSource) {
-  return new RefPartImpl(index, identity, ref)
-}
-
-function isNullOrUndefined<T>(value: T | null | undefined): value is null | undefined {
-  return value === null || value === undefined
-}
-
-function diffStrings(
-  previous: ReadonlyArray<string> | null | undefined,
-  current: ReadonlyArray<string> | null | undefined
-): { added: ReadonlyArray<string>; removed: ReadonlyArray<string>; unchanged: ReadonlyArray<string> } {
-  if (previous == null || previous.length === 0) {
-    return {
-      added: current || [],
-      removed: [],
-      unchanged: []
-    }
-  } else if (current == null || current.length === 0) {
-    return {
-      added: [],
-      removed: previous,
-      unchanged: []
-    }
-  } else {
-    const added = current.filter((c) => !previous.includes(c))
-    const removed: Array<string> = []
-    const unchanged: Array<string> = []
-
-    for (let i = 0; i < previous.length; ++i) {
-      if (current.includes(previous[i])) {
-        unchanged.push(previous[i])
-      } else {
-        removed.push(previous[i])
-      }
-    }
-
-    return {
-      added,
-      removed,
-      unchanged
-    }
+function setupPart(part: Template.PartNode | Template.SparsePartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  switch (part._tag) {
+    case "attr":
+      return setupAttrPart(part, path, ctx)
+    case "boolean-part":
+      return setupBooleanPart(part, path, ctx)
+    case "className-part":
+      return setupClassNamePart(part, path, ctx)
+    case "comment-part":
+      return setupCommentPart(part, path, ctx)
+    case "data":
+      return setupDataPart(part, path, ctx)
+    case "event":
+      return setupEventPart(part, path, ctx)
+    case "node":
+      return setupNodePart(part, path, ctx)
+    case "properties":
+      return setupPropertiesPart(part, path, ctx)
+    case "property":
+      return setupPropertyPart(part, path, ctx)
+    case "ref":
+      return setupRefPart(part, path, ctx)
+    case "sparse-attr":
+      return setupSparseAttrPart(part, path, ctx)
+    case "sparse-class-name":
+      return setupSparseClassNamePart(part, path, ctx)
+    case "sparse-comment":
+      return setupSparseCommentPart(part, path, ctx)
+    case "text-part":
+      return setupTextPart(part, path, ctx)
   }
 }
 
-function diffDataSet(
-  a: Record<string, string | undefined> | null | undefined,
-  b: Record<string, string | undefined> | null | undefined
-):
-  | { added: Array<readonly [string, string | undefined]>; removed: ReadonlyArray<string> }
-  | null
-{
-  if (!a) return b ? { added: Object.entries(b), removed: [] } : null
-  if (!b) return { added: [], removed: Object.keys(a) }
-
-  const { added, removed, unchanged } = diffStrings(Object.keys(a), Object.keys(b))
-
-  return {
-    added: added.concat(unchanged).map((k) => [k, b[k]] as const),
-    removed
-  }
+function setupAttrPart({ index, name }: Template.AttrPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const attr = element.getAttributeNode(name) ?? ctx.document.createAttribute(name)
+  const part = SyncPartsInternal.makeAttributePart(index, element, attr)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
 }
 
-export function makeSparsePartHandler<A extends PartNode, B extends Part, C, D, X, Z, ZE, ZR>(
-  parts: ReadonlyArray<A | TextNode>,
-  makePart: (index: number, setValue: (value: C) => void) => B,
-  handleText: (text: string) => D,
-  join: (values: ReadonlyArray<C | D>) => X,
-  setValue: (value: X) => Effect.Effect<Z, ZE, ZR>
-): Fx.Fx<Z, ZE, ZR | Scope.Scope> {
-  return Fx.mapEffect(
-    Fx.withEmitter<X>((sink) =>
-      Effect.zipRight(
-        Effect.sync(() => {
-          const values = new Map<number, C | D>()
-          const expected = parts.length
+function setupBooleanPart({ index, name }: Template.BooleanPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const part = SyncPartsInternal.makeBooleanAttributePart(name, index, element)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
 
-          const setValueIfReady = () => {
-            if (values.size === expected) {
-              return sink.succeed(join(Array.from(values.values())))
-            }
-          }
+function setupClassNamePart({ index }: Template.ClassNamePartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const part = SyncPartsInternal.makeClassNamePart(index, element)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
 
-          for (let i = 0; i < parts.length; ++i) {
-            const index = i
-            const part = parts[i]
-            if (part._tag === "text") {
-              values.set(i, handleText(part.value))
-            } else {
-              makePart(part.index, (value) => {
-                values.set(index, value)
-                setValueIfReady()
-              })
-            }
-          }
-        }),
-        Effect.never
+function setupCommentPart({ index }: Template.CommentPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as Comment
+  const part = SyncPartsInternal.makeCommentPart(index, element)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
+
+function setupDataPart({ index }: Template.DataPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const part = SyncPartsInternal.makeDataPart(index, element)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
+
+function setupEventPart({ index, name }: Template.EventPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const renderable = ctx.values[index]
+  if (isNullOrUndefined(renderable)) return null
+
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+
+  if (isDirective(renderable)) {
+    return renderable(
+      new EventPartImpl(
+        name,
+        index,
+        ElementSource.fromElement(element),
+        ctx.onCause,
+        (handler) => ctx.eventSource.addEventListener(element, name, handler)
       )
-    ),
-    setValue
+    )
+  } else {
+    const handler = getEventHandler(renderable, ctx.context, ctx.onCause)
+    if (handler === null) return null
+    ctx.eventSource.addEventListener(element, name, handler)
+    return null
+  }
+}
+
+function getEventHandler<E, R>(
+  renderable: any,
+  ctx: Context.Context<any> | Context.Context<never>,
+  onCause: (cause: Cause.Cause<E>) => Effect.Effect<unknown>
+): EventHandler.EventHandler<never, never> | null {
+  if (renderable && typeof renderable === "object") {
+    if (EventHandler.EventHandlerTypeId in renderable) {
+      return EventHandler.make(
+        (ev) =>
+          Effect.provide(
+            Effect.catchAllCause((renderable as EventHandler.EventHandler<Event, E, R>).handler(ev), onCause),
+            ctx as any
+          ),
+        (renderable as EventHandler.EventHandler<Event, E, R>).options
+      )
+    } else if (Effect.EffectTypeId in renderable) {
+      return EventHandler.make(() => Effect.provide(Effect.catchAllCause(renderable, onCause), ctx))
+    }
+  }
+
+  return null
+}
+
+function setupNodePart({ index }: Template.NodePart, path: Chunk<number>, ctx: RenderPartContext) {
+  const comment = findPath(ctx.content, path) as Comment
+  const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, false)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
+
+function setupPropertyPart({ index, name }: Template.PropertyPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const part = SyncPartsInternal.makePropertyPart(name, index, element)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
+}
+
+function setupRefPart({ index }: Template.RefPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const renderable = ctx.values[index]
+
+  if (isNullOrUndefined(renderable)) return null
+  else if (isDirective(renderable)) {
+    // const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+    // return renderable(new RefPartImpl(ElementSource.fromElement(element), index))
+  } else if (ElementRef.isElementRef(renderable)) {
+    // TODO: We need to enable only setting these values once the Template has been rendered into the DOM
+    // return ElementRef.set()
+  } else {
+    return null
+  }
+}
+
+function setupPropertiesPart({ index }: Template.PropertiesPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  // TODO: We need to verify that properties are provided a directive or a record of values
+  return null
+}
+
+function setupSparseAttrPart(
+  { name, nodes }: Template.SparseAttrNode,
+  path: Chunk<number>,
+  ctx: RenderPartContext
+) {
+  ctx.expected++
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const attr = element.getAttributeNode(name) ?? ctx.document.createAttribute(name)
+  const index = nodes.find((n): n is Template.AttrPartNode => n._tag === "attr")!.index
+  return SyncPartsInternal.handleSparseAttribute(
+    element,
+    attr,
+    nodes,
+    (f) => Effect.zipRight(ctx.queue.add(element, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
   )
 }
 
-export function handleSparseAttribute<R>(
-  element: HTMLElement | SVGElement,
-  attr: Attr,
-  parts: ReadonlyArray<AttrPartNode | TextNode>,
-  schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
-  const set = makeAttributeValueSetter(element, attr)
-  return Fx.drain(makeSparsePartHandler(
-    parts,
-    (index, setValue: (value: string | null | undefined) => void) =>
-      new AttributePartImpl(attr.name, index, ({ value }) => setValue(value), attr.value),
-    (text) => text,
-    (values): string => values.flatMap((v) => isNullOrUndefined(v) ? [] : [v]).join(""),
-    (value) => schedule(() => set(value))
-  ))
+function setupSparseClassNamePart(
+  { nodes }: Template.SparseClassNameNode,
+  path: Chunk<number>,
+  ctx: RenderPartContext
+) {
+  ctx.expected++
+  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const index = nodes.find((n): n is Template.ClassNamePartNode => n._tag === "className-part")!.index
+  return SyncPartsInternal.handleSparseClassName(
+    element,
+    nodes,
+    (f) => Effect.zipRight(ctx.queue.add(element, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
+  )
 }
 
-export function handleSparseClassName<R>(
-  element: HTMLElement | SVGElement,
-  parts: ReadonlyArray<ClassNamePartNode | TextNode>,
-  schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
-  let previous = Array.from(element.classList)
-
-  return Fx.drain(makeSparsePartHandler(
-    parts,
-    (index, setValue: (value: ReadonlyArray<string>) => void) =>
-      new ClassNamePartImpl(index, ({ value }) => setValue(value), previous),
-    splitClassNames,
-    (values) => values.flat(1),
-    (values) =>
-      schedule(() => {
-        const { added, removed } = diffStrings(previous, values)
-        element.classList.add(...added)
-        element.classList.remove(...removed)
-        previous = values
-      })
-  ))
+function setupSparseCommentPart({ nodes }: Template.SparseCommentNode, path: Chunk<number>, ctx: RenderPartContext) {
+  ctx.expected++
+  const comment = findPath(ctx.content, path) as Comment
+  const index = nodes.find((n): n is Template.CommentPartNode => n._tag === "comment-part")!.index
+  return SyncPartsInternal.handleSparseComment(
+    comment,
+    nodes,
+    (f) => Effect.zipRight(ctx.queue.add(comment, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
+  )
 }
 
-export function handleSparseComment<R>(
-  comment: Comment,
-  parts: ReadonlyArray<CommentPartNode | TextNode>,
-  schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
-  return Fx.drain(makeSparsePartHandler(
-    parts,
-    (index, setValue: (value: string | null | undefined) => void) =>
-      new CommentPartImpl(index, ({ value }) => setValue(value), comment.textContent),
-    identity,
-    (values): string => values.flatMap((v) => isNullOrUndefined(v) ? [] : [v]).join(""),
-    (value) => schedule(() => (comment.textContent = value))
-  ))
+function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ctx: RenderPartContext) {
+  const comment = findPath(ctx.content, path) as Comment
+  const text = ctx.document.createTextNode("")
+  comment.parentNode!.insertBefore(text, comment)
+  const part = SyncPartsInternal.makeTextPart(index, text)
+  const renderable = ctx.values[index]
+  return matchSyncPart(renderable, ctx, part)
 }
 
-// TODO: Node Part
-// TODO: RenderQueue should be ammended to allow Ref's to only emit once they're inserted into the DOM
-// TODO: Handle spread attributes/properties
-// TODO: Helpers for attaching different data structures to parts
-// TODO: Helpers for directives
-// TODO: RenderQueue should be updated to ensure the highest-priority is used for a given part
-// TODO: Hydration need to support nested fragments of elements
-// TODO: Need to be able to configure replacement parts
-// TODO: The start and end of Templates need to be marked
+function matchSyncPart(
+  renderable: Renderable<any, any>,
+  ctx: RenderPartContext,
+  syncPart: SyncPart
+) {
+  return matchRenderable(renderable, ctx, {
+    Fx: (fx) =>
+      fx.run(Fx.Sink.make(
+        ctx.onCause,
+        (value) => runSyncUpdate(syncPart, value, ctx)
+      )),
+    Effect: (effect) => Effect.flatMap(effect, (value) => runSyncUpdate(syncPart, value, ctx)),
+    Directive: (directive) => directive(syncPartToPart(syncPart, ({ value }) => runSyncUpdate(syncPart, value, ctx))),
+    Otherwise: (value) => {
+      syncPart.update(value as never)
+      return null
+    }
+  })
+}
+
+function runSyncUpdate(
+  syncPart: SyncPart,
+  value: any,
+  ctx: RenderPartContext
+) {
+  return Effect.zipRight(
+    ctx.queue.add(syncPart, () => syncPart.update(value as never), DEFAULT_PRIORITY),
+    ctx.refCounter.release(syncPart.index)
+  )
+}
+
+function matchRenderable(
+  renderable: Renderable<any, any>,
+  ctx: RenderPartContext,
+  matches: {
+    Fx: (fx: Fx.Fx<any, any, any>) => Effect.Effect<void, any, any>
+    Effect: (effect: Effect.Effect<any, any, any>) => Effect.Effect<void, any, any>
+    Directive: (directive: Directive<any, any>) => Effect.Effect<void, any, any>
+    Otherwise: (_: any) => Effect.Effect<void, any, any> | null
+  }
+): Effect.Effect<void, any, any> | null {
+  if (Fx.isFx(renderable)) {
+    ctx.expected++
+    return matches.Fx(renderable)
+  } else if (Effect.isEffect(renderable)) {
+    ctx.expected++
+    return matches.Effect(renderable)
+  } else if (isDirective<any, any>(renderable)) {
+    ctx.expected++
+    return matches.Directive(renderable)
+  } else {
+    return matches.Otherwise(renderable)
+  }
+}
