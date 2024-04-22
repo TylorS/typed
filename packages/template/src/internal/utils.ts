@@ -59,12 +59,35 @@ export function getPreviousNodes(comment: Node, index: number) {
 export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
   Chunk.reduce(path, node, ({ childNodes }, index) => childNodes[index]) as Node
 
-export const findHydratePath = (node: ParentChildNodes, hash: string, path: Chunk.Chunk<number>): Node =>
+export const findHydratePath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
   Chunk.reduce(
     path,
     node,
-    ({ childNodes }, index) => Array.from(childNodes).filter((x) => !isCommentStartingWithValue(x, "hole"))[index]
+    ({ childNodes }, index) => filterNestedTemplates(childNodes, childNodes === node.childNodes)[index]
   ) as Node
+
+function filterNestedTemplates(childNodes: ArrayLike<Node>, isRoot: boolean): Array<Node> {
+  const nodes: Array<Node> = []
+
+  let inTemplate = false
+  for (let i = isRoot ? 1 : 0; i < childNodes.length; ++i) {
+    const node = childNodes[i]
+
+    if (isComment(node)) {
+      if (node.nodeValue?.startsWith("typed-")) {
+        inTemplate = true
+      } else if (node.nodeValue?.startsWith("/typed-")) {
+        inTemplate = false
+      } else {
+        nodes.push(node)
+      }
+    } else if (!inTemplate) {
+      nodes.push(node)
+    }
+  }
+
+  return nodes
+}
 
 export interface ParentChildNodes {
   readonly parentNode: Node | null

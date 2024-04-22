@@ -24,11 +24,11 @@ import { makeRefCounter } from "../indexRefCounter.js"
 import { findHoleComment, findPath, keyToPartType } from "../utils.js"
 import { isNullOrUndefined } from "./helpers.js"
 import { EventPartImpl, RefPartImpl, syncPartToPart } from "./parts.js"
-import { getRenderEntry } from "./render-entry.js"
+import { getBrowserEntry } from "./render-entry.js"
 import * as SyncPartsInternal from "./render-sync-parts.js"
 import type { SyncPart } from "./SyncPart.js"
 
-type TemplateContext = {
+export type TemplateContext = {
   /**
    * @internal
    */
@@ -59,7 +59,7 @@ export const renderTemplate: (
   templateStrings: TemplateStringsArray,
   values: Values
 ) => {
-  const entry = getRenderEntry(document, renderContext, templateStrings)
+  const entry = getBrowserEntry(document, renderContext, templateStrings)
   if (entry.template.parts.length === 0) {
     return Fx.succeed(DomRenderEvent(persistent(document, document.importNode(entry.content, true))))
   }
@@ -117,7 +117,7 @@ export const renderTemplate: (
   )
 }
 
-function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>(
+export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>(
   entry: DocumentFragment,
   document: Document,
   renderContext: RenderContext,
@@ -165,104 +165,116 @@ function setupParts(parts: Template.Template["parts"], ctx: TemplateContext) {
   return effects
 }
 
-function setupPart(part: Template.PartNode | Template.SparsePartNode, path: Chunk<number>, ctx: TemplateContext) {
+function setupPart(
+  part: Template.PartNode | Template.SparsePartNode,
+  path: Chunk<number>,
+  ctx: TemplateContext
+) {
   switch (part._tag) {
     case "attr":
-      return setupAttrPart(part, path, ctx, ctx.values[part.index])
+      return setupAttrPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "boolean-part":
-      return setupBooleanPart(part, path, ctx, ctx.values[part.index])
+      return setupBooleanPart(
+        part,
+        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        ctx,
+        ctx.values[part.index]
+      )
     case "className-part":
-      return setupClassNamePart(part, path, ctx, ctx.values[part.index])
+      return setupClassNamePart(
+        part,
+        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        ctx,
+        ctx.values[part.index]
+      )
     case "comment-part":
-      return setupCommentPart(part, path, ctx)
+      return setupCommentPart(part, findPath(ctx.content, path) as Comment, ctx)
     case "data":
-      return setupDataPart(part, path, ctx, ctx.values[part.index])
+      return setupDataPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "event":
-      return setupEventPart(part, path, ctx, ctx.values[part.index])
+      return setupEventPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "node":
-      return setupNodePart(part, path, ctx)
+      return setupNodePart(part, findPath(ctx.content, path) as Element, ctx)
     case "properties":
-      return setupPropertiesPart(part, path, ctx)
+      return setupPropertiesPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "property":
-      return setupPropertyPart(part, path, ctx, ctx.values[part.index])
+      return setupPropertyPart(
+        part,
+        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        ctx,
+        ctx.values[part.index]
+      )
     case "ref":
-      return setupRefPart(part, path, ctx)
+      return setupRefPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-attr":
-      return setupSparseAttrPart(part, path, ctx)
+      return setupSparseAttrPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-class-name":
-      return setupSparseClassNamePart(part, path, ctx)
+      return setupSparseClassNamePart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-comment":
-      return setupSparseCommentPart(part, path, ctx)
+      return setupSparseCommentPart(part, findPath(ctx.content, path) as Comment, ctx)
     case "text-part":
       return setupTextPart(part, path, ctx)
   }
 }
 
-function setupAttrPart(
+export function setupAttrPart(
   { index, name }: Pick<Template.AttrPartNode, "index" | "name">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const attr = element.getAttributeNode(name) ?? ctx.document.createAttribute(name)
   const part = SyncPartsInternal.makeAttributePart(index, element, attr)
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupBooleanPart(
+export function setupBooleanPart(
   { index, name }: Pick<Template.BooleanPartNode, "index" | "name">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const part = SyncPartsInternal.makeBooleanAttributePart(name, index, element)
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupClassNamePart(
+export function setupClassNamePart(
   { index }: Pick<Template.ClassNamePartNode, "index">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const part = SyncPartsInternal.makeClassNamePart(index, element)
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupCommentPart(
+export function setupCommentPart(
   { index }: Pick<Template.CommentPartNode, "index">,
-  path: Chunk<number>,
+  comment: Comment,
   ctx: TemplateContext
 ) {
-  const element = findPath(ctx.content, path) as Comment
-  const part = SyncPartsInternal.makeCommentPart(index, element)
+  const part = SyncPartsInternal.makeCommentPart(index, comment)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupDataPart(
+export function setupDataPart(
   { index }: Pick<Template.DataPartNode, "index">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const part = SyncPartsInternal.makeDataPart(index, element)
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupEventPart(
+export function setupEventPart(
   { index, name }: Pick<Template.EventPartNode, "index" | "name">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
   if (isNullOrUndefined(renderable)) return null
-
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
 
   if (isDirective(renderable)) {
     return renderable(
@@ -282,7 +294,7 @@ function setupEventPart(
   }
 }
 
-function getEventHandler<E, R>(
+export function getEventHandler<E, R>(
   renderable: any,
   ctx: Context.Context<any> | Context.Context<never>,
   onCause: (cause: Cause.Cause<E>) => Effect.Effect<unknown>
@@ -305,48 +317,50 @@ function getEventHandler<E, R>(
   return null
 }
 
-function setupNodePart(
+export function setupNodePart(
   { index }: Template.NodePart,
-  path: Chunk<number>,
+  parent: Element,
   ctx: TemplateContext
 ) {
-  const parent = findPath(ctx.content, path) as Element
   const comment = findHoleComment(parent, index)
   const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, false)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupPropertyPart(
+export function setupPropertyPart(
   { index, name }: Pick<Template.PropertyPartNode, "index" | "name">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext,
   renderable: Renderable<any, any>
 ) {
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const part = SyncPartsInternal.makePropertyPart(name, index, element)
   return matchSyncPart(renderable, ctx, part)
 }
 
-function setupRefPart({ index }: Pick<Template.RefPartNode, "index">, path: Chunk<number>, ctx: TemplateContext) {
+export function setupRefPart(
+  { index }: Pick<Template.RefPartNode, "index">,
+  element: HTMLElement | SVGElement,
+  ctx: TemplateContext
+) {
   const renderable = ctx.values[index]
 
   if (isNullOrUndefined(renderable)) return null
   else if (isDirective(renderable)) {
     return renderable(
-      new RefPartImpl(ElementSource.fromElement(findPath(ctx.content, path) as HTMLElement | SVGElement), index)
+      new RefPartImpl(ElementSource.fromElement(element), index)
     )
   } else if (ElementRef.isElementRef(renderable)) {
     // TODO: We need to enable only setting these values once the Template has been rendered into the DOM
-    return ElementRef.set(renderable, findPath(ctx.content, path) as HTMLElement | SVGElement)
+    return ElementRef.set(renderable, element)
   } else {
     return null
   }
 }
 
-function setupPropertiesPart(
+export function setupPropertiesPart(
   { index }: Pick<Template.PropertiesPartNode, "index">,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext
 ) {
   const renderable = ctx.values[index]
@@ -362,22 +376,22 @@ function setupPropertiesPart(
       const index = ++ctx.templateIndex
       switch (type) {
         case "attr":
-          addEffect(setupAttrPart({ index, name }, path, ctx, value))
+          addEffect(setupAttrPart({ index, name }, element, ctx, value))
           break
         case "boolean":
-          addEffect(setupBooleanPart({ index, name }, path, ctx, value))
+          addEffect(setupBooleanPart({ index, name }, element, ctx, value))
           break
         case "class":
-          addEffect(setupClassNamePart({ index }, path, ctx, value))
+          addEffect(setupClassNamePart({ index }, element, ctx, value))
           break
         case "data":
-          addEffect(setupDataPart({ index }, path, ctx, value))
+          addEffect(setupDataPart({ index }, element, ctx, value))
           break
         case "event":
-          addEffect(setupEventPart({ index, name }, path, ctx, value))
+          addEffect(setupEventPart({ index, name }, element, ctx, value))
           break
         case "property":
-          addEffect(setupPropertyPart({ index, name }, path, ctx, value))
+          addEffect(setupPropertyPart({ index, name }, element, ctx, value))
           break
       }
     }
@@ -388,13 +402,12 @@ function setupPropertiesPart(
   return null
 }
 
-function setupSparseAttrPart(
+export function setupSparseAttrPart(
   { name, nodes }: Template.SparseAttrNode,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext
 ) {
   ctx.expected++
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const attr = element.getAttributeNode(name) ?? ctx.document.createAttribute(name)
   const index = nodes.find((n): n is Template.AttrPartNode => n._tag === "attr")!.index
   return SyncPartsInternal.handleSparseAttribute(
@@ -406,13 +419,12 @@ function setupSparseAttrPart(
   )
 }
 
-function setupSparseClassNamePart(
+export function setupSparseClassNamePart(
   { nodes }: Template.SparseClassNameNode,
-  path: Chunk<number>,
+  element: HTMLElement | SVGElement,
   ctx: TemplateContext
 ) {
   ctx.expected++
-  const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const index = nodes.find((n): n is Template.ClassNamePartNode => n._tag === "className-part")!.index
   return SyncPartsInternal.handleSparseClassName(
     element,
@@ -422,9 +434,12 @@ function setupSparseClassNamePart(
   )
 }
 
-function setupSparseCommentPart({ nodes }: Template.SparseCommentNode, path: Chunk<number>, ctx: TemplateContext) {
+export function setupSparseCommentPart(
+  { nodes }: Template.SparseCommentNode,
+  comment: Comment,
+  ctx: TemplateContext
+) {
   ctx.expected++
-  const comment = findPath(ctx.content, path) as Comment
   const index = nodes.find((n): n is Template.CommentPartNode => n._tag === "comment-part")!.index
   return SyncPartsInternal.handleSparseComment(
     comment,
@@ -434,7 +449,7 @@ function setupSparseCommentPart({ nodes }: Template.SparseCommentNode, path: Chu
   )
 }
 
-function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ctx: TemplateContext) {
+export function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ctx: TemplateContext) {
   const parent = findPath(ctx.content, path) as HTMLElement | SVGElement
   const comment = findHoleComment(parent, index)
   const text = ctx.document.createTextNode("")
@@ -444,7 +459,7 @@ function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ct
   return matchSyncPart(renderable, ctx, part)
 }
 
-function matchSyncPart(
+export function matchSyncPart(
   renderable: Renderable<any, any>,
   ctx: TemplateContext,
   syncPart: SyncPart
@@ -464,7 +479,7 @@ function matchSyncPart(
   })
 }
 
-function runSyncUpdate(
+export function runSyncUpdate(
   syncPart: SyncPart,
   value: any,
   ctx: TemplateContext
@@ -475,7 +490,7 @@ function runSyncUpdate(
   )
 }
 
-function matchRenderable(
+export function matchRenderable(
   renderable: Renderable<any, any>,
   ctx: TemplateContext,
   matches: {
@@ -522,17 +537,17 @@ export function attachRoot<T extends RenderEvent | null>(
   })
 }
 
-function removeChildren(where: HTMLElement, previous: Rendered) {
+export function removeChildren(where: HTMLElement, previous: Rendered) {
   for (const node of getNodes(previous)) {
     where.removeChild(node)
   }
 }
 
-function replaceChildren(where: HTMLElement, wire: Rendered) {
+export function replaceChildren(where: HTMLElement, wire: Rendered) {
   where.replaceChildren(...getNodes(wire))
 }
 
-function getNodes(rendered: Rendered): Array<globalThis.Node> {
+export function getNodes(rendered: Rendered): Array<globalThis.Node> {
   const value = rendered.valueOf() as globalThis.Node | Array<globalThis.Node>
   return Array.isArray(value) ? value : [value]
 }

@@ -3,7 +3,7 @@ import type { RenderContext } from "../../RenderContext.js"
 import type * as Template from "../../Template.js"
 import { parse } from "../parser2.js"
 
-export function getRenderEntry(
+export function getBrowserEntry(
   document: Document,
   ctx: RenderContext,
   templateStrings: TemplateStringsArray
