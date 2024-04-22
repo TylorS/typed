@@ -3,7 +3,7 @@ import udomdiff from "udomdiff"
 import { isRenderEvent } from "../RenderEvent.js"
 import type { RenderQueue } from "../RenderQueue.js"
 import { convertCharacterEntities } from "./character-entities.js"
-import { NodePartImpl } from "./parts.js"
+import { NodePartImpl } from "./server-parts.js"
 import { findHoleComment, isCommentWithValue } from "./utils.js"
 
 export function makeRenderNodePart(

@@ -20,6 +20,7 @@ export type Part =
   | EventPart
   | NodePart
   | PropertyPart
+  | PropertiesPart
   | RefPart
   | TextPart
 
@@ -89,6 +90,17 @@ export interface PropertyPart {
   readonly _tag: "property"
   readonly name: string
   readonly value: unknown
+  readonly index: number
+
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
+}
+
+/**
+ * @since 1.0.0
+ */
+export interface PropertiesPart {
+  readonly _tag: "properties"
+  readonly value: Record<string, any> | null | undefined
   readonly index: number
 
   readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>

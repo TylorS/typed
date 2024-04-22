@@ -39,7 +39,7 @@ import {
   PropertyPartImpl,
   RefPartImpl,
   TextPartImpl
-} from "./parts.js"
+} from "./server-parts.js"
 import { findPath, keyToPartType } from "./utils.js"
 
 /**

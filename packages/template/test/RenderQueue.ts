@@ -1,4 +1,4 @@
-import * as Parts from "@typed/template/internal/parts"
+import * as Parts from "@typed/template/internal/server-parts"
 import * as RenderQueue from "@typed/template/RenderQueue"
 
 import { deepStrictEqual } from "assert"
@@ -10,7 +10,7 @@ describe("RenderQueue", () => {
       let i = 0
 
       const queue = yield* _(RenderQueue.RenderQueue)
-      const testPart = Parts.CommentPartImpl.server(0, () => Effect.void)
+      const testPart = new Parts.CommentPartImpl(0, () => Effect.void, null)
 
       const add1 = () => i++
 
