@@ -1,6 +1,5 @@
 import { isText } from "@typed/wire"
 import type { Cause } from "effect/Cause"
-import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { equals } from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"
@@ -17,7 +16,6 @@ import type {
   EventPart,
   NodePart,
   Part,
-  PropertiesPart,
   PropertyPart,
   RefPart,
   TextPart

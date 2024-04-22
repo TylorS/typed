@@ -66,8 +66,7 @@ class Parser {
 
   parse(templateStrings: ReadonlyArray<string>): Template.Template {
     this.init(templateStrings)
-    const hash = templateHash(templateStrings)
-    return new Template.Template(this.parseNodes(), hash, this.parts)
+    return new Template.Template(this.parseNodes(), templateHash(templateStrings), this.parts)
   }
 
   private init(templateStrings: ReadonlyArray<string>) {

@@ -1,5 +1,4 @@
 import * as Fx from "@typed/fx"
-import type { Scope } from "effect"
 import { Effect } from "effect"
 import { identity } from "effect/Function"
 import type { AttrPartNode, ClassNamePartNode, CommentPartNode, PartNode, TextNode } from "../../Template.js"
@@ -19,8 +18,12 @@ import type { SyncPart } from "./SyncPart.js"
 
 import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
+import type { Directive } from "../../Directive.js"
+import { isDirective } from "../../Directive.js"
+import type { Renderable } from "../../Renderable.js"
 import { isRenderEvent } from "../../RenderEvent.js"
 import { isCommentWithValue } from "../utils.js"
+import { syncPartToPart } from "./parts.js"
 
 export function makeAttributePart(
   index: number,
@@ -179,15 +182,16 @@ function diffDataSet(
 
 export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C, D, X, Z, ZE, ZR>(
   parts: ReadonlyArray<A | TextNode>,
+  renderables: ReadonlyArray<Renderable<any, any>>,
   makePart: (index: number, setValue: (value: C) => void) => B,
   handleText: (text: string) => D,
   join: (values: ReadonlyArray<C | D>) => X,
   setValue: (value: X) => Effect.Effect<Z, ZE, ZR>
-): Fx.Fx<Z, ZE, ZR | Scope.Scope> {
+): Fx.Fx<Z, any, any> {
   return Fx.mapEffect(
-    Fx.withEmitter<X>((sink) =>
+    Fx.withEmitter<X, any, any, any>((sink) =>
       Effect.zipRight(
-        Effect.sync(() => {
+        Effect.gen(function*(_) {
           const values = new Map<number, C | D>()
           const expected = parts.length
 
@@ -203,10 +207,23 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
             if (part._tag === "text") {
               values.set(i, handleText(part.value))
             } else {
-              makePart(part.index, (value) => {
+              const child = makePart(part.index, (value) => {
                 values.set(index, value)
                 setValueIfReady()
               })
+              const value = renderables[part.index]
+
+              yield* _(matchRenderable(value, {
+                Fx: (fx) =>
+                  fx.run(Fx.Sink.make((cause) =>
+                    Effect.promise(() => sink.failCause(cause)), (value) =>
+                    Effect.sync(() => child.update(value as never)))),
+                Effect: (effect) =>
+                  Effect.tap(effect, (value) => child.update(value as never)),
+                Directive: (directive) =>
+                  directive(syncPartToPart(child, ({ value }) => Effect.sync(() => child.update(value as never)))),
+                Otherwise: (value) => Effect.sync(() => child.update(value as never))
+              }))
             }
           }
         }),
@@ -221,11 +238,13 @@ export function handleSparseAttribute<R>(
   element: HTMLElement | SVGElement,
   attr: Attr,
   parts: ReadonlyArray<AttrPartNode | TextNode>,
+  values: ReadonlyArray<Renderable<any, any>>,
   schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
+): Effect.Effect<void, any, any> {
   const set = makeAttributeValueSetter(element, attr)
   return Fx.drain(makeSparsePartHandler(
     parts,
+    values,
     (index, setValue: (value: string | null | undefined) => void) =>
       new AttributePartImpl(attr.name, index, ({ value }) => setValue(value), attr.value),
     (text) => text,
@@ -237,12 +256,14 @@ export function handleSparseAttribute<R>(
 export function handleSparseClassName<R>(
   element: HTMLElement | SVGElement,
   parts: ReadonlyArray<ClassNamePartNode | TextNode>,
+  values: ReadonlyArray<Renderable<any, any>>,
   schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
+): Effect.Effect<void, any, any> {
   let previous = Array.from(element.classList)
 
   return Fx.drain(makeSparsePartHandler(
     parts,
+    values,
     (index, setValue: (value: ReadonlyArray<string>) => void) =>
       new ClassNamePartImpl(index, ({ value }) => setValue(value), previous),
     splitClassNames,
@@ -260,10 +281,12 @@ export function handleSparseClassName<R>(
 export function handleSparseComment<R>(
   comment: Comment,
   parts: ReadonlyArray<CommentPartNode | TextNode>,
+  values: ReadonlyArray<Renderable<any, any>>,
   schedule: (f: () => void) => Effect.Effect<void, never, R>
-): Effect.Effect<void, never, Scope.Scope | R> {
+): Effect.Effect<void, any, any> {
   return Fx.drain(makeSparsePartHandler(
     parts,
+    values,
     (index, setValue: (value: string | null | undefined) => void) =>
       new CommentPartImpl(index, ({ value }) => setValue(value), comment.textContent),
     identity,
@@ -401,3 +424,23 @@ export function makeCommentPart(index: number, comment: Comment) {
 // TODO: Helpers for directives
 // TODO: Hydration need to support nested fragments of elements
 // TODO: Need to be able to configure replacement parts
+
+function matchRenderable<A, B, C, D>(
+  renderable: Renderable<any, any>,
+  matches: {
+    Fx: (fx: Fx.Fx<any, any, any>) => A
+    Effect: (effect: Effect.Effect<any, any, any>) => B
+    Directive: (directive: Directive<any, any>) => C
+    Otherwise: (_: any) => D
+  }
+): A | B | C | D {
+  if (Fx.isFx(renderable)) {
+    return matches.Fx(renderable)
+  } else if (Effect.isEffect(renderable)) {
+    return matches.Effect(renderable)
+  } else if (isDirective<any, any>(renderable)) {
+    return matches.Directive(renderable)
+  } else {
+    return matches.Otherwise(renderable)
+  }
+}

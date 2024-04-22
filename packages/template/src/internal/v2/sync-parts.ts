@@ -55,6 +55,10 @@ export class AttributePartImpl extends base("attribute") implements SyncPart.Att
   ) {
     super(index, commit, value, strictEq)
   }
+
+  getValue(value: unknown): string | null | undefined {
+    return isNullOrUndefined(value) ? value : renderToString(value)
+  }
 }
 
 export class BooleanPartImpl extends base("boolean") implements SyncPart.BooleanSyncPart {
@@ -78,12 +82,12 @@ export class ClassNamePartImpl extends base("className") implements SyncPart.Cla
   }
 
   getValue(value: unknown): ReadonlyArray<string> {
-    if (Array.isArray(value)) {
-      return value.flatMap(splitClassNames)
-    } else if (typeof value === "string") {
-      return splitClassNames(value)
-    } else {
+    if (isNullOrUndefined(value)) {
       return []
+    } else if (Array.isArray(value)) {
+      return value.flatMap(splitClassNames)
+    } else {
+      return splitClassNames(renderToString(value))
     }
   }
 }

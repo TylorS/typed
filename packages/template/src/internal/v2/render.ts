@@ -1,5 +1,6 @@
 import * as Context from "@typed/Context"
 import * as Fx from "@typed/fx"
+import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
 import type { Cause } from "effect"
 import { Effect, ExecutionStrategy, flow, Scope } from "effect"
@@ -9,6 +10,7 @@ import * as ElementRef from "../../ElementRef.js"
 import * as ElementSource from "../../ElementSource.js"
 import * as EventHandler from "../../EventHandler.js"
 import type { Placeholder } from "../../Placeholder.js"
+import type { ToRendered } from "../../Render.js"
 import type { Renderable } from "../../Renderable.js"
 import type { RenderContext } from "../../RenderContext.js"
 import { DomRenderEvent, type RenderEvent } from "../../RenderEvent.js"
@@ -19,7 +21,7 @@ import type { EventSource } from "../EventSource.js"
 import { makeEventSource } from "../EventSource.js"
 import type { IndexRefCounter } from "../indexRefCounter.js"
 import { makeRefCounter } from "../indexRefCounter.js"
-import { findPath, keyToPartType } from "../utils.js"
+import { findHoleComment, findPath, keyToPartType } from "../utils.js"
 import { isNullOrUndefined } from "./helpers.js"
 import { EventPartImpl, RefPartImpl, syncPartToPart } from "./parts.js"
 import { getRenderEntry } from "./render-entry.js"
@@ -130,7 +132,7 @@ function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>
     const eventSource = makeEventSource()
     const content = document.importNode(entry, true)
     const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
-    const renderPartContext: TemplateContext = {
+    const templateContext: TemplateContext = {
       context: Context.add(context, Scope.Scope, scope),
       expected: 0,
       content,
@@ -146,7 +148,7 @@ function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>
       onCause
     }
 
-    return renderPartContext
+    return templateContext
   })
 }
 
@@ -308,7 +310,8 @@ function setupNodePart(
   path: Chunk<number>,
   ctx: TemplateContext
 ) {
-  const comment = findPath(ctx.content, path) as Comment
+  const parent = findPath(ctx.content, path) as Element
+  const comment = findHoleComment(parent, index)
   const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, false)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
@@ -394,12 +397,12 @@ function setupSparseAttrPart(
   const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const attr = element.getAttributeNode(name) ?? ctx.document.createAttribute(name)
   const index = nodes.find((n): n is Template.AttrPartNode => n._tag === "attr")!.index
-  const id = Symbol(index)
   return SyncPartsInternal.handleSparseAttribute(
     element,
     attr,
     nodes,
-    (f) => Effect.zipRight(ctx.queue.add(id, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
+    ctx.values,
+    (f) => Effect.zipRight(ctx.queue.add(attr, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
   )
 }
 
@@ -411,11 +414,11 @@ function setupSparseClassNamePart(
   ctx.expected++
   const element = findPath(ctx.content, path) as HTMLElement | SVGElement
   const index = nodes.find((n): n is Template.ClassNamePartNode => n._tag === "className-part")!.index
-  const id = Symbol(index)
   return SyncPartsInternal.handleSparseClassName(
     element,
     nodes,
-    (f) => Effect.zipRight(ctx.queue.add(id, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
+    ctx.values,
+    (f) => Effect.zipRight(ctx.queue.add(element.classList, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
   )
 }
 
@@ -423,16 +426,17 @@ function setupSparseCommentPart({ nodes }: Template.SparseCommentNode, path: Chu
   ctx.expected++
   const comment = findPath(ctx.content, path) as Comment
   const index = nodes.find((n): n is Template.CommentPartNode => n._tag === "comment-part")!.index
-  const id = Symbol(index)
   return SyncPartsInternal.handleSparseComment(
     comment,
     nodes,
-    (f) => Effect.zipRight(ctx.queue.add(id, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
+    ctx.values,
+    (f) => Effect.zipRight(ctx.queue.add(comment, f, DEFAULT_PRIORITY), ctx.refCounter.release(index))
   )
 }
 
 function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ctx: TemplateContext) {
-  const comment = findPath(ctx.content, path) as Comment
+  const parent = findPath(ctx.content, path) as HTMLElement | SVGElement
+  const comment = findHoleComment(parent, index)
   const text = ctx.document.createTextNode("")
   comment.parentNode!.insertBefore(text, comment)
   const part = SyncPartsInternal.makeTextPart(index, text)
@@ -493,4 +497,42 @@ function matchRenderable(
   } else {
     return matches.Otherwise(renderable)
   }
+}
+
+export function attachRoot<T extends RenderEvent | null>(
+  cache: RenderContext["renderCache"],
+  where: HTMLElement,
+  what: RenderEvent | null // TODO: Should we support HTML RenderEvents here too?,
+): Effect.Effect<ToRendered<T>> {
+  return Effect.sync(() => {
+    const wire = what?.valueOf() as ToRendered<T>
+    const previous = cache.get(where)
+
+    if (wire !== previous) {
+      if (previous && !wire) removeChildren(where, previous)
+
+      cache.set(where, wire || null)
+
+      if (wire) replaceChildren(where, wire)
+
+      return wire as ToRendered<T>
+    }
+
+    return previous as ToRendered<T>
+  })
+}
+
+function removeChildren(where: HTMLElement, previous: Rendered) {
+  for (const node of getNodes(previous)) {
+    where.removeChild(node)
+  }
+}
+
+function replaceChildren(where: HTMLElement, wire: Rendered) {
+  where.replaceChildren(...getNodes(wire))
+}
+
+function getNodes(rendered: Rendered): Array<globalThis.Node> {
+  const value = rendered.valueOf() as globalThis.Node | Array<globalThis.Node>
+  return Array.isArray(value) ? value : [value]
 }

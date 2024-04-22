@@ -84,7 +84,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
             hydrate: true
           })
 
-          const refCounter = yield* _(makeRefCounter())
+          const refCounter = yield* _(makeRefCounter)
           const ctx: RenderPartContext = {
             context: runtime.context,
             document,
