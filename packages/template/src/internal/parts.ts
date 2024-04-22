@@ -363,18 +363,3 @@ export class TextPartImpl extends base("text") implements TextPart {
       : document.createTextNode("")
   }
 }
-
-export class PropertiesPartImpl extends base("properties") implements PropertiesPart {
-  constructor(
-    index: number,
-    commit: PropertiesPartImpl["commit"],
-    value: PropertiesPartImpl["value"]
-  ) {
-    super(index, commit, value, equals)
-  }
-
-  getValue(value: unknown): unknown {
-    if (value == null) return null
-    return Data.struct(value)
-  }
-}

@@ -14,7 +14,6 @@ export type SyncPart =
   | NodeSyncPart
   | PropertySyncPart
   | TextSyncPart
-  | PropertiesSyncPart
 
 /**
  * @since 1.0.0
@@ -102,17 +101,6 @@ export interface TextSyncPart {
 export interface NodeSyncPart {
   readonly _tag: "node"
   readonly value: unknown
-  readonly index: number
-
-  readonly update: (value: this["value"]) => boolean
-}
-
-/**
- * @since 1.0.0
- */
-export interface PropertiesSyncPart {
-  readonly _tag: "properties"
-  readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
 
   readonly update: (value: this["value"]) => boolean

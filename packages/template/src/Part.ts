@@ -22,7 +22,6 @@ export type Part =
   | PropertyPart
   | RefPart
   | TextPart
-  | PropertiesPart
 
 /**
  * @since 1.0.0
@@ -132,17 +131,6 @@ export interface TextPart {
 export interface NodePart {
   readonly _tag: "node"
   readonly value: unknown
-  readonly index: number
-
-  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
-}
-
-/**
- * @since 1.0.0
- */
-export interface PropertiesPart {
-  readonly _tag: "properties"
-  readonly value: Readonly<Record<string, any>> | null | undefined
   readonly index: number
 
   readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>

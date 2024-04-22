@@ -197,25 +197,6 @@ export class PropertyPartImpl extends base("property") implements Part.PropertyP
   }
 }
 
-export class PropertiesPartImpl extends base("properties") implements Part.PropertiesPart {
-  readonly index: number
-
-  constructor(
-    readonly sync: SyncPart.PropertiesSyncPart,
-    commit: (
-      params: {
-        previous: SyncPart.PropertiesSyncPart["value"]
-        value: SyncPart.PropertiesSyncPart["value"]
-        part: Part.PropertiesPart
-      },
-      priority: number
-    ) => Effect.Effect<void, never, Scope>
-  ) {
-    super(sync, commit)
-    this.index = sync.index
-  }
-}
-
 export class RefPartImpl implements Part.RefPart {
   readonly _tag = "ref"
 
@@ -267,8 +248,6 @@ export function syncPartToPart<T extends SyncPart.SyncPart>(
       return new NodePartImpl(part, commit as any) as any
     case "property":
       return new PropertyPartImpl(part, commit as any) as any
-    case "properties":
-      return new PropertiesPartImpl(part, commit as any) as any
     case "text":
       return new TextPartImpl(part, commit as any) as any
   }
