@@ -143,9 +143,16 @@ export namespace RefSubject {
      * @since 1.20.0
      */
     readonly make: <R>(
-      fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R>,
-      options?: RefSubjectOptions<A>
+      fxOrEffect: Fx<A, E, R | Scope.Scope> | Effect.Effect<A, E, R | Scope.Scope>,
+      options?: RefSubjectOptions<A> & { readonly drop?: number, readonly take?: number }
     ) => Layer.Layer<I, never, R>
+
+    /**
+     * @since 2.0.0
+     */
+    readonly layer: <E2, R2>(
+      make: Effect.Effect<RefSubject<A, E>, E2, R2 | Scope.Scope>
+    ) => Layer.Layer<I, E2, R2>
   }
 
   /**
@@ -1868,10 +1875,25 @@ class RefSubjectTagged<I, E, A> extends FxEffectBase<
     return this.tag.withEffect((ref) => ref.onSuccess(value))
   }
 
+  layer = <E2, R2>(make: Effect.Effect<RefSubject<A, E>, E2, R2 | Scope.Scope>): Layer.Layer<I, E2, R2> =>
+    this.tag.scoped(make)
+
   make = <R>(
-    fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R>,
-    options?: RefSubjectOptions<A>
-  ): Layer.Layer<I, never, R> => this.tag.scoped(make(fxOrEffect, options))
+    fxOrEffect: Fx<A, E, R | Scope.Scope> | Effect.Effect<A, E, R | Scope.Scope>,
+    options?: RefSubjectOptions<A> & { readonly drop?: number, readonly take?: number }
+  ): Layer.Layer<I, never, R> => {
+    
+
+    return this.tag.scoped(Effect.gen(function* (_) { 
+      let ref = yield* _(make(fxOrEffect, options))
+
+      if (options?.drop || options?.take) { 
+        ref = slice(ref, options.drop ?? 0, options.take ?? Infinity)
+      }
+
+      return ref
+    }))
+    }
 }
 
 /**

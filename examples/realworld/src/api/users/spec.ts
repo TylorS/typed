@@ -4,7 +4,7 @@ import { LoginInput } from "@/services/Login"
 import { RegisterInput } from "@/services/Register"
 import { UpdateUserInput } from "@/services/UpdateUser"
 import { Api, ApiGroup } from "@typed/server"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 import * as Routes from "./routes"
 
 export const login = Api.post(

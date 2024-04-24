@@ -3,7 +3,7 @@ import { CreateArticleInput } from "@/services/CreateArticle"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 
 export const UpdateArticleInput = Schema.partial(CreateArticleInput).pipe(
   Schema.identifier("UpdateArticleInput")

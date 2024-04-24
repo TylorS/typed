@@ -3,7 +3,7 @@ import { CommentId } from "@/model"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 
 export const DeleteCommentInput = Schema.Struct({ id: CommentId }).pipe(Schema.identifier("DeleteCommentInput"))
 export type DeleteCommentInput = Schema.Schema.Type<typeof DeleteCommentInput>

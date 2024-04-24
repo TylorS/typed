@@ -3,7 +3,7 @@ import { Email, Password } from "@/model"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect/Effect"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 
 export const LoginInput = Schema.Struct({
   email: Email,

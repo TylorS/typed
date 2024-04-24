@@ -34,9 +34,13 @@ function withCurrentUserFromHeaders<E, R>(app: HttpServer.router.Router<E, R>) {
   return Effect.gen(function*(_) {
     const { headers } = yield* _(Http.request.ServerRequest)
     const token = Http.headers.get(headers, "authorization").pipe(
-      Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
+      Option.map((authorization) => JwtToken(authorization.split(" ")[1])),
+      Option.orElse(() => Http.headers.get(headers, "cookies").pipe(
+        Option.map(Http.cookies.parseHeader),
+        Option.flatMap(_ => Option.fromNullable(_['conduit-token'])),
+        Option.map(JwtToken),
+      ))
     )
-
     // If no token is present, provide the app with no user or token
     if (Option.isNone(token)) {
       const user = yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))

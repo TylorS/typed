@@ -1,4 +1,4 @@
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 import { Profile } from "./Profile"
 
 export const CommentId = Schema.nanoId.pipe(Schema.brand("CommentId"), Schema.description("Nano ID for Comment"))

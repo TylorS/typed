@@ -1,7 +1,7 @@
 import "./styles.css"
 
 import { isAuthenticated } from "@/services"
-import { fromWindow, Fx, Navigation, renderToLayer, Router } from "@typed/core"
+import { Fx, hydrateFromWindow, hydrateToLayer, Navigation, Router } from "@typed/core"
 import { Storage } from "@typed/dom/Storage"
 import { Effect, Layer, Logger, LogLevel, pipe } from "effect"
 import * as Ui from "./ui"
@@ -14,13 +14,13 @@ const onNotFound = Effect.gen(function*(_) {
   }
 })
 
-const main = pipe(Ui.router, Router.notFoundWith(onNotFound), Ui.layout, renderToLayer, Layer.launch)
+const main = pipe(Ui.router, Router.notFoundWith(onNotFound), Ui.layout, hydrateToLayer, Layer.launch)
 
 pipe(
   main,
   Effect.provide(Ui.Live),
   Effect.provide(Storage.layer(localStorage)),
-  Effect.provide(fromWindow(window, { rootElement: document.getElementById("app")! })),
+  Effect.provide(hydrateFromWindow(window, { rootElement: document.getElementById("app")! })),
   Logger.withMinimumLogLevel(LogLevel.Debug),
   Effect.scoped,
   Effect.runPromise

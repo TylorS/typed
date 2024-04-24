@@ -1,6 +1,7 @@
-import * as Schema from "@/lib/Schema"
+import * as Schema from "@effect/schema/Schema"
+import { nanoId } from "@typed/id/Schema"
 
-export const UserId = Schema.nanoId.pipe(Schema.brand("UserId"), Schema.description("Nano ID for User"))
+export const UserId = nanoId.pipe(Schema.brand("UserId"), Schema.description("Nano ID for User"))
 export type UserId = Schema.Schema.Type<typeof UserId>
 
 export const Email = Schema.String.pipe(Schema.brand("Email"), Schema.description("Email Address"))

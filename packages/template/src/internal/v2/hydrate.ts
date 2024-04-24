@@ -42,6 +42,7 @@ import {
 } from "./render.js"
 
 type HydrateTemplateContext = TemplateContext & {
+  readonly hash: string
   readonly where: ParentChildNodes
   readonly makeHydrateContext: (index: number) => HydrateContext
 }
@@ -74,6 +75,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
         const either = getHydrateEntry({
           ...hydrateCtx,
+          hash: entry.template.hash,
           document,
           renderContext,
           strings: templateStrings
@@ -96,7 +98,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           hydrate: true
         })
 
-        const effects = setupParts(template.parts, { ...ctx, where, makeHydrateContext })
+        const effects = setupParts(template.parts, { ...ctx, hash: template.hash, where, makeHydrateContext })
         if (effects.length > 0) {
           yield* _(Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope))))
         }
@@ -139,7 +141,7 @@ function setupPart(
   ctx: HydrateTemplateContext
 ) {
   try {
-    const node = findHydratePath(ctx.where, path)
+    const node = findHydratePath(ctx.where, ctx.hash, path)
 
     switch (part._tag) {
       case "attr":
@@ -238,11 +240,12 @@ export function findRootChildNodes(where: HTMLElement): Array<Node> {
 export function findTemplateResultPartChildNodes(
   where: ParentChildNodes,
   parentTemplate: Template.Template,
+  hash: string,
   partIndex: number,
   manyIndex?: string
 ): Either.Either<ParentChildNodes, CouldNotFindRootElement | CouldNotFindManyCommentError | CouldNotFindCommentError> {
   const [, path] = parentTemplate.parts[partIndex]
-  const parentNode = findHydratePath(where, path) as HTMLElement
+  const parentNode = findHydratePath(where, hash, path, parentTemplate.hash) as HTMLElement
 
   const childNodesEither = findPartChildNodes(parentNode, partIndex)
   if (Either.isLeft(childNodesEither)) return Either.left(childNodesEither.left)
@@ -334,6 +337,7 @@ export function findPreviousManyComment(
 
 export function getHydrateEntry({
   document,
+  hash,
   manyIndex,
   parentTemplate,
   renderContext,
@@ -344,6 +348,7 @@ export function getHydrateEntry({
   document: Document
   renderContext: RenderContext
   where: ParentChildNodes
+  hash: string
   rootIndex: number
   parentTemplate: Template.Template | null
   strings: TemplateStringsArray
@@ -355,7 +360,7 @@ export function getHydrateEntry({
   const { template } = getBrowserEntry(document, renderContext, strings)
 
   if (parentTemplate) {
-    const either = findTemplateResultPartChildNodes(where, parentTemplate, rootIndex, manyIndex)
+    const either = findTemplateResultPartChildNodes(where, parentTemplate, hash, rootIndex, manyIndex)
     if (Either.isLeft(either)) {
       return Either.left(either.left)
     }

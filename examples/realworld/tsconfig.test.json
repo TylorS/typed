@@ -4,11 +4,17 @@
     "outDir": "build/test",
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
-    "rootDir": "test",
+    "rootDir": "./",
+    "baseUrl": "src",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
     "types": [
       "node",
       "vite/client",
-      "@typed/vite-plugin/virtual-modules",
+      "@typed/vite-plugin-types",
       "vitest/globals"
     ]
   },

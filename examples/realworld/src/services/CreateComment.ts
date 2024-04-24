@@ -3,7 +3,7 @@ import { Comment } from "@/model"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 
 export const CreateCommentInput = Comment.pipe(
   Schema.omit("id", "author", "createdAt", "updatedAt"),

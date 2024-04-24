@@ -1,7 +1,9 @@
 import { CurrentUser, isAuthenticated } from "@/services"
 import { NavLink } from "@/ui/components/NavLink"
-import type { RenderEvent } from "@typed/core"
-import { Fx, html, RefAsyncData } from "@typed/core"
+import * as Fx from "@typed/fx"
+import * as RefAsyncData from "@typed/fx/AsyncData"
+import type { RenderEvent } from "@typed/template"
+import { html } from "@typed/template"
 import { Option } from "effect"
 import * as pages from "./pages"
 

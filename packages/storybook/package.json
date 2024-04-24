@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.66.1",
-    "@storybook/builder-vite": "^8.0.8",
-    "@storybook/types": "^8.0.8",
+    "@effect/schema": "^0.66.6",
+    "@storybook/builder-vite": "^8.0.9",
+    "@storybook/types": "^8.0.9",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -57,6 +57,6 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "^3.0.1"
+    "effect": "^3.0.3"
   }
 }

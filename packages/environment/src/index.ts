@@ -68,7 +68,7 @@ export const CurrentEnvironment = Context.Tagged<Environment>()((
 /**
  * @since 1.0.0
  */
-export type CurrentEnvironment = Context.Tag.Identifier<typeof CurrentEnvironment>
+export interface CurrentEnvironment extends Context.Tag.Identifier<typeof CurrentEnvironment> {}
 
 /**
  * @since 1.0.0

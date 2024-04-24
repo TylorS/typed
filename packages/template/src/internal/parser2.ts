@@ -5,10 +5,10 @@ import { tokenize } from "html5parser"
 import * as Template from "../Template.js"
 import { convertCharacterEntities } from "./character-entities.js"
 import { PART_REGEX, PART_STRING } from "./chunks.js"
-import { PathStack, templateHash, unsafeParsePartIndex } from "./parser"
+import { PathStack, templateHash, unsafeParsePartIndex } from "./parser.js"
 import { keyToPartType } from "./utils.js"
 
-export { templateHash } from "./parser"
+export { templateHash } from "./parser.js"
 
 // Unfortunately these are compiled as `const enum` and cannot be exported
 enum TokenKind {

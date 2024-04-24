@@ -1,5 +1,5 @@
-import * as Schema from "@/lib/Schema"
-import { User } from "./User"
+import * as Schema from "@effect/schema/Schema"
+import { User } from "./User.js"
 
 export const Profile = User.pipe(
   Schema.omit("id", "token"),

@@ -7,7 +7,7 @@ import {
 } from "@/api/common/spec"
 import { Profile } from "@/model"
 import { Api, ApiGroup } from "@typed/server"
-import * as Schema from "lib/Schema"
+import * as Schema from "@/lib/Schema"
 import * as Routes from "./routes"
 
 export const getProfile = Api.get(

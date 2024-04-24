@@ -29,6 +29,12 @@
     },
     {
       "path": "../wire"
+    },
+    {
+      "path": "../route"
+    },
+    {
+      "path": "../router"
     }
   ]
 }

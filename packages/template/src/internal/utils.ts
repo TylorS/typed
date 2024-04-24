@@ -59,23 +59,31 @@ export function getPreviousNodes(comment: Node, index: number) {
 export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
   Chunk.reduce(path, node, ({ childNodes }, index) => childNodes[index]) as Node
 
-export const findHydratePath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Node =>
-  Chunk.reduce(
+export const findHydratePath = (
+  node: ParentChildNodes,
+  hash: string,
+  path: Chunk.Chunk<number>,
+  parentHash?: string
+): Node => {
+  return Chunk.reduce(
     path,
     node,
-    ({ childNodes }, index) => filterNestedTemplates(childNodes, childNodes === node.childNodes)[index]
+    ({ childNodes }, index) => filterNestedTemplates(childNodes, hash, parentHash)[index]
   ) as Node
+}
 
-function filterNestedTemplates(childNodes: ArrayLike<Node>, isRoot: boolean): Array<Node> {
+function filterNestedTemplates(childNodes: ArrayLike<Node>, hash: string, parentHash?: string): Array<Node> {
   const nodes: Array<Node> = []
+  const hashStart = `typed-${hash}`
+  const parentHashStart = parentHash ? `typed-${parentHash}` : ""
 
   let inTemplate = false
-  for (let i = isRoot ? 1 : 0; i < childNodes.length; ++i) {
+  for (let i = 0; i < childNodes.length; ++i) {
     const node = childNodes[i]
 
     if (isComment(node)) {
       if (node.data.startsWith("typed-")) {
-        inTemplate = true
+        inTemplate = node.data !== hashStart && node.data !== parentHashStart
       } else if (node.data.startsWith("/typed-")) {
         inTemplate = false
       } else if (node.data.startsWith("many")) {

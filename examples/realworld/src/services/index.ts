@@ -16,7 +16,7 @@ import { UnfavoriteArticle } from "@/services/UnfavoriteArticle"
 import { UnfollowProfile } from "@/services/UnfollowProfile"
 import { UpdateArticle } from "@/services/UpdateArticle"
 import { UpdateUser } from "@/services/UpdateUser"
-import { repository } from "@typed/context"
+import { repository } from "@typed/context/Repository"
 import { CreateArticle } from "./CreateArticle"
 
 export const Articles = repository({

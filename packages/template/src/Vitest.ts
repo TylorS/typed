@@ -7,7 +7,7 @@ import * as TestClock from "effect/TestClock"
 import * as TestContext from "effect/TestContext"
 import type * as TestServices from "effect/TestServices"
 import * as vitest from "vitest"
-import * as RenderQueue from "./RenderQueue"
+import * as RenderQueue from "./RenderQueue.js"
 
 const describeConcurrent = vitest.describe.concurrent
 const expect = vitest.expect

@@ -20,7 +20,7 @@ import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
-import { renderToHtmlString, serverLayer } from "./Html.js"
+import { renderToHtml, renderToHtmlString, serverLayer } from "./Html.js"
 import { hydrate, hydrateLayer } from "./Hydrate.js"
 import { adjustTime } from "./internal/utils.js"
 import { render, renderLayer } from "./Render.js"
@@ -318,4 +318,38 @@ export function isTemplateEndComment(comment: Comment) {
 
 export function stripTypedTemplateComments(html: string) {
   return html.replace(typedTemplateStartCommentRegex, "").replace(typedTemplateEndCommentRegex, "")
+}
+
+/**
+ * @since 1.0.0
+ */
+export function testHtmlString<R, E>(
+  fx: Fx.Fx<RenderEvent, E, R>,
+): Effect.Effect<
+  string,
+  E,
+  | Scope.Scope
+  | Exclude<
+    R,
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment 
+  >
+> {
+  return Effect.provide(Effect.map(renderToHtmlString(fx), stripTypedTemplateComments), serverLayer)
+}
+
+/**
+ * @since 1.0.0
+ */
+export function testHtmlChunks<R, E, Elements>(
+  fx: Fx.Fx<RenderEvent, E, R>,
+): Effect.Effect<
+  ReadonlyArray<string>,
+  E,
+  | Scope.Scope
+  | Exclude<
+    R,
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment 
+  >
+> {
+  return Fx.toReadonlyArray(Fx.provide(Fx.map(renderToHtml(fx), stripTypedTemplateComments), serverLayer))
 }
