@@ -1,0 +1,718 @@
+{
+  "_tag": "element",
+  "parentNode": "<body><!--typed-QIuT+JcysA0=--><!--typed-OHwQ7U5bK38=--><nav class=\"navbar navbar-light\"><div class=\"container\"><a class=\"navbar-brand\" href=\"/\">conduit</a><ul class=\"nav navbar-nav pull-xs-right\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole1-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole2--></ul></div></nav><!--/typed-OHwQ7U5bK38=--><!--hole0--><main><!--typed-ITFKsjimgV4=--><div class=\"home-page\"><div class=\"banner\"><div class=\"container\"><h1 class=\"logo-font\">conduit</h1><p>A place to share your knowledge.</p></div></div><div class=\"container page\"><div class=\"row\"><div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div><div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div></div></div></div><!--/typed-ITFKsjimgV4=--><!--hole1--></main><!--typed-Zlq5/1+cq6k=--><footer><div class=\"container\"><a href=\"/\" class=\"logo-font\">conduit</a><span class=\"attribution\">An interactive learning project from<a href=\"https://thinkster.io\">Thinkster</a>. Code & design licensed under MIT.</span></div></footer><!--/typed-Zlq5/1+cq6k=--><!--hole2--><!--/typed-QIuT+JcysA0=--></body>",
+  "childNodes": [
+    {
+      "_tag": "template",
+      "hash": "QIuT+JcysA0=",
+      "childNodes": [
+        {
+          "_tag": "hole",
+          "index": 0,
+          "childNodes": [
+            {
+              "_tag": "template",
+              "hash": "OHwQ7U5bK38=",
+              "childNodes": [
+                {
+                  "_tag": "element",
+                  "parentNode": "<nav class=\"navbar navbar-light\"><div class=\"container\"><a class=\"navbar-brand\" href=\"/\">conduit</a><ul class=\"nav navbar-nav pull-xs-right\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole1-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole2--></ul></div></nav>",
+                  "childNodes": [
+                    {
+                      "_tag": "element",
+                      "parentNode": "<div class=\"container\"><a class=\"navbar-brand\" href=\"/\">conduit</a><ul class=\"nav navbar-nav pull-xs-right\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole1-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole2--></ul></div>",
+                      "childNodes": [
+                        {
+                          "_tag": "element",
+                          "parentNode": "<a class=\"navbar-brand\" href=\"/\">conduit</a>",
+                          "childNodes": [
+                            {
+                              "_tag": "literal",
+                              "node": "conduit"
+                            }
+                          ]
+                        },
+                        {
+                          "_tag": "element",
+                          "parentNode": "<ul class=\"nav navbar-nav pull-xs-right\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole1-->\n      <!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole2--></ul>",
+                          "childNodes": [
+                            {
+                              "_tag": "hole",
+                              "index": 0,
+                              "childNodes": [
+                                {
+                                  "_tag": "template",
+                                  "hash": "era9ej8Fofk=",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a></li>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<a class=\"nav-link active\" href=\"/\"><!--text-->Home<!--hole3--></a>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "hole",
+                                              "index": 3,
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "<!--text-->"
+                                                },
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "Home"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "_tag": "literal",
+                              "node": "\n      "
+                            },
+                            {
+                              "_tag": "hole",
+                              "index": 1,
+                              "childNodes": [
+                                {
+                                  "_tag": "template",
+                                  "hash": "era9ej8Fofk=",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<li class=\"nav-item\"><a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a></li>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<a class=\"nav-link\" href=\"/login\"><!--text-->Sign in<!--hole3--></a>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "hole",
+                                              "index": 3,
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "<!--text-->"
+                                                },
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "Sign in"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "_tag": "literal",
+                              "node": "\n      "
+                            },
+                            {
+                              "_tag": "hole",
+                              "index": 2,
+                              "childNodes": [
+                                {
+                                  "_tag": "template",
+                                  "hash": "era9ej8Fofk=",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<li class=\"nav-item\"><a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a></li>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<a class=\"nav-link\" href=\"/register\"><!--text-->Sign up<!--hole3--></a>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "hole",
+                                              "index": 3,
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "<!--text-->"
+                                                },
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "Sign up"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_tag": "element",
+          "parentNode": "<main><!--typed-ITFKsjimgV4=--><div class=\"home-page\"><div class=\"banner\"><div class=\"container\"><h1 class=\"logo-font\">conduit</h1><p>A place to share your knowledge.</p></div></div><div class=\"container page\"><div class=\"row\"><div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div><div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div></div></div></div><!--/typed-ITFKsjimgV4=--><!--hole1--></main>",
+          "childNodes": [
+            {
+              "_tag": "hole",
+              "index": 1,
+              "childNodes": [
+                {
+                  "_tag": "template",
+                  "hash": "ITFKsjimgV4=",
+                  "childNodes": [
+                    {
+                      "_tag": "element",
+                      "parentNode": "<div class=\"home-page\"><div class=\"banner\"><div class=\"container\"><h1 class=\"logo-font\">conduit</h1><p>A place to share your knowledge.</p></div></div><div class=\"container page\"><div class=\"row\"><div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div><div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div></div></div></div>",
+                      "childNodes": [
+                        {
+                          "_tag": "element",
+                          "parentNode": "<div class=\"banner\"><div class=\"container\"><h1 class=\"logo-font\">conduit</h1><p>A place to share your knowledge.</p></div></div>",
+                          "childNodes": [
+                            {
+                              "_tag": "element",
+                              "parentNode": "<div class=\"container\"><h1 class=\"logo-font\">conduit</h1><p>A place to share your knowledge.</p></div>",
+                              "childNodes": [
+                                {
+                                  "_tag": "element",
+                                  "parentNode": "<h1 class=\"logo-font\">conduit</h1>",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "literal",
+                                      "node": "conduit"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "_tag": "element",
+                                  "parentNode": "<p>A place to share your knowledge.</p>",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "literal",
+                                      "node": "A place to share your knowledge."
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_tag": "element",
+                          "parentNode": "<div class=\"container page\"><div class=\"row\"><div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div><div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div></div></div>",
+                          "childNodes": [
+                            {
+                              "_tag": "element",
+                              "parentNode": "<div class=\"row\"><div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div><div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div></div>",
+                              "childNodes": [
+                                {
+                                  "_tag": "element",
+                                  "parentNode": "<div class=\"col-md-9\"><div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div><!--typed-L+SRnTP7qvA=--><div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div><!--/typed-L+SRnTP7qvA=--><!--many4_Yp-Z4Ycj3Ba-0X2ZL2O--><!--hole1--><ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul></div>",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<div class=\"feed-toggle\"><ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul></div>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<ul class=\"outline-active nav nav-pills\"><!--typed-era9ej8Fofk=--><li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li><!--/typed-era9ej8Fofk=--><!--hole0--></ul>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "hole",
+                                              "index": 0,
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "template",
+                                                  "hash": "era9ej8Fofk=",
+                                                  "childNodes": [
+                                                    {
+                                                      "_tag": "element",
+                                                      "parentNode": "<li class=\"nav-item\"><a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a></li>",
+                                                      "childNodes": [
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<a class=\"nav-link active\" href=\"/\"><!--text-->Global Feed<!--hole3--></a>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 3,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "<!--text-->"
+                                                                },
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "Global Feed"
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "_tag": "hole",
+                                      "index": 1,
+                                      "childNodes": [
+                                        {
+                                          "_tag": "many",
+                                          "key": "4_Yp-Z4Ycj3Ba-0X2ZL2O",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "template",
+                                              "hash": "L+SRnTP7qvA=",
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "element",
+                                                  "parentNode": "<div class=\"article-preview\"><div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div><a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a></div>",
+                                                  "childNodes": [
+                                                    {
+                                                      "_tag": "element",
+                                                      "parentNode": "<div class=\"article-meta\"><a href=\"/profile/length\"><img src=\"*;:>\"></a><div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div><button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button></div>",
+                                                      "childNodes": [
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<a href=\"/profile/length\"><img src=\"*;:>\"></a>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "element",
+                                                              "parentNode": "<img src=\"*;:>\">",
+                                                              "childNodes": []
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<div class=\"info\"><a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a><span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span></div>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "element",
+                                                              "parentNode": "<a href=\"/profile/length\" class=\"author\"><!--text-->length<!--hole5--></a>",
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "hole",
+                                                                  "index": 5,
+                                                                  "childNodes": [
+                                                                    {
+                                                                      "_tag": "literal",
+                                                                      "node": "<!--text-->"
+                                                                    },
+                                                                    {
+                                                                      "_tag": "literal",
+                                                                      "node": "length"
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "_tag": "element",
+                                                              "parentNode": "<span class=\"date\"><!--text-->1969-12-31T23:59:59.986Z<!--hole6--></span>",
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "hole",
+                                                                  "index": 6,
+                                                                  "childNodes": [
+                                                                    {
+                                                                      "_tag": "literal",
+                                                                      "node": "<!--text-->"
+                                                                    },
+                                                                    {
+                                                                      "_tag": "literal",
+                                                                      "node": "1969-12-31T23:59:59.986Z"
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<button class=\"btn btn-outline-primary btn-sm pull-xs-right\"><i class=\"ion-heart\"></i><!--text-->-160781762560<!--hole7--></button>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "element",
+                                                              "parentNode": "<i class=\"ion-heart\"></i>",
+                                                              "childNodes": []
+                                                            },
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 7,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "<!--text-->"
+                                                                },
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "-160781762560"
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "_tag": "element",
+                                                      "parentNode": "<a href=\"/article/l\" class=\"preview-link\"><h1><!--text-->\"<!--hole10--></h1><p><!--text-->/ mX<!--hole11--></p><span>Read more...</span><ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul></a>",
+                                                      "childNodes": [
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<h1><!--text-->\"<!--hole10--></h1>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 10,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "<!--text-->"
+                                                                },
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "\""
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<p><!--text-->/ mX<!--hole11--></p>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 11,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "<!--text-->"
+                                                                },
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "/ mX"
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<span>Read more...</span>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "literal",
+                                                              "node": "Read more..."
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<ul class=\"tag-list\"><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--typed-tsvxbOkpgic=--><li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li><!--/typed-tsvxbOkpgic=--><!--hole12--></ul>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "template",
+                                                              "hash": "tsvxbOkpgic=",
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "element",
+                                                                  "parentNode": "<li class=\"tag-default tag-pill tag-outline\"><!--text-->@P^?J35<!--hole0--></li>",
+                                                                  "childNodes": [
+                                                                    {
+                                                                      "_tag": "hole",
+                                                                      "index": 0,
+                                                                      "childNodes": [
+                                                                        {
+                                                                          "_tag": "literal",
+                                                                          "node": "<!--text-->"
+                                                                        },
+                                                                        {
+                                                                          "_tag": "literal",
+                                                                          "node": "@P^?J35"
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "_tag": "template",
+                                                              "hash": "tsvxbOkpgic=",
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "element",
+                                                                  "parentNode": "<li class=\"tag-default tag-pill tag-outline\"><!--text-->?Z&fqOU<!--hole0--></li>",
+                                                                  "childNodes": [
+                                                                    {
+                                                                      "_tag": "hole",
+                                                                      "index": 0,
+                                                                      "childNodes": [
+                                                                        {
+                                                                          "_tag": "literal",
+                                                                          "node": "<!--text-->"
+                                                                        },
+                                                                        {
+                                                                          "_tag": "literal",
+                                                                          "node": "?Z&fqOU"
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 12,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "template",
+                                                                  "hash": "tsvxbOkpgic=",
+                                                                  "childNodes": [
+                                                                    {
+                                                                      "_tag": "element",
+                                                                      "parentNode": "<li class=\"tag-default tag-pill tag-outline\"><!--text-->&<!--hole0--></li>",
+                                                                      "childNodes": [
+                                                                        {
+                                                                          "_tag": "hole",
+                                                                          "index": 0,
+                                                                          "childNodes": [
+                                                                            {
+                                                                              "_tag": "literal",
+                                                                              "node": "<!--text-->"
+                                                                            },
+                                                                            {
+                                                                              "_tag": "literal",
+                                                                              "node": "&"
+                                                                            }
+                                                                          ]
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<ul class=\"pagination\"><li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li><li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li></ul>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<li class=\"page-item active\"><a class=\"page-link\" href=\"\">1</a></li>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "element",
+                                              "parentNode": "<a class=\"page-link\" href=\"\">1</a>",
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "1"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<li class=\"page-item\"><a class=\"page-link\" href=\"\">2</a></li>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "element",
+                                              "parentNode": "<a class=\"page-link\" href=\"\">2</a>",
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "literal",
+                                                  "node": "2"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "_tag": "element",
+                                  "parentNode": "<div class=\"col-md-3\"><div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div></div>",
+                                  "childNodes": [
+                                    {
+                                      "_tag": "element",
+                                      "parentNode": "<div class=\"sidebar\"><p>Popular Tags</p><div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div></div>",
+                                      "childNodes": [
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<p>Popular Tags</p>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "literal",
+                                              "node": "Popular Tags"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "_tag": "element",
+                                          "parentNode": "<div class=\"tag-list\"><!--typed-oOP5m/jQWeM=--><a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a><!--/typed-oOP5m/jQWeM=--><!--many?#--><!--hole2--></div>",
+                                          "childNodes": [
+                                            {
+                                              "_tag": "hole",
+                                              "index": 2,
+                                              "childNodes": [
+                                                {
+                                                  "_tag": "many",
+                                                  "key": "?#",
+                                                  "childNodes": [
+                                                    {
+                                                      "_tag": "template",
+                                                      "hash": "oOP5m/jQWeM=",
+                                                      "childNodes": [
+                                                        {
+                                                          "_tag": "element",
+                                                          "parentNode": "<a href=\"/?tag=?#\" class=\"tag-pill tag-default\"><!--text-->?#<!--hole2--></a>",
+                                                          "childNodes": [
+                                                            {
+                                                              "_tag": "hole",
+                                                              "index": 2,
+                                                              "childNodes": [
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "<!--text-->"
+                                                                },
+                                                                {
+                                                                  "_tag": "literal",
+                                                                  "node": "?#"
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_tag": "hole",
+          "index": 2,
+          "childNodes": [
+            {
+              "_tag": "template",
+              "hash": "Zlq5/1+cq6k=",
+              "childNodes": [
+                {
+                  "_tag": "element",
+                  "parentNode": "<footer><div class=\"container\"><a href=\"/\" class=\"logo-font\">conduit</a><span class=\"attribution\">An interactive learning project from<a href=\"https://thinkster.io\">Thinkster</a>. Code & design licensed under MIT.</span></div></footer>",
+                  "childNodes": [
+                    {
+                      "_tag": "element",
+                      "parentNode": "<div class=\"container\"><a href=\"/\" class=\"logo-font\">conduit</a><span class=\"attribution\">An interactive learning project from<a href=\"https://thinkster.io\">Thinkster</a>. Code & design licensed under MIT.</span></div>",
+                      "childNodes": [
+                        {
+                          "_tag": "element",
+                          "parentNode": "<a href=\"/\" class=\"logo-font\">conduit</a>",
+                          "childNodes": [
+                            {
+                              "_tag": "literal",
+                              "node": "conduit"
+                            }
+                          ]
+                        },
+                        {
+                          "_tag": "element",
+                          "parentNode": "<span class=\"attribution\">An interactive learning project from<a href=\"https://thinkster.io\">Thinkster</a>. Code & design licensed under MIT.</span>",
+                          "childNodes": [
+                            {
+                              "_tag": "literal",
+                              "node": "An interactive learning project from"
+                            },
+                            {
+                              "_tag": "element",
+                              "parentNode": "<a href=\"https://thinkster.io\">Thinkster</a>",
+                              "childNodes": [
+                                {
+                                  "_tag": "literal",
+                                  "node": "Thinkster"
+                                }
+                              ]
+                            },
+                            {
+                              "_tag": "literal",
+                              "node": ". Code & design licensed under MIT."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

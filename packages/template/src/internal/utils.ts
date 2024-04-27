@@ -6,6 +6,8 @@ import { isSome } from "effect/Option"
 import { uncapitalize } from "effect/String"
 import { TestClock } from "effect/TestClock"
 import { TEXT_START, TYPED_START } from "../Meta.js"
+import { CouldNotFindCommentError } from "./errors.js"
+import { getNodes, type HydrationNode } from "./v2/hydration-template.js"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE
@@ -34,19 +36,31 @@ export function findHoleComment(parent: Element, index: number) {
     }
   }
 
-  throw new Error(`Unable to find hole comment for index ${index}`)
+  throw new CouldNotFindCommentError(index)
 }
 
 const previousComments = new Set([TEXT_START, TYPED_START])
 
-export function getPreviousNodes(comment: Node, index: number) {
+export function getPreviousNodes(comment: Node, index: number, hash?: string) {
   const nodes: Array<Node> = []
   let node = comment.previousSibling
   const previousHole = `hole${index - 1}`
+  const typedHash = hash ? `typed-${hash}` : ""
 
   previousComments.add(previousHole)
 
-  while (node && !previousComments.has(String(node.nodeValue))) {
+  while (node) {
+    if (isComment(node)) {
+      if (previousComments.has(node.data)) {
+        break
+      }
+
+      if (node.data === typedHash) {
+        nodes.unshift(node)
+        break
+      }
+    }
+
     nodes.unshift(node)
     node = node.previousSibling
   }
@@ -60,43 +74,21 @@ export const findPath = (node: ParentChildNodes, path: Chunk.Chunk<number>): Nod
   Chunk.reduce(path, node, ({ childNodes }, index) => childNodes[index]) as Node
 
 export const findHydratePath = (
-  node: ParentChildNodes,
-  hash: string,
-  path: Chunk.Chunk<number>,
-  parentHash?: string
+  node: HydrationNode,
+  path: Chunk.Chunk<number>
 ): Node => {
-  return Chunk.reduce(
-    path,
-    node,
-    ({ childNodes }, index) => filterNestedTemplates(childNodes, hash, parentHash)[index]
-  ) as Node
-}
-
-function filterNestedTemplates(childNodes: ArrayLike<Node>, hash: string, parentHash?: string): Array<Node> {
-  const nodes: Array<Node> = []
-  const hashStart = `typed-${hash}`
-  const parentHashStart = parentHash ? `typed-${parentHash}` : ""
-
-  let inTemplate = false
-  for (let i = 0; i < childNodes.length; ++i) {
-    const node = childNodes[i]
-
-    if (isComment(node)) {
-      if (node.data.startsWith("typed-")) {
-        inTemplate = node.data !== hashStart && node.data !== parentHashStart
-      } else if (node.data.startsWith("/typed-")) {
-        inTemplate = false
-      } else if (node.data.startsWith("many")) {
-        continue
-      } else {
-        nodes.push(node)
-      }
-    } else if (!inTemplate) {
-      nodes.push(node)
-    }
+  if (Chunk.isEmpty(path)) {
+    return getNodes(node)[0]
   }
 
-  return nodes
+  const [first, ...rest] = path
+
+  let current: Node = getNodes(node)[first]
+  for (const index of rest) {
+    current = current.childNodes[index]
+  }
+
+  return current
 }
 
 export interface ParentChildNodes {

@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import { isNullOrUndefined } from "./internal/v2/helpers.js"
 import type {
   Attribute,
   ElementNode,
@@ -207,11 +208,11 @@ type AttrMap = {
 }
 
 const attrMap: AttrMap = {
-  attribute: (attr) => new TextChunk(` ${attr.name}="${attr.value}"`),
-  attr: (attr) => new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${value}"`)),
+  attribute: (attr) => new TextChunk(` ${attr.name}="${escape(attr.value)}"`),
+  attr: (attr) => new PartChunk(attr, (value) => (value == null ? `` : ` ${attr.name}="${escape(value)}"`)),
   boolean: (attr) => new TextChunk(" " + attr.name),
   "boolean-part": (attr) => new PartChunk(attr, (value) => (value ? ` ${attr.name}` : "")),
-  "className-part": (attr) => new PartChunk(attr, (value) => (value ? ` class="${value}"` : "")),
+  "className-part": (attr) => new PartChunk(attr, (value) => (value ? ` class="${escape(value)}"` : "")),
   data: (attr) =>
     new PartChunk(attr, (value) => value == null ? `` : datasetToString(value as Readonly<Record<string, string>>)),
   event: () => new TextChunk(""),
@@ -231,7 +232,7 @@ const attrMap: AttrMap = {
             if (key[0] === "@") return []
             if (key[0] === ".") return [`${key}="${escape(value)}"`]
             if (key === "ref") return []
-            if (key.toLowerCase() === "classname") return `class="${value}"`
+            if (key.toLowerCase() === "classname") return `class="${escape(value)}"`
 
             return [`${key}="${value}"`]
           }).join(" ")
@@ -244,13 +245,13 @@ const attrMap: AttrMap = {
     new SparsePartChunk(attr, (values) => {
       return values == null
         ? ``
-        : ` ${attr.name}="${Array.isArray(values) ? values.filter(isString).join("") : values}"`
+        : ` ${attr.name}="${Array.isArray(values) ? escape(values.filter(isString).join("")) : escape(values)}"`
     }),
   "sparse-class-name": (attr) =>
     new SparsePartChunk(attr, (values) => {
       return values == null
         ? ``
-        : ` class="${Array.isArray(values) ? values.filter(isString).join("") : values}"`
+        : ` class="${Array.isArray(values) ? escape(values.filter(isString).join("")) : escape(values)}"`
     }),
   text: (attr) => new TextChunk(attr.value)
 }
@@ -265,7 +266,7 @@ function isString(value: unknown): value is string {
 
 function datasetToString(dataset: Readonly<Record<string, string | undefined>>) {
   const s = Object.entries(dataset)
-    .map(([key, value]) => (value === undefined ? `data-${key}` : `data-${key}="${value}"`))
+    .map(([key, value]) => (value === undefined ? `data-${key}` : `data-${key}="${escape(value)}"`))
     .join(" ")
 
   return s.length === 0 ? "" : " " + s
@@ -282,12 +283,26 @@ function closeTag(tagName: string): string {
 /**
  * @since 1.0.0
  */
-export function escape(s: unknown) {
+export function escape(s: unknown): string {
   switch (typeof s) {
     case "string":
     case "number":
     case "boolean":
+    case "bigint":
       return escapeHtml(String(s))
+    case "object": {
+      if (isNullOrUndefined(s)) {
+        return ""
+      } else if (Array.isArray(s)) {
+        return s.map(escape).join("")
+      } else if (s instanceof Date) {
+        return escapeHtml(s.toISOString())
+      } else if (s instanceof RegExp) {
+        return escapeHtml(s.toString())
+      } else {
+        return escapeHtml(JSON.stringify(s))
+      }
+    }
     default:
       return escapeHtml(JSON.stringify(s))
   }

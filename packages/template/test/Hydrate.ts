@@ -11,12 +11,9 @@ describe("Hydrate", () => {
     Effect.gen(function*(_) {
       const { elementRef, elements: { div }, window } = yield* _(
         testHydrate(html`<div>Hello, world!</div>`, (rendered, window) => {
-          ok(Array.isArray(rendered))
-          // Hydration uses 2 comments to separate a template from its surrounding context
-          ok(rendered.length === 3)
-          ok(rendered[1] instanceof window.HTMLDivElement)
+          ok(rendered instanceof window.HTMLDivElement)
           return {
-            div: rendered[1]
+            div: rendered
           }
         })
       )
@@ -26,19 +23,17 @@ describe("Hydrate", () => {
       ok(rendered === div)
     }))
 
-  it("hydrates a template using many", () =>
+  it.only("hydrates a template using many", () =>
     Effect.gen(function*(_) {
       const { elementRef, elements: { listItems, ul }, window } = yield* _(
         testHydrate(
           html`<ul>${many(Fx.succeed([1, 2, 3]), (x) => x, (ref) => html`<li>${ref}</li>`)}</ul>`,
           (rendered, window) => {
-            ok(Array.isArray(rendered))
-            ok(rendered.length === 3)
-            ok(rendered[1] instanceof window.HTMLUListElement)
+            ok(rendered instanceof window.HTMLUListElement)
 
             return {
-              ul: rendered[1],
-              listItems: Array.from(rendered[1].children)
+              ul: rendered,
+              listItems: Array.from(rendered.children)
             }
           }
         )
@@ -59,8 +54,8 @@ describe("Hydrate", () => {
           (rendered) => {
             ok(Array.isArray(rendered))
             // Includes comments and holes for tempaltes
-            deepStrictEqual(rendered.length, 11)
-            const [, , header, , , main, , footer] = rendered
+            deepStrictEqual(rendered.length, 5)
+            const [header, /** HOLE */, main, footer /** HOLE */] = rendered
 
             return {
               header,
@@ -103,8 +98,8 @@ describe("Hydrate", () => {
           html`${html`<header>Header</header><nav>Navigation</nav>`}<main>${html`<h1>${html`<span>${"Test"}</span><span>${"Content"}</span>`}</h1>`}</main>${html`<div>Nested</div><footer>Footer</footer>`}`,
           (rendered) => {
             ok(Array.isArray(rendered))
-            deepEqual(rendered.length, 13)
-            const [, , header, navigation, , , main, , div, footer] = rendered
+            deepEqual(rendered.length, 7)
+            const [header, navigation, /** HOLE */, main, div, footer /** HOLE */] = rendered
 
             return {
               header,

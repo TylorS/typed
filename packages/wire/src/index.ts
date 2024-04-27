@@ -221,6 +221,6 @@ export function toHtml(node: Rendered): string {
   if (isElement(node)) return node.outerHTML
   if (isText(node)) return node.data
   if (isComment(node)) return `<!--${node.data}-->`
-  if (isDocumentFragment(node)) return Array.from(node.childNodes).map(toHtml).join("")
+  if (isDocumentFragment(node)) return Array.from(node.childNodes ?? []).map(toHtml).join("")
   return node.nodeValue || ""
 }

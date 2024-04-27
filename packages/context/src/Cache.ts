@@ -17,7 +17,7 @@ import { Tag } from "./Tag.js"
  * @since 1.0.0
  * @category models
  */
-export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
+export interface Cache<I, K, A, E> extends Tag<I, C.Cache<K, A, E>> {
   readonly get: (key: K) => Effect<A, E, I>
 
   readonly getEither: (key: K) => Effect<Either<A, A>, E, I>
@@ -30,14 +30,14 @@ export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
     options: {
       readonly capacity: number
       readonly timeToLive: DurationInput
-      readonly lookup: C.Lookup<K, R, E, A>
+      readonly lookup: C.Lookup<K, A, E, R>
     }
   ) => Layer.Layer<I, never, R>
 
   readonly makeWith: <R>(
     options: {
       readonly capacity: number
-      readonly lookup: C.Lookup<K, R, E, A>
+      readonly lookup: C.Lookup<K, A, E, R>
       readonly timeToLive: (exit: Exit<A, E>) => DurationInput
     }
   ) => Layer.Layer<I, never, R>
@@ -48,15 +48,15 @@ export interface Cache<I, K, E, A> extends Tag<I, C.Cache<K, E, A>> {
  * @since 1.0.0
  * @category constructors
  */
-export function Cache<K, E, A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
-  <const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
+export function Cache<K, A, E = never>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, A, E>
+  <const I>(identifier: I): Cache<IdentifierOf<I>, K, A, E>
 } {
-  function makeCache<const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
-  function makeCache<const I>(identifier: I): Cache<IdentifierOf<I>, K, E, A>
-  function makeCache<const I extends IdentifierInput<any>>(identifier: I): Cache<IdentifierOf<I>, K, E, A> {
-    const tag = Tag<I, C.Cache<K, E, A>>(identifier).pipe(withActions)
-    const self: Omit<Cache<IdentifierOf<I>, K, E, A>, keyof typeof tag> = {
+  function makeCache<const I extends IdentifierFactory<any>>(identifier: I): Cache<IdentifierOf<I>, K, A, E>
+  function makeCache<const I>(identifier: I): Cache<IdentifierOf<I>, K, A, E>
+  function makeCache<const I extends IdentifierInput<any>>(identifier: I): Cache<IdentifierOf<I>, K, A, E> {
+    const tag = Tag<I, C.Cache<K, A, E>>(identifier).pipe(withActions)
+    const self: Omit<Cache<IdentifierOf<I>, K, A, E>, keyof typeof tag> = {
       get: (key) => tag.withEffect((cache) => cache.get(key)),
       getEither: (key) => tag.withEffect((cache) => cache.getEither(key)),
       refresh: (key) => tag.withEffect((cache) => cache.refresh(key)),

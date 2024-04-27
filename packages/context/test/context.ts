@@ -194,7 +194,7 @@ describe(__filename, () => {
 
   describe(Context.Cache, () => {
     it("allows creating a Cache in the effect context", async () => {
-      const cache = Context.Cache<string, never, number>()("test")
+      const cache = Context.Cache<string, number>()("test")
       const test = cache.get("foo").pipe(
         Effect.provide(cache.make({ capacity: 1, timeToLive: 1000, lookup: () => Effect.succeed(1) }))
       )

@@ -20,7 +20,7 @@ import * as Fiber from "effect/Fiber"
 import type * as Scope from "effect/Scope"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
-import { renderToHtml, renderToHtmlString, serverLayer } from "./Html.js"
+import { renderToHtml, renderToHtmlString, serverLayer, staticLayer } from "./Html.js"
 import { hydrate, hydrateLayer } from "./Hydrate.js"
 import { adjustTime } from "./internal/utils.js"
 import { render, renderLayer } from "./Render.js"
@@ -175,7 +175,7 @@ export function click<E>(
 
 // internals
 
-function getOrMakeWindow(
+export function getOrMakeWindow(
   options?: HappyDOMOptions
 ): Effect.Effect<Window & GlobalThis, never, Scope.Scope> {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
@@ -241,7 +241,7 @@ export function testHydrate<R, E, Elements>(
     body.innerHTML = html
 
     const rendered = Array.from(body.childNodes)
-    const elements = f(rendered.length === 1 ? rendered[0] : rendered, window)
+    const elements = f(fromRendered(rendered), window)
     const elementRef = yield* _(ElementRef.make())
     const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
     const fiber = yield* _(
@@ -259,20 +259,11 @@ export function testHydrate<R, E, Elements>(
                 })
               )
             ),
-          (rendered) => {
-            const elements = Array.isArray(rendered)
-              ? rendered.filter((x) =>
-                isComment(x) ? !(x.data.startsWith("typed") || x.data.startsWith("/typed")) : true
-              )
-              : rendered
-
-            return ElementRef.set(
+          (rendered) =>
+            ElementRef.set(
               elementRef,
-              Array.isArray(elements) && elements.length === 1
-                ? elements[0]
-                : elements
+              fromRendered(rendered)
             )
-          }
         )),
       Effect.provide(hydrateLayer(window)),
       Effect.forkScoped
@@ -303,6 +294,16 @@ export function testHydrate<R, E, Elements>(
   })
 }
 
+function fromRendered(rendered: Rendered) {
+  const elements = Array.isArray(rendered)
+    ? rendered.filter((x) => isComment(x) ? !(x.data.startsWith("typed") || x.data.startsWith("/typed")) : true)
+    : rendered
+
+  return Array.isArray(elements) && elements.length === 1
+    ? elements[0]
+    : elements
+}
+
 const typedTemplateStartCommentRegex =
   /<!--typed-((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}={2}))-->/g
 const typedTemplateEndCommentRegex =
@@ -323,32 +324,32 @@ export function stripTypedTemplateComments(html: string) {
 /**
  * @since 1.0.0
  */
-export function testHtmlString<R, E>(
-  fx: Fx.Fx<RenderEvent, E, R>,
+export function testHtmlString<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
 ): Effect.Effect<
   string,
   E,
   | Scope.Scope
   | Exclude<
     R,
-    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment 
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment
   >
 > {
-  return Effect.provide(Effect.map(renderToHtmlString(fx), stripTypedTemplateComments), serverLayer)
+  return Effect.provide(renderToHtmlString(fx), staticLayer)
 }
 
 /**
  * @since 1.0.0
  */
-export function testHtmlChunks<R, E, Elements>(
-  fx: Fx.Fx<RenderEvent, E, R>,
+export function testHtmlChunks<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
 ): Effect.Effect<
   ReadonlyArray<string>,
   E,
   | Scope.Scope
   | Exclude<
     R,
-    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment 
+    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment
   >
 > {
   return Fx.toReadonlyArray(Fx.provide(Fx.map(renderToHtml(fx), stripTypedTemplateComments), serverLayer))

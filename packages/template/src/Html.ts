@@ -310,7 +310,7 @@ function unwrapRenderable<E, R>(renderable: Renderable<any, any>): Fx.Fx<any, E,
     case "object": {
       if (renderable === null || renderable === undefined) return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return Fx.tuple(renderable.map(unwrapRenderable)) as any
+        return Fx.mergeOrdered(renderable.map((r) => takeOneIfNotRenderEvent(unwrapRenderable(r), true, false))) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {

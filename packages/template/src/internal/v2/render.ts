@@ -193,8 +193,11 @@ function setupPart(
       return setupDataPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "event":
       return setupEventPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
-    case "node":
-      return setupNodePart(part, findPath(ctx.content, path) as Element, ctx, false)
+    case "node": {
+      const parent = findPath(ctx.content, path) as Element
+      const comment = findHoleComment(parent, part.index)
+      return setupNodePart(part, comment, ctx, null, [])
+    }
     case "properties":
       return setupPropertiesPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "property":
@@ -212,8 +215,11 @@ function setupPart(
       return setupSparseClassNamePart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-comment":
       return setupSparseCommentPart(part, findPath(ctx.content, path) as Comment, ctx)
-    case "text-part":
-      return setupTextPart(part, path, ctx)
+    case "text-part": {
+      const parent = findPath(ctx.content, path) as Element
+      const comment = findHoleComment(parent, part.index)
+      return setupTextPart(part, comment, ctx)
+    }
   }
 }
 
@@ -319,12 +325,12 @@ export function getEventHandler<E, R>(
 
 export function setupNodePart(
   { index }: Template.NodePart,
-  parent: Element,
+  comment: Comment,
   ctx: TemplateContext,
-  isHydrating: boolean
+  text: Text | null,
+  nodes: Array<Node>
 ) {
-  const comment = findHoleComment(parent, index)
-  const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, isHydrating)
+  const part = SyncPartsInternal.makeNodePart(index, comment, ctx.document, text, nodes)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
 }
@@ -450,14 +456,19 @@ export function setupSparseCommentPart(
   )
 }
 
-export function setupTextPart({ index }: Template.TextPartNode, path: Chunk<number>, ctx: TemplateContext) {
-  const parent = findPath(ctx.content, path) as HTMLElement | SVGElement
-  const comment = findHoleComment(parent, index)
-  const text = ctx.document.createTextNode("")
-  comment.parentNode!.insertBefore(text, comment)
+export function setupTextPart({ index }: Template.TextPartNode, comment: Comment, ctx: TemplateContext) {
+  const text = comment.previousSibling
+    ? SyncPartsInternal.getPreviousTextSibling(comment.previousSibling) ?? createText(ctx.document, comment)
+    : createText(ctx.document, comment)
   const part = SyncPartsInternal.makeTextPart(index, text)
   const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
+}
+
+function createText(document: Document, comment: Comment) {
+  const text = document.createTextNode("")
+  comment.parentNode!.insertBefore(text, comment)
+  return text
 }
 
 export function matchSyncPart(
@@ -478,6 +489,27 @@ export function matchSyncPart(
       return null
     }
   })
+}
+
+function unwrapRenderable<E, R>(renderable: unknown): Fx.Fx<any, E, R> {
+  switch (typeof renderable) {
+    case "undefined":
+    case "object": {
+      if (renderable === null || renderable === undefined) return Fx.succeed(null)
+      else if (Array.isArray(renderable)) {
+        return renderable.length === 0
+          ? Fx.succeed(null)
+          // TODO: We need to ensure the ordering of these values in server environments
+          : Fx.map(Fx.tuple(renderable.map(unwrapRenderable)), (xs) => xs.flat()) as any
+      } else if (Fx.TypeId in renderable) {
+        return renderable as any
+      } else if (Effect.EffectTypeId in renderable) {
+        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<E, R>))
+      } else return Fx.succeed(renderable as any)
+    }
+    default:
+      return Fx.succeed(renderable)
+  }
 }
 
 export function runSyncUpdate(
@@ -510,6 +542,8 @@ export function matchRenderable(
   } else if (isDirective<any, any>(renderable)) {
     ctx.expected++
     return matches.Directive(renderable)
+  } else if (Array.isArray(renderable)) {
+    return matches.Fx(unwrapRenderable(renderable))
   } else {
     return matches.Otherwise(renderable)
   }

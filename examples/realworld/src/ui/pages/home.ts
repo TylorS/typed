@@ -26,7 +26,7 @@ export const route = Route.home
 //   )
 
 export const main = Fx.gen(function*(_) {
-  const articles = yield* _(Articles.list(defaultGetArticlesInput))
+  const articles = yield* _(RefArray.make(Articles.list(defaultGetArticlesInput)))
   const tagsList = yield* _(RefArray.make(Tags.get()))
 
   return html`<div class="home-page">
@@ -48,7 +48,7 @@ export const main = Fx.gen(function*(_) {
           </ul>
         </div>
 
-        ${articles.map(ArticlePreview)}
+        ${many(articles, (a) => a.id, Fx.switchMap(ArticlePreview))}
 
         <ul class="pagination">
           <li class="page-item active">

@@ -322,6 +322,9 @@ class Parser {
       switch (match) {
         case "attr": {
           const parts = parseTextAndParts(value, (index) => new Template.AttrPartNode(name, index), false)
+
+          if (parts.length === 0) return [true, new Template.AttributeNode(name, "")]
+
           if (parts.length === 1) {
             if (parts[0]._tag === "text") {
               return [true, new Template.AttributeNode(name, parts[0].value)]

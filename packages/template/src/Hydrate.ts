@@ -12,7 +12,8 @@ import * as Fx from "@typed/fx/Fx"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import { HydrateContext } from "./internal/HydrateContext.js"
-import { findRootParentChildNodes, hydrateTemplate } from "./internal/v2/hydrate.js"
+import { hydrateTemplate } from "./internal/v2/hydrate.js"
+import { getHydrationRoot } from "./internal/v2/hydration-template.js"
 import { attachRoot } from "./internal/v2/render.js"
 import type { ToRendered } from "./Render.js"
 import * as RenderContext from "./RenderContext.js"
@@ -61,7 +62,7 @@ export function hydrate<R, E, T extends RenderEvent | null>(
       RootElement
     )
     const ctx: HydrateContext = {
-      where: findRootParentChildNodes(rootElement),
+      where: getHydrationRoot(rootElement),
       rootIndex: -1,
       parentTemplate: null,
       hydrate: true

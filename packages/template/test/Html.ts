@@ -334,9 +334,7 @@ describe("Html", () => {
         `</li></ul></div>`,
         TEXT_START,
         TYPED_HOLE(1),
-        `<ul class="pagination"><li class="page-item active"><a class="page-link"`,
-        `>1</a></li><li class="page-item"><a class="page-link"`,
-        `>2</a></li></ul></div><div class="col-md-3"><div class="sidebar"><p>Popular Tags</p><div class="tag-list">`,
+        `<ul class="pagination"><li class="page-item active"><a class="page-link" href="">1</a></li><li class="page-item"><a class="page-link" href="">2</a></li></ul></div><div class="col-md-3"><div class="sidebar"><p>Popular Tags</p><div class="tag-list">`,
         TEXT_START,
         TYPED_HOLE(2),
         `</div></div></div></div></div></div>`

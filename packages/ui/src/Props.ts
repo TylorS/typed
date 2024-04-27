@@ -9,7 +9,7 @@ import * as EventHandler from "@typed/template/EventHandler"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Rendered } from "@typed/wire"
 import { Effect } from "effect"
-import type { ReadonlyRecord } from "effect"
+import type { Record } from "effect"
 import type { HTMLPropertiesMap } from "./dom-properties.js"
 
 /**
@@ -74,8 +74,8 @@ export type RefOf<T extends Rendered> = {
  */
 export type DataProps = {
   readonly data?:
-    | ReadonlyRecord.ReadonlyRecord<any, any>
-    | Placeholder.Any<ReadonlyRecord.ReadonlyRecord<any, any>>
+    | Record.ReadonlyRecord<any, any>
+    | Placeholder.Any<Record.ReadonlyRecord<any, any>>
     | undefined
 }
 

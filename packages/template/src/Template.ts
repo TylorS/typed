@@ -2,11 +2,12 @@
  * @since 1.0.0
  */
 import type { Chunk } from "effect/Chunk"
+import { type Inspectable, NodeInspectSymbol } from "effect/Inspectable"
 
 /**
  * @since 1.0.0
  */
-export class Template {
+export class Template implements Inspectable {
   readonly _tag = "template"
 
   constructor(
@@ -16,6 +17,19 @@ export class Template {
     /// any nodes/elements into the template.
     readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: Chunk<number>]>
   ) {}
+
+  toJSON() {
+    return {
+      _tag: "template",
+      nodes: this.nodes,
+      hash: this.hash,
+      parts: this.parts.map(([part, path]) => [part, path.toJSON()])
+    }
+  }
+
+  [NodeInspectSymbol]() {
+    return this.toJSON()
+  }
 }
 
 /**

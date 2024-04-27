@@ -36,7 +36,7 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
             return Fx.keyed(values, {
               getKey,
               onValue: (ref, key) =>
-                Fx.provideService(f(ref, key), HydrateContext, { ...hydrateContext.value, manyIndex: key.toString() })
+                Fx.provideService(f(ref, key), HydrateContext, { ...hydrateContext.value, manyKey: key.toString() })
             })
           }
 

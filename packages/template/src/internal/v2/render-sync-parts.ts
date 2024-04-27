@@ -16,7 +16,7 @@ import {
 } from "./sync-parts.js"
 import type { SyncPart } from "./SyncPart.js"
 
-import { diffable } from "@typed/wire"
+import { diffable, isComment, toHtml } from "@typed/wire"
 import udomdiff from "udomdiff"
 import type { Directive } from "../../Directive.js"
 import { isDirective } from "../../Directive.js"
@@ -299,11 +299,9 @@ export function makeNodePart(
   index: number,
   comment: Comment,
   document: Document,
-  isHydrating: boolean
+  text: Text | null,
+  nodes: Array<Node>
 ) {
-  let text: Text | null = isHydrating ? getPreviousTextSibling(comment.previousSibling) : null
-  let nodes = isHydrating ? findPreviousNodes(comment, index) : []
-
   return new NodePartImpl(
     index,
     ({ value }) => {
@@ -342,13 +340,17 @@ export function getPreviousTextSibling(node: Node | null) {
   return null
 }
 
-function findPreviousNodes(comment: Comment, index: number) {
-  const previousIndex = `hole${index - 1}`
+export function findPreviousNodes(comment: Comment, index: number, hash: string) {
+  const previousComments = new Set([`hole${index - 1}`, `typed-${hash}`])
 
   const nodes: Array<Node> = []
 
   let node = comment.previousSibling
-  while (node && !isCommentWithValue(node, previousIndex)) {
+  while (node) {
+    if (isComment(node) && previousComments.has(node.data)) {
+      break
+    }
+
     nodes.unshift(node)
     node = node.previousSibling
   }
@@ -362,15 +364,24 @@ function diffChildren(
   nextNodes: Array<Node>,
   document: Document
 ) {
-  return udomdiff(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    comment.parentNode!,
-    // Document Fragments cannot be removed, so we filter them out
-    currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
-    nextNodes,
-    diffable(document),
-    comment
-  )
+  try {
+    return udomdiff(
+      comment.parentNode!,
+      // Document Fragments cannot be removed, so we filter them out
+      currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
+      nextNodes,
+      diffable(document),
+      comment
+    )
+  } catch (error) {
+    console.log({
+      comment: toHtml(comment),
+      currentNodes: currentNodes.map(toHtml),
+      nextNodes: nextNodes.map(toHtml)
+    })
+
+    throw error
+  }
 }
 
 function matchNodeValue<A, B>(value: unknown, onText: (text: string) => A, onNodes: (nodes: Array<Node>) => B): A | B {
