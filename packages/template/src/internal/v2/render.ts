@@ -36,7 +36,7 @@ export type TemplateContext = {
   /**
    * @internal
    */
-  templateIndex: number
+  spreadIndex: number
 
   readonly content: DocumentFragment
   readonly context: Context.Context<Scope.Scope>
@@ -144,7 +144,7 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
       renderContext,
       scope,
       values,
-      templateIndex: values.length,
+      spreadIndex: values.length,
       onCause
     }
 
@@ -380,7 +380,7 @@ export function setupPropertiesPart(
 
     for (const [key, value] of Object.entries(renderable as Record<string, any>)) {
       const [type, name] = keyToPartType(key)
-      const index = ++ctx.templateIndex
+      const index = ++ctx.spreadIndex
       switch (type) {
         case "attr":
           addEffect(setupAttrPart({ index, name }, element, ctx, value))
