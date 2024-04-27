@@ -16,7 +16,7 @@ import {
 } from "./sync-parts.js"
 import type { SyncPart } from "./SyncPart.js"
 
-import { diffable, isComment, toHtml } from "@typed/wire"
+import { diffable, isComment } from "@typed/wire"
 import udomdiff from "udomdiff"
 import type { Directive } from "../../Directive.js"
 import { isDirective } from "../../Directive.js"
@@ -364,24 +364,13 @@ function diffChildren(
   nextNodes: Array<Node>,
   document: Document
 ) {
-  try {
-    return udomdiff(
-      comment.parentNode!,
-      // Document Fragments cannot be removed, so we filter them out
-      currentNodes.filter((x) => x.nodeType !== x.DOCUMENT_FRAGMENT_NODE),
-      nextNodes,
-      diffable(document),
-      comment
-    )
-  } catch (error) {
-    console.log({
-      comment: toHtml(comment),
-      currentNodes: currentNodes.map(toHtml),
-      nextNodes: nextNodes.map(toHtml)
-    })
-
-    throw error
-  }
+  return udomdiff(
+    comment.parentNode!,
+    currentNodes,
+    nextNodes,
+    diffable(document),
+    comment
+  )
 }
 
 function matchNodeValue<A, B>(value: unknown, onText: (text: string) => A, onNodes: (nodes: Array<Node>) => B): A | B {
@@ -427,13 +416,6 @@ function renderEventToArray(x: unknown): Array<Node> {
 export function makeCommentPart(index: number, comment: Comment) {
   return new CommentPartImpl(index, ({ value }) => (comment.nodeValue = value ?? null), comment.textContent)
 }
-
-// TODO: RenderQueue should be ammended to allow Ref's to only emit once they're inserted into the DOM
-// TODO: Handle spread attributes/properties
-// TODO: Helpers for attaching different data structures to parts
-// TODO: Helpers for directives
-// TODO: Hydration need to support nested fragments of elements
-// TODO: Need to be able to configure replacement parts
 
 function matchRenderable<A, B, C, D>(
   renderable: Renderable<any, any>,
