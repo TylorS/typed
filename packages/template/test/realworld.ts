@@ -22,7 +22,7 @@ describe("Realworld", () => {
   describe("Home Page", () => {
     const home = layout(homePage)
 
-    it.only("generates correct hydration root", () =>
+    it("generates correct hydration root", () =>
       Effect.gen(function*(_) {
         const html = yield* _(renderToHtmlString(home))
         const { document } = yield* _(getOrMakeWindow())
@@ -70,7 +70,7 @@ describe("Realworld", () => {
         Router.withCurrentRoute(Route.home)
       ))
 
-    it.only("hydrates", () =>
+    it("hydrates", () =>
       Effect.gen(function*(_) {
         const { elementRef, elements, window } = yield* _(
           testHydrate(home, (rendered) => rendered).pipe(
