@@ -183,11 +183,6 @@ function setupPart(
     case "node": {
       const hole = findHydrationHole(getChildNodes(ctx.where), part.index)
       if (hole === null) {
-        console.log({
-          part,
-          path,
-          where: ctx.where
-        })
         throw new CouldNotFindCommentError(part.index)
       }
       return setupHydratedNodePart(part, hole, ctx)
