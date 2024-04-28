@@ -58,9 +58,9 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
   </section>`
 
 function TodoItem(todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
-  return Fx.genScoped(function*(_) {
+  return Fx.gen(function*() {
     // Track whether this todo is being edited
-    const isEditing = yield* _(RefSubject.of(false))
+    const isEditing = yield* RefSubject.of(false)
 
     // Track whether the todo is marked as completed
     const isCompleted = RefSubject.map(todo, Domain.isCompleted)

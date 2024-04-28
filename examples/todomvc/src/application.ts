@@ -51,18 +51,19 @@ export const AllAreCompleted: RefSubject.Computed<boolean, never, TodoList> = Re
 export const createTodo: Effect.Effect<Option.Option<Domain.Todo>, never, CreateTodo | TodoList | TodoText> = Effect
   .flatMap(TodoText, (text) =>
     Effect.if(text.trim() === "", {
-      onFalse: CreateTodo(text).pipe(
-        Effect.tap((todo) => RefArray.prepend(TodoList, todo)),
-        Effect.tap(() => RefSubject.set(TodoText, "")),
-        Effect.asSome
-      ),
-      onTrue: Effect.succeed(Option.none<Domain.Todo>())
+      onFalse: () =>
+        CreateTodo(text).pipe(
+          Effect.tap((todo) => RefArray.prepend(TodoList, todo)),
+          Effect.tap(() => RefSubject.set(TodoText, "")),
+          Effect.asSome
+        ),
+      onTrue: () => Effect.succeed(Option.none<Domain.Todo>())
     }))
 
 export const editTodo = (id: Domain.TodoId, text: string): Effect.Effect<Domain.TodoList, never, TodoList> =>
   Effect.if(text.trim() === "", {
-    onFalse: RefSubject.update(TodoList, Domain.editText(id, text)),
-    onTrue: RefSubject.update(TodoList, Domain.deleteTodo(id))
+    onFalse: () => RefSubject.update(TodoList, Domain.editText(id, text)),
+    onTrue: () => RefSubject.update(TodoList, Domain.deleteTodo(id))
   })
 
 export const toggleTodoCompleted: (id: Domain.TodoId) => Effect.Effect<Domain.TodoList, never, TodoList> = (id) =>

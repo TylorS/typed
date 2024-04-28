@@ -3,7 +3,7 @@ import { SchemaStorage } from "@typed/dom/Storage"
 import * as Fx from "@typed/fx/Fx"
 import * as Route from "@typed/route"
 import * as Router from "@typed/router"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, pipe } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 
@@ -23,7 +23,7 @@ const getTodos = todos.get({ errors: "all", onExcessProperty: "error" }).pipe(
 )
 
 // Everytime there is a change to our TodoList, write its value back to storage
-const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.unit)))
+const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.void)))
 
 /* #endregion */
 
@@ -45,10 +45,13 @@ export const filterStateToPath = (state: Domain.FilterState) => {
   }
 }
 
-const currentFilterState = Router.to(allRoute, () => Domain.FilterState.All)
-  .to(activeRoute, () => Domain.FilterState.Active)
-  .to(completedRoute, () => Domain.FilterState.Completed)
-  .redirect(allRoute)
+const currentFilterState = pipe(
+  Router.to(allRoute, () => Domain.FilterState.All)
+    .to(activeRoute, () => Domain.FilterState.Active)
+    .to(completedRoute, () => Domain.FilterState.Completed),
+  Router.redirectTo(allRoute),
+  Fx.switchMapCause(() => Fx.succeed(Domain.FilterState.All))
+)
 
 /* #endregion */
 

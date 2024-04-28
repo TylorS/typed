@@ -5,15 +5,15 @@ export { Brand }
 
 /* #region Model */
 
-export const TodoId: Schema.brand<Schema.$string, "TodoId"> = Schema.string.pipe(
+export const TodoId = Schema.String.pipe(
   Schema.brand("TodoId")
 )
 export type TodoId = Schema.Schema.Type<typeof TodoId>
 
 export const Todo = Schema.Struct({
   id: TodoId,
-  text: Schema.string,
-  completed: Schema.boolean,
+  text: Schema.String,
+  completed: Schema.Boolean,
   timestamp: Schema.DateFromString
 })
 export interface TodoJson extends Schema.Schema.Encoded<typeof Todo> {}
