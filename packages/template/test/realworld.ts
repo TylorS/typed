@@ -9,10 +9,14 @@ import * as Router from "@typed/router"
 import type { Placeholder, RenderEvent } from "@typed/template"
 import { EventHandler, html, many } from "@typed/template"
 import { renderToHtmlString, serverLayer } from "@typed/template/Html"
-import { findHydrationTemplate, getHydrationRoot } from "@typed/template/internal/v2/hydration-template"
+import {
+  findHydrationHole,
+  findHydrationTemplate,
+  getHydrationRoot
+} from "@typed/template/internal/v2/hydration-template"
 import { getOrMakeWindow, testHydrate } from "@typed/template/Test"
 import { describe, it } from "@typed/template/Vitest"
-import { isArray } from "@typed/wire"
+import { isArray, toHtml } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import { Effect, Option } from "effect"
 import { writeFileSync } from "fs"
@@ -22,7 +26,7 @@ describe("Realworld", () => {
   describe("Home Page", () => {
     const home = layout(homePage)
 
-    it("generates correct hydration root", () =>
+    it.only("generates correct hydration root", () =>
       Effect.gen(function*(_) {
         const html = yield* _(renderToHtmlString(home))
         const { document } = yield* _(getOrMakeWindow())
@@ -62,7 +66,9 @@ describe("Realworld", () => {
         deepStrictEqual(homePageHole.index, 1)
 
         deepStrictEqual(findHydrationTemplate(root.childNodes, ROOT_TEMPLATE_HASH), template)
+        deepStrictEqual(findHydrationHole(template.childNodes, 1), homePageHole)
 
+        writeFileSync("hole.json", JSON.stringify(findHydrationHole(template.childNodes, 1), null, 2))
         writeFileSync("realworld-home-root.json", JSON.stringify(root, null, 2))
       }).pipe(
         Effect.provide(serverLayer),
@@ -101,6 +107,8 @@ describe("Realworld", () => {
         ok(main.firstElementChild instanceof window.HTMLElement)
         ok(main.firstElementChild.tagName === "DIV")
         ok(main.firstElementChild.className === "home-page")
+
+        console.log(Array.from(main.childNodes, toHtml))
       }))
   })
 })

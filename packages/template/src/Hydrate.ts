@@ -63,7 +63,6 @@ export function hydrate<R, E, T extends RenderEvent | null>(
     )
     const ctx: HydrateContext = {
       where: getHydrationRoot(rootElement),
-      rootIndex: -1,
       parentTemplate: null,
       hydrate: true
     }

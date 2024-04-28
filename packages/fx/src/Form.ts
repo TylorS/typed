@@ -397,7 +397,7 @@ const deriveMakeEntries = <
       case "TypeLiteral": {
         const propertySignatures = ast.propertySignatures
 
-        return Effect.gen(function*(_) {
+        return Effect.gen(function*() {
           const entries: any = {}
 
           for (const prop of propertySignatures) {
@@ -406,20 +406,16 @@ const deriveMakeEntries = <
 
             if (prop.type._tag === "TypeLiteral") {
               entries[prop.name] = Form(
-                (yield* _(
-                  deriveMakeEntries(
-                    nested,
-                    ast
-                  )
+                (yield* deriveMakeEntries(
+                  nested,
+                  ast
                 )) as any
               )
             } else {
-              entries[prop.name] = yield* _(
-                FormEntry.derive<any, any, any>({
-                  name: prop.name,
-                  schema: S.make(ast)
-                })(nested as Fx<any, E, R>)
-              )
+              entries[prop.name] = yield* FormEntry.derive<any, any, any>({
+                name: prop.name,
+                schema: S.make(ast)
+              })(nested as Fx<any, E, R>)
             }
           }
 
@@ -447,7 +443,7 @@ const deriveMakeInputEntries = <
       case "TypeLiteral": {
         const propertySignatures = ast.propertySignatures
 
-        return Effect.gen(function*(_) {
+        return Effect.gen(function*() {
           const entries: any = {}
 
           for (const prop of propertySignatures) {
@@ -456,20 +452,16 @@ const deriveMakeInputEntries = <
 
             if (prop.type._tag === "TypeLiteral") {
               entries[prop.name] = Form(
-                (yield* _(
-                  deriveMakeInputEntries(
-                    nested,
-                    ast
-                  )
+                (yield* deriveMakeInputEntries(
+                  nested,
+                  ast
                 )) as any
               )
             } else {
-              entries[prop.name] = yield* _(
-                FormEntry.deriveInput<any, any, any>({
-                  name: prop.name,
-                  schema: S.make(ast)
-                })(nested as Fx<any, E, R>)
-              )
+              entries[prop.name] = yield* FormEntry.deriveInput<any, any, any>({
+                name: prop.name,
+                schema: S.make(ast)
+              })(nested as Fx<any, E, R>)
             }
           }
 

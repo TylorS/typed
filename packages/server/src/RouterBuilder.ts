@@ -202,20 +202,19 @@ const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
       PathInput,
       Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<Endpoint>>, Schema.Schema.All>
     >
-  const handler = Effect.gen(function*(_) {
-    const request = yield* _(ServerRequest)
-    const { params, queryParams } = yield* _(RouteHandler.getCurrentParams(route))
-    const response = yield* _(
-      requestParser.parseRequest(request, {
-        params,
-        searchParams: Object.fromEntries(queryParams.entries())
-      }),
+  const handler = Effect.gen(function*() {
+    const request = yield* ServerRequest
+    const { params, queryParams } = yield* RouteHandler.getCurrentParams(route)
+    const response = yield* requestParser.parseRequest(request, {
+      params,
+      searchParams: Object.fromEntries(queryParams.entries())
+    }).pipe(
       Effect.flatMap((input: any) => {
         const { security, ...restInput } = input
         return fn(restInput, security)
       })
     )
-    return yield* _(responseEncoder.encodeResponse(request, response))
+    return yield* responseEncoder.encodeResponse(request, response)
   })
 
   return RouteHandler.make(ApiEndpoint.getMethod(endpoint))(

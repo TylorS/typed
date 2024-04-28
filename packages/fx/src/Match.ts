@@ -166,17 +166,17 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
             when: When<R | R2 | Scope.Scope, E | E2, I, A, O>,
             value: A
           ) =>
-            Effect.gen(function*(_) {
+            Effect.gen(function*() {
               if (previous?.when === when) {
-                yield* _(RefSubject.set(previous.ref, value))
+                yield* RefSubject.set(previous.ref, value)
               } else {
                 // Interrupt any previous resources
                 if (previous !== undefined) {
-                  yield* _(previous.interrupt)
+                  yield* previous.interrupt
                 }
 
                 // RefSubject to pass along to our matching function
-                const refSubject = yield* _(RefSubject.of(value))
+                const refSubject = yield* RefSubject.of(value)
 
                 // Track if the case is ended
                 const hasEnded = MutableRef.make(false)
@@ -184,19 +184,17 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
                 const endSignal = Subject.unsafeMake<void>(0)
 
                 // Run the case
-                const fiber = yield* _(
-                  fork(
-                    Fx.mergeFirst(when.onMatch(refSubject), Fx.tap(endSignal, () => MutableRef.set(hasEnded, true)))
-                      .run(
-                        Sink.make(
-                          (cause) =>
-                            MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
-                              ? Effect.void
-                              : sink.onFailure(cause),
-                          (value) => MutableRef.get(hasEnded) ? Effect.void : sink.onSuccess(Option.some(value))
-                        )
+                const fiber = yield* fork(
+                  Fx.mergeFirst(when.onMatch(refSubject), Fx.tap(endSignal, () => MutableRef.set(hasEnded, true)))
+                    .run(
+                      Sink.make(
+                        (cause) =>
+                          MutableRef.get(hasEnded) || Cause.isInterruptedOnly(cause)
+                            ? Effect.void
+                            : sink.onFailure(cause),
+                        (value) => MutableRef.get(hasEnded) ? Effect.void : sink.onSuccess(Option.some(value))
                       )
-                  )
+                    )
                 )
 
                 previous = new Matched(
@@ -211,11 +209,11 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
             }).pipe(Effect.provideService(Scope.Scope, parentScope))
 
           function matchWhen<A>(input: I, when: When<R | R2 | Scope.Scope, E | E2, I, A, O>) {
-            return Effect.gen(function*(_) {
-              const matched = yield* _(when.guard(input))
+            return Effect.gen(function*() {
+              const matched = yield* when.guard(input)
 
               if (Option.isSome(matched)) {
-                yield* _(onMatch(when, matched.value))
+                yield* onMatch(when, matched.value)
 
                 return true
               } else {
@@ -225,14 +223,14 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
           }
 
           function matchInput(input: I) {
-            return Effect.gen(function*(_) {
+            return Effect.gen(function*() {
               // Allow failures to be accumulated, such that errors do not break the overall match
               // and additional matchers can be attempted against first
               const causes: Array<Cause.Cause<E | E2>> = []
 
               // If there's a previous match, attempt it first to avoid re-testing all cases in order
               if (previous !== undefined) {
-                const matchedExit = yield* _(matchWhen(input, previous.when), Effect.exit)
+                const matchedExit = yield* Effect.exit(matchWhen(input, previous.when))
 
                 if (Exit.isFailure(matchedExit)) {
                   causes.push(matchedExit.cause)
@@ -245,7 +243,7 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
                 // Don't test this case twice
                 if (when === previous?.when) continue
 
-                const matchedExit = yield* _(matchWhen(input, when), Effect.exit)
+                const matchedExit = yield* Effect.exit(matchWhen(input, when))
 
                 if (Exit.isFailure(matchedExit)) {
                   causes.push(matchedExit.cause)
@@ -256,13 +254,13 @@ class TypeMatcherImpl<I, O, E, R> implements TypeMatcher<I, O, E, R> {
 
               if (isNonEmptyReadonlyArray(causes)) {
                 const [first, ...rest] = causes
-                yield* _(sink.onFailure(reduce(rest, first, Cause.sequential)))
+                yield* sink.onFailure(reduce(rest, first, Cause.sequential))
               } else {
                 if (previous !== undefined) {
-                  yield* _(previous.interrupt)
+                  yield* previous.interrupt
                 }
 
-                yield* _(sink.onSuccess(Option.none()))
+                yield* sink.onSuccess(Option.none())
               }
             })
           }

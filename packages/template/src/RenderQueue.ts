@@ -98,8 +98,8 @@ const IDLE_START = RAF_END + 1
  * @since 1.0.0
  */
 export const mixed = (options?: IdleRequestOptions): Layer.Layer<RenderQueue> =>
-  RenderQueue.scoped(Effect.gen(function*(_) {
-    const scope = yield* _(Effect.scope)
+  RenderQueue.scoped(Effect.gen(function*() {
+    const scope = yield* Effect.scope
     const queues: Array<readonly [priorityRange: readonly [number, number], RenderQueue]> = [
       [[-1, -1], new SyncImpl()],
       [[0, MICRO_TASK_END], new MicroTaskImpl(scope)],

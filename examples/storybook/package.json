@@ -29,8 +29,8 @@
     "@storybook/html-vite": "^8.0.9",
     "@storybook/test": "^8.0.9",
     "@storybook/types": "^8.0.9",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "storybook": "^8.0.9",
     "vite": "^5.2.10"
   }

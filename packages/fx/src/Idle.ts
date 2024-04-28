@@ -159,12 +159,12 @@ export interface WhileIdleRequestOptions<R, E, R2, E2> extends IdleRequestOption
 export const whileIdle = <R, E, R2, E2>(
   options: WhileIdleRequestOptions<R, E, R2, E2>
 ): Effect.Effect<void, E | E2, Scope.Scope | R | R2> =>
-  Effect.gen(function*(_) {
-    while (yield* _(options.while)) {
-      const deadline = yield* _(whenIdle(options))
+  Effect.gen(function*() {
+    while (yield* options.while) {
+      const deadline = yield* whenIdle(options)
 
       while (shouldContinue(deadline)) {
-        yield* _(options.body)
+        yield* options.body
       }
     }
   })
@@ -246,12 +246,12 @@ class IdleQueueImpl<I> implements IdleQueue<I> {
             else {
               const [part, task] = result.value
               this.queue.delete(part)
-              yield* _(task)
+              yield* task
             }
           }
 
           if (this.queue.size > 0) {
-            yield* _(run)
+            yield* run
           } else {
             this.scheduled = false
           }

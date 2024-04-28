@@ -7,91 +7,47 @@ const MANY_PREFIX = `many`
 const HOLE_PREFIX = `hole`
 
 export function getHydrationRoot(root: HTMLElement): HydrationElement {
-  return new HydrationElement(root, getHydrationNodes(Array.from(root.childNodes)))
-}
+  const childNodes = Array.from(root.childNodes)
+  let hydrationNodes = getHydrationNodes(childNodes)
 
-type ProcessNodes = {
-  nodes: Array<Node>
-  out: Array<HydrationNode>
+  // If your whole template is wrapped in a single hole, unwrap it.
+  if (hydrationNodes.length === 1 && hydrationNodes[0]._tag === "hole") {
+    hydrationNodes = getChildNodes(hydrationNodes[0])
+  }
+
+  return new HydrationElement(root, hydrationNodes)
 }
 
 function getHydrationNodes(nodes: Array<Node>): Array<HydrationNode> {
   const out: Array<HydrationNode> = []
 
-  const toProcess: Array<ProcessNodes> = [
-    { nodes, out }
-  ]
+  for (let i = 0; i < nodes.length; ++i) {
+    const node = nodes[i]
 
-  while (toProcess.length > 0) {
-    const process = toProcess.shift()!
+    if (isComment(node)) {
+      if (node.data.startsWith(TYPED_TEMPLATE_PREFIX)) {
+        const hash = node.data.slice(TYPED_TEMPLATE_PREFIX.length)
+        const endIndex = getTemplateEndIndex(nodes, i, hash)
+        const childNodes = nodes.slice(i + 1, endIndex)
 
-    const { nodes, out } = process
+        out.push(new HydrationTemplate(hash, getHydrationNodes(childNodes)))
 
-    for (let i = 0; i < nodes.length; ++i) {
-      const node = nodes[i]
-
-      if (isComment(node)) {
-        if (node.data.startsWith(TYPED_TEMPLATE_PREFIX)) {
-          const hash = node.data.slice(TYPED_TEMPLATE_PREFIX.length)
-          const endIndex = getTemplateEndIndex(nodes, i, hash)
-          const childNodes = nodes.slice(i + 1, endIndex)
-
-          const childHydrationNodes: Array<HydrationNode> = []
-
-          out.push(new HydrationTemplate(hash, childHydrationNodes))
-
-          toProcess.push({
-            nodes: childNodes,
-            out: childHydrationNodes
-          })
-          i = endIndex
-        } else if (node.data.startsWith(MANY_PREFIX)) {
-          const last = out.pop()!
-          out.push(new HydrationMany(node.data.slice(MANY_PREFIX.length), node, [last]))
-        } else if (node.data.startsWith(HOLE_PREFIX)) {
-          // When we encounter HOLE comments we need to backtrack and find all nodes that are part of this hole.
-          const last = out.pop()!
-          const index = parseInt(node.data.slice(HOLE_PREFIX.length), 10)
-          if (last._tag === "many") {
-            // Pop all many nodes
-            const manyNodes: Array<HydrationNode> = [last]
-            while (out.length > 0 && out[out.length - 1]._tag === "many") {
-              manyNodes.unshift(out.pop()!)
-            }
-
-            out.push(new HydrationHole(index, node, manyNodes))
-          } else if (last._tag === "literal") {
-            // Pop all literal nodes
-            const literalNodes: Array<HydrationNode> = [last]
-            while (out.length > 0 && out[out.length - 1]._tag === "literal") {
-              literalNodes.unshift(out.pop()!)
-            }
-
-            out.push(new HydrationHole(index, node, literalNodes))
-          } else if (last._tag === "hole") {
-            // If the last node is a hole, we don't want to include it in this other hole. It probably means
-            // that `null` was rendered into this hole and no elements are present.
-            out.push(last)
-            out.push(new HydrationHole(index, node, []))
-          } else {
-            // Otherwise, just take the last Element or Template
-            out.push(new HydrationHole(index, node, [last]))
-          }
-        } else {
-          out.push(new HydrationLiteral(node))
-        }
-      } else if (isElement(node)) {
-        const childHydrationNodes: Array<HydrationNode> = []
-
-        out.push(new HydrationElement(node, childHydrationNodes))
-
-        toProcess.push({
-          nodes: Array.from(node.childNodes),
-          out: childHydrationNodes
-        })
+        i = endIndex
+      } else if (node.data.startsWith(MANY_PREFIX)) {
+        const last = out.pop()
+        out.push(new HydrationMany(node.data.slice(MANY_PREFIX.length), node, last ? [last] : []))
+      } else if (node.data.startsWith(HOLE_PREFIX)) {
+        const index = parseInt(node.data.slice(HOLE_PREFIX.length), 10)
+        const endIndex = getHoleEndIndex(nodes, i, index)
+        out.push(new HydrationHole(index, node, getHydrationNodes(nodes.slice(i + 1, endIndex))))
+        i = endIndex
       } else {
         out.push(new HydrationLiteral(node))
       }
+    } else if (isElement(node)) {
+      out.push(new HydrationElement(node, getHydrationNodes(Array.from(node.childNodes))))
+    } else {
+      out.push(new HydrationLiteral(node))
     }
   }
 
@@ -110,6 +66,20 @@ function getTemplateEndIndex(nodes: Array<Node>, start: number, hash: string): n
   }
 
   throw new Error(`Could not find end comment for template ${hash}`)
+}
+
+function getHoleEndIndex(nodes: Array<Node>, start: number, index: number): number {
+  const endHash = `/hole${index}`
+
+  for (let i = start; i < nodes.length; ++i) {
+    const node = nodes[i]
+
+    if (isComment(node) && node.data === endHash) {
+      return i
+    }
+  }
+
+  throw new Error(`Could not find end comment for hole ${index}`)
 }
 
 export class HydrationElement implements Inspectable {
@@ -235,11 +205,15 @@ export function findHydrationTemplate(
   nodes: Array<HydrationNode>,
   templateHash: string
 ): HydrationTemplate | null {
-  for (let i = 0; i < nodes.length; ++i) {
-    const node = nodes[i]
+  const toProcess: Array<HydrationNode> = [...nodes]
+
+  while (toProcess.length > 0) {
+    const node = toProcess.shift()!
 
     if (node._tag === "template" && node.hash === templateHash) {
       return node
+    } else if (node._tag === "element") {
+      toProcess.push(...node.childNodes)
     }
   }
 
@@ -252,7 +226,6 @@ export function findHydrationMany(
 ): HydrationMany | null {
   for (let i = 0; i < nodes.length; ++i) {
     const node = nodes[i]
-
     if (node._tag === "many" && node.key === key) {
       return node
     }
@@ -262,14 +235,12 @@ export function findHydrationMany(
 }
 
 export function findHydrationHole(nodes: Array<HydrationNode>, index: number): HydrationHole | null {
-  for (let i = 0; i < nodes.length; ++i) {
-    const node = nodes[i]
-
+  for (const node of nodes) {
     if (node._tag === "hole" && node.index === index) {
       return node
     } else if (node._tag === "element") {
       const found = findHydrationHole(node.childNodes, index)
-      if (found) {
+      if (found !== null) {
         return found
       }
     }

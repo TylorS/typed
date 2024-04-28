@@ -72,12 +72,11 @@ export function testRender<E, R>(
     RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices
   >
 > {
-  return Effect.gen(function*(_) {
-    const window = yield* _(getOrMakeWindow(options))
-    const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
-    const fiber = yield* _(
-      fx,
+  return Effect.gen(function*() {
+    const window = yield* getOrMakeWindow(options)
+    const elementRef = yield* ElementRef.make()
+    const errors = yield* RefSubject.make<ReadonlyArray<E>>(Effect.succeed([]))
+    const fiber = yield* fx.pipe(
       render,
       (x) =>
         x.run(Sink.make(
@@ -108,16 +107,16 @@ export function testRender<E, R>(
     }
 
     // Allow our fibers to start
-    yield* _(adjustTime(1))
-    yield* _(adjustTime(1))
+    yield* adjustTime(1)
+    yield* adjustTime(1)
 
     // Await the first render
-    yield* _(
+    yield* Effect.race(
+      Fx.first(elementRef),
       Effect.flatMap(
         Effect.sleep(options?.renderTimeout ?? 1000),
         (_) => Effect.dieMessage(`Rendering taking too long`)
-      ),
-      Effect.race(Fx.first(elementRef))
+      )
     )
 
     return test
@@ -179,15 +178,15 @@ export function getOrMakeWindow(
   options?: HappyDOMOptions
 ): Effect.Effect<Window & GlobalThis, never, Scope.Scope> {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
-    return Effect.gen(function*(_) {
+    return Effect.gen(function*() {
       window.document.head.innerHTML = ""
       window.document.body.innerHTML = ""
-      yield* _(Effect.addFinalizer(() =>
+      yield* Effect.addFinalizer(() =>
         Effect.sync(() => {
           window.document.head.innerHTML = ""
           window.document.body.innerHTML = ""
         })
-      ))
+      )
 
       return window
     })
@@ -224,28 +223,27 @@ export function testHydrate<R, E, Elements>(
   >
   | Exclude<R, RenderContext.RenderContext | RenderTemplate | CurrentEnvironment | DomServices>
 > {
-  return Effect.gen(function*(_) {
-    const window = yield* _(getOrMakeWindow(options))
+  return Effect.gen(function*() {
+    const window = yield* getOrMakeWindow(options)
     const { body } = window.document
 
-    const html = yield* _(
+    const html = yield* Effect.provide(
       renderToHtmlString(fx),
-      Effect.provide(serverLayer.pipe(
+      serverLayer.pipe(
         // Add DomServices to the layer for the types
         Layer.provideMerge(domServices()),
         Layer.provideMerge(Window.layer(window)),
         Layer.provideMerge(GlobalThis.layer(window))
-      ))
+      )
     )
 
     body.innerHTML = html
 
     const rendered = Array.from(body.childNodes)
     const elements = f(fromRendered(rendered), window)
-    const elementRef = yield* _(ElementRef.make())
-    const errors = yield* _(RefSubject.make<ReadonlyArray<E>>(Effect.succeed([])))
-    const fiber = yield* _(
-      fx,
+    const elementRef = yield* ElementRef.make()
+    const errors = yield* RefSubject.make<ReadonlyArray<E>>(Effect.succeed([]))
+    const fiber = yield* fx.pipe(
       hydrate,
       (x) =>
         x.run(Sink.make(
@@ -284,11 +282,11 @@ export function testHydrate<R, E, Elements>(
     }
 
     // Allow our fibers to start
-    yield* _(adjustTime(1))
-    yield* _(adjustTime(1))
+    yield* adjustTime(1)
+    yield* adjustTime(1)
 
     // Await the first render
-    yield* _(Fx.first(elementRef), Effect.race(Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000)))
+    yield* Effect.race(Fx.first(elementRef), Effect.delay(Effect.dieMessage(`Rendering taking too long`), 1000))
 
     return test
   })

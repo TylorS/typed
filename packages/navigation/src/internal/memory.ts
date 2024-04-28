@@ -20,9 +20,9 @@ import {
 
 export const memory = (options: MemoryOptions): Layer.Layer<Navigation> =>
   Navigation.scoped(
-    Effect.gen(function*(_) {
-      const getRandomValues = yield* _(GetRandomValues)
-      const modelAndIntent = yield* _(setupMemory(options))
+    Effect.gen(function*() {
+      const getRandomValues = yield* GetRandomValues
+      const modelAndIntent = yield* setupMemory(options)
       const current = options.entries[options.currentIndex ?? 0]
       const origin = options.origin ?? getOriginFromUrl(current.url)
       const base = options.base ?? "/"
@@ -35,11 +35,11 @@ export function initialMemory(
   options: InitialMemoryOptions
 ): Layer.Layer<Navigation> {
   return Navigation.scoped(
-    Effect.gen(function*(_) {
-      const getRandomValues = yield* _(GetRandomValues)
+    Effect.gen(function*() {
+      const getRandomValues = yield* GetRandomValues
       const origin = options.origin ?? getOriginFromUrl(options.url)
       const base = options.base ?? "/"
-      const destination = yield* _(makeDestination(getUrl(origin, options.url), options.state, origin))
+      const destination = yield* makeDestination(getUrl(origin, options.url), options.state, origin)
       const memoryOptions: MemoryOptions = {
         entries: [destination],
         origin,
@@ -47,7 +47,7 @@ export function initialMemory(
         currentIndex: 0,
         maxEntries: options.maxEntries
       }
-      const modelAndIntent = yield* _(setupMemory(memoryOptions))
+      const modelAndIntent = yield* setupMemory(memoryOptions)
 
       return setupFromModelAndIntent(modelAndIntent, origin, base, getRandomValues)
     }).pipe(Effect.provide(getRandomValues))
@@ -57,17 +57,16 @@ export function initialMemory(
 function setupMemory(
   options: MemoryOptions
 ): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
-  return Effect.gen(function*(_) {
-    const state = yield* _(
-      RefSubject.of<NavigationState>({
-        entries: options.entries,
-        index: options.currentIndex ?? options.entries.length - 1,
-        transition: Option.none()
-      }, { eq: Equivalence.make(Schema.typeSchema(NavigationState)) })
-    )
+  return Effect.gen(function*() {
+    const state = yield* RefSubject.of<NavigationState>({
+      entries: options.entries,
+      index: options.currentIndex ?? options.entries.length - 1,
+      transition: Option.none()
+    }, { eq: Equivalence.make(Schema.typeSchema(NavigationState)) })
+
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* makeHandlersState()
     const commit: Commit = options.commit ?? (() => Effect.void)
 
     return {

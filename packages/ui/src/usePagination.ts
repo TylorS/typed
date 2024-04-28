@@ -47,10 +47,10 @@ export function usePagination<A, E, R>(
   items: RefSubject.Computed<ReadonlyArray<A>, E, R>,
   options: PaginationOptions = {}
 ): Effect.Effect<Pagination<E, A>, never, R | Scope.Scope> {
-  return Effect.gen(function*(_) {
-    const ctx = yield* _(Effect.context<R>())
-    const page: RefSubject.RefSubject<number> = yield* _(RefSubject.of(options.initialPage ?? 0))
-    const pageSize: RefSubject.RefSubject<number> = yield* _(RefSubject.of(options.initialPageSize ?? 10))
+  return Effect.gen(function*() {
+    const ctx = yield* Effect.context<R>()
+    const page: RefSubject.RefSubject<number> = yield* RefSubject.of(options.initialPage ?? 0)
+    const pageSize: RefSubject.RefSubject<number> = yield* RefSubject.of(options.initialPageSize ?? 10)
     const canGoBack: RefSubject.Computed<boolean> = RefSubject.map(page, (x) => x > 0)
     const combined: RefSubject.Computed<readonly [number, number, ReadonlyArray<A>], E> = RefSubject.provide(
       RefSubject.tuple([page, pageSize, items] as const),
@@ -62,9 +62,9 @@ export function usePagination<A, E, R>(
     )
 
     const getTotalPages: Effect.Effect<number, E> = Effect.provide(
-      Effect.gen(function*($) {
-        const currentPageSize = yield* $(pageSize)
-        const results = yield* $(items)
+      Effect.gen(function*() {
+        const currentPageSize = yield* pageSize
+        const results = yield* items
 
         return Math.ceil(results.length / currentPageSize - 1)
       }),
@@ -74,8 +74,8 @@ export function usePagination<A, E, R>(
     const goForward: Effect.Effect<number, E> = RefSubject.updateEffect(
       page,
       (currentPage) =>
-        Effect.gen(function*($) {
-          const totalPages = yield* $(getTotalPages)
+        Effect.gen(function*() {
+          const totalPages = yield* getTotalPages
           const nextPage = Math.min(currentPage + 1, totalPages)
 
           return nextPage

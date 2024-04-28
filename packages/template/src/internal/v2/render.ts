@@ -70,28 +70,26 @@ export const renderTemplate: (
     Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
   >((sink) =>
     Effect.catchAllCause(
-      Effect.gen(function*(_) {
+      Effect.gen(function*() {
         // Create a context for rendering our template
-        const ctx = yield* _(
-          makeTemplateContext<Values>(
-            entry.content,
-            document,
-            renderContext,
-            values,
-            sink.onFailure
-          )
+        const ctx = yield* makeTemplateContext<Values>(
+          entry.content,
+          document,
+          renderContext,
+          values,
+          sink.onFailure
         )
 
         // Setup all parts
         const effects = setupParts(entry.template.parts, ctx)
         if (effects.length > 0) {
-          yield* _(Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope))))
+          yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
         }
 
         // If there's anything to wait on and it's not already done, wait for an initial value
         // for all asynchronous sources.
-        if (ctx.expected > 0 && (yield* _(ctx.refCounter.expect(ctx.expected)))) {
-          yield* _(ctx.refCounter.wait)
+        if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
+          yield* ctx.refCounter.wait
         }
 
         // Create a persistent wire from our content
@@ -100,11 +98,10 @@ export const renderTemplate: (
         // Setup our event listeners for our wire.
         // We use the parentScope to allow event listeners to exist
         // beyond the lifetime of the current Fiber, but no further than its parent template.
-        yield* _(ctx.eventSource.setup(wire, ctx.parentScope))
+        yield* ctx.eventSource.setup(wire, ctx.parentScope)
 
-        yield* _(
-          // Emit our DomRenderEvent
-          sink.onSuccess(DomRenderEvent(wire)),
+        // Emit our DomRenderEvent
+        yield* sink.onSuccess(DomRenderEvent(wire)).pipe(
           // Ensure our templates last forever in the DOM environment
           // so event listeners are kept attached to the current Scope.
           Effect.zipRight(Effect.never),
@@ -124,14 +121,14 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
   values: ReadonlyArray<Renderable<any, any>>,
   onCause: (cause: Cause.Cause<Placeholder.Error<Values[number]>>) => Effect.Effect<unknown>
 ): Effect.Effect<TemplateContext, never, Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>> {
-  return Effect.gen(function*(_) {
-    const refCounter = yield* _(makeRefCounter)
-    const context = yield* _(Effect.context<Placeholder.Context<Values[number]> | Scope.Scope | RenderQueue>())
+  return Effect.gen(function*() {
+    const refCounter = yield* makeRefCounter
+    const context = yield* Effect.context<Placeholder.Context<Values[number]> | Scope.Scope | RenderQueue>()
     const queue = Context.get(context, RenderQueue)
     const parentScope = Context.get(context, Scope.Scope)
     const eventSource = makeEventSource()
     const content = document.importNode(entry, true)
-    const scope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
+    const scope = yield* Scope.fork(parentScope, ExecutionStrategy.sequential)
     const templateContext: TemplateContext = {
       context: Context.add(context, Scope.Scope, scope),
       expected: 0,

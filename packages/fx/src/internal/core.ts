@@ -1,18 +1,19 @@
 import * as Context from "@typed/context"
-import {
-  type ConfigProvider,
-  type Duration,
-  type Equivalence,
-  type FiberId,
-  type FiberRef,
-  type HashSet,
-  type Queue,
-  type Request,
-  type Runtime,
-  type Schedule,
-  type Scheduler,
-  Unify
+import type {
+  ConfigProvider,
+  Duration,
+  Equivalence,
+  FiberId,
+  FiberRef,
+  HashSet,
+  Queue,
+  Request,
+  Runtime,
+  Schedule,
+  Scheduler,
+  Utils
 } from "effect"
+import { Unify } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
@@ -983,22 +984,25 @@ class FromFxEffect<
   }
 }
 
-export function gen<Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+export function gen<Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ): Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>
+  YieldWrapError<Y> | Fx.Error<FX>,
+  YieldWrapContext<Y> | Fx.Context<FX>
 > {
   return fromFxEffect(Effect.gen(f))
 }
 
-export function genScoped<Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+type YieldWrapError<T> = T extends Utils.YieldWrap<Effect.Effect<infer _, infer E, any>> ? E : never
+type YieldWrapContext<T> = T extends Utils.YieldWrap<Effect.Effect<any, any, infer R>> ? R : never
+
+export function genScoped<Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ): Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Exclude<Effect.Effect.Context<Y["value"]> | Fx.Context<FX>, Scope.Scope>
+  YieldWrapError<Y> | Fx.Error<FX>,
+  Exclude<YieldWrapContext<Y> | Fx.Context<FX>, Scope.Scope>
 > {
   return scoped(fromFxEffect(Effect.gen(f)))
 }
@@ -2544,13 +2548,13 @@ class MergeRace<A, E, R, B, E2, R2> extends FxBase<A | B, E | E2, R | R2> {
 
   run<R3>(sink: Sink.Sink<A | B, E | E2, R3>): Effect.Effect<unknown, never, R | R2 | R3> {
     return Effect.gen(this, function*(_) {
-      const fiber1 = yield* _(Effect.fork(this.i0.run(Sink.make(
+      const fiber1 = yield* Effect.fork(this.i0.run(Sink.make(
         sink.onFailure,
         (a) => Effect.flatMap(sink.onSuccess(a), () => Fiber.interrupt(fiber2))
-      ))))
-      const fiber2 = yield* _(Effect.fork(this.i1.run(sink)))
+      )))
+      const fiber2 = yield* Effect.fork(this.i1.run(sink))
 
-      return yield* _(Fiber.joinAll([fiber1, fiber2]))
+      return yield* Fiber.joinAll([fiber1, fiber2])
     })
   }
 }
@@ -2585,22 +2589,22 @@ class RaceAll<const FX extends ReadonlyArray<Fx<any, any, any>>> extends FxBase<
     sink: Sink.Sink<Fx.Success<FX[number]>, Fx.Error<FX[number]>, R2>
   ): Effect.Effect<unknown, never, Fx.Context<FX[number]> | R2> {
     return Effect.gen(this, function*(_) {
-      const winner = yield* _(Deferred.make<Fiber.RuntimeFiber<unknown>>())
+      const winner = yield* Deferred.make<Fiber.RuntimeFiber<unknown>>()
       const fibers: Array<Fiber.RuntimeFiber<unknown>> = []
 
       for (const fx of this.i0) {
-        const fiber: Fiber.RuntimeFiber<unknown> = yield* _(Effect.fork(fx.run(Sink.make(
+        const fiber: Fiber.RuntimeFiber<unknown> = yield* Effect.fork(fx.run(Sink.make(
           sink.onFailure,
           (a) => Effect.flatMap(Deferred.succeed(winner, fiber), () => sink.onSuccess(a))
-        ))))
+        )))
         fibers.push(fiber)
       }
 
-      const winningFiber = yield* _(Deferred.await(winner))
+      const winningFiber = yield* Deferred.await(winner)
 
-      yield* _(Fiber.interruptAll(fibers.filter((x) => x !== winningFiber)))
+      yield* Fiber.interruptAll(fibers.filter((x) => x !== winningFiber))
 
-      return yield* _(Fiber.join(winningFiber))
+      return yield* Fiber.join(winningFiber)
     })
   }
 }

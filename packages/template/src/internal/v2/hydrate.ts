@@ -14,11 +14,10 @@ import type * as Template from "../../Template.js"
 import { CouldNotFindCommentError, isHydrationError } from "../errors.js"
 import { HydrateContext } from "../HydrateContext.js"
 import { findHydratePath, isCommentWithValue, type ParentChildNodes } from "../utils.js"
-import type { HydrationHole, HydrationMany, HydrationNode } from "./hydration-template.js"
+import type { HydrationHole, HydrationMany, HydrationNode, HydrationTemplate } from "./hydration-template.js"
 import {
   findHydrationHole,
   findHydrationMany,
-  findHydrationNode,
   findHydrationTemplate,
   getChildNodes,
   getNodes,
@@ -51,15 +50,18 @@ type HydrateTemplateContext = TemplateContext & {
   readonly makeHydrateContext: (where: HydrationNode, index: number) => HydrateContext
 }
 
-function findWhere(hydrateCtx: HydrateContext, entry: BrowserEntry) {
+function findWhere(hydrateCtx: HydrateContext, entry: BrowserEntry): HydrationTemplate | null {
+  // If there is not a manyKey, we can just find the template by its hash
   if (hydrateCtx.manyKey === undefined) {
     return findHydrationTemplate(getChildNodes(hydrateCtx.where), entry.template.hash)
   }
 
+  // If there is a manyKey, we need to find the many node first
   const many = findHydrationMany(getChildNodes(hydrateCtx.where), hydrateCtx.manyKey)
 
   if (many === null) return null
 
+  // Then we can find the template by its hash
   return findHydrationTemplate(getChildNodes(many), entry.template.hash)
 }
 
@@ -81,29 +83,28 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
 
     return Fx.make((sink) =>
       Effect.catchAllDefect(
-        Effect.gen(function*(_) {
-          const ctx = yield* _(makeTemplateContext(entry.content, document, renderContext, values, sink.onFailure))
+        Effect.gen(function*() {
+          const ctx = yield* makeTemplateContext(entry.content, document, renderContext, values, sink.onFailure)
           const hydrateCtx = unsafeGet(ctx.context, HydrateContext)
 
           // If we're not longer hydrating, just render normally
           if (hydrateCtx.hydrate === false) {
-            return yield* _(render_(templateStrings, values).run(sink))
+            return yield* render_(templateStrings, values).run(sink)
           }
 
-          const where: HydrationNode | null = findWhere(hydrateCtx, entry)
+          const where: HydrationTemplate | null = findWhere(hydrateCtx, entry)
 
           if (where === null) {
             hydrateCtx.hydrate = false
-            return yield* _(render_(templateStrings, values).run(sink))
+            return yield* render_(templateStrings, values).run(sink)
           }
 
           const wire = getNodes(where)
 
-          if (entry.template.parts.length === 0) return yield* _(sink.onSuccess(DomRenderEvent(wire)))
+          if (entry.template.parts.length === 0) return yield* sink.onSuccess(DomRenderEvent(wire))
 
-          const makeHydrateContext = (where: HydrationNode, index: number): HydrateContext => ({
+          const makeHydrateContext = (where: HydrationNode): HydrateContext => ({
             where,
-            rootIndex: index,
             parentTemplate: entry.template,
             hydrate: true
           })
@@ -115,17 +116,16 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
             makeHydrateContext
           })
           if (effects.length > 0) {
-            yield* _(Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope))))
+            yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
           }
 
           // Setup our event listeners for our wire.
           // We use the parentScope to allow event listeners to exist
           // beyond the lifetime of the current Fiber, but no further than its parent template.
-          yield* _(ctx.eventSource.setup(wire, ctx.parentScope))
+          yield* ctx.eventSource.setup(wire, ctx.parentScope)
 
-          yield* _(
-            // Emit our DomRenderEvent
-            sink.onSuccess(DomRenderEvent(wire)),
+          // Emit our DomRenderEvent
+          yield* sink.onSuccess(DomRenderEvent(wire)).pipe(
             // Ensure our templates last forever in the DOM environment
             // so event listeners are kept attached to the current Scope.
             Effect.zipRight(Effect.never),
@@ -134,14 +134,14 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           )
         }),
         (defect) =>
-          Effect.gen(function*(_) {
+          Effect.gen(function*() {
             if (isHydrationError(defect)) {
               console.error(defect)
-              const hydrateCtx = yield* _(HydrateContext)
+              const hydrateCtx = yield* HydrateContext
               hydrateCtx.hydrate = false
-              return yield* _(render_(templateStrings, values).run(sink))
+              return yield* render_(templateStrings, values).run(sink)
             } else {
-              return yield* _(Effect.die(defect))
+              return yield* Effect.die(defect)
             }
           })
       )
@@ -200,7 +200,7 @@ function setupPart(
     case "sparse-comment":
       return setupSparseCommentPart(part, findHydratePath(ctx.where, path) as any, ctx)
     case "text-part": {
-      const hole = findHydrationNode(ctx.where, part.index, ctx.manyKey)
+      const hole = findHydrationHole(getChildNodes(ctx.where), part.index)
       if (hole === null) throw new CouldNotFindCommentError(part.index)
       return setupTextPart(part, hole.comment, ctx)
     }

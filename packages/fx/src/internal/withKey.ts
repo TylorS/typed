@@ -37,7 +37,7 @@ function runWithKey<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
     const run = fx.run(Sink.make(
       (cause) => sink.onFailure(cause),
       (value) =>
-        Effect.gen(function*(_) {
+        Effect.gen(function*() {
           const key = options.getKey(value)
 
           // We don't need to do anything if the key is the same as the previous one
@@ -47,15 +47,15 @@ function runWithKey<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
             // If the key is the same, we just need to update the value
             if (prev.key === key) {
               prev.value = value
-              yield* _(RefSubject.set(prev.ref, value))
+              yield* RefSubject.set(prev.ref, value)
               return
             } else {
               // Otherwise, we need to remove the previous value
-              yield* _(prev.ref.interrupt)
+              yield* prev.ref.interrupt
             }
           }
 
-          const ref = yield* _(RefSubject.fromEffect(Effect.sync(() => state.value)))
+          const ref = yield* RefSubject.fromEffect(Effect.sync(() => state.value))
 
           // Create a new state
           const state: WithKeyState<A, B> = {
@@ -67,7 +67,7 @@ function runWithKey<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
           previous = Option.some(state)
 
           // Create a new listener
-          yield* _(fork(options.onValue(state.ref, state.key).run(sink)))
+          yield* fork(options.onValue(state.ref, state.key).run(sink))
         })
     ))
 

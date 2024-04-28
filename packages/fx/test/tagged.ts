@@ -78,25 +78,25 @@ describe.concurrent("Context", () => {
       const subject = Subject.tagged<number>()("Test")
       const sut = Fx.toReadonlyArray(subject)
 
-      const test = Effect.gen(function*(_) {
-        const fiber = yield* _(Effect.fork(sut))
+      const test = Effect.gen(function*() {
+        const fiber = yield* Effect.fork(sut)
 
         // Wait for the fibers to start
-        yield* _(Effect.sleep(0))
+        yield* Effect.sleep(0)
 
-        yield* _(subject.onSuccess(1))
-        yield* _(subject.onSuccess(2))
+        yield* subject.onSuccess(1)
+        yield* subject.onSuccess(2)
 
-        const fiber2 = yield* _(Effect.fork(sut))
+        const fiber2 = yield* Effect.fork(sut)
         // Wait for the fibers to start
-        yield* _(Effect.sleep(0))
+        yield* Effect.sleep(0)
 
-        yield* _(subject.onSuccess(3))
+        yield* subject.onSuccess(3)
 
-        yield _(subject.interrupt)
+        yield* subject.interrupt
 
-        expect(yield* _(Effect.fromFiber(fiber))).toEqual([1, 2, 3])
-        expect(yield* _(Effect.fromFiber(fiber2))).toEqual([2, 3])
+        expect(yield* Effect.fromFiber(fiber)).toEqual([1, 2, 3])
+        expect(yield* Effect.fromFiber(fiber2)).toEqual([2, 3])
       }).pipe(
         subject.provide(1),
         Effect.scoped
@@ -109,24 +109,23 @@ describe.concurrent("Context", () => {
       const subject = Subject.tagged<number>()("Test")
       const fx = Fx.toReadonlyArray(subject)
 
-      const test = Effect.gen(function*(_) {
-        const fiber = yield* _(Effect.fork(fx))
+      const test = Effect.gen(function*() {
+        const fiber = yield* Effect.fork(fx)
 
         // Wait for the fibers to start
-        yield* _(Effect.sleep(0))
+        yield* Effect.sleep(0)
 
-        yield* _(subject.onSuccess(1))
-        yield* _(subject.onSuccess(2))
-        yield* _(subject.onSuccess(3))
+        yield* subject.onSuccess(1)
+        yield* subject.onSuccess(2)
+        yield* subject.onSuccess(3)
 
-        const fiber2 = yield* _(Effect.fork(fx))
+        const fiber2 = yield* Effect.fork(fx)
         // Wait for the fibers to start
-        yield* _(Effect.sleep(0))
+        yield* Effect.sleep(0)
 
-        yield _(subject.interrupt)
-
-        expect(yield* _(Effect.fromFiber(fiber))).toEqual([1, 2, 3])
-        expect(yield* _(Effect.fromFiber(fiber2))).toEqual([1, 2, 3])
+        yield* subject.interrupt
+        expect(yield* Effect.fromFiber(fiber)).toEqual([1, 2, 3])
+        expect(yield* Effect.fromFiber(fiber2)).toEqual([1, 2, 3])
       }).pipe(
         subject.provide(3),
         Effect.scoped
@@ -140,19 +139,19 @@ describe.concurrent("Context", () => {
       const effect = Fx.toReadonlyArray(subject)
       const sink = subject.pipe(Sink.map((s: string) => s.length))
 
-      const test = Effect.gen(function*(_) {
-        const fiber = yield* _(Effect.fork(effect))
+      const test = Effect.gen(function*() {
+        const fiber = yield* Effect.fork(effect)
 
         // Wait for the fibers to start
-        yield* _(Effect.sleep(0))
+        yield* Effect.sleep(0)
 
-        yield* _(sink.onSuccess("a"))
-        yield* _(sink.onSuccess("ab"))
-        yield* _(sink.onSuccess("abc"))
+        yield* sink.onSuccess("a")
+        yield* sink.onSuccess("ab")
+        yield* sink.onSuccess("abc")
 
-        yield _(subject.interrupt)
+        yield* subject.interrupt
 
-        expect(yield* _(Effect.fromFiber(fiber))).toEqual([1, 2, 3])
+        expect(yield* Effect.fromFiber(fiber)).toEqual([1, 2, 3])
       }).pipe(
         subject.provide(0),
         Effect.scoped

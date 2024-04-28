@@ -29,9 +29,9 @@ export function createScopedRuntime<R>(): Effect.Effect<
   never,
   R | Scope.Scope
 > {
-  return Effect.gen(function*(_) {
-    const runtime = yield* _(Effect.runtime<R | Scope.Scope>())
-    const scope = yield* _(Effect.scope)
+  return Effect.gen(function*() {
+    const runtime = yield* Effect.runtime<R | Scope.Scope>()
+    const scope = yield* Effect.scope
     const runFork = Runtime.runFork(runtime)
 
     return {

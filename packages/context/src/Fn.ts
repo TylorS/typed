@@ -136,6 +136,7 @@ const wrap = <I, S extends EffectFn>(tagged: Tagged<I, S>): Fn<I, S> => {
   output._op = tagged._op
   output._tag = tagged._tag
   output[Effect.EffectTypeId] = tagged[Effect.EffectTypeId]
+  output[Symbol.iterator] = tagged[Symbol.iterator]
 
   return output
 }

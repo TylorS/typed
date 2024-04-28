@@ -511,14 +511,16 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
   constructor(props: { readonly route: R; readonly issue: ParseIssue }) {
     super(props)
 
-    Object.assign(this, { message: `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}` })
+    Object.assign(this, {
+      message: `RouteDecodeError: ${this.route.path}\n${TreeFormatter.formatIssueSync(this.issue)}`
+    })
   }
 
   toJSON(): unknown {
     return {
       _tag: "RouteDecodeError",
       route: this.route.path,
-      issue: ArrayFormatter.formatIssue(this.issue)
+      issue: ArrayFormatter.formatIssueSync(this.issue)
     }
   }
 
@@ -600,12 +602,12 @@ export class RouteEncodeError<R extends Route.Any> extends Data.TaggedError("Rou
     return {
       _tag: "RouteEncodeError",
       route: this.route.path,
-      issue: ArrayFormatter.formatIssue(this.issue)
+      issue: ArrayFormatter.formatIssueSync(this.issue)
     }
   }
 
   toString() {
-    return `RouteEncodeError: ${this.route.path}\n${TreeFormatter.formatIssue(this.issue)}`
+    return `RouteEncodeError: ${this.route.path}\n${TreeFormatter.formatIssueSync(this.issue)}`
   }
 }
 

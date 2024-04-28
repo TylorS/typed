@@ -5,8 +5,8 @@ import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
 import { asRouteGuard, CurrentRoute, type MatchInput } from "@typed/router"
 import { Effect, Effectable, Layer, Option, Order, pipe } from "effect"
-import type { Chunk } from "effect/Chunk"
 import { groupBy, sortBy } from "effect/Array"
+import type { Chunk } from "effect/Chunk"
 import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
 import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../RouteHandler.js"
 import type { Mount, Router } from "../Router.js"
@@ -53,10 +53,10 @@ const routesAlphaOrder = pipe(
 const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
 const getParentRoute = Effect.serviceOption(CurrentRoute)
 
-export const setupRouteContext = Effect.gen(function*(_) {
-  const request = yield* _(ServerRequest)
-  const existingParams = yield* _(getCurrentParamsOption)
-  const parentRoute = yield* _(getParentRoute)
+export const setupRouteContext = Effect.gen(function*() {
+  const request = yield* ServerRequest
+  const existingParams = yield* getCurrentParamsOption
+  const parentRoute = yield* getParentRoute
   const url = getUrlFromServerRequest(request)
   const path = Navigation.getCurrentPathFromUrl(url)
 
@@ -84,17 +84,15 @@ function toHttpApp<E, R>(
   }
 
   const runMounts = ({ existingParams, parentRoute, path, url }: Effect.Effect.Success<typeof setupRouteContext>) =>
-    Effect.gen(function*(_) {
+    Effect.gen(function*() {
       for (const mount of router.mounts) {
-        const response = yield* _(
-          runRouteMatcher<E, R>(
-            mount.prefix,
-            mount.app,
-            path,
-            url,
-            existingParams,
-            parentRoute
-          )
+        const response = yield* runRouteMatcher<E, R>(
+          mount.prefix,
+          mount.app,
+          path,
+          url,
+          existingParams,
+          parentRoute
         )
 
         if (Option.isSome(response)) {
@@ -106,11 +104,11 @@ function toHttpApp<E, R>(
     })
 
   if (hasMounts) {
-    return Effect.gen(function*(_) {
-      const data = yield* _(setupRouteContext)
+    return Effect.gen(function*() {
+      const data = yield* setupRouteContext
 
       // Check mounts first
-      const response = yield* _(runMounts(data))
+      const response = yield* runMounts(data)
       if (Option.isSome(response)) {
         return response.value
       }
@@ -119,15 +117,13 @@ function toHttpApp<E, R>(
       const routes = routesByMethod[request.method]
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
-          const response = yield* _(
-            runRouteMatcher(
-              route,
-              handler,
-              path,
-              url,
-              existingParams,
-              parentRoute
-            )
+          const response = yield* runRouteMatcher(
+            route,
+            handler,
+            path,
+            url,
+            existingParams,
+            parentRoute
           )
 
           if (Option.isSome(response)) {
@@ -137,23 +133,21 @@ function toHttpApp<E, R>(
       }
 
       // No route found
-      return yield* _(new RouteNotFound({ request: data.request }))
+      return yield* new RouteNotFound({ request: data.request })
     })
   } else {
-    return Effect.gen(function*(_) {
-      const { existingParams, parentRoute, path, request, url } = yield* _(setupRouteContext)
+    return Effect.gen(function*() {
+      const { existingParams, parentRoute, path, request, url } = yield* setupRouteContext
       const routes = routesByMethod[request.method]
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
-          const response = yield* _(
-            runRouteMatcher(
-              route,
-              handler,
-              path,
-              url,
-              existingParams,
-              parentRoute
-            )
+          const response = yield* runRouteMatcher(
+            route,
+            handler,
+            path,
+            url,
+            existingParams,
+            parentRoute
           )
 
           if (Option.isSome(response)) {
@@ -163,7 +157,7 @@ function toHttpApp<E, R>(
       }
 
       // No route found
-      return yield* _(new RouteNotFound({ request }))
+      return yield* new RouteNotFound({ request })
     })
   }
 }

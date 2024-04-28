@@ -104,13 +104,13 @@ export type Options = {
   readonly cacheControl?: (filePath: string) => { readonly maxAge: number; readonly immutable?: boolean }
 }
 
-const logServerAddress = Effect.gen(function*(_) {
-  const server = yield* _(Http.server.Server)
+const logServerAddress = Effect.gen(function*() {
+  const server = yield* Http.server.Server
   const address = server.address._tag === "UnixAddress"
     ? server.address.path
     : `${server.address.hostname}:${server.address.port}`
 
-  yield* _(Effect.log(`Listening on ${address}`))
+  yield* Effect.log(`Listening on ${address}`)
 })
 
 const defaultHtmlCacheControl = { maxAge: 0 } as const

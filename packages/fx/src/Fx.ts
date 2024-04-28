@@ -20,7 +20,8 @@ import type {
   Request,
   Runtime,
   Scope,
-  Tracer
+  Tracer,
+  Utils
 } from "effect"
 import * as Cause from "effect/Cause"
 import type { DurationInput } from "effect/Duration"
@@ -2315,23 +2316,24 @@ export const partitionMap: {
 /**
  * @since 1.20.0
  */
-export const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+export const gen: <Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>
+  (Y extends Utils.YieldWrap<Effect.Effect<infer _, infer E, any>> ? E : never) | Fx.Error<FX>,
+  (Y extends Utils.YieldWrap<Effect.Effect<any, any, infer R>> ? R : never) | Fx.Context<FX>
 > = core.gen
 
 /**
  * @since 1.20.0
  */
-export const genScoped: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+export const genScoped: <Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Exclude<Effect.Effect.Context<Y["value"]> | Fx.Context<FX>, Scope.Scope>
+  (Y extends Utils.YieldWrap<Effect.Effect<infer _, infer E, any>> ? E : never) | Fx.Error<FX>,
+  | Exclude<Y extends Utils.YieldWrap<Effect.Effect<any, any, infer R>> ? R : never, Scope.Scope>
+  | Exclude<Fx.Context<FX>, Scope.Scope>
 > = core.genScoped
 
 /**
@@ -2505,9 +2507,9 @@ export function fromDequeue<A>(dequeue: Queue.Dequeue<A>): Fx<A>
 export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A>): Fx<A, never, I>
 export function fromDequeue<I, A>(dequeue: Ctx.Dequeue<I, A> | Queue.Dequeue<A>): Fx<A, never, I> {
   return core.make((sink) =>
-    Effect.gen(function*(_) {
-      while (yield* _(dequeueIsActive(dequeue))) {
-        yield* _(dequeue.take, Effect.matchCauseEffect(sink))
+    Effect.gen(function*() {
+      while (yield* dequeueIsActive(dequeue)) {
+        yield* Effect.matchCauseEffect(dequeue.take, sink)
       }
     })
   )

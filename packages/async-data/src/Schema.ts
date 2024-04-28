@@ -353,9 +353,9 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function*(_) {
+          return Effect.gen(function*() {
             if (!isAsyncDataFrom<AI, EI>(input)) {
-              return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
+              return yield* Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input))
             }
 
             switch (input._tag) {
@@ -363,16 +363,16 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
               case "Loading":
                 return input
               case "Failure": {
-                const cause = yield* _(parseCause(input.cause, options))
+                const cause = yield* parseCause(input.cause, options)
                 return FailureFrom(cause, input.timestamp, input.refreshing)
               }
               case "Success": {
-                const a = yield* _(parseValue(input.value, options))
+                const a = yield* parseValue(input.value, options)
                 return SuccessFrom(a, input.timestamp, input.refreshing)
               }
               case "Optimistic": {
-                const previous = yield* _(parseAsyncData(input.previous, options))
-                const value = yield* _(parseValue(input.value, options))
+                const previous = yield* parseAsyncData(input.previous, options)
+                const value = yield* parseValue(input.value, options)
                 return OptimisticFrom(value, input.timestamp, previous)
               }
             }
@@ -393,9 +393,9 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function*(_) {
+          return Effect.gen(function*() {
             if (!isAsyncDataFrom<A, E>(input)) {
-              return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
+              return yield* Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input))
             }
 
             switch (input._tag) {
@@ -403,16 +403,16 @@ export const asyncDataFromJson = <A, AI, R1, E, EI, R2>(
               case "Loading":
                 return input
               case "Failure": {
-                const cause = yield* _(parseCause(causeFromToCause(input.cause), options))
+                const cause = yield* parseCause(causeFromToCause(input.cause), options)
                 return FailureFrom(cause, input.timestamp, input.refreshing)
               }
               case "Success": {
-                const a = yield* _(parseValue(input.value, options))
+                const a = yield* parseValue(input.value, options)
                 return SuccessFrom(a, input.timestamp, input.refreshing)
               }
               case "Optimistic": {
-                const previous = yield* _(parseAsyncData(input.previous, options))
-                const value = yield* _(parseValue(input.value, options))
+                const previous = yield* parseAsyncData(input.previous, options)
+                const value = yield* parseValue(input.value, options)
                 return OptimisticFrom(value, input.timestamp, previous)
               }
             }
@@ -477,9 +477,9 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function*(_) {
+          return Effect.gen(function*() {
             if (!_AsyncData.isAsyncData<AI, EI>(input)) {
-              return yield* _(Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input)))
+              return yield* Effect.fail<ParseResult.ParseIssue>(new ParseResult.Forbidden(schema.ast, input))
             }
 
             switch (input._tag) {
@@ -487,7 +487,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
               case "Loading":
                 return input
               case "Failure": {
-                const cause = yield* _(parseCause(input.cause, options))
+                const cause = yield* parseCause(input.cause, options)
 
                 return _AsyncData.failCause(cause, {
                   timestamp: input.timestamp,
@@ -495,7 +495,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
                 })
               }
               case "Success": {
-                const a = yield* _(parseValue(input.value, options))
+                const a = yield* parseValue(input.value, options)
 
                 return _AsyncData.success(a, {
                   timestamp: input.timestamp,
@@ -503,8 +503,8 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
                 })
               }
               case "Optimistic": {
-                const previous = yield* _(parseAsyncData(input.previous, options))
-                const value = yield* _(parseValue(input.value, options))
+                const previous = yield* parseAsyncData(input.previous, options)
+                const value = yield* parseValue(input.value, options)
 
                 return _AsyncData.optimistic(previous, value, {
                   timestamp: input.timestamp
@@ -528,9 +528,9 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
           ParseResult.ParseIssue,
           never
         > => {
-          return Effect.gen(function*(_) {
+          return Effect.gen(function*() {
             if (!_AsyncData.isAsyncData<A, E>(input)) {
-              return yield* _(Effect.fail(new ParseResult.Forbidden(schema.ast, input)))
+              return yield* Effect.fail(new ParseResult.Forbidden(schema.ast, input))
             }
 
             switch (input._tag) {
@@ -538,7 +538,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
               case "Loading":
                 return input
               case "Failure": {
-                const cause = yield* _(parseCause(input.cause, options))
+                const cause = yield* parseCause(input.cause, options)
 
                 return _AsyncData.failCause(cause, {
                   timestamp: input.timestamp,
@@ -546,7 +546,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
                 })
               }
               case "Success": {
-                const a = yield* _(parseValue(input.value, options))
+                const a = yield* parseValue(input.value, options)
 
                 return _AsyncData.success(a, {
                   timestamp: input.timestamp,
@@ -554,8 +554,8 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
                 })
               }
               case "Optimistic": {
-                const previous = yield* _(parseAsyncData(input.previous, options))
-                const value = yield* _(parseValue(input.value, options))
+                const previous = yield* parseAsyncData(input.previous, options)
+                const value = yield* parseValue(input.value, options)
 
                 return _AsyncData.optimistic(previous, value, {
                   timestamp: input.timestamp

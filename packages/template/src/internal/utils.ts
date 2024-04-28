@@ -97,14 +97,14 @@ export interface ParentChildNodes {
 }
 
 export function adjustTime(input?: Duration.DurationInput) {
-  return Effect.gen(function*(_) {
-    const ctx = yield* _(Effect.context<never>())
+  return Effect.gen(function*() {
+    const ctx = yield* Effect.context<never>()
     const testClock = getOption(ctx, TestClock)
 
     if (isSome(testClock)) {
-      yield* _(testClock.value.adjust(input ?? 1))
+      yield* testClock.value.adjust(input ?? 1)
     } else if (input) {
-      yield* _(Effect.sleep(input))
+      yield* Effect.sleep(input)
     }
   })
 }

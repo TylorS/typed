@@ -45,12 +45,12 @@ export const addEventListener: {
     target: T,
     options: AddEventListenerOptions<T, EventName, R>
   ) {
-    return Effect.gen(function*(_) {
-      const { run, scope } = yield* _(createScopedRuntime<R>())
+    return Effect.gen(function*() {
+      const { run, scope } = yield* createScopedRuntime<R>()
       const listener = (event: Event) => run(options.handler(event as any))
       const removeListener = addEventListener_(target, options.eventName, listener, options)
 
-      yield* _(Scope.addFinalizer(scope, Effect.sync(removeListener)))
+      yield* Scope.addFinalizer(scope, Effect.sync(removeListener))
     })
   }
 )

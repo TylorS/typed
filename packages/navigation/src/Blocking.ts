@@ -67,29 +67,27 @@ export interface UseBlockNavigationParams<R = never> {
 export const useBlockNavigation = <R = never>(
   params: UseBlockNavigationParams<R> = {}
 ): Effect.Effect<BlockNavigation, never, Navigation | R | Scope.Scope> =>
-  Effect.gen(function*(_) {
-    const navigation = yield* _(Navigation)
-    const blockState = yield* _(RefSubject.of<InternalBlockState>(Unblocked))
+  Effect.gen(function*() {
+    const navigation = yield* Navigation
+    const blockState = yield* RefSubject.of<InternalBlockState>(Unblocked)
 
-    yield* _(
-      navigation.beforeNavigation<R, never>((event) =>
-        RefSubject.modifyEffect(blockState, (state) =>
-          Effect.gen(function*(_) {
-            // Can't block twice
-            if (state._tag === "Blocked") return [Option.none(), state] as const
+    yield* navigation.beforeNavigation<R, never>((event) =>
+      RefSubject.modifyEffect(blockState, (state) =>
+        Effect.gen(function*() {
+          // Can't block twice
+          if (state._tag === "Blocked") return [Option.none(), state] as const
 
-            if (params.shouldBlock && !(yield* _(params.shouldBlock(event)))) {
-              return [Option.none(), state] as const
-            }
+          if (params.shouldBlock && !(yield* params.shouldBlock(event))) {
+            return [Option.none(), state] as const
+          }
 
-            const updated = yield* _(Blocked(event))
+          const updated = yield* Blocked(event)
 
-            return [
-              Option.some(Deferred.await(updated.deferred)),
-              updated
-            ] as const
-          }))
-      )
+          return [
+            Option.some(Deferred.await(updated.deferred)),
+            updated
+          ] as const
+        }))
     )
 
     const blockNavigation: BlockNavigation = Object.assign(

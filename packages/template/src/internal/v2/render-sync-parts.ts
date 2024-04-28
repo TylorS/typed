@@ -191,7 +191,7 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
   return Fx.mapEffect(
     Fx.withEmitter<X, any, any, any>((sink) =>
       Effect.zipRight(
-        Effect.gen(function*(_) {
+        Effect.gen(function*() {
           const values = new Map<number, C | D>()
           const expected = parts.length
 
@@ -213,7 +213,7 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
               })
               const value = renderables[part.index]
 
-              yield* _(matchRenderable(value, {
+              yield* matchRenderable(value, {
                 Fx: (fx) =>
                   fx.run(Fx.Sink.make((cause) =>
                     Effect.promise(() => sink.failCause(cause)), (value) =>
@@ -223,7 +223,7 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
                 Directive: (directive) =>
                   directive(syncPartToPart(child, ({ value }) => Effect.sync(() => child.update(value as never)))),
                 Otherwise: (value) => Effect.sync(() => child.update(value as never))
-              }))
+              })
             }
           }
         }),

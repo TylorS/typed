@@ -50,11 +50,11 @@ export const nodeCrypto = (crypto: typeof import("node:crypto")): Layer.Layer<Ge
  * @since 1.0.0
  */
 export const pseudoRandom: Layer.Layer<GetRandomValues> = GetRandomValues.implement((length) =>
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     const view = new Uint8Array(length)
 
     for (let i = 0; i < length; ++i) {
-      view[i] = yield* _(Random.nextInt)
+      view[i] = yield* Random.nextInt
     }
 
     return view
@@ -65,9 +65,10 @@ export const pseudoRandom: Layer.Layer<GetRandomValues> = GetRandomValues.implem
  * @since 1.0.0
  */
 export const getRandomValues: Layer.Layer<GetRandomValues> = GetRandomValues.layer(
-  Effect.gen(function*(_) {
+  Effect.gen(function*() {
     if (typeof crypto === "undefined") {
-      const crypto = yield* _(Effect.promise(() => import("node:crypto")))
+      // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+      const crypto: typeof import("node:crypto") = yield* Effect.promise(() => import("node:crypto"))
 
       return (length: number) => Effect.sync(() => getRandomValuesNode(crypto, length))
     } else {

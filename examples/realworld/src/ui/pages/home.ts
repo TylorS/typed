@@ -42,9 +42,7 @@ export const main = Fx.gen(function*(_) {
       <div class="col-md-9">
         <div class="feed-toggle">
           <ul class="outline-active nav nav-pills">
-            <li class="nav-item">
-              ${NavLink("Global Feed", route)}
-            </li>
+            ${NavLink("Global Feed", route)}
           </ul>
         </div>
 

@@ -267,16 +267,22 @@ export const toPlatformRouter = <E, R>(
       platformRouter,
       // TODO: Maybe we should do a best-effort to convert the path to a platform compatible path
       MatchInput.getPath(mount.prefix),
-      Effect.gen(function*(_) {
-        const ctx = yield* _(setupRouteContext)
-        const response = yield* _(
-          runRouteMatcher<E, R>(mount.prefix, mount.app, ctx.path, ctx.url, ctx.existingParams, ctx.parentRoute)
+      Effect.gen(function*() {
+        const ctx = yield* setupRouteContext
+        const response = yield* runRouteMatcher<E, R>(
+          mount.prefix,
+          mount.app,
+          ctx.path,
+          ctx.url,
+          ctx.existingParams,
+          ctx.parentRoute
         )
+
         if (Option.isSome(response)) {
           return response.value
         }
 
-        return yield* _(new RouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix }))
+        return yield* new RouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix })
       })
     )
   }

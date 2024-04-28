@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.50.3",
-    "@effect/schema": "^0.66.6",
-    "effect": "^3.0.3",
+    "@effect/platform": "^0.50.7",
+    "@effect/schema": "^0.66.10",
+    "effect": "^3.0.7",
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {

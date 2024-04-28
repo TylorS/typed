@@ -41,14 +41,12 @@ declare global {
 export const fromWindow: Layer.Layer<Navigation, never, Window> = Navigation.scoped(
   Window.withEffect((window) => {
     const getRandomValues = (length: number) => Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
-    return Effect.gen(function*(_) {
-      const { run, runPromise } = yield* _(scopedRuntime<never>())
+    return Effect.gen(function*() {
+      const { run, runPromise } = yield* scopedRuntime<never>()
       const hasNativeNavigation = !!window.navigation
-      const modelAndIntent = yield* _(
-        hasNativeNavigation
-          ? setupWithNavigation(window.navigation!, runPromise)
-          : setupWithHistory(window, (event) => run(handleHistoryEvent(event)))
-      )
+      const modelAndIntent = yield* hasNativeNavigation
+        ? setupWithNavigation(window.navigation!, runPromise)
+        : setupWithHistory(window, (event) => run(handleHistoryEvent(event)))
 
       const navigation = setupFromModelAndIntent(
         modelAndIntent,
@@ -61,26 +59,28 @@ export const fromWindow: Layer.Layer<Navigation, never, Window> = Navigation.sco
       return navigation
 
       function handleHistoryEvent(event: HistoryEvent) {
-        return Effect.gen(function*(_) {
+        return Effect.gen(function*() {
           if (event._tag === "PushState") {
-            return yield* _(navigation.navigate(event.url, {}, event.skipCommit))
+            return yield* navigation.navigate(event.url, {}, event.skipCommit)
           } else if (event._tag === "ReplaceState") {
             if (Option.isSome(event.url)) {
-              return yield* _(
-                navigation.navigate(event.url.value, { history: "replace", state: event.state }, event.skipCommit)
+              return yield* navigation.navigate(
+                event.url.value,
+                { history: "replace", state: event.state },
+                event.skipCommit
               )
             } else {
-              return yield* _(navigation.updateCurrentEntry(event))
+              return yield* navigation.updateCurrentEntry(event)
             }
           } else if (event._tag === "Traverse") {
-            const { entries, index } = yield* _(modelAndIntent.state)
+            const { entries, index } = yield* modelAndIntent.state
             const toIndex = Math.min(Math.max(0, index + event.delta), entries.length - 1)
             const to = entries[toIndex]
 
-            return yield* _(navigation.traverseTo(to.key, {}, event.skipCommit))
+            return yield* navigation.traverseTo(to.key, {}, event.skipCommit)
           } else {
-            yield* _(navigation.traverseTo(event.key, {}, event.skipCommit))
-            return yield* _(navigation.updateCurrentEntry({ state: event.state }))
+            yield* navigation.traverseTo(event.key, {}, event.skipCommit)
+            return yield* navigation.updateCurrentEntry({ state: event.state })
           }
         })
       }
@@ -110,16 +110,14 @@ function setupWithNavigation(
   navigation: NativeNavigation,
   runPromise: <E, A>(effect: Effect.Effect<A, E, Scope.Scope>) => Promise<A>
 ): Effect.Effect<ModelAndIntent, never, Scope.Scope | GetRandomValues> {
-  return Effect.gen(function*(_) {
-    const state = yield* _(
-      RefSubject.fromEffect(
-        Effect.sync((): NavigationState => getNavigationState(navigation)),
-        { eq: Equivalence.make(Schema.typeSchema(Schema.typeSchema(NavigationState))) }
-      )
+  return Effect.gen(function*() {
+    const state = yield* RefSubject.fromEffect(
+      Effect.sync((): NavigationState => getNavigationState(navigation)),
+      { eq: Equivalence.make(Schema.typeSchema(Schema.typeSchema(NavigationState))) }
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* makeHandlersState()
     const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
       Effect.gen(function*(_) {
         const { key, state, url } = to
@@ -144,8 +142,8 @@ function setupWithNavigation(
       })
 
     const runHandlers = (native: NativeEvent) =>
-      Effect.gen(function*(_) {
-        const eventHandlers = yield* _(handlers)
+      Effect.gen(function*() {
+        const eventHandlers = yield* handlers
         const matches: Array<Effect.Effect<unknown>> = []
 
         const event: NavigationEvent = {
@@ -155,14 +153,14 @@ function setupWithNavigation(
         }
 
         for (const [handler, ctx] of eventHandlers) {
-          const match = yield* _(handler(event), Effect.provide(ctx))
+          const match = yield* Effect.provide(handler(event), ctx)
           if (Option.isSome(match)) {
             matches.push(Effect.provide(match.value, ctx))
           }
         }
 
         if (matches.length > 0) {
-          yield* _(Effect.all(matches))
+          yield* Effect.all(matches)
         }
       })
 
@@ -217,30 +215,28 @@ function setupWithHistory(
   window: Window,
   onEvent: (event: HistoryEvent) => void
 ): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
-  return Effect.gen(function*(_) {
+  return Effect.gen(function*() {
     const { location } = window
     const { original: history, unpatch } = patchHistory(window, onEvent)
 
-    yield* _(Effect.addFinalizer(() => unpatch))
+    yield* Effect.addFinalizer(() => unpatch)
 
-    const state = yield* _(
-      RefSubject.fromEffect(
-        Effect.suspend(() =>
-          Effect.map(
-            makeDestination(
-              new URL(location.href),
-              history.state,
-              location.origin
-            ),
-            (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
-          )
-        ),
-        { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
-      )
+    const state = yield* RefSubject.fromEffect(
+      Effect.suspend(() =>
+        Effect.map(
+          makeDestination(
+            new URL(location.href),
+            history.state,
+            location.origin
+          ),
+          (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
+        )
+      ),
+      { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
     )
     const canGoBack = RefSubject.map(state, (s) => s.index > 0)
     const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, formDataHandlers, handlers } = yield* _(makeHandlersState())
+    const { beforeHandlers, formDataHandlers, handlers } = yield* makeHandlersState()
     const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
       Effect.sync(() => {
         const { type } = event

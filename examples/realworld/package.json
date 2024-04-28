@@ -19,11 +19,11 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.50.3",
-    "@effect/platform-node": "^0.47.3",
-    "@effect/schema": "0.66.6",
-    "@effect/sql": "^0.1.8",
-    "@effect/sql-pg": "^0.1.8",
+    "@effect/platform": "^0.50.7",
+    "@effect/platform-node": "^0.47.7",
+    "@effect/schema": "0.66.10",
+    "@effect/sql": "^0.1.12",
+    "@effect/sql-pg": "^0.1.12",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -40,14 +40,16 @@
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
     "@typed/wire": "workspace:*",
+    "@types/source-map-support": "^0.5.10",
     "bcrypt": "^5.1.1",
-    "effect": "3.0.3",
-    "effect-http": "^0.64.0",
-    "effect-http-node": "^0.12.0",
+    "effect": "3.0.7",
+    "effect-http": "^0.64.1",
+    "effect-http-node": "^0.12.1",
     "effect-log": "^0.31.0",
     "jsonwebtoken": "^9.0.2",
     "path-to-regexp": "^6.2.2",
     "postgres": "^3.4.4",
+    "source-map-support": "^0.5.21",
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
@@ -60,11 +62,11 @@
     "rollup-plugin-visualizer": "^5.12.0",
     "schema-openapi": "^0.37.1",
     "terser": "^5.30.4",
-    "tsx": "^4.7.2",
+    "tsx": "^4.7.3",
     "vavite": "^4.1.1",
     "vite": "^5.2.10",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "1.5.0"
+    "vitest": "1.5.2"
   }
 }

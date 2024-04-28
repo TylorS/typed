@@ -8,7 +8,6 @@ import type { HydrationNode } from "./v2/hydration-template.js"
  */
 export type HydrateContext = {
   readonly where: HydrationNode
-  readonly rootIndex: number
   readonly parentTemplate: Template | null
 
   // Used to match sibling components using many() to the correct elements

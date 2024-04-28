@@ -8,10 +8,10 @@ import * as ApiResponse from "effect-http/ApiResponse"
 import * as ApiSchema from "effect-http/ApiSchema"
 import type * as Representation from "effect-http/Representation"
 import * as ServerError from "effect-http/ServerError"
+import * as ReadonlyArray from "effect/Array"
 import * as Effect from "effect/Effect"
 import { flow, pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import * as ReadonlyArray from "effect/Array"
 import { formatParseError } from "./formatParseError.js"
 
 interface ServerResponseEncoder {
@@ -38,13 +38,12 @@ export const create = (
   )
 
   return make((request, inputResponse) =>
-    Effect.gen(function*(_) {
+    Effect.gen(function*() {
       const _input = isFullResponse ?
-        yield* _(
-          parseFullResponseInput(inputResponse),
+        yield* parseFullResponseInput(inputResponse).pipe(
           Effect.mapError(() => createErrorResponse("Invalid response", "Server handler returned unexpected response"))
-        ) :
-        { status: ApiResponse.getStatus(responses[0]), body: inputResponse }
+        )
+        : { status: ApiResponse.getStatus(responses[0]), body: inputResponse }
 
       const response = statusToSpec[_input.status]
       const setBody = createBodySetter(response)
@@ -55,11 +54,9 @@ export const create = (
         request
       )
 
-      return yield* _(
-        ServerResponse.empty({ status: _input.status }).pipe(
-          setBody(_input, representation),
-          Effect.flatMap(setHeaders(_input))
-        )
+      return yield* ServerResponse.empty({ status: _input.status }).pipe(
+        setBody(_input, representation),
+        Effect.flatMap(setHeaders(_input))
       )
     })
   )

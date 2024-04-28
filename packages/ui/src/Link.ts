@@ -12,6 +12,7 @@ import * as EventHandler from "@typed/template/EventHandler"
 import { Placeholder } from "@typed/template/Placeholder"
 import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
+import type { RenderQueue } from "@typed/template/RenderQueue.js"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
 import * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
@@ -43,45 +44,46 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
   | Navigation.Navigation
   | CurrentRoute
   | RenderTemplate
+  | RenderQueue
   | Scope.Scope
   | Placeholder.Context<Props[keyof Props] | Children[number]>
 > {
   return Fx.gen(function*(_) {
     const onClickHandler = getEventHandler(onClick)
-    const toRef = yield* _(Placeholder.asRef(to))
-    const relativeRef = yield* _(Placeholder.asRef(relative ?? true))
-    const replaceRef = yield* _(Placeholder.asRef(replace ?? false))
-    const stateRef = yield* _(Placeholder.asRef(state))
-    const infoRef = yield* _(Placeholder.asRef(props.info))
-    const reloadDocument = yield* _(Placeholder.asRef(props.reloadDocument ?? false))
+    const toRef = yield* Placeholder.asRef(to)
+    const relativeRef = yield* Placeholder.asRef(relative ?? true)
+    const replaceRef = yield* Placeholder.asRef(replace ?? false)
+    const stateRef = yield* Placeholder.asRef(state)
+    const infoRef = yield* Placeholder.asRef(props.info)
+    const reloadDocument = yield* Placeholder.asRef(props.reloadDocument ?? false)
     const href = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
       ([rel, to]) => rel ? makeHref(Route.literal(to)) : Effect.succeed(to)
     )
-    const navigate = Effect.gen(function*(_) {
-      const replace = yield* _(replaceRef)
-      const state = yield* _(stateRef)
-      const url = yield* _(href)
-      const info = yield* _(infoRef)
+    const navigate = Effect.gen(function*() {
+      const replace = yield* replaceRef
+      const state = yield* stateRef
+      const url = yield* href
+      const info = yield* infoRef
 
-      yield* _(Navigation.navigate(url, {
+      yield* Navigation.navigate(url, {
         info,
         history: replace ? "replace" : "auto",
         state
-      }))
+      })
 
-      if (yield* _(reloadDocument)) {
-        yield* _(Navigation.reload({ info, state }))
+      if (yield* reloadDocument) {
+        yield* Navigation.reload({ info, state })
       }
     })
 
     const onClickEventHandler = EventHandler.preventDefault(
       (ev: EventWithCurrentTarget<HTMLAnchorElement, MouseEvent>) =>
-        Effect.gen(function*(_) {
+        Effect.gen(function*() {
           if (onClickHandler) {
-            yield* _(onClickHandler.handler(ev))
+            yield* onClickHandler.handler(ev)
           }
-          yield* _(navigate)
+          yield* navigate
         }),
       onClickHandler?.options
     )

@@ -3,7 +3,7 @@ import type { RenderQueue } from "@typed/template"
 import * as Directive from "@typed/template/Directive"
 import { make } from "@typed/template/EventHandler"
 import { renderToHtml, serverLayer } from "@typed/template/Html"
-import { TEXT_START, TYPED_HOLE } from "@typed/template/Meta"
+import { TEXT_START, TYPED_HOLE_END, TYPED_HOLE_START } from "@typed/template/Meta"
 import type * as RenderContext from "@typed/template/RenderContext"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import { DEFAULT_PRIORITY } from "@typed/template/RenderQueue"
@@ -25,8 +25,7 @@ describe("Html", () => {
   it.concurrent("renders a template with a value", async () => {
     await testHtmlChunks(html`<div>${"Hello, world!"}</div>`, [
       "<div>",
-      `${TEXT_START}Hello, world!`,
-      TYPED_HOLE(0),
+      `${TYPED_HOLE_START(0)}${TEXT_START}Hello, world!${TYPED_HOLE_END(0)}`,
       "</div>"
     ])
   })
@@ -65,8 +64,7 @@ describe("Html", () => {
   it.concurrent("renders interpolated templates", async () => {
     await testHtmlChunks(html`<div>${html`<span>Hello, world!</span>`}</div>`, [
       "<div>",
-      `<span>Hello, world!</span>`,
-      TYPED_HOLE(0),
+      `${TYPED_HOLE_START(0)}<span>Hello, world!</span>${TYPED_HOLE_END(0)}`,
       "</div>"
     ])
   })
@@ -74,11 +72,9 @@ describe("Html", () => {
   it.concurrent("renders interpolated templates with interpolations", async () => {
     await testHtmlChunks(html`<div>${html`<span>${"Hello, world!"}</span>`}</div>`, [
       "<div>",
-      "<span>",
-      TEXT_START + "Hello, world!",
-      TYPED_HOLE(0),
-      "</span>",
-      TYPED_HOLE(0),
+      TYPED_HOLE_START(0) + "<span>",
+      TYPED_HOLE_START(0) + TEXT_START + "Hello, world!" + TYPED_HOLE_END(0),
+      "</span>" + TYPED_HOLE_END(0),
       "</div>"
     ])
   })
@@ -238,8 +234,7 @@ describe("Html", () => {
   it("renders components with wires", async () => {
     await testHtmlChunks(Fx.scoped(counter), [
       `<button id="decrement">-</button><span id="count">`,
-      `${TEXT_START}0`,
-      TYPED_HOLE(1),
+      `${TYPED_HOLE_START(1)}${TEXT_START}0${TYPED_HOLE_END(1)}`,
       `</span><button id="increment">+</button>`
     ])
   })
@@ -329,14 +324,11 @@ describe("Html", () => {
 </div>`,
       [
         `<div class="home-page"><div class="banner"><div class="container"><h1 class="logo-font">conduit</h1><p>A place to share your knowledge.</p></div></div><div class="container page"><div class="row"><div class="col-md-9"><div class="feed-toggle"><ul class="outline-active nav nav-pills"><li class="nav-item">`,
-        TEXT_START,
-        TYPED_HOLE(0),
+        TYPED_HOLE_START(0) + TEXT_START + TYPED_HOLE_END(0),
         `</li></ul></div>`,
-        TEXT_START,
-        TYPED_HOLE(1),
+        TYPED_HOLE_START(1) + TEXT_START + TYPED_HOLE_END(1),
         `<ul class="pagination"><li class="page-item active"><a class="page-link" href="">1</a></li><li class="page-item"><a class="page-link" href="">2</a></li></ul></div><div class="col-md-3"><div class="sidebar"><p>Popular Tags</p><div class="tag-list">`,
-        TEXT_START,
-        TYPED_HOLE(2),
+        TYPED_HOLE_START(2) + TEXT_START + TYPED_HOLE_END(2),
         `</div></div></div></div></div></div>`
       ]
     )
@@ -356,8 +348,7 @@ describe("Html", () => {
       [
         `<li class="nav-item"><a`,
         `>`,
-        TEXT_START,
-        TYPED_HOLE(3),
+        TYPED_HOLE_START(3) + TEXT_START + TYPED_HOLE_END(3),
         `</a></li>`
       ]
     )

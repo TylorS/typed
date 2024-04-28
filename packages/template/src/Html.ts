@@ -18,7 +18,7 @@ import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChu
 import { templateToHtmlChunks } from "./HtmlChunk.js"
 import { parse } from "./internal/parser2.js"
 import { partNodeToPart } from "./internal/server.js"
-import { TEXT_START, TYPED_HOLE } from "./Meta.js"
+import { TEXT_START, TYPED_HOLE_END, TYPED_HOLE_START } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
 import type { Renderable } from "./Renderable.js"
 import * as RenderContext from "./RenderContext.js"
@@ -190,7 +190,27 @@ function renderPart<E, R>(
     })
   } else if (node._tag === "node") {
     if (isStatic) return renderNode<E, R>(renderable, isStatic, done)
-    return Fx.append(renderNode<E, R>(renderable, isStatic, false), HtmlRenderEvent(TYPED_HOLE(node.index), done))
+    let first = true
+    return Fx.continueWith(
+      Fx.map(renderNode<E, R>(renderable, isStatic, true), (x) => {
+        if (x.done) {
+          const y = HtmlRenderEvent(
+            (first ? TYPED_HOLE_START(node.index) : "") + x.html + TYPED_HOLE_END(node.index),
+            done
+          )
+          first = false
+          return y
+        } else {
+          if (first) {
+            first = false
+            return HtmlRenderEvent(TYPED_HOLE_START(node.index) + x.html, false)
+          }
+          return x
+        }
+      }),
+      () =>
+        first ? Fx.succeed(HtmlRenderEvent(TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index), done)) : Fx.empty
+    )
   } else if (node._tag === "properties") {
     if (renderable == null) return Fx.empty
     return Fx.map(

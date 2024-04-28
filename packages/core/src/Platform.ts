@@ -106,19 +106,16 @@ export function toHttpRouter<
         const url = getUrlFromServerRequest(request)
         const path = Navigation.getCurrentPathFromUrl(url)
 
-        return Effect.gen(function*(_) {
-          yield* _(Effect.logDebug(`Attempting guards`))
+        return Effect.gen(function*() {
+          yield* Effect.logDebug(`Attempting guards`)
 
           // Attempt to match a guard
           for (const match of matches) {
-            const matched = yield* _(match.guard(request.url))
+            const matched = yield* match.guard(request.url)
             if (Option.isSome(matched)) {
-              yield* _(
-                Effect.logDebug(`Matched guard for path`),
-                Effect.annotateLogs("route.params", matched.value)
-              )
+              yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
 
-              const ref = yield* _(RefSubject.of(matched.value))
+              const ref = yield* RefSubject.of(matched.value)
               const content = match.match(RefSubject.take(ref, 1))
               const template = Fx.unify(options?.layout ? options.layout({ content, request, head, script }) : content)
                 .pipe(
@@ -136,10 +133,10 @@ export function toHttpRouter<
                   Fx.annotateLogs("route.params", matched.value)
                 )
 
-              return yield* _(htmlResponse(template))
+              return yield* htmlResponse(template)
             }
           }
-          return yield* _(Effect.fail(new GuardsNotMatched({ request, route, matches })))
+          return yield* Effect.fail(new GuardsNotMatched({ request, route, matches }))
         }).pipe(
           Effect.provide(
             Layer.mergeAll(
@@ -190,10 +187,10 @@ export function staticFiles(
     E | BadArgument | PlatformError,
     ServerRequest | Http.platform.Platform | FileSystem | Path | R
   > =>
-    Effect.gen(function*(_) {
-      const request = yield* _(Http.request.ServerRequest)
-      const fs = yield* _(FileSystem)
-      const path = yield* _(Path)
+    Effect.gen(function*() {
+      const request = yield* Http.request.ServerRequest
+      const fs = yield* FileSystem
+      const path = yield* Path
       // TODO: We should probably modify the request url to also look for html files
       const filePath = path.resolve(
         serverOutputDirectory,
@@ -201,20 +198,18 @@ export function staticFiles(
       )
       const gzipFilePath = filePath + ".gz"
 
-      if (yield* _(isFile(fs, gzipFilePath))) {
-        return yield* _(
-          Http.response.file(gzipFilePath, {
-            headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
-            contentType: getContentType(filePath)
-          })
-        )
-      } else if (yield* _(isFile(fs, filePath))) {
+      if (yield* isFile(fs, gzipFilePath)) {
+        return yield* Http.response.file(gzipFilePath, {
+          headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
+          contentType: getContentType(filePath)
+        })
+      } else if (yield* isFile(fs, filePath)) {
         // TODO: We should support gzip'ing files on the fly
-        return yield* _(Http.response.file(filePath, {
+        return yield* Http.response.file(filePath, {
           headers: Http.headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
-        }))
+        })
       } else {
-        return yield* _(self)
+        return yield* self
       }
     })
 }

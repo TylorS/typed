@@ -29,7 +29,14 @@ export const TEXT_START = "<!--text-->"
 /**
  * @since 1.0.0
  */
-export const TYPED_HOLE = (index: number) => `<!--hole${index}-->`
+export const TYPED_HOLE_START = (index: number) => `<!--hole${index}-->`
+
+// Used to mark where a NodePart is in the DOM. It can be found directly after the
+// elements or text nodes it is managing.
+/**
+ * @since 1.0.0
+ */
+export const TYPED_HOLE_END = (index: number) => `<!--/hole${index}-->`
 
 /**
  * Used to mark separation between the start and end of a template.

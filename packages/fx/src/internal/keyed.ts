@@ -64,7 +64,7 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
       const scheduleNextEmit = forkDebounce(Effect.suspend(() => sink.onSuccess(getReadyIndices(state))))
 
       function diffAndPatch(values: ReadonlyArray<A>) {
-        return Effect.gen(function*(_) {
+        return Effect.gen(function*() {
           const previous = state.previousValues
           state.previousValues = values
 
@@ -74,39 +74,37 @@ function runKeyed<A, E, R, B extends PropertyKey, C, E2, R2, R3>(
 
           for (const patch of diffIterator(previous, values, options)) {
             if (patch._tag === "Remove") {
-              yield* _(removeValue(state, patch))
+              yield* removeValue(state, patch)
             } else if (patch._tag === "Add") {
               added = true
-              yield* _(
-                addValue(
-                  state,
-                  values,
-                  patch,
-                  id,
-                  parentScope,
-                  options,
-                  sink,
-                  Effect.suspend(() => {
-                    if (done === false) {
-                      scheduled = true
-                      return Effect.void
-                    }
-                    return scheduleNextEmit
-                  })
-                )
+              yield* addValue(
+                state,
+                values,
+                patch,
+                id,
+                parentScope,
+                options,
+                sink,
+                Effect.suspend(() => {
+                  if (done === false) {
+                    scheduled = true
+                    return Effect.void
+                  }
+                  return scheduleNextEmit
+                })
               )
             } else {
-              yield* _(updateValue(state, values, patch))
+              yield* updateValue(state, values, patch)
             }
           }
 
           done = true
 
           if (scheduled || added === false) {
-            yield* _(scheduleNextEmit)
+            yield* scheduleNextEmit
           } else {
             // Allow fibers to begin running if we're adding Fibers
-            yield* _(Effect.sleep(1))
+            yield* Effect.sleep(1)
           }
         })
       }
@@ -165,16 +163,17 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
   sink: Sink.Sink<ReadonlyArray<C>, E | E2, R2 | R3>,
   scheduleNextEmit: Effect.Effect<D, never, R3>
 ) {
-  return Effect.gen(function*(_) {
+  return Effect.gen(function*() {
     const value = values[patch.index]
-    const childScope = yield* _(Scope.fork(parentScope, ExecutionStrategy.sequential))
-    const ref: RefSubject.RefSubject<A> = yield* _(RefSubject.unsafeMake<never, A>({
+    const childScope = yield* Scope.fork(parentScope, ExecutionStrategy.sequential)
+    const ref: RefSubject.RefSubject<A> = yield* RefSubject.unsafeMake<never, A>({
       initial: Effect.sync(() => entry.value),
       initialValue: value,
       scope: childScope,
       id
-    }))
-    yield* _(Scope.addFinalizer(childScope, ref.interrupt))
+    })
+
+    yield* Scope.addFinalizer(childScope, ref.interrupt)
 
     const entry = new KeyedEntry<A, C>(
       value,
@@ -187,18 +186,16 @@ function addValue<A, B extends PropertyKey, C, R2, E2, E, R3, D>(
     entries.set(patch.key, entry)
     indices.set(patch.index, patch.key)
 
-    yield* _(
-      Effect.forkIn(
-        options.onValue(ref, patch.key).run(Sink.make(
-          (cause) => sink.onFailure(cause),
-          (output) => {
-            entry.output = Option.some(output)
+    yield* Effect.forkIn(
+      options.onValue(ref, patch.key).run(Sink.make(
+        (cause) => sink.onFailure(cause),
+        (output) => {
+          entry.output = Option.some(output)
 
-            return scheduleNextEmit
-          }
-        )),
-        parentScope
-      )
+          return scheduleNextEmit
+        }
+      )),
+      parentScope
     )
   })
 }

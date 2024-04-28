@@ -188,8 +188,8 @@ export function decode<R extends Route.Route.Any>(
  * @since 1.0.0
  */
 export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = CurrentRoute.layer(
-  Effect.gen(function*(_) {
-    const document = yield* _(Document.Document)
+  Effect.gen(function*() {
+    const document = yield* Document.Document
     const base = document.querySelector("base")
     const baseHref = base ? getBasePathname(base.href) : "/"
 

@@ -135,18 +135,18 @@ export function Model<const Refs extends Readonly<Record<string, ModelRef<any, a
         effect
       ),
     layer: (effect) =>
-      Layer.scopedContext(Effect.gen(function*(_) {
-        const scope = yield* _(Effect.scope)
-        const initial = yield* _(effect)
+      Layer.scopedContext(Effect.gen(function*() {
+        const scope = yield* Effect.scope
+        const initial = yield* effect
 
         let context = ContextBuilder.empty
 
         for (const [k, ref] of Object.entries(refs)) {
           context = context.mergeContext(
-            yield* _(Layer.buildWithScope(
+            yield* Layer.buildWithScope(
               ref.layer(Effect.succeed(initial[k])),
               scope
-            ))
+            )
           )
         }
 
