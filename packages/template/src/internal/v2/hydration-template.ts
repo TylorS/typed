@@ -39,7 +39,8 @@ function getHydrationNodes(nodes: Array<Node>): Array<HydrationNode> {
       } else if (node.data.startsWith(HOLE_PREFIX)) {
         const index = parseInt(node.data.slice(HOLE_PREFIX.length), 10)
         const endIndex = getHoleEndIndex(nodes, i, index)
-        out.push(new HydrationHole(index, node, getHydrationNodes(nodes.slice(i + 1, endIndex))))
+        const endComment = nodes[endIndex] as Comment
+        out.push(new HydrationHole(index, node, endComment, getHydrationNodes(nodes.slice(i + 1, endIndex))))
         i = endIndex
       } else {
         out.push(new HydrationLiteral(node))
@@ -153,7 +154,8 @@ export class HydrationHole implements Inspectable {
 
   constructor(
     readonly index: number,
-    readonly comment: Comment,
+    readonly startComment: Comment,
+    readonly endComment: Comment,
     readonly childNodes: Array<HydrationNode>
   ) {}
 
@@ -269,7 +271,7 @@ export function getNodes(node: HydrationNode): Array<Node> {
     case "literal":
       return [node.node]
     case "hole":
-      return [...node.childNodes.flatMap(getNodes), node.comment]
+      return [node.startComment, ...node.childNodes.flatMap(getNodes), node.endComment]
     case "many":
       return [...node.childNodes.flatMap(getNodes), node.comment]
     case "template":
@@ -278,5 +280,9 @@ export function getNodes(node: HydrationNode): Array<Node> {
 }
 
 export function getPreviousNodes(hole: HydrationHole | HydrationMany): Array<Node> {
-  return hole.childNodes.flatMap(getNodes).filter((n) => n !== hole.comment)
+  const predicate: (n: Node) => boolean = hole._tag === "hole"
+    ? (n) => n !== hole.startComment && n !== hole.startComment
+    : (n) => n !== hole.comment
+
+  return hole.childNodes.flatMap(getNodes).filter(predicate)
 }

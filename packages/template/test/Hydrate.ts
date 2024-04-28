@@ -23,7 +23,7 @@ describe("Hydrate", () => {
       ok(rendered === div)
     }))
 
-  it.only("hydrates a template using many", () =>
+  it("hydrates a template using many", () =>
     Effect.gen(function*(_) {
       const { elementRef, elements: { listItems, ul }, window } = yield* _(
         testHydrate(
@@ -54,8 +54,8 @@ describe("Hydrate", () => {
           (rendered) => {
             ok(Array.isArray(rendered))
             // Includes comments and holes for tempaltes
-            deepStrictEqual(rendered.length, 5)
-            const [header, /** HOLE */, main, footer /** HOLE */] = rendered
+            deepStrictEqual(rendered.length, 7)
+            const [/** HOLE_START */, header, /** HOLE_END */, main, /** HOLE_START */, footer /** HOLE */] = rendered
 
             return {
               header,
@@ -69,9 +69,9 @@ describe("Hydrate", () => {
       const rendered = yield* _(elementRef)
 
       ok(Array.isArray(rendered))
-      ok(rendered.length === 5)
+      ok(rendered.length === 7)
 
-      const [header, /** HOLE */, main, footer /** HOLE */] = rendered
+      const [/** HOLE_START */, header, /** HOLE_END */, main, /** HOLE_START */, footer /** HOLE */] = rendered
 
       ok(header instanceof window.HTMLElement)
       ok(header.tagName === "HEADER")
@@ -98,8 +98,17 @@ describe("Hydrate", () => {
           html`${html`<header>Header</header><nav>Navigation</nav>`}<main>${html`<h1>${html`<span>${"Test"}</span><span>${"Content"}</span>`}</h1>`}</main>${html`<div>Nested</div><footer>Footer</footer>`}`,
           (rendered) => {
             ok(Array.isArray(rendered))
-            deepEqual(rendered.length, 7)
-            const [header, navigation, /** HOLE */, main, div, footer /** HOLE */] = rendered
+            deepEqual(rendered.length, 9)
+            const [
+              /** HOLE_START */,
+              header,
+              navigation,
+              /** HOLE_END */,
+              main,
+              /** HOLE_START */,
+              div,
+              footer /** HOLE_END */
+            ] = rendered
 
             return {
               header,
@@ -116,7 +125,16 @@ describe("Hydrate", () => {
 
       ok(Array.isArray(rendered))
 
-      const [header, navigation, /** HOLE */, main, div, footer /** HOLE */] = rendered
+      const [
+        /** HOLE_START */,
+        header,
+        navigation,
+        /** HOLE_END */,
+        main,
+        /** HOLE_START */,
+        div,
+        footer /** HOLE_END */
+      ] = rendered
 
       ok(header instanceof window.HTMLElement)
       ok(header.tagName === "HEADER")
@@ -130,13 +148,13 @@ describe("Hydrate", () => {
 
       ok(main instanceof window.HTMLElement)
       ok(main.tagName === "MAIN")
-      deepStrictEqual(main.childNodes.length, 4)
-      const [, h1] = main.childNodes
+      deepStrictEqual(main.childNodes.length, 5)
+      const [/*TEMPLATE_START*/, /**HOLE_START */ , h1] = main.childNodes
 
       ok(h1 instanceof window.HTMLElement)
-      deepStrictEqual(h1.childNodes.length, 5)
+      deepStrictEqual(h1.childNodes.length, 6)
 
-      const [, span1, span2, mainComment] = h1.childNodes
+      const [/*TEMPLATE_START*/, /**HOLE_START */ , span1, span2, mainComment] = h1.childNodes
 
       ok(span1 instanceof window.HTMLElement)
       ok(span1.tagName === "SPAN")

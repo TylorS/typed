@@ -14,7 +14,7 @@ import type * as Template from "../../Template.js"
 import { CouldNotFindCommentError, isHydrationError } from "../errors.js"
 import { HydrateContext } from "../HydrateContext.js"
 import { findHydratePath, isCommentWithValue, type ParentChildNodes } from "../utils.js"
-import type { HydrationHole, HydrationMany, HydrationNode, HydrationTemplate } from "./hydration-template.js"
+import type { HydrationHole, HydrationNode, HydrationTemplate } from "./hydration-template.js"
 import {
   findHydrationHole,
   findHydrationMany,
@@ -202,14 +202,14 @@ function setupPart(
     case "text-part": {
       const hole = findHydrationHole(getChildNodes(ctx.where), part.index)
       if (hole === null) throw new CouldNotFindCommentError(part.index)
-      return setupTextPart(part, hole.comment, ctx)
+      return setupTextPart(part, hole.endComment, ctx)
     }
   }
 }
 
 function setupHydratedNodePart(
   part: Template.NodePart,
-  hole: HydrationHole | HydrationMany,
+  hole: HydrationHole,
   ctx: HydrateTemplateContext
 ) {
   const nestedCtx = ctx.makeHydrateContext(hole, part.index)
@@ -217,7 +217,7 @@ function setupHydratedNodePart(
   const text = previousNodes.length === 2 && isCommentWithValue(previousNodes[0], "text") && isText(previousNodes[1])
     ? previousNodes[1]
     : null
-  const effect = setupNodePart(part, hole.comment, ctx, text, text === null ? previousNodes : [text])
+  const effect = setupNodePart(part, hole.endComment, ctx, text, text === null ? previousNodes : [text])
   if (effect === null) return null
   return Effect.provideService(effect, HydrateContext, nestedCtx)
 }

@@ -25,7 +25,7 @@ const equalDestinations = (a: ReadonlyArray<Navigation.Destination>, b: Readonly
 
 describe(__filename, () => {
   describe("Navigation", () => {
-    it.only("memory", async () => {
+    it("memory", async () => {
       const url = new URL("https://example.com/foo/1")
       const state = { x: Math.random() }
       const test = Effect.gen(function*(_) {
@@ -421,9 +421,11 @@ describe(__filename, () => {
       it("manages navigation", async () => {
         const window = makeWindow({ url: url.href }, state)
         const NavigationPolyfill = await import("@virtualstate/navigation")
-        const { history, navigation } = NavigationPolyfill.getCompletePolyfill({ window: window as any })
+        const { navigation } = NavigationPolyfill.getCompletePolyfill({
+          window: window as any,
+          history: window.history as any
+        })
         ;(window as any).navigation = navigation as any
-        window.history = history as History
         const test = Effect.gen(function*(_) {
           const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
             yield* _(

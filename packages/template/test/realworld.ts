@@ -16,17 +16,16 @@ import {
 } from "@typed/template/internal/v2/hydration-template"
 import { getOrMakeWindow, testHydrate } from "@typed/template/Test"
 import { describe, it } from "@typed/template/Vitest"
-import { isArray, toHtml } from "@typed/wire"
+import { isArray } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import { Effect, Option } from "effect"
-import { writeFileSync } from "fs"
 import { Article, ArticleTag } from "./realworld-model/Article"
 
 describe("Realworld", () => {
   describe("Home Page", () => {
     const home = layout(homePage)
 
-    it.only("generates correct hydration root", () =>
+    it("generates correct hydration root", () =>
       Effect.gen(function*(_) {
         const html = yield* _(renderToHtmlString(home))
         const { document } = yield* _(getOrMakeWindow())
@@ -67,9 +66,6 @@ describe("Realworld", () => {
 
         deepStrictEqual(findHydrationTemplate(root.childNodes, ROOT_TEMPLATE_HASH), template)
         deepStrictEqual(findHydrationHole(template.childNodes, 1), homePageHole)
-
-        writeFileSync("hole.json", JSON.stringify(findHydrationHole(template.childNodes, 1), null, 2))
-        writeFileSync("realworld-home-root.json", JSON.stringify(root, null, 2))
       }).pipe(
         Effect.provide(serverLayer),
         Effect.provide(Navigation.initialMemory({ url: "/" })),
@@ -91,9 +87,9 @@ describe("Realworld", () => {
 
         deepStrictEqual(rendered, elements)
 
-        deepStrictEqual(rendered.length, 5)
+        deepStrictEqual(rendered.length, 7)
 
-        const [header, /*HOLE*/, main, footer /*HOLE*/] = rendered
+        const [/*HOLE_START*/, header, /*HOLE_END*/, main, /*HOLE_START*/, footer /*HOLE_END*/] = rendered
 
         ok(header instanceof window.HTMLElement)
         deepStrictEqual(header.tagName, "NAV")
@@ -107,17 +103,15 @@ describe("Realworld", () => {
         ok(main.firstElementChild instanceof window.HTMLElement)
         ok(main.firstElementChild.tagName === "DIV")
         ok(main.firstElementChild.className === "home-page")
-
-        console.log(Array.from(main.childNodes, toHtml))
       }))
   })
 })
 
 const articleArbitrary = Arbitrary.make(Article)
-const articles: ReadonlyArray<Article> = FastCheck.sample(articleArbitrary, { numRuns: 1, seed: 100 })
+const articles: ReadonlyArray<Article> = FastCheck.sample(articleArbitrary, { numRuns: 10, seed: 1 })
 
 const tagArbitrary = Arbitrary.make(ArticleTag)
-const tags: ReadonlyArray<ArticleTag> = FastCheck.sample(tagArbitrary, { numRuns: 1, seed: 100 })
+const tags: ReadonlyArray<ArticleTag> = FastCheck.sample(tagArbitrary, { numRuns: 10, seed: 100 })
 
 const homePage = html`<div class="home-page">
   <div class="banner">

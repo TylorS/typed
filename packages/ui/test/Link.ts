@@ -94,7 +94,7 @@ describe("Link", () => {
         Router.withCurrentRoute(Route.literal("/foo"))
       ))
 
-    Vitest.test.only("renders to html", () =>
+    Vitest.test("renders to html", () =>
       Effect.gen(function*(_) {
         const html = yield* _(
           renderToHtmlString(

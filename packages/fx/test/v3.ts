@@ -170,7 +170,7 @@ describe("V3", () => {
     })
 
     describe("Fx.keyed", () => {
-      it.only("allow keeping a reference to a running stream", async () => {
+      it("allow keeping a reference to a running stream", async () => {
         const test = Effect.gen(function*($) {
           const inputs = Fx.mergeAll([
             Fx.succeed([1, 2, 3]),

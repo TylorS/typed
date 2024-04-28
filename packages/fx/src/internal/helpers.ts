@@ -63,9 +63,11 @@ export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
     }
   }
 
+  const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
+
   return {
-    onSuccess,
-    onEnd
+    onSuccess: (i: number, a: A) => lock(onSuccess(i, a)),
+    onEnd: (i: number) => lock(onEnd(i))
   } as const
 }
 
