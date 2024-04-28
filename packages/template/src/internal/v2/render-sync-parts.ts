@@ -197,7 +197,7 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
 
           const setValueIfReady = () => {
             if (values.size === expected) {
-              return sink.succeed(join(Array.from(values.values())))
+              return sink.succeed(join(Array.from({ length: expected }, (_, i) => values.get(i)!)))
             }
           }
 
@@ -213,7 +213,7 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
               })
               const value = renderables[part.index]
 
-              yield* matchRenderable(value, {
+              yield* Effect.forkScoped(matchRenderable(value, {
                 Fx: (fx) =>
                   fx.run(Fx.Sink.make((cause) =>
                     Effect.promise(() => sink.failCause(cause)), (value) =>
@@ -223,9 +223,11 @@ export function makeSparsePartHandler<A extends PartNode, B extends SyncPart, C,
                 Directive: (directive) =>
                   directive(syncPartToPart(child, ({ value }) => Effect.sync(() => child.update(value as never)))),
                 Otherwise: (value) => Effect.sync(() => child.update(value as never))
-              })
+              }))
             }
           }
+
+          setValueIfReady()
         }),
         Effect.never
       )

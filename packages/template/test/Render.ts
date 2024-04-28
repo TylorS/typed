@@ -191,6 +191,30 @@ describe("Render", () => {
           deepStrictEqual(rendered.id, "foo bar")
           deepStrictEqual(rendered.innerText, "Hello, world!")
         }))
+
+      it("renders Effect interpolations", () =>
+        Effect.gen(function*(_) {
+          const { elementRef, window } = yield* _(
+            testRender(html`<div id="${Effect.succeed("foo")} ${Effect.succeed("bar")}">Hello, world!</div>`)
+          )
+          const rendered = yield* _(elementRef)
+
+          ok(rendered instanceof window.HTMLDivElement)
+          deepStrictEqual(rendered.id, "foo bar")
+          deepStrictEqual(rendered.innerText, "Hello, world!")
+        }))
+
+      it("renders Fx interpolations", () =>
+        Effect.gen(function*(_) {
+          const { elementRef, window } = yield* _(
+            testRender(html`<div id="${Fx.succeed("foo")} ${Fx.succeed("bar")}">Hello, world!</div>`)
+          )
+          const rendered = yield* _(elementRef)
+
+          ok(rendered instanceof window.HTMLDivElement)
+          deepStrictEqual(rendered.id, "foo bar")
+          deepStrictEqual(rendered.innerText, "Hello, world!")
+        }))
     })
   })
 
