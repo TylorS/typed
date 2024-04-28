@@ -1,6 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { RenderQueue, renderToLayer } from "@typed/template"
+import { renderLayer, RenderQueue, renderToLayer } from "@typed/template"
 import { html } from "@typed/template/RenderTemplate"
 import { Effect, Layer } from "effect"
 
@@ -14,8 +14,10 @@ const Counter = Fx.gen(function*(_) {
   </div>`
 })
 
-renderToLayer(Counter).pipe(
-  Layer.provide(RenderQueue.raf),
+Counter.pipe(
+  renderToLayer,
+  Layer.provide(renderLayer(window)),
+  Layer.provide(RenderQueue.mixed()),
   Layer.launch,
   Effect.runFork
 )

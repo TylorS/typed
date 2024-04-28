@@ -195,7 +195,7 @@ export {
   /**
    * @since 1.0.0
    */
-  TagClass,
+  type TagClass,
   /**
    * @since 1.0.0
    * @category symbol
