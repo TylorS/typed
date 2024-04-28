@@ -55,6 +55,20 @@ export namespace MatchInput {
   /**
    * @since 1.0.0
    */
+  export type HasPathParams<T> = Route<T> extends Route.Route<infer P, infer _>
+    ? P extends `${infer P2}\\?${infer _}` ? _Path.HasParams<P2> : _Path.HasParams<P>
+    : false
+
+  /**
+   * @since 1.0.0
+   */
+  export type HasQueryParams<T> = Route<T> extends Route.Route<infer P, infer _>
+    ? P extends `${infer _}\\?${infer P2}` ? _Path.HasParams<`\\?${P2}`> : false
+    : false
+
+  /**
+   * @since 1.0.0
+   */
   export type Success<T> = T extends Route.Route<infer _P, infer _S> ? Route.Route.Type<T>
     : T extends RouteGuard.RouteGuard<Route.Route<infer _P, infer _S>, infer A, infer _E, infer _R> ? A
     : never
@@ -77,6 +91,16 @@ export namespace MatchInput {
    * @since 1.0.0
    */
   export type Schema<T> = Route.Route.Schema<MatchInput.Route<T>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type PathSchema<T> = Route.Route.PathSchema<MatchInput.Route<T>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type QuerySchema<T> = Route.Route.QuerySchema<MatchInput.Route<T>>
 }
 
 /**
@@ -233,6 +257,20 @@ export function getRoute<I extends MatchInput.Any>(input: I): MatchInput.Route<I
  */
 export function getSchema<I extends MatchInput.Any>(input: I): MatchInput.Schema<I> {
   return asRouteGuard<I>(input).route.schema
+}
+
+/**
+ * @since 1.0.0
+ */
+export function getPathSchema<I extends MatchInput.Any>(input: I): MatchInput.PathSchema<I> {
+  return asRouteGuard<I>(input).route.pathSchema as MatchInput.PathSchema<I>
+}
+
+/**
+ * @since 1.0.0
+ */
+export function getQuerySchema<I extends MatchInput.Any>(input: I): MatchInput.QuerySchema<I> {
+  return asRouteGuard<I>(input).route.querySchema as MatchInput.QuerySchema<I>
 }
 
 /**

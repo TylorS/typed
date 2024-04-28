@@ -6,7 +6,8 @@ import type { Method } from "@effect/platform/Http/Method"
 import { getPropertySignatures } from "@effect/schema/AST"
 import type { Schema } from "@effect/schema/Schema"
 import type { MatchInput } from "@typed/router"
-import { getPath, getSchema } from "@typed/router"
+import { getPath, getPathSchema, getQuerySchema } from "@typed/router"
+import { flow } from "effect"
 import type { ApiRequest, ApiResponse, Security } from "effect-http"
 import { ApiEndpoint, ApiSchema } from "effect-http"
 
@@ -94,22 +95,37 @@ export function setRequestRoute<I extends MatchInput.Any>(
   Id,
   ApiRequest.ApiRequest<
     B,
-    GetSchemaType<I>,
-    Q,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     H,
     MatchInput.Context<I> | R1
   >,
   Response,
   S
 > {
-  const schema = getSchemaType(route)
-  if (ApiSchema.isIgnored(schema)) {
+  const path = getPathType(route)
+  const query = getQueryType(route)
+
+  const pathIgnored = ApiSchema.isIgnored(path)
+  const queryIgnored = ApiSchema.isIgnored(query)
+
+  if (pathIgnored && queryIgnored) {
     return (endpoint) => endpoint as any
+  } else if (pathIgnored) {
+    return ApiEndpoint.setRequestQuery(query as any) as any
+  } else if (queryIgnored) {
+    return ApiEndpoint.setRequestPath(path as any) as any
+  } else {
+    return flow(ApiEndpoint.setRequestPath(path as any), ApiEndpoint.setRequestQuery(query as any)) as any
   }
-  return ApiEndpoint.setRequestPath(schema as any) as any
 }
 
-type GetSchemaType<I extends MatchInput.Any> = MatchInput.HasParams<I> extends true ? Schema.Type<MatchInput.Schema<I>>
+type GetSchemaPathType<I extends MatchInput.Any> = MatchInput.HasPathParams<I> extends true
+  ? Schema.Type<MatchInput.PathSchema<I>>
+  : ApiSchema.Ignored
+
+type GetSchemaQueryType<I extends MatchInput.Any> = MatchInput.HasQueryParams<I> extends true
+  ? Schema.Type<MatchInput.QuerySchema<I>>
   : ApiSchema.Ignored
 
 /**
@@ -129,8 +145,8 @@ export function make<
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -138,19 +154,22 @@ export function make<
   Security.Security<void, never, never>
 > {
   const path = getPath(route)
-  const schema = getSchemaType(route)
-
-  if (ApiSchema.isIgnored(schema)) {
-    return ApiEndpoint.make(method, id, path, options) as any
-  }
-
-  return ApiEndpoint.make(method, id, path, options).pipe(
-    ApiEndpoint.setRequestPath(schema as any)
-  ) as any
+  const endpoint = ApiEndpoint.make(method, id, path, options) as any
+  return setRequestRoute(route)(endpoint)
 }
 
-function getSchemaType<I extends MatchInput.Any>(input: I): GetSchemaType<I> {
-  const schema: Schema.Any = getSchema(input)
+function getPathType<I extends MatchInput.Any>(input: I): GetSchemaPathType<I> {
+  const schema: Schema.Any = getPathSchema(input)
+  const propertySignature = getPropertySignatures(schema.ast)
+  if (propertySignature.length === 0) {
+    return ApiSchema.Ignored as any
+  } else {
+    return schema as any
+  }
+}
+
+function getQueryType<I extends MatchInput.Any>(input: I): GetSchemaQueryType<I> {
+  const schema: Schema.Any = getQuerySchema(input)
   const propertySignature = getPropertySignatures(schema.ast)
   if (propertySignature.length === 0) {
     return ApiSchema.Ignored as any
@@ -188,8 +207,8 @@ export const get: <const Id extends string, I extends MatchInput.Any, O extends 
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -208,8 +227,8 @@ export const patch: <const Id extends string, I extends MatchInput.Any, O extend
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -228,8 +247,8 @@ export const post: <const Id extends string, I extends MatchInput.Any, O extends
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -248,11 +267,51 @@ export const put: <const Id extends string, I extends MatchInput.Any, O extends 
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
   ApiResponse.ApiResponse.Default,
   Security.Security<void, never, never>
 > = makeWithMethod("PUT")
+
+/**
+ * @since 1.0.0
+ */
+export const head: <const Id extends string, I extends MatchInput.Any, O extends ApiEndpoint.Options>(
+  id: Id,
+  route: I,
+  options: O
+) => ApiEndpoint.ApiEndpoint<
+  Id,
+  ApiRequest.ApiRequest<
+    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
+    ApiSchema.Ignored,
+    MatchInput.Context<I>
+  >,
+  ApiResponse.ApiResponse.Default,
+  Security.Security<void, never, never>
+> = makeWithMethod("HEAD")
+
+/**
+ * @since 1.0.0
+ */
+export const options: <const Id extends string, I extends MatchInput.Any, O extends ApiEndpoint.Options>(
+  id: Id,
+  route: I,
+  options: O
+) => ApiEndpoint.ApiEndpoint<
+  Id,
+  ApiRequest.ApiRequest<
+    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
+    ApiSchema.Ignored,
+    MatchInput.Context<I>
+  >,
+  ApiResponse.ApiResponse.Default,
+  Security.Security<void, never, never>
+> = makeWithMethod("OPTIONS")
