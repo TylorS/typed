@@ -94,7 +94,7 @@ describe("Route", () => {
     const foobarTransformed = foobar.pipe(
       Route.transform(
         Schema.Struct({ foo: Schema.Number.pipe(Schema.int()), bar: Schema.Number.pipe(Schema.int()) }),
-        ({ barId, fooId }) => ({ foo: fooId, bar: barId } as const),
+        ({ barId, fooId }) => ({ foo: fooId, bar: barId }),
         ({ bar, foo }) => ({ fooId: foo, barId: bar })
       )
     )
@@ -105,5 +105,21 @@ describe("Route", () => {
     })
 
     await Effect.runPromise(test)
+  })
+
+  it("separates path and query schemas", () => {
+    const route = Route.literal("/foo").concat(Route.param("fooId"), Route.queryParams({ bar: Route.integer("bar") }))
+    const { pathSchema, querySchema } = route
+    const decodePath = Schema.decode(pathSchema)
+    const decodeQuery = Schema.decode(querySchema)
+    const decode = Route.decode_(route)
+
+    const test = Effect.gen(function*(_) {
+      deepEqual(yield* _(decodePath({ fooId: "1" })), { fooId: "1" })
+      deepEqual(yield* _(decodeQuery({ bar: "1" })), { bar: 1 })
+      deepEqual(yield* _(decode(`/foo/1?bar=1`)), { fooId: "1", bar: 1 })
+    })
+
+    return Effect.runPromise(test)
   })
 })

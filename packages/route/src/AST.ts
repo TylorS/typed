@@ -11,7 +11,7 @@ import * as P from "@typed/path"
  */
 export type AST =
   | AST.Base
-  | QueryParams<ReadonlyArray<QueryParam<any, AST.Base>>>
+  | QueryParams<ReadonlyArray<QueryParam<any, AST>>>
   | Concat<AST, AST>
   | WithSchema<AST, Schema.Schema.All>
 
@@ -144,7 +144,7 @@ export class QueryParams<P extends ReadonlyArray<QueryParam<any, any>>> {
 /**
  * @since 5.0.0
  */
-export class QueryParam<K extends string, V extends AST.Base> {
+export class QueryParam<K extends string, V extends AST> {
   /**
    * @since 5.0.0
    */
@@ -154,6 +154,8 @@ export class QueryParam<K extends string, V extends AST.Base> {
 
 const pathCache = new WeakMap<AST, string>()
 const schemaCache = new WeakMap<AST, Schema.Schema.All>()
+const pathSchemaCache = new WeakMap<AST, Schema.Schema.All>()
+const querySchemaCache = new WeakMap<AST, Schema.Schema.All>()
 
 function toPath_<A extends AST>(ast: A): string {
   switch (ast._tag) {
@@ -195,7 +197,30 @@ export function toPath<A extends AST>(ast: A): string {
   return path
 }
 
-function toSchemas<A extends AST>(ast: A, ctx: { unnamed: number } = { unnamed: 0 }): Array<Schema.Schema.All> {
+function toParts<A extends AST>(
+  ast: A
+): Array<AST> {
+  switch (ast._tag) {
+    case "Optional":
+    case "Prefix":
+    case "OneOrMore":
+    case "ZeroOrMore":
+    case "Param":
+    case "Literal":
+    case "UnnamedParam":
+    case "WithSchema":
+    case "QueryParams":
+      return [ast]
+    case "Concat":
+      return [...toParts(ast.left), ...toParts(ast.right)]
+  }
+}
+
+function toSchemas<A extends AST>(
+  ast: A,
+  includeQueryParams: boolean,
+  ctx: { unnamed: number } = { unnamed: 0 }
+): Array<Schema.Schema.All> {
   switch (ast._tag) {
     case "Literal":
       return []
@@ -209,15 +234,15 @@ function toSchemas<A extends AST>(ast: A, ctx: { unnamed: number } = { unnamed: 
     case "Param":
       return [Schema.Struct({ [ast.param]: Schema.String })]
     case "ZeroOrMore":
-      return toSchemas(ast.param, ctx).map(zeroOrMoreSchema)
+      return toSchemas(ast.param, includeQueryParams, ctx).map(zeroOrMoreSchema)
     case "OneOrMore":
-      return toSchemas(ast.param, ctx).map(oneOrMoreSchema)
+      return toSchemas(ast.param, includeQueryParams, ctx).map(oneOrMoreSchema)
     case "Prefix":
-      return toSchemas(ast.param, ctx)
+      return toSchemas(ast.param, includeQueryParams, ctx)
     case "Optional":
-      return toSchemas(ast.param, ctx).map(orUndefinedSchema)
+      return toSchemas(ast.param, includeQueryParams, ctx).map(orUndefinedSchema)
     case "Concat":
-      return [...toSchemas(ast.left, ctx), ...toSchemas(ast.right, ctx)]
+      return [...toSchemas(ast.left, includeQueryParams, ctx), ...toSchemas(ast.right, includeQueryParams, ctx)]
     case "WithSchema": {
       if (ast.schema.ast._tag === "TypeLiteral") {
         const signatures = ast.schema.ast.propertySignatures.map((s) =>
@@ -236,7 +261,7 @@ function toSchemas<A extends AST>(ast: A, ctx: { unnamed: number } = { unnamed: 
       return [ast.schema]
     }
     case "QueryParams":
-      return ast.params.flatMap(({ value }) => toSchemas(value, ctx))
+      return includeQueryParams ? ast.params.flatMap(({ value }) => toSchemas(value, includeQueryParams, ctx)) : []
   }
 }
 
@@ -306,8 +331,8 @@ function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schem
   return Schema.UndefinedOr(schema as any)
 }
 
-function toSchema_<A extends AST>(ast: A): Schema.Schema.All {
-  const schemas = toSchemas(ast)
+function toSchema_<A extends AST>(ast: A, includeQueryParams: boolean): Schema.Schema.All {
+  const schemas = toSchemas(ast, includeQueryParams)
 
   if (schemas.length === 0) {
     return Schema.Record(Schema.String, Schema.Unknown)
@@ -325,8 +350,48 @@ export function toSchema<A extends AST>(ast: A): Schema.Schema.All {
     return cached
   }
 
-  const schema = toSchema_(ast)
+  const schema = toSchema_(ast, true)
   schemaCache.set(ast, schema)
 
   return schema
+}
+
+/**
+ * @since 5.0.0
+ */
+export function toPathSchema<A extends AST>(ast: A): Schema.Schema.All {
+  const cached = pathSchemaCache.get(ast)
+  if (cached) {
+    return cached
+  }
+
+  const schema = toSchema_(ast, false)
+  pathSchemaCache.set(ast, schema)
+
+  return schema
+}
+
+/**
+ * @since 5.0.0
+ */
+export function toQuerySchema<A extends AST>(ast: A): Schema.Schema.All {
+  const cached = querySchemaCache.get(ast)
+  if (cached) {
+    return cached
+  }
+
+  const schema = toQuerySchema_(ast)
+  querySchemaCache.set(ast, schema)
+
+  return schema
+}
+
+function toQuerySchema_<A extends AST>(ast: A): Schema.Schema.All {
+  const parts = toParts(ast)
+  const queryParams = parts.find((part): part is QueryParams<any> => part._tag === "QueryParams")
+  if (queryParams) {
+    return toSchema_(queryParams, true)
+  } else {
+    return Schema.Record(Schema.String, Schema.Unknown)
+  }
 }
