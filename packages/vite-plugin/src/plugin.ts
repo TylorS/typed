@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import { readFile } from "fs/promises"
 import { join, relative, resolve } from "path"
 import { visualizer } from "rollup-plugin-visualizer"
@@ -7,6 +11,9 @@ import compression from "vite-plugin-compression"
 import tsconfigPaths from "vite-tsconfig-paths"
 import type { TypedOptions } from "./types.js"
 
+/**
+ * @since 1.0.0
+ */
 export interface TypedPluginOptions {
   readonly clientEntry: string
   readonly clientOutputDirectory?: string
@@ -18,6 +25,9 @@ export interface TypedPluginOptions {
   readonly tsconfig?: string
 }
 
+/**
+ * @since 1.0.0
+ */
 export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<PluginOption> {
   const rootDir = pluginOptions.rootDir ? resolve(pluginOptions.rootDir) : process.cwd()
   const clientOutputDirectory = pluginOptions.clientOutputDirectory
@@ -134,11 +144,15 @@ function exposeAssetManifest(clientOutputDirectory: string): Plugin {
     },
     async load(id) {
       if (id === "virtual:asset-manifest") {
-        if (isDev || isClient) return `export default {}`
+        if (isDev || isClient) {
+          return `
+        export default {}`
+        }
 
         const content = JSON.parse(await readFile(path, "utf-8"))
 
-        return `export default ${JSON.stringify(content, null, 2)}`
+        return `
+        export default ${JSON.stringify(content, null, 2)}`
       }
     }
   }
@@ -155,7 +169,8 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
     async load(id) {
       if (id === "virtual:typed-options") {
         const entries = Object.entries(options)
-        const lines = entries.map(([key, value]) => `export const ${key} = "${value}"`)
+        const lines = entries.map(([key, value]) => `
+        export const ${key} = "${value}"`)
 
         return lines.join("\n") + "\n"
       }

@@ -57,7 +57,7 @@ Added in v1.0.0
 ```ts
 export interface EventHandler<Ev extends Event = Event, E = never, R = never> extends Placeholder<never, E, R> {
   readonly [EventHandlerTypeId]: EventHandlerTypeId
-  readonly handler: (event: Ev) => Effect<unknown, E, R>
+  readonly handler: (event: Ev) => Effect.Effect<unknown, E, R>
   readonly options: AddEventListenerOptions | undefined
 }
 ```
@@ -110,7 +110,7 @@ Added in v1.0.0
 
 ```ts
 export declare function make<Ev extends Event, E = never, R = never>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R>
 ```
@@ -123,7 +123,7 @@ Added in v1.0.0
 
 ```ts
 export declare function preventDefault<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R>
 ```
@@ -136,7 +136,7 @@ Added in v1.0.0
 
 ```ts
 export declare function stopImmediatePropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R>
 ```
@@ -149,7 +149,7 @@ Added in v1.0.0
 
 ```ts
 export declare function stopPropagation<R, E, Ev extends Event>(
-  handler: (event: Ev) => Effect<unknown, E, R>,
+  handler: (event: Ev) => Effect.Effect<unknown, E, R>,
   options?: AddEventListenerOptions
 ): EventHandler<Ev, E, R>
 ```

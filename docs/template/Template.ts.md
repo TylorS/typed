@@ -1,6 +1,6 @@
 ---
 title: Template.ts
-nav_order: 21
+nav_order: 22
 parent: "@typed/template"
 ---
 
@@ -59,6 +59,8 @@ Added in v1.0.0
     - [\_tag (property)](#_tag-property-18)
   - [SparsePartNode (type alias)](#sparsepartnode-type-alias)
   - [Template (class)](#template-class)
+    - [toJSON (method)](#tojson-method)
+    - [[NodeInspectSymbol] (method)](#nodeinspectsymbol-method)
     - [\_tag (property)](#_tag-property-19)
   - [Text (type alias)](#text-type-alias)
   - [TextNode (class)](#textnode-class)
@@ -553,6 +555,22 @@ export declare class Template { constructor(
 ```
 
 Added in v1.0.0
+
+### toJSON (method)
+
+**Signature**
+
+```ts
+toJSON()
+```
+
+### [NodeInspectSymbol] (method)
+
+**Signature**
+
+```ts
+;[NodeInspectSymbol]()
+```
 
 ### \_tag (property)
 

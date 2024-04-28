@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const prefix: <P extends string, A extends `:${string}` | "(.*)">(prefix: P, param: A) => `{${P}${A}}`
+export declare const prefix: <P extends string, A extends string>(prefix: P, param: A) => `{${P}${A}}`
 ```
 
 Added in v1.0.0

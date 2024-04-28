@@ -294,7 +294,7 @@ export function isRouteMatcher<M extends RouteMatch.RouteMatch.Any = RouteMatch.
 }
 
 /**
- * @since
+ * @since 1.0.0
  */
 export const redirectWith: {
   <E, R>(

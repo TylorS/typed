@@ -25,6 +25,7 @@ Added in v1.0.0
   - [From "./Render.js"](#from-renderjs)
   - [From "./RenderContext.js"](#from-rendercontextjs)
   - [From "./RenderEvent.js"](#from-rendereventjs)
+  - [From "./RenderQueue.js"](#from-renderqueuejs)
   - [From "./RenderTemplate.js"](#from-rendertemplatejs)
   - [From "./Renderable.js"](#from-renderablejs)
 
@@ -172,6 +173,18 @@ Re-exports all named exports from the "./RenderEvent.js" module.
 
 ```ts
 export * from "./RenderEvent.js"
+```
+
+Added in v1.0.0
+
+## From "./RenderQueue.js"
+
+Re-exports all named exports from the "./RenderQueue.js" module as `RenderQueue`.
+
+**Signature**
+
+```ts
+export * as RenderQueue from "./RenderQueue.js"
 ```
 
 Added in v1.0.0

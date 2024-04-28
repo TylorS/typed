@@ -37,6 +37,7 @@ export declare function Link<
   | Navigation.Navigation
   | CurrentRoute
   | RenderTemplate
+  | RenderQueue
   | Scope.Scope
   | Placeholder.Context<Props[keyof Props] | Children[number]>
 >

@@ -79,51 +79,34 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const BeforeNavigationEvent: Schema.Schema<
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: Uuid
-          readonly key: Uuid
-          readonly url: URL
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
-    readonly delta: number
-    readonly info: unknown
-  },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: string
-      readonly key: string
-      readonly url: string
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: string
-          readonly key: string
-          readonly url: string
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: string; readonly state: unknown; readonly sameDocument: boolean }
-    readonly delta: number
-    readonly info: unknown
-  },
-  never
->
+export declare const BeforeNavigationEvent: Schema.Struct<{
+  type: Schema.Literal<["push", "replace", "reload", "traverse"]>
+  from: Schema.Struct<{
+    id: Schema.Schema<Uuid, string, never>
+    key: Schema.Schema<Uuid, string, never>
+    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+    state: Schema.Unknown
+    sameDocument: Schema.$Boolean
+  }>
+  delta: Schema.$Number
+  to: Schema.Union<
+    [
+      Schema.Schema<
+        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
+        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
+        never
+      >,
+      Schema.Struct<{
+        id: Schema.Schema<Uuid, string, never>
+        key: Schema.Schema<Uuid, string, never>
+        url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+        state: Schema.Unknown
+        sameDocument: Schema.$Boolean
+      }>
+    ]
+  >
+  info: Schema.Unknown
+}>
 ```
 
 Added in v1.0.0
@@ -133,7 +116,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface BeforeNavigationEvent extends Schema.Schema.To<typeof BeforeNavigationEvent> {}
+export interface BeforeNavigationEvent extends Schema.Schema.Type<typeof BeforeNavigationEvent> {}
 ```
 
 Added in v1.0.0
@@ -143,7 +126,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type BeforeNavigationEventJson = Schema.Schema.From<typeof BeforeNavigationEvent>
+export type BeforeNavigationEventJson = Schema.Schema.Encoded<typeof BeforeNavigationEvent>
 ```
 
 Added in v1.0.0
@@ -229,17 +212,13 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Destination: Schema.Schema<
-  { readonly id: Uuid; readonly key: Uuid; readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
-  {
-    readonly id: string
-    readonly key: string
-    readonly url: string
-    readonly state: unknown
-    readonly sameDocument: boolean
-  },
-  never
->
+export declare const Destination: Schema.Struct<{
+  id: Schema.Schema<Uuid, string, never>
+  key: Schema.Schema<Uuid, string, never>
+  url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+  state: Schema.Unknown
+  sameDocument: Schema.$Boolean
+}>
 ```
 
 Added in v1.0.0
@@ -249,7 +228,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Destination extends Schema.Schema.To<typeof Destination> {}
+export interface Destination extends Schema.Schema.Type<typeof Destination> {}
 ```
 
 Added in v1.0.0
@@ -259,7 +238,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DestinationJson = Schema.Schema.From<typeof Destination>
+export type DestinationJson = Schema.Schema.Encoded<typeof Destination>
 ```
 
 Added in v1.0.0
@@ -269,9 +248,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const FileSchema: Schema.Schema<
-  File,
-  { readonly _id: "File"; readonly name: string; readonly data: string },
+export declare const FileSchema: Schema.transformOrFail<
+  Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+  Schema.instanceOf<File>,
   never
 >
 ```
@@ -283,11 +262,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const FileSchemaFrom: Schema.Schema<
-  { readonly _id: "File"; readonly name: string; readonly data: string },
-  { readonly _id: "File"; readonly name: string; readonly data: string },
-  never
->
+export declare const FileSchemaFrom: Schema.Struct<{
+  _id: Schema.Literal<["File"]>
+  name: Schema.$String
+  data: Schema.$String
+}>
 ```
 
 Added in v1.0.0
@@ -297,7 +276,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type FileSchemaFrom = Schema.Schema.From<typeof FileSchemaFrom>
+export type FileSchemaFrom = Schema.Schema.Encoded<typeof FileSchemaFrom>
 ```
 
 Added in v1.0.0
@@ -307,38 +286,38 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const FormDataEvent: Schema.Schema<
-  {
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly name: Option.Option<string>
-    readonly data: FormData
-    readonly action: Option.Option<string>
-    readonly method: Option.Option<string>
-    readonly encoding: Option.Option<string>
-  },
-  {
-    readonly from: {
-      readonly id: string
-      readonly key: string
-      readonly url: string
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly data: {
-      readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string }
-    }
-    readonly name?: string | null | undefined
-    readonly action?: string | null | undefined
-    readonly method?: string | null | undefined
-    readonly encoding?: string | null | undefined
-  },
-  never
+export declare const FormDataEvent: Schema.extend<
+  Schema.Struct<{
+    from: Schema.Struct<{
+      id: Schema.Schema<Uuid, string, never>
+      key: Schema.Schema<Uuid, string, never>
+      url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+      state: Schema.Unknown
+      sameDocument: Schema.$Boolean
+    }>
+  }>,
+  Schema.Struct<{
+    name: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+    action: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+    method: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+    encoding: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+    data: Schema.transform<
+      Schema.$Record<
+        Schema.$String,
+        Schema.Union<
+          [
+            Schema.$String,
+            Schema.transformOrFail<
+              Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+              Schema.instanceOf<File>,
+              never
+            >
+          ]
+        >
+      >,
+      Schema.instanceOf<FormData>
+    >
+  }>
 >
 ```
 
@@ -349,7 +328,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface FormDataEvent extends Schema.Schema.To<typeof FormDataEvent> {}
+export interface FormDataEvent extends Schema.Schema.Type<typeof FormDataEvent> {}
 ```
 
 Added in v1.0.0
@@ -359,7 +338,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type FormDataEventJson = Schema.Schema.From<typeof FormDataEvent>
+export type FormDataEventJson = Schema.Schema.Encoded<typeof FormDataEvent>
 ```
 
 Added in v1.0.0
@@ -385,10 +364,21 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const FormDataSchema: Schema.Schema<
-  FormData,
-  { readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string } },
-  never
+export declare const FormDataSchema: Schema.transform<
+  Schema.$Record<
+    Schema.$String,
+    Schema.Union<
+      [
+        Schema.$String,
+        Schema.transformOrFail<
+          Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+          Schema.instanceOf<File>,
+          never
+        >
+      ]
+    >
+  >,
+  Schema.instanceOf<FormData>
 >
 ```
 
@@ -399,7 +389,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface FormInput extends Schema.Schema.To<typeof FormInputSchema> {}
+export interface FormInput extends Schema.Schema.Type<typeof FormInputSchema> {}
 ```
 
 Added in v1.0.0
@@ -409,7 +399,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type FormInputFrom = Schema.Schema.From<typeof FormInputSchema>
+export type FormInputFrom = Schema.Schema.Encoded<typeof FormInputSchema>
 ```
 
 Added in v1.0.0
@@ -419,25 +409,28 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const FormInputSchema: Schema.Schema<
-  {
-    readonly name: Option.Option<string>
-    readonly data: FormData
-    readonly action: Option.Option<string>
-    readonly method: Option.Option<string>
-    readonly encoding: Option.Option<string>
-  },
-  {
-    readonly data: {
-      readonly [x: string]: string | { readonly _id: "File"; readonly name: string; readonly data: string }
-    }
-    readonly name?: string | null | undefined
-    readonly action?: string | null | undefined
-    readonly method?: string | null | undefined
-    readonly encoding?: string | null | undefined
-  },
-  never
->
+export declare const FormInputSchema: Schema.Struct<{
+  name: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+  action: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+  method: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+  encoding: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+  data: Schema.transform<
+    Schema.$Record<
+      Schema.$String,
+      Schema.Union<
+        [
+          Schema.$String,
+          Schema.transformOrFail<
+            Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+            Schema.instanceOf<File>,
+            never
+          >
+        ]
+      >
+    >,
+    Schema.instanceOf<FormData>
+  >
+}>
 ```
 
 Added in v1.0.0
@@ -544,31 +537,17 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NavigationEvent: Schema.Schema<
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly info: unknown
-    readonly destination: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-  },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly info: unknown
-    readonly destination: {
-      readonly id: string
-      readonly key: string
-      readonly url: string
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-  },
-  never
->
+export declare const NavigationEvent: Schema.Struct<{
+  type: Schema.Literal<["push", "replace", "reload", "traverse"]>
+  destination: Schema.Struct<{
+    id: Schema.Schema<Uuid, string, never>
+    key: Schema.Schema<Uuid, string, never>
+    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+    state: Schema.Unknown
+    sameDocument: Schema.$Boolean
+  }>
+  info: Schema.Unknown
+}>
 ```
 
 Added in v1.0.0
@@ -578,7 +557,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface NavigationEvent extends Schema.Schema.To<typeof NavigationEvent> {}
+export interface NavigationEvent extends Schema.Schema.Type<typeof NavigationEvent> {}
 ```
 
 Added in v1.0.0
@@ -588,7 +567,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type NavigationEventJson = Schema.Schema.From<typeof NavigationEvent>
+export type NavigationEventJson = Schema.Schema.Encoded<typeof NavigationEvent>
 ```
 
 Added in v1.0.0
@@ -610,11 +589,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NavigationType: Schema.Schema<
-  "push" | "replace" | "reload" | "traverse",
-  "push" | "replace" | "reload" | "traverse",
-  never
->
+export declare const NavigationType: Schema.Literal<["push", "replace", "reload", "traverse"]>
 ```
 
 Added in v1.0.0
@@ -624,7 +599,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type NavigationType = Schema.Schema.To<typeof NavigationType>
+export type NavigationType = Schema.Schema.Type<typeof NavigationType>
 ```
 
 Added in v1.0.0
@@ -648,7 +623,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ProposedDestination extends Schema.Schema.To<typeof ProposedDestination> {}
+export interface ProposedDestination extends Schema.Schema.Type<typeof ProposedDestination> {}
 ```
 
 Added in v1.0.0
@@ -658,7 +633,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type ProposedDestinationJson = Schema.Schema.From<typeof ProposedDestination>
+export type ProposedDestinationJson = Schema.Schema.Encoded<typeof ProposedDestination>
 ```
 
 Added in v1.0.0
@@ -678,47 +653,32 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const Transition: Schema.Schema<
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: Uuid
-          readonly key: Uuid
-          readonly url: URL
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean }
-  },
-  {
-    readonly type: "push" | "replace" | "reload" | "traverse"
-    readonly from: {
-      readonly id: string
-      readonly key: string
-      readonly url: string
-      readonly state: unknown
-      readonly sameDocument: boolean
-    }
-    readonly to:
-      | {
-          readonly id: string
-          readonly key: string
-          readonly url: string
-          readonly state: unknown
-          readonly sameDocument: boolean
-        }
-      | { readonly url: string; readonly state: unknown; readonly sameDocument: boolean }
-  },
-  never
->
+export declare const Transition: Schema.Struct<{
+  type: Schema.Literal<["push", "replace", "reload", "traverse"]>
+  from: Schema.Struct<{
+    id: Schema.Schema<Uuid, string, never>
+    key: Schema.Schema<Uuid, string, never>
+    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+    state: Schema.Unknown
+    sameDocument: Schema.$Boolean
+  }>
+  to: Schema.Union<
+    [
+      Schema.Schema<
+        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
+        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
+        never
+      >,
+      Schema.Struct<{
+        id: Schema.Schema<Uuid, string, never>
+        key: Schema.Schema<Uuid, string, never>
+        url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
+        state: Schema.Unknown
+        sameDocument: Schema.$Boolean
+      }>
+    ]
+  >
+}>
 ```
 
 Added in v1.0.0
@@ -728,7 +688,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Transition extends Schema.Schema.To<typeof Transition> {}
+export interface Transition extends Schema.Schema.Type<typeof Transition> {}
 ```
 
 Added in v1.0.0
@@ -738,7 +698,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type TransitionJson = Schema.Schema.From<typeof Transition>
+export type TransitionJson = Schema.Schema.Encoded<typeof Transition>
 ```
 
 Added in v1.0.0

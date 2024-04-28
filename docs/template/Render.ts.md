@@ -51,7 +51,7 @@ Added in v1.0.0
 ```ts
 export declare const renderLayer: (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ) => Layer.Layer<RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
 ```
 
@@ -63,14 +63,8 @@ Added in v1.0.0
 
 ```ts
 export declare function renderToLayer<R, E, T extends RenderEvent | null>(
-  rendered: Fx.Fx<T, E, R>,
-  window: Window & GlobalThis = globalThis.window,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
-): Layer.Layer<
-  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices,
-  never,
-  Exclude<Exclude<R, Scope.Scope>, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
->
+  rendered: Fx.Fx<T, E, R>
+): Layer.Layer<never, never, RenderContext.RenderContext | RenderTemplate | RootElement | Exclude<R, Scope.Scope>>
 ```
 
 Added in v1.0.0

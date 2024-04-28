@@ -1,9 +1,19 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { Schema } from "@effect/schema/Schema"
-import {  getSchema, type MatchInput } from "@typed/router"
+import { getSchema, type MatchInput } from "@typed/router"
 import { ApiRequest } from "effect-http"
 
+/**
+ * @since 1.0.0
+ */
 export * from "effect-http/ApiRequest"
 
+/**
+ * @since 1.0.0
+ */
 export const setRoute = <I extends MatchInput.Any>(
   route: I
 ): <B, _, Q, H, R1>(

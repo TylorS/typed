@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { Default } from "@effect/platform/Http/App"
 import * as Headers from "@effect/platform/Http/Headers"
 import type { Method } from "@effect/platform/Http/Method"

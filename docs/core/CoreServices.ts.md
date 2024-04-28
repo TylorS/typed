@@ -21,7 +21,6 @@ Added in v1.0.0
   - [hydrateFromWindow](#hydratefromwindow)
   - [server](#server)
   - [static](#static)
-  - [static\_](#static_)
 
 ---
 
@@ -50,6 +49,7 @@ export type CoreServices =
   | Navigation.Navigation
   | Router.CurrentRoute
   | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
   | RenderTemplate
 ```
 
@@ -62,9 +62,7 @@ Added in v1.0.0
 ```ts
 export declare function fromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & {
-    readonly skipRenderScheduling?: boolean
-  }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices>
 ```
 
@@ -77,9 +75,7 @@ Added in v1.0.0
 ```ts
 export declare function hydrateFromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & {
-    readonly skipRenderScheduling?: boolean
-  }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices>
 ```
 
@@ -90,7 +86,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function server(options: Navigation.InitialMemoryOptions): Layer.Layer<CoreServices>
+export declare const server: Layer.Layer<
+  CurrentEnvironment | GetRandomValues | RenderTemplate | RenderContext.RenderContext | RenderQueue.RenderQueue,
+  never,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -100,17 +100,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const static: typeof static_
-```
-
-Added in v1.0.0
-
-## static\_
-
-**Signature**
-
-```ts
-function static_(options: Navigation.InitialMemoryOptions): Layer.Layer<CoreServices>
+export declare const static: Layer.Layer<
+  CurrentEnvironment | GetRandomValues | RenderTemplate | RenderContext.RenderContext | RenderQueue.RenderQueue,
+  never,
+  never
+>
 ```
 
 Added in v1.0.0

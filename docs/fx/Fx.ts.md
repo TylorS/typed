@@ -189,6 +189,7 @@ Added in v1.20.0
   - [middleware](#middleware)
   - [multicast](#multicast)
   - [never](#never)
+  - [null](#null)
   - [observe](#observe)
   - [onError](#onerror)
   - [onExit](#onexit)
@@ -250,6 +251,7 @@ Added in v1.20.0
   - [unify](#unify)
   - [uninterruptible](#uninterruptible)
   - [until](#until)
+  - [void](#void)
   - [when](#when)
   - [withConcurrency](#withconcurrency)
   - [withConfigProvider](#withconfigprovider)
@@ -653,7 +655,7 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R> | infer _] ? Fx<A, E, R> : never
+export type Unify<T> = [T] extends [Fx<infer A, infer E, infer R>] ? Fx<A, E, R> : never
 ```
 
 Added in v1.20.0
@@ -2109,12 +2111,12 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const gen: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+export declare const gen: <Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Effect.Effect.Context<Y["value"]> | Fx.Context<FX>
+  (Y extends Utils.YieldWrap<Effect.Effect<infer _, infer E, any>> ? E : never) | Fx.Error<FX>,
+  (Y extends Utils.YieldWrap<Effect.Effect<any, any, infer R>> ? R : never) | Fx.Context<FX>
 >
 ```
 
@@ -2125,12 +2127,13 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const genScoped: <Y extends Effect.EffectGen<any, any, any>, FX extends Fx<any, any, any>>(
+export declare const genScoped: <Y extends Utils.YieldWrap<Effect.Effect<any, any, any>>, FX extends Fx<any, any, any>>(
   f: (_: Effect.Adapter) => Generator<Y, FX, any>
 ) => Fx<
   Fx.Success<FX>,
-  Effect.Effect.Error<Y["value"]> | Fx.Error<FX>,
-  Exclude<Effect.Effect.Context<Y["value"]>, Scope.Scope> | Exclude<Fx.Context<FX>, Scope.Scope>
+  (Y extends Utils.YieldWrap<Effect.Effect<infer _, infer E, any>> ? E : never) | Fx.Error<FX>,
+  | Exclude<Y extends Utils.YieldWrap<Effect.Effect<any, any, infer R>> ? R : never, Scope.Scope>
+  | Exclude<Fx.Context<FX>, Scope.Scope>
 >
 ```
 
@@ -2760,6 +2763,16 @@ export declare const never: Fx<never, never, never>
 
 Added in v1.20.0
 
+## null
+
+**Signature**
+
+```ts
+export declare const null: Fx<null, never, never>
+```
+
+Added in v2.0.0
+
 ## observe
 
 **Signature**
@@ -2792,8 +2805,13 @@ Added in v1.20.0
 
 ```ts
 export declare const onExit: {
-  <R2>(f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2>
-  <A, E, R, R2>(fx: Fx<A, E, R>, f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>): Fx<A, E, R | R2>
+  <R2>(
+    f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R2>
+  ): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R2 | R>
+  <A, E, R, R2>(
+    fx: Fx<A, E, R>,
+    f: (exit: Exit.Exit<unknown>) => Effect.Effect<unknown, never, R | R2>
+  ): Fx<A, E, R | R2>
 }
 ```
 
@@ -3608,6 +3626,16 @@ export declare const until: {
 ```
 
 Added in v1.20.0
+
+## void
+
+**Signature**
+
+```ts
+export declare const void: Fx<void, never, never>
+```
+
+Added in v2.0.0
 
 ## when
 

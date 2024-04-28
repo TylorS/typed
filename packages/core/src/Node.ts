@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 /// <reference types="vite/client" />
 /// <reference types="@typed/vite-plugin-types" />
 
@@ -123,6 +127,9 @@ const defaultCacheControl = (filePath: string) => {
   return defaultFileCacheControl
 }
 
+/**
+ * @since 1.0.0
+ */
 export const listen: {
   (options: Options): <E, R>(
     app: Http.app.Default<E, R>
@@ -185,6 +192,9 @@ export const listen: {
   )
 })
 
+/**
+ * @since 1.0.0
+ */
 export const run = <A, E>(
   effect: Effect.Effect<A, E, NodeContext.NodeContext>,
   options?: RunForkOptions

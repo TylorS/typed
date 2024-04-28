@@ -65,8 +65,24 @@ export interface Fn<I, T extends EffectFn> extends Tagged<I, T> {
    * Call your effectful function with the provided arguments.
    * @since 1.0.0
    */
-  readonly apply: <Args extends EffectFn.ArgsOf<T>>(
+  <Args extends EffectFn.ArgsOf<T>>(
     ...args: Args
+  ): Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
+
+  /**
+   * Call your effectful function with the provided arguments.
+   * @since 1.0.0
+   */
+  readonly call: (
+    ...args: EffectFn.ArgsOf<T>
+  ) => Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
+
+  /**
+   * Call your effectful function with the provided arguments.
+   * @since 1.0.0
+   */
+  readonly apply: (
+    args: EffectFn.ArgsOf<T>
   ) => Effect.Effect<EffectFn.Success<T>, EffectFn.Error<T>, I | EffectFn.Context<T>>
 
   /**

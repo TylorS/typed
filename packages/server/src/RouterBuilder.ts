@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { PathInput } from "@effect/platform/Http/Router"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { Schema } from "@effect/schema"

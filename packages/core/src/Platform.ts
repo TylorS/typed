@@ -1,9 +1,9 @@
-/// <reference types="vite/client" />
-/// <reference types="@typed/vite-plugin-types" />
-
 /**
  * @since 1.0.0
  */
+
+/// <reference types="vite/client" />
+/// <reference types="@typed/vite-plugin-types" />
 
 import { FileSystem } from "@effect/platform/FileSystem"
 import type { PathInput } from "@effect/platform/Http/Router"

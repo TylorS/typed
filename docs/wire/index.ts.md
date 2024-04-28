@@ -34,6 +34,7 @@ Added in v1.0.0
   - [isText](#istext)
   - [isWire](#iswire)
   - [persistent](#persistent)
+  - [toHtml](#tohtml)
 
 ---
 
@@ -259,7 +260,19 @@ otherwise return the first child.
 **Signature**
 
 ```ts
-export declare const persistent: (fragment: DocumentFragment) => DocumentFragment | Node | Wire
+export declare const persistent: (document: Document, fragment: DocumentFragment) => DocumentFragment | Node | Wire
+```
+
+Added in v1.0.0
+
+## toHtml
+
+Convert to html
+
+**Signature**
+
+```ts
+export declare function toHtml(node: Rendered): string
 ```
 
 Added in v1.0.0

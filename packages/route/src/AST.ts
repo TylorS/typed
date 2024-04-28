@@ -1,14 +1,27 @@
+/**
+ * @since 5.0.0
+ */
+
 import { Schema } from "@effect/schema"
 import { PropertySignature, TypeLiteral } from "@effect/schema/AST"
 import * as P from "@typed/path"
 
+/**
+ * @since 5.0.0
+ */
 export type AST =
   | AST.Base
   | QueryParams<ReadonlyArray<QueryParam<any, AST.Base>>>
   | Concat<AST, AST>
   | WithSchema<AST, Schema.Schema.All>
 
+/**
+ * @since 5.0.0
+ */
 export namespace AST {
+  /**
+   * @since 5.0.0
+   */
   export type Base =
     | Literal<any>
     | UnnamedParam
@@ -19,56 +32,122 @@ export namespace AST {
     | Prefix<any, AST>
 }
 
+/**
+ * @since 5.0.0
+ */
 export class Literal<L extends string> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Literal" as const
   constructor(readonly literal: L) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class UnnamedParam {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "UnnamedParam" as const
 }
 
+/**
+ * @since 5.0.0
+ */
 export class Param<P extends string> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Param" as const
   constructor(readonly param: P) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class ZeroOrMore<P extends AST> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "ZeroOrMore" as const
   constructor(readonly param: P) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class OneOrMore<P extends AST> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "OneOrMore" as const
   constructor(readonly param: P) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class Optional<P extends AST> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Optional" as const
   constructor(readonly param: P) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class Prefix<P extends string, A extends AST> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Prefix" as const
   constructor(readonly prefix: P, readonly param: A) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class Concat<L extends AST, R extends AST> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Concat" as const
   constructor(readonly left: L, readonly right: R) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class WithSchema<A extends AST, S extends Schema.Schema.All> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "WithSchema" as const
   constructor(readonly ast: A, readonly schema: S) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class QueryParams<P extends ReadonlyArray<QueryParam<any, any>>> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "QueryParams" as const
   constructor(readonly params: P) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class QueryParam<K extends string, V extends AST.Base> {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "QueryParam" as const
   constructor(readonly key: K, readonly value: V) {}
 }
@@ -101,6 +180,9 @@ function toPath_<A extends AST>(ast: A): string {
   }
 }
 
+/**
+ * @since 5.0.0
+ */
 export function toPath<A extends AST>(ast: A): string {
   const cached = pathCache.get(ast)
   if (cached) {
@@ -234,6 +316,9 @@ function toSchema_<A extends AST>(ast: A): Schema.Schema.All {
   return schemas.reduce(Schema.extend)
 }
 
+/**
+ * @since 5.0.0
+ */
 export function toSchema<A extends AST>(ast: A): Schema.Schema.All {
   const cached = schemaCache.get(ast)
   if (cached) {

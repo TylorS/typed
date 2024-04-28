@@ -84,8 +84,8 @@ export type FormatPart<P extends string> = `` extends P
   ? P
   : RemoveSlash<P> extends `\\?${infer _}`
     ? RemoveSlash<P>
-    : RemoveSlash<P> extends `{${infer _}`
-      ? RemoveSlash<P>
+    : P extends `{${infer _}`
+      ? P
       : `/${RemoveSlash<P>}`
 ```
 

@@ -328,9 +328,14 @@ export interface Tagged<I, E, A> extends RefSubject<A, E, I> {
    * @since 1.20.0
    */
   readonly make: <R>(
-    fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R>,
-    options?: RefSubjectOptions<A>
+    fxOrEffect: Fx<A, E, R | Scope.Scope> | Effect.Effect<A, E, R | Scope.Scope>,
+    options?: RefSubjectOptions<A> & { readonly drop?: number; readonly take?: number }
   ) => Layer.Layer<I, never, R>
+
+  /**
+   * @since 2.0.0
+   */
+  readonly layer: <E2, R2>(make: Effect.Effect<RefSubject<A, E>, E2, R2 | Scope.Scope>) => Layer.Layer<I, E2, R2>
 }
 ```
 

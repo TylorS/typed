@@ -16,7 +16,7 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [CurrentEnvironment](#currentenvironment)
-  - [CurrentEnvironment (type alias)](#currentenvironment-type-alias)
+  - [CurrentEnvironment (interface)](#currentenvironment-interface)
   - [Environment](#environment)
   - [Environment (type alias)](#environment-type-alias)
   - [Environment (namespace)](#environment-namespace)
@@ -43,12 +43,12 @@ export declare const CurrentEnvironment: Context.Tagged<CurrentEnvironment, Envi
 
 Added in v1.0.0
 
-## CurrentEnvironment (type alias)
+## CurrentEnvironment (interface)
 
 **Signature**
 
 ```ts
-export type CurrentEnvironment = Context.Tag.Identifier<typeof CurrentEnvironment>
+export interface CurrentEnvironment extends Context.Tag.Identifier<typeof CurrentEnvironment> {}
 ```
 
 Added in v1.0.0

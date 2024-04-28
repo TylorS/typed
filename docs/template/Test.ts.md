@@ -1,6 +1,6 @@
 ---
 title: Test.ts
-nav_order: 22
+nav_order: 23
 parent: "@typed/template"
 ---
 
@@ -19,6 +19,12 @@ Added in v1.0.0
   - [TestRender (interface)](#testrender-interface)
   - [click](#click)
   - [dispatchEvent](#dispatchevent)
+  - [getOrMakeWindow](#getormakewindow)
+  - [isTemplateEndComment](#istemplateendcomment)
+  - [isTemplateStartComment](#istemplatestartcomment)
+  - [stripTypedTemplateComments](#striptypedtemplatecomments)
+  - [testHtmlChunks](#testhtmlchunks)
+  - [testHtmlString](#testhtmlstring)
   - [testHydrate](#testhydrate)
   - [testRender](#testrender)
 
@@ -107,6 +113,72 @@ export declare function dispatchEvent<E>(
 
 Added in v1.0.0
 
+## getOrMakeWindow
+
+**Signature**
+
+```ts
+export declare function getOrMakeWindow(
+  options?: HappyDOMOptions
+): Effect.Effect<Window & GlobalThis, never, Scope.Scope>
+```
+
+## isTemplateEndComment
+
+**Signature**
+
+```ts
+export declare function isTemplateEndComment(comment: Comment)
+```
+
+## isTemplateStartComment
+
+**Signature**
+
+```ts
+export declare function isTemplateStartComment(comment: Comment)
+```
+
+## stripTypedTemplateComments
+
+**Signature**
+
+```ts
+export declare function stripTypedTemplateComments(html: string)
+```
+
+## testHtmlChunks
+
+**Signature**
+
+```ts
+export declare function testHtmlChunks<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
+): Effect.Effect<
+  ReadonlyArray<string>,
+  E,
+  Scope.Scope | Exclude<R, RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment>
+>
+```
+
+Added in v1.0.0
+
+## testHtmlString
+
+**Signature**
+
+```ts
+export declare function testHtmlString<E, R>(
+  fx: Fx.Fx<RenderEvent, E, R>
+): Effect.Effect<
+  string,
+  E,
+  Scope.Scope | Exclude<R, RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment>
+>
+```
+
+Added in v1.0.0
+
 ## testHydrate
 
 **Signature**
@@ -121,7 +193,12 @@ export declare function testHydrate<R, E, Elements>(
 ): Effect.Effect<
   TestHydrate<E, Elements>,
   E,
-  Scope.Scope | Exclude<R, RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
+  | Scope.Scope
+  | Exclude<
+      R,
+      RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment | DomServices
+    >
+  | Exclude<R, RenderContext.RenderContext | RenderTemplate | CurrentEnvironment | DomServices>
 >
 ```
 

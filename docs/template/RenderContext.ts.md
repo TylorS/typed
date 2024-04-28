@@ -18,14 +18,12 @@ Added in v1.0.0
   - [RenderContext](#rendercontext)
   - [RenderContext (interface)](#rendercontext-interface)
   - [RenderContextOptions (type alias)](#rendercontextoptions-type-alias)
-  - [RenderQueue (interface)](#renderqueue-interface)
   - [dom](#dom)
   - [getRenderCache](#getrendercache)
   - [getTemplateCache](#gettemplatecache)
   - [make](#make)
   - [server](#server)
   - [static](#static)
-  - [unsafeMake](#unsafemake)
 
 ---
 
@@ -65,11 +63,6 @@ export interface RenderContext {
    * Cache for individual templates.
    */
   readonly templateCache: WeakMap<TemplateStringsArray, Entry>
-
-  /**
-   * Queue for work to be batched
-   */
-  readonly queue: RenderQueue
 }
 ```
 
@@ -80,21 +73,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type RenderContextOptions = IdleRequestOptions & {
+export type RenderContextOptions = {
   readonly environment: Environment
-  readonly scope: Scope.Scope
-}
-```
-
-Added in v1.0.0
-
-## RenderQueue (interface)
-
-**Signature**
-
-```ts
-export interface RenderQueue {
-  readonly add: (part: unknown, task: () => void) => Effect.Effect<void, never, Scope.Scope>
 }
 ```
 
@@ -107,7 +87,7 @@ Added in v1.0.0
 ```ts
 export declare const dom: (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ) => Layer.Layer<RenderContext | CurrentEnvironment | DomServices>
 ```
 
@@ -141,7 +121,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function make({ ...options }: Omit<RenderContextOptions, "scope">, skipRenderScheduling?: boolean)
+export declare function make({ environment }: RenderContextOptions): RenderContext
 ```
 
 Added in v1.0.0
@@ -162,19 +142,6 @@ Added in v1.0.0
 
 ```ts
 export declare const static: Layer.Layer<RenderContext | CurrentEnvironment, never, never>
-```
-
-Added in v1.0.0
-
-## unsafeMake
-
-**Signature**
-
-```ts
-export declare function unsafeMake(
-  { environment, scope, ...options }: RenderContextOptions,
-  skipRenderScheduling?: boolean
-): RenderContext
 ```
 
 Added in v1.0.0

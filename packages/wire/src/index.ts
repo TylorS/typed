@@ -214,6 +214,7 @@ export function isArray(node: Rendered): node is ReadonlyArray<Rendered> {
 
 /**
  * Convert to html
+ * @since 1.0.0
  */
 export function toHtml(node: Rendered): string {
   if (isArray(node)) return node.map(toHtml).join("")

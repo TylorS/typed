@@ -76,7 +76,7 @@ Store a Credential
 **Signature**
 
 ```ts
-export declare const storeCredential: (credential: Credential) => Effect.Effect<Credential, never, Navigator>
+export declare const storeCredential: (credential: Credential) => Effect.Effect<void, never, Navigator>
 ```
 
 Added in v8.19.0

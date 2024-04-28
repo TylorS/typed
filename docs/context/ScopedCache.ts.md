@@ -29,9 +29,9 @@ Construct a ScopedCache implementation to be utilized from the Effect Context.
 **Signature**
 
 ```ts
-export declare function ScopedCache<K, E, A>(): {
-  <const I extends IdentifierFactory<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
-  <const I>(identifier: I): ScopedCache<IdentifierOf<I>, K, E, A>
+export declare function ScopedCache<K, A, E = never>(): {
+  <const I extends IdentifierFactory<any>>(identifier: I): ScopedCache<IdentifierOf<I>, K, A, E>
+  <const I>(identifier: I): ScopedCache<IdentifierOf<I>, K, A, E>
 }
 ```
 
@@ -44,7 +44,7 @@ Contextual wrappers around @effect/io/ScopedCache
 **Signature**
 
 ```ts
-export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>> {
+export interface ScopedCache<I, K, A, E> extends Tag<I, SC.ScopedCache<K, A, E>> {
   readonly cacheStats: Effect<C.CacheStats, never, I>
   readonly contains: (key: K) => Effect<boolean, never, I>
   readonly entryStats: (key: K) => Effect<Option<C.EntryStats>, never, I>
@@ -59,12 +59,12 @@ export interface ScopedCache<I, K, E, A> extends Tag<I, SC.ScopedCache<K, E, A>>
   readonly make: <R>(options: {
     readonly capacity: number
     readonly timeToLive: DurationInput
-    readonly lookup: SC.Lookup<K, R, E, A>
+    readonly lookup: SC.Lookup<K, A, E, R>
   }) => Layer.Layer<I, never, R>
 
   readonly makeWith: <R>(options: {
     readonly capacity: number
-    readonly lookup: SC.Lookup<K, R, E, A>
+    readonly lookup: SC.Lookup<K, A, E, R>
     readonly timeToLive: (exit: Exit<A, E>) => DurationInput
   }) => Layer.Layer<I, never, R>
 }

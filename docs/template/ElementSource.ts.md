@@ -163,7 +163,7 @@ Added in v1.0.0
 export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR]
   ? Fallback
   : Fallback extends globalThis.Element
-    ? TQS.ParseSelector<T, Fallback>
+    ? Extract<TQS.ParseSelector<T, Fallback>, globalThis.Element>
     : Fallback
 ```
 

@@ -13,7 +13,9 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
+  - [AsyncData](#asyncdata)
   - [AsyncDataFrom (type alias)](#asyncdatafrom-type-alias)
+  - [AsyncDataFromSelf](#asyncdatafromself)
   - [FailureFrom (type alias)](#failurefrom-type-alias)
   - [LoadingFrom (type alias)](#loadingfrom-type-alias)
   - [NoDataFrom (type alias)](#nodatafrom-type-alias)
@@ -21,13 +23,24 @@ Added in v1.0.0
   - [Progress](#progress)
   - [ProgressFrom (type alias)](#progressfrom-type-alias)
   - [SuccessFrom (type alias)](#successfrom-type-alias)
-  - [asyncData](#asyncdata)
   - [asyncDataFromJson](#asyncdatafromjson)
-  - [asyncDataFromSelf](#asyncdatafromself)
 
 ---
 
 # utils
+
+## AsyncData
+
+**Signature**
+
+```ts
+export declare const AsyncData: <A, AI, R1, E, EI, R2>(
+  valueSchema: Schema.Schema<A, AI, R2>,
+  errorSchema: Schema.Schema<E, EI, R1>
+) => Schema.Schema<_AsyncData.AsyncData<A, E>, AsyncDataFrom<AI, EI>, R1 | R2>
+```
+
+Added in v1.0.0
 
 ## AsyncDataFrom (type alias)
 
@@ -39,6 +52,19 @@ export type AsyncDataFrom<A, E> = NoDataFrom | LoadingFrom | FailureFrom<E> | Su
 
 Added in v1.0.0
 
+## AsyncDataFromSelf
+
+**Signature**
+
+```ts
+export declare const AsyncDataFromSelf: <A, AI, R1, E, EI, R2>(
+  value: Schema.Schema<A, AI, R2>,
+  error: Schema.Schema<E, EI, R1>
+) => Schema.Schema<_AsyncData.AsyncData<A, E>, _AsyncData.AsyncData<AI, EI>, R1 | R2>
+```
+
+Added in v1.0.0
+
 ## FailureFrom (type alias)
 
 **Signature**
@@ -46,7 +72,7 @@ Added in v1.0.0
 ```ts
 export type FailureFrom<E> = {
   readonly _tag: "Failure"
-  readonly cause: Schema.CauseFrom<E>
+  readonly cause: Schema.CauseEncoded<E>
   readonly timestamp: number
   readonly refreshing?: LoadingFrom | undefined
 }
@@ -135,19 +161,6 @@ export type SuccessFrom<A> = {
 
 Added in v1.0.0
 
-## asyncData
-
-**Signature**
-
-```ts
-export declare const asyncData: <A, AI, R1, E, EI, R2>(
-  valueSchema: Schema.Schema<A, AI, R2>,
-  errorSchema: Schema.Schema<E, EI, R1>
-) => Schema.Schema<AsyncData.AsyncData<A, E>, AsyncDataFrom<AI, EI>, R1 | R2>
-```
-
-Added in v1.0.0
-
 ## asyncDataFromJson
 
 **Signature**
@@ -157,19 +170,6 @@ export declare const asyncDataFromJson: <A, AI, R1, E, EI, R2>(
   value: Schema.Schema<A, AI, R1>,
   error: Schema.Schema<E, EI, R2>
 ) => Schema.Schema<AsyncDataFrom<A, E>, AsyncDataFrom<AI, EI>, R1 | R2>
-```
-
-Added in v1.0.0
-
-## asyncDataFromSelf
-
-**Signature**
-
-```ts
-export declare const asyncDataFromSelf: <A, AI, R1, E, EI, R2>(
-  value: Schema.Schema<A, AI, R2>,
-  error: Schema.Schema<E, EI, R1>
-) => Schema.Schema<AsyncData.AsyncData<A, E>, AsyncData.AsyncData<AI, EI>, R1 | R2>
 ```
 
 Added in v1.0.0

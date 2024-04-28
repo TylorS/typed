@@ -25,11 +25,6 @@ Added in v1.0.0
   - [PropertiesPart (interface)](#propertiespart-interface)
   - [PropertyPart (interface)](#propertypart-interface)
   - [RefPart (interface)](#refpart-interface)
-  - [SparseAttributePart (interface)](#sparseattributepart-interface)
-  - [SparseClassNamePart (interface)](#sparseclassnamepart-interface)
-  - [SparseCommentPart (interface)](#sparsecommentpart-interface)
-  - [SparsePart (type alias)](#sparsepart-type-alias)
-  - [StaticText (interface)](#statictext-interface)
   - [TextPart (interface)](#textpart-interface)
 
 ---
@@ -47,7 +42,7 @@ export interface AttributePart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -64,7 +59,7 @@ export interface BooleanPart {
   readonly value: boolean | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -77,10 +72,10 @@ Added in v1.0.0
 ```ts
 export interface ClassNamePart {
   readonly _tag: "className"
-  readonly value: ReadonlyArray<string> | null | undefined
+  readonly value: ReadonlyArray<string>
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -96,7 +91,7 @@ export interface CommentPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -112,7 +107,7 @@ export interface DataPart {
   readonly value: Readonly<Record<string, string | undefined>> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -146,7 +141,7 @@ export interface NodePart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -166,9 +161,9 @@ export type Part =
   | EventPart
   | NodePart
   | PropertyPart
+  | PropertiesPart
   | RefPart
   | TextPart
-  | PropertiesPart
 ```
 
 Added in v1.0.0
@@ -178,7 +173,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Parts = ReadonlyArray<Part | SparsePart>
+export type Parts = ReadonlyArray<Part>
 ```
 
 Added in v1.0.0
@@ -190,10 +185,10 @@ Added in v1.0.0
 ```ts
 export interface PropertiesPart {
   readonly _tag: "properties"
-  readonly value: Readonly<Record<string, any>> | null | undefined
+  readonly value: Record<string, any> | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -210,7 +205,7 @@ export interface PropertyPart {
   readonly value: unknown
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 
@@ -230,75 +225,6 @@ export interface RefPart<T extends HTMLElement | SVGElement = HTMLElement | SVGE
 
 Added in v1.0.0
 
-## SparseAttributePart (interface)
-
-**Signature**
-
-```ts
-export interface SparseAttributePart {
-  readonly _tag: "sparse/attribute"
-  readonly name: string
-  readonly parts: ReadonlyArray<AttributePart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
-}
-```
-
-Added in v1.0.0
-
-## SparseClassNamePart (interface)
-
-**Signature**
-
-```ts
-export interface SparseClassNamePart {
-  readonly _tag: "sparse/className"
-  readonly parts: ReadonlyArray<ClassNamePart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
-}
-```
-
-Added in v1.0.0
-
-## SparseCommentPart (interface)
-
-**Signature**
-
-```ts
-export interface SparseCommentPart {
-  readonly _tag: "sparse/comment"
-  readonly parts: ReadonlyArray<CommentPart | StaticText>
-
-  readonly update: (value: ReadonlyArray<string>) => Effect<void, never, Scope>
-}
-```
-
-Added in v1.0.0
-
-## SparsePart (type alias)
-
-**Signature**
-
-```ts
-export type SparsePart = SparseAttributePart | SparseClassNamePart | SparseCommentPart
-```
-
-Added in v1.0.0
-
-## StaticText (interface)
-
-**Signature**
-
-```ts
-export interface StaticText {
-  readonly _tag: "static/text"
-  readonly value: string
-}
-```
-
-Added in v1.0.0
-
 ## TextPart (interface)
 
 **Signature**
@@ -309,7 +235,7 @@ export interface TextPart {
   readonly value: string | null | undefined
   readonly index: number
 
-  readonly update: (value: this["value"]) => Effect<void, never, Scope>
+  readonly update: (value: this["value"], priority?: number) => Effect<void, never, Scope>
 }
 ```
 

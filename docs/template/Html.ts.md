@@ -38,9 +38,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderToHtml<E, R>(
-  fx: Fx.Fx<RenderEvent, E, R>
-): Fx.Fx<string, E, R | RenderTemplate | RenderContext.RenderContext>
+export declare function renderToHtml<E, R>(fx: Fx.Fx<RenderEvent | null, E, R>): Fx.Fx<string, E, R>
 ```
 
 Added in v1.0.0
@@ -50,9 +48,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function renderToHtmlString<E, R>(
-  fx: Fx.Fx<RenderEvent, E, R>
-): Effect.Effect<string, E, R | RenderTemplate | RenderContext.RenderContext>
+export declare function renderToHtmlString<E, R>(fx: Fx.Fx<RenderEvent | null, E, R>): Effect.Effect<string, E, R>
 ```
 
 Added in v1.0.0
@@ -63,7 +59,7 @@ Added in v1.0.0
 
 ```ts
 export declare const serverLayer: Layer.Layer<
-  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment,
+  RenderTemplate | RenderQueue.RenderQueue | RenderContext.RenderContext | CurrentEnvironment,
   never,
   never
 >
@@ -77,7 +73,7 @@ Added in v1.0.0
 
 ```ts
 export declare const staticLayer: Layer.Layer<
-  RenderTemplate | RenderContext.RenderContext | CurrentEnvironment,
+  RenderTemplate | RenderQueue.RenderQueue | RenderContext.RenderContext | CurrentEnvironment,
   never,
   never
 >

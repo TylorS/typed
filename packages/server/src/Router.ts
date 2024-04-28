@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import type { Default } from "@effect/platform/Http/App"
 import type { Method } from "@effect/platform/Http/Method"
 import * as PlatformRouter from "@effect/platform/Http/Router"

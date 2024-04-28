@@ -1,6 +1,6 @@
 ---
 title: RenderTemplate.ts
-nav_order: 20
+nav_order: 21
 parent: "@typed/template"
 ---
 
@@ -40,7 +40,7 @@ export interface RenderTemplate {
   <Values extends ReadonlyArray<Renderable<any, any>>>(
     templateStrings: TemplateStringsArray,
     values: Values
-  ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope | Placeholder.Context<Values[number]>>
+  ): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, Scope | RenderQueue | Placeholder.Context<Values[number]>>
 }
 ```
 
@@ -54,7 +54,11 @@ Added in v1.0.0
 export declare function html<const Values extends ReadonlyArray<Renderable<any, any>>>(
   template: TemplateStringsArray,
   ...values: Values
-): Fx.Fx<RenderEvent, Placeholder.Error<Values[number]>, RenderTemplate | Scope | Placeholder.Context<Values[number]>>
+): Fx.Fx<
+  RenderEvent,
+  Placeholder.Error<Values[number]>,
+  RenderTemplate | RenderQueue | Scope | Placeholder.Context<Values[number]>
+>
 ```
 
 Added in v1.0.0

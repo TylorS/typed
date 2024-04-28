@@ -28,7 +28,7 @@ Added in v1.0.0
 export declare function many<A, E, R, B extends PropertyKey, R2, E2>(
   values: Fx.Fx<ReadonlyArray<A>, E, R>,
   getKey: (a: NoInfer<A>) => B,
-  f: (a: RefSubject.RefSubject<NoInfer<A>>, key: B) => Fx.Fx<RenderEvent, E2, R2>
+  f: (a: RefSubject.RefSubject<A>, key: B) => Fx.Fx<RenderEvent, E2, R2>
 ): Fx.Fx<RenderEvent | ReadonlyArray<RenderEvent>, E | E2, R | R2 | Scope.Scope | RenderContext>
 ```
 
@@ -52,9 +52,9 @@ export declare const manyAsyncData: {
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
-      Loading: (todo: TODO) => Loading
-      Failure: (data: RefSubject.Computed<E1, never, never>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<A, never, never>, computed: TODO) => Success
+      Loading: (data: RefSubject.Filtered<Progress>) => Loading
+      Failure: (data: RefSubject.Computed<E1, never, never>) => Failure
+      Success: (value: RefSubject.Computed<A, never, never>) => Success
     }
   ): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>
@@ -78,9 +78,9 @@ export declare const manyAsyncData: {
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
-      Loading: (data: TODO) => Loading
-      Failure: (data: RefSubject.Computed<E1, never, never>, computed: TODO) => Failure
-      Success: (value: RefSubject.Computed<A, never, never>, computed: TODO) => Success
+      Loading: (data: RefSubject.Filtered<Progress>) => Loading
+      Failure: (data: RefSubject.Computed<E1, never, never>) => Failure
+      Success: (value: RefSubject.Computed<A, never, never>) => Success
     }
   ): Fx.Fx<
     Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>,

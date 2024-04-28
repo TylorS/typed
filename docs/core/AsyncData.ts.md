@@ -41,7 +41,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export * from "@typed/async-data/Schema"
+export * as Schema from "@typed/async-data/Schema"
 ```
 
 Added in v1.0.0

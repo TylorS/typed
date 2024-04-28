@@ -18,6 +18,7 @@ Added in v1.0.0
   - [HtmlRenderEvent](#htmlrenderevent)
   - [HtmlRenderEvent (type alias)](#htmlrenderevent-type-alias)
   - [RenderEvent (type alias)](#renderevent-type-alias)
+  - [isHtmlRenderEvent](#ishtmlrenderevent)
   - [isRenderEvent](#isrenderevent)
 
 ---
@@ -53,7 +54,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function HtmlRenderEvent(html: string): HtmlRenderEvent
+export declare function HtmlRenderEvent(html: string, done: boolean): HtmlRenderEvent
 ```
 
 Added in v1.0.0
@@ -66,6 +67,7 @@ Added in v1.0.0
 export type HtmlRenderEvent = {
   readonly _tag: "html"
   readonly html: string
+  readonly done: boolean
   readonly valueOf: () => string
 }
 ```
@@ -78,6 +80,16 @@ Added in v1.0.0
 
 ```ts
 export type RenderEvent = DomRenderEvent | HtmlRenderEvent
+```
+
+Added in v1.0.0
+
+## isHtmlRenderEvent
+
+**Signature**
+
+```ts
+export declare function isHtmlRenderEvent(value: unknown): value is HtmlRenderEvent
 ```
 
 Added in v1.0.0

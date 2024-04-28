@@ -172,11 +172,11 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
   readonly get: <K extends keyof Schemas & string>(
     key: K,
     options?: ParseOptions
-  ) => StorageEffect<O.Option<S.Schema.To<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
+  ) => StorageEffect<O.Option<S.Schema.Type<Schemas[K]>>, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
   readonly set: <K extends keyof Schemas & string>(
     key: K,
-    value: S.Schema.To<Schemas[K]>,
+    value: S.Schema.Type<Schemas[K]>,
     options?: ParseOptions
   ) => StorageEffect<void, ParseResult.ParseError, S.Schema.Context<Schemas[K]>>
 
@@ -184,7 +184,7 @@ export interface SchemaStorage<Schemas extends Readonly<Record<string, S.Schema<
 
   readonly key: <K extends keyof Schemas & string>(
     key: K
-  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.To<Schemas[K]>>
+  ) => SchemaKeyStorage<S.Schema.Context<Schemas[K]>, S.Schema.Type<Schemas[K]>>
 }
 ```
 

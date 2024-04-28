@@ -29,6 +29,7 @@ Added in v1.0.0
   - [bindTo](#bindto)
   - [catchAll](#catchall)
   - [catchAllCause](#catchallcause)
+  - [catchTag](#catchtag)
   - [compose](#compose)
   - [decode](#decode)
   - [encode](#encode)
@@ -109,12 +110,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Context<T> =
-  T extends Guard<infer _I, infer _O, infer _E, infer R>
+export type Context<T> = [T] extends [Guard<infer _I, infer _O, infer _E, infer R>]
+  ? R
+  : [T] extends [AsGuard<infer _I, infer _O, infer _E, infer R>]
     ? R
-    : T extends AsGuard<infer _I, infer _O, infer _E, infer R>
-      ? R
-      : never
+    : never
 ```
 
 Added in v1.0.0
@@ -124,12 +124,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Error<T> =
-  T extends Guard<infer _I, infer _O, infer E, infer _R>
+export type Error<T> = [T] extends [Guard<infer _I, infer _O, infer E, infer _R>]
+  ? E
+  : [T] extends [AsGuard<infer _I, infer _O, infer E, infer _R>]
     ? E
-    : T extends AsGuard<infer _I, infer _O, infer E, infer _R>
-      ? E
-      : never
+    : never
 ```
 
 Added in v1.0.0
@@ -139,12 +138,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Input<T> =
-  T extends Guard<infer I, infer _R, infer _E, infer _O>
+export type Input<T> = [T] extends [Guard<infer I, infer _R, infer _E, infer _O>]
+  ? I
+  : [T] extends [AsGuard<infer I, infer _R, infer _E, infer _O>]
     ? I
-    : T extends AsGuard<infer I, infer _R, infer _E, infer _O>
-      ? I
-      : never
+    : never
 ```
 
 Added in v1.0.0
@@ -154,12 +152,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Output<T> =
-  T extends Guard<infer _I, infer O, infer _E, infer _R>
+export type Output<T> = [T] extends [Guard<infer _I, infer O, infer _E, infer _R>]
+  ? O
+  : [T] extends [AsGuard<infer _I, infer O, infer _E, infer _R>]
     ? O
-    : T extends AsGuard<infer _I, infer O, infer _E, infer _R>
-      ? O
-      : never
+    : never
 ```
 
 Added in v1.0.0
@@ -180,8 +177,8 @@ Added in v1.0.0
 
 ```ts
 export declare const addTag: {
-  <B>(value: B): <I, O, E = never, R = never>(guard: Guard<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
-  <I, O, E, R, B>(guard: Guard<I, O, E, R>, value: B): Guard<I, O & { readonly _tag: B }, E, R>
+  <B>(value: B): <I, O, E = never, R = never>(guard: GuardInput<I, O, E, R>) => Guard<I, O & { readonly _tag: B }, E, R>
+  <I, O, E, R, B>(guard: GuardInput<I, O, E, R>, value: B): Guard<I, O & { readonly _tag: B }, E, R>
 }
 ```
 
@@ -263,6 +260,26 @@ export declare const catchAllCause: {
     guard: GuardInput<I, O, E, R>,
     f: (e: Cause.Cause<E>) => Effect.Effect<O2, E2, R2>
   ): Guard<I, O | O2, E2, R | R2>
+}
+```
+
+Added in v1.0.0
+
+## catchTag
+
+**Signature**
+
+```ts
+export declare const catchTag: {
+  <E, K extends E extends { _tag: string } ? E["_tag"] : never, O2, E2, R2>(
+    tag: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<O2, E2, R2>
+  ): <I, O, R>(guard: GuardInput<I, O, E, R>) => Guard<I, O2 | O, E2 | Exclude<E, { _tag: K }>, R2 | R>
+  <I, O, E, R, K extends E extends { _tag: string } ? E["_tag"] : never, O2, E2, R2>(
+    guard: GuardInput<I, O, E, R>,
+    tag: K,
+    f: (e: Extract<E, { _tag: K }>) => Effect.Effect<O2, E2, R2>
+  ): Guard<I, O | O2, E2 | Exclude<E, { _tag: K }>, R | R2>
 }
 ```
 

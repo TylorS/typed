@@ -40,7 +40,7 @@ Added in v1.0.0
 ```ts
 export declare const hydrateLayer: (
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly skipRenderScheduling?: boolean }
+  options?: DomServicesElementParams
 ) => Layer.Layer<RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
 ```
 

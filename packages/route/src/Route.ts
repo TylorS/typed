@@ -1,3 +1,7 @@
+/**
+ * @since 5.0.0
+ */
+
 import { ArrayFormatter, TreeFormatter } from "@effect/schema"
 import type * as SchemaAST from "@effect/schema/AST"
 import type { ParseIssue } from "@effect/schema/ParseResult"
@@ -18,33 +22,52 @@ import type { N } from "ts-toolbelt"
 import * as AST from "./AST.js"
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const RouteTypeId = Symbol.for("@typed/route/Route")
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export type RouteTypeId = typeof RouteTypeId
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export interface Route<
   P extends string,
   S extends Schema.Schema.All = never
 > extends Pipeable {
   readonly [RouteTypeId]: Route.Variance<P, S>
+
+  /**
+   * @since 5.0.0
+   */
   readonly routeAst: AST.AST
 
+  /**
+   * @since 5.0.0
+   */
   readonly path: P
 
+  /**
+   * @since 5.0.0
+   */
   readonly schema: Route.Schema<this>
 
+  /**
+   * @since 5.0.0
+   */
   readonly match: (path: string) => Option.Option<Path.ParamsOf<P>>
 
+  /**
+   * @since 5.0.0
+   */
   readonly interpolate: <P2 extends Path.ParamsOf<P>>(params: P2) => Path.Interpolate<P, P2>
 
+  /**
+   * @since 5.0.0
+   */
   readonly concat: <R2 extends Route.Any>(
     right: R2
   ) => Route<
@@ -52,19 +75,31 @@ export interface Route<
     Route.ConcatSchemas<S, Route.Schema<R2>>
   >
 
+  /**
+   * @since 5.0.0
+   */
   readonly optional: () => Route<Path.Optional<P>, S>
 
+  /**
+   * @since 5.0.0
+   */
   readonly oneOrMore: () => Route<Path.OneOrMore<P>, S>
 
+  /**
+   * @since 5.0.0
+   */
   readonly zeroOrMore: () => Route<Path.ZeroOrMore<P>, S>
 
+  /**
+   * @since 5.0.0
+   */
   readonly prefix: <P2 extends string>(
     prefix: P2
   ) => Route<Path.Prefix<P2, P>, S>
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export namespace Route {
   /**
@@ -175,7 +210,7 @@ export namespace Route {
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export function isRoute(value: unknown): value is Route.Any {
   return hasProperty(value, RouteTypeId)
@@ -249,7 +284,7 @@ class RouteImpl<P extends string, S extends Schema.Schema.All> implements Route<
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const make = <P extends string, S extends Schema.Schema.All>(
   ast: AST.AST,
@@ -260,27 +295,27 @@ export const make = <P extends string, S extends Schema.Schema.All>(
 ): Route<P, S> => new RouteImpl(ast, options)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const literal = <const L extends string>(literal: L): Route<L> => make(new AST.Literal(literal))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const end: Route<"/"> = make(new AST.Literal("/"))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const home: Route<"/"> = make(new AST.Literal("/"), { match: { end: true } })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const param = <const Name extends string>(name: Name): Route<Path.Param<Name>> => make(new AST.Param(name))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const paramWithSchema: {
   <A, R = never>(
@@ -300,7 +335,7 @@ export const paramWithSchema: {
   withSchema(param(name), Schema.Struct(Record.singleton(name, schema)) as any))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const number: <const Name extends string>(
   name: Name
@@ -308,7 +343,7 @@ export const number: <const Name extends string>(
   paramWithSchema(Schema.NumberFromString)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const integer: <const Name extends string>(
   name: Name
@@ -316,7 +351,7 @@ export const integer: <const Name extends string>(
   paramWithSchema(Schema.NumberFromString.pipe(Schema.int()))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const uuid: <const Name extends string>(
   name: Name
@@ -324,7 +359,7 @@ export const uuid: <const Name extends string>(
   paramWithSchema(ID.uuid)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const nanoId: <const Name extends string>(
   name: Name
@@ -332,7 +367,7 @@ export const nanoId: <const Name extends string>(
   paramWithSchema(ID.nanoId)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const BigInt: <const Name extends string>(
   name: Name
@@ -340,7 +375,7 @@ export const BigInt: <const Name extends string>(
   paramWithSchema(Schema.BigInt)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const bigDecimal: <const Name extends string>(
   name: Name
@@ -350,7 +385,7 @@ export const bigDecimal: <const Name extends string>(
 > = paramWithSchema(Schema.BigDecimal)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const base64Url: <const Name extends string>(
   name: Name
@@ -360,7 +395,7 @@ export const base64Url: <const Name extends string>(
 > = paramWithSchema(Schema.Base64Url)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const boolean: <const Name extends string>(
   name: Name
@@ -370,7 +405,7 @@ export const boolean: <const Name extends string>(
 > = paramWithSchema(Schema.parseJson(Schema.Boolean))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const ulid: <const Name extends string>(
   name: Name
@@ -378,7 +413,7 @@ export const ulid: <const Name extends string>(
   paramWithSchema(Schema.ULID)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const date: <const Name extends string>(
   name: Name
@@ -386,12 +421,12 @@ export const date: <const Name extends string>(
   paramWithSchema(Schema.Date)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const unnamed: Route<Path.Unnamed> = make(new AST.UnnamedParam())
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const zeroOrMore = <R extends Route<any, never>>(
   route: R
@@ -399,7 +434,7 @@ export const zeroOrMore = <R extends Route<any, never>>(
   make(new AST.ZeroOrMore(route.routeAst)) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const oneOrMore = <R extends Route<any, never>>(
   route: R
@@ -407,13 +442,13 @@ export const oneOrMore = <R extends Route<any, never>>(
   make(new AST.OneOrMore(route.routeAst)) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const optional = <R extends Route<any, never>>(route: R): Route.UpdatePath<R, Path.Optional<Route.Path<R>>> =>
   make(new AST.Optional(route.routeAst)) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const prefix: {
   <P extends string>(
@@ -432,7 +467,7 @@ export const prefix: {
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const concat: {
   <R extends Route.Any>(right: R): <L extends Route.Any>(
@@ -449,7 +484,7 @@ export const concat: {
 ): Route.Concat<L, R> => make(new AST.Concat(left.routeAst, right.routeAst)) as Route.Concat<L, R>)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const withSchema: {
   <R extends Route.Any, S extends Schema.Schema<any, Path.ParamsOf<Route.Path<R>>, any>>(
@@ -469,12 +504,12 @@ export const withSchema: {
 ): Route.UpdateSchema<R, S> => make(new AST.WithSchema(route.routeAst, schema)) as Route.UpdateSchema<R, S>)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const getPath = <R extends Route.Any>(route: R): Route.Path<R> => AST.toPath(route.routeAst) as Route.Path<R>
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export function getMatch<R extends Route.Any>(
   route: R,
@@ -490,7 +525,7 @@ export function getMatch<R extends Route.Any>(
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export function getInterpolate<R extends Route.Any>(
   route: R,
@@ -502,7 +537,7 @@ export function getInterpolate<R extends Route.Any>(
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("RouteDecodeError")<{
   readonly route: R
@@ -516,6 +551,9 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
     })
   }
 
+  /**
+   * @since 5.0.0
+   */
   toJSON(): unknown {
     return {
       _tag: "RouteDecodeError",
@@ -524,13 +562,16 @@ export class RouteDecodeError<R extends Route.Any> extends Data.TaggedError("Rou
     }
   }
 
+  /**
+   * @since 5.0.0
+   */
   toString(): string {
     return this.message
   }
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const decode: {
   (path: string): <R extends Route.Any>(
@@ -567,7 +608,7 @@ export const decode: {
 })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const decode_: {
   <R extends Route.Any>(
@@ -592,12 +633,15 @@ export const decode_: {
 ): Effect.Effect<Route.Type<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> => decode(route, path))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export class RouteEncodeError<R extends Route.Any> extends Data.TaggedError("RouteEncodeError")<{
   readonly route: R
   readonly issue: ParseIssue
 }> {
+  /**
+   * @since 5.0.0
+   */
   toJSON(): unknown {
     return {
       _tag: "RouteEncodeError",
@@ -606,13 +650,16 @@ export class RouteEncodeError<R extends Route.Any> extends Data.TaggedError("Rou
     }
   }
 
+  /**
+   * @since 5.0.0
+   */
   toString() {
     return `RouteEncodeError: ${this.route.path}\n${TreeFormatter.formatIssueSync(this.issue)}`
   }
 }
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const encode: {
   <R extends Route.Any, O extends Route.Type<R>>(
@@ -636,7 +683,7 @@ export const encode: {
 })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const encode_: {
   <R extends Route.Any, O extends Route.Type<R>>(
@@ -654,7 +701,7 @@ export const encode_: {
   encode(route, params) as any)
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const updateSchema: {
   <R extends Route.Any, S extends Schema.Schema.Any>(
@@ -667,7 +714,7 @@ export const updateSchema: {
 ): Route.UpdateSchema<R, S> => withSchema<R, S>(route, f(route.schema)))
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const transform: {
   <R extends Route.Any, S extends Schema.Schema.Any>(
@@ -692,7 +739,7 @@ export const transform: {
 })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const transformOrFail: {
   <R extends Route.Any, S extends Schema.Schema.Any, R2>(
@@ -717,7 +764,7 @@ export const transformOrFail: {
 })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const attachPropertySignature: {
   <K extends string, V extends symbol | SchemaAST.LiteralValue>(
@@ -760,7 +807,7 @@ export const attachPropertySignature: {
 })
 
 /**
- * @since 1.0.0
+ * @since 5.0.0
  */
 export const addTag: {
   <const T extends string>(

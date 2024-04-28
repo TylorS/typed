@@ -14,7 +14,7 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [GetRandomValues](#getrandomvalues)
-  - [GetRandomValues (type alias)](#getrandomvalues-type-alias)
+  - [GetRandomValues (interface)](#getrandomvalues-interface)
   - [getRandomValues](#getrandomvalues-1)
   - [getRandomValuesNode](#getrandomvaluesnode)
   - [nodeCrypto](#nodecrypto)
@@ -35,12 +35,12 @@ export declare const GetRandomValues: Context.Fn<GetRandomValues, (length: numbe
 
 Added in v1.0.0
 
-## GetRandomValues (type alias)
+## GetRandomValues (interface)
 
 **Signature**
 
 ```ts
-export type GetRandomValues = Context.Fn.Identifier<typeof GetRandomValues>
+export interface GetRandomValues extends Context.Fn.Identifier<typeof GetRandomValues> {}
 ```
 
 Added in v1.0.0

@@ -1,6 +1,6 @@
 ---
 title: Vitest.ts
-nav_order: 23
+nav_order: 24
 parent: "@typed/template"
 ---
 
@@ -47,7 +47,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function it<E, A>(name: string, test: () => Effect.Effect<A, E, Scope>, options?: vitest.TestOptions)
+export declare function it<E, A>(
+  name: string,
+  test: () => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue>,
+  options?: vitest.TestOptions
+)
 ```
 
 Added in v1.0.0
@@ -59,7 +63,9 @@ Added in v1.0.0
 ```ts
 export declare function test<E, A>(
   name: string,
-  test: (options: { readonly clock: TestClock.TestClock }) => Effect.Effect<A, E, Scope | TestServices.TestServices>,
+  test: (options: {
+    readonly clock: TestClock.TestClock
+  }) => Effect.Effect<A, E, Scope | RenderQueue.RenderQueue | TestServices.TestServices>,
   options?: vitest.TestOptions
 )
 ```

@@ -116,7 +116,7 @@ readonly _tag: "text"
 **Signature**
 
 ```ts
-export declare function escape(s: unknown)
+export declare function escape(s: unknown): string
 ```
 
 Added in v1.0.0

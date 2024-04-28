@@ -34,6 +34,7 @@ Added in v1.0.0
 - [unsafe](#unsafe)
   - [unsafeGet](#unsafeget)
 - [utils](#utils)
+  - [TagClass](#tagclass)
   - [add](#add)
   - [getMany](#getmany)
   - [merge](#merge)
@@ -291,6 +292,16 @@ assert.throws(() => Context.unsafeGet(Services, Timeout))
 Added in v1.0.0
 
 # utils
+
+## TagClass
+
+**Signature**
+
+```ts
+export declare const TagClass: any
+```
+
+Added in v1.0.0
 
 ## add
 

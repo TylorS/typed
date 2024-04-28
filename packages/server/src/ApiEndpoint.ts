@@ -7,8 +7,8 @@ import { getPropertySignatures } from "@effect/schema/AST"
 import type { Schema } from "@effect/schema/Schema"
 import type { MatchInput } from "@typed/router"
 import { getPath, getSchema } from "@typed/router"
-import { ApiRequest, ApiResponse, ApiSchema, Security } from "effect-http"
-import { ApiEndpoint } from "effect-http"
+import type { ApiRequest, ApiResponse, Security } from "effect-http"
+import { ApiEndpoint, ApiSchema } from "effect-http"
 
 export {
   /**
@@ -109,10 +109,12 @@ export function setRequestRoute<I extends MatchInput.Any>(
   return ApiEndpoint.setRequestPath(schema as any) as any
 }
 
-type GetSchemaType<I extends MatchInput.Any> = MatchInput.HasParams<I> extends true
-  ? Schema.Type<MatchInput.Schema<I>>
+type GetSchemaType<I extends MatchInput.Any> = MatchInput.HasParams<I> extends true ? Schema.Type<MatchInput.Schema<I>>
   : ApiSchema.Ignored
 
+/**
+ * @since 1.0.0
+ */
 export function make<
   M extends Method,
   const Id extends string,
@@ -138,10 +140,10 @@ export function make<
   const path = getPath(route)
   const schema = getSchemaType(route)
 
-  if (ApiSchema.isIgnored(schema)) { 
+  if (ApiSchema.isIgnored(schema)) {
     return ApiEndpoint.make(method, id, path, options) as any
   }
-  
+
   return ApiEndpoint.make(method, id, path, options).pipe(
     ApiEndpoint.setRequestPath(schema as any)
   ) as any
@@ -160,11 +162,11 @@ function getSchemaType<I extends MatchInput.Any>(input: I): GetSchemaType<I> {
 const makeWithMethod = <M extends Method>(
   method: M
 ) =>
-  <
-    const Id extends string,
-    I extends MatchInput.Any,
-    O extends ApiEndpoint.Options
-  >(id: Id, route: I, options: O) => make(method, id, route, options)
+<
+  const Id extends string,
+  I extends MatchInput.Any,
+  O extends ApiEndpoint.Options
+>(id: Id, route: I, options: O) => make(method, id, route, options)
 
 const delete_ = makeWithMethod("DELETE")
 

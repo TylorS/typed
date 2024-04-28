@@ -37,9 +37,9 @@ Added in v1.0.0
 
 ```ts
 export declare function htmlResponse<E, R>(
-  fx: Fx.Fx<RenderEvent, E, R>,
+  fx: Fx.Fx<RenderEvent | null, E, R>,
   options?: HttpServer.response.Options
-): Effect.Effect<HttpServer.response.ServerResponse, E, R | RenderTemplate | RenderContext.RenderContext>
+): Effect.Effect<HttpServer.response.ServerResponse, E, R>
 ```
 
 Added in v1.0.0

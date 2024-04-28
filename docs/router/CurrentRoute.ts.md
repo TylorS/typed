@@ -19,9 +19,10 @@ Added in v1.0.0
   - [CurrentSearchParams](#currentsearchparams)
   - [CurrentState](#currentstate)
   - [browser](#browser)
+  - [decode](#decode)
   - [isActive](#isactive)
   - [layer](#layer)
-  - [make](#make)
+  - [makeCurrentRoute](#makecurrentroute)
   - [makeHref](#makehref)
   - [server](#server)
   - [withCurrentRoute](#withcurrentroute)
@@ -35,10 +36,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentParams: RefSubject.Filtered<
+export declare const CurrentParams: Fx.RefSubject.Filtered<
   Readonly<Record<string, string | readonly string[]>>,
   never,
-  CurrentRoute<string> | Navigation
+  Navigation | CurrentRoute
 >
 ```
 
@@ -49,7 +50,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentRoute: Context.Tagged<CurrentRoute<string>, CurrentRoute<string>>
+export declare const CurrentRoute: Context.Tagged<CurrentRoute, CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -59,8 +60,8 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface CurrentRoute<P extends string = string> {
-  readonly route: Route.Route<P>
+export interface CurrentRoute {
+  readonly route: Route.Route.Any
   readonly parent: Option.Option<CurrentRoute>
 }
 ```
@@ -72,7 +73,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentSearchParams: RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation>
+export declare const CurrentSearchParams: Fx.RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -82,7 +83,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentState: RefSubject.Computed<unknown, never, Navigation>
+export declare const CurrentState: Fx.RefSubject.Computed<unknown, never, Navigation>
 ```
 
 Added in v1.0.0
@@ -92,7 +93,23 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const browser: Layer.Layer<CurrentRoute<string>, never, Document.Document>
+export declare const browser: Layer.Layer<CurrentRoute, never, Document.Document>
+```
+
+Added in v1.0.0
+
+## decode
+
+**Signature**
+
+```ts
+export declare function decode<R extends Route.Route.Any>(
+  route: R
+): Fx.RefSubject.Filtered<
+  Route.Route.Type<R>,
+  Route.RouteDecodeError<R>,
+  Navigation | CurrentRoute | Route.Route.Context<R>
+>
 ```
 
 Added in v1.0.0
@@ -102,9 +119,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function isActive<const P extends string>(
-  pathOrRoute: Route.Route<P> | P,
-  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+export declare function isActive<R extends Route.Route.Any>(
+  route: R,
+  ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
 ```
 
@@ -115,23 +132,23 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function layer<const P extends string>(
-  route: P | Route.Route<P>,
+export declare function layer<R extends Route.Route.Any>(
+  route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
 ): Layer.Layer<CurrentRoute>
 ```
 
 Added in v1.0.0
 
-## make
+## makeCurrentRoute
 
 **Signature**
 
 ```ts
-export declare function make<const P extends string>(
-  route: P | Route.Route<P>,
+export declare function makeCurrentRoute<R extends Route.Route.Any>(
+  route: R,
   parent: Option.Option<CurrentRoute> = Option.none()
-): CurrentRoute<P>
+): CurrentRoute
 ```
 
 Added in v1.0.0
@@ -141,9 +158,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function makeHref<const P extends string>(
-  pathOrRoute: Route.Route<P> | P,
-  ...params: [keyof ParamsOf<P>] extends [never] ? [{}?] : [ParamsOf<P>]
+export declare function makeHref<const R extends Route.Route.Any>(
+  route: R,
+  ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Filtered<string, never, Navigation | CurrentRoute>
 ```
 
@@ -165,13 +182,13 @@ Added in v1.0.0
 
 ```ts
 export declare const withCurrentRoute: {
-  <P extends string>(
-    route: Route.Route<P>
-  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
-  <A, E, R, P extends string>(
+  <R extends Route.Route.Any>(
+    route: R
+  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
+  <A, E, R, R_ extends Route.Route.Any>(
     effect: Effect.Effect<A, E, R>,
-    route: Route.Route<P>
-  ): Effect.Effect<A, E, Exclude<R, CurrentRoute<string>>>
+    route: R_
+  ): Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 }
 ```
 

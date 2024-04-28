@@ -38,7 +38,7 @@ export interface AddEventListenerOptions<T extends EventTarget, EventName extend
   readonly eventName: EventName
 
   readonly handler: (
-    event: EventWithCurrentTarget<T, DefaultEventMap<T>[EventName]>
+    event: EventWithCurrentTarget<T, EventName extends keyof DefaultEventMap<T> ? DefaultEventMap<T>[EventName] : Event>
   ) => Effect.Effect<unknown, never, R2>
 }
 ```

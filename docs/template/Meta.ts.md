@@ -17,7 +17,8 @@ Added in v1.0.0
   - [TEXT_START](#text_start)
   - [TYPED_END](#typed_end)
   - [TYPED_HASH](#typed_hash)
-  - [TYPED_HOLE](#typed_hole)
+  - [TYPED_HOLE_END](#typed_hole_end)
+  - [TYPED_HOLE_START](#typed_hole_start)
   - [TYPED_START](#typed_start)
 
 ---
@@ -66,12 +67,22 @@ export declare const TYPED_HASH: (hash: string) => string
 
 Added in v1.0.0
 
-## TYPED_HOLE
+## TYPED_HOLE_END
 
 **Signature**
 
 ```ts
-export declare const TYPED_HOLE: (index: number) => string
+export declare const TYPED_HOLE_END: (index: number) => string
+```
+
+Added in v1.0.0
+
+## TYPED_HOLE_START
+
+**Signature**
+
+```ts
+export declare const TYPED_HOLE_START: (index: number) => string
 ```
 
 Added in v1.0.0

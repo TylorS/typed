@@ -70,6 +70,9 @@ Added in v1.0.0
   - [startLoading](#startloading)
   - [stopLoading](#stoploading)
   - [success](#success)
+  - [toOption](#tooption)
+  - [toOptionCause](#tooptioncause)
+  - [toOptionError](#tooptionerror)
 
 ---
 
@@ -503,7 +506,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromEither<A, E = never>(either: Either.Either<A, E>): AsyncData<A, E>
+export declare function fromEither<A, E = never>(either: Either.Either<A, E>): Success<A> | Failure<E>
 ```
 
 Added in v1.0.0
@@ -513,7 +516,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function fromExit<A, E>(exit: Exit.Exit<A, E>): AsyncData<A, E>
+export declare function fromExit<A, E>(exit: Exit.Exit<A, E>): Success<A> | Failure<E>
 ```
 
 Added in v1.0.0
@@ -725,7 +728,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const startLoading: <A, E>(data: AsyncData<A, E>) => AsyncData<A, E>
+export declare const startLoading: <A, E>(
+  data: AsyncData<A, E>,
+  options?: OptionalPartial<LoadingOptions>
+) => AsyncData<A, E>
 ```
 
 Added in v1.0.0
@@ -749,6 +755,36 @@ export declare const success: {
   <A>(value: A, options?: OptionalPartial<SuccessOptions>): Success<A>
   <A, E>(value: A, options?: OptionalPartial<SuccessOptions>): AsyncData<A, E>
 }
+```
+
+Added in v1.0.0
+
+## toOption
+
+**Signature**
+
+```ts
+export declare function toOption<A, E>(data: AsyncData<A, E>): Option.Option<A>
+```
+
+Added in v1.0.0
+
+## toOptionCause
+
+**Signature**
+
+```ts
+export declare function toOptionCause<A, E>(data: AsyncData<A, E>): Option.Option<Cause.Cause<E>>
+```
+
+Added in v1.0.0
+
+## toOptionError
+
+**Signature**
+
+```ts
+export declare function toOptionError<A, E>(data: AsyncData<A, E>): Option.Option<E>
 ```
 
 Added in v1.0.0
