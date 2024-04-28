@@ -79,18 +79,6 @@
       "@typed/dom/examples/*": [
         "packages/dom/build/examples/*"
       ],
-      "@typed/effect": [
-        "packages/effect/build/esm/index.js"
-      ],
-      "@typed/effect/*": [
-        "packages/effect/build/esm/*"
-      ],
-      "@typed/effect/test/*": [
-        "packages/effect/build/test/*"
-      ],
-      "@typed/effect/examples/*": [
-        "packages/effect/build/examples/*"
-      ],
       "@typed/environment": [
         "packages/environment/build/esm/index.js"
       ],
@@ -340,9 +328,6 @@
     "packages/dom/build/esm/**/*",
     "packages/dom/build/test/**/*",
     "packages/dom/build/examples/**/*",
-    "packages/effect/build/esm/**/*",
-    "packages/effect/build/test/**/*",
-    "packages/effect/build/examples/**/*",
     "packages/environment/build/esm/**/*",
     "packages/environment/build/test/**/*",
     "packages/environment/build/examples/**/*",
