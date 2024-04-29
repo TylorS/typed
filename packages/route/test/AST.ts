@@ -1,8 +1,5 @@
 import { describe, it } from "@effect/vitest"
 import * as AST from "@typed/route/AST"
-import type { InterpolateParam } from "@typed/route/interpolate"
-import { astToInterpolation } from "@typed/route/interpolate"
-import { astToMatcher } from "@typed/route/match"
 import * as Route from "@typed/route/Route"
 import { deepEqual } from "assert"
 import { Option } from "effect"
@@ -23,78 +20,25 @@ describe("AST", () => {
   )
 
   it("Can derive interpolate", () => {
-    deepEqual(AST.interpolate(foobar.routeAst, { fooId: "1", barId: "2" }), `/foo/foo-1/bar/bar-2`)
-
-    deepEqual(
-      AST.interpolate(baz.routeAst, { fooId: "1", barId: "2", baz: "3", quux: "4" }),
-      `/foo/foo-1/bar/bar-2?baz=3&quux=4`
-    )
-    deepEqual(AST.interpolate(baz.routeAst, { fooId: "1", barId: "2", baz: "3" }), `/foo/foo-1/bar/bar-2?baz=3`)
-    deepEqual(AST.interpolate(baz.routeAst, { fooId: "1", barId: "2", quux: "4" }), `/foo/foo-1/bar/bar-2?quux=4`)
-
-    deepEqual(AST.interpolate(unnamed.routeAst, { 0: "123", 1: "456" }), `/test/123/test2/456`)
-
-    deepEqual(AST.interpolate(param.routeAst, { test: "test" }), `/test`)
-    deepEqual(AST.interpolate(zeroOrMore.routeAst, { test: ["test", "test"] }), `/test/test`)
-    deepEqual(AST.interpolate(oneOrMore.routeAst, { test: ["test"] }), `/test`)
-    deepEqual(AST.interpolate(optional.routeAst, { test: "test" }), `/test`)
-    deepEqual(AST.interpolate(optional.routeAst, {}), `/`)
-
-    // Compiled interpolation
-
-    const foobarPart = astToInterpolation(foobar.routeAst) as InterpolateParam
-    deepEqual(foobarPart.interpolate({ fooId: "1", barId: "2" }), `/foo/foo-1/bar/bar-2`)
-
-    const bazPart = astToInterpolation(baz.routeAst) as InterpolateParam
-    deepEqual(bazPart.interpolate({ fooId: "1", barId: "2", baz: "3", quux: "4" }), `/foo/foo-1/bar/bar-2?baz=3&quux=4`)
-
-    deepEqual(bazPart.interpolate({ fooId: "1", barId: "2", baz: "3" }), `/foo/foo-1/bar/bar-2?baz=3`)
-    deepEqual(bazPart.interpolate({ fooId: "1", barId: "2", quux: "4" }), `/foo/foo-1/bar/bar-2?quux=4`)
-
-    const unnamedPart = astToInterpolation(unnamed.routeAst) as InterpolateParam
-    deepEqual(unnamedPart.interpolate({ 0: "123", 1: "456" }), `/test/123/test2/456`)
-
-    const paramPart = astToInterpolation(param.routeAst) as InterpolateParam
-    deepEqual(paramPart.interpolate({ test: "test" }), `/test`)
-
-    const zeroOrMorePart = astToInterpolation(zeroOrMore.routeAst) as InterpolateParam
-    deepEqual(zeroOrMorePart.interpolate({ test: ["test", "test"] }), `/test/test`)
-    deepEqual(zeroOrMorePart.interpolate({ test: [] }), `/`)
-
-    const oneOrMorePart = astToInterpolation(oneOrMore.routeAst) as InterpolateParam
-    deepEqual(oneOrMorePart.interpolate({ test: ["test"] }), `/test`)
-
-    const optionalPart = astToInterpolation(optional.routeAst) as InterpolateParam
-    deepEqual(optionalPart.interpolate({ test: "test" }), `/test`)
-    deepEqual(optionalPart.interpolate({}), `/`)
+    testInterpolation(foobar, { fooId: "1", barId: "2" }, `/foo/foo-1/bar/bar-2`)
+    testInterpolation(baz, { fooId: "1", barId: "2" }, `/foo/foo-1/bar/bar-2`)
+    testInterpolation(baz, { fooId: "1", barId: "2", baz: "3" }, `/foo/foo-1/bar/bar-2?baz=3`)
+    testInterpolation(baz, { fooId: "1", barId: "2", quux: "4" }, `/foo/foo-1/bar/bar-2?quux=4`)
+    testInterpolation(baz, { fooId: "1", barId: "2", baz: "3", quux: "4" }, `/foo/foo-1/bar/bar-2?baz=3&quux=4`)
+    testInterpolation(unnamed, { 0: "123", 1: "456" }, `/test/123/test2/456`)
+    testInterpolation(param, { test: "test" }, `/test`)
+    testInterpolation(zeroOrMore, { test: ["test", "test"] }, `/test/test`)
+    testInterpolation(zeroOrMore, { test: [] }, `/`)
+    testInterpolation(oneOrMore, { test: ["test"] }, `/test`)
+    testInterpolation(oneOrMore, { test: ["a", "b"] }, `/a/b`)
+    testInterpolation(optional, { test: "test" }, `/test`)
+    testInterpolation(optional, {}, `/`)
 
     // Literal
-    deepEqual(astToInterpolation(Route.literal("test").routeAst), { _tag: "Literal", value: "/test" })
+    testInterpolation(Route.literal("test"), {}, `/test`)
   })
 
   it("Can derive match", () => {
-    deepEqual(AST.match(foobar.routeAst, `/foo/foo-1/bar/bar-2`), Option.some({ fooId: "1", barId: "2" }))
-    deepEqual(AST.match(unnamed.routeAst, `/test/123/test2/456`), Option.some({ 0: "123", 1: "456" }))
-    deepEqual(AST.match(param.routeAst, `/test`), Option.some({ test: "test" }))
-    deepEqual(AST.match(zeroOrMore.routeAst, `/test/test`), Option.some({ test: ["test", "test"] }))
-    deepEqual(AST.match(oneOrMore.routeAst, `/test`), Option.some({ test: ["test"] }))
-    deepEqual(AST.match(optional.routeAst, `/test`), Option.some({ test: "test" }))
-    deepEqual(AST.match(optional.routeAst, `/`), Option.some({}))
-    deepEqual(AST.match(baz.routeAst, `/foo/foo-1/bar/bar-2`), Option.some({ fooId: "1", barId: "2" }))
-    deepEqual(AST.match(baz.routeAst, `/foo/foo-1/bar/bar-2?baz=3`), Option.some({ fooId: "1", barId: "2", baz: "3" }))
-    deepEqual(
-      AST.match(baz.routeAst, `/foo/foo-1/bar/bar-2?quux=4`),
-      Option.some({ fooId: "1", barId: "2", quux: "4" })
-    )
-    console.time("non-compiled")
-    deepEqual(
-      AST.match(baz.routeAst, `/foo/foo-1/bar/bar-2?baz=3&quux=4`),
-      Option.some({ fooId: "1", barId: "2", baz: "3", quux: "4" })
-    )
-    console.timeEnd("non-compiled")
-
-    // Compiled match
-
     testMatcher(foobar, `/foo/foo-1/bar/bar-2`, Option.some({ fooId: "1", barId: "2" }))
     testMatcher(unnamed, `/test/123/test2/456`, Option.some({ 0: "123", 1: "456" }))
     testMatcher(param, `/test`, Option.some({ test: "test" }))
@@ -108,31 +52,28 @@ describe("AST", () => {
     testMatcher(
       baz,
       `/foo/foo-1/bar/bar-2?baz=3&quux=4`,
-      Option.some({ fooId: "1", barId: "2", baz: "3", quux: "4" }),
-      "compiled"
+      Option.some({ fooId: "1", barId: "2", baz: "3", quux: "4" })
     )
   })
 })
 
+function testInterpolation<R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>,
+  expected: string
+) {
+  const interpolation = AST.astToInterpolation(route.routeAst)
+  if (interpolation._tag === "Literal") {
+    deepEqual(interpolation.value, expected)
+  } else {
+    deepEqual(interpolation.interpolate(params), expected)
+  }
+}
+
 function testMatcher<R extends Route.Route.Any>(
   route: R,
   path: string,
-  expected: Option.Option<Route.Route.Params<R>>,
-  name?: string
+  expected: Option.Option<Route.Route.Params<R>>
 ) {
-  const matcher = astToMatcher(route.routeAst)
-  const { pathname, searchParams } = new URL(path, "http://localhost")
-  const pathSegments = pathname.split(/\//g)
-  if (pathSegments[0] === "") {
-    pathSegments.shift()
-  }
-
-  if (name) {
-    console.time(name)
-    const out = matcher(pathSegments, searchParams)
-    console.timeEnd(name)
-    deepEqual(out, expected)
-  } else {
-    deepEqual(matcher(pathSegments, searchParams), expected)
-  }
+  deepEqual(AST.astToMatcher(route.routeAst, false)(...AST.getPathAndQuery(path)), expected)
 }

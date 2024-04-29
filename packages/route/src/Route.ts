@@ -9,20 +9,17 @@ import * as Sch from "@effect/schema/Schema"
 import type { NanoId } from "@typed/id/NanoId"
 import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
-import type * as Path from "@typed/path"
-import { Data, Effect, Option, Record } from "effect"
+import * as Path from "@typed/path"
+import type { Option } from "effect"
+import { Data, Effect, Record } from "effect"
 import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
-import { dual, flow, pipe } from "effect/Function"
+import { constant, dual, flow, pipe } from "effect/Function"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import { hasProperty } from "effect/Predicate"
 import type * as Types from "effect/Types"
-import * as ptr from "path-to-regexp"
 import type { N, U } from "ts-toolbelt"
 import * as AST from "./AST.js"
-
-// TODO: We need better support for QueryParams and especially optional query parameters
-// TODO: We should investigate removing path-to-regexp in favor of a custom implementation
 
 /**
  * @since 5.0.0
@@ -47,6 +44,11 @@ export interface Route<
    * @since 5.0.0
    */
   readonly routeAst: AST.AST
+
+  /**
+   * @since 5.0.0
+   */
+  readonly options: RouteOptions
 
   /**
    * @since 5.0.0
@@ -90,11 +92,16 @@ export interface Route<
    */
   readonly optional: () => Route<
     Path.Optional<P>,
-    [S] extends [never] ? never : Sch.Schema<
-      Types.Simplify<Partial<Sch.Schema.Type<S>>>,
-      Types.Simplify<Partial<Sch.Schema.Encoded<S>>>,
-      Sch.Schema.Context<S>
-    >
+    [S] extends [never] ? Sch.Schema<
+        Types.Simplify<Optional<Sch.Schema.Type<Route.SchemaFromPath<Path.Optional<P>>>>>,
+        Types.Simplify<Optional<Sch.Schema.Encoded<Route.SchemaFromPath<Path.Optional<P>>>>>,
+        never
+      > :
+      Sch.Schema<
+        Types.Simplify<Optional<Sch.Schema.Type<S>>>,
+        Types.Simplify<Optional<Sch.Schema.Encoded<S>>>,
+        Sch.Schema.Context<S>
+      >
   >
 
   /**
@@ -127,6 +134,10 @@ export interface Route<
   readonly prefix: <P2 extends string>(
     prefix: P2
   ) => Route<Path.Prefix<P2, P>, S>
+}
+
+type Optional<T> = {
+  [K in keyof T]?: T[K] | null | undefined
 }
 
 /**
@@ -183,13 +194,13 @@ export namespace Route {
   export type PathSchemaFromInput<P extends string, S extends Sch.Schema.All = never> = [S] extends [never]
     ? PathSchema.ExtractKeys<
       SchemaFromPath<P>,
-      PathSchema.GetPathEncodedKeys<PathSchema.GetPath<P>>,
-      PathSchema.GetPathTypeKeys<PathSchema.GetPath<P>>
+      PathSchema.GetPathTypeKeys<PathSchema.GetPath<P>>,
+      PathSchema.GetPathEncodedKeys<PathSchema.GetPath<P>>
     >
     : PathSchema.ExtractKeys<
       S,
-      PathSchema.GetPathEncodedKeys<PathSchema.GetPath<P>>,
-      PathSchema.GetPathTypeKeys<PathSchema.GetPath<P>>
+      PathSchema.GetPathTypeKeys<PathSchema.GetPath<P>>,
+      PathSchema.GetPathEncodedKeys<PathSchema.GetPath<P>>
     >
 
   /**
@@ -214,9 +225,9 @@ export namespace Route {
     /**
      * @since 1.0.0
      */
-    export type ExtractKeys<S extends Sch.Schema.All, EK extends PropertyKey, TK extends PropertyKey> = Sch.Schema<
-      Types.Simplify<Pick<Sch.Schema.Encoded<S>, EK>>,
+    export type ExtractKeys<S extends Sch.Schema.All, TK extends PropertyKey, EK extends PropertyKey> = Sch.Schema<
       Types.Simplify<Pick<Sch.Schema.Type<S>, TK>>,
+      Types.Simplify<Pick<Sch.Schema.Encoded<S>, EK>>,
       Sch.Schema.Context<S>
     > extends Sch.Schema<infer A, infer I, infer R> ? Sch.Schema<A, I, R> : never
   }
@@ -378,15 +389,15 @@ const variance_: Route.Variance<any, any> = {
 class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, S> {
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
 
+  readonly options: RouteOptions
+
   constructor(
     readonly routeAst: AST.AST,
-    readonly options?: {
-      readonly match?: Parameters<typeof ptr.match>[1]
-      readonly interpolate?: Parameters<typeof ptr.compile>[1]
-    }
+    options?: Partial<RouteOptions>
   ) {
     this.pipe = this.pipe.bind(this)
     this.concat = this.concat.bind(this)
+    this.options = { end: false, ...options }
   }
 
   private __path!: any
@@ -411,7 +422,7 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
 
   private __match!: Route<P, S>["match"]
   match(path: string) {
-    const m = (this.__match ??= getMatch(this as any, this.options?.match) as any)
+    const m = (this.__match ??= getMatch(this as any, this.options) as any)
     return m(path)
   }
 
@@ -419,7 +430,7 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
   interpolate<P2 extends Path.ParamsOf<P>>(
     params: P2
   ) {
-    const i = (this.__interpolate ??= getInterpolate(this as any, this.options?.interpolate) as any)
+    const i = (this.__interpolate ??= getInterpolate(this as any) as any)
     return i(params)
   }
 
@@ -431,12 +442,12 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
     if (right.length === 0) return this as any
 
     const [first, ...rest] = right
-    let routeAst = first.routeAst
+    let inner = first
     for (const r of rest) {
-      routeAst = new AST.Concat(routeAst, r.routeAst)
+      inner = concat(inner, r)
     }
 
-    return make(new AST.Concat(this.routeAst, routeAst)) as any
+    return concat(this as Route.Any, inner) as any
   }
 
   optional() {
@@ -459,18 +470,23 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
 /**
  * @since 5.0.0
  */
+export interface RouteOptions {
+  readonly end: boolean
+}
+
+/**
+ * @since 5.0.0
+ */
 export const make = <P extends string, S extends Sch.Schema.All>(
   ast: AST.AST,
-  options?: {
-    readonly match?: Parameters<typeof ptr.match>[1]
-    readonly interpolate?: Parameters<typeof ptr.compile>[1]
-  }
+  options?: Partial<RouteOptions>
 ): Route<P, S> => new RouteImpl(ast, options)
 
 /**
  * @since 5.0.0
  */
-export const literal = <const L extends string>(literal: L): Route<L> => make(new AST.Literal(literal))
+export const literal = <const L extends string>(literal: L): Route<L> =>
+  make(new AST.Literal(Path.removeLeadingSlash(Path.removeTrailingSlash(literal))))
 
 /**
  * @since 5.0.0
@@ -480,7 +496,7 @@ export const end: Route<"/"> = make(new AST.Literal("/"))
 /**
  * @since 5.0.0
  */
-export const home: Route<"/"> = make(new AST.Literal("/"), { match: { end: true } })
+export const home: Route<"/"> = make(new AST.Literal("/"), { end: true })
 
 /**
  * @since 5.0.0
@@ -604,7 +620,7 @@ export const unnamed: Route<Path.Unnamed> = make(new AST.UnnamedParam())
 export const zeroOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>> =>
-  make(new AST.ZeroOrMore(route.routeAst)) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
+  make(new AST.ZeroOrMore(route.routeAst), route.options) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
 
 /**
  * @since 5.0.0
@@ -612,13 +628,13 @@ export const zeroOrMore = <R extends Route<any, never>>(
 export const oneOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>> =>
-  make(new AST.OneOrMore(route.routeAst)) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
+  make(new AST.OneOrMore(route.routeAst), route.options) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
 
 /**
  * @since 5.0.0
  */
 export const optional = <R extends Route<any, never>>(route: R): Route.UpdatePath<R, Path.Optional<Route.Path<R>>> =>
-  make(new AST.Optional(route.routeAst)) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
+  make(new AST.Optional(route.routeAst), route.options) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
 
 /**
  * @since 5.0.0
@@ -633,11 +649,16 @@ export const prefix: {
 ): any => {
   if (args.length === 1) {
     return (route: R) =>
-      make(new AST.Prefix(args[0], route.routeAst)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
+      make(new AST.Prefix(args[0], route.routeAst), route.options) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
   }
 
-  return make(new AST.Prefix(args[0], args[1].routeAst)) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
+  return make(new AST.Prefix(args[0], args[1].routeAst), args[1].options) as Route.UpdatePath<
+    R,
+    Path.Prefix<P, Route.Path<R>>
+  >
 }
+
+const dontMergeTags = ["WithSchema", "QueryParams", "QueryParam"]
 
 /**
  * @since 5.0.0
@@ -654,7 +675,15 @@ export const concat: {
 } = dual(2, <L extends Route.Any, R extends Route.Any>(
   left: L,
   right: R
-): Route.Concat<L, R> => make(new AST.Concat(left.routeAst, right.routeAst)) as Route.Concat<L, R>)
+): Route.Concat<L, R> =>
+  make(
+    new AST.Concat(left.routeAst, right.routeAst),
+    dontMergeTags.includes(right.routeAst._tag) ? left.options : mergeOptions(left.options, right.options)
+  ) as Route.Concat<L, R>)
+
+function mergeOptions(left: RouteOptions, right: RouteOptions): RouteOptions {
+  return { end: left.end && right.end }
+}
 
 /**
  * @since 5.0.0
@@ -668,13 +697,17 @@ export const withSchema: {
     route: R,
     schema: S
   ): Route.UpdateSchema<R, S>
-} = dual(2, <
-  R extends Route.Any,
-  S extends Sch.Schema<any, Path.ParamsOf<Route.Path<R>>, any>
->(
-  route: R,
-  schema: S
-): Route.UpdateSchema<R, S> => make(new AST.WithSchema(route.routeAst, schema)) as Route.UpdateSchema<R, S>)
+} = dual(
+  2,
+  <
+    R extends Route.Any,
+    S extends Sch.Schema<any, Path.ParamsOf<Route.Path<R>>, any>
+  >(
+    route: R,
+    schema: S
+  ): Route.UpdateSchema<R, S> =>
+    make(new AST.WithSchema(route.routeAst, schema), route.options) as Route.UpdateSchema<R, S>
+)
 
 /**
  * @since 5.0.0
@@ -686,40 +719,21 @@ export const getPath = <R extends Route.Any>(route: R): Route.Path<R> => AST.toP
  */
 export function getMatch<R extends Route.Any>(
   route: R,
-  options?: Parameters<typeof ptr.match>[1]
+  options?: { end?: boolean }
 ): (path: string) => Option.Option<Route.Params<R>> {
-  const match: ptr.MatchFunction = ptr.match(route.path, { end: false, ...options })
-
-  return (path: string): Option.Option<Route.Params<R>> => {
-    const matched = match(path)
-
-    return matched === false ? Option.none() : Option.some(matched.params as Route.Params<R>)
-  }
+  const matcher = AST.astToMatcher(route.routeAst, options?.end ?? false)
+  return (path: string): Option.Option<Route.Params<R>> => matcher(...AST.getPathAndQuery(path)) as any
 }
 
 /**
  * @since 5.0.0
  */
 export function getInterpolate<R extends Route.Any>(
-  route: R,
-  options?: Parameters<typeof ptr.compile>[1]
+  route: R
 ): <P extends Route.Params<R>>(params: P) => Route.Interpolate<R, P> {
-  const interpolate = ptr.compile(route.path, options)
-  const queryParams = AST.getOptionalQueryParams(route.routeAst)
-
-  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => {
-    const basePath = interpolate(params) || "/" as any
-    if (queryParams.length === 0) return basePath
-    const baseUrl = new URL(basePath, `http://localhost`)
-    const searchParams = baseUrl.searchParams
-    for (const param of queryParams) {
-      const value = searchParams.get(param.key)
-      if (value === null || value === "") {
-        searchParams.delete(param.key)
-      }
-    }
-    return (baseUrl.pathname + baseUrl.search) as any
-  }
+  const interpolate = AST.astToInterpolation(route.routeAst)
+  if (interpolate._tag === "Literal") return constant(interpolate.value) as any
+  return interpolate.interpolate as any
 }
 
 /**

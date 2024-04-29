@@ -39,7 +39,7 @@
     "@giacomorebonato/vavite": "^0.0.4",
     "mock-storage": "^1.1.0",
     "rollup-plugin-visualizer": "^5.12.0",
-    "terser": "^5.30.4",
+    "terser": "^5.31.0",
     "tsx": "^4.7.3",
     "vite": "^5.2.10",
     "vite-plugin-compression": "^0.5.1",

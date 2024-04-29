@@ -64,7 +64,7 @@
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
     "@vitest/browser": "^1.5.2",
-    "fast-check": "^3.17.2",
+    "fast-check": "^3.18.0",
     "happy-dom": "14.7.1",
     "vitest": "1.5.2"
   }

@@ -1,14 +1,12 @@
 import { ArticleSlug } from "@/model"
 import { isAuthenticatedGuard } from "@/services"
-import { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import type { RouteGuard } from "@typed/router"
 import { html } from "@typed/template"
 
-export const route = Route.literal("/editor/:slug").pipe(
-  Route.withSchema(Schema.Struct({ slug: ArticleSlug })),
-  isAuthenticatedGuard
-)
+export const route = Route.literal("/editor/:slug")
+  .concat(Route.paramWithSchema("slug", ArticleSlug))
+  .pipe(isAuthenticatedGuard)
 
 export type Params = RouteGuard.RouteGuard.Success<typeof route>
 

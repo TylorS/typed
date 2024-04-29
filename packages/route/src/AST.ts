@@ -2,11 +2,10 @@
  * @since 5.0.0
  */
 
-import { Schema } from "@effect/schema"
+import { AST, Schema } from "@effect/schema"
 import { getPropertySignatures, PropertySignature, TypeLiteral } from "@effect/schema/AST"
 import * as P from "@typed/path"
 import { Option } from "effect"
-import { isArray, isEmptyReadonlyArray } from "effect/Array"
 
 /**
  * @since 5.0.0
@@ -308,7 +307,7 @@ function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schem
         schema.ast.propertySignatures.map((s) =>
           new PropertySignature(
             s.name,
-            s.type,
+            AST.Union.make([s.type, AST.undefinedKeyword, AST.null]),
             true,
             s.isReadonly,
             s.annotations
@@ -320,7 +319,7 @@ function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schem
     )
   }
 
-  return Schema.UndefinedOr(schema as any)
+  return Schema.NullishOr(schema as any)
 }
 
 function toSchema_<A extends AST>(ast: A, includeQueryParams: boolean): Schema.Schema.All {
@@ -427,298 +426,6 @@ function isOptionalSchema(schema: Schema.Schema.All) {
   return propertySignatures.every((ps) => ps.isOptional)
 }
 
-export function interpolate(
-  ast: AST,
-  values: { [key: string]: string | ReadonlyArray<string> }
-): string {
-  return P.pathJoin(interpolate_(ast, values))
-}
-
-function interpolate_(
-  ast: AST,
-  values: { [key: string | number]: string | ReadonlyArray<string> },
-  isOptional: boolean = false,
-  isMultiple: boolean = false,
-  inQueryParameters: boolean = false,
-  ctx: { unnamed: number } = { unnamed: 0 }
-): string {
-  let out: string = ""
-
-  for (const part of toParts(ast)) {
-    switch (part._tag) {
-      case "Literal": {
-        out = P.pathJoin(out, part.literal)
-        continue
-      }
-      case "OneOrMore": {
-        out = out + interpolate_(part.param, values, false, true, inQueryParameters)
-        continue
-      }
-      case "Optional": {
-        out = out + interpolate_(part.param, values, true, false, inQueryParameters)
-        continue
-      }
-      case "Param": {
-        const v = values[part.param]
-        if (isOptional && v === undefined) continue
-        if (v === undefined) {
-          throw new Error(`Missing value for param: ${part.param}`)
-        }
-
-        if (isArray(v)) {
-          if (isOptional && isEmptyReadonlyArray(v)) continue
-          if (isMultiple) {
-            out = P.pathJoin(out, ...v)
-          } else {
-            throw new Error(`Expected a single value for param: ${part.param} but received [${v.join(", ")}]`)
-          }
-        } else {
-          out = out === "" ? v as string : P.pathJoin(out, v as string)
-        }
-
-        continue
-      }
-      case "Prefix": {
-        const p = interpolate_(part.param, values, isOptional, isMultiple, inQueryParameters)
-        out = P.pathJoin(out, part.prefix + p)
-        continue
-      }
-      case "UnnamedParam": {
-        const i = ctx.unnamed++
-        const v = values[i]
-        if (isOptional && v === undefined) continue
-        if (v === undefined) {
-          throw new Error(`Missing value for param: ${i}`)
-        }
-
-        if (isArray(v)) {
-          if (isOptional && isEmptyReadonlyArray(v)) continue
-          if (isMultiple) {
-            out = P.pathJoin(out, ...v)
-          } else {
-            throw new Error(`Expected a single value for param: ${i} but received [${v.join(", ")}]`)
-          }
-        } else {
-          out = out === "" ? v as string : P.pathJoin(out, v as string)
-        }
-
-        continue
-      }
-      case "ZeroOrMore": {
-        out = P.pathJoin(out, interpolate_(part.param, values, true, true, inQueryParameters))
-        continue
-      }
-      case "QueryParams": {
-        const query = part.params
-          .map(({ key, value }) => {
-            const v = interpolate_(value, values, isOptional, isMultiple, true)
-            if (!v) return ""
-            if (Array.isArray(v)) {
-              return v.map((x) => `${key}=${x}`).join("&")
-            }
-
-            return `${key}=${v}`
-          })
-          .filter((x) => x.length > 0)
-          .join("&")
-
-        out = out + (query ? `?${query}` : "")
-        continue
-      }
-    }
-  }
-
-  return out
-}
-
-export function match(ast: AST, path: string): Option.Option<Readonly<Record<string, string | ReadonlyArray<string>>>> {
-  const [pathname, queryString = ""] = path.split("?")
-  let segments = pathname.split(/\//g)
-  if (segments[0] === "") {
-    segments = segments.slice(1)
-  }
-  const astSegments = getAstSegments(ast)
-  const query = new URLSearchParams(queryString)
-  const match = match_(astSegments, segments, query)
-  if (match === null) return Option.none()
-
-  return Option.some(match)
-}
-
-function match_(
-  astSegments: Array<Array<AST>>,
-  pathSegments: Array<string>,
-  query: URLSearchParams
-) {
-  const out: Record<string, string | ReadonlyArray<string>> = {}
-  const outCtx: { unnamed: number } = { unnamed: 0 }
-
-  let i = 0
-  let j = 0
-  for (; i < astSegments.length; i++, j++) {
-    const astSegment = astSegments[i]
-    const ctx = {
-      path: pathSegments[j],
-      isOptional: false,
-      isMultiple: false
-    }
-
-    for (const ast of astSegment) {
-      switch (ast._tag) {
-        case "Optional": {
-          ctx.isOptional = true
-          astSegment.push(ast.param as any)
-          continue
-        }
-        case "OneOrMore": {
-          ctx.isMultiple = true
-          astSegment.push(ast.param as any)
-          continue
-        }
-        case "ZeroOrMore": {
-          ctx.isOptional = true
-          ctx.isMultiple = true
-          astSegment.push(ast.param as any)
-          continue
-        }
-        case "Literal": {
-          if (ast.literal !== ctx.path) {
-            throw Error(`Expected literal: ${ast.literal} but received: ${ctx.path}`)
-          }
-          continue
-        }
-        case "Prefix": {
-          if (!ctx.path.startsWith(ast.prefix)) {
-            throw Error(`Expected prefix: ${ast.prefix} but received: ${ctx.path}`)
-          }
-
-          ctx.path = ctx.path.slice(ast.prefix.length)
-          astSegment.push(ast.param as any)
-          continue
-        }
-        case "Param": {
-          const value = ctx.path
-          if (ctx.isOptional && !value) continue
-          if (!value) {
-            throw new Error(`Missing value for param: ${ast.param}`)
-          }
-
-          if (ctx.isMultiple) {
-            out[ast.param] = [value, ...pathSegments.slice(j + 1)]
-            j = pathSegments.length
-            return out
-          }
-
-          out[ast.param] = value
-          continue
-        }
-        case "UnnamedParam": {
-          const value = ctx.path
-          if (ctx.isOptional && value === undefined) continue
-          if (value === undefined) {
-            throw new Error(`Missing value for param: ${outCtx.unnamed}`)
-          }
-
-          out[outCtx.unnamed++] = value
-          continue
-        }
-        case "QueryParams": {
-          const currentCtx = { ...ctx }
-
-          for (const { key, value } of ast.params) {
-            const parts = toParts(value)
-            let values = query.getAll(key)
-            const ctx = { ...currentCtx }
-
-            for (const part of parts) {
-              switch (part._tag) {
-                case "Optional": {
-                  ctx.isOptional = true
-                  parts.push(part.param as any)
-                  break
-                }
-                case "OneOrMore": {
-                  ctx.isMultiple = true
-                  parts.push(part.param as any)
-                  break
-                }
-                case "ZeroOrMore": {
-                  ctx.isOptional = true
-                  ctx.isMultiple = true
-                  parts.push(part.param as any)
-                  break
-                }
-                case "Prefix": {
-                  if (values.every((v) => v.startsWith(part.prefix))) {
-                    throw new Error(`Expected prefix: ${part.prefix} but received: ${values[0]}`)
-                  }
-
-                  values = values.map((p) => p.slice(part.prefix.length))
-                  parts.push(part.param as any)
-                  break
-                }
-                case "Literal": {
-                  if (values.length === 0) {
-                    if (ctx.isOptional) break
-                    throw new Error(`Missing value for query param: ${key}`)
-                  }
-
-                  const value = values.shift()!
-                  if (value !== part.literal) {
-                    throw new Error(`Expected literal: ${part.literal} but received: ${value}`)
-                  }
-
-                  break
-                }
-                case "Param": {
-                  if (values.length === 0) {
-                    if (ctx.isOptional) break
-                    throw new Error(`Missing value for query param: ${key}`)
-                  }
-
-                  const value = values.shift()!
-                  if (ctx.isMultiple) {
-                    out[key] = [value, ...values]
-                    return out
-                  }
-
-                  out[key] = value
-                  break
-                }
-                case "UnnamedParam": {
-                  if (values.length === 0) {
-                    if (ctx.isOptional) break
-                    throw new Error(`Missing value for query param: ${key}`)
-                  }
-
-                  const value = values.shift()!
-                  out[outCtx.unnamed++] = value
-                  break
-                }
-                case "WithSchema": {
-                  parts.push(part.ast)
-                  break
-                }
-                default: {
-                  throw new Error(`Invalid AST part in Query Param: ${part._tag}`)
-                }
-              }
-            }
-          }
-
-          continue
-        }
-        case "WithSchema": {
-          astSegment.push(ast.ast)
-          continue
-        }
-      }
-    }
-  }
-
-  return out
-}
-
 export function getAstSegments(part: AST): Array<Array<AST>> {
   const out: Array<Array<AST>> = []
 
@@ -727,7 +434,7 @@ export function getAstSegments(part: AST): Array<Array<AST>> {
   switch (part._tag) {
     case "Literal": {
       if (part.literal === "/") {
-        break
+        return []
       } else {
         current.push(part)
       }
@@ -766,4 +473,370 @@ export function getAstSegments(part: AST): Array<Array<AST>> {
   }
 
   return out
+}
+
+export type InterpolationPart =
+  | InterpolateLiteral
+  | InterpolateParam
+
+export class InterpolateLiteral {
+  readonly _tag = "Literal" as const
+  constructor(readonly value: string) {}
+}
+
+export class InterpolateParam {
+  readonly _tag = "Param" as const
+  constructor(
+    readonly interpolate: Interpolater
+  ) {}
+}
+
+export type Interpolater = (params: Readonly<Record<string, string | ReadonlyArray<string>>>) => string
+
+export function astToInterpolation(ast: AST): InterpolationPart {
+  const ctx: { unnamed: number } = { unnamed: 0 }
+  const parts = getAstSegments(ast).map((segment) => astSegmentToInterpolationPart(segment, ctx))
+  if (parts.every((part) => part._tag === "Literal")) {
+    return new InterpolateLiteral(P.pathJoin(...parts.map((part) => (part as InterpolateLiteral).value)) || "/")
+  }
+
+  return new InterpolateParam((params) => {
+    return P.pathJoin(...parts.map((part) => part._tag === "Literal" ? part.value : part.interpolate(params))) || "/"
+  })
+}
+
+function astSegmentToInterpolationPart(astSegment: ReadonlyArray<AST>, ctx: { unnamed: number }): InterpolationPart {
+  if (astSegment.length === 0) {
+    throw new Error("Empty AST segment")
+  } else if (astSegment.length === 1) {
+    const [ast] = astSegment
+    if (ast._tag === "Concat") {
+      throw new Error("Unexpected Concatatenation of AST segments")
+    } else if (ast._tag === "QueryParams") {
+      return queryParamsToInterpolationPart(ast)
+    }
+    return simpleAstToInterpolationPart(ast, ctx)
+  } else {
+    const parts = astSegment.map((ast) => simpleAstToInterpolationPart(ensureSimpleAst(ast), ctx))
+    return new InterpolateParam((params) => {
+      return parts.flatMap((part) => {
+        const value = part._tag === "Literal" ? part.value : part.interpolate(params)
+        return value === "" ? [] : [value]
+      }).join("")
+    })
+  }
+}
+
+function simpleAstToInterpolationPart(
+  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ctx: { unnamed: number },
+  isOptional: boolean = false,
+  isMultiple: boolean = false
+): InterpolationPart {
+  switch (ast._tag) {
+    case "Literal": {
+      return new InterpolateLiteral(ast.literal)
+    }
+    case "OneOrMore": {
+      return simpleAstToInterpolationPart(ensureSimpleAst(ast.param), ctx, isOptional, true)
+    }
+    case "Optional": {
+      return simpleAstToInterpolationPart(ensureSimpleAst(ast.param), ctx, true, isMultiple)
+    }
+    case "Param": {
+      return new InterpolateParam(getParam(ast.param, isOptional, isMultiple))
+    }
+    case "Prefix": {
+      const inner = simpleAstToInterpolationPart(ensureSimpleAst(ast.param), ctx, isOptional, isMultiple)
+      if (inner._tag === "Literal") return new InterpolateLiteral(ast.prefix + inner.value)
+      return new InterpolateParam((params) => {
+        const value = inner.interpolate(params)
+        return value === "" ? "" : ast.prefix + value
+      })
+    }
+    case "UnnamedParam": {
+      return new InterpolateParam(getParam(ctx.unnamed++, isOptional, isMultiple))
+    }
+    case "WithSchema": {
+      return simpleAstToInterpolationPart(ensureSimpleAst(ast.ast), ctx, isOptional, isMultiple)
+    }
+    case "ZeroOrMore": {
+      return simpleAstToInterpolationPart(ensureSimpleAst(ast.param), ctx, true, true)
+    }
+  }
+}
+
+function getParam(key: string | number, isOptional: boolean, isMultiple: boolean) {
+  return (params: Readonly<Record<string, string | ReadonlyArray<string>>>): string => {
+    const value = params[key]
+    if (isOptional && !value) return ""
+    if (!value) throw new Error(`Expected value for parameter ${key}`)
+    if (Array.isArray(value)) {
+      if (isOptional === false && value.length === 0) {
+        throw new Error(`Expected value for at least one parameter ${key}`)
+      }
+      if (isMultiple) return value.join("/")
+      throw new Error(`Expected single value for parameter ${key}`)
+    } else {
+      return value as string
+    }
+  }
+}
+
+function queryParamsToInterpolationPart(queryParams: QueryParams<any>): InterpolationPart {
+  const parts: Array<InterpolationPart> = queryParams.params.map(queryParamToInterpolationPart)
+  return new InterpolateParam(
+    (params) => {
+      const query = parts.flatMap((part) => {
+        const value = part._tag === "Literal" ? part.value : part.interpolate(params)
+        return value === "" ? [] : [value]
+      }).join("&")
+      return query === "" ? "" : `?${query}`
+    }
+  )
+}
+
+function queryParamToInterpolationPart(
+  queryParam: QueryParam<string, any>,
+  ctx: { unnamed: number }
+): InterpolationPart {
+  const { key, value } = queryParam
+  const simplePart = simpleAstToInterpolationPart(ensureSimpleAst(value), ctx)
+  if (simplePart._tag === "Literal") {
+    return new InterpolateLiteral(`${key}=${simplePart.value}`)
+  } else {
+    return new InterpolateParam((params) => {
+      const value = simplePart.interpolate(params)
+      return value === "" ? "" : `${key}=${value}`
+    })
+  }
+}
+
+export type Matcher = (
+  pathSegments: Array<string>,
+  query: URLSearchParams
+) => Option.Option<Record<string, string | ReadonlyArray<string>>>
+
+export function astToMatcher(ast: AST, end: boolean = false): Matcher {
+  const ctx: { unnamed: number } = { unnamed: 0 }
+  const matchers = getAstSegments(ast).map((segment) => astSegmentToMatcher(segment, ctx))
+  return (pathSegments, query) => {
+    const result: Record<string, string | ReadonlyArray<string>> = {}
+
+    for (const matcher of matchers) {
+      const match = matcher(pathSegments, query)
+      if (Option.isNone(match)) {
+        return Option.none()
+      }
+      Object.assign(result, match.value)
+    }
+
+    if (end && pathSegments.length > 0) {
+      return Option.none()
+    }
+
+    return Option.some(result)
+  }
+}
+
+function astSegmentToMatcher(astSegment: ReadonlyArray<AST>, ctx: { unnamed: number }): Matcher {
+  if (astSegment.length === 0) {
+    throw new Error("Empty AST segment")
+  } else if (astSegment.length === 1) {
+    const [ast] = astSegment
+    if (ast._tag === "Concat") {
+      throw new Error("Unexpected Concatatenation of AST segments")
+    } else if (ast._tag === "QueryParams") {
+      return queryParamsToMatcher(ast, ctx)
+    }
+    return simpleAstToMatcher(ast, ctx)
+  } else {
+    const parts = astSegment.map((ast) => simpleAstToMatcher(ensureSimpleAst(ast), ctx))
+    return (pathSegments, query) => {
+      const result = parts.flatMap((part) => {
+        return part(pathSegments, query)
+      })
+
+      if (result.every(Option.isSome)) {
+        return Option.some(Object.assign({}, ...result.flatMap((x) => Option.isSome(x) ? [x.value] : [])))
+      }
+
+      return Option.none()
+    }
+  }
+}
+
+function simpleAstToMatcher(
+  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ctx: { unnamed: number },
+  isOptional: boolean = false,
+  isMultiple: boolean = false
+): Matcher {
+  switch (ast._tag) {
+    case "Optional":
+      return simpleAstToMatcher(ensureSimpleAst(ast.param), ctx, true, isMultiple)
+    case "OneOrMore":
+      return simpleAstToMatcher(ensureSimpleAst(ast.param), ctx, isOptional, true)
+    case "ZeroOrMore":
+      return simpleAstToMatcher(ensureSimpleAst(ast.param), ctx, true, true)
+    case "WithSchema":
+      return simpleAstToMatcher(ensureSimpleAst(ast.ast), ctx, isOptional, isMultiple)
+    case "Literal":
+      return (pathSegments) => {
+        if (pathSegments[0] === ast.literal) {
+          pathSegments.shift()
+          return Option.some({})
+        } else {
+          return Option.none()
+        }
+      }
+    case "Prefix": {
+      const inner = simpleAstToMatcher(ensureSimpleAst(ast.param), ctx, isOptional, isMultiple)
+      return (pathSegments, query) => {
+        if (pathSegments[0].startsWith(ast.prefix)) {
+          pathSegments[0] = pathSegments[0].slice(ast.prefix.length)
+          return inner(pathSegments, query)
+        } else {
+          return Option.none()
+        }
+      }
+    }
+    case "Param": {
+      return getParamByKey(ast.param, isOptional, isMultiple)
+    }
+    case "UnnamedParam": {
+      return getParamByKey(ctx.unnamed++, isOptional, isMultiple)
+    }
+  }
+}
+
+function getParamByKey(key: string | number, isOptional: boolean, isMultiple: boolean): Matcher {
+  return (pathSegments) => {
+    if (!isOptional && pathSegments.length === 0) {
+      return Option.none()
+    }
+
+    if (isMultiple) {
+      return Option.some({ [key]: pathSegments })
+    }
+
+    const value = pathSegments.shift()
+    if (isOptional && !value) {
+      return Option.some({})
+    }
+    if (!value) {
+      return Option.none()
+    }
+
+    return Option.some({ [key]: isMultiple ? value.split("/") : value })
+  }
+}
+
+function queryParamsToMatcher(
+  queryParams: QueryParams<ReadonlyArray<QueryParam<string, AST>>>,
+  ctx: { unnamed: number }
+): Matcher {
+  const matchers = queryParams.params.map((param) =>
+    simpleAstToQueryMatcher(param.key, ensureSimpleAst(param.value), ctx)
+  )
+
+  return (pathSegments, query) => {
+    const result: Record<string, string | ReadonlyArray<string>> = {}
+
+    for (const matcher of matchers) {
+      const match = matcher(pathSegments, query)
+      if (Option.isNone(match)) {
+        return Option.none()
+      }
+      Object.assign(result, match.value)
+    }
+
+    return Option.some(result)
+  }
+}
+function simpleAstToQueryMatcher(
+  key: string,
+  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ctx: { unnamed: number },
+  isOptional: boolean = false,
+  isMultiple: boolean = false
+): Matcher {
+  switch (ast._tag) {
+    case "Optional":
+      return simpleAstToQueryMatcher(key, ensureSimpleAst(ast.param), ctx, true, isMultiple)
+    case "OneOrMore":
+      return simpleAstToQueryMatcher(key, ensureSimpleAst(ast.param), ctx, isOptional, true)
+    case "ZeroOrMore":
+      return simpleAstToQueryMatcher(key, ensureSimpleAst(ast.param), ctx, true, true)
+    case "WithSchema":
+      return simpleAstToQueryMatcher(key, ensureSimpleAst(ast.ast), ctx, isOptional, isMultiple)
+    case "Literal":
+      return (_, query) => {
+        if (query.get(key) === ast.literal) {
+          return Option.some({})
+        } else {
+          return Option.none()
+        }
+      }
+    case "Prefix": {
+      const inner = simpleAstToQueryMatcher(key, ensureSimpleAst(ast.param), ctx, isOptional, isMultiple)
+      return (_, query) => {
+        const values = query.getAll(key)
+        const trimmed = values.map((value) => value.slice(ast.prefix.length))
+        query.delete(key)
+        for (const value of trimmed) {
+          query.append(key, value)
+        }
+        return inner(_, query)
+      }
+    }
+    case "Param": {
+      return getQueryParamByKey(key, ast.param, isOptional, isMultiple)
+    }
+    case "UnnamedParam": {
+      return getQueryParamByKey(key, ctx.unnamed++, isOptional, isMultiple)
+    }
+  }
+}
+
+function getQueryParamByKey(key: string, outKey: string | number, isOptional: boolean, isMultiple: boolean): Matcher {
+  return (_, query) => {
+    if (isMultiple) {
+      const values = query.getAll(key)
+
+      if (isOptional) return Option.some({ [outKey]: values })
+
+      if (values.length === 0) return Option.none()
+      return Option.some({ [outKey]: values })
+    } else {
+      const value = query.get(key)
+
+      if (isOptional && value === null) return Option.some({})
+      if (value === null) return Option.none()
+
+      return Option.some({ [outKey]: value })
+    }
+  }
+}
+
+function ensureSimpleAst(ast: AST): Exclude<AST, Concat<any, any> | QueryParams<any>> {
+  if (ast._tag === "Concat") {
+    throw new Error("Unexpected Concatatenation of AST segments")
+  } else if (ast._tag === "QueryParams") {
+    throw new Error("Unexpected QueryParams")
+  }
+  return ast
+}
+
+export function getPathAndQuery(path: string) {
+  const { pathname, searchParams } = new URL(path, "http://localhost")
+  const pathSegments = pathname.split(/\//g)
+  if (pathSegments[0] === "") {
+    pathSegments.shift()
+  }
+  if (pathSegments[pathSegments.length - 1] === "") {
+    pathSegments.pop()
+  }
+
+  return [pathSegments, searchParams] as const
 }

@@ -1,5 +1,5 @@
 import { Articles, Tags } from "@/services"
-import { defaultGetArticlesInput } from "@/services/GetArticles"
+import { GetArticlesInput } from "@/services/GetArticles"
 import { ArticlePreview } from "@/ui/components/ArticlePreview"
 import { NavLink } from "@/ui/components/NavLink"
 import * as Fx from "@typed/fx"
@@ -10,26 +10,23 @@ import * as Route from "@typed/route"
 import { EventHandler, html, many } from "@typed/template"
 import { Effect } from "effect"
 
-export const route = Route.home
+export const route = Route.home.pipe(
+  Route.concat(Route.queryParams({
+    tag: Route.param("tag").optional(),
+    author: Route.param("author").optional(),
+    favorited: Route.param("favorited").optional(),
+    limit: Route.param("limit").optional(),
+    offset: Route.param("offset").optional()
+  })),
+  Route.transform(GetArticlesInput, (from) => from, (to) => to)
+)
 
-// const parseQueryParams = (params: URLSearchParams) =>
-//   pipe(
-//     {
-//       tag: params.get("tag"),
-//       author: params.get("author"),
-//       favorited: params.get("favorited"),
-//       limit: params.get("limit"),
-//       offset: params.get("offset")
-//     },
-//     Schema.decode(GetArticlesInput),
-//     Effect.catchAll(() => Effect.succeed(defaultGetArticlesInput))
-//   )
+export const main = (params: RefSubject.RefSubject<Route.Route.Type<typeof route>>) =>
+  Fx.gen(function*(_) {
+    const articles = yield* _(RefArray.make(RefSubject.mapEffect(params, Articles.list)))
+    const tagsList = yield* _(RefArray.make(Tags.get()))
 
-export const main = Fx.gen(function*(_) {
-  const articles = yield* _(RefArray.make(Articles.list(defaultGetArticlesInput)))
-  const tagsList = yield* _(RefArray.make(Tags.get()))
-
-  return html`<div class="home-page">
+    return html`<div class="home-page">
   <div class="banner">
     <div class="container">
       <h1 class="logo-font">conduit</h1>
@@ -42,7 +39,7 @@ export const main = Fx.gen(function*(_) {
       <div class="col-md-9">
         <div class="feed-toggle">
           <ul class="outline-active nav nav-pills">
-            ${NavLink("Global Feed", route)}
+            ${NavLink("Global Feed", route, {})}
           </ul>
         </div>
 
@@ -64,22 +61,22 @@ export const main = Fx.gen(function*(_) {
 
           <div class="tag-list">
             ${
-    many(
-      tagsList,
-      (t) => t,
-      (t) => {
-        const href = RefSubject.map(t, (t) => `/?tag=${t}`)
-        const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
-        return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
-      }
-    ).pipe(
-      Fx.switchMapCause(() => Fx.null)
-    )
-  } 
+      many(
+        tagsList,
+        (t) => t,
+        (t) => {
+          const href = RefSubject.map(t, (t) => `/?tag=${t}`)
+          const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
+          return html`<a href="${href}" class="tag-pill tag-default" onclick="${onclick}">${t}</a>`
+        }
+      ).pipe(
+        Fx.switchMapCause(() => Fx.null)
+      )
+    } 
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>`
-})
+  })

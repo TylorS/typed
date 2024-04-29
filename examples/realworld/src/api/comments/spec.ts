@@ -6,10 +6,10 @@ import {
   addUnauthorizedResponse,
   addUnprocessableResponse
 } from "@/api/common/spec"
+import * as Schema from "@/lib/Schema"
 import { Comment } from "@/model"
 import { CreateCommentInput } from "@/services/CreateComment"
 import { Api, ApiGroup } from "@typed/server"
-import * as Schema from "@/lib/Schema"
 import * as Routes from "./routes"
 
 export const getComments = Api.get(

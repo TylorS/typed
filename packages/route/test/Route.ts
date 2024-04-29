@@ -30,6 +30,8 @@ describe("Route", () => {
     const decodeZeroOrMore = Schema.decode(zeroOrMore.schema)
     const decodeOneOrMore = Schema.decode(oneOrMore.schema)
     const decodeOptional = Schema.decode(optional.schema)
+    const decodeHome = Schema.decode(Route.home.schema)
+    const decodeEnd = Schema.decode(Route.end.schema)
     const test = Effect.gen(function*(_) {
       deepEqual(yield* _(decodeFoobar({ fooId: "1", barId: "2" })), { fooId: 1, barId: 2 })
       deepEqual(yield* _(decodeUnnamed({ 0: "123", 1: "456" })), { 0: "123", 1: "456" })
@@ -38,6 +40,8 @@ describe("Route", () => {
       deepEqual(yield* _(decodeOneOrMore({ test: ["test"] })), { test: ["test"] })
       deepEqual(yield* _(decodeOptional({ test: "test" })), { test: "test" })
       deepEqual(yield* _(decodeOptional({})), {})
+      deepEqual(yield* _(decodeHome({})), {})
+      deepEqual(yield* _(decodeEnd({})), {})
     })
 
     await Effect.runPromise(test)
@@ -50,6 +54,10 @@ describe("Route", () => {
     deepEqual(zeroOrMore.interpolate({ test: ["test", "test"] }), "/test/test")
     deepEqual(oneOrMore.interpolate({ test: ["test"] }), "/test")
     deepEqual(optional.interpolate({ test: "test" }), "/test")
+    deepEqual(Route.home.interpolate({}), "/")
+    deepEqual(Route.end.interpolate({}), "/")
+
+    deepEqual(Route.literal("/foo").concat(Route.param("fooId")).interpolate({ fooId: "123" }), "/foo/123")
   })
 
   it("matches paths", () => {
@@ -60,6 +68,15 @@ describe("Route", () => {
     deepEqual(oneOrMore.match("/test"), Option.some({ test: ["test"] }))
     deepEqual(optional.match("/test"), Option.some({ test: "test" }))
     deepEqual(optional.match("/"), Option.some({}))
+
+    // Home matches only the root path
+    deepEqual(Route.home.match("/"), Option.some({}))
+    deepEqual(Route.home.match("/foo"), Option.none())
+
+    // End matches any path that starts with a `/`
+    deepEqual(Route.end.match("/"), Option.some({}))
+    deepEqual(Route.end.match("/foo"), Option.some({}))
+    deepEqual(Route.end.match("/foo/bar"), Option.some({}))
   })
 
   it("can be decoded", async () => {
@@ -71,6 +88,8 @@ describe("Route", () => {
       deepEqual(yield* _(Route.decode(oneOrMore, "/test")), { test: ["test"] })
       deepEqual(yield* _(Route.decode(optional, "/test")), { test: "test" })
       deepEqual(yield* _(Route.decode(optional, "/")), {})
+      deepEqual(yield* _(Route.decode(Route.home, "/")), {})
+      deepEqual(yield* _(Route.decode(Route.end, "/")), {})
     })
 
     await Effect.runPromise(test)
@@ -85,6 +104,8 @@ describe("Route", () => {
       deepEqual(yield* _(Route.encode(oneOrMore, { test: ["test"] })), "/test")
       deepEqual(yield* _(Route.encode(optional, { test: "test" })), "/test")
       deepEqual(yield* _(Route.encode(optional, {})), "/")
+      deepEqual(yield* _(Route.encode(Route.home, {})), "/")
+      deepEqual(yield* _(Route.encode(Route.end, {})), "/")
     })
 
     return Effect.runPromise(test)
@@ -121,5 +142,37 @@ describe("Route", () => {
     })
 
     return Effect.runPromise(test)
+  })
+
+  it("matches with query params", () => {
+    const route = Route.home.concat(
+      Route.queryParams({
+        tag: Route.param("tag").optional(),
+        author: Route.param("author").optional(),
+        favorited: Route.param("favorited").optional(),
+        limit: Route.param("limit").optional(),
+        offset: Route.param("offset").optional()
+      })
+    )
+
+    deepEqual(route.match("/"), Option.some({}))
+    deepEqual(route.match("/?tag=foo"), Option.some({ tag: "foo" }))
+    deepEqual(route.match("/?tag=foo&author=bar"), Option.some({ tag: "foo", author: "bar" }))
+    deepEqual(
+      route.match("/?tag=foo&author=bar&favorited=baz"),
+      Option.some({ tag: "foo", author: "bar", favorited: "baz" })
+    )
+    deepEqual(
+      route.match("/?tag=foo&author=bar&favorited=baz&limit=10"),
+      Option.some({ tag: "foo", author: "bar", favorited: "baz", limit: "10" })
+    )
+    deepEqual(
+      route.match("/?tag=foo&author=bar&favorited=baz&limit=10&offset=20"),
+      Option.some({ tag: "foo", author: "bar", favorited: "baz", limit: "10", offset: "20" })
+    )
+    deepEqual(
+      route.match("/?tag=foo&author=bar&favorited=baz&limit=10&offset=20&extra=extra"),
+      Option.some({ tag: "foo", author: "bar", favorited: "baz", limit: "10", offset: "20" })
+    )
   })
 })

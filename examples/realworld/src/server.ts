@@ -5,7 +5,7 @@ import { CurrentUser, Users } from "@/services"
 import * as Ui from "@/ui"
 import type { HttpServer } from "@effect/platform"
 import * as Http from "@effect/platform/HttpServer"
-import { AsyncData, RefSubject } from "@typed/core"
+import { AsyncData } from "@typed/core"
 import * as Node from "@typed/core/Node"
 import { toHttpRouter } from "@typed/core/Platform"
 import { Effect, LogLevel, Option } from "effect"
@@ -24,8 +24,9 @@ const uiRouter = Http.router.catchAll(
     })
 )
 
-uiRouter.pipe(
-  Http.router.mount("/api", Api.server),
+Http.router.empty.pipe(
+  Http.router.mountApp("/api", Api.server),
+  Http.router.mountApp("/", uiRouter),
   Http.router.catchTag("Unauthorized", (_) => Http.response.empty({ status: 401 })),
   withCurrentUserFromHeaders,
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
@@ -48,28 +49,18 @@ function withCurrentUserFromHeaders<E, R>(app: HttpServer.router.Router<E, R>) {
     )
     // If no token is present, provide the app with no user or token
     if (Option.isNone(token)) {
-      const user = yield* _(RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData()))
       return yield* _(
         app,
         // CurrentUser is the client representation of the current user
-        // We add take(1) to ensure that the templates will finish emitting.
-        CurrentUser.tag.provide(RefSubject.take(user, 1))
+        Effect.provide(CurrentUser.make(Effect.succeed(AsyncData.noData()), { take: 1 }))
       )
     }
-
-    const user = yield* _(
-      Users.current(),
-      Effect.exit,
-      Effect.map(AsyncData.fromExit),
-      Effect.flatMap((_) => RefSubject.of<RefSubject.Success<typeof CurrentUser>>(_)),
-      // CurrentJwt is the server representation of the current user
-      CurrentJwt.provide(token.value)
-    )
 
     // Otherwise, provide the app with the current user and token
     return yield* _(
       app,
-      CurrentUser.tag.provide(RefSubject.take(user, 1)),
+      Effect.provide(CurrentUser.make(Users.current().pipe(Effect.exit, Effect.map(AsyncData.fromExit)), { take: 1 })),
+      // CurrentJwt is the server representation of the current token
       CurrentJwt.provide(token.value)
     )
   })

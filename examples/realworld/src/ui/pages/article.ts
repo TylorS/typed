@@ -1,11 +1,8 @@
 import { ArticleSlug } from "@/model"
-import { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import { html } from "@typed/template"
 
-export const route = Route.literal("/article/:slug").pipe(
-  Route.withSchema(Schema.Struct({ slug: ArticleSlug }))
-)
+export const route = Route.literal("article").concat(Route.paramWithSchema("slug", ArticleSlug))
 
 export type Params = Route.Route.Type<typeof route>
 

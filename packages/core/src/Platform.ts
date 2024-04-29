@@ -93,7 +93,10 @@ export function toHttpRouter<
     | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
     | ServerRequest
   > = Http.router.empty
-  const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => route.path)
+  const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => {
+    const withoutQuery = route.path.split("?")[0]
+    return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
+  })
   const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
@@ -111,7 +114,7 @@ export function toHttpRouter<
 
           // Attempt to match a guard
           for (const match of matches) {
-            const matched = yield* match.guard(request.url)
+            const matched = yield* match.guard(path)
             if (Option.isSome(matched)) {
               yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
 

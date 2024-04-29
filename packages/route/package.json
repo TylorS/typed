@@ -46,7 +46,6 @@
     "@typed/id": "workspace:*",
     "@typed/path": "workspace:*",
     "effect": "^3.0.7",
-    "path-to-regexp": "^6.2.2",
     "ts-toolbelt": "^9.6.0"
   },
   "peerDependencies": {

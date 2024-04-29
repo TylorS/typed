@@ -199,15 +199,18 @@ export const concat: {
     RouteGuard.Success<L> & RouteGuard.Success<R>,
     RouteGuard.Error<L> | RouteGuard.Error<R>,
     RouteGuard.Context<L> | RouteGuard.Context<R>
-  >(Route.concat<L["route"], R["route"]>(self.route, other.route), (input) =>
-    Effect.Do.pipe(
-      Effect.bind("a", () => self.guard(input)),
-      Effect.bind("b", () => other.guard(input)),
-      Effect.map((options) =>
-        Option.map(
-          Option.all(options),
-          ({ a, b }) => ({ ...a, ...b }) as RouteGuard.Success<L> & RouteGuard.Success<R>
+  >(
+    Route.concat(self.route, other.route) as Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+    (input) =>
+      Effect.Do.pipe(
+        Effect.bind("a", () => self.guard(input)),
+        Effect.bind("b", () => other.guard(input)),
+        Effect.map((options) =>
+          Option.map(
+            Option.all(options),
+            ({ a, b }) => ({ ...a, ...b }) as RouteGuard.Success<L> & RouteGuard.Success<R>
+          )
         )
       )
-    ))
+  )
 })

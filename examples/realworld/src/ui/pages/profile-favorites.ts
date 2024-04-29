@@ -1,14 +1,12 @@
-import { Username } from "@/model"
 import { Articles, Profiles } from "@/services"
 import { defaultGetArticlesInput } from "@/services/GetArticles"
 import { ArticlePreview } from "@/ui/components/ArticlePreview"
-import { Schema } from "@effect/schema"
+import type { Schema } from "@effect/schema"
 import { Fx, html, many, RefSubject, Route } from "@typed/core"
 import { Option } from "effect"
+import { route as profileRoute } from "./profile"
 
-export const route = Route.literal("/profile/:username/favorites").pipe(
-  Route.withSchema(Schema.Struct({ username: Username }))
-)
+export const route = profileRoute.concat(Route.literal("favorites"))
 
 export type Params = Schema.Schema.Type<typeof route.schema>
 
@@ -65,7 +63,7 @@ export const main = (params: RefSubject.RefSubject<Params>) => {
     many(
       articles,
       (a) => a.id,
-      Fx.switchMap(ArticlePreview),
+      Fx.switchMap(ArticlePreview)
     ).pipe(
       Fx.switchMapCause((_) => Fx.null)
     )

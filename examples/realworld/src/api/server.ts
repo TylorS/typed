@@ -1,7 +1,7 @@
 import { Articles, Comments, Profiles, Tags, Users } from "@/services"
 import type { Unauthorized, Unprocessable } from "@/services/errors"
-import { ServerError, ServerRouter, ServerRouterBuilder } from "@typed/server"
-import { flow, Effect } from "effect"
+import { ServerError, ServerRouterBuilder } from "@typed/server"
+import { Effect } from "effect"
 import { Spec } from "./spec"
 
 const STATUS_200 = { status: 200, body: undefined } as const
@@ -89,7 +89,7 @@ export const server = ServerRouterBuilder.make(Spec, { enableDocs: true, docsPat
     "updateUser",
     ({ body: { user } }) => Users.update(user).pipe(Effect.bindTo("user"), catchUnauthorizedAndUnprocessable)
   ),
-  flow(ServerRouterBuilder.getRouter, ServerRouter.toPlatformRouter),
+  ServerRouterBuilder.getRouter
 )
 
 function catchUnauthorized<R, E, A>(

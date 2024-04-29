@@ -34,12 +34,17 @@ export function makeTestConfig(
         "**/test/helpers/*",
         "**/test/fixtures/*"
       ],
-      globals: true,
-      typecheck: {
-        checker: "tsc"
-      }
+      globals: true
     }
   })
+}
+
+export function makeTestConfigFromImportMetaUrl(
+  url: string,
+  testPath: string | Array<string> = "./test/*.ts",
+  tsConfigFileName: string = "tsconfig.test.json"
+) {
+  return makeTestConfig(dirname(fileURLToPath(url)), testPath, tsConfigFileName)
 }
 
 const directory = dirname(fileURLToPath(import.meta.url))

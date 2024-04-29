@@ -15,6 +15,8 @@ export const GetArticlesInput = Schema.Struct({
   Schema.identifier("GetArticlesInput")
 )
 
+export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
+
 export const defaultGetArticlesInput: GetArticlesInput = {
   tag: Option.none(),
   author: Option.none(),
@@ -22,8 +24,6 @@ export const defaultGetArticlesInput: GetArticlesInput = {
   limit: Option.none(),
   offset: Option.none()
 }
-
-export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
 
 export type GetArticlesError = Unprocessable
 

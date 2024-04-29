@@ -11,12 +11,15 @@ describe("Router", () => {
   function testRouter(urls: Array.NonEmptyReadonlyArray<string>, expected: ReadonlyArray<string>) {
     return Effect.gen(function*(_) {
       const router = Router
-        .to(Route.literal("/foo/:id"), ({ id }) => `/foo/${id}`)
-        .to(Route.literal("/bar/:id"), ({ id }) => `/bar/${id}`)
-        .to(Route.literal("/baz/:id"), ({ id }) => `/baz/${id}`)
+        .to(Route.literal("foo").concat(Route.param("id")), ({ id }) => `/foo/${id}`)
+        .to(Route.literal("bar").concat(Route.param("id")), ({ id }) => `/bar/${id}`)
+        .to(Route.literal("baz").concat(Route.param("id")), ({ id }) => `/baz/${id}`)
 
       const fiber = yield* _(
-        Fx.take(Router.redirectTo(router, Route.literal("/foo/:id"), { id: "123" }), expected.length),
+        Fx.take(
+          Router.redirectTo(router, Route.literal("foo").concat(Route.param("id")), { id: "123" }),
+          expected.length
+        ),
         Fx.toReadonlyArray,
         Effect.fork
       )
@@ -48,7 +51,7 @@ describe("Router", () => {
   describe(Router.makeHref, () => {
     it("creates a path for a route", async () => {
       const test = Effect.gen(function*(_) {
-        const href = yield* _(Router.makeHref(Route.literal("/foo/:id"), { id: "123" }))
+        const href = yield* _(Router.makeHref(Route.literal("foo").concat(Route.param("id")), { id: "123" }))
 
         deepStrictEqual(href, "/foo/123")
       }).pipe(Effect.provide(resources("/")), Effect.scoped)
@@ -62,7 +65,7 @@ describe("Router", () => {
       const test = Effect.gen(function*(_) {
         console.log("CurrentEntry", yield* _(Navigation.CurrentEntry))
         console.log("CurrentPath", yield* _(Navigation.CurrentPath))
-        const active = yield* _(Router.isActive(Route.literal("/foo/:id"), { id: "123" }))
+        const active = yield* _(Router.isActive(Route.literal("foo").concat(Route.param("id")), { id: "123" }))
 
         expect(active).toBe(true)
       }).pipe(Effect.provide(resources("/foo/123")), Effect.scoped)
@@ -72,7 +75,7 @@ describe("Router", () => {
 
     it("returns false if the route is not active", async () => {
       const test = Effect.gen(function*(_) {
-        const active = yield* _(Router.isActive(Route.literal("/foo/:id"), { id: "456" }))
+        const active = yield* _(Router.isActive(Route.literal("foo").concat(Route.param("id")), { id: "456" }))
 
         expect(active).toBe(false)
       }).pipe(Effect.provide(resources("/foo/123")), Effect.scoped)

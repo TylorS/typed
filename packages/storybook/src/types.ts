@@ -17,7 +17,7 @@ import type {
   StrictArgs,
   WebRenderer
 } from "@storybook/types"
-import type { CoreDomServices } from "@typed/core"
+import type { CoreDomServices } from "@typed/core/CoreServices"
 import type { Fx } from "@typed/fx/Fx"
 import type { Renderable, RenderEvent } from "@typed/template"
 import type { Types } from "effect"

@@ -1,6 +1,6 @@
 import type { Article } from "@/model"
 import { Navigation } from "@typed/core"
-import { html } from "@typed/template"
+import { EventHandler, html } from "@typed/template"
 import { Option } from "effect"
 
 export function ArticlePreview(article: Article) {
@@ -18,16 +18,26 @@ export function ArticlePreview(article: Article) {
 
   return html`<div class="article-preview">
           <div class="article-meta">
-            <a href="${userProfileHref}" onclick=${onclickProfile}><img src="${userProfileImage}" /></a>
+            <a 
+              href="${userProfileHref}" 
+              onclick="${EventHandler.preventDefault(() => onclickProfile)}"
+            >
+              <img src="${userProfileImage}" />
+            </a>
             <div class="info">
-              <a href="${userProfileHref}" onclick=${onclickProfile} class="author">${userProfileName}</a>
+              <a
+                href="${userProfileHref}" 
+                onclick="${EventHandler.preventDefault(() => onclickProfile)}" class="author"
+              >
+                ${userProfileName}
+              </a>
               <span class="date">${createdDate}</span>
             </div>
             <button class="btn btn-outline-primary btn-sm pull-xs-right">
               <i class="ion-heart"></i> ${favoritesCount}
             </button>
           </div>
-          <a href="${articleHref}" onclick=${onclickArticle} class="preview-link">
+          <a href="${articleHref}" onclick="${EventHandler.preventDefault(() => onclickArticle)}" class="preview-link">
             <h1>${title}</h1>
             <p>${description}</p>
             <span>Read more...</span>

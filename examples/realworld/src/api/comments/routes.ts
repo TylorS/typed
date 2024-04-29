@@ -1,11 +1,7 @@
-import { ArticleSlug, CommentId } from "@/model"
-import { Schema } from "@effect/schema"
+import { CommentId } from "@/model"
 import * as Route from "@typed/route"
+import { article } from "../articles/routes"
 
-export const comments = Route.literal("/articles/:slug/comments").pipe(
-  Route.withSchema(Schema.Struct({ slug: ArticleSlug }))
-)
+export const comments = article.concat(Route.literal("comments"))
 
-export const comment = Route.literal("/articles/:slug/comments/:id").pipe(
-  Route.withSchema(Schema.Struct({ slug: ArticleSlug, id: CommentId }))
-)
+export const comment = comments.concat(Route.paramWithSchema("id", CommentId))
