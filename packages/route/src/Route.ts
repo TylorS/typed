@@ -21,6 +21,9 @@ import * as ptr from "path-to-regexp"
 import type { N, U } from "ts-toolbelt"
 import * as AST from "./AST.js"
 
+// TODO: We need better support for QueryParams and especially optional query parameters
+// TODO: We should investigate removing path-to-regexp in favor of a custom implementation
+
 /**
  * @since 5.0.0
  */
@@ -85,17 +88,38 @@ export interface Route<
   /**
    * @since 5.0.0
    */
-  readonly optional: () => Route<Path.Optional<P>, S>
+  readonly optional: () => Route<
+    Path.Optional<P>,
+    [S] extends [never] ? never : Sch.Schema<
+      Types.Simplify<Partial<Sch.Schema.Type<S>>>,
+      Types.Simplify<Partial<Sch.Schema.Encoded<S>>>,
+      Sch.Schema.Context<S>
+    >
+  >
 
   /**
    * @since 5.0.0
    */
-  readonly oneOrMore: () => Route<Path.OneOrMore<P>, S>
+  readonly oneOrMore: () => Route<
+    Path.OneOrMore<P>,
+    [S] extends [never] ? never : Sch.Schema<
+      readonly [Types.Simplify<Sch.Schema.Type<S>>, ...Array<Types.Simplify<Sch.Schema.Type<S>>>],
+      readonly [Types.Simplify<Sch.Schema.Encoded<S>>, ...Array<Types.Simplify<Sch.Schema.Encoded<S>>>],
+      Sch.Schema.Context<S>
+    >
+  >
 
   /**
    * @since 5.0.0
    */
-  readonly zeroOrMore: () => Route<Path.ZeroOrMore<P>, S>
+  readonly zeroOrMore: () => Route<
+    Path.ZeroOrMore<P>,
+    [S] extends [never] ? never : Sch.Schema<
+      ReadonlyArray<Types.Simplify<Sch.Schema.Type<S>>>,
+      ReadonlyArray<Types.Simplify<Sch.Schema.Encoded<S>>>,
+      Sch.Schema.Context<S>
+    >
+  >
 
   /**
    * @since 5.0.0
@@ -210,13 +234,13 @@ export namespace Route {
   export type QuerySchemaFromInput<P extends string, S extends Sch.Schema.All = never> = [S] extends [never]
     ? QuerySchema.ExtractKeys<
       SchemaFromPath<QuerySchema.GetQuery<P>>,
-      QuerySchema.GetQueryEncodedKeys<QuerySchema.GetQuery<P>>,
-      QuerySchema.GetQueryTypeKeys<QuerySchema.GetQuery<P>>
+      QuerySchema.GetQueryTypeKeys<QuerySchema.GetQuery<P>>,
+      QuerySchema.GetQueryEncodedKeys<QuerySchema.GetQuery<P>>
     >
     : QuerySchema.ExtractKeys<
       S,
-      QuerySchema.GetQueryEncodedKeys<QuerySchema.GetQuery<P>>,
-      QuerySchema.GetQueryTypeKeys<QuerySchema.GetQuery<P>>
+      QuerySchema.GetQueryTypeKeys<QuerySchema.GetQuery<P>>,
+      QuerySchema.GetQueryEncodedKeys<QuerySchema.GetQuery<P>>
     >
 
   /**
@@ -241,10 +265,10 @@ export namespace Route {
     /**
      * @since 1.0.0
      */
-    export type ExtractKeys<S extends Sch.Schema.All, EK extends PropertyKey, TK extends PropertyKey> = [
+    export type ExtractKeys<S extends Sch.Schema.All, TK extends PropertyKey, EK extends PropertyKey> = [
       Sch.Schema<
-        Types.Simplify<Pick<Sch.Schema.Encoded<S>, EK>>,
         Types.Simplify<Pick<Sch.Schema.Type<S>, TK>>,
+        Types.Simplify<Pick<Sch.Schema.Encoded<S>, EK>>,
         Sch.Schema.Context<S>
       >
     ] extends [Sch.Schema<infer A, infer I, infer R>] ? Sch.Schema<A, I, R> : never
@@ -404,12 +428,15 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
   }
 
   concat<R2 extends ReadonlyArray<Route.Any>>(...right: R2) {
-    let routeAst = this.routeAst
-    for (const r of right) {
+    if (right.length === 0) return this as any
+
+    const [first, ...rest] = right
+    let routeAst = first.routeAst
+    for (const r of rest) {
       routeAst = new AST.Concat(routeAst, r.routeAst)
     }
 
-    return make(routeAst) as any
+    return make(new AST.Concat(this.routeAst, routeAst)) as any
   }
 
   optional() {
@@ -678,9 +705,21 @@ export function getInterpolate<R extends Route.Any>(
   options?: Parameters<typeof ptr.compile>[1]
 ): <P extends Route.Params<R>>(params: P) => Route.Interpolate<R, P> {
   const interpolate = ptr.compile(route.path, options)
-  // TODO: Interpolation should trim away optional query parameters that are not provided
+  const queryParams = AST.getOptionalQueryParams(route.routeAst)
 
-  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => interpolate(params) || "/" as any
+  return (params: Route.Params<R>): Route.Interpolate<R, typeof params> => {
+    const basePath = interpolate(params) || "/" as any
+    if (queryParams.length === 0) return basePath
+    const baseUrl = new URL(basePath, `http://localhost`)
+    const searchParams = baseUrl.searchParams
+    for (const param of queryParams) {
+      const value = searchParams.get(param.key)
+      if (value === null || value === "") {
+        searchParams.delete(param.key)
+      }
+    }
+    return (baseUrl.pathname + baseUrl.search) as any
+  }
 }
 
 /**
@@ -1000,7 +1039,9 @@ export function queryParams<Params extends Readonly<Record<string, Route.Any>>>(
   params: Params
 ): RouteFromQueryParamsObject<Params> {
   return make(
-    new AST.QueryParams(Object.entries(params).map(([key, value]) => new AST.QueryParam(key, value.routeAst)))
+    new AST.QueryParams(
+      Object.entries(params).map(([key, value]) => new AST.QueryParam(key, value.routeAst))
+    )
   ) as any
 }
 
@@ -1010,9 +1051,9 @@ export function queryParams<Params extends Readonly<Record<string, Route.Any>>>(
 export type RouteFromQueryParamsObject<O extends Readonly<Record<string, Route.Any>>> = Route<
   QueryParamsFromObject<O>,
   QueryParamsFromObjectSchema<O>
->
+> extends Route<infer P, Sch.Schema<infer A, infer I, infer R>> ? Route<P, Sch.Schema<A, I, R>> : never
 
-type QueryParamsFromObject<O extends Readonly<Record<string, Route.Any>>> = Path.QueryParams<
+export type QueryParamsFromObject<O extends Readonly<Record<string, Route.Any>>> = Path.QueryParams<
   U.ListOf<
     {
       readonly [K in keyof O]: `${Extract<K, string | number>}=${Route.Path<O[K]>}`
@@ -1020,18 +1061,18 @@ type QueryParamsFromObject<O extends Readonly<Record<string, Route.Any>>> = Path
   >
 >
 
-type QueryParamsFromObjectSchema<O extends Readonly<Record<string, Route.Any>>> = Sch.Schema<
+export type QueryParamsFromObjectSchema<O extends Readonly<Record<string, Route.Any>>> = Sch.Schema<
   Types.Simplify<
     Types.UnionToIntersection<
       {
-        readonly [K in keyof O]: Route.Encoded<O[K]>
+        readonly [K in keyof O]: Route.Type<O[K]>
       }[keyof O]
     >
   >,
   Types.Simplify<
     Types.UnionToIntersection<
       {
-        readonly [K in keyof O]: Route.Type<O[K]>
+        readonly [K in keyof O]: Route.Encoded<O[K]>
       }[keyof O]
     >
   >,
