@@ -719,7 +719,7 @@ function match_(
   return out
 }
 
-function getAstSegments(part: AST): Array<Array<AST>> {
+export function getAstSegments(part: AST): Array<Array<AST>> {
   const out: Array<Array<AST>> = []
 
   let current: Array<AST> = []

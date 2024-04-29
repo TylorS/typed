@@ -40,7 +40,7 @@ export const formatPart = (part: string) => {
     return part
   }
 
-  if (part.startsWith("\\?")) {
+  if (part.startsWith("\\?") || part.startsWith("?")) {
     return part
   }
 
