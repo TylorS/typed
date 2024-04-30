@@ -12,5 +12,5 @@ export const server = ServerRouterBuilder.make(Spec, { enableDocs: true, docsPat
   handleProfiles,
   handleGetTags,
   handleUsers,
-  ServerRouterBuilder.getRouter
+  ServerRouterBuilder.build
 )

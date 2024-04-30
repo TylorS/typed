@@ -3,7 +3,7 @@ import { TreeFormatter } from "@effect/schema"
 import type { ParseError } from "@effect/schema/ParseResult"
 import type * as Pg from "@effect/sql-pg"
 import { type ConfigError, Effect } from "effect"
-import { NoSuchElementException } from "effect/Cause"
+import type { NoSuchElementException } from "effect/Cause"
 
 export type ExpectedErrors = Pg.error.SqlError | ParseError | ConfigError.ConfigError | NoSuchElementException
 

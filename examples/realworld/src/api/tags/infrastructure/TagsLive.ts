@@ -8,7 +8,7 @@ import { Effect } from "effect"
 export const TagsLive = Tags.implement({
   get: () =>
     Effect.gen(function*(_) {
-       const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Pg.client.PgClient)
       const tags = yield* _(
         undefined,
         Pg.schema.findAll({
@@ -21,7 +21,8 @@ export const TagsLive = Tags.implement({
           JOIN articles a ON at.article_id = a.id
           GROUP BY t.name
           ORDER BY count(at.tag_id) DESC;
-        `})
+        `
+        })
       )
 
       return tags.map((t) => t.tag)

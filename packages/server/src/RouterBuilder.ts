@@ -237,16 +237,18 @@ const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R,
   )
 }
 
+type FlattenDecodeError<E> = // Flatten the error type to remove duplicates of computed RouteDecodeError<Route<PathInput, never>>
+  E extends Route.RouteDecodeError<Route.Route<PathInput>>
+    ? Exclude<E, Route.RouteDecodeError<Route.Route<PathInput>>> | Route.RouteDecodeError<Route.Route<PathInput>>
+    : E
+
 /**
  * @since 1.0.0
  */
 export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E, R, RemainingEndpoints>
 ): Router.Router<
-  // Flatten the error type to remove duplicates of computed RouteDecodeError<Route<PathInput, never>>
-  E extends Route.RouteDecodeError<Route.Route<PathInput>>
-    ? Exclude<E, Route.RouteDecodeError<Route.Route<PathInput>>> | Route.RouteDecodeError<Route.Route<PathInput>>
-    : E,
+  FlattenDecodeError<E>,
   R
 > {
   return builder.router as any
@@ -257,21 +259,21 @@ export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoi
  */
 export const build = <E, R>(
   builder: RouterBuilder<E, R, never>
-): Default<E, R | SwaggerRouter.SwaggerFiles> => buildPartial(builder)
+): Default<FlattenDecodeError<E>, R | SwaggerRouter.SwaggerFiles> => buildPartial(builder)
 
 /**
  * @since 1.0.0
  */
 export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E, R, RemainingEndpoints>
-): Default<E, R | SwaggerRouter.SwaggerFiles> => {
+): Default<FlattenDecodeError<E>, R | SwaggerRouter.SwaggerFiles> => {
   const swaggerRouter = builder.options.enableDocs
     ? SwaggerRouter.make(OpenApi.make(builder.api))
     : Router.empty
   return Router.mountApp(builder.router, Route.parse(builder.options.docsPath), swaggerRouter, { includePrefix: true })
     .pipe(
       Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
-    )
+    ) as any
 }
 
 /**

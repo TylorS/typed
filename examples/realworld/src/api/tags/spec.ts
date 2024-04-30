@@ -1,7 +1,7 @@
 import { add200, addUnprocessableResponse } from "@/api/common/spec"
+import * as Schema from "@/lib/Schema"
 import { ArticleTagList } from "@/model"
 import { Api, ApiGroup } from "@typed/server"
-import * as Schema from "@/lib/Schema"
 import * as Routes from "./routes"
 
 export const getTags = Api.get(

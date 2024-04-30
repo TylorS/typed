@@ -77,8 +77,11 @@ export const ArticlesLive = Articles.implement({
             Request: DbArticle,
             Result: DbArticle,
             execute: (a) =>
-              sql`update articles set ${sql.update(a, ["id", "author_id", "created_at"])} where id = ${a.id} returning *;`
-          })
+              sql`update articles set ${
+                sql.update(a, ["id", "author_id", "created_at"])
+              } where id = ${a.id} returning *;`
+          }
+        )
       )
 
       if (input.tagList && input.tagList.length > 0) {
@@ -94,7 +97,7 @@ export const ArticlesLive = Articles.implement({
   delete: ({ slug }) =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
-            const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.PgClient)
       const article = yield* _(getArticleFromSlug(slug, user.id))
 
       yield* _(sql`delete from comments where article_id = ${article.id};`)
@@ -108,7 +111,7 @@ export const ArticlesLive = Articles.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
       const { id } = yield* _(getArticleFromSlug(slug, user.id))
-            const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.PgClient)
 
       yield* _(
         sql`insert into favorites ${sql.insert({ article_id: id, user_id: user.id })} on conflict do nothing;`
@@ -122,7 +125,7 @@ export const ArticlesLive = Articles.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
       const { id } = yield* _(getArticleFromSlug(slug, user.id))
-            const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.PgClient)
 
       yield* _(
         sql`delete from favorites where article_id = ${id} and user_id = ${user.id};`
@@ -134,7 +137,7 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   list: (input) =>
     Effect.gen(function*(_) {
-            const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.PgClient)
       const user = yield* _(getOptionalCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
       const offset = sql`offset ${Option.getOrElse(input.offset, () => 0)}`
@@ -169,12 +172,13 @@ export const ArticlesLive = Articles.implement({
                 u.email AS author_email,
                 COUNT(DISTINCT fav.user_id) AS favorites_count, 
                 ARRAY_AGG(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL) AS tag_list,
-                ${Option.match(user, {
-                onNone: () => sql`false as favorited, false as author_following`,
-                onSome: (u) =>
-                  sql`BOOL_OR(fav.user_id = ${u.id}) AS favorited, EXISTS(SELECT 1 FROM follows f WHERE f.followed_id = a.author_id and f.follower_id = ${u.id}) as author_following`
-              })
-                }
+                ${
+                Option.match(user, {
+                  onNone: () => sql`false as favorited, false as author_following`,
+                  onSome: (u) =>
+                    sql`BOOL_OR(fav.user_id = ${u.id}) AS favorited, EXISTS(SELECT 1 FROM follows f WHERE f.followed_id = a.author_id and f.follower_id = ${u.id}) as author_following`
+                })
+              }
             FROM
                 articles a
             JOIN
@@ -188,10 +192,11 @@ export const ArticlesLive = Articles.implement({
             LEFT JOIN
                 tags t ON at.tag_id = t.id
             
-            ${whereConditions.length > 0
+            ${
+                whereConditions.length > 0
                   ? sql`WHERE ${sql.and(whereConditions)}`
                   : sql``
-                }
+              }
 
             GROUP BY
                 a.id, u.username, u.bio, u.image, u.email
@@ -202,7 +207,8 @@ export const ArticlesLive = Articles.implement({
             ${limit}
             ${offset};
           `
-          })
+          }
+        )
       )
 
       return articles.map(dbArticleToArticle)
@@ -249,7 +255,8 @@ export const ArticlesLive = Articles.implement({
           ${limit}
           ${offset};
           `
-          })
+          }
+        )
       )
 
       return articles.map(dbArticleToArticle)
@@ -312,7 +319,8 @@ function getArticleFromSlug(slug: ArticleSlug, currentUserId?: UserId) {
             a.slug = ${s} 
         GROUP BY 
             a.id, u.username, u.bio, u.image, u.email;`
-          })
+          }
+        )
       )
     }
 
@@ -347,7 +355,8 @@ function getArticleFromSlug(slug: ArticleSlug, currentUserId?: UserId) {
             a.slug = ${s} 
         GROUP BY 
             a.id, u.username, u.bio, u.image, u.email;`
-        })
+        }
+      )
     )
   })
 }
@@ -357,10 +366,14 @@ function tagListToTags(list: ReadonlyArray<ArticleTag>) {
     list,
     (tag) =>
       Effect.gen(function*(_) {
-              const sql = yield* _(Sql.client.PgClient)
+        const sql = yield* _(Sql.client.PgClient)
         const existing = yield* _(
           tag,
-          Sql.schema.findOne({ Request: ArticleTag, Result: DbTag, execute: (t) => sql`select * from tags where name = ${t};` })
+          Sql.schema.findOne({
+            Request: ArticleTag,
+            Result: DbTag,
+            execute: (t) => sql`select * from tags where name = ${t};`
+          })
         )
 
         if (Option.isSome(existing)) {

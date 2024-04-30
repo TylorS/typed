@@ -21,20 +21,23 @@ export const CommentsLive = Comments.implement({
         slug,
         Pg.schema.findAll({
           Request: ArticleSlug,
-          Result: DbCommentWithAuthor, execute: (s) =>
+          Result: DbCommentWithAuthor,
+          execute: (s) =>
             sql`
           SELECT c.*, u.username as author_username, u.bio as author_bio, u.image as author_image, u.email as author_email, 
-                  ${Option.match(user, {
-              onNone: () => sql`false as author_following`,
-              onSome: (u) =>
-                sql`exists (select 1 from follows f where f.follower_id = ${u.id} and f.followed_id = u.id) as author_following`
-            })
-              }
+                  ${
+              Option.match(user, {
+                onNone: () => sql`false as author_following`,
+                onSome: (u) =>
+                  sql`exists (select 1 from follows f where f.follower_id = ${u.id} and f.followed_id = u.id) as author_following`
+              })
+            }
           FROM comments c
           JOIN users u ON c.author_id = u.id
           LEFT JOIN articles a ON c.article_id = a.id
           WHERE a.slug = ${s};
-        `})
+        `
+        })
       )
 
       return dbComments.map(dbCommentToComment)

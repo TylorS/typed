@@ -69,7 +69,8 @@ function getProfileByUsername(username: Username, userId?: UserId) {
         SELECT u.email as email, u.username as username, u.bio as bio, u.image as image, false as following
         FROM users u
         WHERE u.username = ${name};
-      `}
+      `
+        }
       )
     )
 
