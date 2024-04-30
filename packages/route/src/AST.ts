@@ -426,6 +426,9 @@ function isOptionalSchema(schema: Schema.Schema.All) {
   return propertySignatures.every((ps) => ps.isOptional)
 }
 
+/**
+ * @since 5.0.0
+ */
 export function getAstSegments(part: AST): Array<Array<AST>> {
   const out: Array<Array<AST>> = []
 
@@ -475,15 +478,24 @@ export function getAstSegments(part: AST): Array<Array<AST>> {
   return out
 }
 
+/**
+ * @since 5.0.0
+ */
 export type InterpolationPart =
   | InterpolateLiteral
   | InterpolateParam
 
+/**
+ * @since 5.0.0
+ */
 export class InterpolateLiteral {
   readonly _tag = "Literal" as const
   constructor(readonly value: string) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export class InterpolateParam {
   readonly _tag = "Param" as const
   constructor(
@@ -491,8 +503,14 @@ export class InterpolateParam {
   ) {}
 }
 
+/**
+ * @since 5.0.0
+ */
 export type Interpolater = (params: Readonly<Record<string, string | ReadonlyArray<string>>>) => string
 
+/**
+ * @since 5.0.0
+ */
 export function astToInterpolation(ast: AST): InterpolationPart {
   const ctx: { unnamed: number } = { unnamed: 0 }
   const parts = getAstSegments(ast).map((segment) => astSegmentToInterpolationPart(segment, ctx))
@@ -617,6 +635,9 @@ export type Matcher = (
   query: URLSearchParams
 ) => Option.Option<Record<string, string | ReadonlyArray<string>>>
 
+/**
+ * @since 5.0.0
+ */
 export function astToMatcher(ast: AST, end: boolean = false): Matcher {
   const ctx: { unnamed: number } = { unnamed: 0 }
   const matchers = getAstSegments(ast).map((segment) => astSegmentToMatcher(segment, ctx))
@@ -828,6 +849,9 @@ function ensureSimpleAst(ast: AST): Exclude<AST, Concat<any, any> | QueryParams<
   return ast
 }
 
+/**
+ * @since 5.0.0
+ */
 export function getPathAndQuery(path: string) {
   const { pathname, searchParams } = new URL(path, "http://localhost")
   const pathSegments = pathname.split(/\//g)
@@ -841,6 +865,9 @@ export function getPathAndQuery(path: string) {
   return [pathSegments, searchParams] as const
 }
 
+/**
+ * @since 5.0.0
+ */
 export function parse(path: string) {
   const [segments, queryString] = splitByQueryParams(path)
   const all = [
@@ -917,6 +944,9 @@ function parseQueryParamValue(value: string): AST {
 
 const PREFIX_REGEXP = /(\{.+\})/g
 
+/**
+ * @since 5.0.0
+ */
 export function splitByQueryParams(path: string): readonly [Array<string>, string] {
   path = P.removeLeadingSlash(P.removeTrailingSlash(path))
   if (path === "") return [[], ""]
@@ -939,25 +969,6 @@ export function splitByQueryParams(path: string): readonly [Array<string>, strin
   return [segments, queryString]
 }
 
-export function splitByPrefixes(segment: string): Array<string> {
+function splitByPrefixes(segment: string): Array<string> {
   return segment.split(PREFIX_REGEXP).map((x) => x === "" ? "/" : x)
-}
-
-const PARAM_REGEXP = /(:(.+))/g
-
-export function splitByParams(segment: string): Array<string> {
-  const params = segment.split(PARAM_REGEXP)
-  if (params.length === 1) return params
-
-  const out: Array<string> = []
-  for (let i = 0; i < params.length; i++) {
-    if (params[i].startsWith(":")) {
-      out.push(params[i])
-      // Skip the inner match
-      i++
-    } else {
-      out.push(params[i])
-    }
-  }
-  return out
 }

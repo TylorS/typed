@@ -1120,6 +1120,9 @@ export type QueryParamsFromObject<O extends Readonly<Record<string, Route.Any>>>
   >
 >
 
+/**
+ * @since 5.0.0
+ */
 export type QueryParamsFromObjectSchema<O extends Readonly<Record<string, Route.Any>>> = Sch.Schema<
   Types.Simplify<
     Types.UnionToIntersection<
