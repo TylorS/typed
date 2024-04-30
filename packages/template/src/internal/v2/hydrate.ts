@@ -124,6 +124,10 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           // beyond the lifetime of the current Fiber, but no further than its parent template.
           yield* ctx.eventSource.setup(wire, ctx.parentScope)
 
+          // We're done setting up so we can resume in "regular" rendering mode when
+          // and new templates come in.
+          hydrateCtx.hydrate = false
+
           // Emit our DomRenderEvent
           yield* sink.onSuccess(DomRenderEvent(wire)).pipe(
             // Ensure our templates last forever in the DOM environment

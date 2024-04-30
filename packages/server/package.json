@@ -49,6 +49,7 @@
     "@typed/router": "workspace:*",
     "effect": "^3.0.7",
     "effect-http": "^0.64.1",
-    "effect-http-node": "^0.12.1"
+    "effect-http-node": "^0.12.1",
+    "schema-openapi": "^0.37.1"
   }
 }

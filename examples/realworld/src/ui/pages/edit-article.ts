@@ -4,7 +4,7 @@ import * as Route from "@typed/route"
 import type { RouteGuard } from "@typed/router"
 import { html } from "@typed/template"
 
-export const route = Route.literal("/editor/:slug")
+export const route = Route.literal("editor")
   .concat(Route.paramWithSchema("slug", ArticleSlug))
   .pipe(isAuthenticatedGuard)
 

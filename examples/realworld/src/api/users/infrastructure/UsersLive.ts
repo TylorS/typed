@@ -27,7 +27,7 @@ export const UsersLive = Users.implement({
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
-       const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Pg.client.PgClient)
       const existingUser = yield* _(getDbUserByEmail(input.email))
       if (Option.isSome(existingUser)) {
         return yield* _(new Unprocessable({ errors: ["Email already exists"] }))
@@ -37,7 +37,9 @@ export const UsersLive = Users.implement({
       const user = yield* _(
         inputUser,
         Pg.schema.single({
-          Request: DbUser, Result: DbUser, execute: (t) => sql`insert into users ${sql.insert(t)} returning *;`
+          Request: DbUser,
+          Result: DbUser,
+          execute: (t) => sql`insert into users ${sql.insert(t)} returning *;`
         })
       )
       const { token } = yield* _(creatJwtTokenForUser(user))
@@ -45,29 +47,30 @@ export const UsersLive = Users.implement({
       return dbUserToUser(user, token)
     }).pipe(catchExpectedErrors),
   login: (input) =>
-    Effect.gen(function*(_) {
-      const user = yield* _(getDbUserByEmail(input.email))
+    Effect.gen(function*() {
+      const user = yield* getDbUserByEmail(input.email)
+      console.log(input, user)
       if (Option.isNone(user)) {
-        return yield* _(new Unauthorized())
+        return yield* new Unauthorized()
       }
 
       const dbUser = user.value
-      if (!(yield* _(ComparePassword(input.password, dbUser.password)))) {
-        return yield* _(new Unauthorized())
+      if (!(yield* ComparePassword(input.password, dbUser.password))) {
+        return yield* new Unauthorized()
       }
 
-      const existingToken = yield* _(getUnexpiredJwtTokenForUser(dbUser))
+      const existingToken = yield* getUnexpiredJwtTokenForUser(dbUser)
       if (Option.isSome(existingToken)) {
         return dbUserToUser(dbUser, existingToken.value.token)
       }
 
-      const { token } = yield* _(creatJwtTokenForUser(dbUser))
+      const { token } = yield* creatJwtTokenForUser(dbUser)
       return dbUserToUser(dbUser, token)
     }).pipe(catchExpectedErrors),
   update: (user) =>
     Effect.gen(function*(_) {
       const current = yield* _(getCurrentJwtUser)
-       const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Pg.client.PgClient)
       const now = new Date(yield* _(Clock.currentTimeMillis))
       const [rawUser] = yield* _(
         sql`update users set 
@@ -89,7 +92,7 @@ export const UsersLive = Users.implement({
 
 function getDbUserByEmail(email: Email) {
   return Effect.gen(function*(_) {
-     const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Pg.client.PgClient)
     return yield* _(
       email,
       Pg.schema.findOne({
@@ -122,7 +125,7 @@ function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
 
 function getUnexpiredJwtTokenForUser(user: DbUser) {
   return Effect.gen(function*(_) {
-     const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Pg.client.PgClient)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     return yield* _(
       user.id,

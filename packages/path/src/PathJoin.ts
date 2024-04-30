@@ -44,8 +44,7 @@ export const formatPart = (part: string) => {
     return part
   }
 
-  part = removeLeadingSlash(part)
-  part = removeTrailingSlash(part)
+  part = removeLeadingSlash(removeTrailingSlash(part))
 
   return part === "" ? "" : `/${part}`
 }

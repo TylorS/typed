@@ -850,6 +850,9 @@ importers:
       effect-http-node:
         specifier: ^0.12.1
         version: 0.12.1(@effect/platform-node@0.47.7(@effect/platform@0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0))(effect@3.0.7))(@effect/platform@0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0))(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect-http@0.64.1(@effect/platform@0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0))(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7))(effect@3.0.7)
+      schema-openapi:
+        specifier: ^0.37.1
+        version: 0.37.1(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)
     publishDirectory: dist
 
   packages/storybook:

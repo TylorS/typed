@@ -3,8 +3,9 @@ import { RouteNotFound } from "@effect/platform/Http/ServerError"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
-import { asRouteGuard, CurrentRoute, type MatchInput } from "@typed/router"
-import { Effect, Effectable, Layer, Option, Order, pipe } from "effect"
+import { getAstSegments } from "@typed/route/AST"
+import { asRouteGuard, CurrentRoute, getRoute, type MatchInput } from "@typed/router"
+import { Effect, Effectable, Layer, Option, Order, pipe, Record } from "effect"
 import { groupBy, sortBy } from "effect/Array"
 import type { Chunk } from "effect/Chunk"
 import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
@@ -42,12 +43,8 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
 
 const routePartsOrder: Order.Order<RouteHandler<any, any, any>> = pipe(
   Order.number,
-  Order.mapInput((route: RouteHandler<any, any, any>) => route.route.path.split("/").length)
-)
-
-const routesAlphaOrder = pipe(
-  Order.string,
-  Order.mapInput((route: RouteHandler<any, any, any>) => route.route.path)
+  Order.mapInput((route: RouteHandler<MatchInput.Any, any, any>) => getRoute(route.route).path.split("/").length),
+  Order.reverse
 )
 
 const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
@@ -71,7 +68,10 @@ function toHttpApp<E, R>(
   | Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
   | ServerRequest
 > {
-  const routesByMethod = groupBy(router.routes.pipe(sortBy(routePartsOrder, routesAlphaOrder)), (route) => route.method)
+  const routesByMethod = Record.map(
+    groupBy(router.routes, (route) => route.method),
+    sortBy(routePartsOrder)
+  )
   const hasMounts = router.mounts.length > 0
 
   // Translate "all" routes to all methods for quick lookup
@@ -79,7 +79,7 @@ function toHttpApp<E, R>(
     allMethods.forEach((method) => {
       routesByMethod[method].push(...routesByMethod["*"])
       // Re-sort the routes
-      routesByMethod[method] = pipe(routesByMethod[method], sortBy(routePartsOrder, routesAlphaOrder))
+      routesByMethod[method] = pipe(routesByMethod[method], sortBy(routePartsOrder))
     })
   }
 
@@ -104,7 +104,7 @@ function toHttpApp<E, R>(
     })
 
   if (hasMounts) {
-    return Effect.gen(function*() {
+    return Effect.gen(function*(_) {
       const data = yield* setupRouteContext
 
       // Check mounts first
@@ -136,9 +136,13 @@ function toHttpApp<E, R>(
       return yield* new RouteNotFound({ request: data.request })
     })
   } else {
-    return Effect.gen(function*() {
+    return Effect.gen(function*(_) {
       const { existingParams, parentRoute, path, request, url } = yield* setupRouteContext
       const routes = routesByMethod[request.method]
+      console.log(
+        "Routes"
+      )
+      routes.forEach((r) => console.log(...[getRoute(r.route).path, ...getAstSegments(getRoute(r.route).routeAst)]))
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
           const response = yield* runRouteMatcher(

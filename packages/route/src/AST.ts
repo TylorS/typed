@@ -840,3 +840,124 @@ export function getPathAndQuery(path: string) {
 
   return [pathSegments, searchParams] as const
 }
+
+export function parse(path: string) {
+  const [segments, queryString] = splitByQueryParams(path)
+  const all = [
+    ...segments.map(parsePathSegment),
+    ...(queryString.trim() === "" ? [] : [parseQuery(queryString)])
+  ]
+
+  if (all.length === 0) return new Literal("/")
+
+  return concat(all)
+}
+
+function concat(asts: ReadonlyArray<AST>): AST {
+  return asts.reduce((acc, ast) => new Concat(acc, ast))
+}
+
+function parsePathSegment(segment: string): AST {
+  const parts = splitByPrefixes(segment).map(parsePathPart)
+  if (parts.length === 0) return new Literal("/")
+  if (parts.length === 1) return parts[0]
+  return concat(parts)
+}
+
+function parsePathPart(part: string): AST {
+  if (part[0] === "{") {
+    return parsePrefix(part)
+  } else if (part === P.unnamed) {
+    return new UnnamedParam()
+  } else if (part[0] === ":") {
+    return parseParam(part.slice(1))
+  } else {
+    return new Literal(part)
+  }
+}
+
+function parsePrefix(part: string): AST {
+  const [prefix, segment] = part.slice(1, -1).split(":")
+
+  if (segment === undefined) {
+    return new Prefix(prefix, new UnnamedParam())
+  }
+
+  return new Prefix(prefix, parseParam(segment))
+}
+
+function parseParam(param: string): AST {
+  if (param.endsWith("?")) {
+    return new Optional(parseParam(param.slice(0, -1)))
+  } else if (param.endsWith("*")) {
+    return new ZeroOrMore(parseParam(param.slice(0, -1)))
+  } else if (param.endsWith("+")) {
+    return new OneOrMore(parseParam(param.slice(0, -1)))
+  } else {
+    return new Param(param)
+  }
+}
+
+function parseQuery(queryString: string): AST {
+  queryString = queryString.replace(/^\?/, "")
+  const params = queryString.split("&")
+  if (params.length === 0) return new QueryParams([])
+  return new QueryParams(params.map(parseQueryParam))
+}
+
+function parseQueryParam(param: string): QueryParam<string, AST> {
+  const [key, value] = param.split("=")
+  return new QueryParam(key, parseQueryParamValue(value))
+}
+
+function parseQueryParamValue(value: string): AST {
+  if (value === "") return new Literal("")
+  return parsePathSegment(value)
+}
+
+const PREFIX_REGEXP = /(\{.+\})/g
+
+export function splitByQueryParams(path: string): readonly [Array<string>, string] {
+  path = P.removeLeadingSlash(P.removeTrailingSlash(path))
+  if (path === "") return [[], ""]
+
+  // eslint-disable-next-line prefer-const
+  let [pathname, queryString = ""] = path.split("\\?")
+  // reg-exp format will require escaping
+  if (pathname.endsWith("\\")) {
+    pathname = pathname.slice(0, -1)
+  }
+
+  const segments = pathname.split(/\//g)
+  if (segments[0] === "") {
+    segments.shift()
+  }
+  if (segments[segments.length - 1] === "") {
+    segments.pop()
+  }
+
+  return [segments, queryString]
+}
+
+export function splitByPrefixes(segment: string): Array<string> {
+  return segment.split(PREFIX_REGEXP).map((x) => x === "" ? "/" : x)
+}
+
+const PARAM_REGEXP = /(:(.+))/g
+
+export function splitByParams(segment: string): Array<string> {
+  const params = segment.split(PARAM_REGEXP)
+  if (params.length === 1) return params
+
+  const out: Array<string> = []
+  for (let i = 0; i < params.length; i++) {
+    if (params[i].startsWith(":")) {
+      out.push(params[i])
+      // Skip the inner match
+      i++
+    } else {
+      out.push(params[i])
+    }
+  }
+  return out
+}

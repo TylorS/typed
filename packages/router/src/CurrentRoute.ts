@@ -194,7 +194,7 @@ export const browser: Layer.Layer<CurrentRoute, never, Document.Document> = Curr
     const baseHref = base ? getBasePathname(base.href) : "/"
 
     return {
-      route: Route.literal(baseHref),
+      route: Route.parse(baseHref),
       parent: Option.none()
     }
   })
@@ -213,7 +213,7 @@ function getBasePathname(base: string): string {
  * @since 1.0.0
  */
 export const server = (base: string = "/"): Layer.Layer<CurrentRoute> =>
-  CurrentRoute.layer({ route: Route.literal(base), parent: Option.none() })
+  CurrentRoute.layer({ route: Route.parse(base), parent: Option.none() })
 
 const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
   Object.fromEntries(destination.url.searchParams)

@@ -201,8 +201,8 @@ const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
   const apiRequest = ApiEndpoint.getRequest(endpoint)
   const pathSchema = ApiRequest.getPathSchema(apiRequest)
   const route = (ApiSchema.isIgnored(pathSchema)
-    ? Route.literal(ApiEndpoint.getPath(endpoint))
-    : Route.withSchema(Route.literal(ApiEndpoint.getPath(endpoint)), pathSchema)) as any as Route.Route<
+    ? Route.parse(ApiEndpoint.getPath(endpoint))
+    : Route.withSchema(Route.parse(ApiEndpoint.getPath(endpoint)), pathSchema)) as any as Route.Route<
       PathInput,
       Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<Endpoint>>, Schema.Schema.All>
     >

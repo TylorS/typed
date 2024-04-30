@@ -485,8 +485,14 @@ export const make = <P extends string, S extends Sch.Schema.All>(
 /**
  * @since 5.0.0
  */
-export const literal = <const L extends string>(literal: L): Route<L> =>
-  make(new AST.Literal(Path.removeLeadingSlash(Path.removeTrailingSlash(literal))))
+export const parse = <const P extends string>(path: P, options?: Partial<RouteOptions>): Route<P> =>
+  make(AST.parse(path), options)
+
+/**
+ * @since 5.0.0
+ */
+export const literal = <const L extends string>(literal: L, options?: Partial<RouteOptions>): Route<L> =>
+  make(new AST.Literal(Path.removeLeadingSlash(Path.removeTrailingSlash(literal))), options)
 
 /**
  * @since 5.0.0
@@ -501,113 +507,152 @@ export const home: Route<"/"> = make(new AST.Literal("/"), { end: true })
 /**
  * @since 5.0.0
  */
-export const param = <const Name extends string>(name: Name): Route<Path.Param<Name>> => make(new AST.Param(name))
+export const param = <const Name extends string>(
+  name: Name,
+  options?: Partial<RouteOptions>
+): Route<Path.Param<Name>> => make(new AST.Param(name), options)
 
 /**
  * @since 5.0.0
  */
 export const paramWithSchema: {
   <A, R = never>(
-    schema: Sch.Schema<A, string, R>
+    schema: Sch.Schema<A, string, R>,
+    options?: Partial<RouteOptions>
   ): <const Name extends string>(
     name: Name
   ) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>>
 
   <const Name extends string, A, R = never>(
     name: Name,
-    schema: Sch.Schema<A, string, R>
+    schema: Sch.Schema<A, string, R>,
+    options?: Partial<RouteOptions>
   ): Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>>
-} = dual(2, <const Name extends string, A, R = never>(
+} = dual((args) => typeof args[0] === "string", <const Name extends string, A, R = never>(
   name: Name,
-  schema: Sch.Schema<A, string, R>
+  schema: Sch.Schema<A, string, R>,
+  options?: Partial<RouteOptions>
 ): Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: A }, { readonly [_ in Name]: string }, R>> =>
-  withSchema(param(name), Sch.Struct(Record.singleton(name, schema)) as any))
+  withSchema(param(name, options), Sch.Struct(Record.singleton(name, schema)) as any))
 
 /**
  * @since 5.0.0
  */
 export const number: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Sch.NumberFromString)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.NumberFromString, options)
 
 /**
  * @since 5.0.0
  */
 export const integer: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Sch.NumberFromString.pipe(Sch.int()))
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: number }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.NumberFromString.pipe(Sch.int()), options)
 
 /**
  * @since 5.0.0
  */
 export const uuid: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: Uuid }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(ID.uuid)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: Uuid }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, ID.uuid, options)
 
 /**
  * @since 5.0.0
  */
 export const nanoId: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: NanoId }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(ID.nanoId)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: NanoId }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, ID.nanoId, options)
 
 /**
  * @since 5.0.0
  */
 export const BigInt: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: bigint }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Sch.BigInt)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: bigint }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.BigInt, options)
 
 /**
  * @since 5.0.0
  */
 export const bigDecimal: <const Name extends string>(
-  name: Name
+  name: Name,
+  options?: Partial<RouteOptions>
 ) => Route<
   Path.Param<Name>,
   Sch.Schema<{ readonly [_ in Name]: BigDecimal }, { readonly [_ in Name]: string }, never>
-> = paramWithSchema(Sch.BigDecimal)
+> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.BigDecimal, options)
 
 /**
  * @since 5.0.0
  */
 export const base64Url: <const Name extends string>(
-  name: Name
+  name: Name,
+  options?: Partial<RouteOptions>
 ) => Route<
   Path.Param<Name>,
   Sch.Schema<{ readonly [_ in Name]: Uint8Array }, { readonly [_ in Name]: string }, never>
-> = paramWithSchema(Sch.Base64Url)
+> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.Base64Url, options)
 
 /**
  * @since 5.0.0
  */
 export const boolean: <const Name extends string>(
-  name: Name
+  name: Name,
+  options?: Partial<RouteOptions>
 ) => Route<
   Path.Param<Name>,
   Sch.Schema<{ readonly [_ in Name]: boolean }, { readonly [_ in Name]: string }, never>
-> = paramWithSchema(Sch.parseJson(Sch.Boolean))
+> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.parseJson(Sch.Boolean), options)
 
 /**
  * @since 5.0.0
  */
 export const ulid: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: string }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Sch.ULID)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: string }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.ULID, options)
 
 /**
  * @since 5.0.0
  */
 export const date: <const Name extends string>(
-  name: Name
-) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: Date }, { readonly [_ in Name]: string }, never>> =
-  paramWithSchema(Sch.Date)
+  name: Name,
+  options?: Partial<RouteOptions>
+) => Route<Path.Param<Name>, Sch.Schema<{ readonly [_ in Name]: Date }, { readonly [_ in Name]: string }, never>> = (
+  name,
+  options
+) => paramWithSchema(name, Sch.Date, options)
 
 /**
  * @since 5.0.0

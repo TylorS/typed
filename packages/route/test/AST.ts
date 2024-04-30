@@ -3,6 +3,7 @@ import * as AST from "@typed/route/AST"
 import * as Route from "@typed/route/Route"
 import { deepEqual } from "assert"
 import { Option } from "effect"
+import { inspect } from "util"
 
 describe("AST", () => {
   const foo = Route.literal("foo").concat(Route.end, Route.integer("fooId").prefix("foo-"))
@@ -18,6 +19,8 @@ describe("AST", () => {
   const baz = foobar.concat(
     Route.queryParams({ baz: Route.integer("baz").optional(), quux: Route.integer("quux").optional() })
   )
+
+  const literals = Route.literal("foo").concat(Route.literal("bar"), Route.literal("baz"))
 
   it("Can derive interpolate", () => {
     testInterpolation(foobar, { fooId: "1", barId: "2" }, `/foo/foo-1/bar/bar-2`)
@@ -36,6 +39,7 @@ describe("AST", () => {
 
     // Literal
     testInterpolation(Route.literal("test"), {}, `/test`)
+    testInterpolation(literals, {}, `/foo/bar/baz`)
   })
 
   it("Can derive match", () => {
@@ -54,6 +58,18 @@ describe("AST", () => {
       `/foo/foo-1/bar/bar-2?baz=3&quux=4`,
       Option.some({ fooId: "1", barId: "2", baz: "3", quux: "4" })
     )
+    testMatcher(literals, `/foo/bar/baz`, Option.some({}))
+  })
+
+  it("Can Parse Path to AST", () => {
+    testParse(foobar.path)
+    testParse(unnamed.path)
+    testParse(param.path)
+    testParse(zeroOrMore.path)
+    testParse(oneOrMore.path)
+    testParse(optional.path)
+    testParse(baz.path)
+    testParse(literals.path)
   })
 })
 
@@ -76,4 +92,18 @@ function testMatcher<R extends Route.Route.Any>(
   expected: Option.Option<Route.Route.Params<R>>
 ) {
   deepEqual(AST.astToMatcher(route.routeAst, false)(...AST.getPathAndQuery(path)), expected)
+}
+
+function testParse(path: string) {
+  const ast = AST.parse(path)
+  try {
+    const actual = AST.toPath(ast)
+    deepEqual(actual, path)
+  } catch (error) {
+    console.log(path)
+    console.log(AST.toPath(ast))
+    console.log(inspect(ast, { depth: 10 }))
+
+    throw error
+  }
 }
