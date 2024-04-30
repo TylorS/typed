@@ -7,11 +7,12 @@ import type { Method } from "@effect/platform/Http/Method"
 import * as PlatformRouter from "@effect/platform/Http/Router"
 import type { RouteNotFound } from "@effect/platform/Http/ServerError"
 import type { Navigation } from "@typed/navigation"
+import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
 import * as MatchInput from "@typed/router/MatchInput"
 import { Chunk, Effect, Option } from "effect"
 import { dual } from "effect/Function"
-import { RouterImpl, type RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
+import { RouterImpl, RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
 import * as RouteHandler from "./RouteHandler.js"
 
 /**
@@ -31,6 +32,7 @@ export interface Router<E, R>
 export interface Mount<E, R> {
   readonly prefix: MatchInput.MatchInput.Any
   readonly app: Default<E, R>
+  readonly options?: { readonly includePrefix?: boolean }
 }
 
 /**
@@ -205,22 +207,25 @@ export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
 export const mountApp: {
   <Prefix extends MatchInput.MatchInput.Any, E2, R2>(
     prefix: Prefix,
-    app: Default<E2, R2>
+    app: Default<E2, R2>,
+    options?: { includePrefix?: boolean | undefined }
   ): <E, R>(router: Router<E, R>) => Router<E2 | E, R2 | R>
 
   <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
     router: Router<E, R>,
     prefix: Prefix,
-    app: Default<E2, R2>
+    app: Default<E2, R2>,
+    options?: { includePrefix?: boolean | undefined }
   ): Router<E | E2, R | R2>
-} = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+} = dual((args) => RouterTypeId in args[0], <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
   router: Router<E, R>,
   prefix: Prefix,
-  app: Default<E2, R2>
+  app: Default<E2, R2>,
+  options?: { includePrefix?: boolean | undefined }
 ): Router<E | E2, R | R2> =>
   new RouterImpl<E | E2, R | R2, E, R>(
     router.routes,
-    Chunk.append(router.mounts, { prefix, app })
+    Chunk.append(router.mounts, { prefix, app, options } as Mount<E | E2, R | R2>)
   ))
 
 /**
@@ -287,7 +292,8 @@ export const toPlatformRouter = <E, R>(
         }
 
         return yield* new RouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix })
-      })
+      }),
+      mount.options
     )
   }
 
@@ -296,4 +302,26 @@ export const toPlatformRouter = <E, R>(
   }
 
   return platformRouter
+}
+
+/**
+ * @since 1.0.0
+ */
+export const fromPlatformRouter = <E, R>(
+  platformRouter: PlatformRouter.Router<E, R>
+): Router<E, R> => {
+  let router: Router<any, any> = empty
+
+  for (const [prefix, app, options] of platformRouter.mounts) {
+    router = mountApp(router, Route.parse(prefix), app, options)
+  }
+
+  for (const platformRoute of platformRouter.routes) {
+    router = addHandler(
+      router,
+      RouteHandler.make(platformRoute.method)(Route.parse(platformRoute.path), platformRoute.handler)
+    )
+  }
+
+  return router
 }

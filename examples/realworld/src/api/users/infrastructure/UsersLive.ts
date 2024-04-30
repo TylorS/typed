@@ -49,7 +49,6 @@ export const UsersLive = Users.implement({
   login: (input) =>
     Effect.gen(function*() {
       const user = yield* getDbUserByEmail(input.email)
-      console.log(input, user)
       if (Option.isNone(user)) {
         return yield* new Unauthorized()
       }

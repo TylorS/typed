@@ -3,7 +3,6 @@ import { RouteNotFound } from "@effect/platform/Http/ServerError"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
-import { getAstSegments } from "@typed/route/AST"
 import { asRouteGuard, CurrentRoute, getRoute, type MatchInput } from "@typed/router"
 import { Effect, Effectable, Layer, Option, Order, pipe, Record } from "effect"
 import { groupBy, sortBy } from "effect/Array"
@@ -139,10 +138,6 @@ function toHttpApp<E, R>(
     return Effect.gen(function*(_) {
       const { existingParams, parentRoute, path, request, url } = yield* setupRouteContext
       const routes = routesByMethod[request.method]
-      console.log(
-        "Routes"
-      )
-      routes.forEach((r) => console.log(...[getRoute(r.route).path, ...getAstSegments(getRoute(r.route).routeAst)]))
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
           const response = yield* runRouteMatcher(

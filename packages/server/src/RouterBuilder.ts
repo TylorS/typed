@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-
+import type { Default } from "@effect/platform/Http/App"
 import type { PathInput } from "@effect/platform/Http/Router"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import { Effect, type Pipeable } from "effect"
 import type { Api, Route as EffectHttpRoute, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
-import { ApiEndpoint, ApiRequest, ApiSchema, ServerError } from "effect-http"
+import { ApiEndpoint, ApiRequest, ApiSchema, OpenApi, ServerError, SwaggerRouter } from "effect-http"
 import { dual } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
 import * as ServerRequestParser from "./internal/serverRequestParser.js"
@@ -168,7 +168,7 @@ export const handle: {
   remainingEndpoints.splice(index, 1)
 
   const router = builder.router.pipe(
-    Router.addHandler(fromEndpoint(endpoint, handler, builder.options))
+    Router.addHandler(makeHandlerFromEndpoint(endpoint, handler, builder.options))
   )
 
   return {
@@ -187,7 +187,7 @@ type HandlerFromEndpoint<Endpoint extends ApiEndpoint.ApiEndpoint.Any, E, R> = R
   R
 >
 
-const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
+const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
   endpoint: Endpoint,
   fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
   options?: Partial<Options>
@@ -206,18 +206,20 @@ const fromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
       PathInput,
       Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<Endpoint>>, Schema.Schema.All>
     >
-  const handler = Effect.gen(function*() {
+  const handler = Effect.gen(function*(_) {
     const request = yield* ServerRequest
     const { params, queryParams } = yield* RouteHandler.getCurrentParams(route)
-    const response = yield* requestParser.parseRequest(request, {
-      params,
-      searchParams: Object.fromEntries(queryParams.entries())
-    }).pipe(
-      Effect.flatMap((input: any) => {
+    const response = yield* _(Effect.flatMap(
+      requestParser.parseRequest(request, {
+        params,
+        searchParams: Object.fromEntries(queryParams.entries())
+      }),
+      (input: any) => {
         const { security, ...restInput } = input
         return fn(restInput, security)
-      })
-    )
+      }
+    ))
+
     return yield* responseEncoder.encodeResponse(request, response)
   })
 
@@ -249,3 +251,85 @@ export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoi
 > {
   return builder.router as any
 }
+
+/**
+ * @since 1.0.0
+ */
+export const build = <E, R>(
+  builder: RouterBuilder<E, R, never>
+): Default<E, R | SwaggerRouter.SwaggerFiles> => buildPartial(builder)
+
+/**
+ * @since 1.0.0
+ */
+export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+  builder: RouterBuilder<E, R, RemainingEndpoints>
+): Default<E, R | SwaggerRouter.SwaggerFiles> => {
+  const swaggerRouter = builder.options.enableDocs
+    ? SwaggerRouter.make(OpenApi.make(builder.api))
+    : Router.empty
+  return Router.mountApp(builder.router, Route.parse(builder.options.docsPath), swaggerRouter, { includePrefix: true })
+    .pipe(
+      Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
+    )
+}
+
+/**
+ * @since 1.0.0
+ */
+export const fromEndpoint: {
+  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  ): (endpoint: E) => <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+    builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
+  ) => RouterBuilder<
+    | E1
+    | E2
+    | RouteHandler.RouteHandler.Error<
+      HandlerFromEndpoint<E, E2, R2>
+    >,
+    | R1
+    | R2
+    | RouteHandler.RouteHandler.Context<
+      HandlerFromEndpoint<E, E2, R2>
+    >,
+    Exclude<RemainingEndpoints, E>
+  >
+
+  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+    endpoint: E,
+    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  ): <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+    builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
+  ) => RouterBuilder<
+    | E1
+    | E2
+    | RouteHandler.RouteHandler.Error<
+      HandlerFromEndpoint<E, E2, R2>
+    >,
+    | R1
+    | R2
+    | RouteHandler.RouteHandler.Context<
+      HandlerFromEndpoint<E, E2, R2>
+    >,
+    Exclude<RemainingEndpoints, E>
+  >
+} = dual(2, <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+  endpoint: E,
+  handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+) =>
+<E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+  builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
+): RouterBuilder<
+  | E1
+  | E2
+  | RouteHandler.RouteHandler.Error<
+    HandlerFromEndpoint<E, E2, R2>
+  >,
+  | R1
+  | R2
+  | RouteHandler.RouteHandler.Context<
+    HandlerFromEndpoint<E, E2, R2>
+  >,
+  Exclude<RemainingEndpoints, E>
+> => handle(builder, ApiEndpoint.getId(endpoint) as ApiEndpoint.ApiEndpoint.Id<E>, handler as any) as any)
