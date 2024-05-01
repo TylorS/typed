@@ -270,7 +270,7 @@ export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEnd
   const swaggerRouter = builder.options.enableDocs
     ? SwaggerRouter.make(OpenApi.make(builder.api))
     : Router.empty
-  return Router.mountApp(builder.router, Route.parse(builder.options.docsPath), swaggerRouter, { includePrefix: true })
+  return Router.mountApp(builder.router, Route.parse(builder.options.docsPath), swaggerRouter)
     .pipe(
       Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
     ) as any

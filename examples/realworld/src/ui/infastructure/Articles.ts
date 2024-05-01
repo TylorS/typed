@@ -23,19 +23,15 @@ export const ArticlesLive = Articles.implement({
       (r) => r.article
     ),
   delete: (input) =>
-    handleClientRequest(
-      withJwtToken((jwtToken) => client.deleteArticle({ path: input }, jwtToken))
+    Effect.map(
+      handleClientRequest(
+        withJwtToken((jwtToken) => client.deleteArticle({ path: input }, jwtToken))
+      ),
+      (r) => r.article
     ),
   list: (input) =>
-    Effect.map(
-      handleClientRequest(withOptionalJwtToken((jwtToken) => client.getArticles({ query: input }, jwtToken))),
-      (r) => r.articles
-    ),
-  feed: (input) =>
-    Effect.map(
-      handleClientRequest(withJwtToken((jwtToken) => client.getFeed({ query: input }, jwtToken))),
-      (r) => r.articles
-    ),
+    handleClientRequest(withOptionalJwtToken((jwtToken) => client.getArticles({ query: input }, jwtToken))),
+  feed: (input) => handleClientRequest(withJwtToken((jwtToken) => client.getFeed({ query: input }, jwtToken))),
   favorite: (slug) =>
     Effect.map(
       handleClientRequest(

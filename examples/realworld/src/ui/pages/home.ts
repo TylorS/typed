@@ -23,7 +23,9 @@ export const route = Route.home.pipe(
 
 export const main = (params: RefSubject.RefSubject<Route.Route.Type<typeof route>>) =>
   Fx.gen(function*(_) {
-    const articles = yield* _(RefArray.make(RefSubject.mapEffect(params, Articles.list)))
+    const articlesAndCount = yield* _(RefSubject.make(RefSubject.mapEffect(params, Articles.list)))
+    const articles = RefSubject.map(articlesAndCount, (a) => a.articles)
+    // const count = RefSubject.map(articlesAndCount, (a) => a.articlesCount)
     const tagsList = yield* _(RefArray.make(Tags.get()))
 
     return html`<div class="home-page">

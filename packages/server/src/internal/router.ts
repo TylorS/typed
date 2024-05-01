@@ -1,8 +1,9 @@
 import type { Default } from "@effect/platform/Http/App"
 import { RouteNotFound } from "@effect/platform/Http/ServerError"
-import { ServerRequest } from "@effect/platform/Http/ServerRequest"
+import * as ServerRequest from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
+import { removeTrailingSlash } from "@typed/path"
 import * as Route from "@typed/route"
 import { asRouteGuard, CurrentRoute, getRoute, makeCurrentRoute, type MatchInput } from "@typed/router"
 import type { Order } from "effect"
@@ -19,7 +20,7 @@ export type RouterTypeId = typeof RouterTypeId
 export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   ServerResponse,
   E | E2 | RouteNotFound,
-  Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest
+  Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest.ServerRequest
 > implements Router<E | E2, R | R2> {
   readonly [RouterTypeId]: RouterTypeId = RouterTypeId
 
@@ -27,7 +28,7 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
     ServerResponse,
     E | E2 | RouteNotFound,
     | Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
-    | ServerRequest
+    | ServerRequest.ServerRequest
   >
 
   constructor(
@@ -49,7 +50,7 @@ const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
 const getParentRoute = Effect.serviceOption(CurrentRoute)
 
 export const setupRouteContext = Effect.gen(function*() {
-  const request = yield* ServerRequest
+  const request = yield* ServerRequest.ServerRequest
   const existingParams = yield* getCurrentParamsOption
   const parentRoute = yield* getParentRoute
   const url = getUrlFromServerRequest(request)
@@ -64,7 +65,7 @@ function toHttpApp<E, R>(
   ServerResponse,
   E | RouteNotFound,
   | Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
-  | ServerRequest
+  | ServerRequest.ServerRequest
 > {
   const routesByMethod = Record.map(
     groupBy(router.routes, (route) => route.method),
@@ -87,13 +88,25 @@ function toHttpApp<E, R>(
         const prefixRoute = getRoute(mount.prefix)
         yield* Effect.logDebug(`Checking mount: ${prefixRoute.path}`)
 
-        const response = yield* runRouteMatcher<E, R>(
-          mount.prefix,
-          mount.app,
-          path,
-          url,
-          existingParams,
-          Option.some(makeCurrentRoute(prefixRoute, parentRoute))
+        const match = prefixRoute.match(path)
+        if (Option.isNone(match)) continue
+
+        const request = yield* ServerRequest.ServerRequest
+        const prefix = prefixRoute.interpolate(match.value)
+
+        const response: Option.Option<ServerResponse> = yield* Effect.provideService(
+          runRouteMatcher<E, R>(
+            mount.prefix,
+            mount.app,
+            path,
+            url,
+            existingParams,
+            Option.some(makeCurrentRoute(prefixRoute, parentRoute))
+          ),
+          ServerRequest.ServerRequest,
+          mount.options?.includePrefix === true
+            ? request
+            : replaceRequestUrl(request, prefix)
         )
 
         if (Option.isSome(response)) {
@@ -186,7 +199,7 @@ export function runRouteMatcher<E, R>(
 ): Effect.Effect<
   Option.Option<ServerResponse>,
   E,
-  Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest
+  Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest.ServerRequest
 > {
   const { guard, route } = asRouteGuard(input)
   const routeParams = route.match(path)
@@ -217,5 +230,15 @@ export function runRouteMatcher<E, R>(
     )
 
     return Effect.asSome(Effect.provide(handler, layer))
+  })
+}
+
+function replaceRequestUrl(request: ServerRequest.ServerRequest, prefix: string): ServerRequest.ServerRequest {
+  const newUrl = removeTrailingSlash(request.url.replace(prefix, "")) || "/"
+  return new Proxy(request, {
+    get(target, prop) {
+      if (prop === "url") return newUrl
+      return target[prop as keyof typeof target]
+    }
   })
 }

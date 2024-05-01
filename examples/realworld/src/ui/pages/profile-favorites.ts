@@ -16,11 +16,13 @@ export const main = (params: RefSubject.RefSubject<Params>) => {
   const profileName = RefSubject.map(profile, (p) => p.username)
   const profileBio = RefSubject.map(profile, (p) => Option.getOrElse(p.bio, () => ""))
 
-  const articles = RefSubject.mapEffect(profile, (_) =>
+  const articlesAndCount = RefSubject.mapEffect(profile, (_) =>
     Articles.list({
       ...defaultGetArticlesInput,
       author: Option.some(_.username)
     }))
+
+  const articles = RefSubject.map(articlesAndCount, (_) => _.articles)
 
   return html`<div class="profile-page">
   <div class="user-info">

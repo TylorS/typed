@@ -1,4 +1,4 @@
-import { catchUnauthorizedAndUnprocessable, catchUnprocessable, STATUS_200 } from "@/api/common/handlers"
+import { catchUnauthorizedAndUnprocessable, catchUnprocessable } from "@/api/common/handlers"
 import { Articles } from "@/services"
 import { ServerRouterBuilder } from "@typed/server"
 import { Effect, flow } from "effect"
@@ -12,7 +12,7 @@ export const handleCreateArticle = Spec.createArticle.pipe(
 
 export const handleDeleteArticle = Spec.deleteArticle.pipe(
   ServerRouterBuilder.fromEndpoint(
-    ({ path: { slug } }) => Articles.delete({ slug }).pipe(Effect.as(STATUS_200), catchUnauthorizedAndUnprocessable)
+    ({ path: { slug } }) => Articles.delete({ slug }).pipe(Effect.bindTo("article"), catchUnauthorizedAndUnprocessable)
   )
 )
 

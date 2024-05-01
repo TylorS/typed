@@ -49,7 +49,7 @@ export interface Route<
   /**
    * @since 5.0.0
    */
-  readonly options: RouteOptions
+  readonly routeOptions: RouteOptions
 
   /**
    * @since 5.0.0
@@ -390,7 +390,7 @@ const variance_: Route.Variance<any, any> = {
 class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, S> {
   readonly [RouteTypeId]: Route.Variance<P, S> = variance_
 
-  readonly options: RouteOptions
+  readonly routeOptions: RouteOptions
 
   constructor(
     readonly routeAst: AST.AST,
@@ -398,7 +398,7 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
   ) {
     this.pipe = this.pipe.bind(this)
     this.concat = this.concat.bind(this)
-    this.options = { end: false, ...options }
+    this.routeOptions = { end: false, ...options }
   }
 
   private __path!: any
@@ -423,7 +423,7 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
 
   private __match!: Route<P, S>["match"]
   match(path: string) {
-    const m = (this.__match ??= getMatch(this as any, this.options) as any)
+    const m = (this.__match ??= getMatch(this as any, this.routeOptions) as any)
     return m(path)
   }
 
@@ -666,7 +666,7 @@ export const unnamed: Route<Path.Unnamed> = make(new AST.UnnamedParam())
 export const zeroOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>> =>
-  make(new AST.ZeroOrMore(route.routeAst), route.options) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
+  make(new AST.ZeroOrMore(route.routeAst), route.routeOptions) as Route.UpdatePath<R, Path.ZeroOrMore<Route.Path<R>>>
 
 /**
  * @since 5.0.0
@@ -674,13 +674,13 @@ export const zeroOrMore = <R extends Route<any, never>>(
 export const oneOrMore = <R extends Route<any, never>>(
   route: R
 ): Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>> =>
-  make(new AST.OneOrMore(route.routeAst), route.options) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
+  make(new AST.OneOrMore(route.routeAst), route.routeOptions) as Route.UpdatePath<R, Path.OneOrMore<Route.Path<R>>>
 
 /**
  * @since 5.0.0
  */
 export const optional = <R extends Route<any, never>>(route: R): Route.UpdatePath<R, Path.Optional<Route.Path<R>>> =>
-  make(new AST.Optional(route.routeAst), route.options) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
+  make(new AST.Optional(route.routeAst), route.routeOptions) as Route.UpdatePath<R, Path.Optional<Route.Path<R>>>
 
 /**
  * @since 5.0.0
@@ -695,10 +695,13 @@ export const prefix: {
 ): any => {
   if (args.length === 1) {
     return (route: R) =>
-      make(new AST.Prefix(args[0], route.routeAst), route.options) as Route.UpdatePath<R, Path.Prefix<P, Route.Path<R>>>
+      make(new AST.Prefix(args[0], route.routeAst), route.routeOptions) as Route.UpdatePath<
+        R,
+        Path.Prefix<P, Route.Path<R>>
+      >
   }
 
-  return make(new AST.Prefix(args[0], args[1].routeAst), args[1].options) as Route.UpdatePath<
+  return make(new AST.Prefix(args[0], args[1].routeAst), args[1].routeOptions) as Route.UpdatePath<
     R,
     Path.Prefix<P, Route.Path<R>>
   >
@@ -724,7 +727,9 @@ export const concat: {
 ): Route.Concat<L, R> =>
   make(
     new AST.Concat(left.routeAst, right.routeAst),
-    dontMergeTags.includes(right.routeAst._tag) ? left.options : mergeOptions(left.options, right.options)
+    dontMergeTags.includes(right.routeAst._tag)
+      ? left.routeOptions
+      : mergeOptions(left.routeOptions, right.routeOptions)
   ) as Route.Concat<L, R>)
 
 function mergeOptions(left: RouteOptions, right: RouteOptions): RouteOptions {
@@ -752,7 +757,7 @@ export const withSchema: {
     route: R,
     schema: S
   ): Route.UpdateSchema<R, S> =>
-    make(new AST.WithSchema(route.routeAst, schema), route.options) as Route.UpdateSchema<R, S>
+    make(new AST.WithSchema(route.routeAst, schema), route.routeOptions) as Route.UpdateSchema<R, S>
 )
 
 /**

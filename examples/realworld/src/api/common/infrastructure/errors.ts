@@ -17,7 +17,6 @@ export function handleExpectedErrors<
 >(
   error: T | ExpectedErrors
 ): Exclude<T, ExpectedErrors> | Unprocessable {
-  console.log("error", error)
   switch (error._tag) {
     case "NoSuchElementException":
       return new Unprocessable({ errors: [(error as NoSuchElementException).message] })

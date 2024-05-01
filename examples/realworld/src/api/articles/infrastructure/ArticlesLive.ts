@@ -137,8 +137,6 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   list: (input) =>
     Effect.gen(function*(_) {
-      console.log(`list`, input)
-
       const sql = yield* _(Sql.client.PgClient)
       const user = yield* _(getOptionalCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
@@ -245,7 +243,6 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   feed: (input) =>
     Effect.gen(function*(_) {
-      console.log(`feed`, input)
       const sql = yield* _(Sql.client.PgClient)
       const user = yield* _(getCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
