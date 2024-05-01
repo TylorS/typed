@@ -14,6 +14,8 @@ describe("Route", () => {
   const oneOrMore = param.oneOrMore()
   const optional = param.optional()
 
+  const concatLiterals = Route.literal("foo").concat(Route.literal("bar"))
+
   it("generates paths", () => {
     deepEqual(foobar.path, "/foo/{foo-:fooId}/bar/{bar-:barId}")
     deepEqual(unnamed.path, "/test/(.*)/test2/(.*)")
@@ -21,6 +23,7 @@ describe("Route", () => {
     deepEqual(zeroOrMore.path, "/:test*")
     deepEqual(oneOrMore.path, "/:test+")
     deepEqual(optional.path, "/:test?")
+    deepEqual(concatLiterals.path, "/foo/bar")
   })
 
   it("generates schemas", async () => {
@@ -32,6 +35,7 @@ describe("Route", () => {
     const decodeOptional = Schema.decode(optional.schema)
     const decodeHome = Schema.decode(Route.home.schema)
     const decodeEnd = Schema.decode(Route.end.schema)
+    const decodeConcatLiterals = Schema.decode(concatLiterals.schema)
     const test = Effect.gen(function*(_) {
       deepEqual(yield* _(decodeFoobar({ fooId: "1", barId: "2" })), { fooId: 1, barId: 2 })
       deepEqual(yield* _(decodeUnnamed({ 0: "123", 1: "456" })), { 0: "123", 1: "456" })
@@ -42,6 +46,7 @@ describe("Route", () => {
       deepEqual(yield* _(decodeOptional({})), {})
       deepEqual(yield* _(decodeHome({})), {})
       deepEqual(yield* _(decodeEnd({})), {})
+      deepEqual(yield* _(decodeConcatLiterals({})), {})
     })
 
     await Effect.runPromise(test)
@@ -56,8 +61,8 @@ describe("Route", () => {
     deepEqual(optional.interpolate({ test: "test" }), "/test")
     deepEqual(Route.home.interpolate({}), "/")
     deepEqual(Route.end.interpolate({}), "/")
-
     deepEqual(Route.literal("/foo").concat(Route.param("fooId")).interpolate({ fooId: "123" }), "/foo/123")
+    deepEqual(concatLiterals.interpolate({}), "/foo/bar")
   })
 
   it("matches paths", () => {
@@ -77,6 +82,10 @@ describe("Route", () => {
     deepEqual(Route.end.match("/"), Option.some({}))
     deepEqual(Route.end.match("/foo"), Option.some({}))
     deepEqual(Route.end.match("/foo/bar"), Option.some({}))
+
+    // Literal matches only the literal path
+    deepEqual(concatLiterals.match("/foo/bar"), Option.some({}))
+    deepEqual(concatLiterals.match("/foo"), Option.none())
   })
 
   it("can be decoded", async () => {
@@ -90,6 +99,7 @@ describe("Route", () => {
       deepEqual(yield* _(Route.decode(optional, "/")), {})
       deepEqual(yield* _(Route.decode(Route.home, "/")), {})
       deepEqual(yield* _(Route.decode(Route.end, "/")), {})
+      deepEqual(yield* _(Route.decode(concatLiterals, "/foo/bar")), {})
     })
 
     await Effect.runPromise(test)
@@ -106,6 +116,7 @@ describe("Route", () => {
       deepEqual(yield* _(Route.encode(optional, {})), "/")
       deepEqual(yield* _(Route.encode(Route.home, {})), "/")
       deepEqual(yield* _(Route.encode(Route.end, {})), "/")
+      deepEqual(yield* _(Route.encode(concatLiterals, {})), "/foo/bar")
     })
 
     return Effect.runPromise(test)
@@ -174,5 +185,25 @@ describe("Route", () => {
       route.match("/?tag=foo&author=bar&favorited=baz&limit=10&offset=20&extra=extra"),
       Option.some({ tag: "foo", author: "bar", favorited: "baz", limit: "10", offset: "20" })
     )
+  })
+
+  it("can be ordered by complexity", () => {
+    const articles = Route.literal("articles")
+    const article = Route.literal("articles").concat(Route.param("slug"))
+    const feed = articles.concat(Route.literal("feed"))
+    const favorites = article.concat(Route.literal("favorite"))
+    const comments = article.concat(Route.literal("comments"))
+    const comment = comments.concat(Route.param("id"))
+    const routes = [articles, article, feed, favorites, comments, comment]
+    const expected = [
+      feed,
+      comment,
+      favorites,
+      comments,
+      article,
+      articles
+    ]
+
+    deepEqual(Route.sortRoutes(routes).map((r) => r.path), expected.map((r) => r.path))
   })
 })

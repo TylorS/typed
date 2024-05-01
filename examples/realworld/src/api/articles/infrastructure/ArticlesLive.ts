@@ -137,6 +137,8 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   list: (input) =>
     Effect.gen(function*(_) {
+      console.log(`list`, input)
+
       const sql = yield* _(Sql.client.PgClient)
       const user = yield* _(getOptionalCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
@@ -156,8 +158,7 @@ export const ArticlesLive = Articles.implement({
         whereConditions.push(sql`fav_user.username = ${input.favorited.value}`)
       }
 
-      const articles = yield* _(
-        undefined,
+      const [articles, { count: articlesCount }] = yield* _(Effect.all([
         Sql.schema.findAll(
           {
             Request: Schema.Void,
@@ -208,20 +209,48 @@ export const ArticlesLive = Articles.implement({
             ${offset};
           `
           }
-        )
-      )
+        )(undefined),
+        Sql.schema.single(
+          {
+            Request: Schema.Void,
+            Result: Schema.Struct({ count: Schema.NumberFromString }),
+            execute: () =>
+              sql`
+            SELECT
+                COUNT(DISTINCT a.id)
+            FROM
+                articles a
+            JOIN
+                users u ON a.author_id = u.id
+            LEFT JOIN
+                favorites fav ON a.id = fav.article_id
+            LEFT JOIN
+                users fav_user ON fav.user_id = fav_user.id
+            LEFT JOIN
+                article_tags at ON a.id = at.article_id
+            LEFT JOIN
+                tags t ON at.tag_id = t.id
 
-      return articles.map(dbArticleToArticle)
+            ${
+                whereConditions.length > 0
+                  ? sql`WHERE ${sql.and(whereConditions)}`
+                  : sql``
+              }
+          `
+          }
+        )(undefined)
+      ], { concurrency: "unbounded" }))
+
+      return { articles: articles.map(dbArticleToArticle), articlesCount }
     }).pipe(catchExpectedErrors),
   feed: (input) =>
     Effect.gen(function*(_) {
+      console.log(`feed`, input)
       const sql = yield* _(Sql.client.PgClient)
       const user = yield* _(getCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
       const offset = sql`offset ${Option.getOrElse(input.offset, () => 0)}`
-
-      const articles = yield* _(
-        undefined,
+      const [articles, { count: articlesCount }] = yield* _(Effect.all([
         Sql.schema.findAll(
           {
             Request: Schema.Void,
@@ -256,10 +285,34 @@ export const ArticlesLive = Articles.implement({
           ${offset};
           `
           }
-        )
-      )
+        )(undefined),
+        Sql.schema.single(
+          {
+            Request: Schema.Void,
+            Result: Schema.Struct({ count: Schema.NumberFromString }),
+            execute: () =>
+              sql`
+          SELECT 
+              COUNT(DISTINCT a.id)
+          FROM
+              articles a
+          JOIN
+              users u ON a.author_id = u.id
+          LEFT JOIN 
+              favorites fav ON a.id = fav.article_id
+          LEFT JOIN
+              article_tags at ON a.id = at.article_id
+          LEFT JOIN
+              tags t ON at.tag_id = t.id;
+          `
+          }
+        )(undefined)
+      ], { concurrency: "unbounded" }))
 
-      return articles.map(dbArticleToArticle)
+      return {
+        articles: articles.map(dbArticleToArticle),
+        articlesCount
+      }
     }).pipe(catchExpectedErrors)
 })
 

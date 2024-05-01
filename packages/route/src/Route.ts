@@ -11,7 +11,8 @@ import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
 import * as Path from "@typed/path"
 import type { Option } from "effect"
-import { Data, Effect, Record } from "effect"
+import { Data, Effect, Order as O, Record } from "effect"
+import { sortBy } from "effect/Array"
 import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
 import { constant, dual, flow, pipe } from "effect/Function"
@@ -1140,3 +1141,58 @@ export type QueryParamsFromObjectSchema<O extends Readonly<Record<string, Route.
   >,
   Route.Context<O[keyof O]>
 >
+
+/**
+ * @since 5.0.0
+ */
+export const Order: O.Order<Route.Any> = O.make((a, b) => {
+  const aPath = a.path
+  const bPath = b.path
+  const aParts = aPath.split("/")
+  const bParts = bPath.split("/")
+  const l = Math.min(aParts.length, bParts.length)
+
+  for (let i = 0; i < l; i++) {
+    if (aParts[i] === bParts[i]) continue
+
+    const aComplexity = guessComplexity(aParts[i])
+    const bComplexity = guessComplexity(bParts[i])
+
+    if (aComplexity === bComplexity) {
+      continue
+    }
+
+    if (aComplexity === 0) return -1
+    if (bComplexity === 0) return 1
+    if (bComplexity > aComplexity) return -1
+    return 1
+  }
+
+  if (aParts.length === bParts.length) return 0
+  if (aParts.length > bParts.length) return -1
+  return 1
+})
+
+/**
+ * @since 5.0.0
+ */
+export function sortRoutes<Routes extends ReadonlyArray<Route.Any>>(
+  routes: Routes
+): Routes extends ReadonlyArray<infer R> ? ReadonlyArray<R> : never {
+  return sortBy(Order)(routes) as any
+}
+
+function guessComplexity(part: string): number {
+  let complexity: number = 0
+
+  for (let i = 0; i < part.length; i++) {
+    if (part[i] === ":") {
+      complexity += 1
+    }
+    if (part[i] === "{") {
+      complexity += 1
+    }
+  }
+
+  return complexity
+}

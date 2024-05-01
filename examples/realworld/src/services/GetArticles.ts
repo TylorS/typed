@@ -27,7 +27,17 @@ export const defaultGetArticlesInput: GetArticlesInput = {
 
 export type GetArticlesError = Unprocessable
 
-export const GetArticles = Fn<(input: GetArticlesInput) => Effect.Effect<ReadonlyArray<Article>, GetArticlesError>>()(
+export const GetArticles = Fn<
+  (
+    input: GetArticlesInput
+  ) => Effect.Effect<
+    {
+      readonly articles: ReadonlyArray<Article>
+      readonly articlesCount: number
+    },
+    GetArticlesError
+  >
+>()(
   "GetArticles"
 )
 export type GetArticles = Fn.Identifier<typeof GetArticles>

@@ -3,8 +3,10 @@ import { RouteNotFound } from "@effect/platform/Http/ServerError"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import * as Navigation from "@typed/navigation"
-import { asRouteGuard, CurrentRoute, getRoute, type MatchInput } from "@typed/router"
-import { Effect, Effectable, Layer, Option, Order, pipe, Record } from "effect"
+import * as Route from "@typed/route"
+import { asRouteGuard, CurrentRoute, getRoute, makeCurrentRoute, type MatchInput } from "@typed/router"
+import type { Order } from "effect"
+import { Effect, Effectable, Layer, Option, pipe, Record } from "effect"
 import { groupBy, sortBy } from "effect/Array"
 import type { Chunk } from "effect/Chunk"
 import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
@@ -40,11 +42,8 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   }
 }
 
-const routePartsOrder: Order.Order<RouteHandler<any, any, any>> = pipe(
-  Order.number,
-  Order.mapInput((route: RouteHandler<MatchInput.Any, any, any>) => getRoute(route.route).path.split("/").length),
-  Order.reverse
-)
+const routePartsOrder: Order.Order<RouteHandler<any, any, any>> = (a, b) =>
+  Route.Order(getRoute(a.route), getRoute(b.route))
 
 const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
 const getParentRoute = Effect.serviceOption(CurrentRoute)
@@ -85,16 +84,20 @@ function toHttpApp<E, R>(
   const runMounts = ({ existingParams, parentRoute, path, url }: Effect.Effect.Success<typeof setupRouteContext>) =>
     Effect.gen(function*() {
       for (const mount of router.mounts) {
+        const prefixRoute = getRoute(mount.prefix)
+        yield* Effect.logDebug(`Checking mount: ${prefixRoute.path}`)
+
         const response = yield* runRouteMatcher<E, R>(
           mount.prefix,
           mount.app,
           path,
           url,
           existingParams,
-          parentRoute
+          Option.some(makeCurrentRoute(prefixRoute, parentRoute))
         )
 
         if (Option.isSome(response)) {
+          yield* Effect.logDebug(`Mount matched: ${prefixRoute.path}`)
           return response
         }
       }
@@ -106,6 +109,8 @@ function toHttpApp<E, R>(
     return Effect.gen(function*(_) {
       const data = yield* setupRouteContext
 
+      yield* Effect.logDebug(`Checking routes for method: ${data.request.method} at URL: ${data.url.href}`)
+
       // Check mounts first
       const response = yield* runMounts(data)
       if (Option.isSome(response)) {
@@ -116,6 +121,8 @@ function toHttpApp<E, R>(
       const routes = routesByMethod[request.method]
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
+          const routePath = getRoute(route).path
+          yield* Effect.logDebug(`Checking route: ${routePath}`)
           const response = yield* runRouteMatcher(
             route,
             handler,
@@ -126,6 +133,7 @@ function toHttpApp<E, R>(
           )
 
           if (Option.isSome(response)) {
+            yield* Effect.logDebug(`Route matched: ${routePath}`)
             return response.value
           }
         }
@@ -138,8 +146,13 @@ function toHttpApp<E, R>(
     return Effect.gen(function*(_) {
       const { existingParams, parentRoute, path, request, url } = yield* setupRouteContext
       const routes = routesByMethod[request.method]
+
+      yield* _(Effect.logDebug(`Checking routes for method: ${request.method} at URL: ${url.href}`))
+
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
+          const routePath = getRoute(route).path
+          yield* Effect.logDebug(`Checking route: ${routePath}`)
           const response = yield* runRouteMatcher(
             route,
             handler,
@@ -150,6 +163,8 @@ function toHttpApp<E, R>(
           )
 
           if (Option.isSome(response)) {
+            yield* Effect.logDebug(`Route matched: ${routePath}`)
+
             return response.value
           }
         }

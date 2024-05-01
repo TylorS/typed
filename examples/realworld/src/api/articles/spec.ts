@@ -23,7 +23,7 @@ export const getFeed = Api.get(
   }
 ).pipe(
   Api.setRequestQuery(GetFeedInput),
-  add200(Schema.Struct({ articles: Schema.Array(Article) })),
+  add200(Schema.Struct({ articles: Schema.Array(Article), articlesCount: Schema.Number })),
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -37,7 +37,7 @@ export const getArticles = Api.get(
   }
 ).pipe(
   Api.setRequestQuery(GetArticlesInput),
-  add200(Schema.Struct({ articles: Schema.Array(Article) })),
+  add200(Schema.Struct({ articles: Schema.Array(Article), articlesCount: Schema.Number })),
   addUnprocessableResponse,
   addOptionalJwtTokenSecurity
 )

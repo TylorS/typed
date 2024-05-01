@@ -29,9 +29,7 @@ export const handleGetArticle = Spec.getArticle.pipe(
 )
 
 export const handleGetArticles = Spec.getArticles.pipe(
-  ServerRouterBuilder.fromEndpoint(({ query }) =>
-    Articles.list(query).pipe(Effect.bindTo("articles"), catchUnprocessable)
-  )
+  ServerRouterBuilder.fromEndpoint(({ query }) => Articles.list(query).pipe(catchUnprocessable))
 )
 
 export const handleUnfavoriteArticle = Spec.unfavorite.pipe(
@@ -47,9 +45,7 @@ export const handleUpdateArticle = Spec.updateArticle.pipe(
 )
 
 export const handleGetFeed = Spec.getFeed.pipe(
-  ServerRouterBuilder.fromEndpoint(({ query }) =>
-    Articles.feed(query).pipe(Effect.bindTo("articles"), catchUnauthorizedAndUnprocessable)
-  )
+  ServerRouterBuilder.fromEndpoint(({ query }) => Articles.feed(query).pipe(catchUnauthorizedAndUnprocessable))
 )
 
 export const handleArticles = flow(
