@@ -84,11 +84,15 @@ export function makeEventSource(): EventSource {
 
     for (const [event, sets] of bubbleListeners) {
       for (const handlers of sets) {
+        if (handlers.size === 0) continue
         const listener = (ev: Event) =>
           run(
-            Effect.forEach(handlers, ([el, handler]) =>
-              ev.target === el || el.contains(ev.target as Node) ? handler.handler(ev) : Effect.void)
+            Effect.forEach(
+              handlers,
+              ([el, { handler }]) => ev.target === el || el.contains(ev.target as Node) ? handler(ev) : Effect.void
+            )
           )
+
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
         disposables.push(disposable(() => element.removeEventListener(event, listener)))
       }
@@ -102,11 +106,12 @@ export function makeEventSource(): EventSource {
 
     for (const [event, sets] of captureListeners) {
       for (const handlers of sets) {
+        if (handlers.size === 0) continue
         const listener = (ev: Event) =>
           run(
-            Effect.forEach(handlers, ([el, handler]) =>
+            Effect.forEach(handlers, ([el, { handler }]) =>
               ev.target === el || el.contains(ev.target as Node)
-                ? handler.handler(proxyCurrentTargetForCaptureEvents(ev, el))
+                ? handler(proxyCurrentTargetForCaptureEvents(ev, el))
                 : Effect.void)
           )
         element.addEventListener(event, listener, getDerivedAddEventListenerOptions(handlers))
