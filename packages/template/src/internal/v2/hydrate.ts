@@ -99,8 +99,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
             return yield* render_(templateStrings, values).run(sink)
           }
 
-          const wire = getNodes(where)
-
+          const wire = getWire(where)
           if (entry.template.parts.length === 0) return yield* sink.onSuccess(DomRenderEvent(wire))
 
           const makeHydrateContext = (where: HydrationNode): HydrateContext => ({
@@ -138,14 +137,14 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
           )
         }),
         (defect) =>
-          Effect.gen(function*() {
+          Effect.gen(function*(_) {
             if (isHydrationError(defect)) {
-              console.error(defect)
-              const hydrateCtx = yield* HydrateContext
+              yield* _(Effect.logError(defect))
+              const hydrateCtx = yield* _(HydrateContext)
               hydrateCtx.hydrate = false
-              return yield* render_(templateStrings, values).run(sink)
+              return yield* _(render_(templateStrings, values).run(sink))
             } else {
-              return yield* Effect.die(defect)
+              return yield* _(Effect.die(defect))
             }
           })
       )
@@ -279,4 +278,10 @@ export function findRootChildNodes(where: HTMLElement): Array<Node> {
   }
 
   return rootChildNodes
+}
+
+function getWire(where: HydrationNode) {
+  const nodes = getNodes(where)
+  if (nodes.length === 1) return nodes[0]
+  return nodes
 }
