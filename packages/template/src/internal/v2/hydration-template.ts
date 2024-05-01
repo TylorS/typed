@@ -279,6 +279,21 @@ export function getNodes(node: HydrationNode): Array<Node> {
   }
 }
 
+export function getNodesExcludingStartComment(node: HydrationNode): Array<Node> {
+  switch (node._tag) {
+    case "element":
+      return [node.parentNode]
+    case "literal":
+      return [node.node]
+    case "hole":
+      return [...node.childNodes.flatMap(getNodesExcludingStartComment), node.endComment]
+    case "many":
+      return [...node.childNodes.flatMap(getNodesExcludingStartComment), node.comment]
+    case "template":
+      return node.childNodes.flatMap(getNodesExcludingStartComment)
+  }
+}
+
 export function getPreviousNodes(hole: HydrationHole | HydrationMany): Array<Node> {
   const predicate: (n: Node) => boolean = hole._tag === "hole"
     ? (n) => n !== hole.startComment && n !== hole.startComment

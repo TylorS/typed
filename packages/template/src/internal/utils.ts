@@ -7,7 +7,7 @@ import { uncapitalize } from "effect/String"
 import { TestClock } from "effect/TestClock"
 import { TEXT_START, TYPED_START } from "../Meta.js"
 import { CouldNotFindCommentError } from "./errors.js"
-import { getNodes, type HydrationNode } from "./v2/hydration-template.js"
+import { getNodesExcludingStartComment, type HydrationNode } from "./v2/hydration-template.js"
 
 export function isComment(node: Node): node is Comment {
   return node.nodeType === node.COMMENT_NODE
@@ -78,17 +78,22 @@ export const findHydratePath = (
   path: Chunk.Chunk<number>
 ): Node => {
   if (Chunk.isEmpty(path)) {
-    return getNodes(node)[0]
+    return getNodesExcludingStartComment(node)[0]
   }
 
   const [first, ...rest] = path
 
-  let current: Node = getNodes(node)[first]
+  // Hydration adds an extra starting comment node which should not be included in the path
+  let current: Node = getNodesExcludingStartComment(node)[first]
   for (const index of rest) {
-    current = current.childNodes[index]
+    current = Array.from(current.childNodes).filter(isNotStartComment)[index]
   }
 
   return current
+}
+
+function isNotStartComment(node: Node) {
+  return !isComment(node) || !node.data.startsWith("hole")
 }
 
 export interface ParentChildNodes {
