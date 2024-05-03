@@ -1,5 +1,6 @@
 import * as Api from "@/api"
 import { Live } from "@/api/infrastructure"
+import { CurrentUserLive } from "@/api/users/infrastructure"
 import * as Ui from "@/ui"
 import * as Http from "@effect/platform/HttpServer"
 import * as Node from "@typed/core/Node"
@@ -7,7 +8,6 @@ import { toServerRouter } from "@typed/core/Platform"
 import { ServerResponse, ServerRouter } from "@typed/server"
 import { Effect, LogLevel } from "effect"
 import sms from "source-map-support"
-import { CurrentUserLive } from "./api/users/infrastructure"
 
 sms.install()
 
