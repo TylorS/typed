@@ -6,10 +6,12 @@ import type { Default } from "@effect/platform/Http/App"
 import type { Method } from "@effect/platform/Http/Method"
 import * as PlatformRouter from "@effect/platform/Http/Router"
 import type { RouteNotFound } from "@effect/platform/Http/ServerError"
-import type { Navigation } from "@typed/navigation"
+import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
+import type * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
-import type { CurrentRoute } from "@typed/router"
+import type * as TypedRouter from "@typed/router"
 import * as MatchInput from "@typed/router/MatchInput"
+import type { Cause } from "effect"
 import { Chunk, Effect, Option } from "effect"
 import { dual } from "effect/Function"
 import { RouterImpl, RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
@@ -18,8 +20,11 @@ import * as RouteHandler from "./RouteHandler.js"
 /**
  * @since 1.0.0
  */
-export interface Router<E, R>
-  extends Default<E | RouteNotFound, Exclude<R, CurrentRoute | RouteHandler.CurrentParams<any> | Navigation>>
+export interface Router<E, R> extends
+  Default<
+    E | RouteNotFound,
+    Exclude<R, TypedRouter.CurrentRoute | RouteHandler.CurrentParams<any> | Navigation.Navigation>
+  >
 {
   readonly [RouterTypeId]: RouterTypeId
   readonly routes: Chunk.Chunk<RouteHandler.RouteHandler<MatchInput.MatchInput.Any, E, R>>
@@ -73,8 +78,8 @@ const make = (method: Method | "*") =>
 ) => Router<
   E2 | RouteHandler.RouteNotMatched | E | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > => addHandler(RouteHandler.make(method)(route, handler))
 
 /**
@@ -88,8 +93,8 @@ export const get: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("GET")
 
 /**
@@ -103,8 +108,8 @@ export const post: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("POST")
 
 /**
@@ -118,8 +123,8 @@ export const put: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("PUT")
 
 const delete_: <I extends MatchInput.MatchInput.Any, E2, R2>(
@@ -130,8 +135,8 @@ const delete_: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E | E2 | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("DELETE")
 
 export {
@@ -152,8 +157,8 @@ export const patch: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   RouteHandler.RouteNotMatched | E2 | E | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("PATCH")
 
 /**
@@ -167,8 +172,8 @@ export const options: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("OPTIONS")
 
 /**
@@ -182,8 +187,8 @@ export const head: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("HEAD")
 
 /**
@@ -197,8 +202,8 @@ export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, CurrentRoute | Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, CurrentRoute | Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
 > = make("*")
 
 /**
@@ -325,3 +330,78 @@ export const fromPlatformRouter = <E, R>(
 
   return router
 }
+
+/**
+ * @since 1.0.0
+ */
+export const catchAllCause: {
+  <E, E2, R2>(
+    onCause: (cause: Cause.Cause<E>) => Effect.Effect<ServerResponse, E2, R2>
+  ): <R>(router: Router<E, R>) => Router<E2, R | R2>
+
+  <E, R, E2, R2>(
+    router: Router<E, R>,
+    onCause: (cause: Cause.Cause<E>) => Effect.Effect<ServerResponse, E2, R2>
+  ): Router<E2, R | R2>
+} = dual(2, <E, R, E2, R2>(
+  router: Router<E, R>,
+  onCause: (cause: Cause.Cause<E>) => Effect.Effect<ServerResponse, E2, R2>
+): Router<E2, R | R2> =>
+  new RouterImpl(
+    Chunk.map(router.routes, (handler) => RouteHandler.catchAllCause(handler, onCause)),
+    Chunk.map(router.mounts, (mount) => ({
+      ...mount,
+      app: Effect.catchAllCause(mount.app, onCause)
+    }))
+  ))
+
+/**
+ * @since 1.0.0
+ */
+export const catchAll: {
+  <E, E2, R2>(
+    onCause: (cause: E) => Effect.Effect<ServerResponse, E2, R2>
+  ): <R>(router: Router<E, R>) => Router<E2, R | R2>
+
+  <E, R, E2, R2>(router: Router<E, R>, onCause: (cause: E) => Effect.Effect<ServerResponse, E2, R2>): Router<E2, R | R2>
+} = dual(2, <E, R, E2, R2>(
+  router: Router<E, R>,
+  onCause: (cause: E) => Effect.Effect<ServerResponse, E2, R2>
+): Router<E2, R | R2> =>
+  new RouterImpl(
+    Chunk.map(router.routes, (handler) => RouteHandler.catchAll(handler, onCause)),
+    Chunk.map(router.mounts, (mount) => ({
+      ...mount,
+      app: Effect.catchAll(mount.app, onCause)
+    }))
+  ))
+
+/**
+ * @since 1.0.0
+ */
+export const catchTag: {
+  <E, const Tag extends E extends { readonly _tag: string } ? E["_tag"] : never, E2, R2>(
+    tag: Tag,
+    onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E2, R2>
+  ): <R>(router: Router<E, R>) => Router<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
+
+  <E, R, const Tag extends E extends { readonly _tag: string } ? E["_tag"] : never, E2, R2>(
+    router: Router<E, R>,
+    tag: Tag,
+    onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E2, R2>
+  ): Router<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
+} = dual(
+  3,
+  <E, R, const Tag extends (E extends { readonly _tag: string } ? E["_tag"] : never), E2, R2>(
+    router: Router<E, R>,
+    tag: Tag,
+    onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E2, R2>
+  ): Router<Exclude<E, { readonly _tag: Tag }> | E2, R | R2> =>
+    new RouterImpl(
+      Chunk.map(router.routes, (handler) => RouteHandler.catchTag(handler, tag, onError)),
+      Chunk.map(router.mounts, (mount) => ({
+        ...mount,
+        app: Effect.catchTag(mount.app, tag as any, onError)
+      }))
+    )
+)

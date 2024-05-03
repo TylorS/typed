@@ -580,6 +580,9 @@ importers:
       '@typed/router':
         specifier: workspace:*
         version: link:../router/dist
+      '@typed/server':
+        specifier: workspace:*
+        version: link:../server/dist
       '@typed/template':
         specifier: workspace:*
         version: link:../template/dist

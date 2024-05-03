@@ -11,7 +11,9 @@ import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import { Tagged } from "@typed/context"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
+import type { Cause } from "effect"
 import { Data, Effect, Layer, Option } from "effect"
+import { dual } from "effect/Function"
 
 /**
  * @since 1.0.0
@@ -244,3 +246,84 @@ export function toHttpApp<I extends RouteHandler.Any>(
     )
   })
 }
+
+/**
+ * @since 1.0.0
+ */
+export const catchAllCause: {
+  <E2, E3, R3>(
+    onCause: (cause: Cause.Cause<E2>) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(handler: RouteHandler<R, E2, R2>) => RouteHandler<R, E3, R2 | R3>
+
+  <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+    handler: RouteHandler<R, E2, R2>,
+    onCause: (cause: Cause.Cause<E2>) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3, R2 | R3>
+} = dual(2, function catchAllCause<R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+  handler: RouteHandler<R, E2, R2>,
+  onCause: (cause: Cause.Cause<E2>) => Effect.Effect<ServerResponse, E3, R3>
+): RouteHandler<R, E3, R2 | R3> {
+  return make(handler.method)(handler.route, Effect.catchAllCause(handler.handler, onCause))
+})
+
+/**
+ * @since 1.0.0
+ */
+export const catchAll: {
+  <E2, E3, R3>(
+    onError: (error: E2) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(handler: RouteHandler<R, E2, R2>) => RouteHandler<R, E3, R2 | R3>
+
+  <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+    handler: RouteHandler<R, E2, R2>,
+    onError: (error: E2) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3, R2 | R3>
+} = dual(2, function catchAll<R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+  handler: RouteHandler<R, E2, R2>,
+  onError: (error: E2) => Effect.Effect<ServerResponse, E3, R3>
+): RouteHandler<R, E3, R2 | R3> {
+  return make(handler.method)(handler.route, Effect.catchAll(handler.handler, onError))
+})
+
+/**
+ * @since 1.0.0
+ */
+export const catchTag: {
+  <
+    E2,
+    const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never,
+    E3,
+    R3
+  >(
+    tag: Tag,
+    onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(
+    handler: RouteHandler<R, E2, R2>
+  ) => RouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>
+
+  <
+    R extends Router.MatchInput.Any,
+    E2,
+    R2,
+    const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never,
+    E3,
+    R3
+  >(
+    handler: RouteHandler<R, E2, R2>,
+    tag: Tag,
+    onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>
+} = dual(3, function catchTag<
+  R extends Router.MatchInput.Any,
+  E2,
+  R2,
+  const Tag extends (E2 extends { _tag: string } ? E2["_tag"] : never),
+  E3,
+  R3
+>(
+  handler: RouteHandler<R, E2, R2>,
+  tag: Tag,
+  onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E3, R3>
+): RouteHandler<R, Exclude<E2, { readonly _tag: Tag }> | E3, R2 | R3> {
+  return make(handler.method)(handler.route, Effect.catchTag(handler.handler, tag, onError))
+})

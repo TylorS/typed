@@ -28,7 +28,7 @@ export namespace RouteMatch {
   /**
    * @since 1.0.0
    */
-  export type Any = RouteMatch<Route.Route.Any, any, any, any, any, any, any>
+  export type Any<O = any> = RouteMatch<Route.Route.Any, any, any, any, O, any, any>
 
   /**
    * @since 1.0.0

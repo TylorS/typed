@@ -157,8 +157,8 @@ export namespace Route {
     P extends string,
     S extends Sch.Schema.All
   > {
-    readonly _P: Types.Invariant<P>
-    readonly _S: Types.Invariant<S>
+    readonly _P: Types.Covariant<P>
+    readonly _S: Types.Covariant<S>
   }
 
   /**

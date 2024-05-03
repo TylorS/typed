@@ -49,6 +49,9 @@
       "path": "../router"
     },
     {
+      "path": "../server"
+    },
+    {
       "path": "../template"
     },
     {
