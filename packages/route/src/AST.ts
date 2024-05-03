@@ -894,7 +894,7 @@ function parsePathSegment(segment: string): AST {
 function parsePathPart(part: string): AST {
   if (part[0] === "{") {
     return parsePrefix(part)
-  } else if (part === P.unnamed) {
+  } else if (part === P.unnamed || part === "*") {
     return new UnnamedParam()
   } else if (part[0] === ":") {
     return parseParam(part.slice(1))

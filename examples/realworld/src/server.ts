@@ -4,28 +4,31 @@ import * as Ui from "@/ui"
 import * as Http from "@effect/platform/HttpServer"
 import * as Node from "@typed/core/Node"
 import { toServerRouter } from "@typed/core/Platform"
-import { ServerRouter } from "@typed/server"
+import { ServerResponse, ServerRouter } from "@typed/server"
 import { Effect, LogLevel } from "effect"
 import sms from "source-map-support"
+import { CurrentUserLive } from "./api/users/infrastructure"
 
 sms.install()
 
-const uiRouter = ServerRouter.catchAll(
-  toServerRouter(Ui.router, { layout: Ui.document }),
-  (_) =>
-    Http.response.empty({
-      status: 303,
-      headers: Http.headers.fromInput({
-        location: _._tag === "RedirectError" ? _.path.toString() : "/login"
+toServerRouter(Ui.router, { layout: Ui.document }).pipe(
+  ServerRouter.catchAll(
+    (_) =>
+      ServerResponse.empty({
+        status: 303,
+        headers: Http.headers.fromInput({
+          location: _._tag === "RedirectError" ? _.path.toString() : "/login"
+        })
       })
-    })
-)
-
-const apiServer = Effect.catchTag(Api.server, "Unauthorized", () => Http.response.empty({ status: 401 }))
-
-uiRouter.pipe(
-  ServerRouter.mountApp("/api", apiServer),
-  Effect.provide(Live),
+  ),
+  ServerRouter.mountApp(
+    "/api",
+    Effect.catchTag(Api.server, "Unauthorized", () => ServerResponse.empty({ status: 401 }))
+  ),
+  // CurrentUserLive depends on ServerRequest provided by Node.listen
+  Effect.provide(CurrentUserLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
+  // Provide all static resources which do not change per-request
+  Effect.provide(Live),
   Node.run
 )

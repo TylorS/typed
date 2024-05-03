@@ -34,10 +34,12 @@ export interface Router<E, R> extends
 /**
  * @since 1.0.0
  */
-export interface Mount<E, R> {
-  readonly prefix: MatchInput.MatchInput.Any
-  readonly app: Default<E, R>
-  readonly options?: { readonly includePrefix?: boolean }
+export class Mount<E, R> {
+  constructor(
+    readonly prefix: MatchInput.MatchInput.Any,
+    readonly app: Default<E, R>,
+    readonly options?: { readonly includePrefix?: boolean | undefined }
+  ) {}
 }
 
 /**
@@ -222,19 +224,29 @@ export const mountApp: {
     app: Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
   ): Router<E | E2, R | R2>
-} = dual((args) => RouterTypeId in args[0], <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
-  router: Router<E, R>,
-  prefix: Prefix,
-  app: Default<E2, R2>,
-  options?: { includePrefix?: boolean | undefined }
-): Router<E | E2, R | R2> =>
-  new RouterImpl<E | E2, R | R2, E, R>(
-    router.routes,
-    Chunk.append(
-      router.mounts,
-      { prefix: typeof prefix === "string" ? Route.parse(prefix) : prefix, app, options } as Mount<E | E2, R | R2>
+} = dual(
+  (args) => typeof args[0] === "object" && RouterTypeId in args[0],
+  <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
+    router: Router<E, R>,
+    prefix: Prefix,
+    app: Default<E2, R2>,
+    options?: { includePrefix?: boolean | undefined }
+  ): Router<E | E2, R | R2> => {
+    const prefixRoute = getRouteGuard(prefix)
+
+    return new RouterImpl<E | E2, R | R2, E, R>(
+      router.routes,
+      Chunk.append(
+        router.mounts,
+        new Mount(
+          prefixRoute,
+          app,
+          options
+        )
+      )
     )
-  ))
+  }
+)
 
 /**
  * @since 1.0.0
@@ -255,7 +267,7 @@ export const mount: {
   prefix: Prefix,
   router: Router<E2, R2>
 ): Router<E | E2, R | R2> => {
-  const prefixRoute = typeof prefix === "string" ? Route.parse(prefix) : prefix as Exclude<Prefix, string>
+  const prefixRoute = getRouteGuard(prefix)
 
   return new RouterImpl<E | E2, R | R2, E | E2, R | R2>(
     Chunk.appendAll(
@@ -264,10 +276,15 @@ export const mount: {
     ),
     Chunk.appendAll(
       parentRouter.mounts,
-      Chunk.map(router.mounts, (m) => ({ prefix: MatchInput.concat(prefixRoute, m.prefix), app: m.app }))
+      Chunk.map(router.mounts, (m) => new Mount(MatchInput.concat(prefixRoute, m.prefix), m.app, m.options))
     )
   )
 })
+
+function getRouteGuard<const I extends MatchInput.MatchInput.Any | string>(routeOrPath: I) {
+  if (typeof routeOrPath === "string") return MatchInput.asRouteGuard(Route.parse(routeOrPath))
+  return MatchInput.asRouteGuard(routeOrPath)
+}
 
 /**
  * Note this will only function properly if your route's paths are compatible with the platform router.
@@ -355,10 +372,10 @@ export const catchAllCause: {
 ): Router<E2, R | R2> =>
   new RouterImpl(
     Chunk.map(router.routes, (handler) => RouteHandler.catchAllCause(handler, onCause)),
-    Chunk.map(router.mounts, (mount) => ({
-      ...mount,
-      app: Effect.catchAllCause(mount.app, onCause)
-    }))
+    Chunk.map(
+      router.mounts,
+      (mount) => new Mount(mount.prefix, Effect.catchAllCause(mount.app, onCause), mount.options)
+    )
   ))
 
 /**
@@ -376,10 +393,12 @@ export const catchAll: {
 ): Router<E2, R | R2> =>
   new RouterImpl(
     Chunk.map(router.routes, (handler) => RouteHandler.catchAll(handler, onCause)),
-    Chunk.map(router.mounts, (mount) => ({
-      ...mount,
-      app: Effect.catchAll(mount.app, onCause)
-    }))
+    Chunk.map(router.mounts, (mount) =>
+      new Mount(
+        mount.prefix,
+        Effect.catchAll(mount.app, onCause),
+        mount.options
+      ))
   ))
 
 /**
@@ -405,9 +424,7 @@ export const catchTag: {
   ): Router<Exclude<E, { readonly _tag: Tag }> | E2, R | R2> =>
     new RouterImpl(
       Chunk.map(router.routes, (handler) => RouteHandler.catchTag(handler, tag, onError)),
-      Chunk.map(router.mounts, (mount) => ({
-        ...mount,
-        app: Effect.catchTag(mount.app, tag as any, onError)
-      }))
+      Chunk.map(router.mounts, (mount) =>
+        new Mount(mount.prefix, Effect.catchTag(mount.app, tag as any, onError), mount.options))
     )
 )

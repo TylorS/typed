@@ -96,3 +96,20 @@ export * as ServerError from "./ServerError.js"
  * @since 1.0.0
  */
 export * as SwaggerRouter from "./SwaggerRouter.js"
+
+// Re-exports from @effect/platform
+
+/**
+ * @since 1.0.0
+ */
+export * as ServerResponse from "@effect/platform/Http/ServerResponse"
+
+/**
+ * @since 1.0.0
+ */
+export * as ServerHeaders from "@effect/platform/Http/Headers"
+
+/**
+ * @since 1.0.0
+ */
+export * as Cookies from "@effect/platform/Http/Cookies"
