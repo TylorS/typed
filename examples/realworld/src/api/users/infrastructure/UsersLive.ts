@@ -17,7 +17,7 @@ import { makeNanoId } from "@typed/id"
 import { Clock, Config, Effect, Layer, Option } from "effect"
 import jwt from "jsonwebtoken"
 
-export const UsersLive = Users.implement({
+export const UsersRepoLive = Users.implement({
   current: () =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)

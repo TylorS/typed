@@ -210,19 +210,19 @@ export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
  * @since 1.0.0
  */
 export const mountApp: {
-  <Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+  <Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
     prefix: Prefix,
     app: Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
   ): <E, R>(router: Router<E, R>) => Router<E2 | E, R2 | R>
 
-  <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+  <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
     router: Router<E, R>,
     prefix: Prefix,
     app: Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
   ): Router<E | E2, R | R2>
-} = dual((args) => RouterTypeId in args[0], <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+} = dual((args) => RouterTypeId in args[0], <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
   router: Router<E, R>,
   prefix: Prefix,
   app: Default<E2, R2>,
@@ -230,38 +230,44 @@ export const mountApp: {
 ): Router<E | E2, R | R2> =>
   new RouterImpl<E | E2, R | R2, E, R>(
     router.routes,
-    Chunk.append(router.mounts, { prefix, app, options } as Mount<E | E2, R | R2>)
+    Chunk.append(
+      router.mounts,
+      { prefix: typeof prefix === "string" ? Route.parse(prefix) : prefix, app, options } as Mount<E | E2, R | R2>
+    )
   ))
 
 /**
  * @since 1.0.0
  */
 export const mount: {
-  <Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+  <Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
     prefix: Prefix,
     router: Router<E2, R2>
   ): <E, R>(parentRouter: Router<E, R>) => Router<E | E2, R | R2>
 
-  <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+  <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
     parentRouter: Router<E, R>,
     prefix: Prefix,
     router: Router<E2, R2>
   ): Router<E | E2, R | R2>
-} = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any, E2, R2>(
+} = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
   parentRouter: Router<E, R>,
   prefix: Prefix,
   router: Router<E2, R2>
-): Router<E | E2, R | R2> =>
-  new RouterImpl<E | E2, R | R2, E | E2, R | R2>(
+): Router<E | E2, R | R2> => {
+  const prefixRoute = typeof prefix === "string" ? Route.parse(prefix) : prefix as Exclude<Prefix, string>
+
+  return new RouterImpl<E | E2, R | R2, E | E2, R | R2>(
     Chunk.appendAll(
       parentRouter.routes,
-      Chunk.map(router.routes, (r) => RouteHandler.make(r.method)(MatchInput.concat(prefix, r.route), r.handler))
+      Chunk.map(router.routes, (r) => RouteHandler.make(r.method)(MatchInput.concat(prefixRoute, r.route), r.handler))
     ),
     Chunk.appendAll(
       parentRouter.mounts,
-      Chunk.map(router.mounts, (m) => ({ prefix: MatchInput.concat(prefix, m.prefix), app: m.app }))
+      Chunk.map(router.mounts, (m) => ({ prefix: MatchInput.concat(prefixRoute, m.prefix), app: m.app }))
     )
-  ))
+  )
+})
 
 /**
  * Note this will only function properly if your route's paths are compatible with the platform router.

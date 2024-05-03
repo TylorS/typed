@@ -2,13 +2,12 @@ import { DbUser, dbUserToUser } from "@/api/common/infrastructure/schema"
 import type { JwtToken, User } from "@/model"
 import { Unauthorized } from "@/services/errors"
 import { Schema } from "@effect/schema"
-import { Context } from "@typed/core"
-import { Config, Effect, Option } from "effect"
+import { Config, Effect, FiberRef, Option } from "effect"
 import jwt from "jsonwebtoken"
 
-export const CurrentJwt = Context.Tagged<JwtToken>()("CurrentJwt")
+export const CurrentJwt = FiberRef.unsafeMake<Option.Option<JwtToken>>(Option.none())
 
-export const getCurrentJwtOption = Effect.serviceOption(CurrentJwt)
+export const getCurrentJwtOption = FiberRef.get(CurrentJwt)
 
 export const getCurrentJwt = getCurrentJwtOption.pipe(
   Effect.flatten,

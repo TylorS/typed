@@ -3,7 +3,7 @@ import { CommentsLive } from "@/api/comments/infrastructure/CommentsLive"
 import { DbLive } from "@/api/common/infrastructure/db"
 import { ProfilesLive } from "@/api/profiles/infrastructure/ProfilesLive"
 import { TagsLive } from "@/api/tags/infrastructure/TagsLive"
-import { UsersLive } from "@/api/users/infrastructure/UsersLive"
+import { UsersLive } from "@/api/users/infrastructure"
 import { getRandomValues } from "@typed/id"
 import { ConfigProvider, Layer } from "effect"
 import { NodeSwaggerFiles } from "effect-http-node"
@@ -16,5 +16,3 @@ export const Live = Layer.mergeAll(ArticlesLive, CommentsLive, ProfilesLive, Tag
   Layer.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env))),
   Layer.provideMerge(NodeSwaggerFiles.SwaggerFilesLive)
 )
-
-export * from "./common/infrastructure/CurrentJwt"
