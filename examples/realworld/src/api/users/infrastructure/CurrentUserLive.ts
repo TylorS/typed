@@ -2,7 +2,7 @@ import * as Http from "@effect/platform/HttpServer"
 import { CurrentJwt } from "@realworld/api/common/infrastructure/CurrentJwt"
 import { JwtToken } from "@realworld/model"
 import { CurrentUser, Users } from "@realworld/services"
-import { AsyncData } from "@typed/core"
+import { AsyncData, RefSubject } from "@typed/core"
 import { Effect, Layer, Option } from "effect"
 
 export const CurrentUserLive = Layer.scopedContext(Effect.gen(function*(_) {
@@ -18,13 +18,18 @@ export const CurrentUserLive = Layer.scopedContext(Effect.gen(function*(_) {
     )
   )
 
-  // Set the CurrentJwt to the Token we parsed from the headers
-  yield* _(Effect.locallyScoped(CurrentJwt, token))
+  if (Option.isNone(token)) {
+    const { context } = CurrentUser.tag.build(
+      yield* RefSubject.of<RefSubject.Success<typeof CurrentUser>>(AsyncData.noData())
+    )
+    return context
+  }
 
-  return yield* Layer.build(Option.match(token, {
-    // Don't bother fetching the User if there is no token
-    onNone: () => CurrentUser.make(Effect.succeed(AsyncData.noData()), { take: 1 }),
-    // Attempt to fetch the current user with the Token
-    onSome: () => CurrentUser.make(Users.current().pipe(Effect.exit, Effect.map(AsyncData.fromExit)), { take: 1 })
-  }))
+  const ref = yield* Users.current().pipe(
+    Effect.exit,
+    Effect.map(AsyncData.fromExit),
+    Effect.flatMap(RefSubject.of<RefSubject.Success<typeof CurrentUser>>)
+  )
+
+  return CurrentUser.tag.build(ref).merge(CurrentJwt.build(token.value)).context
 }))
