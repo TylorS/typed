@@ -12,6 +12,10 @@ import { UpdateUserInput } from "@realworld/services/UpdateUser"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 
+export const addCookieHeader = Api.setResponseHeaders(Schema.Struct({
+  "set-cookie": Schema.optional(Schema.String)
+}))
+
 export const login = Api.post(
   "login",
   Routes.login,
@@ -21,6 +25,7 @@ export const login = Api.post(
 ).pipe(
   Api.setRequestBody(Schema.Struct({ user: LoginInput })),
   add200(Schema.Struct({ user: User })),
+  addCookieHeader,
   addUnauthorizedResponse,
   addUnprocessableResponse
 )
@@ -33,6 +38,7 @@ export const getCurrentUser = Api.get(
   }
 ).pipe(
   add200(Schema.Struct({ user: User })),
+  addCookieHeader,
   addUnauthorizedResponse,
   addUnprocessableResponse,
   addJwtTokenSecurity
@@ -47,6 +53,7 @@ export const register = Api.post(
 ).pipe(
   Api.setRequestBody(Schema.Struct({ user: RegisterInput })),
   add200(Schema.Struct({ user: User })),
+  addCookieHeader,
   addUnprocessableResponse
 )
 

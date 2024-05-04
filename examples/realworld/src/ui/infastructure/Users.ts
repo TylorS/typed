@@ -7,17 +7,17 @@ export const UsersLive = Users.implement({
   current: () =>
     withJwtToken((jwtToken) => client.getCurrentUser({}, jwtToken)).pipe(
       handleClientRequest,
-      Effect.map((r) => r.user),
+      Effect.map((r) => r.body.user),
       Effect.tap((user) => SaveJwtToken(user.token))
     ),
   login: (input) =>
     handleClientRequest(client.login({ body: { user: input } })).pipe(
-      Effect.map((r) => r.user),
+      Effect.map((r) => r.body.user),
       Effect.tap((user) => SaveJwtToken(user.token))
     ),
   register: (input) =>
     handleClientRequest(client.register({ body: { user: input } })).pipe(
-      Effect.map((r) => r.user),
+      Effect.map((r) => r.body.user),
       Effect.tap((user) => SaveJwtToken(user.token))
     ),
   update: (input) =>

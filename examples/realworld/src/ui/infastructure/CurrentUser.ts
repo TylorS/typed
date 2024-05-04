@@ -18,7 +18,7 @@ export const CurrentUserLive = CurrentUser.make(
     return yield* _(
       client.getCurrentUser({}, addJwtTokenToRequest(jwtToken.value)),
       handleClientRequest,
-      Effect.map((r) => r.user),
+      Effect.map((r) => r.body.user),
       Effect.tapErrorCause(() => RemoveJwtToken()),
       Effect.exit,
       Effect.map(AsyncData.fromExit)
