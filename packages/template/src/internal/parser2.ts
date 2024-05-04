@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
-import { Chunk } from "effect"
+import * as Chunk from "effect/Chunk"
 import type { IToken } from "html5parser"
 import { tokenize } from "html5parser"
 import * as Template from "../Template.js"

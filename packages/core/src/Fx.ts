@@ -5,7 +5,7 @@
 
 import { CurrentEnvironment, type Environment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 
 /**
  * [Fx documentation](https://tylors.github.io/typed/fx/Fx.ts.html)

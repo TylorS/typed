@@ -3,10 +3,13 @@
  * @since 1.20.0
  */
 
-import type { Effect, Option, Pipeable, Scope } from "effect"
 import type { Cause } from "effect/Cause"
+import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import type * as Option from "effect/Option"
+import type * as Pipeable from "effect/Pipeable"
 import { pipeArguments } from "effect/Pipeable"
+import type * as Scope from "effect/Scope"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import { FxBase } from "./internal/protos.js"

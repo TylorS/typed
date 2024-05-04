@@ -1,4 +1,4 @@
-import type { Cause } from "effect"
+import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
 import type { ElementSource } from "../../ElementSource.js"

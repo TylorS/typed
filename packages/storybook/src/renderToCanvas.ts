@@ -4,15 +4,17 @@
  */
 
 import type { RenderContext } from "@storybook/types"
-
 import * as Fx from "@typed/fx/Fx"
-import { getRandomValues } from "@typed/id"
-import * as Navigation from "@typed/navigation"
-import * as Router from "@typed/router"
-import { renderLayer, renderToLayer } from "@typed/template"
+import { getRandomValues } from "@typed/id/GetRandomValues"
+import { initialMemory } from "@typed/navigation/Layer"
+import { server } from "@typed/router/CurrentRoute"
+import { renderLayer, renderToLayer } from "@typed/template/Render"
 import * as RenderQueue from "@typed/template/RenderQueue"
-import { Cause, Effect, FiberId, Layer } from "effect"
-import type { TypedRenderer } from "./types"
+import * as Cause from "effect/Cause"
+import * as Effect from "effect/Effect"
+import * as FiberId from "effect/FiberId"
+import * as Layer from "effect/Layer"
+import type { TypedRenderer } from "./types.js"
 
 /**
  * Storybook v3 renderer.
@@ -42,8 +44,8 @@ export async function renderToCanvas(
   )
 
   const program = renderToLayer(renderable).pipe(
-    Layer.provideMerge(Router.server("/")),
-    Layer.provideMerge(Navigation.initialMemory({ url: "/" })),
+    Layer.provideMerge(server("/")),
+    Layer.provideMerge(initialMemory({ url: "/" })),
     Layer.provideMerge(renderLayer(window, { rootElement })),
     Layer.provide(RenderQueue.mixed()),
     Layer.provideMerge(getRandomValues),

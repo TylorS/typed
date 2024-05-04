@@ -4,20 +4,24 @@
  */
 
 import * as C from "@typed/context"
-import type { Equivalence, FiberId, Runtime } from "effect"
-import { Fiber, MutableRef, Unify } from "effect"
-import * as ReadonlyArray from "effect/Array"
+import * as Array from "effect/Array"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
+import type * as Equivalence from "effect/Equivalence"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
+import * as Fiber from "effect/Fiber"
+import type * as FiberId from "effect/FiberId"
 import { dual, identity } from "effect/Function"
 import * as Layer from "effect/Layer"
+import * as MutableRef from "effect/MutableRef"
 import { sum } from "effect/Number"
 import * as Option from "effect/Option"
+import type * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"
+import * as Unify from "effect/Unify"
 import { type Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
@@ -1491,7 +1495,7 @@ class RefSubjectTuple<
     this.interrupt = Effect.all(refs.map((r) => r.interrupt), UNBOUNDED)
     this.subscriberCount = Effect.map(
       Effect.all(refs.map((r) => r.subscriberCount), UNBOUNDED),
-      ReadonlyArray.reduce(0, sum)
+      Array.reduce(0, sum)
     )
 
     this.getSetDelete = {
@@ -1662,7 +1666,7 @@ class RefSubjectStruct<
     this.interrupt = Effect.all(Object.values(refs).map((r) => r.interrupt), UNBOUNDED)
     this.subscriberCount = Effect.map(
       Effect.all(Object.values(refs).map((r) => r.subscriberCount), UNBOUNDED),
-      ReadonlyArray.reduce(0, sum)
+      Array.reduce(0, sum)
     )
 
     this.getSetDelete = {

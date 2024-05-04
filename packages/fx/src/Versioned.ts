@@ -6,12 +6,14 @@
  */
 
 import type * as Context from "@typed/context"
-import type { Layer, Runtime, Scope } from "effect"
-import { Exit } from "effect"
 import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
 import { dual, flow } from "effect/Function"
+import type * as Layer from "effect/Layer"
 import { sum } from "effect/Number"
 import * as Option from "effect/Option"
+import type * as Runtime from "effect/Runtime"
+import type * as Scope from "effect/Scope"
 import type { Fx } from "./Fx.js"
 import * as core from "./internal/core.js"
 import { MulticastEffect } from "./internal/helpers.js"

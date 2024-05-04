@@ -5,10 +5,14 @@
 import type { ParseOptions } from "@effect/schema/AST"
 import type * as ParseResult from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
-import type { Cause, Context, Layer, Predicate, Runtime } from "effect"
+import type * as Cause from "effect/Cause"
+import type * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import type * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type * as Predicate from "effect/Predicate"
+import type * as Runtime from "effect/Runtime"
 
 /**
  * @since 1.0.0

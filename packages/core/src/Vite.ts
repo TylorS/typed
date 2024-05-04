@@ -6,7 +6,7 @@ import * as Fx from "@typed/fx"
 import type { RenderEvent, RenderQueue, RenderTemplate } from "@typed/template"
 import { HtmlRenderEvent } from "@typed/template"
 import type { AssetManifest } from "@typed/vite-plugin"
-import type { Scope } from "effect"
+import type * as Scope from "effect/Scope"
 
 /**
  * @since 1.0.0

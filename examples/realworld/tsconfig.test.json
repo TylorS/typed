@@ -20,10 +20,5 @@
   },
   "include": [
     "test/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    }
   ]
 }

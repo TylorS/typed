@@ -5,9 +5,10 @@
 
 import * as Context from "@typed/context"
 import * as Idle from "@typed/fx/Idle"
-import { FiberRef, type Layer } from "effect"
 import * as Effect from "effect/Effect"
+import * as FiberRef from "effect/FiberRef"
 import { dual } from "effect/Function"
+import type * as Layer from "effect/Layer"
 import * as Scope from "effect/Scope"
 
 /**

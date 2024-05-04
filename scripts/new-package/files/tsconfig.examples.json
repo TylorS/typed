@@ -9,10 +9,5 @@
   },
   "include": [
     "examples/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    }
   ]
 }

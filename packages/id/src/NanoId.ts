@@ -2,7 +2,8 @@
  * @since 1.0.0
  */
 
-import { Brand, Effect } from "effect"
+import * as Brand from "effect/Brand"
+import * as Effect from "effect/Effect"
 import { GetRandomValues } from "./GetRandomValues.js"
 
 const nanoIdPattern = /[0-9a-zA-Z_-]/

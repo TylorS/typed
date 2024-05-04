@@ -10,7 +10,7 @@ import type { Renderable } from "@typed/template/Renderable"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import type { RenderQueue } from "@typed/template/RenderQueue"
 import { RenderTemplate } from "@typed/template/RenderTemplate"
-import type { Scope } from "effect"
+import type * as Scope from "effect/Scope"
 import type { TypedPropertiesMap } from "./Props.js"
 
 /**

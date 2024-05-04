@@ -1,7 +1,8 @@
-import type { Equivalence, FiberId } from "effect"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
+import type * as Equivalence from "effect/Equivalence"
 import * as Exit from "effect/Exit"
+import type * as FiberId from "effect/FiberId"
 import * as Option from "effect/Option"
 import { EffectBase } from "./protos.js"
 

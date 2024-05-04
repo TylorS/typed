@@ -5,10 +5,10 @@
  * @since 1.0.0
  */
 
-import type { Effect } from "effect"
 import * as Cause from "effect/Cause"
 import * as Data from "effect/Data"
 import * as Duration from "effect/Duration"
+import type * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Equal from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"

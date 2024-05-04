@@ -8,8 +8,8 @@ import type { DefaultEventMap } from "@typed/template/ElementSource"
 import * as EventHandler from "@typed/template/EventHandler"
 import type { Placeholder } from "@typed/template/Placeholder"
 import type { Rendered } from "@typed/wire"
-import { Effect } from "effect"
-import type { Record } from "effect"
+import * as Effect from "effect/Effect"
+import type * as Record from "effect/Record"
 import type { HTMLPropertiesMap } from "./dom-properties.js"
 
 /**

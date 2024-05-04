@@ -1,5 +1,5 @@
 import * as Fx from "@typed/fx"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { identity } from "effect/Function"
 import type { AttrPartNode, ClassNamePartNode, CommentPartNode, PartNode, TextNode } from "../../Template.js"
 import { convertCharacterEntities } from "../character-entities.js"

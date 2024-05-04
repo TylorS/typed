@@ -8,8 +8,10 @@ import * as Fx from "@typed/fx/Fx"
 import type * as ElementRef from "@typed/template/ElementRef"
 import { getElements } from "@typed/template/ElementSource"
 import type { Rendered } from "@typed/wire"
-import type { Effect, Fiber, Scope } from "effect"
+import type * as Effect from "effect/Effect"
+import type * as Fiber from "effect/Fiber"
 import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import { addEventListeners } from "./internal/addEventListener.js"
 
 /**

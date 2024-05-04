@@ -4,13 +4,14 @@
  */
 
 import * as C from "@typed/context"
-import type { Predicate, Tracer } from "effect"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type * as Predicate from "effect/Predicate"
+import type * as Tracer from "effect/Tracer"
 import { type Bounds } from "./internal/bounds.js"
 
 /**

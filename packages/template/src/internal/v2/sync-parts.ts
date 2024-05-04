@@ -1,5 +1,5 @@
-import { Equivalence } from "effect"
 import { equals } from "effect/Equal"
+import * as Equivalence from "effect/Equivalence"
 import { isNullOrUndefined, renderToString } from "./helpers.js"
 import type * as SyncPart from "./SyncPart.js"
 

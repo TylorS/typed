@@ -3,8 +3,8 @@
  */
 
 import * as RefSubject from "@typed/fx/RefSubject"
-import type { Scope } from "effect"
 import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 
 /**
  * @since 1.0.0

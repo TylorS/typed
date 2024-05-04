@@ -4,14 +4,16 @@
  */
 
 import * as C from "@typed/context"
-import type { Cause, Layer, Pipeable } from "effect"
+import type * as Cause from "effect/Cause"
 import type * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
 import { dual, identity } from "effect/Function"
+import type * as Layer from "effect/Layer"
 import * as MutableRef from "effect/MutableRef"
 import * as Option from "effect/Option"
+import type * as Pipeable from "effect/Pipeable"
 import { hasProperty } from "effect/Predicate"
 import * as Scope from "effect/Scope"
 import { type Fx } from "./Fx.js"

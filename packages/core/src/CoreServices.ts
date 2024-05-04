@@ -7,10 +7,12 @@ import type { DomServices, DomServicesElementParams } from "@typed/dom/DomServic
 import type { GlobalThis } from "@typed/dom/GlobalThis"
 import type { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
-import { GetRandomValues, getRandomValues } from "@typed/id"
+import { GetRandomValues, getRandomValues } from "@typed/id/GetRandomValues"
 import * as Navigation from "@typed/navigation"
-import * as Router from "@typed/router"
-import { hydrateLayer, renderLayer, serverLayer, staticLayer } from "@typed/template"
+import { browser as CurrentRouteBrowser, type CurrentRoute } from "@typed/router/CurrentRoute"
+import { serverLayer, staticLayer } from "@typed/template/Html"
+import { hydrateLayer } from "@typed/template/Hydrate"
+import { renderLayer } from "@typed/template/Render"
 import type * as RenderContext from "@typed/template/RenderContext"
 import * as RenderQueue from "@typed/template/RenderQueue"
 import type { RenderTemplate } from "@typed/template/RenderTemplate"
@@ -25,7 +27,7 @@ export type CoreServices =
   | CurrentEnvironment
   | GetRandomValues
   | Navigation.Navigation
-  | Router.CurrentRoute
+  | CurrentRoute
   | RenderContext.RenderContext
   | RenderQueue.RenderQueue
   | RenderTemplate
@@ -40,14 +42,14 @@ export type CoreDomServices = DomServices | CoreServices
  */
 export function fromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | "mixed" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices> {
   return Layer.mergeAll(
     GetRandomValues.implement((length: number) =>
       Effect.succeed(window.crypto.getRandomValues(new Uint8Array(length)))
     ),
     Navigation.fromWindow,
-    Router.browser
+    CurrentRouteBrowser
   ).pipe(Layer.provideMerge(renderLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
 }
 
@@ -63,14 +65,14 @@ export function hydrateFromWindow(
       Effect.succeed(window.crypto.getRandomValues(new Uint8Array(length)))
     ),
     Navigation.fromWindow,
-    Router.browser
+    CurrentRouteBrowser
   ).pipe(Layer.provideMerge(hydrateLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
 }
 
 /**
  * @since 1.0.0
  */
-export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | Router.CurrentRoute>> = Layer.mergeAll(
+export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | CurrentRoute>> = Layer.mergeAll(
   getRandomValues,
   serverLayer,
   RenderQueue.sync
@@ -79,7 +81,7 @@ export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | R
 /**
  * @since 1.0.0
  */
-const static_: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | Router.CurrentRoute>> = Layer.mergeAll(
+const static_: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | CurrentRoute>> = Layer.mergeAll(
   getRandomValues,
   staticLayer,
   RenderQueue.sync
@@ -92,12 +94,14 @@ export {
   static_ as static
 }
 
-function makeQueueLayer(type: "raf" | "sync" | ["idle", IdleRequestOptions]) {
+function makeQueueLayer(type: "raf" | "sync" | "mixed" | ["idle", IdleRequestOptions]) {
   switch (type) {
     case "raf":
       return RenderQueue.raf
     case "sync":
       return RenderQueue.sync
+    case "mixed":
+      return RenderQueue.mixed()
     default:
       return RenderQueue.idle(type[1])
   }

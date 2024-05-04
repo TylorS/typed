@@ -11,9 +11,12 @@ import type { ServerResponse } from "@effect/platform/Http/ServerResponse"
 import { Tagged } from "@typed/context"
 import * as Navigation from "@typed/navigation"
 import * as Router from "@typed/router"
-import type { Cause } from "effect"
-import { Data, Effect, Layer, Option } from "effect"
+import type * as Cause from "effect/Cause"
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 
 /**
  * @since 1.0.0

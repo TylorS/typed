@@ -2,4 +2,4 @@
 
 import { makeTestConfigFromImportMetaUrl } from "../../vitest-make-config.mjs"
 
-export default makeTestConfigFromImportMetaUrl(import.meta.url)
+export default makeTestConfigFromImportMetaUrl(import.meta.env)

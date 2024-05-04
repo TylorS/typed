@@ -3,7 +3,7 @@
 import { dirname } from "path"
 import { fileURLToPath } from "url"
 import { defineConfig, mergeConfig } from "vite"
-import { makeTestConfig } from "../../vitest.config.mjs"
+import { makeTestConfig } from "../../vitest-make-config.mjs"
 
 const directory = dirname(fileURLToPath(import.meta.url))
 const config = mergeConfig(

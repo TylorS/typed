@@ -4,36 +4,33 @@
  */
 
 import type * as Ctx from "@typed/context"
-import type {
-  ConfigProvider,
-  Duration,
-  Equivalence,
-  ExecutionStrategy,
-  Exit,
-  Fiber,
-  FiberId,
-  FiberRef,
-  HashSet,
-  Pipeable,
-  Predicate,
-  PubSub,
-  Request,
-  Runtime,
-  Scope,
-  Tracer,
-  Utils
-} from "effect"
 import * as Cause from "effect/Cause"
-import type { DurationInput } from "effect/Duration"
+import type * as ConfigProvider from "effect/ConfigProvider"
+import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
+import type * as Equivalence from "effect/Equivalence"
+import type * as ExecutionStrategy from "effect/ExecutionStrategy"
+import type * as Exit from "effect/Exit"
+import type * as Fiber from "effect/Fiber"
+import type * as FiberId from "effect/FiberId"
+import type * as FiberRef from "effect/FiberRef"
 import { dual, identity } from "effect/Function"
+import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
+import type * as Pipeable from "effect/Pipeable"
+import type * as Predicate from "effect/Predicate"
 import { hasProperty } from "effect/Predicate"
+import type * as PubSub from "effect/PubSub"
 import * as Queue from "effect/Queue"
+import type * as Request from "effect/Request"
+import type * as Runtime from "effect/Runtime"
 import * as Schedule from "effect/Schedule"
+import type * as Scope from "effect/Scope"
+import type * as Tracer from "effect/Tracer"
 import type * as Types from "effect/Types"
+import type * as Utils from "effect/Utils"
 import * as Emitter from "./Emitter.js"
 import * as core from "./internal/core.js"
 import * as coreKeyed from "./internal/keyed.js"
@@ -2455,9 +2452,9 @@ export const withEmitter = <A, E = never, E2 = never, R = never>(
  * @since 1.18.0
  */
 export const delay: {
-  (delay: DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
-  <A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, R | Scope.Scope>
-} = dual(2, function<A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, R | Scope.Scope> {
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, R | Scope.Scope>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, R | Scope.Scope>
+} = dual(2, function<A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, R | Scope.Scope> {
   return core.flatMap(fx, (a) => core.fromEffect(Effect.delay(Effect.succeed(a), delay)))
 })
 

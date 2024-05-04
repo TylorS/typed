@@ -1,8 +1,8 @@
 import type { EventWithCurrentTarget } from "@typed/dom/EventTarget"
 import * as Fx from "@typed/fx/Fx"
 import type { DefaultEventMap } from "@typed/template/ElementSource"
-import type { Scope } from "effect"
 import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 
 export function addEventListeners<T extends EventTarget, Events extends ReadonlyArray<keyof DefaultEventMap<T>>>(
   target: T,

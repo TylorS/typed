@@ -9,9 +9,9 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import type { Destination } from "@typed/navigation"
 import { CurrentEntry, CurrentPath, getCurrentPathFromUrl, Navigation } from "@typed/navigation"
 import * as Route from "@typed/route"
-import type { Layer } from "effect"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
+import type * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 
 /**

@@ -3,11 +3,10 @@
 import babel from "@vitejs/plugin-react"
 import tsconfigPaths from "vite-plugin-tsconfig-paths"
 
-import { readdirSync, statSync } from "fs"
-import { createRequire } from "module"
-import { dirname, join } from "path"
-import { fileURLToPath } from "url"
-import { defineConfig } from "vite"
+import { createRequire } from "node:module"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
+import { defineProject } from "vitest/config"
 
 const require = createRequire(import.meta.url)
 
@@ -19,7 +18,7 @@ export function makeTestConfig(
   testPath: string | Array<string> = "./test/*.ts",
   tsConfigFileName: string = "tsconfig.test.json"
 ) {
-  return defineConfig({
+  return defineProject({
     plugins: [
       babel({ babel: babelConfig }),
       tsconfigPaths({
@@ -46,24 +45,3 @@ export function makeTestConfigFromImportMetaUrl(
 ) {
   return makeTestConfig(dirname(fileURLToPath(url)), testPath, tsConfigFileName)
 }
-
-const directory = dirname(fileURLToPath(import.meta.url))
-
-const packages = readdirSync(join(directory, "packages"))
-  .filter(hasTestDirectory)
-  .map((pkg) => `./packages/${pkg}/test/**/*.ts`)
-
-function hasTestDirectory(pkg: string) {
-  const dir = join(directory, "packages", pkg)
-  const stat = statSync(dir)
-
-  if (!stat.isDirectory()) return false
-
-  try {
-    return statSync(join(dir, "test")).isDirectory()
-  } catch {
-    return false
-  }
-}
-
-export default makeTestConfig(directory, packages, "tsconfig.json")

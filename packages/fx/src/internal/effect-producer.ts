@@ -1,4 +1,4 @@
-import type { Cause } from "effect"
+import type * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
 import * as Schedule from "effect/Schedule"
 import type * as Sink from "../Sink.js"

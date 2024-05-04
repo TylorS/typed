@@ -4,7 +4,7 @@
  */
 
 import type { PresetProperty } from "@storybook/types"
-import type { StorybookConfig } from "./types"
+import type { StorybookConfig } from "./types.js"
 
 /**
  * @since 1.0.0

@@ -1,37 +1,35 @@
 import * as Context from "@typed/context"
-import type {
-  ConfigProvider,
-  Duration,
-  Equivalence,
-  FiberId,
-  FiberRef,
-  HashSet,
-  Queue,
-  Request,
-  Runtime,
-  Schedule,
-  Scheduler,
-  Utils
-} from "effect"
-import { Unify } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
+import type * as ConfigProvider from "effect/ConfigProvider"
 import * as Deferred from "effect/Deferred"
+import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Either from "effect/Either"
 import * as Equal from "effect/Equal"
+import type * as Equivalence from "effect/Equivalence"
 import { boolean } from "effect/Equivalence"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
+import type * as FiberId from "effect/FiberId"
+import type * as FiberRef from "effect/FiberRef"
 import { constFalse, constTrue } from "effect/Function"
+import type * as HashSet from "effect/HashSet"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as Predicate from "effect/Predicate"
+import type * as Queue from "effect/Queue"
 import * as Ref from "effect/Ref"
+import type * as Request from "effect/Request"
+import type * as Runtime from "effect/Runtime"
+import type * as Schedule from "effect/Schedule"
+import type * as Scheduler from "effect/Scheduler"
 import * as Scope from "effect/Scope"
 import * as Tracer from "effect/Tracer"
+import * as Unify from "effect/Unify"
+import type * as Utils from "effect/Utils"
 import type { FlattenStrategy, Fx, FxFork, MergeStrategy } from "../Fx.js"
 import * as Sink from "../Sink.js"
 import type { Bounds } from "./bounds.js"

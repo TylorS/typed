@@ -9,9 +9,10 @@ import { Tagged } from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
 import type { Uuid } from "@typed/id"
 import * as IdSchema from "@typed/id/Schema"
-import type { Option, Scope } from "effect"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
+import type * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 import type { Simplify } from "effect/Types"
 
 /**

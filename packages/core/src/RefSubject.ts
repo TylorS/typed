@@ -5,7 +5,10 @@
 import type { CurrentEnvironment, Environment } from "@typed/environment"
 import type * as RefSubject from "@typed/fx/RefSubject"
 import { ComputedTypeId, RefSubjectTypeId } from "@typed/fx/TypeId"
-import type { Cause, Effect, Exit, Scope } from "effect"
+import type * as Cause from "effect/Cause"
+import type * as Effect from "effect/Effect"
+import type * as Exit from "effect/Exit"
+import type * as Scope from "effect/Scope"
 import * as Fx from "./Fx.js"
 
 /**

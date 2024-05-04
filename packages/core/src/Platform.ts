@@ -25,9 +25,13 @@ import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import type { TypedOptions } from "@typed/vite-plugin"
-import type { Scope } from "effect"
-import { Array, Data, Effect, identity, Layer, Option } from "effect"
-import type { NonEmptyArray } from "effect/Array"
+import * as Array from "effect/Array"
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
+import { identity } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import type * as Scope from "effect/Scope"
 
 /**
  * @since 1.0.0
@@ -397,7 +401,7 @@ export function toServerRouter<
 
 const fromMatches = <R extends Route.Route.Any>(
   route: R,
-  matches: NonEmptyArray<Router.RouteMatch.RouteMatch.Any>,
+  matches: Array.NonEmptyArray<Router.RouteMatch.RouteMatch.Any>,
   head: ReturnType<typeof getHeadAndScript>["head"],
   script: ReturnType<typeof getHeadAndScript>["script"],
   options?: {

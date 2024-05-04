@@ -1,7 +1,8 @@
 import type { Rendered } from "@typed/wire"
-import { Effect, Scope } from "effect"
+import * as Effect from "effect/Effect"
 import * as Fiber from "effect/Fiber"
 import * as Runtime from "effect/Runtime"
+import * as Scope from "effect/Scope"
 import { getElements } from "../ElementSource.js"
 import type { EventHandler } from "../EventHandler.js"
 

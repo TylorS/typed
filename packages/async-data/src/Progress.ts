@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 
-import { Data } from "effect"
+import * as Data from "effect/Data"
 import * as Equivalence from "effect/Equivalence"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"

@@ -13,7 +13,7 @@
 import { Schema } from "@effect/schema"
 import type { ParseOptions } from "@effect/schema/AST"
 import type { ParseError } from "@effect/schema/ParseResult"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import { hasProperty } from "effect/Predicate"
 

@@ -3,11 +3,12 @@
  * @since 1.20.0
  */
 
-import { ExecutionStrategy, type Scope } from "effect"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
+import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import type * as Exit from "effect/Exit"
 import * as Runtime from "effect/Runtime"
+import type * as Scope from "effect/Scope"
 import { withScope } from "./internal/helpers.js"
 import * as Sink from "./Sink.js"
 

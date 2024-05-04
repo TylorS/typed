@@ -6,8 +6,9 @@ import type * as Schema from "@effect/schema/Schema"
 import type { Guard } from "@typed/guard"
 import type * as _Path from "@typed/path"
 import * as Route from "@typed/route"
-import type { Effect, Option } from "effect"
+import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
+import type * as Option from "effect/Option"
 import * as RouteGuard from "./RouteGuard.js"
 
 /**

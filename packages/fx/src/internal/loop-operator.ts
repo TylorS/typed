@@ -1,4 +1,4 @@
-import type { Either } from "effect"
+import type * as Either from "effect/Either"
 import * as Option from "effect/Option"
 import * as Sink from "../Sink.js"
 import type { Bounds } from "./bounds.js"

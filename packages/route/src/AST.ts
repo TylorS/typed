@@ -5,7 +5,7 @@
 import { AST, Schema } from "@effect/schema"
 import { getPropertySignatures, PropertySignature, TypeLiteral } from "@effect/schema/AST"
 import * as P from "@typed/path"
-import { Option } from "effect"
+import * as Option from "effect/Option"
 
 /**
  * @since 5.0.0

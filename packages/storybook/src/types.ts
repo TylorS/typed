@@ -20,7 +20,7 @@ import type {
 import type { CoreDomServices } from "@typed/core/CoreServices"
 import type { Fx } from "@typed/fx/Fx"
 import type { Renderable, RenderEvent } from "@typed/template"
-import type { Types } from "effect"
+import type * as Types from "effect/Types"
 
 type FrameworkName = "@storybook/typed"
 type BuilderName = "@storybook/builder-vite"

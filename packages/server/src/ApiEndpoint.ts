@@ -7,9 +7,9 @@ import { getPropertySignatures } from "@effect/schema/AST"
 import type { Schema } from "@effect/schema/Schema"
 import type { MatchInput } from "@typed/router"
 import { getPath, getPathSchema, getQuerySchema } from "@typed/router"
-import { flow } from "effect"
 import type { ApiRequest, ApiResponse, Security } from "effect-http"
 import { ApiEndpoint, ApiSchema } from "effect-http"
+import { flow } from "effect/Function"
 
 export {
   /**

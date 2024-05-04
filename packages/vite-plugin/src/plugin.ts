@@ -51,7 +51,9 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
         config.root = rootDir
         config.optimizeDeps = {
           ...config.optimizeDeps,
-          exclude: Array.from(new Set([...(config.optimizeDeps?.exclude ?? []), "@typed/core"]))
+          exclude: Array.from(
+            new Set([...(config.optimizeDeps?.exclude ?? []), "@typed/core/Node", "@typed/core/Platform"])
+          )
         }
 
         if (config.build?.assetsDir) {
