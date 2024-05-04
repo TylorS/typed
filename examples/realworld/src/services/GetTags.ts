@@ -1,5 +1,5 @@
-import type { ArticleTagList } from "@/model"
-import type { Unprocessable } from "@/services/errors"
+import type { ArticleTagList } from "@realworld/model"
+import type { Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 

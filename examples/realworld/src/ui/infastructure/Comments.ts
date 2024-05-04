@@ -1,6 +1,6 @@
-import { client } from "@/api/client"
-import { Comments } from "@/services"
-import { handleClientRequest, withJwtToken, withOptionalJwtToken } from "@/ui/infastructure/_client"
+import { client } from "@realworld/api/client"
+import { Comments } from "@realworld/services"
+import { handleClientRequest, withJwtToken, withOptionalJwtToken } from "@realworld/ui/infastructure/_client"
 import { Effect } from "effect"
 
 export const CommentsLive = Comments.implement({

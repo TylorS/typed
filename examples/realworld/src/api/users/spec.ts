@@ -1,9 +1,14 @@
-import { add200, addJwtTokenSecurity, addUnauthorizedResponse, addUnprocessableResponse } from "@/api/common/spec"
-import * as Schema from "@/lib/Schema"
-import { User } from "@/model"
-import { LoginInput } from "@/services/Login"
-import { RegisterInput } from "@/services/Register"
-import { UpdateUserInput } from "@/services/UpdateUser"
+import {
+  add200,
+  addJwtTokenSecurity,
+  addUnauthorizedResponse,
+  addUnprocessableResponse
+} from "@realworld/api/common/spec"
+import * as Schema from "@realworld/lib/Schema"
+import { User } from "@realworld/model"
+import { LoginInput } from "@realworld/services/Login"
+import { RegisterInput } from "@realworld/services/Register"
+import { UpdateUserInput } from "@realworld/services/UpdateUser"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 

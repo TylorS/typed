@@ -1,7 +1,7 @@
-import { DbUser, dbUserToUser } from "@/api/common/infrastructure/schema"
-import type { JwtToken, User } from "@/model"
-import { Unauthorized } from "@/services/errors"
 import { Schema } from "@effect/schema"
+import { DbUser, dbUserToUser } from "@realworld/api/common/infrastructure/schema"
+import type { JwtToken, User } from "@realworld/model"
+import { Unauthorized } from "@realworld/services/errors"
 import { Config, Effect, FiberRef, Option } from "effect"
 import jwt from "jsonwebtoken"
 

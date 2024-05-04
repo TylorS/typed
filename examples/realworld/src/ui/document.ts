@@ -1,4 +1,4 @@
-import { layout } from "@/ui/layout"
+import { layout } from "@realworld/ui/layout"
 import { html } from "@typed/core"
 import type { Fx, RenderEvent } from "@typed/core"
 import type { LayoutParams } from "@typed/core/Platform"

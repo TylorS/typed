@@ -1,5 +1,5 @@
-import * as S from "@/lib/Schema"
-import type { Article, Comment, Profile, User } from "@/model"
+import * as S from "@realworld/lib/Schema"
+import type { Article, Comment, Profile, User } from "@realworld/model"
 import {
   ArticleBody,
   ArticleDescription,
@@ -16,7 +16,7 @@ import {
   PasswordHash,
   UserId,
   Username
-} from "@/model"
+} from "@realworld/model"
 import { Option } from "effect"
 
 export const DbUser = S.Struct({

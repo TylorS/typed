@@ -1,4 +1,4 @@
-import { CommentId } from "@/model"
+import { CommentId } from "@realworld/model"
 import * as Route from "@typed/route"
 import { article } from "../articles/routes"
 

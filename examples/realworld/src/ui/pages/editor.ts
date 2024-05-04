@@ -1,4 +1,4 @@
-import { isAuthenticatedGuard } from "@/services"
+import { isAuthenticatedGuard } from "@realworld/services"
 import { html, Route } from "@typed/core"
 
 export const route = Route.literal("/editor").pipe(isAuthenticatedGuard)

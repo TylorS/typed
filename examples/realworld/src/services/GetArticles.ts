@@ -1,7 +1,7 @@
-import * as Schema from "@/lib/Schema"
-import type { Article } from "@/model"
-import { ArticleTag, Username } from "@/model"
-import type { Unprocessable } from "@/services/errors"
+import * as Schema from "@realworld/lib/Schema"
+import type { Article } from "@realworld/model"
+import { ArticleTag, Username } from "@realworld/model"
+import type { Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import { type Effect, Option } from "effect"
 

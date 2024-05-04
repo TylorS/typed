@@ -5,13 +5,13 @@ import {
   addOptionalJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
-} from "@/api/common/spec"
-import * as Schema from "@/lib/Schema"
-import { Article } from "@/model"
-import { CreateArticleInput } from "@/services/CreateArticle"
-import { GetArticlesInput } from "@/services/GetArticles"
-import { GetFeedInput } from "@/services/GetFeed"
-import { UpdateArticleInput } from "@/services/UpdateArticle"
+} from "@realworld/api/common/spec"
+import * as Schema from "@realworld/lib/Schema"
+import { Article } from "@realworld/model"
+import { CreateArticleInput } from "@realworld/services/CreateArticle"
+import { GetArticlesInput } from "@realworld/services/GetArticles"
+import { GetFeedInput } from "@realworld/services/GetFeed"
+import { UpdateArticleInput } from "@realworld/services/UpdateArticle"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 

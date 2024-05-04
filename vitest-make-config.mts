@@ -6,7 +6,7 @@ import tsconfigPaths from "vite-plugin-tsconfig-paths"
 import { createRequire } from "node:module"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { defineProject } from "vitest/config"
+import { defineConfig } from "vitest/config"
 
 const require = createRequire(import.meta.url)
 
@@ -18,7 +18,7 @@ export function makeTestConfig(
   testPath: string | Array<string> = "./test/*.ts",
   tsConfigFileName: string = "tsconfig.test.json"
 ) {
-  return defineProject({
+  return defineConfig({
     plugins: [
       babel({ babel: babelConfig }),
       tsconfigPaths({

@@ -5,10 +5,10 @@ import {
   addOptionalJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
-} from "@/api/common/spec"
-import * as Schema from "@/lib/Schema"
-import { Comment } from "@/model"
-import { CreateCommentInput } from "@/services/CreateComment"
+} from "@realworld/api/common/spec"
+import * as Schema from "@realworld/lib/Schema"
+import { Comment } from "@realworld/model"
+import { CreateCommentInput } from "@realworld/services/CreateComment"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 

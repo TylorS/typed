@@ -1,4 +1,4 @@
-import { GetArticleInput } from "@/services/GetArticle"
+import { GetArticleInput } from "@realworld/services/GetArticle"
 import * as Route from "@typed/route"
 
 export const articles = Route.literal("articles")

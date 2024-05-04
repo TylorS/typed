@@ -1,18 +1,18 @@
-import { getCurrentJwtUser, JwtUser } from "@/api/common/infrastructure/CurrentJwt"
-import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
+import { Schema } from "@effect/schema"
+import * as Pg from "@effect/sql-pg"
+import { getCurrentJwtUser, JwtUser } from "@realworld/api/common/infrastructure/CurrentJwt"
+import { catchExpectedErrors } from "@realworld/api/common/infrastructure/errors"
 import {
   ComparePassword,
   ComparePasswordLive,
   HashPassword,
   HashPasswordLive
-} from "@/api/common/infrastructure/Passwords"
-import { DbJwtToken, DbUser, dbUserToUser } from "@/api/common/infrastructure/schema"
-import { Email, JwtToken, UserId } from "@/model"
-import { Users } from "@/services"
-import { Unauthorized, Unprocessable } from "@/services/errors"
-import type { RegisterInput } from "@/services/Register"
-import { Schema } from "@effect/schema"
-import * as Pg from "@effect/sql-pg"
+} from "@realworld/api/common/infrastructure/Passwords"
+import { DbJwtToken, DbUser, dbUserToUser } from "@realworld/api/common/infrastructure/schema"
+import { Email, JwtToken, UserId } from "@realworld/model"
+import { Users } from "@realworld/services"
+import { Unauthorized, Unprocessable } from "@realworld/services/errors"
+import type { RegisterInput } from "@realworld/services/Register"
 import { makeNanoId } from "@typed/id"
 import { Clock, Config, Effect, Layer, Option } from "effect"
 import jwt from "jsonwebtoken"

@@ -1,8 +1,8 @@
-import { Password, User } from "@/model"
-import type { Unauthorized, Unprocessable } from "@/services/errors"
+import * as Schema from "@realworld/lib/Schema"
+import { Password, User } from "@realworld/model"
+import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect/Effect"
-import * as Schema from "@/lib/Schema"
 
 export const UpdateUserInput = Schema.Struct({
   email: User.fields.email,

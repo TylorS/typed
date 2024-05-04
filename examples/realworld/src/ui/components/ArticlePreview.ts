@@ -1,4 +1,4 @@
-import type { Article } from "@/model"
+import type { Article } from "@realworld/model"
 import { Navigation } from "@typed/core"
 import { EventHandler, html } from "@typed/template"
 import { Option } from "effect"

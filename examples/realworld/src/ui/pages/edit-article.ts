@@ -1,5 +1,5 @@
-import { ArticleSlug } from "@/model"
-import { isAuthenticatedGuard } from "@/services"
+import { ArticleSlug } from "@realworld/model"
+import { isAuthenticatedGuard } from "@realworld/services"
 import * as Route from "@typed/route"
 import type { RouteGuard } from "@typed/router"
 import { html } from "@typed/template"

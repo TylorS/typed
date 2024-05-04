@@ -1,7 +1,7 @@
-import { CurrentJwt } from "@/api/common/infrastructure/CurrentJwt"
-import { JwtToken } from "@/model"
-import { CurrentUser, Users } from "@/services"
 import * as Http from "@effect/platform/HttpServer"
+import { CurrentJwt } from "@realworld/api/common/infrastructure/CurrentJwt"
+import { JwtToken } from "@realworld/model"
+import { CurrentUser, Users } from "@realworld/services"
 import { AsyncData } from "@typed/core"
 import { Effect, Layer, Option } from "effect"
 

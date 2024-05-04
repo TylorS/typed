@@ -1,15 +1,15 @@
-import { client } from "@/api"
-import { addJwtTokenToRequest } from "@/api/common/spec"
-import { JwtToken } from "@/model"
-import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@/services"
-import { handleClientRequest } from "@/ui/infastructure/_client"
 import { Schema } from "@effect/schema"
+import { client } from "@realworld/api"
+import { addJwtTokenToRequest } from "@realworld/api/common/spec"
+import { JwtToken } from "@realworld/model"
+import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@realworld/services"
+import { handleClientRequest } from "@realworld/ui/infastructure/_client"
 import { AsyncData } from "@typed/core"
 import { SchemaStorage } from "@typed/dom/Storage"
 import { Effect, Layer, Option } from "effect"
 
 export const CurrentUserLive = CurrentUser.make(
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const jwtToken = yield* _(ReadJwtToken())
     if (Option.isNone(jwtToken)) {
       return AsyncData.noData()

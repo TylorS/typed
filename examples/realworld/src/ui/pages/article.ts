@@ -1,4 +1,4 @@
-import { ArticleSlug } from "@/model"
+import { ArticleSlug } from "@realworld/model"
 import * as Route from "@typed/route"
 import { html } from "@typed/template"
 

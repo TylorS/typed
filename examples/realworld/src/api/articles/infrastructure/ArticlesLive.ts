@@ -1,12 +1,17 @@
-import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@/api/common/infrastructure/CurrentJwt"
-import { catchExpectedErrors } from "@/api/common/infrastructure/errors"
-import { DbArticle, dbArticleToArticle, DbArticleWithFavoritesAndTags, DbTag } from "@/api/common/infrastructure/schema"
-import type { UserId } from "@/model"
-import { ArticleId, ArticleSlug, ArticleTag } from "@/model"
-import { Articles } from "@/services"
-import type { CreateArticleInput } from "@/services/CreateArticle"
 import { Schema } from "@effect/schema"
 import * as Sql from "@effect/sql-pg"
+import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@realworld/api/common/infrastructure/CurrentJwt"
+import { catchExpectedErrors } from "@realworld/api/common/infrastructure/errors"
+import {
+  DbArticle,
+  dbArticleToArticle,
+  DbArticleWithFavoritesAndTags,
+  DbTag
+} from "@realworld/api/common/infrastructure/schema"
+import type { UserId } from "@realworld/model"
+import { ArticleId, ArticleSlug, ArticleTag } from "@realworld/model"
+import { Articles } from "@realworld/services"
+import type { CreateArticleInput } from "@realworld/services/CreateArticle"
 import { makeNanoId } from "@typed/id"
 import { Clock, Effect, Option } from "effect"
 

@@ -1,5 +1,5 @@
-import { catchUnauthorizedAndUnprocessable, catchUnprocessable } from "@/api/common/handlers"
-import { Articles } from "@/services"
+import { catchUnauthorizedAndUnprocessable, catchUnprocessable } from "@realworld/api/common/handlers"
+import { Articles } from "@realworld/services"
 import { ServerRouterBuilder } from "@typed/server"
 import { Effect, flow } from "effect"
 import * as Spec from "./spec.js"

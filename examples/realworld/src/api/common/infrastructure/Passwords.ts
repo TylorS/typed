@@ -1,5 +1,5 @@
-import type { Password } from "@/model"
-import { PasswordHash } from "@/model"
+import type { Password } from "@realworld/model"
+import { PasswordHash } from "@realworld/model"
 import { Context } from "@typed/core"
 import { Effect, Secret } from "effect"
 

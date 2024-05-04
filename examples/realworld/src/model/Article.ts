@@ -1,5 +1,5 @@
-import * as Schema from "@/lib/Schema"
-import { Profile } from "@/model/Profile"
+import * as Schema from "@realworld/lib/Schema"
+import { Profile } from "@realworld/model/Profile"
 
 export const ArticleId = Schema.nanoId.pipe(
   Schema.brand("ArticleId"),

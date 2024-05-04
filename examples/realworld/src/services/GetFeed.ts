@@ -1,6 +1,6 @@
-import * as Schema from "@/lib/Schema"
-import type { Article } from "@/model"
-import type { Unauthorized, Unprocessable } from "@/services/errors"
+import * as Schema from "@realworld/lib/Schema"
+import type { Article } from "@realworld/model"
+import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 

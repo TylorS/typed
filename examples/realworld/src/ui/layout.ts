@@ -1,5 +1,5 @@
-import { CurrentUser, isAuthenticated } from "@/services"
-import { NavLink } from "@/ui/components/NavLink"
+import { CurrentUser, isAuthenticated } from "@realworld/services"
+import { NavLink } from "@realworld/ui/components/NavLink"
 import * as Fx from "@typed/fx"
 import * as RefAsyncData from "@typed/fx/AsyncData"
 import type { RenderEvent } from "@typed/template"

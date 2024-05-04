@@ -1,4 +1,4 @@
-import { isAuthenticatedGuard } from "@/services"
+import { isAuthenticatedGuard } from "@realworld/services"
 import * as Route from "@typed/route"
 import { html } from "@typed/template"
 

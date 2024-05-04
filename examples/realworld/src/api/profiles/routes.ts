@@ -1,4 +1,4 @@
-import { Username } from "@/model"
+import { Username } from "@realworld/model"
 import * as Route from "@typed/route"
 
 export const profiles = Route.literal("profiles").concat(Route.paramWithSchema("username", Username))

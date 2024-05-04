@@ -1,9 +1,9 @@
-import type { ArticleSlug } from "@/model"
-import { CommentId } from "@/model"
-import type { Unauthorized, Unprocessable } from "@/services/errors"
+import * as Schema from "@realworld/lib/Schema"
+import type { ArticleSlug } from "@realworld/model"
+import { CommentId } from "@realworld/model"
+import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
-import * as Schema from "@/lib/Schema"
 
 export const DeleteCommentInput = Schema.Struct({ id: CommentId }).pipe(Schema.identifier("DeleteCommentInput"))
 export type DeleteCommentInput = Schema.Schema.Type<typeof DeleteCommentInput>

@@ -5,9 +5,9 @@
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
     "rootDir": "./",
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": [
+      "@realworld/*": [
         "./*"
       ]
     },
@@ -19,6 +19,7 @@
     ]
   },
   "include": [
+    "src",
     "test/**/*.ts"
   ]
 }

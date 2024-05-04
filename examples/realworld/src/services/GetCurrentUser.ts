@@ -1,5 +1,5 @@
-import type { User } from "@/model"
-import type { Unauthorized, Unprocessable } from "@/services/errors"
+import type { User } from "@realworld/model"
+import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
 import type { Effect } from "effect"
 

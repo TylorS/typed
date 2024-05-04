@@ -1,5 +1,5 @@
-import { client } from "@/api/client"
-import { Articles } from "@/services"
+import { client } from "@realworld/api/client"
+import { Articles } from "@realworld/services"
 import { Effect } from "effect"
 import { handleClientRequest, withJwtToken, withOptionalJwtToken } from "./_client"
 

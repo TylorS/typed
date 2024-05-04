@@ -1,6 +1,6 @@
-import { client } from "@/api/client"
-import { Profiles } from "@/services"
-import { handleClientRequest, withJwtToken, withOptionalJwtToken } from "@/ui/infastructure/_client"
+import { client } from "@realworld/api/client"
+import { Profiles } from "@realworld/services"
+import { handleClientRequest, withJwtToken, withOptionalJwtToken } from "@realworld/ui/infastructure/_client"
 import { Effect } from "effect"
 
 export const ProfilesLive = Profiles.implement({
