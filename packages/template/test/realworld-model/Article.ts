@@ -1,5 +1,4 @@
-import { arbitrary } from "@effect/schema/Arbitrary"
-import * as Schema from "@effect/schema/Schema"
+import { Arbitrary, Schema } from "@effect/schema"
 import { nanoId } from "@typed/id/Schema"
 import { Profile } from "./Profile.js"
 
@@ -43,24 +42,24 @@ export const Article = Schema.Struct({
   id: ArticleId,
   slug: ArticleSlug,
   title: ArticleTitle.pipe(
-    arbitrary(() => (fc) =>
+    Arbitrary.arbitrary(() => (fc) =>
       fc.base64String({ minLength: 1, maxLength: 10 }).map((title) => ArticleTitle(title.replace(/\s+/g, " ")))
     )
   ),
   description: ArticleDescription.pipe(
-    arbitrary(() => (fc) =>
+    Arbitrary.arbitrary(() => (fc) =>
       fc.base64String({ minLength: 1, maxLength: 100 }).map((description) =>
         ArticleDescription(description.replace(/\s+/g, " "))
       )
     )
   ),
   body: ArticleBody.pipe(
-    arbitrary(() => (fc) =>
+    Arbitrary.arbitrary(() => (fc) =>
       fc.base64String({ minLength: 1, maxLength: 1000 }).map((body) => ArticleBody(body.replace(/\s+/g, " ")))
     )
   ),
   tagList: ArticleTagList.pipe(
-    arbitrary(() => (fc) =>
+    Arbitrary.arbitrary(() => (fc) =>
       fc.array(fc.base64String({ minLength: 2, maxLength: 10 }), { minLength: 1, maxLength: 5 }).map((
         tags
       ): ArticleTagList => tags.map(ArticleTag))

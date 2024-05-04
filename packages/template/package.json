@@ -49,12 +49,10 @@
     "@typed/fx": "workspace:*",
     "@typed/wire": "workspace:*",
     "effect": "^3.0.7",
+    "fast-check": "^3.18.0",
     "html5parser": "^2.0.2",
     "typed-query-selector": "^2.11.2",
     "udomdiff": "^1.1.0"
-  },
-  "peerDependencies": {
-    "effect": "^2.4.0"
   },
   "optionalPeerDependencies": {
     "happy-dom": "^12.10.3",
@@ -64,7 +62,6 @@
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
     "@vitest/browser": "^1.5.2",
-    "fast-check": "^3.18.0",
     "happy-dom": "14.7.1",
     "vitest": "1.5.2"
   }

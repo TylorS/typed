@@ -1,4 +1,4 @@
-import * as Context from "@typed/Context"
+import * as Context from "@typed/context"
 import * as Fx from "@typed/fx"
 import type { Rendered } from "@typed/wire"
 import { persistent } from "@typed/wire"
