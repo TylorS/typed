@@ -18,6 +18,10 @@ export {
   /**
    * @since 1.0.0
    */
+  type Api,
+  /**
+   * @since 1.0.0
+   */
   getEndpoint,
   /**
    * @since 1.0.0
