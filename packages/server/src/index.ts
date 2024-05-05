@@ -102,6 +102,11 @@ export * as SwaggerRouter from "./SwaggerRouter.js"
 /**
  * @since 1.0.0
  */
+export * as ServerRequest from "@effect/platform/Http/ServerRequest"
+
+/**
+ * @since 1.0.0
+ */
 export * as ServerResponse from "@effect/platform/Http/ServerResponse"
 
 /**
