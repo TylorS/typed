@@ -1,24 +1,13 @@
 import * as HttpClient from "@effect/platform/HttpClient"
-import * as Http from "@effect/platform/HttpServer"
 import * as Schema from "@typed/realworld/lib/Schema"
-import { JwtToken } from "@typed/realworld/model"
+import type { JwtToken } from "@typed/realworld/model"
 import { Unauthorized } from "@typed/realworld/services/errors"
 import type { ApiEndpoint, ApiRequest, ApiSchema } from "@typed/server"
 import { Api, ApiResponse, Security } from "@typed/server"
 import { Effect, Option } from "effect"
+import { getJwtTokenFromRequest } from "./infrastructure/CurrentJwt"
 
-const jwtTokenSchema = Schema.String.pipe(
-  Schema.transform(JwtToken, { decode: (f) => JwtToken(f.split(" ")[1]), encode: (t) => `Token ${t}` })
-)
-
-const getJwtTokenFromHeader = Http.request.ServerRequest.pipe(
-  Effect.flatMap((request) => Http.headers.get(request.headers, "authorization")),
-  Effect.flatMap(Schema.decode(jwtTokenSchema)),
-  Effect.asSome,
-  Effect.catchAll(() => Effect.succeedNone)
-)
-
-export const optionalJwtTokenSecurity = Security.make(getJwtTokenFromHeader, {
+export const optionalJwtTokenSecurity = Security.make(getJwtTokenFromRequest, {
   jwtToken: {
     type: "http",
     scheme: "bearer",
@@ -26,7 +15,7 @@ export const optionalJwtTokenSecurity = Security.make(getJwtTokenFromHeader, {
   }
 })
 
-export const jwtTokenSecurity = Security.make(getJwtTokenFromHeader, {}).pipe(
+export const jwtTokenSecurity = Security.make(getJwtTokenFromRequest, {}).pipe(
   Security.mapEffect((token) => Option.isSome(token) ? Effect.succeed(token.value) : new Unauthorized())
 )
 

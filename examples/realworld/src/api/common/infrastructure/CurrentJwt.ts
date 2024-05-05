@@ -1,14 +1,30 @@
 import { Schema } from "@effect/schema"
 import { Tagged } from "@typed/context"
 import { DbUser, dbUserToUser } from "@typed/realworld/api/common/infrastructure/schema"
-import type { JwtToken, User } from "@typed/realworld/model"
+import type { User } from "@typed/realworld/model"
+import { JwtToken } from "@typed/realworld/model"
 import { Unauthorized } from "@typed/realworld/services/errors"
+import { Cookies, ServerHeaders, ServerRequest } from "@typed/server"
 import { Config, Effect, Option } from "effect"
 import jwt from "jsonwebtoken"
 
 export const CurrentJwt = Tagged<JwtToken>()("CurrentJwt")
 
 export const getCurrentJwtOption = Effect.serviceOption(CurrentJwt)
+
+export const getJwtTokenFromRequest = Effect.gen(function*(_) {
+  const { headers } = yield* _(ServerRequest.ServerRequest)
+  return ServerHeaders.get(headers, "cookie").pipe(
+    Option.map(Cookies.parseHeader),
+    Option.flatMap((_) => Option.fromNullable(_["conduit-token"])),
+    Option.map(JwtToken),
+    Option.orElse(() =>
+      ServerHeaders.get(headers, "authorization").pipe(
+        Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
+      )
+    )
+  )
+})
 
 export const getCurrentJwt = getCurrentJwtOption.pipe(
   Effect.flatten,
@@ -26,6 +42,7 @@ export const JwtUser = DbUser.pipe(
 export const verifyJwt = (token: JwtToken) =>
   Effect.gen(function*(_) {
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
+    console.log(token)
     const payload = jwt.verify(token, secret)
     const dbUser = yield* _(
       payload,
