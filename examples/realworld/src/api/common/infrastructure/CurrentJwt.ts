@@ -42,7 +42,6 @@ export const JwtUser = DbUser.pipe(
 export const verifyJwt = (token: JwtToken) =>
   Effect.gen(function*(_) {
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
-    console.log(token)
     const payload = jwt.verify(token, secret)
     const dbUser = yield* _(
       payload,
