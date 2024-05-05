@@ -10,7 +10,19 @@
     ]
   },
   "include": [
-    "test/**/*.ts",
-    "../../test"
+    "src",
+    "test",
+    "../../"
+  ],
+  "references": [
+    {
+      "path": "../async-data/tsconfig.test.json"
+    },
+    {
+      "path": "../context/tsconfig.test.json"
+    },
+    {
+      "path": "../guard/tsconfig.test.json"
+    }
   ]
 }

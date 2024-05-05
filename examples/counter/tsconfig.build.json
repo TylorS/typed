@@ -13,16 +13,16 @@
   ],
   "references": [
     {
-      "path": "../../packages/context"
+      "path": "../../packages/context/tsconfig.build.json"
     },
     {
-      "path": "../../packages/dom"
+      "path": "../../packages/dom/tsconfig.build.json"
     },
     {
-      "path": "../../packages/fx"
+      "path": "../../packages/fx/tsconfig.build.json"
     },
     {
-      "path": "../../packages/template"
+      "path": "../../packages/template/tsconfig.build.json"
     }
   ]
 }

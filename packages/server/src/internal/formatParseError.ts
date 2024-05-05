@@ -1,11 +1,11 @@
 import * as AST from "@effect/schema/AST"
 import type * as ParseResult from "@effect/schema/ParseResult"
+import * as ReadonlyArray from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as Equivalence from "effect/Equivalence"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/Array"
 
 const getDescription = AST.getAnnotation<AST.DescriptionAnnotation>(
   AST.DescriptionAnnotationId

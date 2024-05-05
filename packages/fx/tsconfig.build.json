@@ -13,13 +13,13 @@
   ],
   "references": [
     {
-      "path": "../async-data"
+      "path": "../async-data/tsconfig.build.json"
     },
     {
-      "path": "../context"
+      "path": "../context/tsconfig.build.json"
     },
     {
-      "path": "../guard"
+      "path": "../guard/tsconfig.build.json"
     }
   ]
 }

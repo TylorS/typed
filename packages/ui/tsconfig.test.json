@@ -4,12 +4,39 @@
     "outDir": "build/test",
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
-    "rootDir": "test",
+    "rootDir": "./",
     "types": [
       "vitest/globals"
     ]
   },
   "include": [
-    "test/**/*.ts"
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../context/tsconfig.test.json"
+    },
+    {
+      "path": "../dom/tsconfig.test.json"
+    },
+    {
+      "path": "../environment/tsconfig.test.json"
+    },
+    {
+      "path": "../fx/tsconfig.test.json"
+    },
+    {
+      "path": "../navigation/tsconfig.test.json"
+    },
+    {
+      "path": "../route/tsconfig.test.json"
+    },
+    {
+      "path": "../router/tsconfig.test.json"
+    },
+    {
+      "path": "../template/tsconfig.test.json"
+    }
   ]
 }

@@ -4,12 +4,63 @@
     "outDir": "build/test",
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
-    "rootDir": "test",
+    "rootDir": "./",
     "types": [
       "vitest/globals"
     ]
   },
   "include": [
-    "test/**/*.ts"
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../async-data/tsconfig.test.json"
+    },
+    {
+      "path": "../context/tsconfig.test.json"
+    },
+    {
+      "path": "../decoder/tsconfig.test.json"
+    },
+    {
+      "path": "../dom/tsconfig.test.json"
+    },
+    {
+      "path": "../environment/tsconfig.test.json"
+    },
+    {
+      "path": "../fx/tsconfig.test.json"
+    },
+    {
+      "path": "../guard/tsconfig.test.json"
+    },
+    {
+      "path": "../id/tsconfig.test.json"
+    },
+    {
+      "path": "../navigation/tsconfig.test.json"
+    },
+    {
+      "path": "../path/tsconfig.test.json"
+    },
+    {
+      "path": "../route/tsconfig.test.json"
+    },
+    {
+      "path": "../router/tsconfig.test.json"
+    },
+    {
+      "path": "../server/tsconfig.test.json"
+    },
+    {
+      "path": "../template/tsconfig.test.json"
+    },
+    {
+      "path": "../ui/tsconfig.test.json"
+    },
+    {
+      "path": "../vite-plugin/tsconfig.test.json"
+    }
   ]
 }

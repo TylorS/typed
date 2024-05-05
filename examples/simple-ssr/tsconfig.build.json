@@ -13,10 +13,10 @@
   ],
   "references": [
     {
-      "path": "../../packages/fx"
+      "path": "../../packages/fx/tsconfig.build.json"
     },
     {
-      "path": "../../packages/template"
+      "path": "../../packages/template/tsconfig.build.json"
     }
   ]
 }

@@ -13,28 +13,28 @@
   ],
   "references": [
     {
-      "path": "../context"
+      "path": "../context/tsconfig.build.json"
     },
     {
-      "path": "../dom"
+      "path": "../dom/tsconfig.build.json"
     },
     {
-      "path": "../environment"
+      "path": "../environment/tsconfig.build.json"
     },
     {
-      "path": "../fx"
+      "path": "../fx/tsconfig.build.json"
     },
     {
-      "path": "../navigation"
+      "path": "../navigation/tsconfig.build.json"
     },
     {
-      "path": "../route"
+      "path": "../route/tsconfig.build.json"
     },
     {
-      "path": "../router"
+      "path": "../router/tsconfig.build.json"
     },
     {
-      "path": "../template"
+      "path": "../template/tsconfig.build.json"
     }
   ]
 }

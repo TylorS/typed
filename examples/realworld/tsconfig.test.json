@@ -20,6 +20,59 @@
   },
   "include": [
     "src",
-    "test/**/*.ts"
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../../packages/async-data/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/context/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/core/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/dom/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/environment/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/fx/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/guard/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/id/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/navigation/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/path/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/route/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/router/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/server/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/template/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/ui/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/wire/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/vite-plugin/tsconfig.test.json"
+    }
   ]
 }

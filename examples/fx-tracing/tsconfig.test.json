@@ -10,11 +10,18 @@
     ]
   },
   "include": [
-    "test/**/*.ts"
+    "src",
+    "test"
   ],
   "references": [
     {
-      "path": "./tsconfig.build.json"
+      "path": "../../packages/context/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/dom/tsconfig.test.json"
+    },
+    {
+      "path": "../../packages/fx/tsconfig.test.json"
     }
   ]
 }

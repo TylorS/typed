@@ -13,16 +13,16 @@
   ],
   "references": [
     {
-      "path": "../context"
+      "path": "../context/tsconfig.build.json"
     },
     {
-      "path": "../dom"
+      "path": "../dom/tsconfig.build.json"
     },
     {
-      "path": "../fx"
+      "path": "../fx/tsconfig.build.json"
     },
     {
-      "path": "../id"
+      "path": "../id/tsconfig.build.json"
     }
   ]
 }

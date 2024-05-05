@@ -11,16 +11,16 @@
   ],
   "references": [
     {
-      "path": "../decoder"
+      "path": "../decoder/tsconfig.build.json"
     },
     {
-      "path": "../guard"
+      "path": "../guard/tsconfig.build.json"
     },
     {
-      "path": "../id"
+      "path": "../id/tsconfig.build.json"
     },
     {
-      "path": "../path"
+      "path": "../path/tsconfig.build.json"
     }
   ]
 }

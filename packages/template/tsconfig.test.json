@@ -10,7 +10,30 @@
     ]
   },
   "include": [
-    "test",
-    "../../test"
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../context/tsconfig.test.json"
+    },
+    {
+      "path": "../dom/tsconfig.test.json"
+    },
+    {
+      "path": "../environment/tsconfig.test.json"
+    },
+    {
+      "path": "../fx/tsconfig.test.json"
+    },
+    {
+      "path": "../wire/tsconfig.test.json"
+    },
+    {
+      "path": "../route/tsconfig.test.json"
+    },
+    {
+      "path": "../router/tsconfig.test.json"
+    }
   ]
 }

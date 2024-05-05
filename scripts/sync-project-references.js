@@ -22,7 +22,7 @@ async function main() {
 async function updateRootReferences(packages) { 
   const [buildJson, tsconfigJson] = await Promise.all([readJsonFile(Path.join(ROOT_DIRECTORY, 'tsconfig.build.json')), readJsonFile(Path.join(ROOT_DIRECTORY, 'tsconfig.json'))])
 
-  buildJson.content.references = packages.map(({ example, name }) => ({ path: `${example ? `examples` : `packages`}/${name}` }))
+  buildJson.content.references = packages.map(({ example, name }) => ({ path: `${example ? `examples` : `packages`}/${name}/tsconfig.build.json` }))
   tsconfigJson.content.references = packages.map(({ example, name }) => ({ path: `${example ? `examples` : `packages`}/${name}` }))
 
   await Promise.all([
@@ -31,12 +31,13 @@ async function updateRootReferences(packages) {
   ])
 }
 
-async function updateProjectReferences({ example, name, packageJson, tsconfigBuildJson }) {
+async function updateProjectReferences({ example, name, packageJson, tsconfigBuildJson, tsconfigTestJson }) {
   console.log(`Updating project references for @typed/${name}...`)
 
   const typedReferences = findTypedReferencesFromPackageJson(packageJson)
   
   await updateTsConfigWithRefrences(tsconfigBuildJson, typedReferences, example)
+  await updateTsConfigWithRefrences(tsconfigTestJson, typedReferences, example)
 
   console.log(`Updated project references for @typed/${name}!`)
 }
@@ -44,9 +45,10 @@ async function updateProjectReferences({ example, name, packageJson, tsconfigBui
 async function updateTsConfigWithRefrences(tsconfigJson, references, example) {
   if (references.length === 0) return
 
-  const { path,  content } = tsconfigJson
+  const { path, content } = tsconfigJson
+  const fileName = Path.basename(path)
 
-  content.references = references.map((name) => ({ path: example ? `../../packages/${name}` : `../${name}` }))
+  content.references = references.map((name) => ({ path: example ? `../../packages/${name}/${fileName}` : `../${name}/${fileName}` }))
 
   await FS.promises.writeFile(path, JSON.stringify(content, null, 2) + EOL)
 }
