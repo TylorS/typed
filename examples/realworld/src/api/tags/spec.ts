@@ -1,6 +1,6 @@
-import { add200, addUnprocessableResponse } from "@realworld/api/common/spec"
-import * as Schema from "@realworld/lib/Schema"
-import { ArticleTagList } from "@realworld/model"
+import { add200, addUnprocessableResponse } from "@typed/realworld/api/common/spec"
+import * as Schema from "@typed/realworld/lib/Schema"
+import { ArticleTagList } from "@typed/realworld/model"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 

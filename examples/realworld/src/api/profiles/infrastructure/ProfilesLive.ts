@@ -1,11 +1,11 @@
 import { Schema } from "@effect/schema"
 import * as Pg from "@effect/sql-pg"
-import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@realworld/api/common/infrastructure/CurrentJwt"
-import { catchExpectedErrors } from "@realworld/api/common/infrastructure/errors"
-import { DbProfile, DbUser } from "@realworld/api/common/infrastructure/schema"
-import type { Profile, UserId } from "@realworld/model"
-import { Username } from "@realworld/model"
-import { Profiles } from "@realworld/services"
+import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
+import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
+import { DbProfile, DbUser } from "@typed/realworld/api/common/infrastructure/schema"
+import type { Profile, UserId } from "@typed/realworld/model"
+import { Username } from "@typed/realworld/model"
+import { Profiles } from "@typed/realworld/services"
 import { Effect, Option } from "effect"
 
 export const ProfilesLive = Profiles.implement({

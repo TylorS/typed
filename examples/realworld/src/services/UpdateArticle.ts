@@ -1,8 +1,8 @@
-import * as Schema from "@realworld/lib/Schema"
-import type { Article, ArticleSlug } from "@realworld/model"
-import { CreateArticleInput } from "@realworld/services/CreateArticle"
-import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
+import * as Schema from "@typed/realworld/lib/Schema"
+import type { Article, ArticleSlug } from "@typed/realworld/model"
+import { CreateArticleInput } from "@typed/realworld/services/CreateArticle"
+import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect"
 
 export const UpdateArticleInput = Schema.partial(CreateArticleInput).pipe(

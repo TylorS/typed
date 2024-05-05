@@ -1,8 +1,8 @@
-import * as Schema from "@realworld/lib/Schema"
-import type { Article } from "@realworld/model"
-import { ArticleTag, Username } from "@realworld/model"
-import type { Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
+import * as Schema from "@typed/realworld/lib/Schema"
+import type { Article } from "@typed/realworld/model"
+import { ArticleTag, Username } from "@typed/realworld/model"
+import type { Unprocessable } from "@typed/realworld/services/errors"
 import { type Effect, Option } from "effect"
 
 export const GetArticlesInput = Schema.Struct({

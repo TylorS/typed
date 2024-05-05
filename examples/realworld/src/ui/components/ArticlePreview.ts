@@ -1,5 +1,5 @@
-import type { Article } from "@realworld/model"
 import { Navigation } from "@typed/core"
+import type { Article } from "@typed/realworld/model"
 import { EventHandler, html } from "@typed/template"
 import { Option } from "effect"
 

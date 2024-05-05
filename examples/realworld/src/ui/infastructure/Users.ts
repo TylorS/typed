@@ -1,6 +1,6 @@
-import { client } from "@realworld/api/client"
-import { SaveJwtToken, Users } from "@realworld/services"
-import { handleClientRequest, withJwtToken } from "@realworld/ui/infastructure/_client"
+import { client } from "@typed/realworld/api/client"
+import { SaveJwtToken, Users } from "@typed/realworld/services"
+import { handleClientRequest, withJwtToken } from "@typed/realworld/ui/infastructure/_client"
 import { Effect } from "effect"
 
 export const UsersLive = Users.implement({

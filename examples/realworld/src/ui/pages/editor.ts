@@ -1,5 +1,5 @@
-import { isAuthenticatedGuard } from "@realworld/services"
 import { html, Route } from "@typed/core"
+import { isAuthenticatedGuard } from "@typed/realworld/services"
 
 export const route = Route.literal("/editor").pipe(isAuthenticatedGuard)
 

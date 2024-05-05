@@ -1,8 +1,8 @@
 import * as Http from "@effect/platform/HttpServer"
-import { CurrentJwt, verifyJwt } from "@realworld/api/common/infrastructure/CurrentJwt"
-import { JwtToken } from "@realworld/model"
-import { CurrentUser } from "@realworld/services"
 import { AsyncData, RefSubject } from "@typed/core"
+import { CurrentJwt, verifyJwt } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
+import { JwtToken } from "@typed/realworld/model"
+import { CurrentUser } from "@typed/realworld/services"
 import { Effect, Layer, Option } from "effect"
 
 export const CurrentUserLive = Layer.scopedContext(Effect.gen(function*(_) {

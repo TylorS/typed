@@ -1,7 +1,7 @@
 import type { ClientRequest } from "@effect/platform/Http/ClientRequest"
-import { addJwtTokenToRequest, addOptionalJwtTokenToRequest } from "@realworld/api/common/spec"
-import { getCurrentJwtToken } from "@realworld/services/CurrentUser"
-import { Unauthorized, Unprocessable } from "@realworld/services/errors"
+import { addJwtTokenToRequest, addOptionalJwtTokenToRequest } from "@typed/realworld/api/common/spec"
+import { getCurrentJwtToken } from "@typed/realworld/services/CurrentUser"
+import { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { ClientError } from "@typed/server"
 import { Effect, Unify } from "effect"
 

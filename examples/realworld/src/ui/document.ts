@@ -1,7 +1,7 @@
-import { layout } from "@realworld/ui/layout"
 import { html } from "@typed/core"
 import type { Fx, RenderEvent } from "@typed/core"
 import type { LayoutParams } from "@typed/core/Platform"
+import { layout } from "@typed/realworld/ui/layout"
 
 export function document<Content extends Fx.Fx<RenderEvent | null, any, any>>(
   { content, head, script }: LayoutParams<Content>

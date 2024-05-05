@@ -1,5 +1,5 @@
-import { CurrentUser } from "@realworld/services"
 import { AsyncData, Fx, html } from "@typed/core"
+import { CurrentUser } from "@typed/realworld/services"
 import { Either } from "effect"
 import { failureOrCause } from "effect/Cause"
 

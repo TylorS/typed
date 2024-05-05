@@ -1,18 +1,18 @@
 import { Schema } from "@effect/schema"
 import * as Sql from "@effect/sql-pg"
-import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@realworld/api/common/infrastructure/CurrentJwt"
-import { catchExpectedErrors } from "@realworld/api/common/infrastructure/errors"
+import { makeNanoId } from "@typed/id"
+import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
+import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
 import {
   DbArticle,
   dbArticleToArticle,
   DbArticleWithFavoritesAndTags,
   DbTag
-} from "@realworld/api/common/infrastructure/schema"
-import type { UserId } from "@realworld/model"
-import { ArticleId, ArticleSlug, ArticleTag } from "@realworld/model"
-import { Articles } from "@realworld/services"
-import type { CreateArticleInput } from "@realworld/services/CreateArticle"
-import { makeNanoId } from "@typed/id"
+} from "@typed/realworld/api/common/infrastructure/schema"
+import type { UserId } from "@typed/realworld/model"
+import { ArticleId, ArticleSlug, ArticleTag } from "@typed/realworld/model"
+import { Articles } from "@typed/realworld/services"
+import type { CreateArticleInput } from "@typed/realworld/services/CreateArticle"
 import { Clock, Effect, Option } from "effect"
 
 export const ArticlesLive = Articles.implement({

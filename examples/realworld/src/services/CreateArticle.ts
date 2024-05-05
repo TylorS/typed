@@ -1,7 +1,7 @@
-import * as Schema from "@realworld/lib/Schema"
-import { Article } from "@realworld/model"
-import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
+import * as Schema from "@typed/realworld/lib/Schema"
+import { Article } from "@typed/realworld/model"
+import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect"
 
 export const CreateArticleInput = Article.pipe(

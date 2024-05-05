@@ -1,8 +1,8 @@
-import { ArticlesSpec } from "@realworld/api/articles"
-import { CommentsSpec } from "@realworld/api/comments"
-import { ProfilesSpec } from "@realworld/api/profiles"
-import { TagsSpec } from "@realworld/api/tags"
-import { UsersSpec } from "@realworld/api/users"
+import { ArticlesSpec } from "@typed/realworld/api/articles"
+import { CommentsSpec } from "@typed/realworld/api/comments"
+import { ProfilesSpec } from "@typed/realworld/api/profiles"
+import { TagsSpec } from "@typed/realworld/api/tags"
+import { UsersSpec } from "@typed/realworld/api/users"
 import { Api } from "@typed/server"
 
 export const Spec = Api.make({

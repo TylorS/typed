@@ -1,4 +1,4 @@
-import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
+import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import { ServerError } from "@typed/server"
 import { Effect } from "effect"
 

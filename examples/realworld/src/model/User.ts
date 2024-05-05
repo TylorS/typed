@@ -1,4 +1,4 @@
-import * as Schema from "@realworld/lib/Schema"
+import * as Schema from "@typed/realworld/lib/Schema"
 
 export const UserId = Schema.nanoId.pipe(Schema.brand("UserId"), Schema.description("Nano ID for User"))
 export type UserId = Schema.Schema.Type<typeof UserId>

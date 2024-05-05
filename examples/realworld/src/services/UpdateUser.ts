@@ -1,7 +1,7 @@
-import * as Schema from "@realworld/lib/Schema"
-import { Password, User } from "@realworld/model"
-import type { Unauthorized, Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
+import * as Schema from "@typed/realworld/lib/Schema"
+import { Password, User } from "@typed/realworld/model"
+import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect/Effect"
 
 export const UpdateUserInput = Schema.Struct({

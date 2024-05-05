@@ -1,9 +1,9 @@
 import type { Schema } from "@effect/schema"
-import { Username } from "@realworld/model"
-import { Articles, Profiles } from "@realworld/services"
-import { defaultGetArticlesInput } from "@realworld/services/GetArticles"
-import { ArticlePreview } from "@realworld/ui/components/ArticlePreview"
 import { Fx, html, many, RefSubject } from "@typed/core"
+import { Username } from "@typed/realworld/model"
+import { Articles, Profiles } from "@typed/realworld/services"
+import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
+import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import * as Route from "@typed/route"
 import { Option } from "effect"
 

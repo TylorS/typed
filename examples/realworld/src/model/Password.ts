@@ -1,4 +1,4 @@
-import * as Schema from "@realworld/lib/Schema"
+import * as Schema from "@typed/realworld/lib/Schema"
 
 export const Password = Schema.Secret.pipe(
   Schema.brand("Password"),

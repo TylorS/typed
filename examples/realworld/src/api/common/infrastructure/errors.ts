@@ -1,7 +1,7 @@
 import { TreeFormatter } from "@effect/schema"
 import type { ParseError } from "@effect/schema/ParseResult"
 import type * as Pg from "@effect/sql-pg"
-import { Unprocessable } from "@realworld/services/errors"
+import { Unprocessable } from "@typed/realworld/services/errors"
 import { type ConfigError, Effect } from "effect"
 import type { NoSuchElementException } from "effect/Cause"
 

@@ -1,6 +1,6 @@
-import { client } from "@realworld/api/client"
-import { Tags } from "@realworld/services"
-import { handleClientRequest } from "@realworld/ui/infastructure/_client"
+import { client } from "@typed/realworld/api/client"
+import { Tags } from "@typed/realworld/services"
+import { handleClientRequest } from "@typed/realworld/ui/infastructure/_client"
 import { Effect } from "effect"
 
 export const TagsLive = Tags.implement({

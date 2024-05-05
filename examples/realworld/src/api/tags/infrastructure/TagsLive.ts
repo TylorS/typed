@@ -1,8 +1,8 @@
 import { Schema } from "@effect/schema"
 import * as Pg from "@effect/sql-pg"
-import { ArticleTag } from "@realworld/model"
-import { Tags } from "@realworld/services"
-import { Unprocessable } from "@realworld/services/errors"
+import { ArticleTag } from "@typed/realworld/model"
+import { Tags } from "@typed/realworld/services"
+import { Unprocessable } from "@typed/realworld/services/errors"
 import { Effect } from "effect"
 
 export const TagsLive = Tags.implement({

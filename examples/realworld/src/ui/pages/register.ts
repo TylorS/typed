@@ -1,11 +1,11 @@
 import { ArrayFormatter } from "@effect/schema"
-import { parseFormData } from "@realworld/lib/Schema"
-import { CurrentUser, Users } from "@realworld/services"
-import { Unprocessable } from "@realworld/services/errors"
-import { RegisterInput } from "@realworld/services/Register"
-import { CurrentUserErrors } from "@realworld/ui/services/CurrentUser"
 import { AsyncData, EventHandler, html, RefAsyncData, RefSubject, Route } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
+import { parseFormData } from "@typed/realworld/lib/Schema"
+import { CurrentUser, Users } from "@typed/realworld/services"
+import { Unprocessable } from "@typed/realworld/services/errors"
+import { RegisterInput } from "@typed/realworld/services/Register"
+import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
 import { Effect } from "effect"
 
 export const route = Route.literal("/register")

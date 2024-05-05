@@ -3,12 +3,12 @@ import {
   addJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
-} from "@realworld/api/common/spec"
-import * as Schema from "@realworld/lib/Schema"
-import { User } from "@realworld/model"
-import { LoginInput } from "@realworld/services/Login"
-import { RegisterInput } from "@realworld/services/Register"
-import { UpdateUserInput } from "@realworld/services/UpdateUser"
+} from "@typed/realworld/api/common/spec"
+import * as Schema from "@typed/realworld/lib/Schema"
+import { User } from "@typed/realworld/model"
+import { LoginInput } from "@typed/realworld/services/Login"
+import { RegisterInput } from "@typed/realworld/services/Register"
+import { UpdateUserInput } from "@typed/realworld/services/UpdateUser"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 

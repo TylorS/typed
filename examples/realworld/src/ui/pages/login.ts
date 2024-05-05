@@ -1,12 +1,12 @@
 import { ArrayFormatter } from "@effect/schema"
-import { parseFormData } from "@realworld/lib/Schema"
-import { CurrentUser, isAuthenticated, Users } from "@realworld/services"
-import { Unprocessable } from "@realworld/services/errors"
-import { LoginInput } from "@realworld/services/Login"
-import { CurrentUserErrors } from "@realworld/ui/services/CurrentUser"
 import { AsyncData, EventHandler, Fx, html, Navigation, RefAsyncData, RefSubject, Route } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { isDom } from "@typed/environment"
+import { parseFormData } from "@typed/realworld/lib/Schema"
+import { CurrentUser, isAuthenticated, Users } from "@typed/realworld/services"
+import { Unprocessable } from "@typed/realworld/services/errors"
+import { LoginInput } from "@typed/realworld/services/Login"
+import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
 import { Effect } from "effect"
 
 export const route = Route.literal("/login")

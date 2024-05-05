@@ -1,11 +1,11 @@
 import { Schema } from "@effect/schema"
-import { client } from "@realworld/api"
-import { addJwtTokenToRequest } from "@realworld/api/common/spec"
-import { JwtToken } from "@realworld/model"
-import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@realworld/services"
-import { handleClientRequest } from "@realworld/ui/infastructure/_client"
 import { AsyncData } from "@typed/core"
 import { SchemaStorage } from "@typed/dom/Storage"
+import { client } from "@typed/realworld/api"
+import { addJwtTokenToRequest } from "@typed/realworld/api/common/spec"
+import { JwtToken } from "@typed/realworld/model"
+import { CurrentUser, ReadJwtToken, RemoveJwtToken, SaveJwtToken } from "@typed/realworld/services"
+import { handleClientRequest } from "@typed/realworld/ui/infastructure/_client"
 import { Effect, Layer, Option } from "effect"
 
 export const CurrentUserLive = CurrentUser.make(

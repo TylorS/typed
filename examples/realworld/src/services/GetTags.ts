@@ -1,6 +1,6 @@
-import type { ArticleTagList } from "@realworld/model"
-import type { Unprocessable } from "@realworld/services/errors"
 import { Fn } from "@typed/context"
+import type { ArticleTagList } from "@typed/realworld/model"
+import type { Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect"
 
 export type GetTagsError = Unprocessable

@@ -5,12 +5,6 @@
     "declarationDir": "build/test-dts",
     "tsBuildInfoFile": "build/tsbuildinfo/test.tsbuildinfo",
     "rootDir": "./",
-    "baseUrl": "./src",
-    "paths": {
-      "@realworld/*": [
-        "./*"
-      ]
-    },
     "types": [
       "node",
       "vite/client",

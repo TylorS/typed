@@ -1,6 +1,6 @@
-import type { Password } from "@realworld/model"
-import { PasswordHash } from "@realworld/model"
 import { Context } from "@typed/core"
+import type { Password } from "@typed/realworld/model"
+import { PasswordHash } from "@typed/realworld/model"
 import { Effect, Secret } from "effect"
 
 export const HashPassword = Context.Fn<(password: Password) => Effect.Effect<PasswordHash>>()("PasswordHash")

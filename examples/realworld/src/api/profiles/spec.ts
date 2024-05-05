@@ -4,9 +4,9 @@ import {
   addOptionalJwtTokenSecurity,
   addUnauthorizedResponse,
   addUnprocessableResponse
-} from "@realworld/api/common/spec"
-import * as Schema from "@realworld/lib/Schema"
-import { Profile } from "@realworld/model"
+} from "@typed/realworld/api/common/spec"
+import * as Schema from "@typed/realworld/lib/Schema"
+import { Profile } from "@typed/realworld/model"
 import { Api, ApiGroup } from "@typed/server"
 import * as Routes from "./routes"
 
