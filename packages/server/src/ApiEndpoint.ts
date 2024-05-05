@@ -19,11 +19,11 @@ export {
   /**
    * @since 1.0.0
    */
-  ApiEndpoint,
+  type ApiEndpoint,
   /**
    * @since 1.0.0
    */
-  Options,
+  type Options,
   /**
    * @since 1.0.0
    */
@@ -72,7 +72,7 @@ export {
 
 /**
  * @since 1.0.0
- */
+ type */
 export function setRequestRoute<I extends MatchInput.Any>(
   route: I
 ): <
