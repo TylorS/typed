@@ -147,8 +147,7 @@ class Parser {
     const token = this.consumeNextTokenOfKind(TokenKind.Literal)
     const parts = parseTextAndParts(
       token.value,
-      (index) => new Template.NodePart(index),
-      true
+      (index) => new Template.NodePart(index)
     )
 
     return parts.map((p) => {
@@ -229,8 +228,7 @@ class Parser {
 
     const parts = parseTextAndParts(
       value,
-      (index) => new Template.CommentPartNode(index),
-      false
+      (index) => new Template.CommentPartNode(index)
     )
 
     if (parts.length === 1) {
@@ -328,7 +326,7 @@ class Parser {
 
       switch (match) {
         case "attr": {
-          const parts = parseTextAndParts(value, (index) => new Template.AttrPartNode(name, index), false)
+          const parts = parseTextAndParts(value, (index) => new Template.AttrPartNode(name, index))
 
           if (parts.length === 0) return [true, new Template.AttributeNode(name, "")]
 
@@ -343,7 +341,7 @@ class Parser {
           return [true, this.addPart(new Template.SparseAttrNode(name, parts))]
         }
         case "boolean": {
-          const parts = parseTextAndParts(value, (index) => new Template.BooleanPartNode(name, index), false)
+          const parts = parseTextAndParts(value, (index) => new Template.BooleanPartNode(name, index))
           if (parts.length === 1) {
             if (parts[0]._tag === "text") {
               return [true, new Template.BooleanNode(name)]
@@ -355,7 +353,7 @@ class Parser {
           throw new Error("Boolean attributes cannot have multiple parts")
         }
         case "class": {
-          const parts = parseTextAndParts(value, (index) => new Template.ClassNamePartNode(index), false)
+          const parts = parseTextAndParts(value, (index) => new Template.ClassNamePartNode(index))
           if (parts.length === 1) {
             if (parts[0]._tag === "text") {
               return [true, new Template.AttributeNode("class", parts[0].value.trim())]
@@ -400,7 +398,7 @@ class Parser {
     // @ts-expect-error
     if (type === TokenKind.Literal) {
       this.consumeNextTokenOfKind(TokenKind.CloseTag)
-      return parseTextAndParts(value, (index) => this.addPartWithPrevious(new Template.TextPartNode(index)), true)
+      return parseTextAndParts(value, (index) => this.addPartWithPrevious(new Template.TextPartNode(index)))
     }
     this.consumeWhitespace()
     return []
@@ -445,11 +443,11 @@ function templateWithParts(template: ReadonlyArray<string>): string {
 
 function parseTextAndParts<T>(
   s: string,
-  f: (index: number) => T,
-  skipWhitespace: boolean
+  f: (index: number) => T
 ): Array<Template.TextNode | T> {
+  let skipWhitespace = false
   const out: Array<Template.TextNode | T> = []
-  const parts = (skipWhitespace ? s.trim() : s).split(PART_REGEX)
+  const parts = s.split(PART_REGEX)
   const last = parts.length - 2
 
   for (let i = 0; i < parts.length; i++) {

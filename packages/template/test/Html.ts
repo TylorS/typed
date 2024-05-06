@@ -150,7 +150,7 @@ describe("Html", () => {
       html`<script>
         console.log('hello, world!')
       </script>`,
-      ["<script>console.log('hello, world!')</script>"]
+      ["<script>\n        console.log('hello, world!')\n      </script>"]
     )
   })
 
