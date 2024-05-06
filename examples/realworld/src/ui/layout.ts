@@ -24,8 +24,8 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
     ${Link({ href: "/", className: "navbar-brand", content: "conduit" })}
     <ul class="nav navbar-nav pull-xs-right">
       ${NavLink("Home", pages.home.route, {})}
-      ${NavLink(Fx.take(html`<i class="mr-2 ion-compose"></i> New Article`, 1), pages.editor.route)}
-      ${NavLink(Fx.take(html`<i class="mr-2 ion-gear-a"></i> Settings`, 1), pages.settings.route)}
+      ${NavLink(html`<i class="mr-2 ion-compose"></i> New Article`, pages.editor.route)}
+      ${NavLink(html`<i class="mr-2 ion-gear-a"></i> Settings`, pages.settings.route)}
       ${
   CurrentUser.pipe(
     RefAsyncData.getSuccess,
