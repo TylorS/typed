@@ -2364,3 +2364,32 @@ export const unsafeGetExit = <A, E = never, R = never>(ref: RefSubject<A, E, R>)
  * @since 1.25.0
  */
 export const unsafeGet = <A, E = never, R = never>(ref: RefSubject<A, E, R>): A => Effect.runSync(unsafeGetExit(ref))
+
+/**
+ * Extract all values from an object using a Proxy
+ *
+ * @since 2.0.0
+ */
+export const proxy: {
+  <A extends ReadonlyArray<any> | Readonly<Record<PropertyKey, any>>, E, R>(
+    source: Computed<A, E, R>
+  ): { readonly [K in keyof A]: Computed<A[K], E, R> }
+
+  <A extends ReadonlyArray<any> | Readonly<Record<PropertyKey, any>>, E, R>(
+    source: Filtered<A, E, R>
+  ): { readonly [K in keyof A]: Filtered<A[K], E, R> }
+} = <
+  A extends Readonly<Record<PropertyKey, any>> | ReadonlyArray<any>,
+  E,
+  R
+>(
+  source: Computed<A, E, R> | Filtered<A, E, R>
+): any => {
+  const target: any = {}
+  return new Proxy(target, {
+    get(self, prop) {
+      if (prop in self) return self[prop]
+      return self[prop] = map(source, (a) => a[prop as keyof A])
+    }
+  })
+}
