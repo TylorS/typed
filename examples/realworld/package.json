@@ -42,6 +42,7 @@
     "@typed/wire": "workspace:*",
     "@types/source-map-support": "^0.5.10",
     "bcrypt": "^5.1.1",
+    "date-fns": "^3.6.0",
     "effect": "3.0.7",
     "effect-http": "^0.64.1",
     "effect-http-node": "^0.12.1",
