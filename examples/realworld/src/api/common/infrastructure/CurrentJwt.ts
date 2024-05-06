@@ -6,7 +6,6 @@ import { JwtToken } from "@typed/realworld/model"
 import { Unauthorized } from "@typed/realworld/services/errors"
 import { Cookies, ServerHeaders, ServerRequest } from "@typed/server"
 import { Config, Effect, Option } from "effect"
-import jwt from "jsonwebtoken"
 
 export const CurrentJwt = Tagged<JwtToken>()("CurrentJwt")
 
@@ -42,6 +41,7 @@ export const JwtUser = DbUser.pipe(
 export const verifyJwt = (token: JwtToken) =>
   Effect.gen(function*(_) {
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
+    const jwt = yield* _(Effect.promise(() => import("jsonwebtoken").then((m) => m.default)))
     const payload = jwt.verify(token, secret)
     const dbUser = yield* _(
       payload,

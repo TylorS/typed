@@ -15,7 +15,6 @@ import { Users } from "@typed/realworld/services"
 import { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { RegisterInput } from "@typed/realworld/services/Register"
 import { Clock, Config, Effect, Layer, Option } from "effect"
-import jwt from "jsonwebtoken"
 
 export const UsersLive = Users.implement({
   current: () =>
@@ -146,6 +145,7 @@ function creatJwtTokenForUser(user: DbUser) {
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
     const jwtUser = yield* _(user, Schema.encode(JwtUser))
+    const jwt = yield* _(Effect.promise(() => import("jsonwebtoken").then((m) => m.default)))
     const token = JwtToken(jwt.sign(jwtUser, secret, { expiresIn: "7d" }))
     const jwtToken: DbJwtToken = {
       id,
