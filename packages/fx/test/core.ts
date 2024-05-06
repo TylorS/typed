@@ -453,7 +453,6 @@ describe.concurrent(__filename, () => {
       it.concurrent("unsafeGet", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.make(Effect.succeed(0)))
-        
 
           expect(RefSubject.unsafeGet(ref)).toEqual(0)
         }).pipe(Effect.scoped)
