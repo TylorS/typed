@@ -27,7 +27,8 @@ export function NavLink<E, R, I extends MatchInput.Any, E2 = never, R2 = never>(
       Link(
         {
           to,
-          className
+          className,
+          relative: false
         },
         content
       )

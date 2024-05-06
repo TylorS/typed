@@ -11,7 +11,8 @@ export function Link<E, R>(
   return UiLink(
     {
       to: params.href,
-      className: params.className
+      className: params.className,
+      relative: false
     },
     params.content
   )
