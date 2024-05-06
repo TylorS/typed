@@ -130,7 +130,7 @@ const isActive_ = (
   currentPath: string,
   currentRoute: Route.Route.Any,
   route: Route.Route.Any,
-  params: {} = {}
+  params: any = {}
 ): boolean => {
   const currentMatch = currentRoute.match(currentPath)
 
@@ -147,6 +147,14 @@ const isActive_ = (
 /**
  * @since 1.0.0
  */
+export function isActive<R extends Route.Route.Any>(
+  route: R,
+  ...[params]: Route.Route.ParamsList<R>
+): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
+export function isActive<R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>
+): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
 export function isActive<R extends Route.Route.Any>(
   route: R,
   ...[params]: Route.Route.ParamsList<R>
