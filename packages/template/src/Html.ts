@@ -10,11 +10,16 @@ import { join } from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
-import * as Record from "effect/Record"
+import type * as Record from "effect/Record"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
 import type { ServerEntry } from "./Entry.js"
-import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
+import type {
+  HtmlChunk,
+  PartChunk,
+  SparsePartChunk,
+  TextChunk,
+} from "./HtmlChunk.js"
 import { templateToHtmlChunks } from "./HtmlChunk.js"
 import { parse } from "./internal/parser2.js"
 import { partNodeToPart } from "./internal/server.js"
@@ -27,33 +32,34 @@ import type { RenderEvent } from "./RenderEvent.js"
 import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
-const toHtml = (r: RenderEvent | null) => r === null ? "" : (r as HtmlRenderEvent).html
+const toHtml = (r: RenderEvent | null) =>
+  r === null ? "" : (r as HtmlRenderEvent).html
 
 /**
  * @since 1.0.0
  */
 export const serverLayer: Layer.Layer<
-  RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment
-> = Layer
-  .provideMerge(
-    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
-    RenderContext.server
-  ).pipe(
-    Layer.provideMerge(RenderQueue.sync)
-  )
+  | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
+  | RenderTemplate
+  | CurrentEnvironment
+> = Layer.provideMerge(
+  RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
+  RenderContext.server
+).pipe(Layer.provideMerge(RenderQueue.sync))
 
 /**
  * @since 1.0.0
  */
 export const staticLayer: Layer.Layer<
-  RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment
-> = Layer
-  .provideMerge(
-    RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
-    RenderContext.static
-  ).pipe(
-    Layer.provideMerge(RenderQueue.sync)
-  )
+  | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
+  | RenderTemplate
+  | CurrentEnvironment
+> = Layer.provideMerge(
+  RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
+  RenderContext.static
+).pipe(Layer.provideMerge(RenderQueue.sync))
 
 /**
  * @since 1.0.0
@@ -83,24 +89,31 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
   ): Fx.Fx<
     RenderEvent,
     Placeholder.Error<Values[number]>,
-    Scope.Scope | Placeholder.Context<readonly [] extends Values ? never : Values[number]>
+    | Scope.Scope
+    | Placeholder.Context<readonly [] extends Values ? never : Values[number]>
   > => {
-    const isStatic = ctx.environment === "static" || ctx.environment === "test:static"
+    const isStatic =
+      ctx.environment === "static" || ctx.environment === "test:static"
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
 
     if (values.length === 0) {
-      return Fx.succeed(HtmlRenderEvent((entry.chunks[0] as TextChunk).value, true))
+      return Fx.succeed(
+        HtmlRenderEvent((entry.chunks[0] as TextChunk).value, true)
+      )
     } else {
+      const lastIndex = entry.chunks.length - 1
       return Fx.filter(
         Fx.mergeOrdered(
           entry.chunks.map((chunk, i) =>
             renderChunk<
               Placeholder.Error<Values[number]>,
-              Placeholder.Context<readonly [] extends Values ? never : Values[number]>
-            >(chunk, values, isStatic, i === entry.chunks.length - 1)
+              Placeholder.Context<
+                readonly [] extends Values ? never : Values[number]
+              >
+            >(chunk, values, isStatic, i === lastIndex)
           )
         ),
-        (x) => (x.valueOf()).length > 0
+        (x) => x.valueOf().length > 0
       )
     }
   }
@@ -117,7 +130,11 @@ function renderChunk<E, R>(
   } else if (chunk._tag === "part") {
     return renderPart<E, R>(chunk, values, isStatic, done)
   } else {
-    return renderSparsePart<E, R>(chunk, values, done) as Fx.Fx<HtmlRenderEvent, E, R>
+    return renderSparsePart<E, R>(chunk, values, done) as Fx.Fx<
+      HtmlRenderEvent,
+      E,
+      R
+    >
   }
 }
 
@@ -131,7 +148,12 @@ function renderNode<E, R>(
     case "number":
     case "boolean":
     case "bigint":
-      return Fx.succeed(HtmlRenderEvent((isStatic ? "" : TEXT_START) + renderable.toString(), done))
+      return Fx.succeed(
+        HtmlRenderEvent(
+          (isStatic ? "" : TEXT_START) + renderable.toString(),
+          done
+        )
+      )
     case "undefined":
     case "object":
       return renderObject(renderable, isStatic, done)
@@ -149,7 +171,9 @@ function renderObject<E, R>(
     return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START, done))
   } else if (Array.isArray(renderable)) {
     return Fx.mergeOrdered(
-      renderable.map((r, i) => renderNode(r, isStatic, done && i === renderable.length - 1))
+      renderable.map((r, i) =>
+        renderNode(r, isStatic, done && i === renderable.length - 1)
+      )
     ) as any
   } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
     return takeOneIfNotRenderEvent(renderable, isStatic, done)
@@ -180,14 +204,15 @@ function renderPart<E, R>(
 
   // Refs and events are not rendered into HTML
   if (isDirective<E, R>(renderable)) {
-    return Fx.make<HtmlRenderEvent, E, R>((sink: Sink.Sink<HtmlRenderEvent, E>) => {
-      const part = partNodeToPart(
-        node,
-        (value) => sink.onSuccess(HtmlRenderEvent(render(value), done))
-      )
+    return Fx.make<HtmlRenderEvent, E, R>(
+      (sink: Sink.Sink<HtmlRenderEvent, E>) => {
+        const part = partNodeToPart(node, (value) =>
+          sink.onSuccess(HtmlRenderEvent(render(value), done))
+        )
 
-      return Effect.catchAllCause(renderable(part), sink.onFailure)
-    })
+        return Effect.catchAllCause(renderable(part), sink.onFailure)
+      }
+    )
   } else if (node._tag === "node") {
     if (isStatic) return renderNode<E, R>(renderable, isStatic, done)
     let first = true
@@ -195,7 +220,9 @@ function renderPart<E, R>(
       Fx.map(renderNode<E, R>(renderable, isStatic, true), (x) => {
         if (x.done) {
           const y = HtmlRenderEvent(
-            (first ? TYPED_HOLE_START(node.index) : "") + x.html + TYPED_HOLE_END(node.index),
+            (first ? TYPED_HOLE_START(node.index) : "") +
+              x.html +
+              TYPED_HOLE_END(node.index),
             done
           )
           first = false
@@ -203,33 +230,53 @@ function renderPart<E, R>(
         } else {
           if (first) {
             first = false
-            return HtmlRenderEvent(TYPED_HOLE_START(node.index) + x.html, false)
+            return HtmlRenderEvent(
+              TYPED_HOLE_START(node.index) + x.html,
+              false
+            )
           }
           return x
         }
       }),
       () =>
-        first ? Fx.succeed(HtmlRenderEvent(TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index), done)) : Fx.empty
+        first
+          ? Fx.succeed(
+              HtmlRenderEvent(
+                TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index),
+                done
+              )
+            )
+          : Fx.empty
     )
   } else if (node._tag === "properties") {
     if (renderable == null) return Fx.empty
-    return Fx.map(
-      Fx.take(
-        Fx.struct(
-          Record.map(renderable as any, (v) => unwrapRenderable(v as any)) as any
-        ),
-        1
-      ),
-      (x) => HtmlRenderEvent(render(x), done)
-    ) as any
+
+    return Fx.mergeAll(
+      Object.entries(renderable as Record<string, Renderable<any, any>>).map(
+        ([key, renderable]) => {
+          return Fx.filterMap(
+            Fx.take(unwrapRenderable<E, R>(renderable), 1),
+            (value) => {
+              const s = render({ [key]: value })
+
+              return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
+            }
+          )
+        }
+      )
+    )
   } else {
-    if (renderable === null) return Fx.succeed(HtmlRenderEvent(render(renderable), done))
+    if (renderable === null)
+      return Fx.succeed(HtmlRenderEvent(render(renderable), done))
 
-    const html = Fx.filterMap(Fx.take(unwrapRenderable<E, R>(renderable), 1), (value) => {
-      const s = render(value)
+    const html = Fx.filterMap(
+      Fx.take(unwrapRenderable<E, R>(renderable), 1),
+      (value) => {
+        const s = render(value)
 
-      return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
-    })
+        return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
+      }
+    )
 
     return html
   }
@@ -253,7 +300,9 @@ function renderSparsePart<E, R>(
           if (isDirective<E, R>(renderable)) {
             return Fx.make<unknown, E, R>((sink: Sink.Sink<unknown, E>) =>
               Effect.catchAllCause(
-                renderable(partNodeToPart(node, (value) => sink.onSuccess(value))),
+                renderable(
+                  partNodeToPart(node, (value) => sink.onSuccess(value))
+                ),
                 sink.onFailure
               )
             )
@@ -276,28 +325,31 @@ function takeOneIfNotRenderEvent<A, E, R>(
   return Fx.make<HtmlRenderEvent, E, R>((sink) =>
     Sink.withEarlyExit(sink, (sink) =>
       fx.run(
-        Sink.make(
-          sink.onFailure,
-          (event) => {
-            if (isHtmlRenderEvent(event)) {
-              if (done) {
-                return sink.onSuccess(event)
-              } else {
-                return sink.onSuccess(HtmlRenderEvent(event.html, false))
-              }
+        Sink.make(sink.onFailure, (event) => {
+          if (isHtmlRenderEvent(event)) {
+            if (done) {
+              return sink.onSuccess(event)
+            } else {
+              return sink.onSuccess(HtmlRenderEvent(event.html, false))
             }
-
-            if (event === null || event === undefined) {
-              return sink.earlyExit
-            }
-
-            return Effect.zipRight(
-              sink.onSuccess(HtmlRenderEvent((isStatic ? "" : TEXT_START) + String(event), done)),
-              sink.earlyExit
-            )
           }
-        )
-      ))
+
+          if (event === null || event === undefined) {
+            return sink.earlyExit
+          }
+
+          return Effect.zipRight(
+            sink.onSuccess(
+              HtmlRenderEvent(
+                (isStatic ? "" : TEXT_START) + String(event),
+                done
+              )
+            ),
+            sink.earlyExit
+          )
+        })
+      )
+    )
   )
 }
 
@@ -313,7 +365,7 @@ function getServerEntry(
     const entry: ServerEntry = {
       _tag: "Server",
       template,
-      chunks: templateToHtmlChunks(template, isStatic)
+      chunks: templateToHtmlChunks(template, isStatic),
     }
 
     templateCache.set(templateStrings, entry)
@@ -324,17 +376,26 @@ function getServerEntry(
   }
 }
 
-function unwrapRenderable<E, R>(renderable: Renderable<any, any>): Fx.Fx<any, E, R> {
+function unwrapRenderable<E, R>(
+  renderable: Renderable<any, any>
+): Fx.Fx<any, E, R> {
   switch (typeof renderable) {
     case "undefined":
     case "object": {
-      if (renderable === null || renderable === undefined) return Fx.succeed(null)
+      if (renderable === null || renderable === undefined)
+        return Fx.succeed(null)
       else if (Array.isArray(renderable)) {
-        return Fx.mergeOrdered(renderable.map((r) => takeOneIfNotRenderEvent(unwrapRenderable(r), true, false))) as any
+        return Fx.mergeOrdered(
+          renderable.map((r) =>
+            takeOneIfNotRenderEvent(unwrapRenderable(r), true, false)
+          )
+        ) as any
       } else if (TypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
-        return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<any, any>))
+        return Fx.fromFxEffect(
+          Effect.map(renderable as any, unwrapRenderable<any, any>)
+        )
       } else return Fx.succeed(renderable as any)
     }
     default:

@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import { keyToPartType } from "./internal/utils.js"
 import { isNullOrUndefined } from "./internal/v2/helpers.js"
 import type {
   Attribute,
@@ -226,15 +227,23 @@ const attrMap: AttrMap = {
         const out = value == null
           ? ``
           : " " + Object.entries(value).flatMap(([key, value]) => {
-            if (value === true) return [key]
             if (value == null) return []
-            if (key[0] === "o" && key[1] === "n") return []
-            if (key[0] === "@") return []
-            if (key[0] === ".") return [`${key}="${escape(value)}"`]
-            if (key === "ref") return []
-            if (key.toLowerCase() === "classname") return `class="${escape(value)}"`
 
-            return [`${key}="${value}"`]
+            const [type, k] = keyToPartType(key)
+
+            switch (type) {
+              case "attr":
+              case "property":
+                return value == null ? [] : [`${k}="${escape(value)}"`]
+              case "boolean":
+                return value ? [k] : []
+              case "class":
+                return [`class="${escape(value)}"`]
+              case "data":
+                return [datasetToString(value)]
+              default:
+                return []
+            }
           }).join(" ")
 
         return out
