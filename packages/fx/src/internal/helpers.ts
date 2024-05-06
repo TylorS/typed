@@ -1,13 +1,15 @@
 import { getOption } from "@typed/context"
 import * as Cause from "effect/Cause"
+import * as Deferred from "effect/Deferred"
 import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Effectable from "effect/Effectable"
 import * as Equal from "effect/Equal"
 import * as Equivalence from "effect/Equivalence"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
-import type * as Exit from "effect/Exit"
+import * as Exit from "effect/Exit"
 import * as Fiber from "effect/Fiber"
+import type * as FiberId from "effect/FiberId"
 import * as FiberSet from "effect/FiberSet"
 import * as Option from "effect/Option"
 import * as Ref from "effect/Ref"
@@ -18,59 +20,93 @@ import * as Unify from "effect/Unify"
 import type { FlattenStrategy, FxFork, ScopedFork } from "../Fx.js"
 import type * as Sink from "../Sink.js"
 
-export function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
-  const buffers: Array<Array<A>> = Array.from({ length: size }, () => [])
-  const finished = new Set<number>()
-  const done = new Set<number>()
-  let currentIndex = 0
+export function withBuffers<A, E, R>(
+  size: number,
+  sink: Sink.Sink<A, E, R>,
+  id: FiberId.FiberId
+) {
+  const buffers = indexedBuffers(size, sink, id)
+  const onSuccess = (index: number, value: A) => buffers.get(index)!.onSuccess(value)
+  const onEnd = (index: number) => buffers.get(index)!.onEnd
 
-  const drainBuffer = (index: number): Effect.Effect<void, never, R> => {
-    const effect = Effect.forEach(buffers[index], sink.onSuccess)
-    buffers[index] = []
+  return {
+    onSuccess: (i: number, a: A) => onSuccess(i, a),
+    onEnd: (i: number) => onEnd(i)
+  } as const
+}
 
-    return Effect.flatMap(effect, () => finished.has(index) ? onEnd(index) : Effect.void)
-  }
+function indexedBuffers<A, E, R>(
+  size: number,
+  sink: Sink.Sink<A, E, R>,
+  id: FiberId.FiberId
+) {
+  const buffers = new Map<number, ReturnType<typeof IndexedBuffer<A, E, R>>>()
 
-  const onSuccess = (index: number, value: A) => {
-    if (done.has(index)) return Effect.void
-
-    if (index === currentIndex) {
-      const buffer = buffers[index]
-
-      if (buffer.length === 0) {
-        return sink.onSuccess(value)
-      } else {
-        buffer.push(value)
-
-        return drainBuffer(index)
-      }
-    } else if (index > currentIndex) {
-      buffers[index].push(value)
+  const last = size - 1
+  for (let i = 0; i < size; i++) {
+    const deferred = Deferred.unsafeMake<void>(id)
+    const state = {
+      ready: i === 0,
+      deferred
     }
 
-    return Effect.void
-  }
-
-  const onEnd = (index: number) => {
-    if (finished.has(index)) {
-      done.add(index)
-    } else {
-      finished.add(index)
+    // First should start immediately
+    if (i === 0) {
+      Deferred.unsafeDone(deferred, Exit.void)
     }
 
-    if (index === currentIndex && ++currentIndex < size) {
-      return drainBuffer(currentIndex)
+    buffers.set(
+      i,
+      IndexedBuffer(
+        state,
+        sink,
+        i === last ? Effect.void : Effect.suspend(() => {
+          const next = buffers.get(i + 1)!
+          next.state.ready = true
+          return Deferred.done(next.state.deferred, Exit.void)
+        })
+      )
+    )
+  }
+
+  return buffers
+}
+
+function IndexedBuffer<A, E, R>(
+  state: {
+    ready: boolean
+    deferred: Deferred.Deferred<void>
+  },
+  sink: Sink.Sink<A, E, R>,
+  onDone: Effect.Effect<void>
+) {
+  let buffer: Array<A> = []
+
+  const onSuccess = (value: A) => {
+    if (state.ready) {
+      if (buffer.length === 0) return sink.onSuccess(value)
+      buffer.push(value)
+      const effect = Effect.forEach(buffer, sink.onSuccess)
+      buffer = []
+      return effect
     } else {
+      buffer.push(value)
       return Effect.void
     }
   }
 
-  const lock = Effect.unsafeMakeSemaphore(1).withPermits(1)
+  const onEnd = Effect.flatMap(Deferred.await(state.deferred), () => {
+    if (buffer.length === 0) return onDone
+    const effect = Effect.forEach(buffer, sink.onSuccess)
+    buffer = []
+    return Effect.zipRight(effect, onDone)
+  })
 
   return {
-    onSuccess: (i: number, a: A) => lock(onSuccess(i, a)),
-    onEnd: (i: number) => lock(onEnd(i))
-  } as const
+    state,
+    onSuccess,
+    onEnd
+  }
 }
 
 export const withScope = <A, E, R>(

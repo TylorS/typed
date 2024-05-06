@@ -1266,9 +1266,9 @@ function runOrdered<
   sink: Sink.Sink<any, any, R2>,
   concurrency: number | "unbounded"
 ): Effect.Effect<unknown, never, R2 | Fx.Context<FX[number]>> {
-  return Effect.suspend(
-    () => {
-      const buffers = withBuffers(fx.length, sink)
+  return Effect.fiberIdWith(
+    (id) => {
+      const buffers = withBuffers(fx.length, sink, id)
       return Effect.forEach(
         fx,
         (fx, i) =>

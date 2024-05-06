@@ -48,11 +48,11 @@ export const takeOneIfNotEnvironment: {
     fx: Fx.Fx<A, E, R>,
     environments: ReadonlyArray<Environment>
   ): Fx.Fx<A, E, R | CurrentEnvironment>
-} = function takeOneIfEnvironment<A, E, R>(
+} = function takeOneIfNotEnvironment<A, E, R>(
   ...args: [ReadonlyArray<Environment>] | [Fx.Fx<A, E, R>, ReadonlyArray<Environment>]
 ): any {
   if (args.length === 1) {
-    return (fx: Fx.Fx<A, E, R>) => takeOneIfEnvironment(fx, args[0])
+    return (fx: Fx.Fx<A, E, R>) => takeOneIfNotEnvironment(fx, args[0])
   }
 
   const [fx, environments] = args
