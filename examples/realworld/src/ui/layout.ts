@@ -1,15 +1,14 @@
-import { AsyncData, Fx } from "@typed/core"
+import { AsyncData, Fx, Link } from "@typed/core"
 import { CurrentUser, isAuthenticated } from "@typed/realworld/services"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
 import type { RenderEvent } from "@typed/template"
 import { html } from "@typed/template"
 import { Option } from "effect"
-import { Link } from "./components/Link"
 import * as pages from "./pages"
 
 const UnauthenticatedHeader = html`<nav class="navbar navbar-light">
   <div class="container">
-    ${Link({ href: "/", className: "navbar-brand", content: "conduit" })}
+    ${Link({ to: "/", className: "navbar-brand" }, "conduit")}
     <ul class="nav navbar-nav pull-xs-right">
       ${NavLink("Home", pages.home.route, {})}
       ${NavLink("Sign in", pages.login.route)}
@@ -20,7 +19,7 @@ const UnauthenticatedHeader = html`<nav class="navbar navbar-light">
 
 const AuthenticatedHeader = html`<nav class="navbar navbar-light">
   <div class="container">
-    ${Link({ href: "/", className: "navbar-brand", content: "conduit" })}
+    ${Link({ to: "/", className: "navbar-brand" }, "conduit")}
     <ul class="nav navbar-nav pull-xs-right">
       ${NavLink("Home", pages.home.route, {})}
       ${NavLink(html`<i class="mr-2 ion-compose"></i> New Article`, pages.editor.route)}
@@ -55,7 +54,7 @@ const Header = Fx.if(
 
 const Footer = html`<footer>
   <div class="container">
-    ${Link({ href: "/", className: "logo-font", content: "conduit" })}
+    ${Link({ to: "/", className: "logo-font" }, "conduit")}
     <span class="attribution">
       An interactive learning project from <a href="https://thinkster.io">Thinkster</a>. Code & design licensed under MIT.
     </span>
