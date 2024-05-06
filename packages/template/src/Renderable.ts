@@ -10,7 +10,7 @@ import type { RenderEvent } from "./RenderEvent.js"
 /**
  * @since 1.0.0
  */
-export type Renderable<R = never, E = never> =
+export type Renderable<E = never, R = never> =
   | Renderable.Value
   | Placeholder<any, E, R>
   | { readonly [key: string]: Renderable<E, R> | Placeholder<any, E, R> | unknown } // TODO: Should we manage data attributes this way?

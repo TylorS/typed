@@ -39,24 +39,31 @@ export namespace Placeholder {
     | Placeholder<A, never, any>
     | Placeholder<A>
     | Placeholder<A, any>
+    | Effect.Effect<A, any, any>
+    // Null/Undefined cannot be modified globally to make them placeholders
+    | ([A] extends [null] ? null : never)
+    | ([A] extends [undefined] ? undefined : never)
 
   /**
    * @since 1.0.0
    */
   export type Context<T> = [T] extends [never] ? never
-    : [T] extends [Placeholder<infer _A, infer _E, infer R>] ? R
+    : T extends Effect.Effect<infer _A, infer _E, infer R> ? R
+    : T extends Placeholder<infer _A, infer _E, infer R> ? R
     : never
   /**
    * @since 1.0.0
    */
   export type Error<T> = [T] extends [never] ? never
-    : [T] extends [Placeholder<infer _A, infer E, infer _R>] ? E
+    : T extends Effect.Effect<infer _A, infer E, infer _R> ? E
+    : T extends Placeholder<infer _A, infer E, infer _R> ? E
     : never
   /**
    * @since 1.0.0
    */
   export type Success<T> = [T] extends [never] ? never
-    : [T] extends [Placeholder<infer A, infer _E, infer _R>] ? A
+    : T extends Effect.Effect<infer A, infer _E, infer _R> ? A
+    : T extends Placeholder<infer A, infer _E, infer _R> ? A
     : never
 
   export function asRef<A, E = never, R = never>(
