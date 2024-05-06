@@ -1,3 +1,4 @@
+import { MutableRef } from "effect"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
 import type * as Equivalence from "effect/Equivalence"
@@ -8,29 +9,33 @@ import { EffectBase } from "./protos.js"
 
 export class DeferredRef<E, A> extends EffectBase<A, E, never> {
   // Keep track of the latest value emitted by the stream
-  public current!: Option.Option<Exit.Exit<A, E>>
   public version!: number
   public deferred!: Deferred.Deferred<A, E>
 
-  constructor(private id: FiberId.FiberId, private eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
+  constructor(
+    private id: FiberId.FiberId,
+    private eq: Equivalence.Equivalence<Exit.Exit<A, E>>,
+    readonly current: MutableRef.MutableRef<Option.Option<Exit.Exit<A, E>>>
+  ) {
     super()
     this.reset()
   }
 
   toEffect() {
     return Effect.suspend(() => {
-      if (Option.isNone(this.current)) {
+      const current = MutableRef.get(this.current)
+      if (Option.isNone(current)) {
         return Deferred.await(this.deferred)
       } else {
-        return this.current.value
+        return current.value
       }
     })
   }
 
   done(exit: Exit.Exit<A, E>) {
-    const current = this.current
+    const current = MutableRef.get(this.current)
 
-    this.current = Option.some(exit)
+    MutableRef.set(this.current, Option.some(exit))
 
     if (Option.isSome(current) && this.eq(current.value, exit)) {
       return false
@@ -43,7 +48,7 @@ export class DeferredRef<E, A> extends EffectBase<A, E, never> {
   }
 
   reset() {
-    this.current = Option.none()
+    MutableRef.set(this.current, Option.none())
     this.version = -1
 
     if (this.deferred) {
@@ -55,9 +60,13 @@ export class DeferredRef<E, A> extends EffectBase<A, E, never> {
 }
 
 export function make<E, A>(eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
-  return Effect.map(Effect.fiberId, (id) => new DeferredRef(id, eq))
+  return Effect.map(Effect.fiberId, (id) => new DeferredRef(id, eq, MutableRef.make(Option.none())))
 }
 
-export function unsafeMake<E, A>(id: FiberId.FiberId, eq: Equivalence.Equivalence<Exit.Exit<A, E>>) {
-  return new DeferredRef(id, eq)
+export function unsafeMake<E, A>(
+  id: FiberId.FiberId,
+  eq: Equivalence.Equivalence<Exit.Exit<A, E>>,
+  current: MutableRef.MutableRef<Option.Option<Exit.Exit<A, E>>>
+) {
+  return new DeferredRef(id, eq, current)
 }

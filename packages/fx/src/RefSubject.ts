@@ -224,7 +224,6 @@ export type Identifier<T> = RefSubject.Identifier<T>
  */
 export interface RefSubjectOptions<A> {
   readonly eq?: Equivalence.Equivalence<A>
-  readonly replay?: number
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy
 }
 
@@ -371,15 +370,16 @@ export function unsafeMake<E, A>(
   const { id, initial, options, scope } = params
   return Effect.flatMap(Effect.runtime(), (runtime) => {
     const core = unsafeMakeCore(initial, id, runtime, scope, options)
+    const current = MutableRef.get(core.deferredRef.current)
 
     // Sometimes we might be instantiating directly from a known value
     // Here we seed the value and ensure the subject has it as well for re-broadcasting
-    if ("initialValue" in params && Option.isNone(core.deferredRef.current)) {
+    if ("initialValue" in params && Option.isNone(current)) {
       core.deferredRef.done(Exit.succeed(params.initialValue))
       return Effect.map(core.subject.onSuccess(params.initialValue), () => new RefSubjectImpl(core))
-    } else if (Option.isSome(core.deferredRef.current)) {
+    } else if (Option.isSome(current)) {
       return Effect.map(
-        Effect.matchCauseEffect(core.deferredRef.current.value, core.subject),
+        Effect.matchCauseEffect(current.value, core.subject),
         () => new RefSubjectImpl(core)
       )
     } else {
@@ -429,7 +429,7 @@ class RefSubjectImpl<A, E, R, R2> extends FxEffectBase<A, E, Exclude<R, R2> | Sc
   }
 
   unsafeGet: () => Exit.Exit<A, E> = () =>
-    Option.getOrThrowWith(this.core.deferredRef.current, () => new Cause.NoSuchElementException())
+    Option.getOrThrowWith(MutableRef.get(this.core.deferredRef.current), () => new Cause.NoSuchElementException())
 
   onSuccess(value: A): Effect.Effect<unknown, never, Exclude<R, R2>> {
     return setCore(this.core, value)
@@ -637,7 +637,7 @@ export const runUpdates: {
 class RefSubjectCore<A, E, R, R2> {
   constructor(
     readonly initial: Effect.Effect<A, E, R>,
-    readonly subject: Subject.Subject<A, E, R>,
+    readonly subject: Subject.HoldSubjectImpl<A, E>,
     readonly runtime: Runtime.Runtime<R2>,
     readonly scope: Scope.CloseableScope,
     readonly deferredRef: DeferredRef.DeferredRef<E, A>,
@@ -659,22 +659,9 @@ function makeCore<A, E, R>(
       "scope",
       ({ executionStrategy, runtime }) => Scope.fork(C.get(runtime.context, Scope.Scope), executionStrategy)
     ),
-    Effect.bind(
-      "deferredRef",
-      () => DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals))
-    ),
-    Effect.let("subject", () => Subject.unsafeMake<A, E>(Math.max(1, options?.replay ?? 1))),
-    Effect.tap(({ scope, subject }) => Scope.addFinalizer(scope, subject.interrupt)),
-    Effect.map(({ deferredRef, runtime, scope, subject }) =>
-      new RefSubjectCore(
-        initial,
-        subject,
-        runtime,
-        scope,
-        deferredRef,
-        Effect.unsafeMakeSemaphore(1)
-      )
-    )
+    Effect.bind("id", () => Effect.fiberId),
+    Effect.map(({ id, runtime, scope }) => unsafeMakeCore(initial, id, runtime, scope, options)),
+    Effect.tap((core) => Scope.addFinalizer(core.scope, Effect.provide(core.subject.interrupt, core.runtime.context)))
   )
 }
 
@@ -685,12 +672,13 @@ function unsafeMakeCore<A, E, R>(
   scope: Scope.CloseableScope,
   options?: RefSubjectOptions<A>
 ) {
+  const subject = new Subject.HoldSubjectImpl<A, E>()
   const core = new RefSubjectCore(
     initial,
-    Subject.unsafeMake<A, E>(Math.max(1, options?.replay ?? 1)),
+    subject,
     runtime,
     scope,
-    DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals)),
+    DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals), subject.lastValue),
     Effect.unsafeMakeSemaphore(1)
   )
 
@@ -722,7 +710,7 @@ function getOrInitializeCore<A, E, R, R2>(
   lockInitialize: boolean
 ): Effect.Effect<A, E, Exclude<R, R2>> {
   return Effect.suspend(() => {
-    if (core._fiber === undefined && Option.isNone(core.deferredRef.current)) {
+    if (core._fiber === undefined && Option.isNone(MutableRef.get(core.deferredRef.current))) {
       return initializeCoreAndTap(core, lockInitialize)
     } else {
       return core.deferredRef
@@ -834,7 +822,7 @@ function deleteCore<A, E, R, R2>(
   core: RefSubjectCore<A, E, R, R2>
 ): Effect.Effect<Option.Option<A>, E, Exclude<R, R2>> {
   return Effect.suspend(() => {
-    const current = core.deferredRef.current
+    const current = MutableRef.get(core.deferredRef.current)
     core.deferredRef.reset()
 
     if (Option.isNone(current)) {
