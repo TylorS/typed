@@ -33,10 +33,10 @@ export function getHeadAndScript(
   const styles = [...css, ...imports.flatMap((i) => manifest[i]?.css ?? [])]
 
   const headHtml = [
+    ...styles.map(makeStylesheetLink),
     ...modulePreloads.map((src) =>
       makePreloadLink(useScript ? "preload" : "modulepreload", src, useScript ? "script" : undefined)
-    ),
-    ...styles.map(makeStylesheetLink)
+    )
   ].join("\n")
   const scriptHtml = `<script ${useScript ? "async defer" : `type="module"`} src="${file}"></script>`
 
