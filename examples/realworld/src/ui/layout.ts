@@ -1,5 +1,4 @@
-import * as Fx from "@typed/fx"
-import * as RefAsyncData from "@typed/fx/AsyncData"
+import { AsyncData, Fx } from "@typed/core"
 import { CurrentUser, isAuthenticated } from "@typed/realworld/services"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
 import type { RenderEvent } from "@typed/template"
@@ -28,7 +27,8 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
       ${NavLink(html`<i class="mr-2 ion-gear-a"></i> Settings`, pages.settings.route)}
       ${
   CurrentUser.pipe(
-    RefAsyncData.getSuccess,
+    // Safe because AuthenticatedHeader is only rendered when the user is authenticated
+    Fx.filterMap(AsyncData.getSuccess),
     Fx.switchMap(
       (user) =>
         NavLink(
