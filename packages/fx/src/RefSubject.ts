@@ -1075,7 +1075,7 @@ class ComputedImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => share.hold(core.mapEffect(fx, f)) as any,
+      (fx) => core.mapEffect(fx, f) as any,
       Effect.flatMap(f)
     )
   }
@@ -1115,7 +1115,7 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => share.hold(core.filterMapEffect(fx, f)) as any,
+      (fx) => core.filterMapEffect(fx, f) as any,
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }
@@ -2306,7 +2306,7 @@ class RefSubjectSlice<A, E, R> extends FxEffectBase<A, E, R | Scope.Scope, A, E,
     this.version = ref.version
     this.interrupt = ref.interrupt
     this.subscriberCount = ref.subscriberCount
-    this._fx = share.hold(core.slice(ref, drop, take))
+    this._fx = core.slice(ref, drop, take)
     this._effect = ref
   }
 
