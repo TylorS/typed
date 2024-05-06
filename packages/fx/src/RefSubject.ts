@@ -374,12 +374,17 @@ export function unsafeMake<E, A>(
 
     // Sometimes we might be instantiating directly from a known value
     // Here we seed the value and ensure the subject has it as well for re-broadcasting
-    if ("initialValue" in params) {
+    if ("initialValue" in params && Option.isNone(core.deferredRef.current)) {
       core.deferredRef.done(Exit.succeed(params.initialValue))
       return Effect.map(core.subject.onSuccess(params.initialValue), () => new RefSubjectImpl(core))
+    } else if (Option.isSome(core.deferredRef.current)) {
+      return Effect.map(
+        Effect.matchCauseEffect(core.deferredRef.current.value, core.subject),
+        () => new RefSubjectImpl(core)
+      )
+    } else {
+      return Effect.succeed(new RefSubjectImpl(core))
     }
-
-    return Effect.succeed(new RefSubjectImpl(core))
   })
 }
 
@@ -680,7 +685,7 @@ function unsafeMakeCore<A, E, R>(
   scope: Scope.CloseableScope,
   options?: RefSubjectOptions<A>
 ) {
-  return new RefSubjectCore(
+  const core = new RefSubjectCore(
     initial,
     Subject.unsafeMake<A, E>(Math.max(1, options?.replay ?? 1)),
     runtime,
@@ -688,6 +693,28 @@ function unsafeMakeCore<A, E, R>(
     DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals)),
     Effect.unsafeMakeSemaphore(1)
   )
+
+  const onSuccess = (a: A) => {
+    core.deferredRef.done(Exit.succeed(a))
+  }
+  const onCause = (cause: Cause.Cause<E>) => {
+    core.deferredRef.done(Exit.failCause(cause))
+  }
+  const onError = (e: E) => onCause(Cause.fail(e))
+
+  // Initialize the core with the initial value if it is synchronous
+  matchEffectPrimitive(initial, {
+    Success: onSuccess,
+    Failure: onCause,
+    Some: onSuccess,
+    None: onError,
+    Left: onError,
+    Right: onSuccess,
+    Sync: (f) => onSuccess(f()),
+    Otherwise: () => {}
+  })
+
+  return core
 }
 
 function getOrInitializeCore<A, E, R, R2>(
@@ -718,7 +745,7 @@ function initializeCoreEffect<A, E, R, R2>(
 
   return Effect.flatMap(
     Effect.forkIn(
-      lock && core.semaphore ? core.semaphore.withPermits(1)(initialize) : initialize,
+      lock ? core.semaphore.withPermits(1)(initialize) : initialize,
       core.scope
     ),
     (fiber) => Effect.sync(() => core._fiber = fiber)
@@ -750,7 +777,7 @@ function initializeCore<A, E, R, R2>(
     None: onError,
     Left: onError,
     Right: onSuccess,
-    Sync: (f) => onSuccess(f()),
+    Sync: (f) => Effect.suspend(() => onSuccess(f())),
     Otherwise: () => initializeCoreEffect(core, lock)
   })
 }
