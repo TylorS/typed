@@ -399,6 +399,42 @@ describe.concurrent(__filename, () => {
 
         await Effect.runPromise(Effect.scoped(test))
       })
+
+      it.concurrent("multicasts to multiple subscribers", async () => {
+        const ref = RefSubject.tagged<number>()("test")
+        const max = 5
+        const delay = 100
+        const sut = ref.pipe(
+          Fx.take(max),
+          Fx.multicast,
+          Fx.toReadonlyArray
+        )
+
+        const test = Effect.gen(function*(_) {
+          yield* Effect.fork(Effect.gen(function*(_) {
+            for (let i = 0; i < max; i++) {
+              expect(yield* _(ref)).toEqual(i)
+              yield* _(Effect.sleep(delay))
+              yield* _(RefSubject.set(ref, i + 1))
+            }
+          }))
+
+          // start first fiber
+          const a = yield* _(Effect.fork(sut))
+
+          // Allow 2 events to occur
+          yield* _(Effect.sleep(delay * 2))
+
+          // Start the second
+          const b = yield* _(Effect.fork(sut))
+
+          // Validate the outputs
+          expect(yield* _(Fiber.join(a))).toEqual([0, 1, 2, 3, 4])
+          expect(yield* _(Fiber.join(b))).toEqual([2, 3, 4])
+        }).pipe(Effect.provide(ref.make(Effect.succeed(0))), Effect.retry(Schedule.recurUpTo(3)), Effect.scoped)
+
+        await Effect.runPromise(test)
+      })
     })
 
     describe.concurrent("unsafe", () => {
@@ -417,8 +453,8 @@ describe.concurrent(__filename, () => {
       it.concurrent("unsafeGet", async () => {
         const test = Effect.gen(function*(_) {
           const ref = yield* _(RefSubject.make(Effect.succeed(0)))
-          // Effect/Fx-backed RefSubjects require being initialized
-          yield* _(ref)
+          // // Effect/Fx-backed RefSubjects require being initialized
+          // yield* _(ref)
 
           expect(RefSubject.unsafeGet(ref)).toEqual(0)
         }).pipe(Effect.scoped)
