@@ -16,7 +16,34 @@ export class CouldNotFindManyCommentError extends Error {
   }
 }
 
-export function isHydrationError(e: unknown): e is CouldNotFindCommentError | CouldNotFindRootElement {
-  return e instanceof CouldNotFindCommentError || e instanceof CouldNotFindRootElement ||
-    e instanceof CouldNotFindManyCommentError
+export class CouldNotFindTemplateHashError extends Error {
+  constructor(readonly hash: string) {
+    super(`Could not find template hash ${hash}`)
+  }
+}
+
+export class CouldNotFindTemplateEndError extends Error {
+  constructor(readonly hash: string) {
+    super(`Could not find end of template for hash ${hash}`)
+  }
+}
+
+const constructors: Array<Function> = [
+  CouldNotFindCommentError,
+  CouldNotFindRootElement,
+  CouldNotFindManyCommentError,
+  CouldNotFindTemplateHashError,
+  CouldNotFindTemplateEndError
+]
+
+export function isHydrationError(
+  e: unknown
+): e is
+  | CouldNotFindCommentError
+  | CouldNotFindRootElement
+  | CouldNotFindManyCommentError
+  | CouldNotFindTemplateHashError
+  | CouldNotFindTemplateEndError
+{
+  return constructors.some((c) => e instanceof c)
 }

@@ -1,5 +1,6 @@
 import { isComment, isElement, toHtml } from "@typed/wire"
 import { type Inspectable, NodeInspectSymbol } from "effect/Inspectable"
+import { CouldNotFindRootElement, CouldNotFindTemplateEndError } from "../errors"
 
 const TYPED_TEMPLATE_PREFIX = `typed-`
 const TYPED_TEMPLATE_END_PREFIX = `/typed-`
@@ -66,21 +67,25 @@ function getTemplateEndIndex(nodes: Array<Node>, start: number, hash: string): n
     }
   }
 
-  throw new Error(`Could not find end comment for template ${hash}`)
+  throw new CouldNotFindTemplateEndError(hash)
 }
 
 function getHoleEndIndex(nodes: Array<Node>, start: number, index: number): number {
   const endHash = `/hole${index}`
 
+  let inTemplate = false
+
   for (let i = start; i < nodes.length; ++i) {
     const node = nodes[i]
 
-    if (isComment(node) && node.data === endHash) {
-      return i
+    if (isComment(node)) {
+      if (!inTemplate && node.data === endHash) return i
+      else if (node.data.startsWith(TYPED_TEMPLATE_PREFIX)) inTemplate = true
+      else if (node.data.startsWith(TYPED_TEMPLATE_END_PREFIX)) inTemplate = false
     }
   }
 
-  throw new Error(`Could not find end comment for hole ${index}`)
+  throw new CouldNotFindRootElement(index)
 }
 
 export class HydrationElement implements Inspectable {
