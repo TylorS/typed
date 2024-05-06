@@ -73,15 +73,15 @@ function getTemplateEndIndex(nodes: Array<Node>, start: number, hash: string): n
 function getHoleEndIndex(nodes: Array<Node>, start: number, index: number): number {
   const endHash = `/hole${index}`
 
-  let inTemplate = false
+  let templateDepth = 0
 
   for (let i = start; i < nodes.length; ++i) {
     const node = nodes[i]
 
     if (isComment(node)) {
-      if (!inTemplate && node.data === endHash) return i
-      else if (node.data.startsWith(TYPED_TEMPLATE_PREFIX)) inTemplate = true
-      else if (node.data.startsWith(TYPED_TEMPLATE_END_PREFIX)) inTemplate = false
+      if (templateDepth === 0 && node.data === endHash) return i
+      else if (node.data.startsWith(TYPED_TEMPLATE_PREFIX)) templateDepth++
+      else if (node.data.startsWith(TYPED_TEMPLATE_END_PREFIX)) templateDepth--
     }
   }
 
