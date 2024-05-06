@@ -1,5 +1,5 @@
 import type { Placeholder, RenderEvent } from "@typed/core"
-import { EventHandler, html, Navigation } from "@typed/core"
+import { Link as UiLink } from "@typed/ui/Link"
 
 export function Link<E, R>(
   params: {
@@ -8,11 +8,11 @@ export function Link<E, R>(
     readonly content: Placeholder<string | RenderEvent, E, R>
   }
 ) {
-  return html` <a
-      onclick=${EventHandler.preventDefault(() => Navigation.navigate(params.href))} 
-      class=${params.className}
-      href=${params.href}
-    >
-      ${params.content}
-    </a>`
+  return UiLink(
+    {
+      to: params.href,
+      className: params.className
+    },
+    params.content
+  )
 }
