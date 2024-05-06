@@ -2722,11 +2722,8 @@ export function when<B, E, R, C>(
     readonly onTrue: B
     readonly onFalse: C
   }
-): Fx<B | C, E, R | Scope.Scope> {
-  return if_(bool, {
-    onTrue: succeed(options.onTrue),
-    onFalse: succeed(options.onFalse)
-  })
+): Fx<B | C, E, R> {
+  return map(skipRepeatsWith(bool, boolean), b => (b ? options.onTrue : options.onFalse))
 }
 
 export function mapBoth<A, E, R, B, C>(
