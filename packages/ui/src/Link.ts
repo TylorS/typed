@@ -58,7 +58,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
     const reloadDocument = yield* Placeholder.asRef(props.reloadDocument ?? false)
     const href = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
-      ([rel, to]) => rel ? makeHref(Route.literal(to)) : Effect.succeed(to)
+      ([rel, to]) => rel ? makeHref(Route.parse<string>(to)) : Effect.succeed(to)
     )
     const navigate = Effect.gen(function*() {
       const replace = yield* replaceRef
