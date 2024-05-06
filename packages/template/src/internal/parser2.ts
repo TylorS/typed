@@ -147,11 +147,18 @@ class Parser {
     const token = this.consumeNextTokenOfKind(TokenKind.Literal)
     const parts = parseTextAndParts(
       token.value,
-      (index) => this.addPartWithPrevious(new Template.NodePart(index)),
+      (index) => new Template.NodePart(index),
       true
     )
 
-    return parts
+    return parts.map((p) => {
+      if (p._tag === "text") {
+        this.path.inc()
+        return p
+      } else {
+        return this.addPartWithPrevious(p)
+      }
+    })
   }
 
   private parseOpenTag(): Template.Node {
