@@ -138,19 +138,9 @@ const isActive_ = (
   const fullRoute = currentRoute.concat(route)
   const fullParams = { ...currentMatch.value, ...params }
   const fullPath: string = fullRoute.interpolate(fullParams as any)
-
-  const active = fullPath === "/" ? currentPath === "/" : fullPath === currentPath || currentPath.startsWith(fullPath)
-
-  console.log({
-    currentPath,
-    currentRoute: currentRoute.path,
-    route: route.path,
-    params,
-    active
-  })
-
-  return active
+  return fullPath === "/" ? currentPath === "/" : fullPath === currentPath || currentPath.startsWith(fullPath)
 }
+
 /**
  * @since 1.0.0
  */
