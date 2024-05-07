@@ -129,7 +129,7 @@ class RefSubjectSimpleFxTransform<A, E, R, R2> extends Fx.FxEffectBase<A, E, R |
   }
 
   toFx(): Fx.Fx<A, E, R | R2 | Scope.Scope> {
-    return Fx.hold(this.transform(this.ref))
+    return this.transform(this.ref)
   }
 
   toEffect(): Effect.Effect<A, E, R> {
