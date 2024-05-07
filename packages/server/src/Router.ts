@@ -25,7 +25,7 @@ import * as RouteHandler from "./RouteHandler.js"
 export interface Router<E, R> extends
   Default<
     E | RouteNotFound,
-    Exclude<R, TypedRouter.CurrentRoute | RouteHandler.CurrentParams<any> | Navigation.Navigation>
+    TypedRouter.CurrentRoute | Exclude<R, RouteHandler.CurrentParams<any> | Navigation.Navigation>
   >
 {
   readonly [RouterTypeId]: RouterTypeId
@@ -77,14 +77,7 @@ const make = (method: Method | "*") =>
 <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
   handler: RouteHandler.Handler<I, E2, R2>
-): <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | RouteHandler.RouteNotMatched | E | MatchInput.MatchInput.Error<I>,
-  | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
-> => addHandler(RouteHandler.make(method)(route, handler))
+) => addHandler(RouteHandler.make(method)(route, handler))
 
 /**
  * @since 1.0.0
@@ -97,8 +90,8 @@ export const get: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("GET")
 
 /**
@@ -112,8 +105,8 @@ export const post: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("POST")
 
 /**
@@ -127,8 +120,8 @@ export const put: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("PUT")
 
 const delete_: <I extends MatchInput.MatchInput.Any, E2, R2>(
@@ -139,8 +132,8 @@ const delete_: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E | E2 | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("DELETE")
 
 export {
@@ -161,8 +154,8 @@ export const patch: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   RouteHandler.RouteNotMatched | E2 | E | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("PATCH")
 
 /**
@@ -176,8 +169,8 @@ export const options: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("OPTIONS")
 
 /**
@@ -191,8 +184,8 @@ export const head: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("HEAD")
 
 /**
@@ -206,8 +199,8 @@ export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
 ) => Router<
   E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, TypedRouter.CurrentRoute | Navigation.Navigation>
-  | Exclude<MatchInput.MatchInput.Context<I>, TypedRouter.CurrentRoute | Navigation.Navigation>
+  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("*")
 
 /**
@@ -295,10 +288,10 @@ function getRouteGuard<const I extends MatchInput.MatchInput.Any | string>(route
  */
 export const toPlatformRouter = <E, R>(
   router: Router<E, R>
-): PlatformRouter.Router<E | RouteHandler.RouteNotMatched, R> => {
+): PlatformRouter.Router<E | RouteHandler.RouteNotMatched, R | TypedRouter.CurrentRoute> => {
   let platformRouter: PlatformRouter.Router<
     E | RouteHandler.RouteNotMatched,
-    R
+    R | TypedRouter.CurrentRoute
   > = PlatformRouter.empty
 
   for (const mount of router.mounts) {
@@ -313,8 +306,7 @@ export const toPlatformRouter = <E, R>(
           mount.app,
           ctx.path,
           ctx.url,
-          ctx.existingParams,
-          ctx.parentRoute
+          ctx.existingParams
         )
 
         if (Option.isSome(response)) {

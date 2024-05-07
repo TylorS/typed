@@ -25,14 +25,15 @@ export type RouterTypeId = typeof RouterTypeId
 export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   ServerResponse,
   E | E2 | RouteNotFound,
-  Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest.ServerRequest
+  CurrentRoute | Exclude<R | R2, CurrentParams<any> | Navigation.Navigation> | ServerRequest.ServerRequest
 > implements Router<E | E2, R | R2> {
   readonly [RouterTypeId]: RouterTypeId = RouterTypeId
 
   private _httpApp!: Effect.Effect<
     ServerResponse,
     E | E2 | RouteNotFound,
-    | Exclude<R | R2, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
+    | Exclude<R | R2, CurrentParams<any> | Navigation.Navigation>
+    | CurrentRoute
     | ServerRequest.ServerRequest
   >
 
@@ -69,7 +70,8 @@ function toHttpApp<E, R>(
 ): Effect.Effect<
   ServerResponse,
   E | RouteNotFound,
-  | Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation>
+  | Exclude<R, CurrentParams<any> | Navigation.Navigation>
+  | CurrentRoute
   | ServerRequest.ServerRequest
 > {
   const routesByMethod = Record.map(
@@ -99,19 +101,20 @@ function toHttpApp<E, R>(
         const request = yield* ServerRequest.ServerRequest
         const prefix = prefixRoute.interpolate(match.value)
 
-        const response: Option.Option<ServerResponse> = yield* Effect.provideService(
-          runRouteMatcher<E, R>(
-            mount.prefix,
-            mount.app,
-            path,
-            url,
-            existingParams,
-            Option.some(makeCurrentRoute(prefixRoute, parentRoute))
+        const response: Option.Option<ServerResponse> = yield* runRouteMatcher<E, R>(
+          mount.prefix,
+          mount.app,
+          path,
+          url,
+          existingParams
+        ).pipe(
+          Effect.provideService(
+            ServerRequest.ServerRequest,
+            mount.options?.includePrefix === true
+              ? request
+              : replaceRequestUrl(request, prefix)
           ),
-          ServerRequest.ServerRequest,
-          mount.options?.includePrefix === true
-            ? request
-            : replaceRequestUrl(request, prefix)
+          Effect.provideService(CurrentRoute, makeCurrentRoute(prefixRoute, parentRoute))
         )
 
         if (Option.isSome(response)) {
@@ -135,7 +138,7 @@ function toHttpApp<E, R>(
         return response.value
       }
 
-      const { existingParams, parentRoute, path, request, url } = data
+      const { existingParams, path, request, url } = data
       const routes = routesByMethod[request.method]
       if (routes !== undefined) {
         for (const { handler, route } of routes) {
@@ -146,8 +149,7 @@ function toHttpApp<E, R>(
             handler,
             path,
             url,
-            existingParams,
-            parentRoute
+            existingParams
           )
 
           if (Option.isSome(response)) {
@@ -162,7 +164,7 @@ function toHttpApp<E, R>(
     })
   } else {
     return Effect.gen(function*(_) {
-      const { existingParams, parentRoute, path, request, url } = yield* setupRouteContext
+      const { existingParams, path, request, url } = yield* setupRouteContext
       const routes = routesByMethod[request.method]
 
       yield* _(Effect.logDebug(`Checking routes for method: ${request.method} at URL: ${url.href}`))
@@ -176,8 +178,7 @@ function toHttpApp<E, R>(
             handler,
             path,
             url,
-            existingParams,
-            parentRoute
+            existingParams
           )
 
           if (Option.isSome(response)) {
@@ -199,12 +200,11 @@ export function runRouteMatcher<E, R>(
   handler: Default<E, R>,
   path: string,
   url: URL,
-  existingParams: Option.Option<CurrentParams<any>>,
-  parent: Option.Option<CurrentRoute>
+  existingParams: Option.Option<CurrentParams<any>>
 ): Effect.Effect<
   Option.Option<ServerResponse>,
   E,
-  Exclude<R, CurrentRoute | CurrentParams<any> | Navigation.Navigation> | ServerRequest.ServerRequest
+  Exclude<R, CurrentParams<any> | Navigation.Navigation> | CurrentRoute | ServerRequest.ServerRequest
 > {
   const { guard, route } = asRouteGuard(input)
   const routeParams = route.match(path)
@@ -224,7 +224,6 @@ export function runRouteMatcher<E, R>(
 
     const layer = Layer.mergeAll(
       Navigation.initialMemory({ url }),
-      CurrentRoute.layer({ route, parent }),
       currentParamsLayer<typeof route>({
         params: Option.match(existingParams, {
           onNone: () => params.value,

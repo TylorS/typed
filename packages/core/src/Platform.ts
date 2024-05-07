@@ -104,7 +104,7 @@ export function toHttpRouter<
     return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
   })
   const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
-
+  const baseRoute = Route.parse(options?.base ?? "/")
   for (const [path, matches] of Object.entries(guardsByPath)) {
     const route = matches[0].route
 
@@ -125,7 +125,7 @@ export function toHttpRouter<
               yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
 
               const ref = yield* RefSubject.of(matched.value)
-              const content = match.match(RefSubject.take(ref, 1))
+              const content = match.match(RefSubject.take(ref, 1)).pipe(Fx.provide(Router.layer(route)))
               const template = Fx.unify(options?.layout ? options.layout({ content, request, head, script }) : content)
                 .pipe(
                   Fx.withSpan("render_template"),
@@ -150,7 +150,7 @@ export function toHttpRouter<
           Effect.provide(
             Layer.mergeAll(
               Navigation.initialMemory({ url, base: options?.base }),
-              Router.layer(route as any)
+              Router.layer(baseRoute)
             )
           ),
           Effect.withSpan("check_route_guards"),
@@ -387,12 +387,16 @@ export function toServerRouter<
     return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
   })
   const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
+  const baseRoute = Route.parse(options?.base ?? "/")
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
     if (matches.length === 1) {
-      router = ServerRouter.addHandler(router, fromMatches(matches[0].route, matches, head, script, options))
+      router = ServerRouter.addHandler(router, fromMatches(baseRoute, matches[0].route, matches, head, script, options))
     } else {
-      router = ServerRouter.addHandler(router, fromMatches(Route.parse(path), matches, head, script, options))
+      router = ServerRouter.addHandler(
+        router,
+        fromMatches(baseRoute, Route.parse(path), matches, head, script, options)
+      )
     }
   }
 
@@ -400,6 +404,7 @@ export function toServerRouter<
 }
 
 const fromMatches = <R extends Route.Route.Any>(
+  baseRoute: Route.Route.Any,
   route: R,
   matches: Array.NonEmptyArray<Router.RouteMatch.RouteMatch.Any>,
   head: ReturnType<typeof getHeadAndScript>["head"],
@@ -429,8 +434,7 @@ const fromMatches = <R extends Route.Route.Any>(
             yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
 
             const ref = yield* RefSubject.of(matched.value)
-            const content = match.match(RefSubject.take(ref, 1))
-
+            const content = match.match(RefSubject.take(ref, 1)).pipe(Fx.provide(Router.layer(route)))
             const template = Fx.unify(options?.layout ? options.layout({ request, content, head, script }) : content)
               .pipe(
                 Fx.withSpan("render_template"),
@@ -456,7 +460,7 @@ const fromMatches = <R extends Route.Route.Any>(
         Effect.provide(
           Layer.mergeAll(
             Navigation.initialMemory({ url, base: options?.base }),
-            Router.layer(route)
+            Router.layer(baseRoute)
           )
         ),
         Effect.withSpan("check_route_guards"),

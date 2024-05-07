@@ -9,7 +9,11 @@ import type { Window } from "@typed/dom/Window"
 import type { CurrentEnvironment } from "@typed/environment"
 import { GetRandomValues, getRandomValues } from "@typed/id/GetRandomValues"
 import * as Navigation from "@typed/navigation"
-import { browser as CurrentRouteBrowser, type CurrentRoute } from "@typed/router/CurrentRoute"
+import {
+  browser as CurrentRouteBrowser,
+  type CurrentRoute,
+  server as CurrentRouteServer
+} from "@typed/router/CurrentRoute"
 import { serverLayer, staticLayer } from "@typed/template/Html"
 import { hydrateLayer } from "@typed/template/Hydrate"
 import { renderLayer } from "@typed/template/Render"
@@ -72,18 +76,20 @@ export function hydrateFromWindow(
 /**
  * @since 1.0.0
  */
-export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | CurrentRoute>> = Layer.mergeAll(
+export const server: Layer.Layer<Exclude<CoreServices, Navigation.Navigation>> = Layer.mergeAll(
   getRandomValues,
   serverLayer,
+  CurrentRouteServer("/"),
   RenderQueue.sync
 )
 
 /**
  * @since 1.0.0
  */
-const static_: Layer.Layer<Exclude<CoreServices, Navigation.Navigation | CurrentRoute>> = Layer.mergeAll(
+const static_: Layer.Layer<Exclude<CoreServices, Navigation.Navigation>> = Layer.mergeAll(
   getRandomValues,
   staticLayer,
+  CurrentRouteServer("/"),
   RenderQueue.sync
 )
 

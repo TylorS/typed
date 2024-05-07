@@ -48,7 +48,7 @@ export namespace RouteHandler {
    */
   export type Context<T> = T extends RouteHandler<infer I, any, infer R> ? Exclude<
       Exclude<R, CurrentParams<I>> | Router.MatchInput.Context<I>,
-      Router.CurrentRoute | Navigation.Navigation
+      Navigation.Navigation
     >
     : never
 }

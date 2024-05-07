@@ -6,6 +6,8 @@ import type { PathInput } from "@effect/platform/Http/Router"
 import { ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
+import type { CurrentRoute } from "@typed/router"
+import { Unify } from "effect"
 import type { Api, Route as EffectHttpRoute, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
 import { ApiEndpoint, ApiRequest, ApiSchema, OpenApi, ServerError, SwaggerRouter } from "effect-http"
 import * as Effect from "effect/Effect"
@@ -260,21 +262,25 @@ export function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoi
  */
 export const build = <E, R>(
   builder: RouterBuilder<E, R, never>
-): Default<FlattenDecodeError<E>, R | SwaggerRouter.SwaggerFiles> => buildPartial(builder)
+): Default<FlattenDecodeError<E>, R | CurrentRoute | SwaggerRouter.SwaggerFiles> => buildPartial(builder)
 
 /**
  * @since 1.0.0
  */
 export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E, R, RemainingEndpoints>
-): Default<FlattenDecodeError<E>, R | SwaggerRouter.SwaggerFiles> => {
-  const swaggerRouter = builder.options.enableDocs
-    ? SwaggerRouter.make(OpenApi.make(builder.api))
-    : Router.empty
-  return Router.mountApp(builder.router, Route.parse(builder.options.docsPath), swaggerRouter)
-    .pipe(
-      Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
-    ) as any
+): Default<FlattenDecodeError<E>, R | CurrentRoute | SwaggerRouter.SwaggerFiles> => {
+  return builder.router.pipe(
+    Router.mountApp(
+      Route.parse(builder.options.docsPath),
+      Unify.unify(
+        builder.options.enableDocs
+          ? SwaggerRouter.make(OpenApi.make(builder.api))
+          : Router.empty
+      )
+    ),
+    Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
+  ) as any
 }
 
 /**
