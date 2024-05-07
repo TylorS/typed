@@ -114,6 +114,7 @@ function toHttpApp<E, R>(
               ? request
               : replaceRequestUrl(request, prefix)
           ),
+          // Mounts should include the prefix route as part of the context
           Effect.provideService(CurrentRoute, makeCurrentRoute(prefixRoute, parentRoute))
         )
 
