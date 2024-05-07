@@ -34,7 +34,7 @@ export function ArticlePreview(article: Article) {
               <span class="date">${createdDate}</span>
             </div>
             <button class="btn btn-outline-primary btn-sm pull-xs-right">
-              <i class="ion-heart"></i> ${favoritesCount}
+              <i class="ion-heart"></i>&nbsp;${favoritesCount}
             </button>
           </div>
           <a href="${articleHref}" onclick="${EventHandler.preventDefault(() => onclickArticle)}" class="preview-link">

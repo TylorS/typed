@@ -11,11 +11,13 @@
     "noEmit": true
   },
   "include": [
-    "src",
     "test",
     "../../"
   ],
   "references": [
+    {
+      "path": "./tsconfig.build.json"
+    },
     {
       "path": "../async-data/tsconfig.test.json"
     },
