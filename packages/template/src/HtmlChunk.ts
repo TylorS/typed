@@ -224,29 +224,30 @@ const attrMap: AttrMap = {
       (
         value
       ) => {
-        const out = value == null
-          ? ``
-          : " " + Object.entries(value).flatMap(([key, value]) => {
-            if (value == null) return []
+        if (value == null) return ""
 
-            const [type, k] = keyToPartType(key)
+        // Each call has only 1 key-value pair
+        const [k, v] = Object.entries(value)[0]
 
-            switch (type) {
-              case "attr":
-              case "property":
-                return value == null ? [] : [`${k}="${escape(value)}"`]
-              case "boolean":
-                return value ? [k] : []
-              case "class":
-                return [`class="${escape(value)}"`]
-              case "data":
-                return [datasetToString(value)]
-              default:
-                return []
-            }
-          }).join(" ")
+        if (value == null) return ""
 
-        return out
+        const [type, key] = keyToPartType(k)
+
+        switch (type) {
+          case "attr":
+          case "property":
+            return v == null ? "" : ` ${key}="${escape(v)}"`
+          case "boolean":
+            return v ? key : ""
+          case "class":
+            return ` class="${escape(v)}"`
+          case "data": {
+            const d = datasetToString(v)
+            return d.length === 0 ? "" : ` ${d}`
+          }
+          default:
+            return ""
+        }
       }
     ),
   ref: () => new TextChunk(""),
