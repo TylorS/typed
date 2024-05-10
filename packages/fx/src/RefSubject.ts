@@ -28,6 +28,7 @@ import * as DeferredRef from "./internal/DeferredRef.js"
 import { getExitEquivalence, matchEffectPrimitive, withScope } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
 import { runtimeToLayer } from "./internal/provide.js"
+import { hold } from "./internal/share.js"
 import type { UnionToTuple } from "./internal/UnionToTuple.js"
 import * as Sink from "./Sink.js"
 import * as Subject from "./Subject.js"
@@ -1074,7 +1075,7 @@ class ComputedImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => core.mapEffect(fx, f) as any,
+      (fx) => hold(core.mapEffect(fx, f)) as any,
       Effect.flatMap(f)
     )
   }
@@ -1114,7 +1115,7 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => core.filterMapEffect(fx, f) as any,
+      (fx) => hold(core.filterMapEffect(fx, f)) as any,
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
   }
