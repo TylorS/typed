@@ -1,7 +1,7 @@
-import { RefSubject } from "@typed/core"
+import { AsyncData, Fx, RefSubject } from "@typed/core"
 import type { Comment } from "@typed/realworld/model"
 import { ArticleSlug } from "@typed/realworld/model"
-import { Articles, Comments } from "@typed/realworld/services"
+import { Articles, Comments, CurrentUser, isAuthenticated } from "@typed/realworld/services"
 import * as Route from "@typed/route"
 import { html, many } from "@typed/template"
 import { format } from "date-fns"
@@ -16,10 +16,23 @@ export type Params = Route.Route.Type<typeof route>
 export const main = (params: RefSubject.RefSubject<Params>) => {
   const article = RefSubject.proxy(RefSubject.mapEffect(params, Articles.get))
   const author = RefSubject.proxy(article.author)
-  const authorProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
+  const authorProfileHref = RefSubject.map(
+    author.username,
+    (username) => `/profile/${username}`
+  )
   const authorImage = RefSubject.map(author.image, (img) => Option.getOrElse(img, () => ""))
   const comments = RefSubject.mapEffect(article.slug, Comments.get)
   const createdDate = RefSubject.map(article.createdAt, (date) => format(date, "MMM do"))
+  const currentUserIsAuthor = RefSubject.struct({
+    username: author.username,
+    currentUser: CurrentUser
+  }).pipe(
+    RefSubject.map(
+      ({ currentUser, username }) =>
+        AsyncData.isSuccess(currentUser) &&
+        username === currentUser.value.username
+    )
+  )
 
   const meta = html`<div class="article-meta">
     <a href="${authorProfileHref}"><img src="${authorImage}" /></a>
@@ -27,23 +40,34 @@ export const main = (params: RefSubject.RefSubject<Params>) => {
       <a href="${authorProfileHref}" class="author">${author.username}</a>
       <span class="date">${createdDate}</span>
     </div>
-    <button class="btn btn-sm btn-outline-secondary">
-      <i class="ion-plus-round"></i>
-      &nbsp; Follow ${author.username}
-    </button>
-    &nbsp;&nbsp;
-    <button class="btn btn-sm btn-outline-primary">
-      <i class="ion-heart"></i>
-      &nbsp; Favorite Post <span class="counter">(${article.favoritesCount})</span>
-    </button>
-    &nbsp;&nbsp;
-    <button class="btn btn-sm btn-outline-secondary">
-      <i class="ion-edit"></i> Edit Article
-    </button>
-    &nbsp;&nbsp;
-    <button class="btn btn-sm btn-outline-danger">
-      <i class="ion-trash-a"></i> Delete Article
-    </button>
+    ${
+    Fx.if(isAuthenticated, {
+      onFalse: Fx.null,
+      onTrue: html`<button class="btn btn-sm btn-outline-secondary">
+          <i class="ion-plus-round"></i>
+          &nbsp; Follow ${author.username}
+        </button>
+        &nbsp;&nbsp;
+        <button class="btn btn-sm btn-outline-primary">
+          <i class="ion-heart"></i>
+          &nbsp; Favorite Post
+          <span class="counter">(${article.favoritesCount})</span>
+        </button>`
+    })
+  }
+    ${
+    Fx.if(currentUserIsAuthor, {
+      onFalse: Fx.null,
+      onTrue: html`&nbsp;&nbsp;
+        <button class="btn btn-sm btn-outline-secondary">
+          <i class="ion-edit"></i> Edit Article
+        </button>
+        &nbsp;&nbsp;
+        <button class="btn btn-sm btn-outline-danger">
+          <i class="ion-trash-a"></i> Delete Article
+        </button>`
+    })
+  }
   </div>`
 
   return html`<div class="article-page">
@@ -111,19 +135,18 @@ function CommentCard(comment: RefSubject.RefSubject<Comment>) {
   const authorImage = RefSubject.map(author, (a) => Option.getOrElse(a.image, () => ""))
 
   return html`<div class="card">
-  <div class="card-block">
-    <p class="card-text">${body}</p>
-  </div>
-  <div class="card-footer">
-    <a href="${authorProfileHref}" class="comment-author">
-      <img
-        src="${authorImage}"
-        class="comment-author-img"
-      />
-    </a>
-    &nbsp;
-    <a href="${authorProfileHref}" class="comment-author">${authorProfileHref}</a>
-    <span class="date-posted">Dec 29th</span>
-  </div>
-</div>`
+    <div class="card-block">
+      <p class="card-text">${body}</p>
+    </div>
+    <div class="card-footer">
+      <a href="${authorProfileHref}" class="comment-author">
+        <img src="${authorImage}" class="comment-author-img" />
+      </a>
+      &nbsp;
+      <a href="${authorProfileHref}" class="comment-author"
+        >${authorProfileHref}</a
+      >
+      <span class="date-posted">Dec 29th</span>
+    </div>
+  </div>`
 }
