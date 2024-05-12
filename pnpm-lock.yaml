@@ -202,6 +202,9 @@ importers:
 
   examples/realworld:
     dependencies:
+      '@effect/opentelemetry':
+        specifier: ^0.33.4
+        version: 0.33.4(@opentelemetry/api@1.8.0)(@opentelemetry/resources@1.24.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-metrics@1.24.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-base@1.24.0(@opentelemetry/api@1.8.0))(@opentelemetry/sdk-trace-node@1.24.0(@opentelemetry/api@1.8.0))(@opentelemetry/semantic-conventions@1.24.0)(effect@3.0.7)
       '@effect/platform':
         specifier: ^0.50.7
         version: 0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0)
@@ -217,6 +220,12 @@ importers:
       '@effect/sql-pg':
         specifier: ^0.1.12
         version: 0.1.12(@effect/platform@0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0))(@effect/sql@0.1.12(@effect/platform@0.50.7(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7)(ws@8.17.0))(@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0))(effect@3.0.7))(effect@3.0.7)
+      '@opentelemetry/exporter-trace-otlp-http':
+        specifier: ^0.51.0
+        version: 0.51.0(@opentelemetry/api@1.8.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: ^1.24.0
+        version: 1.24.0(@opentelemetry/api@1.8.0)
       '@typed/async-data':
         specifier: workspace:*
         version: link:../../packages/async-data/dist

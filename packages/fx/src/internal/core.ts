@@ -2723,7 +2723,7 @@ export function when<B, E, R, C>(
     readonly onFalse: C
   }
 ): Fx<B | C, E, R> {
-  return map(skipRepeatsWith(bool, boolean), b => (b ? options.onTrue : options.onFalse))
+  return map(skipRepeatsWith(bool, boolean), (b) => (b ? options.onTrue : options.onFalse))
 }
 
 export function mapBoth<A, E, R, B, C>(

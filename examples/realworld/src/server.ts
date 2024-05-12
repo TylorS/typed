@@ -1,4 +1,7 @@
+import * as NodeSdk from "@effect/opentelemetry/NodeSdk"
 import * as Http from "@effect/platform/HttpServer"
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import * as Node from "@typed/core/Node"
 import { toServerRouter } from "@typed/core/Platform"
 import * as Api from "@typed/realworld/api"
@@ -28,6 +31,14 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
   // CurrentUserLive depends on ServerRequest provided by Node.listen
   Effect.provide(CurrentUserLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
+  Effect.provide(NodeSdk.layer(() => ({
+    resource: { serviceName: "example" },
+    spanProcessor: new BatchSpanProcessor(
+      new OTLPTraceExporter({
+        url: "http://localhost:4318/v1/traces"
+      })
+    )
+  }))),
   // Provide all static resources which do not change per-request
   Effect.provide(Live),
   Node.run
