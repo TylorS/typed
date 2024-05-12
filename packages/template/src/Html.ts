@@ -14,15 +14,11 @@ import type * as Record from "effect/Record"
 import type * as Scope from "effect/Scope"
 import { isDirective } from "./Directive.js"
 import type { ServerEntry } from "./Entry.js"
-import type {
-  HtmlChunk,
-  PartChunk,
-  SparsePartChunk,
-  TextChunk,
-} from "./HtmlChunk.js"
+import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
 import { templateToHtmlChunks } from "./HtmlChunk.js"
 import { parse } from "./internal/parser2.js"
 import { partNodeToPart } from "./internal/server.js"
+import { isNullOrUndefined } from "./internal/v2/helpers.js"
 import { TEXT_START, TYPED_HOLE_END, TYPED_HOLE_START } from "./Meta.js"
 import type { Placeholder } from "./Placeholder.js"
 import type { Renderable } from "./Renderable.js"
@@ -32,8 +28,7 @@ import type { RenderEvent } from "./RenderEvent.js"
 import * as RenderQueue from "./RenderQueue.js"
 import { RenderTemplate } from "./RenderTemplate.js"
 
-const toHtml = (r: RenderEvent | null) =>
-  r === null ? "" : (r as HtmlRenderEvent).html
+const toHtml = (r: RenderEvent | null) => r === null ? "" : (r as HtmlRenderEvent).html
 
 /**
  * @since 1.0.0
@@ -90,10 +85,9 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
     RenderEvent,
     Placeholder.Error<Values[number]>,
     | Scope.Scope
-    | Placeholder.Context<readonly [] extends Values ? never : Values[number]>
+    | Placeholder.Context<Values[number]>
   > => {
-    const isStatic =
-      ctx.environment === "static" || ctx.environment === "test:static"
+    const isStatic = ctx.environment === "static" || ctx.environment === "test:static"
     const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
 
     if (values.length === 0) {
@@ -107,9 +101,7 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
           entry.chunks.map((chunk, i) =>
             renderChunk<
               Placeholder.Error<Values[number]>,
-              Placeholder.Context<
-                readonly [] extends Values ? never : Values[number]
-              >
+              Placeholder.Context<Values[number]>
             >(chunk, values, isStatic, i === lastIndex)
           )
         ),
@@ -167,21 +159,20 @@ function renderObject<E, R>(
   isStatic: boolean,
   done: boolean
 ): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
-  if (renderable === null || renderable === undefined) {
+  if (isNullOrUndefined(renderable)) {
     return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START, done))
   } else if (Array.isArray(renderable)) {
+    const lastIndex = renderable.length - 1
     return Fx.mergeOrdered(
-      renderable.map((r, i) =>
-        renderNode(r, isStatic, done && i === renderable.length - 1)
-      )
+      renderable.map((r, i) => renderNode(r, isStatic, done && i === lastIndex))
     ) as any
-  } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
-    return takeOneIfNotRenderEvent(renderable, isStatic, done)
   } else if (Effect.isEffect(renderable)) {
     return Fx.switchMap(
       Fx.fromEffect(renderable as Effect.Effect<Renderable, E, R>),
       (r) => renderNode<E, R>(r, isStatic, done)
     )
+  } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
+    return takeOneIfNotRenderEvent(renderable, isStatic, done)
   } else if (isHtmlRenderEvent(renderable)) {
     if (done) {
       return Fx.succeed(renderable)
@@ -206,9 +197,7 @@ function renderPart<E, R>(
   if (isDirective<E, R>(renderable)) {
     return Fx.make<HtmlRenderEvent, E, R>(
       (sink: Sink.Sink<HtmlRenderEvent, E>) => {
-        const part = partNodeToPart(node, (value) =>
-          sink.onSuccess(HtmlRenderEvent(render(value), done))
-        )
+        const part = partNodeToPart(node, (value) => sink.onSuccess(HtmlRenderEvent(render(value), done)))
 
         return Effect.catchAllCause(renderable(part), sink.onFailure)
       }
@@ -241,11 +230,11 @@ function renderPart<E, R>(
       () =>
         first
           ? Fx.succeed(
-              HtmlRenderEvent(
-                TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index),
-                done
-              )
+            HtmlRenderEvent(
+              TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index),
+              done
             )
+          )
           : Fx.empty
     )
   } else if (node._tag === "properties") {
@@ -266,8 +255,9 @@ function renderPart<E, R>(
       )
     )
   } else {
-    if (renderable === null)
+    if (renderable === null) {
       return Fx.succeed(HtmlRenderEvent(render(renderable), done))
+    }
 
     const html = Fx.filterMap(
       Fx.take(unwrapRenderable<E, R>(renderable), 1),
@@ -334,7 +324,7 @@ function takeOneIfNotRenderEvent<A, E, R>(
             }
           }
 
-          if (event === null || event === undefined) {
+          if (isNullOrUndefined(event)) {
             return sink.earlyExit
           }
 
@@ -348,8 +338,7 @@ function takeOneIfNotRenderEvent<A, E, R>(
             sink.earlyExit
           )
         })
-      )
-    )
+      ))
   )
 }
 
@@ -365,7 +354,7 @@ function getServerEntry(
     const entry: ServerEntry = {
       _tag: "Server",
       template,
-      chunks: templateToHtmlChunks(template, isStatic),
+      chunks: templateToHtmlChunks(template, isStatic)
     }
 
     templateCache.set(templateStrings, entry)
@@ -382,13 +371,11 @@ function unwrapRenderable<E, R>(
   switch (typeof renderable) {
     case "undefined":
     case "object": {
-      if (renderable === null || renderable === undefined)
-        return Fx.succeed(null)
-      else if (Array.isArray(renderable)) {
+      if (isNullOrUndefined(renderable)) {
+        return Fx.null
+      } else if (Array.isArray(renderable)) {
         return Fx.mergeOrdered(
-          renderable.map((r) =>
-            takeOneIfNotRenderEvent(unwrapRenderable(r), true, false)
-          )
+          renderable.map((r) => takeOneIfNotRenderEvent(unwrapRenderable(r), true, false))
         ) as any
       } else if (TypeId in renderable) {
         return renderable as any
