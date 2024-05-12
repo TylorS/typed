@@ -4,6 +4,7 @@
  */
 
 import * as C from "@typed/context"
+import type { Tracer } from "effect"
 import * as Array from "effect/Array"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
@@ -682,12 +683,8 @@ function unsafeMakeCore<A, E, R>(
     Effect.unsafeMakeSemaphore(1)
   )
 
-  const onSuccess = (a: A) => {
-    core.deferredRef.done(Exit.succeed(a))
-  }
-  const onCause = (cause: Cause.Cause<E>) => {
-    core.deferredRef.done(Exit.failCause(cause))
-  }
+  const onSuccess = (a: A) => core.deferredRef.done(Exit.succeed(a))
+  const onCause = (cause: Cause.Cause<E>) => core.deferredRef.done(Exit.failCause(cause))
   const onError = (e: E) => onCause(Cause.fail(e))
 
   // Initialize the core with the initial value if it is synchronous
@@ -699,7 +696,7 @@ function unsafeMakeCore<A, E, R>(
     Left: onError,
     Right: onSuccess,
     Sync: (f) => onSuccess(f()),
-    Otherwise: () => {}
+    Otherwise: () => false
   })
 
   return core
@@ -2392,4 +2389,79 @@ export const proxy: {
       return self[prop] = map(source, (a) => a[prop as keyof A])
     }
   })
+}
+
+/**
+ * @since 2.0.0
+ */
+export const withSpan: {
+  (name: string, options?: {
+    readonly attributes?: Record<string, unknown>
+    readonly links?: ReadonlyArray<Tracer.SpanLink>
+    readonly parent?: Tracer.ParentSpan
+    readonly root?: boolean
+    readonly context?: C.Context<never>
+  }): <A, E, R>(self: RefSubject<A, E, R>) => RefSubject<A, E, R>
+
+  <A, E, R>(self: RefSubject<A, E, R>, name: string, options?: {
+    readonly attributes?: Record<string, unknown>
+    readonly links?: ReadonlyArray<Tracer.SpanLink>
+    readonly parent?: Tracer.ParentSpan
+    readonly root?: boolean
+    readonly context?: C.Context<never>
+  }): RefSubject<A, E, R>
+} = dual(
+  isRefSubjectDataFirst,
+  (ref, name, options) =>
+    new RefSubjectSimpleTransform(ref, (fx) => core.withSpan(fx, name, options), Effect.withSpan(name, options))
+)
+
+class RefSubjectSimpleTransform<A, E, R, R2, R3> extends FxEffectBase<A, E, R | R2 | Scope.Scope, A, E, R | R3>
+  implements RefSubject<A, E, R | R2 | R3>
+{
+  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
+
+  readonly version: Effect.Effect<number, E, R>
+  readonly interrupt: Effect.Effect<void, never, R>
+  readonly subscriberCount: Effect.Effect<number, never, R>
+  private _fx: Fx<A, E, Scope.Scope | R | R2>
+
+  constructor(
+    readonly ref: RefSubject<A, E, R>,
+    readonly transformFx: (fx: Fx<A, E, Scope.Scope | R>) => Fx<A, E, Scope.Scope | R | R2>,
+    readonly transformEffect: (effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R | R3>
+  ) {
+    super()
+
+    this.version = ref.version
+    this.interrupt = ref.interrupt
+    this.subscriberCount = ref.subscriberCount
+
+    this._fx = transformFx(ref)
+  }
+
+  run<R4>(sink: Sink.Sink<A, E, R4>) {
+    return this._fx.run(sink)
+  }
+
+  toEffect(): Effect.Effect<A, E, R | R3> {
+    return this.transformEffect(this.ref)
+  }
+
+  runUpdates<E2, R2, C>(
+    run: (ref: GetSetDelete<A, E, R>) => Effect.Effect<C, E2, R2>
+  ): Effect.Effect<C, E2, R | R2> {
+    return this.ref.runUpdates(run)
+  }
+
+  unsafeGet: () => Exit.Exit<A, E> = () => this.ref.unsafeGet()
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R> {
+    return this.ref.onFailure(cause)
+  }
+
+  onSuccess(value: A): Effect.Effect<unknown, never, R> {
+    return this.ref.onSuccess(value)
+  }
 }
