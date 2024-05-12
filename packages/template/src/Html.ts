@@ -377,12 +377,12 @@ function unwrapRenderable<E, R>(
         return Fx.mergeOrdered(
           renderable.map((r) => takeOneIfNotRenderEvent(unwrapRenderable(r), true, false))
         ) as any
-      } else if (TypeId in renderable) {
-        return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
         return Fx.fromFxEffect(
           Effect.map(renderable as any, unwrapRenderable<any, any>)
         )
+      } else if (TypeId in renderable) {
+        return renderable as any
       } else return Fx.succeed(renderable as any)
     }
     default:
