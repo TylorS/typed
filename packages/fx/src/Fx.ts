@@ -1225,7 +1225,7 @@ export const withSpan: {
     readonly root?: boolean
     readonly context?: Ctx.Context<never>
   }): Fx<A, E, R>
-} = dual(3, core.withSpan)
+} = dual((args) => isFx(args[0]), core.withSpan)
 
 /**
  * @since 1.20.0
