@@ -2465,3 +2465,21 @@ class RefSubjectSimpleTransform<A, E, R, R2, R3> extends FxEffectBase<A, E, R | 
     return this.ref.onSuccess(value)
   }
 }
+
+/**
+ * @since 2.0.0
+ */
+export const when: {
+  <B, C>(options: { onTrue: B; onFalse: C }): {
+    <E, R>(ref: Filtered<boolean, E, R>): Filtered<B | C, E, R>
+    <E, R>(ref: Computed<boolean, E, R>): Computed<B | C, E, R>
+  }
+
+  <E, R, B, C>(ref: Filtered<boolean, E, R>, options: { onTrue: B; onFalse: C }): Filtered<B | C, E, R>
+  <E, R, B, C>(ref: Computed<boolean, E, R>, options: { onTrue: B; onFalse: C }): Computed<B | C, E, R>
+} = dual(2, function when<E, R, B, C>(ref: Computed<boolean, E, R> | Filtered<boolean, E, R>, options: {
+  onTrue: B
+  onFalse: C
+}): any {
+  return map(ref, (a) => a ? options.onTrue : options.onFalse)
+})
