@@ -1,4 +1,5 @@
 import * as Context from "@typed/context"
+import { Data, Record } from "effect"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Clock from "effect/Clock"
@@ -616,10 +617,37 @@ export function skipRepeatsWith<A, E, R>(
   })
 }
 
+const toDeepEquals = (u: unknown): unknown => {
+  switch (typeof u) {
+    case "object": {
+      if (Predicate.isNullable(u)) {
+        return u
+      } else if (Equal.symbol in u) {
+        return u
+      } else if (Array.isArray(u)) {
+        return Data.tuple(u.map(toDeepEquals))
+      } else if (u instanceof Set) {
+        return Data.tuple(Array.from(u).map(toDeepEquals))
+      } else if (u instanceof Map) {
+        return Data.tuple(Array.from(u).map(([k, v]) => Data.tuple([toDeepEquals(k), toDeepEquals(v)])))
+      } else {
+        return Data.struct(Record.map(u, toDeepEquals))
+      }
+    }
+    default:
+      return u
+  }
+}
+
+/**
+ * @internal
+ */
+export const deepEquals = (a: unknown, b: unknown) => Equal.equals(toDeepEquals(a), toDeepEquals(b))
+
 export function skipRepeats<A, E, R>(
   fx: Fx<A, E, R>
 ): Fx<A, E, R> {
-  return skipRepeatsWith(fx, Equal.equals)
+  return skipRepeatsWith(fx, deepEquals)
 }
 
 class ProducerEffectTransformer<A, E, R, B, E2, R2> extends FxBase<B, E | E2, R | R2> {

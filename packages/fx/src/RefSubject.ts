@@ -9,7 +9,6 @@ import * as Array from "effect/Array"
 import * as Boolean from "effect/Boolean"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
-import * as Equal from "effect/Equal"
 import type * as Equivalence from "effect/Equivalence"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import * as Exit from "effect/Exit"
@@ -24,7 +23,7 @@ import type * as Runtime from "effect/Runtime"
 import * as Scope from "effect/Scope"
 import * as Unify from "effect/Unify"
 import { type Fx } from "./Fx.js"
-import * as core from "./internal/core.js"
+import * as internal from "./internal/core.js"
 import * as DeferredRef from "./internal/DeferredRef.js"
 import { getExitEquivalence, matchEffectPrimitive, withScope } from "./internal/helpers.js"
 import { FxEffectBase } from "./internal/protos.js"
@@ -253,7 +252,7 @@ export function fromFx<A, E, R>(
   fx: Fx<A, E, R>,
   options?: RefSubjectOptions<A>
 ): Effect.Effect<RefSubject<A, E>, never, R | Scope.Scope> {
-  return DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals)).pipe(
+  return DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? internal.deepEquals)).pipe(
     Effect.bindTo("deferredRef"),
     Effect.bind("core", ({ deferredRef }) => makeCore(deferredRef, options)),
     Effect.tap(({ core, deferredRef }) =>
@@ -281,7 +280,7 @@ export function fromRefSubject<A, E, R>(
   ref: RefSubject<A, E, R>,
   options?: RefSubjectOptions<A>
 ): Effect.Effect<RefSubject.Derived<A, E, R>, never, R | Scope.Scope> {
-  return DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? Equal.equals)).pipe(
+  return DeferredRef.make<E, A>(getExitEquivalence(options?.eq ?? internal.deepEquals)).pipe(
     Effect.bindTo("deferredRef"),
     Effect.bind("core", ({ deferredRef }) => makeCore<A, E, R>(deferredRef, options)),
     Effect.tap(({ core, deferredRef }) =>
@@ -687,7 +686,7 @@ function unsafeMakeCore<A, E, R>(
     subject,
     runtime,
     scope,
-    DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? Equal.equals), subject.lastValue),
+    DeferredRef.unsafeMake(id, getExitEquivalence(options?.eq ?? internal.deepEquals), subject.lastValue),
     Effect.unsafeMakeSemaphore(1)
   )
 
@@ -1081,20 +1080,22 @@ class ComputedImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => core.mapEffect(fx, f) as any,
+      (fx) => internal.mapEffect(fx, f) as any,
       Effect.flatMap(f)
     )
 
-    this._computed = hold(core.fromFxEffect(
-      Effect.contextWith((ctx: C.Context<R0 | Exclude<R, Scope.Scope> | R2 | R3>) => {
+    this._computed = hold(internal.fromFxEffect(
+      Effect.contextWith((ctx: C.Context<R0 | R | Scope.Scope | R2 | R3>) => {
         if (checkIsDOM(ctx)) {
-          return core.fromEffect(this.toEffect()).pipe(
-            (_) => core.continueWith(_, () => this._fx),
-            core.skipRepeats
+          return internal.fromEffect(input).pipe(
+            (_) => internal.continueWith(_, () => input),
+            internal.skipRepeats,
+            (_) => internal.mapEffect(_, f),
+            internal.skipRepeats
           )
         }
 
-        return core.fromEffect(this.toEffect())
+        return internal.fromEffect(Effect.flatMap(input, f))
       })
     ))
   }
@@ -1131,18 +1132,7 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   R0 | Exclude<R, Scope.Scope> | R2 | R3
 > implements Filtered<C, E0 | E | E2 | E3, R0 | Exclude<R, Scope.Scope> | R2 | R3> {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
-  private _filtered: Fx<
-    C,
-    | E0
-    | E
-    | E2
-    | E3
-    | Exclude<E0, Cause.NoSuchElementException>
-    | Exclude<E, Cause.NoSuchElementException>
-    | Exclude<E2, Cause.NoSuchElementException>
-    | Exclude<E3, Cause.NoSuchElementException>,
-    Scope.Scope | R0 | R2 | R3 | Exclude<R, Scope.Scope>
-  >
+  private _filtered: Fx<C, E | E2 | E3, Scope.Scope | R0 | R | R2 | R3 | Exclude<R, Scope.Scope>>
 
   constructor(
     readonly input: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
@@ -1150,26 +1140,25 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => core.filterMapEffect(fx, f) as any,
+      (fx) => internal.filterMapEffect(fx, f) as any,
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
 
-    const initial = this.toEffect().pipe(
-      Effect.optionFromOptional,
-      (_) => core.fromEffect(_),
-      (_) => core.filterMap(_, (_) => _)
-    )
-
-    this._filtered = hold(core.fromFxEffect(
+    this._filtered = hold(internal.fromFxEffect(
       Effect.contextWith((ctx: C.Context<R0 | Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope>) => {
         if (checkIsDOM(ctx)) {
-          return initial.pipe(
-            (_) => core.continueWith(_, () => this._fx),
-            core.skipRepeats
+          return internal.fromEffect(input).pipe(
+            (_) => internal.continueWith(_, () => input),
+            internal.skipRepeats,
+            (_) => internal.filterMapEffect(_, f),
+            internal.skipRepeats
           )
         }
 
-        return initial
+        return Effect.flatMap(input, f).pipe(
+          internal.fromEffect,
+          (_) => internal.filterMap(_, identity)
+        )
       })
     ))
   }
@@ -1223,7 +1212,7 @@ export const skipRepeatsWith: {
   ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>,
   eq: Equivalence.Equivalence<A>
 ): Computed<A, E, R> | Filtered<A, E, R> {
-  const versioned = Versioned.transform(ref, (fx) => core.skipRepeatsWith(fx, eq), identity)
+  const versioned = Versioned.transform(ref, (fx) => internal.skipRepeatsWith(fx, eq), identity)
 
   if (FilteredTypeId in ref) {
     return FilteredImpl.make(versioned, Effect.succeedSome)
@@ -1250,7 +1239,7 @@ export function skipRepeats<A, E, R>(
 export function skipRepeats<A, E, R>(
   ref: RefSubject<A, E, R> | Computed<A, E, R> | Filtered<A, E, R>
 ): Computed<A, E, R> | Filtered<A, E, R> {
-  return skipRepeatsWith(ref, Equal.equals)
+  return skipRepeatsWith(ref, internal.deepEquals)
 }
 
 /**
@@ -1357,8 +1346,8 @@ class RefSubjectTransformEffect<A, E, R, B, E2, R2, R3, E3>
   }
 
   run<R4 = never>(sink: Sink.Sink<B, E | E2 | E3, R4>): Effect.Effect<unknown, never, R | R2 | R3 | Scope.Scope | R4> {
-    return core.skipRepeats(
-      core.merge(core.tapEffect(core.mapEffect(this.ref, this.from), this.subject.onSuccess), this.subject)
+    return internal.skipRepeats(
+      internal.merge(internal.tapEffect(internal.mapEffect(this.ref, this.from), this.subject.onSuccess), this.subject)
     ).run(
       sink
     )
@@ -2006,7 +1995,7 @@ class RefSubjectFromTag<I, S, A, E, R> extends FxEffectBase<
     super()
 
     this._get = Effect.map(tag, f)
-    this._fx = core.fromFxEffect(this._get)
+    this._fx = internal.fromFxEffect(this._get)
 
     this.version = Effect.flatMap(this._get, (ref) => ref.version)
     this.interrupt = Effect.flatMap(this._get, (ref) => ref.interrupt)
@@ -2321,7 +2310,7 @@ export const slice: {
 } = dual(
   3,
   function slice<A, E, R>(ref: RefSubject<A, E, R>, drop: number, take: number): RefSubject<A, E, R> {
-    return new RefSubjectSimpleTransform(ref, (_) => core.slice(_, drop, take), identity)
+    return new RefSubjectSimpleTransform(ref, (_) => internal.slice(_, drop, take), identity)
   }
 )
 
@@ -2426,7 +2415,7 @@ export const withSpan: {
 } = dual(
   isRefSubjectDataFirst,
   (ref, name, options) =>
-    new RefSubjectSimpleTransform(ref, (fx) => core.withSpan(fx, name, options), Effect.withSpan(name, options))
+    new RefSubjectSimpleTransform(ref, (fx) => internal.withSpan(fx, name, options), Effect.withSpan(name, options))
 )
 
 class RefSubjectSimpleTransform<A, E, R, R2, R3> extends FxEffectBase<A, E, R | R2 | Scope.Scope, A, E, R | R3>
