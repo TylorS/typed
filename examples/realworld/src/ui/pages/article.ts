@@ -4,11 +4,11 @@ import { navigate } from "@typed/navigation"
 import type { Comment } from "@typed/realworld/model"
 import { ArticleSlug, CommentBody, Image } from "@typed/realworld/model"
 import { Articles, Comments, CurrentUser, isAuthenticated, Profiles } from "@typed/realworld/services"
+import { formatMonthAndDay, formatMonthDayYear } from "@typed/realworld/ui/common/date"
 import * as Route from "@typed/route"
 import { EventHandler, html, many } from "@typed/template"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
-import { formatMonthAndDay, formatMonthDayYear } from "../common/date"
 
 export const route = Route.literal("article").concat(
   Route.paramWithSchema("slug", ArticleSlug)
@@ -21,7 +21,7 @@ const FALLBACK_IMAGE = Image("https://api.realworld.io/images/demo-avatar.png")
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
     const ref = yield* _(
-      RefSubject.make(RefSubject.mapEffect(params, Articles.get))
+      RefSubject.make(RefSubject.mapEffect(params, Articles.get), { eq: (a, b) => a.slug === b.slug })
     )
     const article = RefSubject.proxy(ref)
     const author = RefSubject.proxy(article.author)
@@ -147,12 +147,6 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
       ${authenticatedActions} ${currentUserActions}
     </div>`
 
-    const tags = many(
-      article.tagList,
-      (t) => t,
-      (tag) => html`<li class="tag-default tag-pill tag-outline">${tag}</li>`
-    )
-
     return html`<div class="article-page">
       <div class="banner">
         <div class="container">
@@ -167,7 +161,13 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
           <div class="col-md-12">
             <p>${article.body}</p>
             <ul class="tag-list">
-              ${tags}
+              ${
+      many(
+        article.tagList,
+        (t) => t,
+        (tag) => html`<li class="tag-default tag-pill tag-outline">${tag}</li>`
+      )
+    }
             </ul>
           </div>
         </div>
@@ -237,32 +237,29 @@ function PostComment<E, R, E2, R2>(
   })
 }
 
-function CommentCard(comment: RefSubject.RefSubject<Comment>) {
-  const { author, body } = RefSubject.proxy(comment)
-  const { username } = RefSubject.proxy(author)
-  const authorProfileHref = RefSubject.map(
-    username,
-    (username) => `/profile/${username}`
-  )
-  const authorImage = RefSubject.map(author, (a) => Option.getOrElse(a.image, () => FALLBACK_IMAGE))
-  const datePosted = RefSubject.map(comment, (c) => formatMonthAndDay(c.createdAt))
+function CommentCard(ref: RefSubject.RefSubject<Comment>) {
+  const comment = RefSubject.proxy(ref)
+  const author = RefSubject.proxy(comment.author)
+  const authorProfileHref = RefSubject.map(author.username, (x) => `/profile/${x}`)
+  const authorImage = RefSubject.map(author.image, Option.getOrElse(() => FALLBACK_IMAGE))
+  const datePosted = RefSubject.map(comment.createdAt, formatMonthAndDay)
 
   return html`<div class="card">
     <div class="card-block">
-      <p class="card-text">${body}</p>
+      <p class="card-text">${comment.body}</p>
     </div>
     <div class="card-footer">
       ${
     Link(
       { to: authorProfileHref, className: "comment-author", relative: false },
-      html`<img src="${authorImage}" class="comment-author-img" />`
+      html`<img src=${authorImage} class="comment-author-img" />`
     )
   }
       &nbsp;
       ${
     Link(
       { to: authorProfileHref, className: "comment-author", relative: false },
-      username
+      author.username
     )
   }
       <span class="date-posted">${datePosted}</span>
