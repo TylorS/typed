@@ -1,5 +1,5 @@
 import { client } from "@typed/realworld/api/client"
-import { SaveJwtToken, Users } from "@typed/realworld/services"
+import { RemoveJwtToken, SaveJwtToken, Users } from "@typed/realworld/services"
 import { handleClientRequest, withJwtToken } from "@typed/realworld/ui/infastructure/_client"
 import { Effect } from "effect"
 
@@ -14,6 +14,11 @@ export const UsersLive = Users.implement({
     handleClientRequest(client.login({ body: { user: input } })).pipe(
       Effect.map((r) => r.body.user),
       Effect.tap((user) => SaveJwtToken(user.token))
+    ),
+  logout: () =>
+    withJwtToken((jwtToken) => client.logout({}, jwtToken)).pipe(
+      handleClientRequest,
+      Effect.tap(() => RemoveJwtToken())
     ),
   register: (input) =>
     handleClientRequest(client.register({ body: { user: input } })).pipe(

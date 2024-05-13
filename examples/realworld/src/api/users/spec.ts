@@ -30,6 +30,20 @@ export const login = Api.post(
   addUnprocessableResponse
 )
 
+export const logout = Api.delete(
+  "logout",
+  Routes.login,
+  {
+    description: "Logout a user"
+  }
+).pipe(
+  add200(),
+  addCookieHeader,
+  addUnauthorizedResponse,
+  addUnprocessableResponse,
+  addJwtTokenSecurity
+)
+
 export const getCurrentUser = Api.get(
   "getCurrentUser",
   Routes.user,
@@ -73,6 +87,7 @@ export const updateUser = Api.put(
 
 export const UsersSpec = ApiGroup.make("Users and Authentication").pipe(
   ApiGroup.addEndpoint(login),
+  ApiGroup.addEndpoint(logout),
   ApiGroup.addEndpoint(getCurrentUser),
   ApiGroup.addEndpoint(register),
   ApiGroup.addEndpoint(updateUser)

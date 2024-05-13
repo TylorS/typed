@@ -1,6 +1,7 @@
 import { Schema } from "@effect/schema"
 import * as Pg from "@effect/sql-pg"
 import { makeNanoId } from "@typed/id"
+import { nanoId } from "@typed/id/Schema"
 import { getCurrentJwtUser, JwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
 import {
@@ -65,6 +66,25 @@ export const UsersLive = Users.implement({
       const { token } = yield* creatJwtTokenForUser(dbUser)
       return dbUserToUser(dbUser, token)
     }).pipe(catchExpectedErrors),
+
+  logout: () =>
+    Effect.gen(function*(_) {
+      const current = yield* _(getCurrentJwtUser)
+      const existingToken = yield* getUnexpiredJwtTokenForUser({ id: current.id })
+      if (Option.isNone(existingToken)) {
+        return
+      }
+
+      const sql = yield* _(Pg.client.PgClient)
+
+      yield* _(
+        existingToken.value.id,
+        Pg.schema.void({
+          Request: nanoId,
+          execute: (t) => sql`delete from jwt_tokens where id = ${t};`
+        })
+      )
+    }).pipe(catchExpectedErrors),
   update: (user) =>
     Effect.gen(function*(_) {
       const current = yield* _(getCurrentJwtUser)
@@ -121,7 +141,7 @@ function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
   })
 }
 
-function getUnexpiredJwtTokenForUser(user: DbUser) {
+function getUnexpiredJwtTokenForUser(user: Pick<DbUser, "id">) {
   return Effect.gen(function*(_) {
     const sql = yield* _(Pg.client.PgClient)
     const now = new Date(yield* _(Clock.currentTimeMillis))

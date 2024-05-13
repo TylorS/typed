@@ -1,9 +1,11 @@
-import { catchUnauthorizedAndUnprocessable } from "@typed/realworld/api/common/handlers"
+import { catchUnauthorizedAndUnprocessable, STATUS_200 } from "@typed/realworld/api/common/handlers"
 import type { User } from "@typed/realworld/model"
 import { Users } from "@typed/realworld/services"
 import { Cookies, ServerRouterBuilder } from "@typed/server"
 import { Effect, flow } from "effect"
 import * as Spec from "./spec"
+
+const ONE_WEEK_SECONDS = 60 * 60 * 24 * 7
 
 const userToResponse = (user: User) => ({
   status: 200,
@@ -15,7 +17,8 @@ const userToResponse = (user: User) => ({
         sameSite: "strict",
         secure: false,
         path: "/",
-        maxAge: 60 * 60 * 24 * 7
+        maxAge: ONE_WEEK_SECONDS,
+        expires: new Date(Date.now() + ONE_WEEK_SECONDS)
       })
     )
   }
@@ -45,9 +48,32 @@ export const handleUpdateUser = Spec.updateUser.pipe(
   )
 )
 
+export const handleLogout = Spec.logout.pipe(
+  ServerRouterBuilder.fromEndpoint(() =>
+    Users.logout().pipe(
+      Effect.as({
+        ...STATUS_200,
+        headers: {
+          "set-cookie": Cookies.serializeCookie(
+            Cookies.unsafeMakeCookie("conduit-token", "", {
+              httpOnly: true,
+              sameSite: "strict",
+              secure: false,
+              path: "/",
+              expires: new Date(0)
+            })
+          )
+        }
+      }),
+      catchUnauthorizedAndUnprocessable
+    )
+  )
+)
+
 export const handleUsers = flow(
   handleGetCurrentUser,
   handleLogin,
+  handleLogout,
   handleRegister,
   handleUpdateUser
 )

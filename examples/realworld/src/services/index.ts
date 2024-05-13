@@ -18,6 +18,7 @@ import { UnfollowProfile } from "@typed/realworld/services/UnfollowProfile"
 import { UpdateArticle } from "@typed/realworld/services/UpdateArticle"
 import { UpdateUser } from "@typed/realworld/services/UpdateUser"
 import { CreateArticle } from "./CreateArticle"
+import { LogoutUser } from "./LogoutUser"
 
 export const Articles = repository({
   list: GetArticles,
@@ -47,6 +48,7 @@ export const Tags = repository({ get: GetTags })
 export const Users = repository({
   current: GetCurrentUser,
   login: Login,
+  logout: LogoutUser,
   register: Register,
   update: UpdateUser
 })
