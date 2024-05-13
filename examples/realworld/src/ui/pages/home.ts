@@ -8,7 +8,7 @@ import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
 import * as Route from "@typed/route"
 import { EventHandler, html, many } from "@typed/template"
-import { Effect } from "effect"
+import { Effect, identity } from "effect"
 
 export const route = Route.home.pipe(
   Route.concat(
@@ -20,11 +20,7 @@ export const route = Route.home.pipe(
       offset: Route.param("offset").optional()
     })
   ),
-  Route.transform(
-    GetArticlesInput,
-    (from) => from,
-    (to) => to
-  )
+  Route.transform(GetArticlesInput, identity, identity)
 )
 
 export const main = (
@@ -80,9 +76,9 @@ export const main = (
                       href="${href}"
                       class="tag-pill tag-default"
                       onclick="${onclick}"
-                      >
-                        ${t}
-                      </a>`
+                    >
+                      ${t}
+                    </a>`
         }
       ).pipe(Fx.switchMapCause(() => Fx.null))
     }

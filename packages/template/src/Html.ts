@@ -167,9 +167,8 @@ function renderObject<E, R>(
       renderable.map((r, i) => renderNode(r, isStatic, done && i === lastIndex))
     ) as any
   } else if (Effect.isEffect(renderable)) {
-    return Fx.switchMap(
-      Fx.fromEffect(renderable as Effect.Effect<Renderable, E, R>),
-      (r) => renderNode<E, R>(r, isStatic, done)
+    return Fx.fromFxEffect(
+      Effect.map(renderable as Effect.Effect<Renderable, E, R>, (r) => renderNode<E, R>(r, isStatic, done))
     )
   } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
     return takeOneIfNotRenderEvent(renderable, isStatic, done)

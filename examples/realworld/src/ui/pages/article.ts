@@ -16,17 +16,11 @@ export type Params = Route.Route.Type<typeof route>
 export const main = (params: RefSubject.RefSubject<Params>) => {
   const article = RefSubject.proxy(RefSubject.mapEffect(params, Articles.get))
   const author = RefSubject.proxy(article.author)
-  const authorProfileHref = RefSubject.map(
-    author.username,
-    (username) => `/profile/${username}`
-  )
+  const authorProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
   const authorImage = RefSubject.map(author.image, (img) => Option.getOrElse(img, () => ""))
   const comments = RefSubject.mapEffect(article.slug, Comments.get)
   const createdDate = RefSubject.map(article.createdAt, (date) => format(date, "MMM do"))
-  const currentUserIsAuthor = RefSubject.struct({
-    username: author.username,
-    currentUser: CurrentUser
-  }).pipe(
+  const currentUserIsAuthor = RefSubject.struct({ username: author.username, currentUser: CurrentUser }).pipe(
     RefSubject.map(
       ({ currentUser, username }) =>
         AsyncData.isSuccess(currentUser) &&

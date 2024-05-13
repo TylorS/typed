@@ -23,13 +23,31 @@ export const main = html`<div class="auth-page">
 
         <form onsubmit=${EventHandler.preventDefault(registerUser)}>
           <fieldset class="form-group">
-            <input autocomplete="username" name="username" class="form-control form-control-lg" type="text" placeholder="Username" />
+            <input
+              autocomplete="username"
+              name="username"
+              class="form-control form-control-lg"
+              type="text"
+              placeholder="Username"
+            />
           </fieldset>
           <fieldset class="form-group">
-            <input autocomplete="email" name="email" class="form-control form-control-lg" type="text" placeholder="Email" />
+            <input
+              autocomplete="email"
+              name="email"
+              class="form-control form-control-lg"
+              type="text"
+              placeholder="Email"
+            />
           </fieldset>
           <fieldset class="form-group">
-            <input autocomplete="password" name="password" class="form-control form-control-lg" type="password" placeholder="Password" />
+            <input
+              autocomplete="password"
+              name="password"
+              class="form-control form-control-lg"
+              type="password"
+              placeholder="Password"
+            />
           </fieldset>
           <button class="btn btn-lg btn-primary pull-xs-right">Sign up</button>
         </form>
@@ -53,7 +71,10 @@ function registerUser(ev: EventWithTarget<HTMLFormElement, Event>) {
     Effect.catchAll((error) => {
       const issues = ArrayFormatter.formatIssueSync(error.error)
       const errors = issues.map((issue) => issue.message)
-      return RefSubject.set(CurrentUser, AsyncData.fail(new Unprocessable({ errors })))
+      return RefSubject.set(
+        CurrentUser,
+        AsyncData.fail(new Unprocessable({ errors }))
+      )
     })
   )
 }

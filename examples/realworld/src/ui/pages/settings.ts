@@ -17,10 +17,18 @@ export const main = html`<div class="settings-page">
         <form>
           <fieldset>
             <fieldset class="form-group">
-              <input class="form-control" type="text" placeholder="URL of profile picture" />
+              <input
+                class="form-control"
+                type="text"
+                placeholder="URL of profile picture"
+              />
             </fieldset>
             <fieldset class="form-group">
-              <input class="form-control form-control-lg" type="text" placeholder="Your Name" />
+              <input
+                class="form-control form-control-lg"
+                type="text"
+                placeholder="Your Name"
+              />
             </fieldset>
             <fieldset class="form-group">
               <textarea
@@ -30,7 +38,11 @@ export const main = html`<div class="settings-page">
               ></textarea>
             </fieldset>
             <fieldset class="form-group">
-              <input class="form-control form-control-lg" type="text" placeholder="Email" />
+              <input
+                class="form-control form-control-lg"
+                type="text"
+                placeholder="Email"
+              />
             </fieldset>
             <fieldset class="form-group">
               <input
@@ -39,7 +51,9 @@ export const main = html`<div class="settings-page">
                 placeholder="New Password"
               />
             </fieldset>
-            <button class="btn btn-lg btn-primary pull-xs-right">Update Settings</button>
+            <button class="btn btn-lg btn-primary pull-xs-right">
+              Update Settings
+            </button>
           </fieldset>
         </form>
         <hr />

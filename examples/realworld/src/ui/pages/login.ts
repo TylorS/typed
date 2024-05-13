@@ -11,44 +11,68 @@ import { Effect } from "effect"
 
 export const route = Route.literal("/login")
 
+type SubmitEvent = EventWithTarget<HTMLFormElement, Event>
+
 export const main = Fx.gen(function*(_) {
+  const hasSubmitted = yield* _(RefSubject.of<boolean>(false))
+  const onSubmit = EventHandler.preventDefault((ev: SubmitEvent) =>
+    Effect.zipRight(loginUser(ev), RefSubject.set(hasSubmitted, true))
+  )
+
   if (yield* _(isDom)) {
     yield* _(
       isAuthenticated,
-      Fx.if({
-        onFalse: Fx.fromEffect(Effect.logDebug("Not authenticated")),
-        onTrue: Fx.fromEffect(Navigation.navigate("/", { history: "replace" }))
-      }),
-      Fx.forkScoped
+      Effect.if({
+        onFalse: () => Effect.void,
+        onTrue: () => Navigation.navigate("/", { history: "replace" })
+      })
     )
   }
-  return html`<div class="auth-page">
-  <div class="container page">
-    <div class="row">
-      <div class="col-md-6 col-xs-12 offset-md-3">
-        <h1 class="text-xs-center">Sign in</h1>
-        <p class="text-xs-center">
-          <a href="/register">Need an account?</a>
-        </p>
 
-        ${CurrentUserErrors}
-        
-        <form onsubmit=${EventHandler.preventDefault(loginUser)}>
-          <fieldset class="form-group">
-            <input name="email" class="form-control form-control-lg" type="text" placeholder="Email" />
-          </fieldset>
-          <fieldset class="form-group">
-            <input name="password" class="form-control form-control-lg" type="password" placeholder="Password" />
-          </fieldset>
-          <button class="btn btn-lg btn-primary pull-xs-right">Sign in</button>
-        </form>
+  return html`<div class="auth-page">
+    <div class="container page">
+      <div class="row">
+        <div class="col-md-6 col-xs-12 offset-md-3">
+          <h1 class="text-xs-center">Sign in</h1>
+          <p class="text-xs-center">
+            <a href="/register">Need an account?</a>
+          </p>
+
+          ${
+    Fx.if(hasSubmitted, {
+      onFalse: Fx.null,
+      onTrue: CurrentUserErrors
+    })
+  }
+
+          <form onsubmit=${onSubmit}>
+            <fieldset class="form-group">
+              <input
+                name="email"
+                class="form-control form-control-lg"
+                type="text"
+                placeholder="Email"
+              />
+            </fieldset>
+            <fieldset class="form-group">
+              <input
+                name="password"
+                class="form-control form-control-lg"
+                type="password"
+                placeholder="Password"
+              />
+            </fieldset>
+            <button class="btn btn-lg btn-primary pull-xs-right">
+              Sign in
+            </button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-</div>`
+  </div>`
 })
 
-function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
+function loginUser(ev: SubmitEvent) {
   return Effect.gen(function*(_) {
     const current = yield* _(CurrentUser)
 
@@ -63,7 +87,10 @@ function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
     Effect.catchAll((error) => {
       const issues = ArrayFormatter.formatErrorSync(error)
       const errors = issues.map((issue) => issue.message)
-      return RefSubject.set(CurrentUser, AsyncData.fail(new Unprocessable({ errors })))
+      return RefSubject.set(
+        CurrentUser,
+        AsyncData.fail(new Unprocessable({ errors }))
+      )
     })
   )
 }

@@ -14,10 +14,18 @@ export const main = html`<div class="editor-page">
         <form>
           <fieldset>
             <fieldset class="form-group">
-              <input type="text" class="form-control form-control-lg" placeholder="Article Title" />
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                placeholder="Article Title"
+              />
             </fieldset>
             <fieldset class="form-group">
-              <input type="text" class="form-control" placeholder="What's this article about?" />
+              <input
+                type="text"
+                class="form-control"
+                placeholder="What's this article about?"
+              />
             </fieldset>
             <fieldset class="form-group">
               <textarea
@@ -27,9 +35,15 @@ export const main = html`<div class="editor-page">
               ></textarea>
             </fieldset>
             <fieldset class="form-group">
-              <input type="text" class="form-control" placeholder="Enter tags" />
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter tags"
+              />
               <div class="tag-list">
-                <span class="tag-default tag-pill"> <i class="ion-close-round"></i> tag </span>
+                <span class="tag-default tag-pill">
+                  <i class="ion-close-round"></i> tag
+                </span>
               </div>
             </fieldset>
             <button class="btn btn-lg pull-xs-right btn-primary" type="button">
