@@ -1,9 +1,11 @@
-import { AsyncData, Fx, Link, RefSubject } from "@typed/core"
+import { AsyncData, Fx, Link, RefArray, RefSubject } from "@typed/core"
+import type { EventWithTarget } from "@typed/dom/EventTarget"
+import { navigate } from "@typed/navigation"
 import type { Comment } from "@typed/realworld/model"
-import { ArticleSlug } from "@typed/realworld/model"
+import { ArticleSlug, CommentBody, Image } from "@typed/realworld/model"
 import { Articles, Comments, CurrentUser, isAuthenticated, Profiles } from "@typed/realworld/services"
 import * as Route from "@typed/route"
-import { html, many } from "@typed/template"
+import { EventHandler, html, many } from "@typed/template"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
 import { formatMonthAndDay, formatMonthDayYear } from "../common/date"
@@ -14,21 +16,24 @@ export const route = Route.literal("article").concat(
 
 export type Params = Route.Route.Type<typeof route>
 
-// Delete Article
-
-const FALLBACK_IMAGE = "https://api.realworld.io/images/demo-avatar.png"
+const FALLBACK_IMAGE = Image("https://api.realworld.io/images/demo-avatar.png")
 
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
-    const ref = yield* _(RefSubject.make(RefSubject.mapEffect(params, Articles.get)))
+    const ref = yield* _(
+      RefSubject.make(RefSubject.mapEffect(params, Articles.get))
+    )
     const article = RefSubject.proxy(ref)
     const author = RefSubject.proxy(article.author)
     const authorProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
     const authorImage = RefSubject.map(author.image, (img) => Option.getOrElse(img, () => FALLBACK_IMAGE))
-    const comments = RefSubject.mapEffect(article.slug, Comments.get)
+    const comments = yield* _(RefSubject.make(RefSubject.mapEffect(article.slug, Comments.get)))
     const createdDate = RefSubject.map(article.createdAt, formatMonthDayYear)
     const currentUserIsAuthor = RefSubject.map(
-      RefSubject.struct({ username: author.username, currentUser: CurrentUser }),
+      RefSubject.struct({
+        username: author.username,
+        currentUser: CurrentUser
+      }),
       ({ currentUser, username }) =>
         AsyncData.isSuccess(currentUser) &&
         username === currentUser.value.username
@@ -51,9 +56,15 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
 
     const favoriteOrUnfavorite = Effect.if(article.favorited, {
       onFalse: () =>
-        article.slug.pipe(Effect.flatMap(Articles.favorite), Effect.flatMap((_) => RefSubject.set(ref, _))),
+        article.slug.pipe(
+          Effect.flatMap(Articles.favorite),
+          Effect.flatMap((_) => RefSubject.set(ref, _))
+        ),
       onTrue: () =>
-        article.slug.pipe(Effect.flatMap(Articles.unfavorite), Effect.flatMap((_) => RefSubject.set(ref, _)))
+        article.slug.pipe(
+          Effect.flatMap(Articles.unfavorite),
+          Effect.flatMap((_) => RefSubject.set(ref, _))
+        )
     })
 
     const authenticatedActions = Fx.if(isAuthenticated, {
@@ -64,7 +75,12 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         >
           <i class="ion-plus-round"></i>
           &nbsp;
-          ${RefSubject.when(author.following, { onFalse: "Follow", onTrue: "Unfollow" })}
+          ${
+        RefSubject.when(author.following, {
+          onFalse: "Follow",
+          onTrue: "Unfollow"
+        })
+      }
           ${author.username}
         </button>
         &nbsp;&nbsp;
@@ -74,7 +90,12 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         >
           <i class="ion-heart"></i>
           &nbsp;
-          ${RefSubject.when(article.favorited, { onFalse: "Favorite", onTrue: "Unfavorite" })}
+          ${
+        RefSubject.when(article.favorited, {
+          onFalse: "Favorite",
+          onTrue: "Unfavorite"
+        })
+      }
           Post
           <span class="counter">(${article.favoritesCount})</span>
         </button>`
@@ -82,32 +103,45 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
 
     const editArticleHref = RefSubject.map(article.slug, (slug) => `/editor/${slug}`)
 
-    const currentUserActions = Fx.if(
-      currentUserIsAuthor,
-      {
-        onFalse: Fx.null,
-        onTrue: html`&nbsp;&nbsp;
+    const deleteArticle = Effect.gen(function*() {
+      const slug = yield* article.slug
+      yield* Articles.delete({ slug })
+      yield* navigate("/")
+    })
+
+    const currentUserActions = Fx.if(currentUserIsAuthor, {
+      onFalse: Fx.null,
+      onTrue: html`&nbsp;&nbsp;
         ${
-          Link(
-            {
-              to: editArticleHref,
-              className: "btn btn-sm btn-outline-secondary",
-              relative: false
-            },
-            html`<i class="ion-edit"></i> Edit Article`
-          )
-        }
+        Link(
+          {
+            to: editArticleHref,
+            className: "btn btn-sm btn-outline-secondary",
+            relative: false
+          },
+          html`<i class="ion-edit"></i> Edit Article`
+        )
+      }
         &nbsp;&nbsp;
-        <button class="btn btn-sm btn-outline-danger">
+        <button class="btn btn-sm btn-outline-danger" onclick=${deleteArticle}>
           <i class="ion-trash-a"></i> Delete Article
         </button>`
-      }
-    )
+    })
 
     const meta = html`<div class="article-meta">
-      ${Link({ to: authorProfileHref, relative: false }, html`<img src="${authorImage}" />`)}
+      ${
+      Link(
+        { to: authorProfileHref, relative: false },
+        html`<img src="${authorImage}" />`
+      )
+    }
       <div class="info">
-        ${Link({ to: authorProfileHref, className: "author", relative: false }, author.username)}
+        ${
+      Link(
+        { to: authorProfileHref, className: "author", relative: false },
+        author.username
+      )
+    }
         <span class="date">${createdDate}</span>
       </div>
       ${authenticatedActions} ${currentUserActions}
@@ -144,23 +178,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
 
         <div class="row">
           <div class="col-xs-12 col-md-8 offset-md-2">
-            <form class="card comment-form">
-              <div class="card-block">
-                <textarea
-                  class="form-control"
-                  placeholder="Write a comment..."
-                  rows="3"
-                ></textarea>
-              </div>
-              <div class="card-footer">
-                <img
-                  src="http://i.imgur.com/Qr71crq.jpg"
-                  class="comment-author-img"
-                />
-                <button class="btn btn-sm btn-primary">Post Comment</button>
-              </div>
-            </form>
-
+            ${PostComment(article.slug, (comment) => RefArray.append(comments, comment))}
             ${many(comments, (c) => c.id, CommentCard)}
           </div>
         </div>
@@ -168,10 +186,64 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
     </div>`
   })
 
+function PostComment<E, R, E2, R2>(
+  slug: RefSubject.Computed<ArticleSlug, E, R>,
+  onNewComment: (comment: Comment) => Effect.Effect<void, E2, R2>
+) {
+  return Fx.gen(function*(_) {
+    const commentBody = yield* RefSubject.of<string>("")
+
+    const updateCommentBody = EventHandler.target<HTMLTextAreaElement>()((ev) =>
+      RefSubject.set(commentBody, ev.target.value)
+    )
+
+    const postComment = EventHandler.preventDefault(
+      (_: EventWithTarget<HTMLFormElement, SubmitEvent>) =>
+        Effect.gen(function*() {
+          const body = yield* commentBody
+          if (body.trim() === "") return
+
+          const comment = yield* Comments.create(yield* slug, { body: CommentBody(body) })
+          yield* onNewComment(comment)
+          yield* RefSubject.set(commentBody, "")
+        })
+    )
+
+    const currentUserImage = RefSubject.map(CurrentUser, (user) =>
+      AsyncData.getSuccess(user).pipe(
+        Option.flatMap((u) => u.image),
+        Option.getOrElse(() => FALLBACK_IMAGE)
+      ))
+
+    return html`<form class="card comment-form" onsubmit=${postComment}>
+      <div class="card-block">
+        <textarea
+          name="comment-body"
+          class="form-control"
+          placeholder="Write a comment..."
+          .value=${commentBody}
+          oninput=${updateCommentBody}
+          onchange=${updateCommentBody}
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="card-footer">
+        <img src="${currentUserImage}" class="comment-author-img" />
+        <button type="submit" class="btn btn-sm btn-primary">
+          Post Comment
+        </button>
+      </div>
+    </form>`
+  })
+}
+
 function CommentCard(comment: RefSubject.RefSubject<Comment>) {
   const { author, body } = RefSubject.proxy(comment)
   const { username } = RefSubject.proxy(author)
-  const authorProfileHref = RefSubject.map(username, (username) => `/profile/${username}`)
+  const authorProfileHref = RefSubject.map(
+    username,
+    (username) => `/profile/${username}`
+  )
   const authorImage = RefSubject.map(author, (a) => Option.getOrElse(a.image, () => FALLBACK_IMAGE))
   const datePosted = RefSubject.map(comment, (c) => formatMonthAndDay(c.createdAt))
 
@@ -187,7 +259,12 @@ function CommentCard(comment: RefSubject.RefSubject<Comment>) {
     )
   }
       &nbsp;
-      ${Link({ to: authorProfileHref, className: "comment-author", relative: false }, username)}
+      ${
+    Link(
+      { to: authorProfileHref, className: "comment-author", relative: false },
+      username
+    )
+  }
       <span class="date-posted">${datePosted}</span>
     </div>
   </div>`
