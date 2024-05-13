@@ -20,9 +20,7 @@ const FALLBACK_IMAGE = Image("https://api.realworld.io/images/demo-avatar.png")
 
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
-    const ref = yield* _(
-      RefSubject.make(RefSubject.mapEffect(params, Articles.get), { eq: (a, b) => a.slug === b.slug })
-    )
+    const ref = yield* _(RefSubject.make(RefSubject.mapEffect(params, Articles.get)))
     const article = RefSubject.proxy(ref)
     const author = RefSubject.proxy(article.author)
     const authorProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
@@ -39,31 +37,24 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         username === currentUser.value.username
     )
 
-    const followOrUnfollow = Effect.if(author.following, {
-      onFalse: () =>
-        Effect.gen(function*() {
-          const author = yield* article.author
-          const followed = yield* Profiles.follow(author.username)
-          yield* RefSubject.update(ref, (a) => ({ ...a, author: followed }))
-        }),
-      onTrue: () =>
-        Effect.gen(function*() {
-          const author = yield* article.author
-          const unfollowed = yield* Profiles.unfollow(author.username)
-          yield* RefSubject.update(ref, (a) => ({ ...a, author: unfollowed }))
-        })
+    const followOrUnfollow = Effect.gen(function*() {
+      const author = yield* article.author
+      const updated = author.following
+        ? yield* Profiles.unfollow(author.username)
+        : yield* Profiles.follow(author.username)
+      yield* RefSubject.update(ref, (a) => ({ ...a, author: updated }))
     })
 
     const favoriteOrUnfavorite = Effect.if(article.favorited, {
       onFalse: () =>
         article.slug.pipe(
           Effect.flatMap(Articles.favorite),
-          Effect.flatMap((_) => RefSubject.set(ref, _))
+          Effect.flatMap((article) => RefSubject.set(ref, article))
         ),
       onTrue: () =>
         article.slug.pipe(
           Effect.flatMap(Articles.unfavorite),
-          Effect.flatMap((_) => RefSubject.set(ref, _))
+          Effect.flatMap((article) => RefSubject.set(ref, article))
         )
     })
 
