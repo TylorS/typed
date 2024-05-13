@@ -38,6 +38,14 @@ import * as Versioned from "./Versioned.js"
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
 
+// TODO: Kind of a Hack, but I don't really want to pollute the public API with this. What should we do with this?
+const CURRENT_ENVIRONMENT_TAG = C.Tagged<never, string>("@typed/environment/CurrentEnvironment")
+const checkIsDOM = (ctx: C.Context<any>) =>
+  C.getOption(ctx, CURRENT_ENVIRONMENT_TAG).pipe(
+    Option.map((s) => s === "dom" || s === "test:dom"),
+    Option.getOrElse(() => false)
+  )
+
 /**
  * A Computed is essentially a readonly RefSubject.
  * @since 1.20.0
@@ -1065,6 +1073,7 @@ class ComputedImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   R0 | Exclude<R, Scope.Scope> | R2 | R3
 > implements Computed<C, E0 | E | E2 | E3, R0 | Exclude<R, Scope.Scope> | R2 | R3> {
   readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
+  private _computed: Fx<C, E0 | E | E2 | E3, R0 | R | Scope.Scope | R2 | R3>
 
   constructor(
     readonly input: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
@@ -1072,9 +1081,26 @@ class ComputedImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => hold(core.mapEffect(fx, f)) as any,
+      (fx) => core.mapEffect(fx, f) as any,
       Effect.flatMap(f)
     )
+
+    this._computed = hold(core.fromFxEffect(
+      Effect.contextWith((ctx: C.Context<R0 | Exclude<R, Scope.Scope> | R2 | R3>) => {
+        if (checkIsDOM(ctx)) {
+          return core.fromEffect(this.toEffect()).pipe(
+            (_) => core.continueWith(_, () => this._fx),
+            core.skipRepeats
+          )
+        }
+
+        return core.fromEffect(this.toEffect())
+      })
+    ))
+  }
+
+  run<R4>(sink: Sink.Sink<C, E0 | E | E2 | E3, R4>) {
+    return this._computed.run(sink) as any
   }
 
   unsafeGet: () => Exit.Exit<C, E0 | E | E2 | E3> = () =>
@@ -1099,12 +1125,24 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   R2,
   C,
   E0 | E | E2 | E3,
-  Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope,
+  R0 | Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope,
   C,
   E0 | E | E2 | E3 | Cause.NoSuchElementException,
-  R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3
-> implements Filtered<C, E0 | E | E2 | E3, R0 | Exclude<R, Scope.Scope> | R2 | R3 | R2 | R3> {
+  R0 | Exclude<R, Scope.Scope> | R2 | R3
+> implements Filtered<C, E0 | E | E2 | E3, R0 | Exclude<R, Scope.Scope> | R2 | R3> {
   readonly [FilteredTypeId]: FilteredTypeId = FilteredTypeId
+  private _filtered: Fx<
+    C,
+    | E0
+    | E
+    | E2
+    | E3
+    | Exclude<E0, Cause.NoSuchElementException>
+    | Exclude<E, Cause.NoSuchElementException>
+    | Exclude<E2, Cause.NoSuchElementException>
+    | Exclude<E3, Cause.NoSuchElementException>,
+    Scope.Scope | R0 | R2 | R3 | Exclude<R, Scope.Scope>
+  >
 
   constructor(
     readonly input: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
@@ -1112,9 +1150,28 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
   ) {
     super(
       input,
-      (fx) => hold(core.filterMapEffect(fx, f)) as any,
+      (fx) => core.filterMapEffect(fx, f) as any,
       (effect) => Effect.flatten(Effect.flatMap(effect, f))
     )
+
+    const initial = this.toEffect().pipe(
+      Effect.optionFromOptional,
+      (_) => core.fromEffect(_),
+      (_) => core.filterMap(_, (_) => _)
+    )
+
+    this._filtered = hold(core.fromFxEffect(
+      Effect.contextWith((ctx: C.Context<R0 | Exclude<R, Scope.Scope> | R2 | R3 | Scope.Scope>) => {
+        if (checkIsDOM(ctx)) {
+          return initial.pipe(
+            (_) => core.continueWith(_, () => this._fx),
+            core.skipRepeats
+          )
+        }
+
+        return initial
+      })
+    ))
   }
 
   static make<R0, E0, A, E, R, E2, R2, C, E3, R3>(
@@ -1130,6 +1187,10 @@ class FilteredImpl<R0, E0, A, E, R, E2, R2, C, E3, R3> extends Versioned.Version
 
   asComputed(): Computed<Option.Option<C>, E0 | E | E2 | E3, R0 | R2 | R3 | Exclude<R, Scope.Scope>> {
     return ComputedImpl.make(this.input, this.f)
+  }
+
+  run<R4>(sink: Sink.Sink<C, E0 | E | E2 | E3, R4>) {
+    return this._filtered.run(sink) as any
   }
 
   unsafeGet: () => Exit.Exit<C, Cause.NoSuchElementException | E0 | E | E2 | E3> = () =>
@@ -2260,7 +2321,7 @@ export const slice: {
 } = dual(
   3,
   function slice<A, E, R>(ref: RefSubject<A, E, R>, drop: number, take: number): RefSubject<A, E, R> {
-    return new RefSubjectSlice(ref, drop, take)
+    return new RefSubjectSimpleTransform(ref, (_) => core.slice(_, drop, take), identity)
   }
 )
 
@@ -2283,54 +2344,6 @@ export const take: {
 } = dual(2, function take<A, E, R>(ref: RefSubject<A, E, R>, take: number): RefSubject<A, E, R> {
   return slice(ref, 0, take)
 })
-
-class RefSubjectSlice<A, E, R> extends FxEffectBase<A, E, R | Scope.Scope, A, E, R> implements RefSubject<A, E, R> {
-  readonly [ComputedTypeId]: ComputedTypeId = ComputedTypeId
-  readonly [RefSubjectTypeId]: RefSubjectTypeId = RefSubjectTypeId
-
-  readonly version: Effect.Effect<number, E, R>
-  readonly interrupt: Effect.Effect<void, never, R>
-  readonly subscriberCount: Effect.Effect<number, never, R>
-  private _fx: Fx<A, E, Scope.Scope | R>
-
-  constructor(
-    readonly ref: RefSubject<A, E, R>,
-    readonly drop: number,
-    readonly take: number
-  ) {
-    super()
-
-    this.version = ref.version
-    this.interrupt = ref.interrupt
-    this.subscriberCount = ref.subscriberCount
-    this._fx = core.slice(ref, drop, take)
-    this._effect = ref
-  }
-
-  run<R2>(sink: Sink.Sink<A, E, R2>): Effect.Effect<unknown, never, R | R2 | Scope.Scope> {
-    return this._fx.run(sink)
-  }
-
-  toEffect(): Effect.Effect<A, E, R> {
-    return this.ref
-  }
-
-  runUpdates<E2, R2, C>(
-    run: (ref: GetSetDelete<A, E, R>) => Effect.Effect<C, E2, R2>
-  ): Effect.Effect<C, E2, R | R2> {
-    return this.ref.runUpdates(run)
-  }
-
-  unsafeGet: () => Exit.Exit<A, E> = () => this.ref.unsafeGet()
-
-  onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R> {
-    return this.ref.onFailure(cause)
-  }
-
-  onSuccess(value: A): Effect.Effect<unknown, never, R> {
-    return this.ref.onSuccess(value)
-  }
-}
 
 /**
  * Get the current value of the RefSubject. If it has not been set yet, a Fiber will be used to wait for the value to be set.
