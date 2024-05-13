@@ -73,24 +73,30 @@ export const main = Fx.gen(function*(_) {
 })
 
 function loginUser(ev: SubmitEvent) {
-  return Effect.gen(function*(_) {
-    const current = yield* _(CurrentUser)
+  return Effect.catchTag(
+    Effect.gen(function*(_) {
+      const current = yield* _(CurrentUser)
 
-    // Only allow one login request at a time
-    if (AsyncData.isLoadingOrRefreshing(current)) return
+      // Only allow one login request at a time
+      if (AsyncData.isLoadingOrRefreshing(current)) return
 
-    const data = new FormData(ev.target)
-    const input = yield* _(data, parseFormData(LoginInput.fields))
+      const data = new FormData(ev.target)
+      const input = yield* _(data, parseFormData(LoginInput.fields))
 
-    yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
-  }).pipe(
-    Effect.catchAll((error) => {
+      const updated = yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
+
+      if (AsyncData.isSuccess(updated)) {
+        yield* _(Navigation.navigate("/", { history: "replace" }))
+      }
+    }),
+    "ParseError",
+    (error) => {
       const issues = ArrayFormatter.formatErrorSync(error)
       const errors = issues.map((issue) => issue.message)
       return RefSubject.set(
         CurrentUser,
         AsyncData.fail(new Unprocessable({ errors }))
       )
-    })
+    }
   )
 }

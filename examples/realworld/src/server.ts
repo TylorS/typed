@@ -32,7 +32,7 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
   Effect.provide(CurrentUserLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
   Effect.provide(NodeSdk.layer(() => ({
-    resource: { serviceName: "example" },
+    resource: { serviceName: "realworld" },
     spanProcessor: new BatchSpanProcessor(
       new OTLPTraceExporter({
         url: "http://localhost:4318/v1/traces"
