@@ -35,10 +35,14 @@ export function dbUserToUser(user: Omit<DbUser, "password">, token: JwtToken): U
     id: user.id,
     email: user.email,
     username: user.username,
-    bio: Option.fromNullable(user.bio),
-    image: Option.fromNullable(user.image),
+    bio: fromNullableString(user.bio),
+    image: fromNullableString(user.image),
     token
   }
+}
+
+function fromNullableString<T extends string>(value: T | null | undefined): Option.Option<NonNullable<T>> {
+  return Option.filter(Option.fromNullable(value), (x) => x.length > 0)
 }
 
 export type DbUser = S.Schema.Type<typeof DbUser>
@@ -129,8 +133,8 @@ function dbProfileJoinToProfile(db: DbProfileJoin): Profile {
   return {
     email: db.author_email,
     username: db.author_username,
-    bio: Option.fromNullable(db.author_bio),
-    image: Option.fromNullable(db.author_image),
+    bio: fromNullableString(db.author_bio),
+    image: fromNullableString(db.author_image),
     following: db.author_following ?? false
   }
 }
