@@ -1,7 +1,6 @@
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { renderLayer, RenderQueue, renderToLayer } from "@typed/template"
-import { html } from "@typed/template/RenderTemplate"
+import { html, renderLayer, RenderQueue, renderToLayer } from "@typed/template"
 import { Effect, Layer } from "effect"
 
 const Counter = Fx.gen(function*(_) {
