@@ -25,6 +25,51 @@ import * as typedOptions from "virtual:typed-options"
 import * as CoreServices from "./CoreServices.js"
 import { staticFiles } from "./Platform.js"
 
+const EFFECT_UPGRADE_HANDLER_TYPEID = Symbol.for("@typed/core/Node/EffectUpgradeHandler")
+
+type Handler = (req: any, socket: any, head: any) => void
+
+type CombinedHandler = Handler & {
+  [EFFECT_UPGRADE_HANDLER_TYPEID]: {
+    readonly vite: Handler
+    readonly effect: Handler
+  }
+}
+
+function makeEffectUpgradeHandler(vite: Handler, effect: Handler): CombinedHandler {
+  function combined(req: any, socket: any, head: any) {
+    if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
+      return vite(req, socket, head)
+    } else {
+      return effect(req, socket, head)
+    }
+  }
+
+  return Object.assign(combined, {
+    [EFFECT_UPGRADE_HANDLER_TYPEID]: {
+      vite,
+      effect
+    }
+  })
+}
+
+function findViteHmrListener(server: NonNullable<typeof viteHttpServer>) {
+  return Array.from(server.listeners("upgrade")).find((listener) => {
+    return !(EFFECT_UPGRADE_HANDLER_TYPEID in listener)
+  }) as Handler | undefined
+}
+
+function findCombinedHandler(server: NonNullable<typeof viteHttpServer>) {
+  return Array.from(server.listeners("upgrade")).find((listener) => {
+    return EFFECT_UPGRADE_HANDLER_TYPEID in listener
+  }) as CombinedHandler | undefined
+}
+
+function removeCombinedHandler(server: NonNullable<typeof viteHttpServer>, combinedHandler: CombinedHandler) {
+  server.off("upgrade", combinedHandler)
+  server.on("upgrade", combinedHandler[EFFECT_UPGRADE_HANDLER_TYPEID].vite)
+}
+
 /**
  * TODO: Allow configuration of the server for HTTPS and HTTP2
  *
@@ -34,9 +79,12 @@ export function getOrCreateServer() {
   if (viteHttpServer === undefined) {
     return createServer()
   } else {
-    let viteHmrListener: ((req: any, socket: any, head: any) => void) | undefined
-    let effectUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
-    let combinedUpgradeHandler: ((req: any, socket: any, head: any) => void) | undefined
+    let combinedUpgradeHandler: CombinedHandler | undefined = findCombinedHandler(viteHttpServer)
+
+    if (combinedUpgradeHandler !== undefined) {
+      removeCombinedHandler(viteHttpServer, combinedUpgradeHandler)
+      combinedUpgradeHandler = undefined
+    }
 
     return new Proxy(viteHttpServer, {
       get(target, prop) {
@@ -59,21 +107,15 @@ export function getOrCreateServer() {
             // We don't want to utilize Effect's default websocket upgrade handling to allow HMR to continue working
             if (args[0] === "upgrade") {
               if (combinedUpgradeHandler !== undefined) {
-                target.off("upgrade", combinedUpgradeHandler)
+                removeCombinedHandler(viteHttpServer!, combinedUpgradeHandler)
+                combinedUpgradeHandler = undefined
               }
 
-              viteHmrListener = Array.from(new Set(viteHttpServer!.listeners(args[0])))[0] as any
+              const viteHmrListener = findViteHmrListener(viteHttpServer!) as Handler
               // Remove the vite listener since it will be replaced with our combined listener
               target.off("upgrade", viteHmrListener!)
 
-              effectUpgradeHandler = args[1]
-              combinedUpgradeHandler = (req, socket, head) => {
-                if (req.headers["sec-websocket-protocol"] === "vite-hmr") {
-                  return viteHmrListener!(req, socket, head)
-                } else {
-                  return effectUpgradeHandler!(req, socket, head)
-                }
-              }
+              combinedUpgradeHandler = makeEffectUpgradeHandler(viteHmrListener, args[1])
 
               return target.on("upgrade", combinedUpgradeHandler)
             }
@@ -83,10 +125,11 @@ export function getOrCreateServer() {
         } else if (prop === "off") {
           return (...args: Parameters<NonNullable<typeof viteHttpServer>["off"]>) => {
             // Here we need to proxy to the listener we really added
-            if (args[0] === "upgrade" && args[1] === effectUpgradeHandler && combinedUpgradeHandler !== undefined) {
-              target.on("upgrade", viteHmrListener!)
-              target.off("upgrade", combinedUpgradeHandler)
-              effectUpgradeHandler = undefined
+            if (
+              args[0] === "upgrade" && combinedUpgradeHandler !== undefined &&
+              args[1] === combinedUpgradeHandler[EFFECT_UPGRADE_HANDLER_TYPEID].effect
+            ) {
+              removeCombinedHandler(viteHttpServer!, combinedUpgradeHandler)
               combinedUpgradeHandler = undefined
             }
 
@@ -226,6 +269,10 @@ export const run = <A, E>(
 
   process.once("SIGINT", onDispose)
   process.once("SIGTERM", onDispose)
+
+  if (import.meta.hot) {
+    import.meta.hot.dispose(onDispose)
+  }
 
   return {
     [Symbol.dispose]: onDispose
