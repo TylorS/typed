@@ -169,7 +169,17 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
 
         <div class="row">
           <div class="col-xs-12 col-md-8 offset-md-2">
-            ${PostComment(article.slug, (comment) => RefArray.append(comments, comment))}
+            ${
+      Fx.if(isAuthenticated, {
+        onFalse: html`<p show-authed="false" style="display: inherit;">
+          ${Link({ to: "/login" }, "Sign in")}
+          or
+          ${Link({ to: "/register" }, "sign up")}
+          to add comments on this article.
+        </p>`,
+        onTrue: PostComment(article.slug, (comment) => RefArray.append(comments, comment))
+      })
+    }
             ${many(comments, (c) => c.id, CommentCard)}
           </div>
         </div>
