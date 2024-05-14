@@ -30,6 +30,9 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
   ),
   Effect.provide(CurrentUserLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
+  // Provide all static resources which do not change per-request
+  Effect.provide(Live),
+  // OpenTelemetry tracing
   Effect.provide(NodeSdk.layer(() => ({
     resource: { serviceName: "realworld" },
     spanProcessor: new BatchSpanProcessor(
@@ -38,7 +41,5 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
       })
     )
   }))),
-  // Provide all static resources which do not change per-request
-  Effect.provide(Live),
   Node.run
 )
