@@ -1,4 +1,4 @@
-import { Schema } from "@effect/schema"
+import { AST, Schema } from "@effect/schema"
 import { Option, type Record } from "effect"
 
 export * as ParseResult from "@effect/schema/ParseResult"
@@ -25,3 +25,16 @@ export const parseFormData = <Fields extends Record.ReadonlyRecord<string, Schem
 
   return (data: FormData) => decode(Object.fromEntries(keys.map((k) => [k, data.get(k)])))
 }
+
+export const getFields = <A, I extends Record<keyof A, any>, R>(schema: Schema.Schema<A, I, R>): {
+  readonly [K in keyof A]: Schema.Schema<A[K], I[K], R>
+} =>
+  Object.fromEntries(
+    AST.getPropertySignatures(schema.ast).map((ps) => {
+      if (ps.isOptional) {
+        return [ps.name, Schema.NullishOr(Schema.make(ps.type))] as const
+      }
+
+      return [ps.name, Schema.make(ps.type)] as const
+    })
+  ) as any

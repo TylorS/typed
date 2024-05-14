@@ -28,7 +28,6 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
     "/api",
     Effect.catchTag(Api.server, "Unauthorized", () => ServerResponse.empty({ status: 401 }))
   ),
-  // CurrentUserLive depends on ServerRequest provided by Node.listen
   Effect.provide(CurrentUserLive),
   Node.listen({ port: 3000, serverDirectory: import.meta.dirname, logLevel: LogLevel.Debug }),
   Effect.provide(NodeSdk.layer(() => ({
