@@ -172,9 +172,9 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
             ${
       Fx.if(isAuthenticated, {
         onFalse: html`<p show-authed="false" style="display: inherit;">
-          ${Link({ to: "/login" }, "Sign in")}
+          ${Link({ to: "/login", relative: false }, "Sign in")}
           or
-          ${Link({ to: "/register" }, "sign up")}
+          ${Link({ to: "/register", relative: false }, "sign up")}
           to add comments on this article.
         </p>`,
         onTrue: PostComment(article.slug, (comment) => RefArray.append(comments, comment))
