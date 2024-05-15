@@ -139,9 +139,7 @@ const isActive_ = (
   const fullParams = { ...currentMatch.value, ...params }
   const fullPath: string = fullRoute.interpolate(fullParams as any)
 
-  if (fullPath === "/") {
-    return currentPath === "/"
-  } else if (fullPath === currentPath) {
+  if (fullPath === currentPath) {
     return true
   } else if (route.routeOptions.end) {
     return false

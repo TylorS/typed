@@ -44,7 +44,7 @@ export const main = (
           <div class="col-md-9">
             <div class="feed-toggle">
               <ul class="outline-active nav nav-pills">
-                ${NavLink("Global Feed", route, {})}
+                ${NavLink({ content: "Global Feed", route }, {})}
               </ul>
             </div>
 

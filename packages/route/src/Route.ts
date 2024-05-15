@@ -732,12 +732,8 @@ export const concat: {
     new AST.Concat(left.routeAst, right.routeAst),
     dontMergeTags.includes(right.routeAst._tag)
       ? left.routeOptions
-      : mergeOptions(left.routeOptions, right.routeOptions)
+      : right.routeOptions
   ) as Route.Concat<L, R>)
-
-function mergeOptions(left: RouteOptions, right: RouteOptions): RouteOptions {
-  return { end: left.end && right.end }
-}
 
 /**
  * @since 5.0.0

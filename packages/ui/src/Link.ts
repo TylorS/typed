@@ -36,7 +36,7 @@ export type LinkProps = Omit<TypedPropertiesMap["a"], keyof URL> & {
  * @since 1.0.0
  */
 export function Link<Props extends LinkProps, Children extends ReadonlyArray<Renderable<any, any>> = readonly []>(
-  { onClick, relative, replace, state, to, ...props }: Props,
+  input: Props,
   ...children: Children
 ): Fx.Fx<
   RenderEvent,
@@ -49,13 +49,14 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
   | Placeholder.Context<Props[keyof Props] | Children[number]>
 > {
   return Fx.gen(function*(_) {
+    const { info, onClick, relative, reloadDocument, replace, state, to, ...linkProps } = input
     const onClickHandler = getEventHandler(onClick)
-    const toRef = yield* Placeholder.asRef(to)
+    const toRef = yield* _(Placeholder.asRef(to))
     const relativeRef = yield* Placeholder.asRef(relative ?? true)
     const replaceRef = yield* Placeholder.asRef(replace ?? false)
     const stateRef = yield* Placeholder.asRef(state)
-    const infoRef = yield* Placeholder.asRef(props.info)
-    const reloadDocument = yield* Placeholder.asRef(props.reloadDocument ?? false)
+    const infoRef = yield* Placeholder.asRef(info)
+    const reloadDocumentRef = yield* Placeholder.asRef(reloadDocument ?? false)
     const href = RefSubject.mapEffect(
       RefSubject.tuple([relativeRef, toRef]),
       ([rel, to]) => rel ? makeHref(Route.parse<string>(to)) : Effect.succeed(to)
@@ -72,7 +73,7 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
         state
       })
 
-      if (yield* reloadDocument) {
+      if (yield* reloadDocumentRef) {
         yield* Navigation.reload({ info, state })
       }
     })
@@ -88,8 +89,12 @@ export function Link<Props extends LinkProps, Children extends ReadonlyArray<Ren
       onClickHandler?.options
     )
 
-    const allProps = { ...props, href, state: stateRef, onclick: onClickEventHandler }
+    const allProps = { ...linkProps, href, onclick: onClickEventHandler } as any
 
-    return a(allProps as any as Props, ...children)
+    if ("state" in input) {
+      allProps.state = stateRef
+    }
+
+    return a(allProps as Props, ...children)
   })
 }

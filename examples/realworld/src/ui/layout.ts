@@ -10,9 +10,9 @@ const UnauthenticatedHeader = html`<nav class="navbar navbar-light">
   <div class="container">
     ${Link({ to: "/", className: "navbar-brand" }, "conduit")}
     <ul class="nav navbar-nav pull-xs-right">
-      ${NavLink("Home", pages.home.route, {})}
-      ${NavLink("Sign in", pages.login.route)}
-      ${NavLink("Sign up", pages.register.route)}
+      ${NavLink({ content: "Home", route: pages.home.route }, {})}
+      ${NavLink({ content: "Sign in", route: pages.login.route })}
+      ${NavLink({ content: "Sign up", route: pages.register.route })}
     </ul>
   </div>
 </nav>`
@@ -21,9 +21,9 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
   <div class="container">
     ${Link({ to: "/", className: "navbar-brand" }, "conduit")}
     <ul class="nav navbar-nav pull-xs-right">
-      ${NavLink("Home", pages.home.route, {})}
-      ${NavLink(html`<i class="mr-2 ion-compose"></i> New Article`, pages.editor.route)}
-      ${NavLink(html`<i class="mr-2 ion-gear-a"></i> Settings`, pages.settings.route)}
+      ${NavLink({ content: "Home", route: pages.home.route }, {})}
+      ${NavLink({ content: html`<i class="mr-2 ion-compose"></i> New Article`, route: pages.editor.route })}
+      ${NavLink({ content: html`<i class="mr-2 ion-gear-a"></i> Settings`, route: pages.settings.route })}
       ${
   CurrentUser.pipe(
     // Safe because AuthenticatedHeader is only rendered when the user is authenticated
@@ -31,8 +31,10 @@ const AuthenticatedHeader = html`<nav class="navbar navbar-light">
     Fx.switchMap(
       (user) =>
         NavLink(
-          html`<img src="${Option.getOrElse(user.image, () => "")}" class="user-pic" /> ${user.username}`,
-          pages.profile.route,
+          {
+            content: html`<img src="${Option.getOrElse(user.image, () => "")}" class="user-pic" /> ${user.username}`,
+            route: pages.profile.route
+          },
           {
             username: user.username
           }

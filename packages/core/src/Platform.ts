@@ -427,6 +427,8 @@ const fromMatches = <R extends Route.Route.Any>(
       return Effect.gen(function*() {
         yield* Effect.logDebug(`Attempting guards`)
 
+        const currentRoute = yield* Router.CurrentRoute
+
         for (const match of matches) {
           // Attempt to match a guard
           const matched = yield* match.guard(path)
@@ -434,8 +436,21 @@ const fromMatches = <R extends Route.Route.Any>(
             yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
 
             const ref = yield* RefSubject.of(matched.value)
-            const content = match.match(RefSubject.take(ref, 1)).pipe(Fx.provide(Router.layer(route)))
-            const template = Fx.unify(options?.layout ? options.layout({ request, content, head, script }) : content)
+            const content = match.match(RefSubject.take(ref, 1)).pipe(
+              // Ensure content receives the current route
+              Fx.provide(Router.CurrentRoute.layer(currentRoute))
+            )
+            const template = Fx.unify(
+              options?.layout ?
+                options.layout({ request, content, head, script }).pipe(Fx.provide(
+                  // Ensure layout only receives the parent route
+                  Router.CurrentRoute.layer(Option.match(currentRoute.parent, {
+                    onNone: () => Router.makeCurrentRoute(Route.end),
+                    onSome: identity
+                  }))
+                )) :
+                content
+            )
               .pipe(
                 Fx.withSpan("render_template"),
                 Fx.onExit((exit) =>

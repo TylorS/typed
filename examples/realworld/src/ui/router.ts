@@ -13,7 +13,6 @@ export const router = Router
   .match(pages.editArticle.route, pages.editArticle.main)
   .match(pages.editor.route, () => pages.editor.main)
   .match(pages.profile.route, pages.profile.main)
-  .match(pages.profileFavorites.route, pages.profileFavorites.main)
   .match(pages.home.route, pages.home.main)
 
 const onNotFound = Effect.gen(function*(_) {
