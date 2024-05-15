@@ -8,7 +8,7 @@
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import * as Http from "@effect/platform/HttpServer"
 import { defaultTeardown } from "@effect/platform/Runtime"
-import type { CurrentEnvironment } from "@typed/environment"
+import { CurrentEnvironment, Environment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import * as Cause from "effect/Cause"
@@ -243,14 +243,15 @@ export const listen: {
  * @since 1.0.0
  */
 export const run = <A, E>(
-  effect: Effect.Effect<A, E, NodeContext.NodeContext>,
-  options?: RunForkOptions
+  effect: Effect.Effect<A, E, NodeContext.NodeContext | CurrentEnvironment>,
+  options?: RunForkOptions & { readonly static?: boolean }
 ): Disposable => {
   const program = effect.pipe(
     Effect.tapErrorCause((cause) =>
       Cause.isInterruptedOnly(cause) ? Effect.void : Effect.logError(`Application Failure`, cause)
     ),
-    Effect.provide(NodeContext.layer)
+    Effect.provide(NodeContext.layer),
+    CurrentEnvironment.provide(options?.static ? Environment.static : Environment.server)
   )
   const keepAlive = setInterval(() => {}, 2 ** 31 - 1)
   const fiber = Effect.runFork(program, options)

@@ -42,7 +42,8 @@ const CURRENT_ENVIRONMENT_TAG = C.Tagged<never, string>("@typed/environment/Curr
 const checkIsDOM = (ctx: C.Context<any>) =>
   C.getOption(ctx, CURRENT_ENVIRONMENT_TAG).pipe(
     Option.map((s) => s === "dom" || s === "test:dom"),
-    Option.getOrElse(() => false)
+    // Default behavior should allow multiple updates via Fx interface
+    Option.getOrElse(() => true)
   )
 
 /**
