@@ -83,12 +83,27 @@ export function stopImmediatePropagation<R, E, Ev extends Event>(
 /**
  * @since 1.0.0
  */
-export function target<T extends HTMLElement>() {
+export function target<T extends HTMLElement>(eventOptions?: {
+  preventDefault?: boolean
+  stopPropagation?: boolean
+  stopImmediatePropagation?: boolean
+}) {
   return <R, E, Ev extends Event>(
     handler: (event: EventWithTarget<T, Ev>) => Effect.Effect<unknown, E, R>,
     options?: AddEventListenerOptions
   ): EventHandler<EventWithTarget<T, Ev>, E, R> => {
-    return make(handler, options)
+    return make(
+      eventOptions ?
+        (ev) => {
+          if (eventOptions.preventDefault) ev.preventDefault()
+          if (eventOptions.stopPropagation) ev.stopPropagation()
+          if (eventOptions.stopImmediatePropagation) ev.stopImmediatePropagation()
+
+          return handler(ev)
+        } :
+        handler,
+      options
+    )
   }
 }
 
