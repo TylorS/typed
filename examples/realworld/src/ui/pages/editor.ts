@@ -32,22 +32,23 @@ export const main = Fx.gen(function*() {
     }))
   )
   const errors = yield* RefSubject.of<ReadonlyArray<string>>([])
-  const onSubmit = EventHandler.target<HTMLFormElement>()((ev) =>
-    Effect.gen(function*() {
-      const input = yield* parseCreateArticleInput(new FormData(ev.target))
-      const article = yield* Articles.create({
-        ...input,
-        tagList: yield* tagsList
-      })
+  const onSubmit = EventHandler.target<HTMLFormElement>({ preventDefault: true })(
+    (ev) =>
+      Effect.gen(function*() {
+        const input = yield* parseCreateArticleInput(new FormData(ev.target))
+        const article = yield* Articles.create({
+          ...input,
+          tagList: yield* tagsList
+        })
 
-      yield* navigate(`/article/${article.slug}`)
-    }).pipe(
-      Effect.catchTags({
-        Unprocessable: (error) => RefSubject.set(errors, error.errors),
-        Unauthorized: () => navigate("/login"),
-        ParseError: (issue) => RefSubject.set(errors, [issue.message])
-      })
-    )
+        yield* navigate(`/article/${article.slug}`)
+      }).pipe(
+        Effect.catchTags({
+          Unprocessable: (error) => RefSubject.set(errors, error.errors),
+          Unauthorized: () => navigate("/login"),
+          ParseError: (issue) => RefSubject.set(errors, [issue.message])
+        })
+      )
   )
 
   const removeTag = (tag: ArticleTag) => RefSubject.update(tagsList, (tags) => tags.filter((t) => t !== tag))
