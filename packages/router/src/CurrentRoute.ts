@@ -138,7 +138,16 @@ const isActive_ = (
   const fullRoute = currentRoute.concat(route)
   const fullParams = { ...currentMatch.value, ...params }
   const fullPath: string = fullRoute.interpolate(fullParams as any)
-  return fullPath === "/" ? currentPath === "/" : fullPath === currentPath || currentPath.startsWith(fullPath)
+
+  if (fullPath === "/") {
+    return currentPath === "/"
+  } else if (fullPath === currentPath) {
+    return true
+  } else if (route.routeOptions.end) {
+    return false
+  } else {
+    return currentPath.startsWith(fullPath)
+  }
 }
 
 /**
@@ -159,10 +168,7 @@ export function isActive<R extends Route.Route.Any>(
   return RefSubject.mapEffect(
     CurrentPath,
     (currentPath) =>
-      Effect.map(
-        CurrentRoute,
-        (currentRoute): boolean => isActive_(currentPath, currentRoute.route, route, params)
-      )
+      CurrentRoute.with((currentRoute): boolean => isActive_(currentPath, currentRoute.route, route, params))
   )
 }
 
