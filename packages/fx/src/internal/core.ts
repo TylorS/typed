@@ -627,9 +627,9 @@ const toDeepEquals = (u: unknown): unknown => {
       } else if (Array.isArray(u)) {
         return Data.tuple(u.map(toDeepEquals))
       } else if (u instanceof Set) {
-        return Data.tuple(Array.from(u).map(toDeepEquals))
+        return Data.tuple(Array.from(u, toDeepEquals))
       } else if (u instanceof Map) {
-        return Data.tuple(Array.from(u).map(([k, v]) => Data.tuple([toDeepEquals(k), toDeepEquals(v)])))
+        return Data.tuple(Array.from(u, ([k, v]) => Data.tuple([toDeepEquals(k), toDeepEquals(v)])))
       } else {
         return Data.struct(Record.map(u, toDeepEquals))
       }
