@@ -5,7 +5,6 @@ import { Articles, Profiles } from "@typed/realworld/services"
 import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import * as Route from "@typed/route"
-import { CurrentRoute } from "@typed/router"
 import { Effect, Option } from "effect"
 import { NavLink } from "../components/NavLink"
 
@@ -19,14 +18,6 @@ export type Params = Schema.Schema.Type<typeof route.schema>
 
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
-    console.log(`\n\n\n\n\n\n\n`)
-    const currentRoute = yield* _(CurrentRoute)
-    console.log(
-      currentRoute.route.path,
-      Option.match(currentRoute.parent, { onNone: () => "NoParent", onSome: (p) => p.route.path })
-    )
-    console.log(`\n\n\n\n\n\n\n`)
-
     const ref = yield* _(
       RefSubject.make(
         RefSubject.mapEffect(params, (_) => Profiles.get(_.username))
@@ -79,6 +70,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         },
         html`<button
                 class="btn btn-sm btn-outline-secondary action-btn"
+                style="margin-right: 4px"
               >
                 <i class="ion-gear-a" style="margin-right: 4px"></i>
                 Edit Profile Settings
