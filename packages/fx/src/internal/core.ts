@@ -642,7 +642,11 @@ const toDeepEquals = (u: unknown): unknown => {
 /**
  * @internal
  */
-export const deepEquals = (a: unknown, b: unknown) => Equal.equals(toDeepEquals(a), toDeepEquals(b))
+export const deepEquals = (a: unknown, b: unknown) => {
+  // Attempt reference equality first for performance
+  if (Object.is(a, b)) return true
+  return Equal.equals(toDeepEquals(a), toDeepEquals(b))
+}
 
 export function skipRepeats<A, E, R>(
   fx: Fx<A, E, R>
