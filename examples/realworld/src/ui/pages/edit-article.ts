@@ -1,8 +1,10 @@
+import { Fx, RefSubject } from "@typed/core"
 import { ArticleSlug } from "@typed/realworld/model"
-import { isAuthenticatedGuard } from "@typed/realworld/services"
+import { Articles, isAuthenticatedGuard } from "@typed/realworld/services"
 import * as Route from "@typed/route"
 import type { RouteGuard } from "@typed/router"
-import { html } from "@typed/template"
+import { Effect } from "effect"
+import { EditArticle } from "../components/EditArticle"
 
 export const route = Route.literal("editor")
   .concat(Route.paramWithSchema("slug", ArticleSlug))
@@ -10,55 +12,15 @@ export const route = Route.literal("editor")
 
 export type Params = RouteGuard.RouteGuard.Success<typeof route>
 
-export const main = html`<div class="editor-page">
-  <div class="container page">
-    <div class="row">
-      <div class="col-md-10 col-xs-12 offset-md-1">
-        <ul class="error-messages">
-          <li>That title is required</li>
-        </ul>
+export const main = (params: RefSubject.RefSubject<Params>) =>
+  Fx.gen(function*(_) {
+    const article = yield* _(RefSubject.make(RefSubject.mapEffect(params, Articles.get)))
 
-        <form>
-          <fieldset>
-            <fieldset class="form-group">
-              <input
-                type="text"
-                class="form-control form-control-lg"
-                placeholder="Article Title"
-              />
-            </fieldset>
-            <fieldset class="form-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="What's this article about?"
-              />
-            </fieldset>
-            <fieldset class="form-group">
-              <textarea
-                class="form-control"
-                rows="8"
-                placeholder="Write your article (in markdown)"
-              ></textarea>
-            </fieldset>
-            <fieldset class="form-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Enter tags"
-              />
-              <div class="tag-list">
-                <span class="tag-default tag-pill">
-                  <i class="ion-close-round"></i> tag
-                </span>
-              </div>
-            </fieldset>
-            <button class="btn btn-lg pull-xs-right btn-primary" type="button">
-              Publish Article
-            </button>
-          </fieldset>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>`
+    return EditArticle(article, (fields) =>
+      Effect.gen(function*(_) {
+        const current = yield* article
+        const updated = yield* Articles.update(current.slug, { ...current, ...fields })
+
+        yield* RefSubject.set(article, updated)
+      }))
+  })

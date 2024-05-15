@@ -1,0 +1,219 @@
+import type { ParseError } from "@effect/schema/ParseResult"
+import { EventHandler, Fx, html, many, RefSubject } from "@typed/core"
+import type { NavigationError } from "@typed/navigation"
+import { navigate } from "@typed/navigation"
+import {
+  type Article,
+  ArticleBody,
+  ArticleDescription,
+  ArticleTag,
+  type ArticleTagList,
+  ArticleTitle
+} from "@typed/realworld/model"
+import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
+import { Effect } from "effect"
+
+export type EditArticleFields = Pick<
+  Article,
+  "title" | "description" | "body" | "tagList"
+>
+
+export function useEditArticle<R, R2>(
+  initial: RefSubject.Computed<
+    EditArticleFields,
+    Unprocessable | Unauthorized | ParseError,
+    R
+  >,
+  onSubmit: (
+    updated: EditArticleFields
+  ) => Effect.Effect<unknown, Unprocessable | Unauthorized | ParseError | NavigationError, R2>
+) {
+  return Effect.gen(function*(_) {
+    const article = yield* _(RefSubject.make(initial))
+    const tagInput = yield* RefSubject.of<string>("")
+    const { body, description, tagList, title } = RefSubject.proxy(article)
+
+    const errors = yield* RefSubject.of<ReadonlyArray<string>>([])
+    const submit = EventHandler.target<HTMLFormElement>({
+      preventDefault: true
+    })(() =>
+      Effect.gen(function*(_) {
+        yield* onSubmit(yield* article)
+      }).pipe(
+        Effect.catchTags({
+          Unprocessable: (error) => RefSubject.set(errors, error.errors),
+          Unauthorized: () => navigate("/login"),
+          ParseError: (issue) => RefSubject.set(errors, [issue.message])
+        })
+      )
+    )
+
+    const setTagInput = (input: string) => RefSubject.set(tagInput, input)
+    const tagEnter = EventHandler.keys("Enter")((ev) => {
+      ev.preventDefault()
+      return Effect.gen(function*(_) {
+        const tag = yield* tagInput
+        if (tag.trim() === "") return
+        yield* RefSubject.set(tagInput, "")
+        yield* RefSubject.update(article, (a) => ({
+          ...a,
+          tagList: [...a.tagList, ArticleTag(tag)]
+        }))
+      })
+    })
+
+    return {
+      body,
+      setBody: (body: ArticleBody) => RefSubject.update(article, (a) => ({ ...a, body })),
+      description,
+      setDescription: (description: ArticleDescription) => RefSubject.update(article, (a) => ({ ...a, description })),
+      tagInput,
+      setTagInput,
+      tagList,
+      tagEnter,
+      updateTagList: (f: (tagList: ArticleTagList) => ArticleTagList) =>
+        RefSubject.update(article, (a) => ({ ...a, tagList: f(a.tagList) })),
+      title,
+      setTitle: (title: ArticleTitle) => RefSubject.update(article, (a) => ({ ...a, title })),
+      submit,
+      errors
+    }
+  })
+}
+
+export type EditArticleModelAndIntent = Effect.Effect.Success<
+  ReturnType<typeof useEditArticle>
+>
+
+export function renderErrors({
+  errors
+}: Pick<EditArticleModelAndIntent, "errors">) {
+  return Fx.if(
+    Fx.map(errors, (errors) => errors.length > 0),
+    {
+      onFalse: Fx.null,
+      onTrue: html`<ul class="error-messages">
+        ${
+        many(
+          errors,
+          (e) => e,
+          (error) => html`<li>${error}</li>`
+        )
+      }
+      </ul>`
+    }
+  )
+}
+
+export function renderForm({
+  body,
+  description,
+  setBody,
+  setDescription,
+  setTagInput,
+  setTitle,
+  submit,
+  tagEnter,
+  tagInput,
+  tagList,
+  title,
+  updateTagList
+}: EditArticleModelAndIntent) {
+  return html`<form onsubmit=${submit}>
+    <fieldset>
+      <fieldset class="form-group">
+        <input
+          type="text"
+          class="form-control form-control-lg"
+          placeholder="Article Title"
+          name="title"
+          .value=${title}
+          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle(ev.target.value)))}
+          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle(ev.target.value)))}
+        />
+      </fieldset>
+      <fieldset class="form-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="What's this article about?"
+          name="description"
+          .value=${description}
+          onchange=${
+    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription(ev.target.value)))
+  }
+          oninput=${
+    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription(ev.target.value)))
+  }
+        />
+      </fieldset>
+      <fieldset class="form-group">
+        <textarea
+          class="form-control"
+          rows="8"
+          placeholder="Write your article (in markdown)"
+          name="body"
+          .value=${body}
+          onchange=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody(ev.target.value)))}
+          oninput=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody(ev.target.value)))}
+        ></textarea>
+      </fieldset>
+      <fieldset class="form-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Enter tags"
+          name="tagList"
+          .value=${tagInput}
+          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTagInput(ev.target.value))}
+          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTagInput(ev.target.value))}
+          onkeydown=${tagEnter}
+        />
+        <div class="tag-list">
+          ${
+    many(
+      tagList,
+      (t) => t,
+      (t) =>
+        html` <span class="tag-default tag-pill">
+                <i
+                  class="ion-close-round"
+                  onclick=${Effect.flatMap(t, (t) => updateTagList((tagList) => tagList.filter((tag) => tag !== t)))}
+                ></i>
+                ${t}
+              </span>`
+    )
+  }
+        </div>
+      </fieldset>
+      <button class="btn btn-lg pull-xs-right btn-primary">
+        Publish Article
+      </button>
+    </fieldset>
+  </form>`
+}
+
+export function EditArticle<R, R2>(
+  initial: RefSubject.Computed<
+    EditArticleFields,
+    Unprocessable | Unauthorized | ParseError,
+    R
+  >,
+  onSubmit: (
+    updated: EditArticleFields
+  ) => Effect.Effect<unknown, Unprocessable | NavigationError | Unauthorized | ParseError, R2>
+) {
+  return Fx.gen(function*(_) {
+    const model = yield* _(useEditArticle(initial, onSubmit))
+
+    return html`<div class="editor-page">
+      <div class="container page">
+        <div class="row">
+          <div class="col-md-10 col-xs-12 offset-md-1">
+            ${renderErrors(model)} ${renderForm(model)}
+          </div>
+        </div>
+      </div>
+    </div>`
+  })
+}
