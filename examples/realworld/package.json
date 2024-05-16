@@ -42,6 +42,8 @@
     "@typed/server": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
+    "@typed/vite-plugin": "workspace:*",
+    "@typed/vite-plugin-types": "workspace:*",
     "@typed/wire": "workspace:*",
     "@types/source-map-support": "^0.5.10",
     "bcrypt": "^5.1.1",
@@ -57,8 +59,6 @@
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
-    "@typed/vite-plugin": "workspace:*",
-    "@typed/vite-plugin-types": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "happy-dom": "14.7.1",
