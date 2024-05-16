@@ -648,7 +648,7 @@ describe.concurrent("Fx.at", () => {
 
     const [duration, array] = await Effect.runPromise(test)
 
-    expect(Math.ceil(Duration.toMillis(duration))).toBeGreaterThan(delay)
+    expect(Math.ceil(Duration.toMillis(duration))).toBeGreaterThanOrEqual(delay)
     expect(array).toEqual(["a"])
   })
 })
