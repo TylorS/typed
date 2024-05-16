@@ -1,6 +1,6 @@
 {
   "name": "@typed/router",
-  "version": "0.27.7",
+  "version": "0.28.0",
   "description": "",
   "publishConfig": {
     "access": "public",
