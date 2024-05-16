@@ -279,6 +279,10 @@ export const ArticlesLive = Articles.implement({
               article_tags at ON a.id = at.article_id
           LEFT JOIN
               tags t ON at.tag_id = t.id
+          LEFT JOIN
+              follows f ON a.author_id = f.followed_id
+          WHERE
+              f.follower_id = ${user.id}
           GROUP BY
               a.id, u.username, u.bio, u.image, u.email
           ORDER BY

@@ -2,13 +2,15 @@ import { Link } from "@typed/core"
 import * as Fx from "@typed/fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { Articles, Tags } from "@typed/realworld/services"
-import { GetArticlesInput } from "@typed/realworld/services/GetArticles"
+import { Articles, isAuthenticated, Tags } from "@typed/realworld/services"
+import type { GetArticlesInput } from "@typed/realworld/services/GetArticles"
+import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
+import { usePagination } from "@typed/realworld/ui/components/Pagination"
 import * as Route from "@typed/route"
 import { html, many } from "@typed/template"
-import { usePagination } from "../components/Pagination"
+import { Option } from "effect"
 
 const pageSize = 20
 
@@ -16,15 +18,9 @@ export const route = Route.home.pipe(
   Route.concat(
     Route.queryParams({
       tag: Route.param("tag").optional(),
-      author: Route.param("author").optional(),
-      favorited: Route.param("favorited").optional(),
-      page: Route.integer("page").optional()
+      page: Route.integer("page").optional(),
+      myFeed: Route.boolean("myFeed").optional()
     })
-  ),
-  Route.transform(
-    GetArticlesInput,
-    (x) => ({ ...x, limit: String(pageSize), offset: String(((x.page ?? 1) - 1) * pageSize) }),
-    (x) => ({ ...x, page: x.offset ? Math.ceil(Number(x.offset) / pageSize) : 1 })
   )
 )
 
@@ -32,7 +28,23 @@ export const main = (
   params: RefSubject.RefSubject<Route.Route.Type<typeof route>>
 ) =>
   Fx.gen(function*(_) {
-    const feed = RefSubject.mapEffect(params, Articles.list)
+    const tab = yield* RefSubject.make<"global" | "feed">(
+      RefSubject.map(params, (p) => p.myFeed ? "feed" : "global")
+    )
+    const feed = RefSubject.mapEffect(
+      RefSubject.struct({ params, tab }),
+      ({ params, tab }) => {
+        const input: GetArticlesInput = {
+          ...defaultGetArticlesInput,
+          limit: Option.some(pageSize),
+          offset: Option.some(pageSize * (params.page ?? 1 - 1))
+        }
+
+        return tab === "global"
+          ? Articles.list(input)
+          : Articles.feed(input)
+      }
+    )
     const { articles, articlesCount } = RefSubject.proxy(feed)
     const tagsList = yield* _(RefArray.make(Tags.get()))
     const pagination = usePagination(pageSize, articlesCount)
@@ -50,7 +62,19 @@ export const main = (
           <div class="col-md-9">
             <div class="feed-toggle">
               <ul class="outline-active nav nav-pills">
-                ${NavLink({ content: "Global Feed", route }, {})}
+                ${NavLink({ content: "Global Feed", route, isActive: RefSubject.map(tab, (t) => t === "global") }, {})}
+                ${
+      Fx.if(isAuthenticated, {
+        onFalse: Fx.null,
+        onTrue: NavLink({
+          content: "My Feed",
+          route,
+          isActive: RefSubject.map(tab, (t) => t === "feed")
+        }, {
+          myFeed: "true"
+        })
+      })
+    }
               </ul>
             </div>
 
