@@ -1026,7 +1026,7 @@ describe.concurrent("Fx.debounce", () => {
     const test = Fx.mergeAll(
       [Fx.at(1, 50), Fx.at(2, 100), Fx.at(3, 150)]
     ).pipe(
-      Fx.debounce(50),
+      Fx.debounce(75),
       Fx.toReadonlyArray,
       Effect.scoped
     )
