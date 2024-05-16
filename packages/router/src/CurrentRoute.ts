@@ -138,13 +138,15 @@ const isActive_ = (
   const fullRoute = currentRoute.concat(route)
   const fullParams = { ...currentMatch.value, ...params }
   const fullPath: string = fullRoute.interpolate(fullParams as any)
+  const currentPathWithoutSearch = currentPath.split("?")[0] || "/"
+  const fullPathWithoutSearch = fullPath.split("?")[0] || "/"
 
-  if (fullPath === currentPath) {
+  if (fullPathWithoutSearch === currentPathWithoutSearch) {
     return true
   } else if (route.routeOptions.end) {
     return false
   } else {
-    return currentPath.startsWith(fullPath)
+    return currentPathWithoutSearch.startsWith(fullPathWithoutSearch)
   }
 }
 

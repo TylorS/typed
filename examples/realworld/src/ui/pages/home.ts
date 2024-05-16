@@ -1,14 +1,16 @@
+import { Link } from "@typed/core"
 import * as Fx from "@typed/fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
-import * as Navigation from "@typed/navigation"
 import { Articles, Tags } from "@typed/realworld/services"
 import { GetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
 import * as Route from "@typed/route"
-import { EventHandler, html, many } from "@typed/template"
-import { Effect, identity } from "effect"
+import { html, many } from "@typed/template"
+import { usePagination } from "../components/Pagination"
+
+const pageSize = 20
 
 export const route = Route.home.pipe(
   Route.concat(
@@ -16,20 +18,24 @@ export const route = Route.home.pipe(
       tag: Route.param("tag").optional(),
       author: Route.param("author").optional(),
       favorited: Route.param("favorited").optional(),
-      limit: Route.param("limit").optional(),
-      offset: Route.param("offset").optional()
+      page: Route.integer("page").optional()
     })
   ),
-  Route.transform(GetArticlesInput, identity, identity)
+  Route.transform(
+    GetArticlesInput,
+    (x) => ({ ...x, limit: String(pageSize), offset: String(((x.page ?? 1) - 1) * pageSize) }),
+    (x) => ({ ...x, page: x.offset ? Math.ceil(Number(x.offset) / pageSize) : 1 })
+  )
 )
 
 export const main = (
   params: RefSubject.RefSubject<Route.Route.Type<typeof route>>
 ) =>
   Fx.gen(function*(_) {
-    const articlesAndCount = RefSubject.mapEffect(params, Articles.list)
-    const { articles } = RefSubject.proxy(articlesAndCount)
+    const feed = RefSubject.mapEffect(params, Articles.list)
+    const { articles, articlesCount } = RefSubject.proxy(feed)
     const tagsList = yield* _(RefArray.make(Tags.get()))
+    const pagination = usePagination(pageSize, articlesCount)
 
     return html`<div class="home-page">
       <div class="banner">
@@ -50,14 +56,7 @@ export const main = (
 
             ${many(articles, (a) => a.id, ArticlePreview)}
 
-            <ul class="pagination">
-              <li class="page-item active">
-                <a class="page-link" href="">1</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="">2</a>
-              </li>
-            </ul>
+            ${pagination.view}
           </div>
 
           <div class="col-md-3">
@@ -69,18 +68,16 @@ export const main = (
       many(
         tagsList,
         (t) => t,
-        (t) => {
-          const href = RefSubject.map(t, (t) => `/?tag=${t}`)
-          const onclick = EventHandler.preventDefault(() => Effect.flatMap(href, Navigation.navigate))
-          return html`<a
-                      href="${href}"
-                      class="tag-pill tag-default"
-                      onclick="${onclick}"
-                    >
-                      ${t}
-                    </a>`
-        }
-      ).pipe(Fx.switchMapCause(() => Fx.null))
+        (t) =>
+          Link(
+            {
+              to: RefSubject.map(t, (t) => `/?tag=${t}`),
+              className: "tag-pill tag-default",
+              relative: false
+            },
+            t
+          )
+      )
     }
               </div>
             </div>

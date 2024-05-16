@@ -8,6 +8,7 @@ import * as Route from "@typed/route"
 import { CurrentSearchParams } from "@typed/router"
 import { Effect, Option } from "effect"
 import { NavLink } from "../components/NavLink"
+import { usePagination } from "../components/Pagination"
 
 export const route = Route.literal("profile").concat(Route.paramWithSchema("username", Username))
 
@@ -36,9 +37,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         })
     )
     const { articles, articlesCount } = RefSubject.proxy(articlesAndCount)
-    const pages = RefSubject.map(articlesCount, (count) =>
-      Array.from({ length: Math.ceil(count / pageSize) }, (_, i) => i + 1))
-
+    const pagination = usePagination(pageSize, articlesCount)
     const followOrUnfollow = Effect.gen(function*() {
       const current = yield* ref
       const updated = current.following
@@ -105,28 +104,11 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
               </ul>
             </div>
 
-            ${
-      many(articles, (a) => a.id, ArticlePreview)
-    }
+            ${many(articles, (a) => a.id, ArticlePreview)}
 
-            <ul class="pagination">
-              ${many(pages, (p) => p, (page) => renderPagination(currentPage, page))}
-            </ul>
+            ${pagination.view}
           </div>
         </div>
       </div>
     </div>`
   })
-
-function renderPagination<R>(
-  currentPage: RefSubject.Computed<number, never, R>,
-  page: RefSubject.Computed<number>
-) {
-  const activeClassName = RefSubject.tuple([currentPage, page]).pipe(
-    RefSubject.map(([current, p]) => current === p ? "active" : "")
-  )
-  const to = RefSubject.map(page, (p) => `?page=${p}`)
-  return html`<li class="page-item ${activeClassName}">
-    ${Link({ to, className: "page-link" }, page)}
-  </li>`
-}
