@@ -83,6 +83,26 @@ export function stopImmediatePropagation<R, E, Ev extends Event>(
 /**
  * @since 1.0.0
  */
+export type EventOptions = {
+  readonly preventDefault?: boolean
+  readonly stopPropagation?: boolean
+  readonly stopImmediatePropagation?: boolean
+}
+
+function handleEventOptions<Ev extends Event>(
+  eventOptions: EventOptions,
+  ev: Ev
+): boolean {
+  if (eventOptions.preventDefault) ev.preventDefault()
+  if (eventOptions.stopPropagation) ev.stopPropagation()
+  if (eventOptions.stopImmediatePropagation) ev.stopImmediatePropagation()
+
+  return true
+}
+
+/**
+ * @since 1.0.0
+ */
 export function target<T extends HTMLElement>(eventOptions?: {
   preventDefault?: boolean
   stopPropagation?: boolean
@@ -95,10 +115,7 @@ export function target<T extends HTMLElement>(eventOptions?: {
     return make(
       eventOptions ?
         (ev) => {
-          if (eventOptions.preventDefault) ev.preventDefault()
-          if (eventOptions.stopPropagation) ev.stopPropagation()
-          if (eventOptions.stopImmediatePropagation) ev.stopImmediatePropagation()
-
+          handleEventOptions(eventOptions, ev)
           return handler(ev)
         } :
         handler,
@@ -113,10 +130,13 @@ export function target<T extends HTMLElement>(eventOptions?: {
 export function keys<Keys extends ReadonlyArray<string>>(...keys: Keys) {
   return <E, R>(
     handler: (event: KeyboardEvent & { key: Keys[number] }) => Effect.Effect<unknown, E, R>,
-    options?: AddEventListenerOptions
+    options?: AddEventListenerOptions & EventOptions
   ): EventHandler<KeyboardEvent, E, R> =>
     make(
-      (ev: KeyboardEvent) => !isUsingKeyModifier(ev) && keys.includes(ev.key) ? handler(ev as any) : Effect.void,
+      (ev: KeyboardEvent) =>
+        !isUsingKeyModifier(ev) && keys.includes(ev.key)
+          ? (options && handleEventOptions(options, ev), handler(ev as any))
+          : Effect.void,
       options
     )
 }
