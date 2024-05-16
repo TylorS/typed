@@ -1,5 +1,18 @@
 # @typed/vite-plugin
 
+## 0.2.0
+
+### Minor Changes
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade effect deps
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps to latest
+
+### Patch Changes
+
+- Updated dependencies [[`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7), [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7)]:
+  - @typed/vite-plugin-types@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

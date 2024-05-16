@@ -1,5 +1,31 @@
 # @typed/storybook
 
+## 0.6.0
+
+### Minor Changes
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade effect deps
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps to latest
+
+### Patch Changes
+
+- Updated dependencies [[`9a34f62`](https://github.com/TylorS/typed/commit/9a34f62af1c2e91d1437e3ccda80d5256f0edd8a), [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7), [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7)]:
+  - @typed/template@0.11.0
+  - @typed/environment@0.8.0
+  - @typed/async-data@0.9.0
+  - @typed/navigation@0.15.0
+  - @typed/context@0.27.0
+  - @typed/decoder@0.18.0
+  - @typed/router@0.29.0
+  - @typed/route@6.0.0
+  - @typed/core@3.4.0
+  - @typed/path@0.12.0
+  - @typed/dom@15.0.0
+  - @typed/fx@1.29.0
+  - @typed/id@0.8.0
+  - @typed/ui@0.11.0
+
 ## 0.5.0
 
 ### Minor Changes
