@@ -64,7 +64,5 @@ const Footer = html`<footer>
 </footer>`
 
 export function layout<E, R>(content: Fx.Fx<RenderEvent | null, E, R>) {
-  return html`${Header}<main>${content}</main>${Footer}`.pipe(Fx.tap((x) => {
-    console.log(x)
-  }))
+  return html`${Header}<main>${content}</main>${Footer}`
 }
