@@ -1,4 +1,4 @@
-<img src="typed.svg" alt="Typed">
+<img src="./docs/typed.svg" alt="Typed">
 
 <hr/>
 

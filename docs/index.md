@@ -6,7 +6,7 @@ has_children: false
 has_toc: false
 ---
 
-<img src="../typed.svg" alt="Typed">
+<img src="./typed.svg" alt="Typed">
 
 <hr/>
 
