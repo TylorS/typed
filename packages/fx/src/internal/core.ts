@@ -1407,7 +1407,7 @@ class DropAfter<A, E, R> extends FxBase<A, E, R> {
   }
 
   run<R2>(sink: Sink.Sink<A, E, R2>): Effect.Effect<unknown, never, R | R2> {
-    return this.i0.run(Sink.dropAfter(sink, this.i1))
+    return Sink.dropAfter(sink, this.i1, (s) => this.i0.run(s))
   }
 
   static make<A, E, R>(fx: Fx<A, E, R>, predicate: Predicate.Predicate<A>): Fx<A, E, R> {
