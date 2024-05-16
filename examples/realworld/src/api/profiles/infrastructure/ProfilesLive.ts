@@ -1,5 +1,5 @@
 import { Schema } from "@effect/schema"
-import * as Pg from "@effect/sql-pg"
+import * as Sql from "@effect/sql"
 import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
 import { DbProfile, DbUser } from "@typed/realworld/api/common/infrastructure/schema"
@@ -17,7 +17,7 @@ export const ProfilesLive = Profiles.implement({
   follow: (username) =>
     Effect.gen(function*(_) {
       const currentUser = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const user = yield* _(getDbUserByUsername(username))
 
       yield* _(sql`insert into follows (follower_id, followed_id) values (${currentUser.id}, ${user.id});`)
@@ -33,7 +33,7 @@ export const ProfilesLive = Profiles.implement({
   unfollow: (username) =>
     Effect.gen(function*(_) {
       const currentUser = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const user = yield* _(getDbUserByUsername(username))
 
       yield* _(sql`delete from follows where follower_id = ${currentUser.id} and followed_id = ${user.id};`)
@@ -50,11 +50,11 @@ export const ProfilesLive = Profiles.implement({
 
 function getProfileByUsername(username: Username, userId?: UserId) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
 
     const dbProfile = yield* _(
       username,
-      Pg.schema.single(
+      Sql.schema.single(
         {
           Request: Username,
           Result: DbProfile.pipe(Schema.extend(Schema.Struct({ following: Schema.Boolean }))),
@@ -80,10 +80,10 @@ function getProfileByUsername(username: Username, userId?: UserId) {
 
 function getDbUserByUsername(username: Username) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
     return yield* _(
       username,
-      Pg.schema.single({
+      Sql.schema.single({
         Request: Username,
         Result: DbUser,
         execute: (t) => sql`select * from users where username = ${t}`

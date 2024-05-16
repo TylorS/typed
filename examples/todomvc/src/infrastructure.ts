@@ -68,8 +68,8 @@ const ModelLive = Layer.mergeAll(
 
 const CreateTodoLive = App.CreateTodo.implement((text) =>
   // Create a new Todo with the provided text
-  Effect.sync(() => ({
-    id: Domain.TodoId(crypto.randomUUID()),
+  Effect.sync((): Domain.Todo => ({
+    id: Domain.TodoId.make(crypto.randomUUID()),
     text,
     completed: false,
     timestamp: new Date()

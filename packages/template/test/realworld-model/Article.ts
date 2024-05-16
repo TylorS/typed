@@ -43,26 +43,26 @@ export const Article = Schema.Struct({
   slug: ArticleSlug,
   title: ArticleTitle.pipe(
     Arbitrary.arbitrary(() => (fc) =>
-      fc.base64String({ minLength: 1, maxLength: 10 }).map((title) => ArticleTitle(title.replace(/\s+/g, " ")))
+      fc.base64String({ minLength: 1, maxLength: 10 }).map((title) => ArticleTitle.make(title.replace(/\s+/g, " ")))
     )
   ),
   description: ArticleDescription.pipe(
     Arbitrary.arbitrary(() => (fc) =>
       fc.base64String({ minLength: 1, maxLength: 100 }).map((description) =>
-        ArticleDescription(description.replace(/\s+/g, " "))
+        ArticleDescription.make(description.replace(/\s+/g, " "))
       )
     )
   ),
   body: ArticleBody.pipe(
     Arbitrary.arbitrary(() => (fc) =>
-      fc.base64String({ minLength: 1, maxLength: 1000 }).map((body) => ArticleBody(body.replace(/\s+/g, " ")))
+      fc.base64String({ minLength: 1, maxLength: 1000 }).map((body) => ArticleBody.make(body.replace(/\s+/g, " ")))
     )
   ),
   tagList: ArticleTagList.pipe(
     Arbitrary.arbitrary(() => (fc) =>
       fc.array(fc.base64String({ minLength: 2, maxLength: 10 }), { minLength: 1, maxLength: 5 }).map((
         tags
-      ): ArticleTagList => tags.map(ArticleTag))
+      ): ArticleTagList => tags.map((_) => ArticleTag.make(_)))
     )
   ),
   author: Profile,

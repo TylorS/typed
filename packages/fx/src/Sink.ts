@@ -102,10 +102,10 @@ export function withEarlyExit<A, E, R, B, R2>(
       earlyExit: Effect.sync(() => resume(Effect.void))
     }
 
-    return Effect.asVoid(Effect.matchCauseEffect(f(earlyExit), {
-      onFailure: (cause) => sink.onFailure(cause),
+    return Effect.matchCauseEffect(f(earlyExit), {
+      onFailure: (cause) => Effect.asVoid(sink.onFailure(cause)),
       onSuccess: () => earlyExit.earlyExit
-    }))
+    })
   })
 }
 
@@ -795,24 +795,42 @@ export const dropWhile: {
 })
 
 /**
- * @since 1.20.0
+ * @since 2.0.0
  */
 export const dropAfter: {
-  <A>(predicate: Predicate.Predicate<A>): <E, R>(
-    sink: Sink<A, E, R>
-  ) => Sink<A, E, R>
-  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
-} = dual(2, function dropAfter<A, E, R>(
+  <A, E, R, R2>(
+    sink: Sink<A, E, R>,
+    predicate: Predicate.Predicate<A>,
+    f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, E, R2>
+  ): Effect.Effect<void, never, R | R2>
+} = dual(3, function dropAfter<A, E, R, R2>(
   sink: Sink<A, E, R>,
-  predicate: Predicate.Predicate<A>
-) {
-  return filterMapLoop(sink, false, (drop: boolean, a: A) => {
-    if (drop === true) return [Option.none(), drop]
-
-    const drop2 = predicate(a)
-    return [Option.some(a), drop2]
-  })
+  predicate: Predicate.Predicate<A>,
+  f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, E, R2>
+): Effect.Effect<void, never, R | R2> {
+  return withEarlyExit(sink, (s) => f(new DropAfterSink(s, predicate)))
 })
+
+class DropAfterSink<A, E, R> implements Sink<A, E, R> {
+  constructor(
+    readonly sink: WithEarlyExit<A, E, R>,
+    readonly predicate: Predicate.Predicate<A>
+  ) {
+    this.onFailure = this.onFailure.bind(this)
+    this.onSuccess = this.onSuccess.bind(this)
+  }
+
+  onFailure(cause: Cause.Cause<E>): Effect.Effect<unknown, never, R> {
+    return this.sink.onFailure(cause)
+  }
+
+  onSuccess(value: A) {
+    if (this.predicate(value)) {
+      return Effect.zipRight(this.sink.onSuccess(value), this.sink.earlyExit)
+    }
+    return this.sink.onSuccess(value)
+  }
+}
 
 /**
  * @since 1.20.0

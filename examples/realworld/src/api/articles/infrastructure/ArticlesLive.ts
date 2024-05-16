@@ -1,5 +1,5 @@
 import { Schema } from "@effect/schema"
-import * as Sql from "@effect/sql-pg"
+import * as Sql from "@effect/sql"
 import { makeNanoId } from "@typed/id"
 import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
@@ -32,7 +32,7 @@ export const ArticlesLive = Articles.implement({
   create: (input) =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const dbArticle = yield* _(dbArticleFromCreateArticleInput(input, user.id))
 
       yield* _(sql`insert into articles ${sql.insert(dbArticle)};`)
@@ -66,7 +66,7 @@ export const ArticlesLive = Articles.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
       const current = yield* _(getArticleFromSlug(slug, user.id))
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const updatedArticle: DbArticle = {
         ...current,
         slug: input.title ? makeSlugFromTitle(input.title) : current.slug,
@@ -102,7 +102,7 @@ export const ArticlesLive = Articles.implement({
   delete: ({ slug }) =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const article = yield* _(getArticleFromSlug(slug, user.id))
 
       yield* _(sql`delete from comments where article_id = ${article.id};`)
@@ -116,7 +116,7 @@ export const ArticlesLive = Articles.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
       const { id } = yield* _(getArticleFromSlug(slug, user.id))
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
 
       yield* _(
         sql`insert into favorites ${sql.insert({ article_id: id, user_id: user.id })} on conflict do nothing;`
@@ -130,7 +130,7 @@ export const ArticlesLive = Articles.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
       const { id } = yield* _(getArticleFromSlug(slug, user.id))
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
 
       yield* _(
         sql`delete from favorites where article_id = ${id} and user_id = ${user.id};`
@@ -142,7 +142,7 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   list: (input) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const user = yield* _(getOptionalCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
       const offset = sql`offset ${Option.getOrElse(input.offset, () => 0)}`
@@ -248,7 +248,7 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   feed: (input) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Sql.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const user = yield* _(getCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
       const offset = sql`offset ${Option.getOrElse(input.offset, () => 0)}`
@@ -324,7 +324,7 @@ export const ArticlesLive = Articles.implement({
 
 function dbArticleFromCreateArticleInput(input: CreateArticleInput, author_id: UserId) {
   return Effect.gen(function*(_) {
-    const id = ArticleId(yield* _(makeNanoId))
+    const id = ArticleId.make(yield* _(makeNanoId))
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const article: DbArticle = {
       id,
@@ -343,7 +343,7 @@ function dbArticleFromCreateArticleInput(input: CreateArticleInput, author_id: U
 
 function getArticleFromSlug(slug: ArticleSlug, currentUserId?: UserId) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Sql.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
 
     if (currentUserId) {
       return yield* _(
@@ -425,7 +425,7 @@ function tagListToTags(list: ReadonlyArray<ArticleTag>) {
     list,
     (tag) =>
       Effect.gen(function*(_) {
-        const sql = yield* _(Sql.client.PgClient)
+        const sql = yield* _(Sql.client.Client)
         const existing = yield* _(
           tag,
           Sql.schema.findOne({
@@ -454,5 +454,5 @@ function tagListToTags(list: ReadonlyArray<ArticleTag>) {
 }
 
 function makeSlugFromTitle(title: string) {
-  return ArticleSlug(title.toLowerCase().replace(/\s/g, "-"))
+  return ArticleSlug.make(title.toLowerCase().replace(/\s/g, "-"))
 }

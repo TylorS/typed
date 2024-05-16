@@ -123,11 +123,13 @@ const formatParseErrors = (
             Option.flatMap((f) => {
               const msg = f(parseIssue)
 
-              if (Effect.isEffect(msg)) {
+              if (typeof msg === "string") {
+                return Option.some(msg)
+              } else if (Effect.isEffect(msg) || Effect.isEffect(msg.message)) {
                 return Option.none()
+              } else {
+                return Option.some(msg.message)
               }
-
-              return Option.some(msg)
             }),
             Option.getOrElse(() => formatAST(parseIssue.ast))
           )

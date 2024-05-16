@@ -1,4 +1,3 @@
-import type * as Router from "@effect/platform/Http/Router"
 import * as ServerRequest from "@effect/platform/Http/ServerRequest"
 import type * as AST from "@effect/schema/AST"
 import * as Schema from "@effect/schema/Schema"
@@ -11,10 +10,15 @@ import * as Effect from "effect/Effect"
 import * as Unify from "effect/Unify"
 import { formatParseError } from "./formatParseError.js"
 
+type Ctx = {
+  searchParams: Record<string, any>
+  params: Record<string, any>
+}
+
 interface ServerRequestParser {
   parseRequest: (
     request: ServerRequest.ServerRequest,
-    context: Pick<Router.RouteContext, "searchParams" | "params">
+    context: Ctx
   ) => Effect.Effect<{ query: any; path: any; body: any; headers: any; security: any }, ServerError.ServerError>
 }
 
@@ -100,7 +104,7 @@ const createQueryParser = (
 
   const parse = Schema.decodeUnknown(schema as Schema.Schema<any, any, never>)
 
-  return (context: Pick<Router.RouteContext, "searchParams" | "params">) => {
+  return (context: Ctx) => {
     return parse(context.searchParams, parseOptions).pipe(
       Effect.mapError((error) => createError("query", formatParseError(error, parseOptions)))
     )
@@ -148,7 +152,7 @@ const createParamsParser = (
 
   const parse = Schema.decodeUnknown(schema as Schema.Schema<any, any, never>)
 
-  return (ctx: Pick<Router.RouteContext, "searchParams" | "params">) =>
+  return (ctx: Ctx) =>
     parse(ctx.params, parseOptions).pipe(
       Effect.mapError((error) => createError("path", formatParseError(error, parseOptions)))
     )

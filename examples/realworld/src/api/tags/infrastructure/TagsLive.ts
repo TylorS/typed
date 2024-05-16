@@ -1,5 +1,5 @@
 import { Schema } from "@effect/schema"
-import * as Pg from "@effect/sql-pg"
+import * as Sql from "@effect/sql"
 import { ArticleTag } from "@typed/realworld/model"
 import { Tags } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
@@ -8,10 +8,10 @@ import { Effect } from "effect"
 export const TagsLive = Tags.implement({
   get: () =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const tags = yield* _(
         undefined,
-        Pg.schema.findAll({
+        Sql.schema.findAll({
           Request: Schema.Void,
           Result: Schema.Struct({ tag: ArticleTag }),
           execute: () =>

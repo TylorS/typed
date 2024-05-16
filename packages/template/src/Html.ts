@@ -96,16 +96,16 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
       )
     } else {
       const lastIndex = entry.chunks.length - 1
-      return Fx.filter(
-        Fx.mergeOrdered(
-          entry.chunks.map((chunk, i) =>
-            renderChunk<
-              Placeholder.Error<Values[number]>,
-              Placeholder.Context<Values[number]>
-            >(chunk, values, isStatic, i === lastIndex)
-          )
-        ),
-        (x) => x.valueOf().length > 0
+      return Fx.mergeOrdered(
+        entry.chunks.map((chunk, i) =>
+          renderChunk<
+            Placeholder.Error<Values[number]>,
+            Placeholder.Context<Values[number]>
+          >(chunk, values, isStatic, i === lastIndex)
+        )
+      ).pipe(
+        Fx.filter((x) => x.html.length > 0),
+        Fx.dropAfter((x) => x.done)
       )
     }
   }
@@ -312,7 +312,7 @@ function takeOneIfNotRenderEvent<A, E, R>(
   done: boolean
 ): Fx.Fx<HtmlRenderEvent, E, R> {
   return Fx.make<HtmlRenderEvent, E, R>((sink) =>
-    Sink.withEarlyExit(sink, (sink) =>
+    Effect.uninterruptible(Sink.withEarlyExit(sink, (sink) =>
       fx.run(
         Sink.make(sink.onFailure, (event) => {
           if (isHtmlRenderEvent(event)) {
@@ -337,7 +337,7 @@ function takeOneIfNotRenderEvent<A, E, R>(
             sink.earlyExit
           )
         })
-      ))
+      )))
   )
 }
 
