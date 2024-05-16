@@ -2,6 +2,7 @@ import * as ServerRequest from "@effect/platform/Http/ServerRequest"
 import * as ServerResponse from "@effect/platform/Http/ServerResponse"
 import { html } from "@effect/platform/Http/ServerResponse"
 import * as Route from "@typed/route"
+import { CurrentRoute, makeCurrentRoute } from "@typed/router"
 import { getCurrentParams } from "@typed/server/RouteHandler"
 import * as Router from "@typed/server/Router"
 import { ok } from "assert"
@@ -33,7 +34,8 @@ describe("Router", () => {
     const request = ServerRequest.fromWeb(new Request(url, init))
     return router.pipe(
       Effect.provideService(ServerRequest.ServerRequest, request),
-      Effect.map(ServerResponse.toWeb)
+      Effect.map(ServerResponse.toWeb),
+      CurrentRoute.provide(makeCurrentRoute(Route.end))
     )
   }
 
@@ -66,7 +68,7 @@ describe("Router", () => {
       ok(response._tag === "Left")
       ok(response.left._tag === "RouteDecodeError")
       expect(response.left.message).toBe(`RouteDecodeError: /foo/:fooId
-{ fooId: integer }
+{ readonly fooId: integer }
 └─ ["fooId"]
    └─ integer
       └─ From side refinement failure
@@ -97,7 +99,8 @@ describe("Router", () => {
       const request = ServerRequest.fromWeb(new Request(url, init))
       return platformRouter.pipe(
         Effect.provideService(ServerRequest.ServerRequest, request),
-        Effect.map(ServerResponse.toWeb)
+        Effect.map(ServerResponse.toWeb),
+        CurrentRoute.provide(makeCurrentRoute(Route.end))
       )
     }
 

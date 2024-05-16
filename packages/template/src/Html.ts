@@ -96,7 +96,7 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
       )
     } else {
       const lastIndex = entry.chunks.length - 1
-      return Fx.filter(
+      const base = Fx.filter(
         Fx.mergeOrdered(
           entry.chunks.map((chunk, i) =>
             renderChunk<
@@ -106,6 +106,17 @@ export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
           )
         ),
         (x) => x.valueOf().length > 0
+      )
+
+      return Fx.make((sink) =>
+        Sink.withEarlyExit(sink, (sink) =>
+          base.run(Sink.make(
+            sink.onFailure,
+            (value) =>
+              value.done
+                ? Effect.zipRight(sink.onSuccess(value), sink.earlyExit)
+                : sink.onSuccess(value)
+          )))
       )
     }
   }

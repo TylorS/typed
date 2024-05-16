@@ -2,6 +2,7 @@ import { Link } from "@typed/core"
 import * as Fx from "@typed/fx"
 import * as RefArray from "@typed/fx/RefArray"
 import * as RefSubject from "@typed/fx/RefSubject"
+import { ArticleTag } from "@typed/realworld/model"
 import { Articles, isAuthenticated, Tags } from "@typed/realworld/services"
 import type { GetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
@@ -36,6 +37,7 @@ export const main = (
       ({ params, tab }) => {
         const input: GetArticlesInput = {
           ...defaultGetArticlesInput,
+          tag: Option.fromNullable(params.tag).pipe(Option.map((t) => ArticleTag.make(t))),
           limit: Option.some(pageSize),
           offset: Option.some(pageSize * (params.page ?? 1 - 1))
         }

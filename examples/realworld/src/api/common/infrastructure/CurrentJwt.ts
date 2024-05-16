@@ -16,10 +16,10 @@ export const getJwtTokenFromRequest = Effect.gen(function*(_) {
   return ServerHeaders.get(headers, "cookie").pipe(
     Option.map(Cookies.parseHeader),
     Option.flatMap((_) => Option.fromNullable(_["conduit-token"])),
-    Option.map(JwtToken),
+    Option.map((token) => JwtToken.make(token)),
     Option.orElse(() =>
       ServerHeaders.get(headers, "authorization").pipe(
-        Option.map((authorization) => JwtToken(authorization.split(" ")[1]))
+        Option.map((authorization) => JwtToken.make(authorization.split(" ")[1]))
       )
     )
   )

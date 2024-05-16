@@ -16,7 +16,7 @@ export const route = Route.literal("article").concat(
 
 export type Params = Route.Route.Type<typeof route>
 
-const FALLBACK_IMAGE = Image("https://api.realworld.io/images/demo-avatar.png")
+const FALLBACK_IMAGE = Image.make("https://api.realworld.io/images/demo-avatar.png")
 
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
@@ -204,7 +204,7 @@ function PostComment<E, R, E2, R2>(
           const body = yield* commentBody
           if (body.trim() === "") return
 
-          const comment = yield* Comments.create(yield* slug, { body: CommentBody(body) })
+          const comment = yield* Comments.create(yield* slug, { body: CommentBody.make(body) })
           yield* onNewComment(comment)
           yield* RefSubject.set(commentBody, "")
         })

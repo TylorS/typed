@@ -10,9 +10,9 @@ export const route = Route.literal("editor").pipe(isAuthenticatedGuard)
 
 export const main = Fx.gen(function*() {
   const initial = yield* RefSubject.of<EditArticleFields>({
-    title: ArticleTitle(""),
-    description: ArticleDescription(""),
-    body: ArticleBody(""),
+    title: ArticleTitle.make(""),
+    description: ArticleDescription.make(""),
+    body: ArticleBody.make(""),
     tagList: []
   })
 

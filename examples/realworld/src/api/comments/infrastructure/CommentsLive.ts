@@ -1,5 +1,5 @@
 import { Schema } from "@effect/schema"
-import * as Pg from "@effect/sql-pg"
+import * as Sql from "@effect/sql"
 import { makeNanoId } from "@typed/id"
 import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
 import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
@@ -16,10 +16,10 @@ export const CommentsLive = Comments.implement({
     Effect.gen(function*(_) {
       const user = yield* _(getOptionalCurrentJwtUser)
 
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const dbComments = yield* _(
         slug,
-        Pg.schema.findAll({
+        Sql.schema.findAll({
           Request: ArticleSlug,
           Result: DbCommentWithAuthor,
           execute: (s) =>
@@ -45,7 +45,7 @@ export const CommentsLive = Comments.implement({
   create: (slug, input) =>
     Effect.gen(function*(_) {
       const user = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const comment = yield* _(createDbComment(user, slug, input))
 
       yield* _(
@@ -63,7 +63,7 @@ export const CommentsLive = Comments.implement({
     }).pipe(catchExpectedErrors),
   delete: (_, { id }) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const user = yield* _(getCurrentJwtUser)
       yield* _(sql`DELETE FROM comments WHERE id = ${id} AND author_id = ${user.id};`)
     }).pipe(catchExpectedErrors)
@@ -71,7 +71,7 @@ export const CommentsLive = Comments.implement({
 
 function createDbComment(user: User, slug: ArticleSlug, input: CreateCommentInput) {
   return Effect.gen(function*(_) {
-    const id = CommentId(yield* _(makeNanoId))
+    const id = CommentId.make(yield* _(makeNanoId))
     const article_id = yield* _(getArticleIdBySlug(slug))
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const comment: DbComment = {
@@ -89,10 +89,10 @@ function createDbComment(user: User, slug: ArticleSlug, input: CreateCommentInpu
 
 function getArticleIdBySlug(slug: ArticleSlug) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
     const { id } = yield* _(
       slug,
-      Pg.schema.single(
+      Sql.schema.single(
         {
           Request: ArticleSlug,
           Result: Schema.Struct({ id: ArticleId }),

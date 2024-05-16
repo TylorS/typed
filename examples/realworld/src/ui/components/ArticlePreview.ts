@@ -5,7 +5,7 @@ import { Effect, Option } from "effect"
 import { Articles, isAuthenticated } from "../../services"
 import { formatMonthDayYear } from "../common/date"
 
-const FALLBACK_IMAGE = Image("https://api.realworld.io/images/demo-avatar.png")
+const FALLBACK_IMAGE = Image.make("https://api.realworld.io/images/demo-avatar.png")
 
 export function ArticlePreview(ref: RefSubject.RefSubject<Article>) {
   const article = RefSubject.proxy(ref)

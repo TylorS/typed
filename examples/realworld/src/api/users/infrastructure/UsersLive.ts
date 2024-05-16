@@ -1,5 +1,5 @@
 import { Schema } from "@effect/schema"
-import * as Pg from "@effect/sql-pg"
+import * as Sql from "@effect/sql"
 import { makeNanoId } from "@typed/id"
 import { nanoId } from "@typed/id/Schema"
 import { getCurrentJwtUser, JwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
@@ -27,7 +27,7 @@ export const UsersLive = Users.implement({
     }).pipe(catchExpectedErrors),
   register: (input) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const existingUser = yield* _(getDbUserByEmail(input.email))
       if (Option.isSome(existingUser)) {
         return yield* _(new Unprocessable({ errors: ["Email already exists"] }))
@@ -36,7 +36,7 @@ export const UsersLive = Users.implement({
       const inputUser = yield* _(dbUserFromRegisterInput(input))
       const user = yield* _(
         inputUser,
-        Pg.schema.single({
+        Sql.schema.single({
           Request: DbUser,
           Result: DbUser,
           execute: (t) => sql`insert into users ${sql.insert(t)} returning *;`
@@ -75,11 +75,11 @@ export const UsersLive = Users.implement({
         return
       }
 
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
 
       yield* _(
         existingToken.value.id,
-        Pg.schema.void({
+        Sql.schema.void({
           Request: nanoId,
           execute: (t) => sql`delete from jwt_tokens where id = ${t};`
         })
@@ -88,7 +88,7 @@ export const UsersLive = Users.implement({
   update: (user) =>
     Effect.gen(function*(_) {
       const current = yield* _(getCurrentJwtUser)
-      const sql = yield* _(Pg.client.PgClient)
+      const sql = yield* _(Sql.client.Client)
       const now = new Date(yield* _(Clock.currentTimeMillis))
       const [rawUser] = yield* _(
         sql`update users set 
@@ -110,10 +110,10 @@ export const UsersLive = Users.implement({
 
 function getDbUserByEmail(email: Email) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
     return yield* _(
       email,
-      Pg.schema.findOne({
+      Sql.schema.findOne({
         Request: Email,
         Result: DbUser,
         execute: (t) => sql`select * from users where email = ${t}`
@@ -124,7 +124,7 @@ function getDbUserByEmail(email: Email) {
 
 function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
   return Effect.gen(function*(_) {
-    const id = UserId(yield* _(makeNanoId))
+    const id = UserId.make(yield* _(makeNanoId))
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const dbUser: DbUser = {
       id,
@@ -143,11 +143,11 @@ function dbUserFromRegisterInput({ email, password, username }: RegisterInput) {
 
 function getUnexpiredJwtTokenForUser(user: Pick<DbUser, "id">) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     return yield* _(
       user.id,
-      Pg.schema.findOne(
+      Sql.schema.findOne(
         {
           Request: UserId,
           Result: DbJwtToken,
@@ -160,13 +160,13 @@ function getUnexpiredJwtTokenForUser(user: Pick<DbUser, "id">) {
 
 function creatJwtTokenForUser(user: DbUser) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Pg.client.PgClient)
+    const sql = yield* _(Sql.client.Client)
     const id = yield* _(makeNanoId)
     const now = new Date(yield* _(Clock.currentTimeMillis))
     const secret = yield* _(Config.string("VITE_JWT_SECRET"))
     const jwtUser = yield* _(user, Schema.encode(JwtUser))
     const jwt = yield* _(Effect.promise(() => import("jsonwebtoken").then((m) => m.default)))
-    const token = JwtToken(jwt.sign(jwtUser, secret, { expiresIn: "7d" }))
+    const token = JwtToken.make(jwt.sign(jwtUser, secret, { expiresIn: "7d" }))
     const jwtToken: DbJwtToken = {
       id,
       user_id: user.id,
@@ -176,7 +176,7 @@ function creatJwtTokenForUser(user: DbUser) {
 
     yield* _(
       jwtToken,
-      Pg.schema.void({
+      Sql.schema.void({
         Request: DbJwtToken,
         execute: (t) => sql`insert into jwt_tokens ${sql.insert(t)} returning *;`
       })
