@@ -48,7 +48,7 @@ export const main = (
               </ul>
             </div>
 
-            ${many(articles, (a) => a.id, Fx.switchMap(ArticlePreview))}
+            ${many(articles, (a) => a.id, ArticlePreview)}
 
             <ul class="pagination">
               <li class="page-item active">

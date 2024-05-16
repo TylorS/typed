@@ -5,38 +5,39 @@ import { Articles, Profiles } from "@typed/realworld/services"
 import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import * as Route from "@typed/route"
+import { CurrentSearchParams } from "@typed/router"
 import { Effect, Option } from "effect"
 import { NavLink } from "../components/NavLink"
 
-export const route = Route.literal("profile").concat(
-  Route.paramWithSchema("username", Username)
-)
+export const route = Route.literal("profile").concat(Route.paramWithSchema("username", Username))
 
 const favoritesRoute = Route.literal("favorites")
+const pageSize = 5
 
 export type Params = Schema.Schema.Type<typeof route.schema>
 
 export const main = (params: RefSubject.RefSubject<Params>) =>
   Fx.gen(function*(_) {
-    const ref = yield* _(
-      RefSubject.make(
-        RefSubject.mapEffect(params, (_) => Profiles.get(_.username))
-      )
-    )
+    const ref = yield* _(RefSubject.make(RefSubject.mapEffect(params, (_) => Profiles.get(_.username))))
     const profile = RefSubject.proxy(ref)
     const profileImage = RefSubject.map(profile.image, Option.getOrElse(() => ""))
     const profileBio = RefSubject.map(profile.bio, Option.getOrElse(() => ""))
-
+    const currentPage = RefSubject.map(CurrentSearchParams, (params) => Number(params.page ?? 1))
     const articlesAndCount = RefSubject.mapEffect(
-      RefSubject.tuple([Router.isActive(favoritesRoute), profile.username]),
-      ([favorites, username]) =>
+      RefSubject.tuple([Router.isActive(favoritesRoute), profile.username, currentPage]),
+      ([favorites, username, page]) =>
         Articles.list({
           ...defaultGetArticlesInput,
-          ...(favorites ? { favorited: Option.some(username) } : { author: Option.some(username) })
+          limit: Option.some(pageSize),
+          offset: Option.some((page - 1) * pageSize),
+          ...(favorites
+            ? { favorited: Option.some(username) }
+            : { author: Option.some(username) })
         })
     )
-
-    const articles = RefSubject.map(articlesAndCount, (a) => a.articles)
+    const { articles, articlesCount } = RefSubject.proxy(articlesAndCount)
+    const pages = RefSubject.map(articlesCount, (count) =>
+      Array.from({ length: Math.ceil(count / pageSize) }, (_, i) => i + 1))
 
     const followOrUnfollow = Effect.gen(function*() {
       const current = yield* ref
@@ -69,12 +70,12 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
           relative: false
         },
         html`<button
-                class="btn btn-sm btn-outline-secondary action-btn"
-                style="margin-right: 4px"
-              >
-                <i class="ion-gear-a" style="margin-right: 4px"></i>
-                Edit Profile Settings
-              </button>`
+                  class="btn btn-sm btn-outline-secondary action-btn"
+                  style="margin-right: 4px"
+                >
+                  <i class="ion-gear-a" style="margin-right: 4px"></i>
+                  Edit Profile Settings
+                </button>`
       )
     }
             </div>
@@ -87,30 +88,45 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
           <div class="col-xs-12 col-md-10 offset-md-1">
             <div class="articles-toggle">
               <ul class="outline-active nav nav-pills">
-                ${NavLink({ content: `My Articles`, route: Route.home, relative: true })}
-                ${NavLink({ content: `Favorited Articles`, route: favoritesRoute, relative: true })}
+                ${
+      NavLink({
+        content: `My Articles`,
+        route: Route.home,
+        relative: true
+      })
+    }
+                ${
+      NavLink({
+        content: `Favorited Articles`,
+        route: favoritesRoute,
+        relative: true
+      })
+    }
               </ul>
             </div>
 
             ${
-      many(
-        articles,
-        (a) => a.id,
-        // TODO: ArticlePreview should accept an article
-        Fx.switchMap(ArticlePreview)
-      )
+      many(articles, (a) => a.id, ArticlePreview)
     }
 
             <ul class="pagination">
-              <li class="page-item active">
-                <a class="page-link" href="">1</a>
-              </li>
-              <li class="page-item">
-                <a class="page-link" href="">2</a>
-              </li>
+              ${many(pages, (p) => p, (page) => renderPagination(currentPage, page))}
             </ul>
           </div>
         </div>
       </div>
     </div>`
   })
+
+function renderPagination<R>(
+  currentPage: RefSubject.Computed<number, never, R>,
+  page: RefSubject.Computed<number>
+) {
+  const activeClassName = RefSubject.tuple([currentPage, page]).pipe(
+    RefSubject.map(([current, p]) => current === p ? "active" : "")
+  )
+  const to = RefSubject.map(page, (p) => `?page=${p}`)
+  return html`<li class="page-item ${activeClassName}">
+    ${Link({ to, className: "page-link" }, page)}
+  </li>`
+}
