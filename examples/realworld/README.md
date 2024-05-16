@@ -29,3 +29,9 @@ pnpm start
 # Production server
 pnpm build && pnpm preview
 ```
+
+## PORTS
+
+- Development Server :: Port 5173
+- Production Server :: Port 3000
+- OpenTelemetry :: Port 9091
