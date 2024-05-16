@@ -34,12 +34,9 @@ export function useEditArticle<R, R2>(
     const { body, description, tagList, title } = RefSubject.proxy(article)
 
     const errors = yield* RefSubject.of<ReadonlyArray<string>>([])
-    const submit = EventHandler.target<HTMLFormElement>({
-      preventDefault: true
-    })(() =>
-      Effect.gen(function*(_) {
-        yield* onSubmit(yield* article)
-      }).pipe(
+    const submit = EventHandler.target<HTMLFormElement>({ preventDefault: true })(() =>
+      article.pipe(
+        Effect.flatMap(onSubmit),
         Effect.catchTags({
           Unprocessable: (error) => RefSubject.set(errors, error.errors),
           Unauthorized: () => navigate("/login"),
@@ -49,18 +46,24 @@ export function useEditArticle<R, R2>(
     )
 
     const setTagInput = (input: string) => RefSubject.set(tagInput, input)
-    const tagEnter = EventHandler.keys("Enter")((ev) => {
-      ev.preventDefault()
-      return Effect.gen(function*(_) {
-        const tag = yield* tagInput
-        if (tag.trim() === "") return
-        yield* RefSubject.set(tagInput, "")
-        yield* RefSubject.update(article, (a) => ({
-          ...a,
-          tagList: [...a.tagList, ArticleTag(tag)]
-        }))
-      })
-    })
+    const tagEnter = EventHandler.keys("Enter")(
+      () =>
+        Effect.gen(function*(_) {
+          const input = yield* tagInput
+          if (input.trim() === "") return
+
+          const tags = input.split(",").flatMap((tag) => {
+            const trimmed = tag.trim()
+            return trimmed === "" ? [] : [ArticleTag(trimmed)]
+          })
+
+          yield* RefSubject.set(tagInput, "")
+          yield* RefSubject.update(article, (a) => ({ ...a, tagList: [...a.tagList, ...tags] }))
+        }),
+      {
+        preventDefault: true
+      }
+    )
 
     return {
       body,
