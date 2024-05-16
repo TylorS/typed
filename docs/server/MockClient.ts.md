@@ -1,6 +1,6 @@
 ---
 title: MockClient.ts
-nav_order: 12
+nav_order: 14
 parent: "@typed/server"
 ---
 

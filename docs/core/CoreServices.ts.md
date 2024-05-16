@@ -47,7 +47,7 @@ export type CoreServices =
   | CurrentEnvironment
   | GetRandomValues
   | Navigation.Navigation
-  | Router.CurrentRoute
+  | CurrentRoute
   | RenderContext.RenderContext
   | RenderQueue.RenderQueue
   | RenderTemplate
@@ -62,7 +62,7 @@ Added in v1.0.0
 ```ts
 export declare function fromWindow(
   window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
+  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | "mixed" | ["idle", IdleRequestOptions] }
 ): Layer.Layer<CoreDomServices>
 ```
 
@@ -87,7 +87,12 @@ Added in v1.0.0
 
 ```ts
 export declare const server: Layer.Layer<
-  CurrentEnvironment | GetRandomValues | RenderTemplate | RenderContext.RenderContext | RenderQueue.RenderQueue,
+  | CurrentEnvironment
+  | GetRandomValues
+  | RenderTemplate
+  | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
+  | CurrentRoute,
   never,
   never
 >
@@ -101,7 +106,12 @@ Added in v1.0.0
 
 ```ts
 export declare const static: Layer.Layer<
-  CurrentEnvironment | GetRandomValues | RenderTemplate | RenderContext.RenderContext | RenderQueue.RenderQueue,
+  | CurrentEnvironment
+  | GetRandomValues
+  | RenderTemplate
+  | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
+  | CurrentRoute,
   never,
   never
 >

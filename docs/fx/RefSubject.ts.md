@@ -69,6 +69,7 @@ Added in v1.20.0
   - [modifyEffect](#modifyeffect)
   - [of](#of)
   - [provide](#provide)
+  - [proxy](#proxy)
   - [reset](#reset)
   - [runUpdates](#runupdates)
   - [set](#set)
@@ -87,6 +88,8 @@ Added in v1.20.0
   - [unsafeMake](#unsafemake)
   - [update](#update)
   - [updateEffect](#updateeffect)
+  - [when](#when)
+  - [withSpan](#withspan)
 
 ---
 
@@ -419,7 +422,6 @@ Added in v1.20.0
 ```ts
 export interface RefSubjectOptions<A> {
   readonly eq?: Equivalence.Equivalence<A>
-  readonly replay?: number
   readonly executionStrategy?: ExecutionStrategy.ExecutionStrategy
 }
 ```
@@ -929,6 +931,25 @@ export declare const provide: {
 
 Added in v1.20.0
 
+## proxy
+
+Extract all values from an object using a Proxy
+
+**Signature**
+
+```ts
+export declare const proxy: {
+  <A extends readonly any[] | Readonly<Record<PropertyKey, any>>, E, R>(
+    source: Computed<A, E, R>
+  ): { readonly [K in keyof A]: Computed<A[K], E, R> }
+  <A extends readonly any[] | Readonly<Record<PropertyKey, any>>, E, R>(
+    source: Filtered<A, E, R>
+  ): { readonly [K in keyof A]: Filtered<A[K], E, R> }
+}
+```
+
+Added in v2.0.0
+
 ## reset
 
 **Signature**
@@ -1189,3 +1210,55 @@ export declare const updateEffect: {
 ```
 
 Added in v1.20.0
+
+## when
+
+**Signature**
+
+```ts
+export declare const when: {
+  <B, C>(options: {
+    onTrue: B
+    onFalse: C
+  }): {
+    <E, R>(ref: Filtered<boolean, E, R>): Filtered<B | C, E, R>
+    <E, R>(ref: Computed<boolean, E, R>): Computed<B | C, E, R>
+  }
+  <E, R, B, C>(ref: Filtered<boolean, E, R>, options: { onTrue: B; onFalse: C }): Filtered<B | C, E, R>
+  <E, R, B, C>(ref: Computed<boolean, E, R>, options: { onTrue: B; onFalse: C }): Computed<B | C, E, R>
+}
+```
+
+Added in v2.0.0
+
+## withSpan
+
+**Signature**
+
+```ts
+export declare const withSpan: {
+  (
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, unknown>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: C.Context<never>
+    }
+  ): <A, E, R>(self: RefSubject<A, E, R>) => RefSubject<A, E, R>
+  <A, E, R>(
+    self: RefSubject<A, E, R>,
+    name: string,
+    options?: {
+      readonly attributes?: Record<string, unknown>
+      readonly links?: ReadonlyArray<Tracer.SpanLink>
+      readonly parent?: Tracer.ParentSpan
+      readonly root?: boolean
+      readonly context?: C.Context<never>
+    }
+  ): RefSubject<A, E, R>
+}
+```
+
+Added in v2.0.0

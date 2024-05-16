@@ -19,6 +19,7 @@ Added in v1.0.0
   - [getContentType](#getcontenttype)
   - [staticFiles](#staticfiles)
   - [toHttpRouter](#tohttprouter)
+  - [toServerRouter](#toserverrouter)
 
 ---
 
@@ -116,7 +117,7 @@ Added in v1.0.0
 
 ```ts
 export declare function toHttpRouter<
-  M extends Router.RouteMatch.RouteMatch<Route.Any, any, any, any, RenderEvent | null, any, any>,
+  M extends Router.RouteMatch.RouteMatch<Route.Route.Any, any, any, any, RenderEvent | null, any, any>,
   E2 = never,
   R2 = never
 >(
@@ -131,6 +132,33 @@ export declare function toHttpRouter<
     environment?: "server" | "static"
   }
 ): Http.router.Router<
+  Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
+  ServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
+>
+```
+
+Added in v1.0.0
+
+## toServerRouter
+
+**Signature**
+
+```ts
+export declare function toServerRouter<
+  M extends Router.RouteMatch.RouteMatch<Route.Route.Any, any, any, any, RenderEvent | null, any, any>,
+  E2 = never,
+  R2 = never
+>(
+  matcher: Router.RouteMatcher<M>,
+  options?: {
+    layout?: LayoutTemplate<
+      Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
+      E2,
+      R2
+    >
+    base?: string
+  }
+): ServerRouter.Router<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
   ServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 >

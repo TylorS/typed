@@ -18,7 +18,9 @@ Added in v1.0.0
   - [addResponse](#addresponse)
   - [delete](#delete)
   - [get](#get)
+  - [head](#head)
   - [make](#make)
+  - [options](#options-1)
   - [patch](#patch)
   - [post](#post)
   - [put](#put)
@@ -90,7 +92,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const delete: <Id, I, O>(id: Id, route: I, options: O) => ApiEndpoint.ApiEndpoint<Id, ApiRequest.ApiRequest<ApiSchema.Ignored, GetSchemaType<I>, ApiSchema.Ignored, ApiSchema.Ignored, MatchInput.Context<I>>, ApiResponse.ApiResponse.Default, Security.Security<void, never, never>>
+export declare const delete: <Id, I, O>(id: Id, route: I, options: O) => ApiEndpoint.ApiEndpoint<Id, ApiRequest.ApiRequest<ApiSchema.Ignored, GetSchemaPathType<I>, GetSchemaQueryType<I>, ApiSchema.Ignored, MatchInput.Context<I>>, ApiResponse.ApiResponse.Default, Security.Security<void, never, never>>
 ```
 
 Added in v1.0.0
@@ -108,8 +110,33 @@ export declare const get: <const Id extends string, I extends MatchInput.Any, O 
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
+    MatchInput.Context<I>
+  >,
+  ApiResponse.ApiResponse.Default,
+  Security.Security<void, never, never>
+>
+```
+
+Added in v1.0.0
+
+## head
+
+**Signature**
+
+```ts
+export declare const head: <const Id extends string, I extends MatchInput.Any, O extends ApiEndpoint.Options>(
+  id: Id,
+  route: I,
+  options: O
+) => ApiEndpoint.ApiEndpoint<
+  Id,
+  ApiRequest.ApiRequest<
+    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -139,8 +166,33 @@ export declare function make<
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
+    MatchInput.Context<I>
+  >,
+  ApiResponse.ApiResponse.Default,
+  Security.Security<void, never, never>
+>
+```
+
+Added in v1.0.0
+
+## options
+
+**Signature**
+
+```ts
+export declare const options: <const Id extends string, I extends MatchInput.Any, O extends ApiEndpoint.Options>(
+  id: Id,
+  route: I,
+  options: O
+) => ApiEndpoint.ApiEndpoint<
+  Id,
+  ApiRequest.ApiRequest<
+    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -164,8 +216,8 @@ export declare const patch: <const Id extends string, I extends MatchInput.Any, 
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -189,8 +241,8 @@ export declare const post: <const Id extends string, I extends MatchInput.Any, O
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -214,8 +266,8 @@ export declare const put: <const Id extends string, I extends MatchInput.Any, O 
   Id,
   ApiRequest.ApiRequest<
     ApiSchema.Ignored,
-    GetSchemaType<I>,
-    ApiSchema.Ignored,
+    GetSchemaPathType<I>,
+    GetSchemaQueryType<I>,
     ApiSchema.Ignored,
     MatchInput.Context<I>
   >,
@@ -348,13 +400,14 @@ export declare function setRequestRoute<I extends MatchInput.Any>(
   endpoint: ApiEndpoint.ApiEndpoint<Id, ApiRequest.ApiRequest<B, _, Q, H, R1>, Response, S>
 ) => ApiEndpoint.ApiEndpoint<
   Id,
-  ApiRequest.ApiRequest<B, GetSchemaType<I>, Q, H, MatchInput.Context<I> | R1>,
+  ApiRequest.ApiRequest<B, GetSchemaPathType<I>, GetSchemaQueryType<I>, H, MatchInput.Context<I> | R1>,
   Response,
   S
 >
 ```
 
 Added in v1.0.0
+type
 
 ## setResponse
 

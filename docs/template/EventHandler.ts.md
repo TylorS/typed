@@ -161,7 +161,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function target<T extends HTMLElement>()
+export declare function target<T extends HTMLElement>(eventOptions?: {
+  preventDefault?: boolean
+  stopPropagation?: boolean
+  stopImmediatePropagation?: boolean
+})
 ```
 
 Added in v1.0.0

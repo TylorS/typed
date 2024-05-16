@@ -98,7 +98,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const delete: <Id, I, O>(id: Id, route: I, options: O) => ApiEndpoint<Id, ApiRequest<Ignored, MatchInput.HasParams<I> extends true ? Schema.Type<Route.Schema<MatchInput.Route<I>>> : Ignored, Ignored, Ignored, MatchInput.Context<I>>, ApiResponse.Default, Security<void, never, never>>
+export declare const delete: <Id, I, O>(id: Id, route: I, options: O) => ApiEndpoint<Id, ApiRequest<Ignored, MatchInput.HasPathParams<I> extends true ? Schema.Type<Route.PathSchema<MatchInput.Route<I>>> : Ignored, MatchInput.HasQueryParams<I> extends true ? Schema.Type<Route.QuerySchema<MatchInput.Route<I>>> : Ignored, Ignored, MatchInput.Context<I>>, ApiResponse.Default, Security<void, never, never>>
 ```
 
 Added in v1.0.0
@@ -126,8 +126,8 @@ export declare const get: <const Id extends string, I extends MatchInput.Any, O 
   Id,
   ApiRequest<
     Ignored,
-    MatchInput.HasParams<I> extends true ? Schema.Type<Route.Schema<MatchInput.Route<I>>> : Ignored,
-    Ignored,
+    MatchInput.HasPathParams<I> extends true ? Schema.Type<Route.PathSchema<MatchInput.Route<I>>> : Ignored,
+    MatchInput.HasQueryParams<I> extends true ? Schema.Type<Route.QuerySchema<MatchInput.Route<I>>> : Ignored,
     Ignored,
     MatchInput.Context<I>
   >,
@@ -161,8 +161,8 @@ export declare const patch: <const Id extends string, I extends MatchInput.Any, 
   Id,
   ApiRequest<
     Ignored,
-    MatchInput.HasParams<I> extends true ? Schema.Type<Route.Schema<MatchInput.Route<I>>> : Ignored,
-    Ignored,
+    MatchInput.HasPathParams<I> extends true ? Schema.Type<Route.PathSchema<MatchInput.Route<I>>> : Ignored,
+    MatchInput.HasQueryParams<I> extends true ? Schema.Type<Route.QuerySchema<MatchInput.Route<I>>> : Ignored,
     Ignored,
     MatchInput.Context<I>
   >,
@@ -186,8 +186,8 @@ export declare const post: <const Id extends string, I extends MatchInput.Any, O
   Id,
   ApiRequest<
     Ignored,
-    MatchInput.HasParams<I> extends true ? Schema.Type<Route.Schema<MatchInput.Route<I>>> : Ignored,
-    Ignored,
+    MatchInput.HasPathParams<I> extends true ? Schema.Type<Route.PathSchema<MatchInput.Route<I>>> : Ignored,
+    MatchInput.HasQueryParams<I> extends true ? Schema.Type<Route.QuerySchema<MatchInput.Route<I>>> : Ignored,
     Ignored,
     MatchInput.Context<I>
   >,
@@ -211,8 +211,8 @@ export declare const put: <const Id extends string, I extends MatchInput.Any, O 
   Id,
   ApiRequest<
     Ignored,
-    MatchInput.HasParams<I> extends true ? Schema.Type<Route.Schema<MatchInput.Route<I>>> : Ignored,
-    Ignored,
+    MatchInput.HasPathParams<I> extends true ? Schema.Type<Route.PathSchema<MatchInput.Route<I>>> : Ignored,
+    MatchInput.HasQueryParams<I> extends true ? Schema.Type<Route.QuerySchema<MatchInput.Route<I>>> : Ignored,
     Ignored,
     MatchInput.Context<I>
   >,

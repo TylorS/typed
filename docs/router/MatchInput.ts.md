@@ -19,8 +19,12 @@ Added in v1.0.0
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [HasParams (type alias)](#hasparams-type-alias)
+    - [HasPathParams (type alias)](#haspathparams-type-alias)
+    - [HasQueryParams (type alias)](#hasqueryparams-type-alias)
     - [ParamsOf (type alias)](#paramsof-type-alias)
     - [Path (type alias)](#path-type-alias)
+    - [PathSchema (type alias)](#pathschema-type-alias)
+    - [QuerySchema (type alias)](#queryschema-type-alias)
     - [Route (type alias)](#route-type-alias)
     - [Schema (type alias)](#schema-type-alias)
     - [Success (type alias)](#success-type-alias)
@@ -30,6 +34,8 @@ Added in v1.0.0
   - [filterMap](#filtermap)
   - [flatMap](#flatmap)
   - [getPath](#getpath)
+  - [getPathSchema](#getpathschema)
+  - [getQuerySchema](#getqueryschema)
   - [getRoute](#getroute)
   - [getSchema](#getschema)
   - [map](#map)
@@ -105,6 +111,36 @@ export type HasParams<T> = Route<T> extends Route.Route<infer P, infer _> ? _Pat
 
 Added in v1.0.0
 
+### HasPathParams (type alias)
+
+**Signature**
+
+```ts
+export type HasPathParams<T> =
+  Route<T> extends Route.Route<infer P, infer _>
+    ? P extends `${infer P2}\\?${infer _}`
+      ? _Path.HasParams<P2>
+      : _Path.HasParams<P>
+    : false
+```
+
+Added in v1.0.0
+
+### HasQueryParams (type alias)
+
+**Signature**
+
+```ts
+export type HasQueryParams<T> =
+  Route<T> extends Route.Route<infer P, infer _>
+    ? P extends `${infer _}\\?${infer P2}`
+      ? _Path.HasParams<`\\?${P2}`>
+      : false
+    : false
+```
+
+Added in v1.0.0
+
 ### ParamsOf (type alias)
 
 **Signature**
@@ -121,6 +157,26 @@ Added in v1.0.0
 
 ```ts
 export type Path<T> = Route.Route.Path<Route<T>>
+```
+
+Added in v1.0.0
+
+### PathSchema (type alias)
+
+**Signature**
+
+```ts
+export type PathSchema<T> = Route.Route.PathSchema<MatchInput.Route<T>>
+```
+
+Added in v1.0.0
+
+### QuerySchema (type alias)
+
+**Signature**
+
+```ts
+export type QuerySchema<T> = Route.Route.QuerySchema<MatchInput.Route<T>>
 ```
 
 Added in v1.0.0
@@ -257,6 +313,26 @@ Added in v1.0.0
 
 ```ts
 export declare function getPath<I extends MatchInput.Any>(input: I): MatchInput.Path<I>
+```
+
+Added in v1.0.0
+
+## getPathSchema
+
+**Signature**
+
+```ts
+export declare function getPathSchema<I extends MatchInput.Any>(input: I): MatchInput.PathSchema<I>
+```
+
+Added in v1.0.0
+
+## getQuerySchema
+
+**Signature**
+
+```ts
+export declare function getQuerySchema<I extends MatchInput.Any>(input: I): MatchInput.QuerySchema<I>
 ```
 
 Added in v1.0.0

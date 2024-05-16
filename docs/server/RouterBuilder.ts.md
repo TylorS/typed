@@ -1,6 +1,6 @@
 ---
 title: RouterBuilder.ts
-nav_order: 17
+nav_order: 21
 parent: "@typed/server"
 ---
 
@@ -24,6 +24,9 @@ Added in v1.0.0
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [RemainingEndpoints (type alias)](#remainingendpoints-type-alias)
+  - [build](#build)
+  - [buildPartial](#buildpartial)
+  - [fromEndpoint](#fromendpoint)
   - [getRouter](#getrouter)
 
 ---
@@ -81,7 +84,7 @@ export declare const handle: {
             >
           >
         >,
-        CurrentRoute | Navigation
+        Navigation
       >,
     ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
   >
@@ -127,7 +130,7 @@ export declare const handle: {
             >
           >
         >,
-        CurrentRoute | Navigation
+        Navigation
       >,
     ApiEndpoint.ApiEndpoint.ExcludeById<RemainingEndpoints, Id>
   >
@@ -217,6 +220,104 @@ export type RemainingEndpoints<T> =
 
 Added in v1.0.0
 
+## build
+
+**Signature**
+
+```ts
+export declare const build: <E, R>(
+  builder: RouterBuilder<E, R, never>
+) => Default<FlattenDecodeError<E>, R | CurrentRoute | SwaggerRouter.SwaggerFiles>
+```
+
+Added in v1.0.0
+
+## buildPartial
+
+**Signature**
+
+```ts
+export declare const buildPartial: <E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+  builder: RouterBuilder<E, R, RemainingEndpoints>
+) => Default<FlattenDecodeError<E>, CurrentRoute | SwaggerRouter.SwaggerFiles | R>
+```
+
+Added in v1.0.0
+
+## fromEndpoint
+
+**Signature**
+
+```ts
+export declare const fromEndpoint: {
+  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  ): (
+    endpoint: E
+  ) => <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+    builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
+  ) => RouterBuilder<
+    | RouteHandler.RouteNotMatched
+    | E2
+    | E1
+    | Route.RouteDecodeError<
+        Route.Route<
+          PathInput,
+          Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<E>>, Schema.Schema.All>
+        >
+      >,
+    | R2
+    | R1
+    | Exclude<
+        Exclude<
+          R2,
+          RouteHandler.CurrentParams<
+            Route.Route<
+              PathInput,
+              Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<E>>, Schema.Schema.All>
+            >
+          >
+        >,
+        Navigation
+      >,
+    Exclude<RemainingEndpoints, E>
+  >
+  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+    endpoint: E,
+    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  ): <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
+    builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
+  ) => RouterBuilder<
+    | RouteHandler.RouteNotMatched
+    | E2
+    | E1
+    | Route.RouteDecodeError<
+        Route.Route<
+          PathInput,
+          Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<E>>, Schema.Schema.All>
+        >
+      >,
+    | R2
+    | R1
+    | Exclude<
+        Exclude<
+          R2,
+          RouteHandler.CurrentParams<
+            Route.Route<
+              PathInput,
+              Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<E>>, Schema.Schema.All>
+            >
+          >
+        >,
+        Navigation
+      >,
+    Exclude<RemainingEndpoints, E>
+  >
+}
+```
+
+Added in v1.0.0
+
 ## getRouter
 
 **Signature**
@@ -224,13 +325,7 @@ Added in v1.0.0
 ```ts
 export declare function getRouter<E, R, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E, R, RemainingEndpoints>
-): Router.Router<
-  // Flatten the error type to remove duplicates of computed RouteDecodeError<Route<PathInput, never>>
-  E extends Route.RouteDecodeError<Route.Route<PathInput>>
-    ? Exclude<E, Route.RouteDecodeError<Route.Route<PathInput>>> | Route.RouteDecodeError<Route.Route<PathInput>>
-    : E,
-  R
->
+): Router.Router<FlattenDecodeError<E>, R>
 ```
 
 Added in v1.0.0

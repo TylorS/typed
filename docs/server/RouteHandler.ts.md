@@ -1,6 +1,6 @@
 ---
 title: RouteHandler.ts
-nav_order: 15
+nav_order: 19
 parent: "@typed/server"
 ---
 
@@ -22,6 +22,9 @@ Added in v1.0.0
     - [Error (type alias)](#error-type-alias)
   - [RouteNotMatched (class)](#routenotmatched-class)
   - [all](#all)
+  - [catchAll](#catchall)
+  - [catchAllCause](#catchallcause)
+  - [catchTag](#catchtag)
   - [currentParamsLayer](#currentparamslayer)
   - [delete](#delete)
   - [get](#get)
@@ -103,7 +106,7 @@ Added in v1.0.0
 ```ts
 export type Context<T> =
   T extends RouteHandler<infer I, any, infer R>
-    ? Exclude<Exclude<R, CurrentParams<I>> | Router.MatchInput.Context<I>, Router.CurrentRoute | Navigation.Navigation>
+    ? Exclude<Exclude<R, CurrentParams<I>> | Router.MatchInput.Context<I>, Navigation.Navigation>
     : never
 ```
 
@@ -139,6 +142,71 @@ export declare const all: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
 ) => RouteHandler<I, E, R>
+```
+
+Added in v1.0.0
+
+## catchAll
+
+**Signature**
+
+```ts
+export declare const catchAll: {
+  <E2, E3, R3>(
+    onError: (error: E2) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(handler: RouteHandler<R, E2, R2>) => RouteHandler<R, E3, R3 | R2>
+  <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+    handler: RouteHandler<R, E2, R2>,
+    onError: (error: E2) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3, R2 | R3>
+}
+```
+
+Added in v1.0.0
+
+## catchAllCause
+
+**Signature**
+
+```ts
+export declare const catchAllCause: {
+  <E2, E3, R3>(
+    onCause: (cause: Cause.Cause<E2>) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(handler: RouteHandler<R, E2, R2>) => RouteHandler<R, E3, R3 | R2>
+  <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
+    handler: RouteHandler<R, E2, R2>,
+    onCause: (cause: Cause.Cause<E2>) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3, R2 | R3>
+}
+```
+
+Added in v1.0.0
+
+## catchTag
+
+**Signature**
+
+```ts
+export declare const catchTag: {
+  <E2, const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never, E3, R3>(
+    tag: Tag,
+    onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E3, R3>
+  ): <R extends Router.MatchInput.Any, R2>(
+    handler: RouteHandler<R, E2, R2>
+  ) => RouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R3 | R2>
+  <
+    R extends Router.MatchInput.Any,
+    E2,
+    R2,
+    const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never,
+    E3,
+    R3
+  >(
+    handler: RouteHandler<R, E2, R2>,
+    tag: Tag,
+    onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<ServerResponse, E3, R3>
+  ): RouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>
+}
 ```
 
 Added in v1.0.0

@@ -97,24 +97,22 @@ export * as ServerError from "./ServerError.js"
  */
 export * as SwaggerRouter from "./SwaggerRouter.js"
 
-// Re-exports from @effect/platform
+/**
+ * @since 1.0.0
+ */
+export * as ServerRequest from "./Request.js"
 
 /**
  * @since 1.0.0
  */
-export * as ServerRequest from "@effect/platform/Http/ServerRequest"
+export * as ServerResponse from "./Response.js"
 
 /**
  * @since 1.0.0
  */
-export * as ServerResponse from "@effect/platform/Http/ServerResponse"
+export * as ServerHeaders from "./Headers.js"
 
 /**
  * @since 1.0.0
  */
-export * as ServerHeaders from "@effect/platform/Http/Headers"
-
-/**
- * @since 1.0.0
- */
-export * as Cookies from "@effect/platform/Http/Cookies"
+export * as Cookies from "./Cookies.js"

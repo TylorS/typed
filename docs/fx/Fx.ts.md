@@ -970,8 +970,8 @@ events have occurred before emitting a value.
 
 ```ts
 export declare const delay: {
-  (delay: DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
-  <A, E, R>(fx: Fx<A, E, R>, delay: DurationInput): Fx<A, E, Scope.Scope | R>
+  (delay: Duration.DurationInput): <A, E, R>(fx: Fx<A, E, R>) => Fx<A, E, Scope.Scope | R>
+  <A, E, R>(fx: Fx<A, E, R>, delay: Duration.DurationInput): Fx<A, E, Scope.Scope | R>
 }
 ```
 

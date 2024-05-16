@@ -14,31 +14,46 @@ Added in v5.0.0
 
 - [utils](#utils)
   - [AST (type alias)](#ast-type-alias)
-  - [AST (namespace)](#ast-namespace)
-    - [Base (type alias)](#base-type-alias)
   - [Concat (class)](#concat-class)
     - [\_tag (property)](#_tag-property)
-  - [Literal (class)](#literal-class)
+  - [InterpolateLiteral (class)](#interpolateliteral-class)
     - [\_tag (property)](#_tag-property-1)
-  - [OneOrMore (class)](#oneormore-class)
+  - [InterpolateParam (class)](#interpolateparam-class)
     - [\_tag (property)](#_tag-property-2)
-  - [Optional (class)](#optional-class)
+  - [Interpolater (type alias)](#interpolater-type-alias)
+  - [InterpolationPart (type alias)](#interpolationpart-type-alias)
+  - [Literal (class)](#literal-class)
     - [\_tag (property)](#_tag-property-3)
-  - [Param (class)](#param-class)
+  - [Matcher (type alias)](#matcher-type-alias)
+  - [OneOrMore (class)](#oneormore-class)
     - [\_tag (property)](#_tag-property-4)
-  - [Prefix (class)](#prefix-class)
+  - [Optional (class)](#optional-class)
     - [\_tag (property)](#_tag-property-5)
-  - [QueryParam (class)](#queryparam-class)
+  - [Param (class)](#param-class)
     - [\_tag (property)](#_tag-property-6)
-  - [QueryParams (class)](#queryparams-class)
+  - [Prefix (class)](#prefix-class)
     - [\_tag (property)](#_tag-property-7)
-  - [UnnamedParam (class)](#unnamedparam-class)
+  - [QueryParam (class)](#queryparam-class)
     - [\_tag (property)](#_tag-property-8)
-  - [WithSchema (class)](#withschema-class)
+  - [QueryParams (class)](#queryparams-class)
     - [\_tag (property)](#_tag-property-9)
-  - [ZeroOrMore (class)](#zeroormore-class)
+  - [UnnamedParam (class)](#unnamedparam-class)
     - [\_tag (property)](#_tag-property-10)
+  - [WithSchema (class)](#withschema-class)
+    - [\_tag (property)](#_tag-property-11)
+  - [ZeroOrMore (class)](#zeroormore-class)
+    - [\_tag (property)](#_tag-property-12)
+  - [astToInterpolation](#asttointerpolation)
+  - [astToMatcher](#asttomatcher)
+  - [getAstSegments](#getastsegments)
+  - [getOptionalQueryParams](#getoptionalqueryparams)
+  - [getPathAndQuery](#getpathandquery)
+  - [getQueryParams](#getqueryparams)
+  - [parse](#parse)
+  - [splitByQueryParams](#splitbyqueryparams)
   - [toPath](#topath)
+  - [toPathSchema](#topathschema)
+  - [toQuerySchema](#toqueryschema)
   - [toSchema](#toschema)
 
 ---
@@ -51,31 +66,16 @@ Added in v5.0.0
 
 ```ts
 export type AST =
-  | AST.Base
-  | QueryParams<ReadonlyArray<QueryParam<any, AST.Base>>>
+  | Literal<string>
+  | UnnamedParam
+  | Param<string>
+  | ZeroOrMore<AST>
+  | OneOrMore<AST>
+  | Optional<AST>
+  | Prefix<string, AST>
+  | QueryParams<ReadonlyArray<QueryParam<string, AST>>>
   | Concat<AST, AST>
   | WithSchema<AST, Schema.Schema.All>
-```
-
-Added in v5.0.0
-
-## AST (namespace)
-
-Added in v5.0.0
-
-### Base (type alias)
-
-**Signature**
-
-```ts
-export type Base =
-  | Literal<any>
-  | UnnamedParam
-  | Param<any>
-  | ZeroOrMore<any>
-  | OneOrMore<any>
-  | Optional<AST>
-  | Prefix<any, AST>
 ```
 
 Added in v5.0.0
@@ -100,6 +100,68 @@ readonly _tag: "Concat"
 
 Added in v5.0.0
 
+## InterpolateLiteral (class)
+
+**Signature**
+
+```ts
+export declare class InterpolateLiteral { constructor(readonly value: string) }
+```
+
+Added in v5.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "Literal"
+```
+
+Added in v5.0.0
+
+## InterpolateParam (class)
+
+**Signature**
+
+```ts
+export declare class InterpolateParam { constructor(
+    readonly interpolate: Interpolater
+  ) }
+```
+
+Added in v5.0.0
+
+### \_tag (property)
+
+**Signature**
+
+```ts
+readonly _tag: "Param"
+```
+
+Added in v5.0.0
+
+## Interpolater (type alias)
+
+**Signature**
+
+```ts
+export type Interpolater = (params: Readonly<Record<string, string | ReadonlyArray<string>>>) => string
+```
+
+Added in v5.0.0
+
+## InterpolationPart (type alias)
+
+**Signature**
+
+```ts
+export type InterpolationPart = InterpolateLiteral | InterpolateParam
+```
+
+Added in v5.0.0
+
 ## Literal (class)
 
 **Signature**
@@ -116,6 +178,19 @@ Added in v5.0.0
 
 ```ts
 readonly _tag: "Literal"
+```
+
+Added in v5.0.0
+
+## Matcher (type alias)
+
+**Signature**
+
+```ts
+export type Matcher = (
+  pathSegments: Array<string>,
+  query: URLSearchParams
+) => Option.Option<Record<string, string | ReadonlyArray<string>>>
 ```
 
 Added in v5.0.0
@@ -300,12 +375,112 @@ readonly _tag: "ZeroOrMore"
 
 Added in v5.0.0
 
+## astToInterpolation
+
+**Signature**
+
+```ts
+export declare function astToInterpolation(ast: AST): InterpolationPart
+```
+
+Added in v5.0.0
+
+## astToMatcher
+
+**Signature**
+
+```ts
+export declare function astToMatcher(ast: AST, end: boolean = false): Matcher
+```
+
+Added in v5.0.0
+
+## getAstSegments
+
+**Signature**
+
+```ts
+export declare function getAstSegments(part: AST): Array<Array<AST>>
+```
+
+Added in v5.0.0
+
+## getOptionalQueryParams
+
+**Signature**
+
+```ts
+export declare function getOptionalQueryParams(ast: AST): ReadonlyArray<QueryParam<string, AST>>
+```
+
+Added in v5.0.0
+
+## getPathAndQuery
+
+**Signature**
+
+```ts
+export declare function getPathAndQuery(path: string)
+```
+
+Added in v5.0.0
+
+## getQueryParams
+
+**Signature**
+
+```ts
+export declare function getQueryParams(ast: AST): QueryParams<ReadonlyArray<QueryParam<string, AST>>> | null
+```
+
+Added in v5.0.0
+
+## parse
+
+**Signature**
+
+```ts
+export declare function parse(path: string)
+```
+
+Added in v5.0.0
+
+## splitByQueryParams
+
+**Signature**
+
+```ts
+export declare function splitByQueryParams(path: string): readonly [Array<string>, string]
+```
+
+Added in v5.0.0
+
 ## toPath
 
 **Signature**
 
 ```ts
 export declare function toPath<A extends AST>(ast: A): string
+```
+
+Added in v5.0.0
+
+## toPathSchema
+
+**Signature**
+
+```ts
+export declare function toPathSchema<A extends AST>(ast: A): Schema.Schema.All
+```
+
+Added in v5.0.0
+
+## toQuerySchema
+
+**Signature**
+
+```ts
+export declare function toQuerySchema<A extends AST>(ast: A): Schema.Schema.All
 ```
 
 Added in v5.0.0

@@ -29,7 +29,7 @@ export declare function Link<
   Props extends LinkProps,
   Children extends ReadonlyArray<Renderable<any, any>> = readonly []
 >(
-  { onClick, relative, replace, state, to, ...props }: Props,
+  input: Props,
   ...children: Children
 ): Fx.Fx<
   RenderEvent,

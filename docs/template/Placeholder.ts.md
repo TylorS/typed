@@ -51,7 +51,15 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Any<A = any> = Placeholder<A, any, any> | Placeholder<A, never, any> | Placeholder<A> | Placeholder<A, any>
+export type Any<A = any> =
+  | Placeholder<A, any, any>
+  | Placeholder<A, never, any>
+  | Placeholder<A>
+  | Placeholder<A, any>
+  | Effect.Effect<A, any, any>
+  // Null/Undefined cannot be modified globally to make them placeholders
+  | ([A] extends [null] ? null : never)
+  | ([A] extends [undefined] ? undefined : never)
 ```
 
 Added in v1.0.0
@@ -63,9 +71,11 @@ Added in v1.0.0
 ```ts
 export type Context<T> = [T] extends [never]
   ? never
-  : [T] extends [Placeholder<infer _A, infer _E, infer R>]
+  : T extends Effect.Effect<infer _A, infer _E, infer R>
     ? R
-    : never
+    : T extends Placeholder<infer _A, infer _E, infer R>
+      ? R
+      : never
 ```
 
 Added in v1.0.0
@@ -75,7 +85,13 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Error<T> = [T] extends [never] ? never : [T] extends [Placeholder<infer _A, infer E, infer _R>] ? E : never
+export type Error<T> = [T] extends [never]
+  ? never
+  : T extends Effect.Effect<infer _A, infer E, infer _R>
+    ? E
+    : T extends Placeholder<infer _A, infer E, infer _R>
+      ? E
+      : never
 ```
 
 Added in v1.0.0
@@ -87,9 +103,11 @@ Added in v1.0.0
 ```ts
 export type Success<T> = [T] extends [never]
   ? never
-  : [T] extends [Placeholder<infer A, infer _E, infer _R>]
+  : T extends Effect.Effect<infer A, infer _E, infer _R>
     ? A
-    : never
+    : T extends Placeholder<infer A, infer _E, infer _R>
+      ? A
+      : never
 ```
 
 Added in v1.0.0

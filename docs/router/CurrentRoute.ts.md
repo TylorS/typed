@@ -123,6 +123,10 @@ export declare function isActive<R extends Route.Route.Any>(
   route: R,
   ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
+export declare function isActive<R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>
+): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
 ```
 
 Added in v1.0.0

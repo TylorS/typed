@@ -489,6 +489,9 @@ export type InterpolationPart =
  * @since 5.0.0
  */
 export class InterpolateLiteral {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Literal" as const
   constructor(readonly value: string) {}
 }
@@ -497,6 +500,9 @@ export class InterpolateLiteral {
  * @since 5.0.0
  */
 export class InterpolateParam {
+  /**
+   * @since 5.0.0
+   */
   readonly _tag = "Param" as const
   constructor(
     readonly interpolate: Interpolater
@@ -630,6 +636,9 @@ function queryParamToInterpolationPart(
   }
 }
 
+/**
+ * @since 5.0.0
+ */
 export type Matcher = (
   pathSegments: Array<string>,
   query: URLSearchParams

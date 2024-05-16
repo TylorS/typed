@@ -1117,6 +1117,9 @@ export type RouteFromQueryParamsObject<O extends Readonly<Record<string, Route.A
   QueryParamsFromObjectSchema<O>
 > extends Route<infer P, Sch.Schema<infer A, infer I, infer R>> ? Route<P, Sch.Schema<A, I, R>> : never
 
+/**
+ * @since 5.0.0
+ */
 export type QueryParamsFromObject<O extends Readonly<Record<string, Route.Any>>> = Path.QueryParams<
   U.ListOf<
     {

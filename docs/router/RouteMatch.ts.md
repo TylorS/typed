@@ -49,7 +49,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Any = RouteMatch<Route.Route.Any, any, any, any, any, any, any>
+export type Any<O = any> = RouteMatch<Route.Route.Any, any, any, any, O, any, any>
 ```
 
 Added in v1.0.0
