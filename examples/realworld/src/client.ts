@@ -7,10 +7,10 @@ import * as Ui from "./ui"
 
 Ui.main.pipe(
   hydrateToLayer,
+  Layer.provide(Ui.Live),
+  Layer.provide(Storage.layer(localStorage)),
+  Layer.provide(hydrateFromWindow(window, { rootElement: document.getElementById("app")! })),
   Layer.launch,
-  Effect.provide(Ui.Live),
-  Effect.provide(Storage.layer(localStorage)),
-  Effect.provide(hydrateFromWindow(window, { rootElement: document.getElementById("app")! })),
   Effect.scoped,
   Effect.runFork
 )
