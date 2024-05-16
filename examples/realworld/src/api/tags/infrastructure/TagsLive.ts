@@ -19,8 +19,10 @@ export const TagsLive = Tags.implement({
           SELECT t.name as tag FROM tags t
           JOIN article_tags at ON t.id = at.tag_id
           JOIN articles a ON at.article_id = a.id
+          JOIN favorites f ON a.id = f.article_id
           GROUP BY t.name
-          ORDER BY count(at.tag_id) DESC;
+          ORDER BY count(f.article_id) DESC
+          LIMIT 10;
         `
         })
       )
