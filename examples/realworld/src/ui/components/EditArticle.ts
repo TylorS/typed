@@ -81,13 +81,13 @@ export function useEditArticle<R, R2>(
   })
 }
 
-export type EditArticleModelAndIntent = Effect.Effect.Success<
-  ReturnType<typeof useEditArticle>
+export type EditArticleModelAndIntent<R, R2> = Effect.Effect.Success<
+  ReturnType<typeof useEditArticle<R, R2>>
 >
 
-export function renderErrors({
+export function renderErrors<R, R2>({
   errors
-}: Pick<EditArticleModelAndIntent, "errors">) {
+}: Pick<EditArticleModelAndIntent<R, R2>, "errors">) {
   return Fx.if(
     Fx.map(errors, (errors) => errors.length > 0),
     {
@@ -105,7 +105,7 @@ export function renderErrors({
   )
 }
 
-export function renderForm({
+export function renderForm<R, R2>({
   body,
   description,
   setBody,
@@ -118,7 +118,7 @@ export function renderForm({
   tagList,
   title,
   updateTagList
-}: EditArticleModelAndIntent) {
+}: EditArticleModelAndIntent<R, R2>) {
   return html`<form onsubmit=${submit}>
     <fieldset>
       <fieldset class="form-group">

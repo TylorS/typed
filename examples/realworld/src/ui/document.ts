@@ -3,8 +3,8 @@ import type { Fx, RenderEvent } from "@typed/core"
 import type { LayoutParams } from "@typed/core/Platform"
 import { layout } from "@typed/realworld/ui/layout"
 
-export function document<Content extends Fx.Fx<RenderEvent | null, any, any>>(
-  { content, head, script }: LayoutParams<Content>
+export function document<E, R>(
+  { content, head, script }: LayoutParams<Fx.Fx<RenderEvent | null, E, R>>
 ) {
   return html`<!DOCTYPE html>
     <html lang="en">
@@ -19,7 +19,7 @@ export function document<Content extends Fx.Fx<RenderEvent | null, any, any>>(
         ${head}
       </head>
       <body>
-        <div id="app">${layout(content)}</div>
+        <div id="app">${layout<E, R>(content)}</div>
         ${script}
       </body>
     </html>`

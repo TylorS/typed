@@ -10,6 +10,8 @@ import * as Http from "@effect/platform/HttpServer"
 import { defaultTeardown } from "@effect/platform/Runtime"
 import { CurrentEnvironment, Environment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
+import * as Route from "@typed/route"
+import { CurrentRoute, makeCurrentRoute } from "@typed/router"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import * as Cause from "effect/Cause"
 import * as Effect from "effect/Effect"
@@ -25,6 +27,7 @@ import * as typedOptions from "virtual:typed-options"
 import * as CoreServices from "./CoreServices.js"
 import { staticFiles } from "./Platform.js"
 
+const EFFECT_HANDLER = Symbol.for("@typed/core/Node/EffectHandler")
 const EFFECT_UPGRADE_HANDLER_TYPEID = Symbol.for("@typed/core/Node/EffectUpgradeHandler")
 
 type Handler = (req: any, socket: any, head: any) => void
@@ -70,6 +73,20 @@ function removeCombinedHandler(server: NonNullable<typeof viteHttpServer>, combi
   server.on("upgrade", combinedHandler[EFFECT_UPGRADE_HANDLER_TYPEID].vite)
 }
 
+function removeEffectHandlers(server: NonNullable<typeof viteHttpServer>) {
+  server.listeners("upgrade").forEach((listener) => {
+    if (EFFECT_HANDLER in listener) {
+      server.off("upgrade", listener as any)
+    }
+  })
+
+  server.listeners("request").forEach((listener) => {
+    if (EFFECT_HANDLER in listener) {
+      server.off("request", listener as any)
+    }
+  })
+}
+
 /**
  * TODO: Allow configuration of the server for HTTPS and HTTP2
  *
@@ -85,6 +102,9 @@ export function getOrCreateServer() {
       removeCombinedHandler(viteHttpServer, combinedUpgradeHandler)
       combinedUpgradeHandler = undefined
     }
+
+    // Attempt to remove any pre-existing effect handlers, due to HMR
+    removeEffectHandlers(viteHttpServer)
 
     return new Proxy(viteHttpServer, {
       get(target, prop) {
@@ -119,6 +139,8 @@ export function getOrCreateServer() {
 
               return target.on("upgrade", combinedUpgradeHandler)
             }
+
+            Object.assign(args[1], { [EFFECT_HANDLER]: EFFECT_HANDLER })
 
             return target.on.apply(target, args as any)
           }
@@ -243,15 +265,16 @@ export const listen: {
  * @since 1.0.0
  */
 export const run = <A, E>(
-  effect: Effect.Effect<A, E, NodeContext.NodeContext | CurrentEnvironment>,
-  options?: RunForkOptions & { readonly static?: boolean }
+  effect: Effect.Effect<A, E, NodeContext.NodeContext | CurrentEnvironment | CurrentRoute>,
+  options?: RunForkOptions & { readonly static?: boolean; readonly base?: string }
 ): Disposable => {
   const program = effect.pipe(
     Effect.tapErrorCause((cause) =>
       Cause.isInterruptedOnly(cause) ? Effect.void : Effect.logError(`Application Failure`, cause)
     ),
     Effect.provide(NodeContext.layer),
-    CurrentEnvironment.provide(options?.static ? Environment.static : Environment.server)
+    CurrentEnvironment.provide(options?.static ? Environment.static : Environment.server),
+    CurrentRoute.provide(makeCurrentRoute(Route.parse(options?.base ?? "/")))
   )
   const keepAlive = setInterval(() => {}, 2 ** 31 - 1)
   const fiber = Effect.runFork(program, options)
