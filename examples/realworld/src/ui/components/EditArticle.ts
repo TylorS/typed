@@ -54,7 +54,7 @@ export function useEditArticle<R, R2>(
 
           const tags = input.split(",").flatMap((tag) => {
             const trimmed = tag.trim()
-            return trimmed === "" ? [] : [ArticleTag(trimmed)]
+            return trimmed === "" ? [] : [ArticleTag.make(trimmed)]
           })
 
           yield* RefSubject.set(tagInput, "")
@@ -131,8 +131,8 @@ export function renderForm<R, R2>({
           placeholder="Article Title"
           name="title"
           .value=${title}
-          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle(ev.target.value)))}
-          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle(ev.target.value)))}
+          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle.make(ev.target.value)))}
+          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle.make(ev.target.value)))}
         />
       </fieldset>
       <fieldset class="form-group">
@@ -143,10 +143,10 @@ export function renderForm<R, R2>({
           name="description"
           .value=${description}
           onchange=${
-    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription(ev.target.value)))
+    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription.make(ev.target.value)))
   }
           oninput=${
-    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription(ev.target.value)))
+    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription.make(ev.target.value)))
   }
         />
       </fieldset>
@@ -157,8 +157,8 @@ export function renderForm<R, R2>({
           placeholder="Write your article (in markdown)"
           name="body"
           .value=${body}
-          onchange=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody(ev.target.value)))}
-          oninput=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody(ev.target.value)))}
+          onchange=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody.make(ev.target.value)))}
+          oninput=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody.make(ev.target.value)))}
         ></textarea>
       </fieldset>
       <fieldset class="form-group">

@@ -42,7 +42,7 @@ toServerRouter(Ui.router, { layout: Ui.document }).pipe(
       spanProcessor: new BatchSpanProcessor(
         new OTLPTraceExporter({
           url: "http://localhost:4318/v1/traces"
-        })
+        }) as any // Something weird with the types here "Type 'OTLPTraceExporter' is missing the following properties from type 'SpanExporter': export, shutdown"
       )
     }))
   ),
