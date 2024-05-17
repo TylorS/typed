@@ -15,22 +15,16 @@ export function ArticlePreview(ref: RefSubject.RefSubject<Article>) {
   const userProfileImage = RefSubject.map(author.image, Option.getOrElse(() => FALLBACK_IMAGE))
   const createdDate = RefSubject.map(article.createdAt, formatMonthDayYear)
 
-  const favoriteOrUnfavorite = Effect.if(article.favorited, {
-    onFalse: () =>
-      article.slug.pipe(
-        Effect.flatMap(Articles.favorite),
-        Effect.flatMap((article) => RefSubject.set(ref, article))
-      ),
-    onTrue: () =>
-      article.slug.pipe(
-        Effect.flatMap(Articles.unfavorite),
-        Effect.flatMap((article) => RefSubject.set(ref, article))
-      )
+  const favoriteOrUnfavorite = Effect.gen(function*() {
+    const slug = yield* article.slug
+    const favorited = yield* article.favorited
+    const updated = yield* favorited ? Articles.unfavorite(slug) : Articles.favorite(slug)
+    yield* RefSubject.set(ref, updated)
   })
 
   return html`<div class="article-preview">
     <div class="article-meta">
-      ${Link({ to: userProfileHref }, html`<img src="${userProfileImage}" />`)}
+      ${Link({ to: userProfileHref, relative: false }, html`<img src="${userProfileImage}" />`)}
       <div class="info">
         ${Link({ to: userProfileHref, className: "author", relative: false }, author.username)}
         <span class="date">${createdDate}</span>

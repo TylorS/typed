@@ -24,10 +24,9 @@ export const main = Fx.gen(function*(_) {
   const user = RefSubject.proxy(RefAsyncData.getSuccess(CurrentUser))
   const userImage = RefSubject.map(user.image, Option.getOrElse(() => ""))
 
-  // TODO: This really needs to make a request to remove the current user's cookies
   const logoutCurrentUser = RefSubject.set(CurrentUser, AsyncData.noData()).pipe(
     Effect.zipRight(Users.logout()),
-    Effect.zipRight(navigate("/"))
+    Effect.zipRight(navigate("/login"))
   )
 
   return html`<div class="settings-page">

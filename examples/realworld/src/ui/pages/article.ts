@@ -45,17 +45,10 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
       yield* RefSubject.update(ref, (a) => ({ ...a, author: updated }))
     })
 
-    const favoriteOrUnfavorite = Effect.if(article.favorited, {
-      onFalse: () =>
-        article.slug.pipe(
-          Effect.flatMap(Articles.favorite),
-          Effect.flatMap((article) => RefSubject.set(ref, article))
-        ),
-      onTrue: () =>
-        article.slug.pipe(
-          Effect.flatMap(Articles.unfavorite),
-          Effect.flatMap((article) => RefSubject.set(ref, article))
-        )
+    const favoriteOrUnfavorite = Effect.gen(function*() {
+      const { favorited, slug } = yield* ref
+      const updated = yield* favorited ? Articles.unfavorite(slug) : Articles.favorite(slug)
+      yield* RefSubject.set(ref, updated)
     })
 
     const authenticatedActions = Fx.if(isAuthenticated, {

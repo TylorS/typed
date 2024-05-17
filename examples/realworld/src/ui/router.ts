@@ -15,12 +15,9 @@ export const router = Router
   .match(pages.profile.route, pages.profile.main)
   .match(pages.home.route, pages.home.main)
 
-const onNotFound = Effect.gen(function*(_) {
-  if (yield* _(isAuthenticated)) {
-    return yield* _(new Navigation.RedirectError(pages.home.route))
-  } else {
-    return yield* _(new Navigation.RedirectError(pages.login.route))
-  }
+const onNotFound = Effect.if(isAuthenticated, {
+  onFalse: () => new Navigation.RedirectError(pages.login.route),
+  onTrue: () => new Navigation.RedirectError(pages.home.route)
 })
 
 export const main = layout(Router.notFoundWith(router, onNotFound))
