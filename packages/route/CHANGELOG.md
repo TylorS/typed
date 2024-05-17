@@ -1,5 +1,21 @@
 # @typed/route
 
+## 6.0.0
+
+### Minor Changes
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade effect deps
+
+- [#60](https://github.com/TylorS/typed/pull/60) [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps to latest
+
+### Patch Changes
+
+- Updated dependencies [[`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7), [`96fb8b4`](https://github.com/TylorS/typed/commit/96fb8b4be9f673e3a8dfff16e801d70ca207c6d7)]:
+  - @typed/decoder@0.18.0
+  - @typed/guard@0.3.0
+  - @typed/path@0.12.0
+  - @typed/id@0.8.0
+
 ## 5.0.0
 
 ### Minor Changes
