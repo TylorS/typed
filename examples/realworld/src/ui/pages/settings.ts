@@ -2,15 +2,15 @@ import { ArrayFormatter } from "@effect/schema"
 import { AsyncData, Fx, RefAsyncData, RefSubject } from "@typed/core"
 import { navigate } from "@typed/navigation"
 import { parseFormData } from "@typed/realworld/lib/Schema"
-import { CurrentUser, isAuthenticatedGuard, Users } from "@typed/realworld/services"
+import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { UpdateUserInput } from "@typed/realworld/services/UpdateUser"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
-import * as Route from "@typed/route"
 import { EventHandler, html } from "@typed/template"
 import { Effect, Option } from "effect"
 
-export const route = Route.literal("/settings").pipe(isAuthenticatedGuard)
+export const route = Routes.settings
 
 type SubmitEvent = Event & { target: HTMLFormElement }
 
@@ -26,7 +26,7 @@ export const main = Fx.gen(function*(_) {
 
   const logoutCurrentUser = RefSubject.set(CurrentUser, AsyncData.noData()).pipe(
     Effect.zipRight(Users.logout()),
-    Effect.zipRight(navigate("/login"))
+    Effect.zipRight(navigate(Routes.login.interpolate({})))
   )
 
   return html`<div class="settings-page">
@@ -35,12 +35,7 @@ export const main = Fx.gen(function*(_) {
       <div class="col-md-6 col-xs-12 offset-md-3">
         <h1 class="text-xs-center">Your Settings</h1>
       
-        ${
-    Fx.if(hasSubmitted, {
-      onFalse: Fx.null,
-      onTrue: CurrentUserErrors
-    })
-  }
+        ${Fx.if(hasSubmitted, { onFalse: Fx.null, onTrue: CurrentUserErrors })}
 
         <form onsubmit=${onSubmit}>
           <fieldset>

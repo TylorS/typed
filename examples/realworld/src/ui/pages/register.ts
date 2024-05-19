@@ -1,14 +1,15 @@
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, EventHandler, html, RefAsyncData, RefSubject, Route } from "@typed/core"
+import { AsyncData, EventHandler, html, Link, RefAsyncData, RefSubject } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { parseFormData } from "@typed/realworld/lib/Schema"
 import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { RegisterInput } from "@typed/realworld/services/Register"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
 import { Effect } from "effect"
 
-export const route = Route.literal("/register")
+export const route = Routes.register
 
 export const main = html`<div class="auth-page">
   <div class="container page">
@@ -16,7 +17,7 @@ export const main = html`<div class="auth-page">
       <div class="col-md-6 col-xs-12 offset-md-3">
         <h1 class="text-xs-center">Sign up</h1>
         <p class="text-xs-center">
-          <a href="/login">Have an account?</a>
+          ${Link({ to: Routes.login.interpolate({}) }, `Have an account?`)}
         </p>
 
         ${CurrentUserErrors}
@@ -61,12 +62,12 @@ function registerUser(ev: EventWithTarget<HTMLFormElement, Event>) {
     const current = yield* _(CurrentUser)
 
     // Only allow one login request at a time
-    if (AsyncData.isLoadingOrRefreshing(current)) return
+    if (AsyncData.isLoadingOrRefreshing(current)) return current
 
     const data = new FormData(ev.target)
     const input = yield* _(data, parseFormData(RegisterInput.fields))
 
-    yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.register(input)))
+    return yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.register(input)))
   }).pipe(
     Effect.catchAll((error) => {
       const issues = ArrayFormatter.formatIssueSync(error.error)

@@ -1,14 +1,11 @@
 import { Fx, RefSubject } from "@typed/core"
-import { ArticleSlug } from "@typed/realworld/model"
-import { Articles, isAuthenticatedGuard } from "@typed/realworld/services"
-import * as Route from "@typed/route"
+import { Articles } from "@typed/realworld/services"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import type { RouteGuard } from "@typed/router"
 import { Effect } from "effect"
 import { EditArticle } from "../components/EditArticle"
 
-export const route = Route.literal("editor")
-  .concat(Route.paramWithSchema("slug", ArticleSlug))
-  .pipe(isAuthenticatedGuard)
+export const route = Routes.editArticle
 
 export type Params = RouteGuard.RouteGuard.Success<typeof route>
 

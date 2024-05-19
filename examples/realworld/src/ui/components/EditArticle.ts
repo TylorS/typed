@@ -11,6 +11,7 @@ import {
   ArticleTitle
 } from "@typed/realworld/model"
 import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { Effect } from "effect"
 
 export type EditArticleFields = Pick<
@@ -39,7 +40,7 @@ export function useEditArticle<R, R2>(
         Effect.flatMap(onSubmit),
         Effect.catchTags({
           Unprocessable: (error) => RefSubject.set(errors, error.errors),
-          Unauthorized: () => navigate("/login"),
+          Unauthorized: () => navigate(Routes.login.interpolate({})),
           ParseError: (issue) => RefSubject.set(errors, [issue.message])
         })
       )

@@ -1,19 +1,17 @@
 import { AsyncData, Fx, Link, RefArray, RefSubject } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { navigate } from "@typed/navigation"
-import type { Comment } from "@typed/realworld/model"
-import { ArticleSlug, CommentBody, Image } from "@typed/realworld/model"
+import type { ArticleSlug, Comment } from "@typed/realworld/model"
+import { CommentBody, Image } from "@typed/realworld/model"
 import { Articles, Comments, CurrentUser, isAuthenticated, Profiles } from "@typed/realworld/services"
 import { formatMonthAndDay, formatMonthDayYear } from "@typed/realworld/ui/common/date"
-import * as Route from "@typed/route"
+import * as Routes from "@typed/realworld/ui/common/routes"
+import type * as Route from "@typed/route"
 import { EventHandler, html, many } from "@typed/template"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
 
-export const route = Route.literal("article").concat(
-  Route.paramWithSchema("slug", ArticleSlug)
-)
-
+export const route = Routes.article
 export type Params = Route.Route.Type<typeof route>
 
 const FALLBACK_IMAGE = Image.make("https://api.realworld.io/images/demo-avatar.png")
@@ -23,7 +21,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
     const ref = yield* _(RefSubject.make(RefSubject.mapEffect(params, Articles.get)))
     const article = RefSubject.proxy(ref)
     const author = RefSubject.proxy(article.author)
-    const authorProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
+    const authorProfileHref = RefSubject.map(author.username, (username) => Routes.profile.interpolate({ username }))
     const authorImage = RefSubject.map(author.image, (img) => Option.getOrElse(img, () => FALLBACK_IMAGE))
     const comments = yield* _(RefSubject.make(RefSubject.mapEffect(article.slug, Comments.get)))
     const createdDate = RefSubject.map(article.createdAt, formatMonthDayYear)
@@ -85,12 +83,12 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         </button>`
     })
 
-    const editArticleHref = RefSubject.map(article.slug, (slug) => `/editor/${slug}`)
+    const editArticleHref = RefSubject.map(article.slug, (slug) => Routes.editArticle.route.interpolate({ slug }))
 
     const deleteArticle = Effect.gen(function*() {
       const slug = yield* article.slug
       yield* Articles.delete({ slug })
-      yield* navigate("/")
+      yield* navigate(Routes.home.interpolate({}))
     })
 
     const currentUserActions = Fx.if(currentUserIsAuthor, {
@@ -234,7 +232,7 @@ function PostComment<E, R, E2, R2>(
 function CommentCard(ref: RefSubject.RefSubject<Comment>) {
   const comment = RefSubject.proxy(ref)
   const author = RefSubject.proxy(comment.author)
-  const authorProfileHref = RefSubject.map(author.username, (x) => `/profile/${x}`)
+  const authorProfileHref = RefSubject.map(author.username, (username) => Routes.profile.interpolate({ username }))
   const authorImage = RefSubject.map(author.image, Option.getOrElse(() => FALLBACK_IMAGE))
   const datePosted = RefSubject.map(comment.createdAt, formatMonthAndDay)
 

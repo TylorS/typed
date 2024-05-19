@@ -1,16 +1,16 @@
 import type { Schema } from "@effect/schema"
 import { Fx, html, Link, many, RefSubject, Router } from "@typed/core"
-import { Username } from "@typed/realworld/model"
 import { Articles, Profiles } from "@typed/realworld/services"
 import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import * as Route from "@typed/route"
 import { CurrentSearchParams } from "@typed/router"
 import { Effect, Option } from "effect"
 import { NavLink } from "../components/NavLink"
-import { usePagination } from "../components/Pagination"
+import { Pagination } from "../components/Pagination"
 
-export const route = Route.literal("profile").concat(Route.paramWithSchema("username", Username))
+export const route = Routes.profile
 
 const favoritesRoute = Route.literal("favorites")
 const pageSize = 5
@@ -37,7 +37,6 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
         })
     )
     const { articles, articlesCount } = RefSubject.proxy(articlesAndCount)
-    const pagination = usePagination(pageSize, articlesCount)
     const followOrUnfollow = Effect.gen(function*() {
       const current = yield* ref
       const updated = current.following
@@ -65,7 +64,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
               ${
       Link(
         {
-          to: "/settings",
+          to: Routes.settings.route.interpolate({}),
           relative: false
         },
         html`<button
@@ -106,7 +105,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
 
             ${many(articles, (a) => a.id, ArticlePreview)}
 
-            ${pagination.view}
+            ${Pagination(pageSize, articlesCount)}
           </div>
         </div>
       </div>

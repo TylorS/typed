@@ -1,5 +1,6 @@
 import { Fx, Link, RefSubject } from "@typed/core"
 import { type Article, Image } from "@typed/realworld/model"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { html, many } from "@typed/template"
 import { Effect, Option } from "effect"
 import { Articles, isAuthenticated } from "../../services"
@@ -10,8 +11,8 @@ const FALLBACK_IMAGE = Image.make("https://api.realworld.io/images/demo-avatar.p
 export function ArticlePreview(ref: RefSubject.RefSubject<Article>) {
   const article = RefSubject.proxy(ref)
   const author = RefSubject.proxy(article.author)
-  const articleHref = RefSubject.map(article.slug, (slug) => `/article/${slug}`)
-  const userProfileHref = RefSubject.map(author.username, (username) => `/profile/${username}`)
+  const articleHref = RefSubject.map(article.slug, (slug) => Routes.article.interpolate({ slug }))
+  const userProfileHref = RefSubject.map(author.username, (username) => Routes.profile.interpolate({ username }))
   const userProfileImage = RefSubject.map(author.image, Option.getOrElse(() => FALLBACK_IMAGE))
   const createdDate = RefSubject.map(article.createdAt, formatMonthDayYear)
 

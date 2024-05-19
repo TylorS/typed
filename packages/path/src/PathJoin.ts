@@ -12,8 +12,10 @@
 export type PathJoin<A> = A extends readonly [
   infer Head extends string,
   ...infer Tail extends ReadonlyArray<string>
-] ? `${FormatPart<Head>}${PathJoin<Tail>}`
+] ? RemoveLeadingDoubleSlash<`${FormatPart<Head>}${PathJoin<Tail>}`>
   : ``
+
+type RemoveLeadingDoubleSlash<A> = A extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : A
 
 /**
  * Join together path parts

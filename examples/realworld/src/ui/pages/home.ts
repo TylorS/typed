@@ -6,24 +6,17 @@ import { ArticleTag } from "@typed/realworld/model"
 import { Articles, isAuthenticated, Tags } from "@typed/realworld/services"
 import type { GetArticlesInput } from "@typed/realworld/services/GetArticles"
 import { defaultGetArticlesInput } from "@typed/realworld/services/GetArticles"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { ArticlePreview } from "@typed/realworld/ui/components/ArticlePreview"
 import { NavLink } from "@typed/realworld/ui/components/NavLink"
-import { usePagination } from "@typed/realworld/ui/components/Pagination"
-import * as Route from "@typed/route"
+import { Pagination } from "@typed/realworld/ui/components/Pagination"
+import type * as Route from "@typed/route"
 import { html, many } from "@typed/template"
 import { Option } from "effect"
 
 const pageSize = 20
 
-export const route = Route.home.pipe(
-  Route.concat(
-    Route.queryParams({
-      tag: Route.param("tag").optional(),
-      page: Route.integer("page").optional(),
-      myFeed: Route.boolean("myFeed").optional()
-    })
-  )
-)
+export const route = Routes.home
 
 export const main = (
   params: RefSubject.RefSubject<Route.Route.Type<typeof route>>
@@ -49,7 +42,6 @@ export const main = (
     )
     const { articles, articlesCount } = RefSubject.proxy(feed)
     const tagsList = yield* _(RefArray.make(Tags.get()))
-    const pagination = usePagination(pageSize, articlesCount)
 
     return html`<div class="home-page">
       <div class="banner">
@@ -82,7 +74,7 @@ export const main = (
 
             ${many(articles, (a) => a.id, ArticlePreview)}
 
-            ${pagination.view}
+            ${Pagination(pageSize, articlesCount)}
           </div>
 
           <div class="col-md-3">
@@ -97,7 +89,7 @@ export const main = (
         (t) =>
           Link(
             {
-              to: RefSubject.map(t, (t) => `/?tag=${t}`),
+              to: RefSubject.map(t, (tag) => Routes.home.interpolate({ tag })),
               className: "tag-pill tag-default",
               relative: false
             },

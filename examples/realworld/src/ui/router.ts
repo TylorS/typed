@@ -10,8 +10,8 @@ export const router = Router
   .match(pages.article.route, pages.article.main)
   .match(pages.register.route, () => pages.register.main)
   .match(pages.settings.route, () => pages.settings.main)
-  .match(pages.editArticle.route, pages.editArticle.main)
   .match(pages.editor.route, () => pages.editor.main)
+  .match(pages.editArticle.route, pages.editArticle.main)
   .match(pages.profile.route, pages.profile.main)
   .match(pages.home.route, pages.home.main)
 

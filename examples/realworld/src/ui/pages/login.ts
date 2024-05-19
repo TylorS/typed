@@ -1,15 +1,16 @@
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, EventHandler, Fx, html, Navigation, RefAsyncData, RefSubject, Route } from "@typed/core"
+import { AsyncData, EventHandler, Fx, html, Navigation, RefAsyncData, RefSubject } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
-import { isDom } from "@typed/environment"
+import { RedirectError } from "@typed/navigation"
 import { parseFormData } from "@typed/realworld/lib/Schema"
 import { CurrentUser, isAuthenticated, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { LoginInput } from "@typed/realworld/services/Login"
+import * as Routes from "@typed/realworld/ui/common/routes"
 import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
 import { Effect } from "effect"
 
-export const route = Route.literal("/login")
+export const route = Routes.login
 
 type SubmitEvent = EventWithTarget<HTMLFormElement, Event>
 
@@ -19,13 +20,9 @@ export const main = Fx.gen(function*(_) {
     Effect.zipRight(loginUser(ev), RefSubject.set(hasSubmitted, true))
   )
 
-  if (yield* _(isDom)) {
-    yield* _(
-      isAuthenticated,
-      Effect.if({
-        onFalse: () => Effect.void,
-        onTrue: () => Navigation.navigate("/", { history: "replace" })
-      })
+  if (yield* _(isAuthenticated)) {
+    return yield* _(
+      new RedirectError({ path: Routes.home.interpolate({}) })
     )
   }
 
@@ -38,12 +35,7 @@ export const main = Fx.gen(function*(_) {
             <a href="/register">Need an account?</a>
           </p>
 
-          ${
-    Fx.if(hasSubmitted, {
-      onFalse: Fx.null,
-      onTrue: CurrentUserErrors
-    })
-  }
+          ${Fx.if(hasSubmitted, { onFalse: Fx.null, onTrue: CurrentUserErrors })}
 
           <form onsubmit=${onSubmit}>
             <fieldset class="form-group">
@@ -86,7 +78,7 @@ function loginUser(ev: SubmitEvent) {
       const updated = yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
 
       if (AsyncData.isSuccess(updated)) {
-        yield* _(Navigation.navigate("/", { history: "replace" }))
+        yield* _(Navigation.navigate(Routes.home.interpolate({}), { history: "replace" }))
       }
     }),
     "ParseError",
