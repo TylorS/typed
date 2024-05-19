@@ -142,6 +142,7 @@ describe("Route", () => {
   it("separates path and query schemas", () => {
     const route = Route.literal("/foo").concat(Route.param("fooId"), Route.queryParams({ bar: Route.integer("bar") }))
     const { pathSchema, querySchema } = route
+
     const decodePath = Schema.decode(pathSchema)
     const decodeQuery = Schema.decode(querySchema)
     const decode = Route.decode_(route)
@@ -185,6 +186,28 @@ describe("Route", () => {
       route.match("/?tag=foo&author=bar&favorited=baz&limit=10&offset=20&extra=extra"),
       Option.some({ tag: "foo", author: "bar", favorited: "baz", limit: "10", offset: "20" })
     )
+  })
+
+  it("allows concatenation of routes with query params", () => {
+    const foobar = Route.literal("foo").concat(Route.queryParams({ bar: Route.integer("bar").optional() }))
+    const bazQuux = Route.literal("baz").concat(Route.queryParams({ quux: Route.integer("quux").optional() }))
+    const route = foobar.concat(bazQuux)
+
+    deepEqual(route.path, "/foo/baz\\?bar=:bar?&quux=:quux?")
+
+    const { pathSchema, querySchema } = route
+
+    const decodePath = Schema.decode(pathSchema)
+    const decodeQuery = Schema.decode(querySchema)
+
+    const test = Effect.gen(function*(_) {
+      deepEqual(yield* _(decodePath({})), {})
+      deepEqual(yield* _(decodeQuery({ bar: "1" })), { bar: 1 })
+      deepEqual(yield* _(decodeQuery({ quux: "2" })), { quux: 2 })
+      deepEqual(yield* _(decodeQuery({ bar: "1", quux: "2" })), { bar: 1, quux: 2 })
+    })
+
+    return Effect.runPromise(test)
   })
 
   it("can be ordered by complexity", () => {

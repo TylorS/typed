@@ -18,7 +18,7 @@ export type AST =
   | OneOrMore<AST>
   | Optional<AST>
   | Prefix<string, AST>
-  | QueryParams<ReadonlyArray<QueryParam<string, AST>>>
+  | QueryParams<AST, ReadonlyArray<QueryParam<string, AST>>>
   | Concat<AST, AST>
   | WithSchema<AST, Schema.Schema.All>
 
@@ -112,6 +112,34 @@ export class Concat<L extends AST, R extends AST> {
 /**
  * @since 5.0.0
  */
+export const concat = (left: AST, right: AST): AST => {
+  // Ensure that QueryParams are always at the end of the AST
+  if (left._tag === "QueryParams") {
+    if (right._tag === "QueryParams") {
+      return new QueryParams(
+        isEmptyLiteral(right.previous) ? left.previous : new Concat(left.previous, right.previous),
+        [
+          ...left.params.filter((x) => !right.params.some((y) => x.key === y.key)),
+          ...right.params
+        ]
+      )
+    } else {
+      return new QueryParams(isEmptyLiteral(left.previous) ? right : new Concat(left.previous, right), left.params)
+    }
+  } else if (right._tag === "QueryParams") {
+    return new QueryParams(isEmptyLiteral(right.previous) ? left : new Concat(left, right.previous), right.params)
+  } else {
+    return new Concat(left, right)
+  }
+}
+
+function isEmptyLiteral(ast: AST): boolean {
+  return ast._tag === "Literal" && P.removeTrailingSlash(ast.literal) === ""
+}
+
+/**
+ * @since 5.0.0
+ */
 export class WithSchema<A extends AST, S extends Schema.Schema.All> {
   /**
    * @since 5.0.0
@@ -123,12 +151,12 @@ export class WithSchema<A extends AST, S extends Schema.Schema.All> {
 /**
  * @since 5.0.0
  */
-export class QueryParams<P extends ReadonlyArray<QueryParam<any, any>>> {
+export class QueryParams<Previous extends AST, P extends ReadonlyArray<QueryParam<any, any>>> {
   /**
    * @since 5.0.0
    */
   readonly _tag = "QueryParams" as const
-  constructor(readonly params: P) {}
+  constructor(readonly previous: Previous, readonly params: P) {}
 }
 
 /**
@@ -168,7 +196,10 @@ function toPath_<A extends AST>(ast: A): string {
     case "WithSchema":
       return toPath_(ast.ast)
     case "QueryParams":
-      return P.queryParams(...ast.params.map(({ key, value }) => P.queryParam(key, toPath_(value))) as any)
+      return P.pathJoin(
+        toPath_(ast.previous),
+        P.queryParams(...ast.params.map(({ key, value }) => P.queryParam(key, toPath_(value))) as any)
+      )
   }
 }
 
@@ -185,26 +216,6 @@ export function toPath<A extends AST>(ast: A): string {
   pathCache.set(ast, path)
 
   return path
-}
-
-function toParts<A extends AST>(
-  ast: A
-): Array<AST> {
-  switch (ast._tag) {
-    case "Optional":
-    case "Prefix":
-    case "OneOrMore":
-    case "ZeroOrMore":
-    case "Param":
-    case "Literal":
-    case "UnnamedParam":
-    case "QueryParams":
-      return [ast]
-    case "WithSchema":
-      return toParts(ast.ast)
-    case "Concat":
-      return [...toParts(ast.left), ...toParts(ast.right)]
-  }
 }
 
 function toSchemas<A extends AST>(
@@ -252,7 +263,12 @@ function toSchemas<A extends AST>(
       return [ast.schema]
     }
     case "QueryParams":
-      return includeQueryParams ? ast.params.flatMap(({ value }) => toSchemas(value, includeQueryParams, ctx)) : []
+      return includeQueryParams
+        ? [
+          ...toSchemas(ast.previous, true, ctx),
+          ...ast.params.flatMap(({ value }) => toSchemas(value, true, ctx))
+        ]
+        : toSchemas(ast.previous, false, ctx)
   }
 }
 
@@ -297,7 +313,7 @@ function oneOrMoreSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.
     )
   }
 
-  return Schema.Array(schema as any)
+  return Schema.NonEmptyArray(schema as any)
 }
 
 function orUndefinedSchema<S extends Schema.Schema.All>(schema: S): Schema.Schema.All {
@@ -378,10 +394,10 @@ export function toQuerySchema<A extends AST>(ast: A): Schema.Schema.All {
 }
 
 function toQuerySchema_<A extends AST>(ast: A): Schema.Schema.All {
-  const parts = toParts(ast)
-  const queryParams = parts.find((part): part is QueryParams<any> => part._tag === "QueryParams")
-  if (queryParams) {
-    return toSchema_(queryParams, true)
+  const queryParams = getQueryParams(ast)
+  if (queryParams && queryParams.params.length > 0) {
+    const ctx: { unnamed: number } = { unnamed: 0 }
+    return queryParams.params.flatMap(({ value }) => toSchemas(value, true, ctx)).reduce(Schema.extend)
   } else {
     return Schema.Record(Schema.String, Schema.Unknown)
   }
@@ -390,7 +406,7 @@ function toQuerySchema_<A extends AST>(ast: A): Schema.Schema.All {
 /**
  * @since 5.0.0
  */
-export function getQueryParams(ast: AST): QueryParams<ReadonlyArray<QueryParam<string, AST>>> | null {
+export function getQueryParams(ast: AST): QueryParams<AST, ReadonlyArray<QueryParam<string, AST>>> | null {
   if (ast._tag === "QueryParams") {
     return ast
   } else if (ast._tag === "Concat") {
@@ -416,8 +432,9 @@ function isOptional(ast: AST): boolean {
   if (ast._tag === "Optional" || ast._tag === "ZeroOrMore") return true
   else if (ast._tag === "Concat") return isOptional(ast.left) && isOptional(ast.right)
   else if (ast._tag === "WithSchema") return isOptional(ast.ast) || isOptionalSchema(ast.schema)
-  else if (ast._tag === "QueryParams") return ast.params.every((param) => isOptional(param.value))
-  else return false
+  else if (ast._tag === "QueryParams") {
+    return isOptional(ast.previous) && ast.params.every((param) => isOptional(param.value))
+  } else return false
 }
 
 function isOptionalSchema(schema: Schema.Schema.All) {
@@ -465,6 +482,7 @@ export function getAstSegments(part: AST): Array<Array<AST>> {
         out.push(current)
         current = []
       }
+      out.push(...getAstSegments(part.previous))
       out.push([part])
       break
     case "WithSchema":
@@ -552,7 +570,7 @@ function astSegmentToInterpolationPart(astSegment: ReadonlyArray<AST>, ctx: { un
 }
 
 function simpleAstToInterpolationPart(
-  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ast: Exclude<AST, Concat<any, any> | QueryParams<AST, any>>,
   ctx: { unnamed: number },
   isOptional: boolean = false,
   isMultiple: boolean = false
@@ -607,7 +625,7 @@ function getParam(key: string | number, isOptional: boolean, isMultiple: boolean
   }
 }
 
-function queryParamsToInterpolationPart(queryParams: QueryParams<any>): InterpolationPart {
+function queryParamsToInterpolationPart(queryParams: QueryParams<AST, any>): InterpolationPart {
   const parts: Array<InterpolationPart> = queryParams.params.map(queryParamToInterpolationPart)
   return new InterpolateParam(
     (params) => {
@@ -697,7 +715,7 @@ function astSegmentToMatcher(astSegment: ReadonlyArray<AST>, ctx: { unnamed: num
 }
 
 function simpleAstToMatcher(
-  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ast: Exclude<AST, Concat<any, any> | QueryParams<AST, any>>,
   ctx: { unnamed: number },
   isOptional: boolean = false,
   isMultiple: boolean = false
@@ -763,7 +781,7 @@ function getParamByKey(key: string | number, isOptional: boolean, isMultiple: bo
 }
 
 function queryParamsToMatcher(
-  queryParams: QueryParams<ReadonlyArray<QueryParam<string, AST>>>,
+  queryParams: QueryParams<AST, ReadonlyArray<QueryParam<string, AST>>>,
   ctx: { unnamed: number }
 ): Matcher {
   const matchers = queryParams.params.map((param) =>
@@ -786,7 +804,7 @@ function queryParamsToMatcher(
 }
 function simpleAstToQueryMatcher(
   key: string,
-  ast: Exclude<AST, Concat<any, any> | QueryParams<any>>,
+  ast: Exclude<AST, Concat<any, any> | QueryParams<AST, any>>,
   ctx: { unnamed: number },
   isOptional: boolean = false,
   isMultiple: boolean = false
@@ -849,7 +867,7 @@ function getQueryParamByKey(key: string, outKey: string | number, isOptional: bo
   }
 }
 
-function ensureSimpleAst(ast: AST): Exclude<AST, Concat<any, any> | QueryParams<any>> {
+function ensureSimpleAst(ast: AST): Exclude<AST, Concat<any, any> | QueryParams<AST, any>> {
   if (ast._tag === "Concat") {
     throw new Error("Unexpected Concatatenation of AST segments")
   } else if (ast._tag === "QueryParams") {
@@ -879,17 +897,15 @@ export function getPathAndQuery(path: string) {
  */
 export function parse(path: string) {
   const [segments, queryString] = splitByQueryParams(path)
-  const all = [
-    ...segments.map(parsePathSegment),
-    ...(queryString.trim() === "" ? [] : [parseQuery(queryString)])
-  ]
+  const allSegments = segments.map(parsePathSegment)
+  const ast = allSegments.length === 0 ? new Literal("/") : concatAll(allSegments)
 
-  if (all.length === 0) return new Literal("/")
+  if (queryString.trim() === "") return ast
 
-  return concat(all)
+  return parseQuery(ast, queryString)
 }
 
-function concat(asts: ReadonlyArray<AST>): AST {
+function concatAll(asts: ReadonlyArray<AST>): AST {
   return asts.reduce((acc, ast) => new Concat(acc, ast))
 }
 
@@ -897,7 +913,7 @@ function parsePathSegment(segment: string): AST {
   const parts = splitByPrefixes(segment).map(parsePathPart)
   if (parts.length === 0) return new Literal("/")
   if (parts.length === 1) return parts[0]
-  return concat(parts)
+  return concatAll(parts)
 }
 
 function parsePathPart(part: string): AST {
@@ -934,11 +950,11 @@ function parseParam(param: string): AST {
   }
 }
 
-function parseQuery(queryString: string): AST {
+function parseQuery(previous: AST, queryString: string): AST {
   queryString = queryString.replace(/^\?/, "")
   const params = queryString.split("&")
-  if (params.length === 0) return new QueryParams([])
-  return new QueryParams(params.map(parseQueryParam))
+  if (params.length === 0) return previous
+  return new QueryParams(previous, params.map(parseQueryParam))
 }
 
 function parseQueryParam(param: string): QueryParam<string, AST> {

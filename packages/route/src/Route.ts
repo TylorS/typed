@@ -174,6 +174,18 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
+  export type PathWithoutQuery<T> = Path<T> extends `${infer P}\\?${infer _}` ? P : Path<T>
+
+  /**
+   * @since 1.0.0
+   */
+  export type Query<T> = Path<T> extends `${string}\\?${infer Q}` ? `\\?${Q}` :
+    Path<T> extends `${string}?${infer Q}` ? `?${Q}`
+    : ""
+
+  /**
+   * @since 1.0.0
+   */
   export type Schema<T> = [T] extends [never] ? never
     : T extends Route<infer P, infer S> ? SchemaFromInput<P, S>
     : never
@@ -335,7 +347,7 @@ export namespace Route {
    */
   export type Concat<I extends Route.Any, I2 extends Route.Any> = [I2] extends [never] ? I
     : Route<
-      Path.PathJoin<[Path<I>, Path<I2>]>,
+      Path.PathJoin<[PathWithoutQuery<I>, PathWithoutQuery<I2>, ConcatQuery<Query<I>, Query<I2>>]>,
       ConcatSchemas<Schema<I>, Schema<I2>>
     > extends Route<infer P, infer S> ? Route<P, S>
     : never
@@ -361,6 +373,18 @@ export namespace Route {
       MergeSchemaTypes<Sch.Schema.Encoded<S1>, Sch.Schema.Encoded<S2>>,
       Sch.Schema.Context<S1> | Sch.Schema.Context<S2>
     >
+
+  /**
+   * @since 1.0.0
+   */
+  export type ConcatQuery<Q1 extends string, Q2 extends string> = [Q1, Q2] extends ["", ""] ? "" :
+    [Q1] extends [""] ? `\\?${RemoveQuestionMark<Q2>}` :
+    [Q2] extends [""] ? `\\?${RemoveQuestionMark<Q1>}` :
+    `\\?${RemoveQuestionMark<Q1>}&${RemoveQuestionMark<Q2>}`
+
+  type RemoveQuestionMark<Q extends string> = Q extends `?${infer R}` ? R :
+    Q extends `\\?${infer R}` ? R
+    : Q
 
   type MergeSchemaTypes<A, B> = CountUnnamedParams<A> extends infer R extends number
     ? Types.Simplify<A & IncrementUnnamedParams<B, R>>
@@ -729,7 +753,7 @@ export const concat: {
   right: R
 ): Route.Concat<L, R> =>
   make(
-    new AST.Concat(left.routeAst, right.routeAst),
+    AST.concat(left.routeAst, right.routeAst),
     dontMergeTags.includes(right.routeAst._tag)
       ? left.routeOptions
       : right.routeOptions
@@ -1104,6 +1128,7 @@ export function queryParams<Params extends Readonly<Record<string, Route.Any>>>(
 ): RouteFromQueryParamsObject<Params> {
   return make(
     new AST.QueryParams(
+      end.routeAst,
       Object.entries(params).map(([key, value]) => new AST.QueryParam(key, value.routeAst))
     )
   ) as any
