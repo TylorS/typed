@@ -2,7 +2,7 @@ import { html, Link, many, RefSubject } from "@typed/core"
 import { CurrentSearchParams } from "@typed/router"
 
 export function Pagination<E, R>(pageSize: number, count: RefSubject.Computed<number, E, R>) {
-  const currentPage = RefSubject.map(CurrentSearchParams, (params) => Number(params.page ?? 1))
+  const currentPage = RefSubject.map(CurrentSearchParams, (params) => Number(params.get("page") ?? 1))
   const pages = RefSubject.map(count, (count) => Array.from({ length: Math.ceil(count / pageSize) }, (_, i) => i + 1))
 
   return html`<ul class="pagination">

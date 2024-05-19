@@ -225,13 +225,12 @@ function getBasePathname(base: string): string {
 export const server = (base: string = "/"): Layer.Layer<CurrentRoute> =>
   CurrentRoute.layer({ route: Route.parse(base), parent: Option.none() })
 
-const getSearchParams = (destination: Destination): Readonly<Record<string, string>> =>
-  Object.fromEntries(destination.url.searchParams)
+const getSearchParams = (destination: Destination) => destination.url.searchParams
 
 /**
  * @since 1.0.0
  */
-export const CurrentSearchParams: RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation> = RefSubject
+export const CurrentSearchParams: RefSubject.Computed<URLSearchParams, never, Navigation> = RefSubject
   .map(CurrentEntry, getSearchParams)
 
 /**

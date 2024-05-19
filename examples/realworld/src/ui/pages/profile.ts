@@ -23,7 +23,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
     const profile = RefSubject.proxy(ref)
     const profileImage = RefSubject.map(profile.image, Option.getOrElse(() => ""))
     const profileBio = RefSubject.map(profile.bio, Option.getOrElse(() => ""))
-    const currentPage = RefSubject.map(CurrentSearchParams, (params) => Number(params.page ?? 1))
+    const currentPage = RefSubject.map(CurrentSearchParams, (params) => Number(params.get("page") ?? 1))
     const articlesAndCount = RefSubject.mapEffect(
       RefSubject.tuple([Router.isActive(favoritesRoute), profile.username, currentPage]),
       ([favorites, username, page]) =>
