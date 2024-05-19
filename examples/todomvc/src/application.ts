@@ -1,9 +1,6 @@
-import * as Context from "@typed/context"
-import * as RefArray from "@typed/fx/RefArray"
-import * as RefSubject from "@typed/fx/RefSubject"
+import { Context, RefArray, RefSubject } from "@typed/core"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
-
 import * as Domain from "./domain"
 
 /* #region Services */

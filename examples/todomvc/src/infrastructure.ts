@@ -1,8 +1,6 @@
 import * as S from "@effect/schema/Schema"
+import { Fx, Route, Router } from "@typed/core"
 import { SchemaStorage } from "@typed/dom/Storage"
-import * as Fx from "@typed/fx/Fx"
-import * as Route from "@typed/route"
-import * as Router from "@typed/router"
 import { Effect, Layer, pipe } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
@@ -30,8 +28,8 @@ const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Eff
 /* #region Routing */
 
 const allRoute = Route.home
-const activeRoute = Route.literal("/active")
-const completedRoute = Route.literal("/completed")
+const activeRoute = Route.literal("active")
+const completedRoute = Route.literal("completed")
 
 // Expose conversion to route for the UI
 export const filterStateToPath = (state: Domain.FilterState) => {

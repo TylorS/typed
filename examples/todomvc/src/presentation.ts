@@ -1,10 +1,7 @@
 import "./styles.css"
 
-import * as Fx from "@typed/fx/Fx"
-import * as RefSubject from "@typed/fx/RefSubject"
-import { EventHandler, html, many } from "@typed/template"
-import { Link } from "@typed/ui/Link"
-import { Effect } from "effect"
+import { EventHandler, Fx, html, Link, many, RefSubject } from "@typed/core"
+import { Boolean, Effect } from "effect"
 import * as App from "./application"
 import * as Domain from "./domain"
 import * as Infra from "./infrastructure"
@@ -49,7 +46,7 @@ export const TodoApp = html`<section class="todoapp ${App.FilterState}">
     App.SomeAreCompleted,
     {
       onTrue: html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
-      onFalse: Fx.succeed(null)
+      onFalse: Fx.null
     }
   )
 }
@@ -91,7 +88,7 @@ function TodoItem(todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
           onclick="${App.toggleTodoCompleted(id)}"
         />
 
-        <label ondblclick="${RefSubject.update(isEditing, (x) => !x)}">${text}</label>
+        <label ondblclick="${RefSubject.update(isEditing, Boolean.not)}">${text}</label>
 
         <button class="destroy" onclick="${App.deleteTodo(id)}"></button>
       </div>
@@ -100,7 +97,7 @@ function TodoItem(todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
         class="edit"
         .value="${text}"
         oninput="${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}"
-        onfocusout="${EventHandler.make(() => submit)}"
+        onfocusout="${submit}"
         onkeydown="${onEnterOrEscape((ev) => (ev.key === "Enter" ? submit : reset))}"
       />
     </li>`
