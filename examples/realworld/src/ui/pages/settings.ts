@@ -108,12 +108,12 @@ function updateUser(ev: SubmitEvent) {
       const current = yield* _(CurrentUser)
 
       // Only allow one submit request at a time
-      if (AsyncData.isLoadingOrRefreshing(current)) return
+      if (AsyncData.isLoadingOrRefreshing(current)) return current
 
       const data = new FormData(ev.target)
       const input = yield* _(data, parseFormData(UpdateUserInput.fields))
       const exit = yield* _(Users.update(input), Effect.exit)
-      yield* _(RefSubject.set(CurrentUser, AsyncData.fromExit(exit)))
+      return yield* _(RefSubject.set(CurrentUser, AsyncData.fromExit(exit)))
     }),
     "ParseError",
     (error) => {
