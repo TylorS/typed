@@ -1,6 +1,5 @@
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, Fx, RefAsyncData, RefSubject } from "@typed/core"
-import { navigate } from "@typed/navigation"
+import { AsyncData, Fx, RefAsyncData, RefSubject, Router } from "@typed/core"
 import { parseFormData } from "@typed/realworld/lib/Schema"
 import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
@@ -26,7 +25,7 @@ export const main = Fx.gen(function*(_) {
 
   const logoutCurrentUser = RefSubject.set(CurrentUser, AsyncData.noData()).pipe(
     Effect.zipRight(Users.logout()),
-    Effect.zipRight(navigate(Routes.login.interpolate({})))
+    Effect.zipRight(Router.navigate(Routes.login))
   )
 
   return html`<div class="settings-page">

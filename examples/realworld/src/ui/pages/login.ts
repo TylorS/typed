@@ -1,9 +1,8 @@
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, EventHandler, Fx, html, Navigation, RefAsyncData, RefSubject } from "@typed/core"
+import { AsyncData, EventHandler, Fx, html, Link, RefAsyncData, RefSubject, Router } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
-import { RedirectError } from "@typed/navigation"
 import { parseFormData } from "@typed/realworld/lib/Schema"
-import { CurrentUser, isAuthenticated, Users } from "@typed/realworld/services"
+import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { LoginInput } from "@typed/realworld/services/Login"
 import * as Routes from "@typed/realworld/ui/common/routes"
@@ -20,19 +19,13 @@ export const main = Fx.gen(function*(_) {
     Effect.zipRight(loginUser(ev), RefSubject.set(hasSubmitted, true))
   )
 
-  if (yield* _(isAuthenticated)) {
-    return yield* _(
-      new RedirectError({ path: Routes.home.interpolate({}) })
-    )
-  }
-
   return html`<div class="auth-page">
     <div class="container page">
       <div class="row">
         <div class="col-md-6 col-xs-12 offset-md-3">
           <h1 class="text-xs-center">Sign in</h1>
           <p class="text-xs-center">
-            <a href="/register">Need an account?</a>
+            ${Link({ to: Routes.register.interpolate({}) }, `Need an account?`)}
           </p>
 
           ${Fx.if(hasSubmitted, { onFalse: Fx.null, onTrue: CurrentUserErrors })}
@@ -78,7 +71,7 @@ function loginUser(ev: SubmitEvent) {
       const updated = yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
 
       if (AsyncData.isSuccess(updated)) {
-        yield* _(Navigation.navigate(Routes.home.interpolate({}), { history: "replace" }))
+        yield* _(Router.navigate(Routes.home, { relative: false, params: {} }))
       }
     }),
     "ParseError",

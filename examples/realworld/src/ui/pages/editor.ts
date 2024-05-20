@@ -1,6 +1,5 @@
-import { Fx } from "@typed/core"
+import { Fx, Router } from "@typed/core"
 import { RefSubject } from "@typed/fx"
-import { navigate } from "@typed/navigation"
 import { ArticleBody, ArticleDescription, ArticleTitle } from "@typed/realworld/model"
 import { Articles } from "@typed/realworld/services"
 import * as Routes from "@typed/realworld/ui/common/routes"
@@ -22,7 +21,7 @@ export const main = Fx.gen(function*() {
     (input) =>
       Effect.gen(function*(_) {
         const article = yield* _(Articles.create(input))
-        yield* navigate(Routes.article.interpolate({ slug: article.slug }))
+        yield* Router.navigate(Routes.article, { relative: false, params: article })
       })
   )
 })

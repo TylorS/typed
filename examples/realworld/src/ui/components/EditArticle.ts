@@ -1,7 +1,6 @@
 import type { ParseError } from "@effect/schema/ParseResult"
-import { EventHandler, Fx, html, many, RefSubject } from "@typed/core"
+import { EventHandler, Fx, html, many, RefSubject, Router } from "@typed/core"
 import type { NavigationError } from "@typed/navigation"
-import { navigate } from "@typed/navigation"
 import {
   type Article,
   ArticleBody,
@@ -40,7 +39,7 @@ export function useEditArticle<R, R2>(
         Effect.flatMap(onSubmit),
         Effect.catchTags({
           Unprocessable: (error) => RefSubject.set(errors, error.errors),
-          Unauthorized: () => navigate(Routes.login.interpolate({})),
+          Unauthorized: () => Router.navigate(Routes.login),
           ParseError: (issue) => RefSubject.set(errors, [issue.message])
         })
       )

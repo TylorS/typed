@@ -1,6 +1,5 @@
-import { AsyncData, Fx, Link, RefArray, RefSubject } from "@typed/core"
+import { AsyncData, Fx, Link, RefArray, RefSubject, Router } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
-import { navigate } from "@typed/navigation"
 import type { ArticleSlug, Comment } from "@typed/realworld/model"
 import { CommentBody, Image } from "@typed/realworld/model"
 import { Articles, Comments, CurrentUser, isAuthenticated, Profiles } from "@typed/realworld/services"
@@ -88,7 +87,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
     const deleteArticle = Effect.gen(function*() {
       const slug = yield* article.slug
       yield* Articles.delete({ slug })
-      yield* navigate(Routes.home.interpolate({}))
+      yield* Router.navigate(Routes.home)
     })
 
     const currentUserActions = Fx.if(currentUserIsAuthor, {

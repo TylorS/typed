@@ -1,6 +1,5 @@
-import * as Navigation from "@typed/navigation"
+import { Fx, Navigation, Router } from "@typed/core"
 import { isAuthenticated } from "@typed/realworld/services"
-import * as Router from "@typed/router"
 import { Effect } from "effect"
 import { layout } from "./layout"
 import * as pages from "./pages"
@@ -15,9 +14,9 @@ export const router = Router
   .match(pages.profile.route, pages.profile.main)
   .match(pages.home.route, pages.home.main)
 
-const onNotFound = Effect.if(isAuthenticated, {
-  onFalse: () => new Navigation.RedirectError(pages.login.route),
-  onTrue: () => new Navigation.RedirectError(pages.home.route)
+const onNotFound = Effect.if(Fx.first(isAuthenticated), {
+  onFalse: () => new Navigation.RedirectError({ path: pages.login.route.interpolate({}) }),
+  onTrue: () => new Navigation.RedirectError({ path: pages.home.route.interpolate({}) })
 })
 
 export const main = layout(Router.notFoundWith(router, onNotFound))

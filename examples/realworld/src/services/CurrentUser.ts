@@ -27,12 +27,10 @@ export const getCurrentJwtToken = CurrentUser.pipe(
   }))
 )
 
-const isAuthenticated_ = CurrentUser.pipe(
+export const isAuthenticated = CurrentUser.pipe(
   Fx.dropWhile(AsyncData.isLoadingOrRefreshing),
   Fx.map(AsyncData.isSuccess)
 )
-
-export const isAuthenticated = Object.assign(isAuthenticated_, Fx.first(isAuthenticated_))
 
 export const isAuthenticatedGuard = <R extends Route.Route.Any>(route: R) =>
   RouteGuard.flatMap(RouteGuard.fromRoute(route), (params) =>
