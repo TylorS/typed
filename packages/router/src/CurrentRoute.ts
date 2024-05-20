@@ -175,13 +175,6 @@ function compareQueries(currentQuery: string, hrefQuery: string) {
 }
 
 function splitByQuery(path: string) {
-  const ptrSyntaxIndex = path.indexOf("\\?")
-  if (ptrSyntaxIndex > -1) {
-    const pathname = path.slice(0, ptrSyntaxIndex)
-    const query = path.slice(ptrSyntaxIndex + 1).trim()
-    return [pathname, query] as const
-  }
-
   const queryIndex = path.indexOf("?")
   if (queryIndex > -1) {
     const pathname = path.slice(0, queryIndex)
