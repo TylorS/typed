@@ -20,7 +20,7 @@ const FALLBACK_IMAGE = Image.make(
 const renderTag = (tag: RefSubject.RefSubject<ArticleTag>) =>
   html`<li class="tag-default tag-pill tag-outline">${tag}</li>`
 
-const signInOrSignUp = html`<p show-authed="false" style="display: inherit;">
+const signInOrSignUp = html`<p>
   ${Link({ to: "/login", relative: false }, "Sign in")} or
   ${Link({ to: "/register", relative: false }, "sign up")} to add comments on
   this article.
