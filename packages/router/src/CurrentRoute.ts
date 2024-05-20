@@ -145,17 +145,51 @@ const isActive_ = (
 
   const fullRoute = currentRoute.concat(route)
   const fullParams = { ...currentMatch.value, ...params }
-  const fullPath: string = fullRoute.interpolate(fullParams as any)
-  const currentPathWithoutSearch = currentPath.split("?")[0] || "/"
-  const fullPathWithoutSearch = fullPath.split("?")[0] || "/"
+  const href: string = fullRoute.interpolate(fullParams as any)
+  const [currentPathname, currentQuery] = splitByQuery(currentPath)
+  const [hrefPathname, hrefQuery] = splitByQuery(href)
 
-  if (fullPathWithoutSearch === currentPathWithoutSearch) {
-    return true
-  } else if (route.routeOptions.end) {
-    return false
-  } else {
-    return currentPathWithoutSearch.startsWith(fullPathWithoutSearch)
+  return (fullRoute.routeOptions.end ? currentPathname === hrefPathname : currentPathname.startsWith(hrefPathname)) &&
+    compareQueries(currentQuery, hrefQuery)
+}
+
+function compareQueries(currentQuery: string, hrefQuery: string) {
+  // if hrefQuery is empty, it means that the href is a pathname only
+  if (!hrefQuery) return true
+  // if currentQuery is empty, there is no match at this point
+  if (!currentQuery) return false
+  // if the queries are equal, there is a match
+  if (currentQuery === hrefQuery) return true
+
+  const currentQueryParams = new URLSearchParams(currentQuery)
+  const hrefQueryParams = new URLSearchParams(hrefQuery)
+
+  for (const key of hrefQueryParams.keys()) {
+    const a = currentQueryParams.getAll(key).sort()
+    const b = hrefQueryParams.getAll(key).sort()
+
+    if (a.length !== b.length || !b.every((bx, i) => a[i] === bx)) return false
   }
+
+  return true
+}
+
+function splitByQuery(path: string) {
+  const ptrSyntaxIndex = path.indexOf("\\?")
+  if (ptrSyntaxIndex > -1) {
+    const pathname = path.slice(0, ptrSyntaxIndex)
+    const query = path.slice(ptrSyntaxIndex + 1).trim()
+    return [pathname, query] as const
+  }
+
+  const queryIndex = path.indexOf("?")
+  if (queryIndex > -1) {
+    const pathname = path.slice(0, queryIndex)
+    const query = path.slice(queryIndex + 1).trim()
+    return [pathname, query] as const
+  }
+
+  return [path, ""] as const
 }
 
 /**

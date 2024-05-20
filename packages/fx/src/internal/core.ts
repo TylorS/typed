@@ -630,6 +630,10 @@ const toDeepEquals = (u: unknown): unknown => {
         return Data.tuple(Array.from(u, toDeepEquals))
       } else if (u instanceof Map) {
         return Data.tuple(Array.from(u, ([k, v]) => Data.tuple([toDeepEquals(k), toDeepEquals(v)])))
+      } else if (u instanceof URLSearchParams) {
+        return Data.tuple(Array.from(u.keys()).map((key) => Data.tuple([key, toDeepEquals(u.getAll(key))])))
+      } else if (Symbol.iterator in u) {
+        return Data.tuple(Array.from(u as any, toDeepEquals))
       } else {
         return Data.struct(Record.map(u, toDeepEquals))
       }

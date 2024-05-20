@@ -19,6 +19,6 @@ function renderPagination<R>(
   )
 
   return html`<li class="page-item ${activeClassName}">
-    ${Link({ to: RefSubject.map(page, (p) => `?page=${p}`), className: "page-link" }, page)}
+    ${Link({ to: RefSubject.map(page, (p) => `?page=${p}`), className: "page-link", relative: true }, page)}
   </li>`
 }
