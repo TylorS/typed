@@ -17,12 +17,12 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { constant, dual, flow, pipe } from "effect/Function"
 import type * as Option from "effect/Option"
-import * as O from "effect/Order"
+import * as Ord from "effect/Order"
 import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import { hasProperty } from "effect/Predicate"
 import * as Record from "effect/Record"
 import type * as Types from "effect/Types"
-import type { N, U } from "ts-toolbelt"
+import type { N, O, U } from "ts-toolbelt"
 import * as AST from "./AST.js"
 
 /**
@@ -401,6 +401,14 @@ export namespace Route {
    * @since 1.0.0
    */
   export type SchemaFromPath<P extends string> = Sch.Schema<Path.ParamsOf<P>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type ParamsAreOptional<R extends Route.Any> = [keyof Params<R>] extends [never] ? true
+    : KeysAreOptional<Params<R>>
+
+  type KeysAreOptional<T extends object> = [keyof T] extends [O.OptionalKeys<T>] ? true : false
 }
 
 /**
@@ -1177,7 +1185,7 @@ export type QueryParamsFromObjectSchema<O extends Readonly<Record<string, Route.
 /**
  * @since 5.0.0
  */
-export const Order: O.Order<Route.Any> = O.make((a, b) => {
+export const Order: Ord.Order<Route.Any> = Ord.make((a, b) => {
   const aPath = a.path
   const bPath = b.path
   const aParts = aPath.split("/")

@@ -56,15 +56,14 @@ export const CurrentParams: RefSubject.Filtered<
   Readonly<Record<string, string | ReadonlyArray<string>>>,
   never,
   Navigation.Navigation | CurrentRoute
-> = RefSubject
-  .filteredFromTag(
-    Navigation.Navigation,
-    (nav) =>
-      RefSubject.filterMapEffect(
-        nav.currentEntry,
-        (e) => CurrentRoute.with(({ route }) => route.match(Navigation.getCurrentPathFromUrl(e.url)))
-      )
-  )
+> = RefSubject.filteredFromTag(
+  Navigation.Navigation,
+  (nav) =>
+    RefSubject.filterMapEffect(
+      nav.currentEntry,
+      (e) => CurrentRoute.with(({ route }) => route.match(Navigation.getCurrentPathFromUrl(e.url)))
+    )
+)
 
 /**
  * @since 1.0.0
@@ -72,26 +71,35 @@ export const CurrentParams: RefSubject.Filtered<
 export const withCurrentRoute: {
   <R extends Route.Route.Any>(
     route: R
-  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
+  ): <A, E, R>(
+    effect: Effect.Effect<A, E, R>
+  ) => Effect.Effect<A, E, Exclude<R, CurrentRoute>>
 
   <A, E, R, R_ extends Route.Route.Any>(
     effect: Effect.Effect<A, E, R>,
     route: R_
   ): Effect.Effect<A, E, Exclude<R, CurrentRoute>>
-} = dual(2, <A, E, R, R_ extends Route.Route.Any>(
-  effect: Effect.Effect<A, E, R>,
-  route: R_
-): Effect.Effect<A, E, Exclude<R, CurrentRoute>> =>
-  Effect.contextWithEffect((ctx) => {
-    const parent = Context.getOption(ctx, CurrentRoute)
+} = dual(
+  2,
+  <A, E, R, R_ extends Route.Route.Any>(
+    effect: Effect.Effect<A, E, R>,
+    route: R_
+  ): Effect.Effect<A, E, Exclude<R, CurrentRoute>> =>
+    Effect.contextWithEffect((ctx) => {
+      const parent = Context.getOption(ctx, CurrentRoute)
 
-    if (Option.isNone(parent)) return pipe(effect, CurrentRoute.provide(makeCurrentRoute(route)))
+      if (Option.isNone(parent)) {
+        return pipe(effect, CurrentRoute.provide(makeCurrentRoute(route)))
+      }
 
-    return pipe(
-      effect,
-      CurrentRoute.provide(makeCurrentRoute(parent.value.route.concat(route), parent))
-    )
-  }))
+      return pipe(
+        effect,
+        CurrentRoute.provide(
+          makeCurrentRoute(parent.value.route.concat(route), parent)
+        )
+      )
+    })
+)
 
 const makeHref_ = (
   currentPath: string,
@@ -124,14 +132,11 @@ export function makeHref<const R extends Route.Route.Any>(
   route: R,
   ...[params]: Route.Route.ParamsList<R>
 ): RefSubject.Filtered<string, never, Navigation.Navigation | CurrentRoute> {
-  return RefSubject.filterMapEffect(
-    Navigation.CurrentPath,
-    (currentPath) =>
-      Effect.map(
-        CurrentRoute,
-        (currentRoute): Option.Option<string> => makeHref_(currentPath, currentRoute.route, route, params)
-      )
-  )
+  return RefSubject.filterMapEffect(Navigation.CurrentPath, (currentPath) =>
+    Effect.map(
+      CurrentRoute,
+      (currentRoute): Option.Option<string> => makeHref_(currentPath, currentRoute.route, route, params)
+    ))
 }
 
 const isActive_ = (
@@ -149,8 +154,12 @@ const isActive_ = (
   const [currentPathname, currentQuery] = splitByQuery(currentPath)
   const [hrefPathname, hrefQuery] = splitByQuery(href)
 
-  return (fullRoute.routeOptions.end ? currentPathname === hrefPathname : currentPathname.startsWith(hrefPathname)) &&
+  return (
+    (fullRoute.routeOptions.end
+      ? currentPathname === hrefPathname
+      : currentPathname.startsWith(hrefPathname)) &&
     compareQueries(currentQuery, hrefQuery)
+  )
 }
 
 function compareQueries(currentQuery: string, hrefQuery: string) {
@@ -224,7 +233,12 @@ export function decode<R extends Route.Route.Any>(
         nav.currentEntry,
         (e) =>
           Effect.flatMap(CurrentRoute, ({ route: parent }) =>
-            Effect.optionFromOptional(Route.decode(parent.concat(route) as R, Navigation.getCurrentPathFromUrl(e.url))))
+            Effect.optionFromOptional(
+              Route.decode(
+                parent.concat(route) as R,
+                Navigation.getCurrentPathFromUrl(e.url)
+              )
+            ))
       )
   )
 }
@@ -265,8 +279,11 @@ const getSearchParams = (destination: Navigation.Destination) => destination.url
 /**
  * @since 1.0.0
  */
-export const CurrentSearchParams: RefSubject.Computed<URLSearchParams, never, Navigation.Navigation> = RefSubject
-  .map(Navigation.CurrentEntry, getSearchParams)
+export const CurrentSearchParams: RefSubject.Computed<
+  URLSearchParams,
+  never,
+  Navigation.Navigation
+> = RefSubject.map(Navigation.CurrentEntry, getSearchParams)
 
 /**
  * @since 1.0.0
@@ -279,29 +296,38 @@ export const CurrentState = RefSubject.computedFromTag(
 /**
  * @since 1.0.0
  */
-export type NavigateOptions<R extends Route.Route.Any> =
-  & Navigation.NavigateOptions
-  & ([keyof Route.Route.Params<R>] extends [never] ? { readonly params?: Route.Route.Params<R> | undefined }
-    : { readonly params: Route.Route.Params<R> })
-  & {
-    readonly relative?: boolean
-  }
+export type NavigateOptions<R extends Route.Route.Any> = Route.Route.ParamsAreOptional<R> extends true ? [
+    options?: Navigation.NavigateOptions & {
+      readonly params?: Route.Route.Params<R> | undefined
+    } & {
+      readonly relative?: boolean
+    }
+  ]
+  : [
+    options: Navigation.NavigateOptions & {
+      readonly params: Route.Route.Params<R>
+    } & {
+      readonly relative?: boolean
+    }
+  ]
 
 /**
  * @since 1.0.0
  */
 export const navigate = <R extends Route.Route.Any>(
   route: R,
-  options: NavigateOptions<R> = {} as NavigateOptions<R>
+  ...[options]: NavigateOptions<R>
 ): Effect.Effect<
   Option.Option<Navigation.Destination>,
   Navigation.NavigationError,
   Navigation.Navigation | CurrentRoute
 > =>
-  Effect.optionFromOptional(Effect.gen(function*(_) {
-    const params = options.params ?? {} as Route.Route.Params<R>
-    const path = options.relative === false
-      ? route.interpolate(params)
-      : yield* _(makeHref<R>(route, params))
-    return yield* _(Navigation.navigate(path))
-  }))
+  Effect.optionFromOptional(
+    Effect.gen(function*(_) {
+      const params = options?.params ?? ({} as Route.Route.Params<R>)
+      const path = options?.relative === false
+        ? route.interpolate(params)
+        : yield* _(makeHref<R>(route, params))
+      return yield* _(Navigation.navigate(path))
+    })
+  )
