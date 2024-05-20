@@ -107,12 +107,7 @@ function ArticleMeta<E, R>(ref: RefSubject.RefSubject<Article, E, R>) {
       >
         <i class="ion-plus-round"></i>
         &nbsp;
-        ${
-      RefSubject.when(author.following, {
-        onFalse: "Follow",
-        onTrue: "Unfollow"
-      })
-    }
+        ${RefSubject.when(author.following, { onFalse: "Follow", onTrue: "Unfollow" })}
         ${author.username}
       </button>
       &nbsp;&nbsp;
@@ -122,12 +117,7 @@ function ArticleMeta<E, R>(ref: RefSubject.RefSubject<Article, E, R>) {
       >
         <i class="ion-heart"></i>
         &nbsp;
-        ${
-      RefSubject.when(article.favorited, {
-        onFalse: "Favorite",
-        onTrue: "Unfavorite"
-      })
-    }
+        ${RefSubject.when(article.favorited, { onFalse: "Favorite", onTrue: "Unfavorite" })}
         Post
         <span class="counter">(${article.favoritesCount})</span>
       </button>`

@@ -26,7 +26,11 @@ export function useEditArticle<R, R2>(
   >,
   onSubmit: (
     updated: EditArticleFields
-  ) => Effect.Effect<unknown, Unprocessable | Unauthorized | ParseError | NavigationError, R2>
+  ) => Effect.Effect<
+    unknown,
+    Unprocessable | Unauthorized | ParseError | NavigationError,
+    R2
+  >
 ) {
   return Effect.gen(function*(_) {
     const article = yield* _(RefSubject.make(initial))
@@ -122,6 +126,13 @@ export function renderForm<R, R2>({
   title,
   updateTagList
 }: EditArticleModelAndIntent<R, R2>) {
+  const onArticleTitle = EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle.make(ev.target.value)))
+  const onArticleDescription = EventHandler.target<HTMLInputElement>()((ev) =>
+    setDescription(ArticleDescription.make(ev.target.value))
+  )
+  const onArticleBody = EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody.make(ev.target.value)))
+  const onTagInput = EventHandler.target<HTMLInputElement>()((ev) => setTagInput(ev.target.value))
+
   return html`<form onsubmit=${submit}>
     <fieldset>
       <fieldset class="form-group">
@@ -131,8 +142,8 @@ export function renderForm<R, R2>({
           placeholder="Article Title"
           name="title"
           .value=${title}
-          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle.make(ev.target.value)))}
-          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTitle(ArticleTitle.make(ev.target.value)))}
+          onchange=${onArticleTitle}
+          oninput=${onArticleTitle}
         />
       </fieldset>
       <fieldset class="form-group">
@@ -142,12 +153,8 @@ export function renderForm<R, R2>({
           placeholder="What's this article about?"
           name="description"
           .value=${description}
-          onchange=${
-    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription.make(ev.target.value)))
-  }
-          oninput=${
-    EventHandler.target<HTMLInputElement>()((ev) => setDescription(ArticleDescription.make(ev.target.value)))
-  }
+          onchange=${onArticleDescription}
+          oninput=${onArticleDescription}
         />
       </fieldset>
       <fieldset class="form-group">
@@ -157,8 +164,8 @@ export function renderForm<R, R2>({
           placeholder="Write your article (in markdown)"
           name="body"
           .value=${body}
-          onchange=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody.make(ev.target.value)))}
-          oninput=${EventHandler.target<HTMLTextAreaElement>()((ev) => setBody(ArticleBody.make(ev.target.value)))}
+          onchange=${onArticleBody}
+          oninput=${onArticleBody}
         ></textarea>
       </fieldset>
       <fieldset class="form-group">
@@ -168,8 +175,8 @@ export function renderForm<R, R2>({
           placeholder="Enter tags"
           name="tagList"
           .value=${tagInput}
-          onchange=${EventHandler.target<HTMLInputElement>()((ev) => setTagInput(ev.target.value))}
-          oninput=${EventHandler.target<HTMLInputElement>()((ev) => setTagInput(ev.target.value))}
+          onchange=${onTagInput}
+          oninput=${onTagInput}
           onkeydown=${tagEnter}
         />
         <div class="tag-list">
@@ -177,13 +184,13 @@ export function renderForm<R, R2>({
     many(
       tagList,
       (t) => t,
-      (t) =>
+      (tag) =>
         html` <span class="tag-default tag-pill">
                 <i
                   class="ion-close-round"
-                  onclick=${Effect.flatMap(t, (t) => updateTagList((tagList) => tagList.filter((tag) => tag !== t)))}
+                  onclick=${Effect.flatMap(tag, (t) => updateTagList((tagList) => tagList.filter((tag) => tag !== t)))}
                 ></i>
-                ${t}
+                ${tag}
               </span>`
     )
   }
@@ -204,7 +211,11 @@ export function EditArticle<R, R2>(
   >,
   onSubmit: (
     updated: EditArticleFields
-  ) => Effect.Effect<unknown, Unprocessable | NavigationError | Unauthorized | ParseError, R2>
+  ) => Effect.Effect<
+    unknown,
+    Unprocessable | NavigationError | Unauthorized | ParseError,
+    R2
+  >
 ) {
   return Fx.gen(function*(_) {
     const model = yield* _(useEditArticle(initial, onSubmit))
