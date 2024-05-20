@@ -90,7 +90,7 @@ export * as Security from "./Security.js"
 /**
  * @since 1.0.0
  */
-export * as ServerError from "./ServerError.js"
+export * as HttpError from "./HttpError.js"
 
 /**
  * @since 1.0.0

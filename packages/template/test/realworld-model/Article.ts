@@ -62,7 +62,7 @@ export const Article = Schema.Struct({
     Arbitrary.arbitrary(() => (fc) =>
       fc.array(fc.base64String({ minLength: 2, maxLength: 10 }), { minLength: 1, maxLength: 5 }).map((
         tags
-      ): ArticleTagList => tags.map((_) => ArticleTag.make(_)))
+      ): ArticleTagList => tags.map(ArticleTag.make))
     )
   ),
   author: Profile,

@@ -30,7 +30,7 @@ export const main = (
       ({ params, tab }) => {
         const input: GetArticlesInput = {
           ...defaultGetArticlesInput,
-          tag: Option.fromNullable(params.tag).pipe(Option.map((t) => ArticleTag.make(t))),
+          tag: Option.fromNullable(params.tag).pipe(Option.map(ArticleTag.make)),
           limit: Option.some(pageSize),
           offset: Option.some(pageSize * (params.page ?? 1 - 1))
         }

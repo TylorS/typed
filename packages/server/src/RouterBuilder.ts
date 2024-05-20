@@ -9,7 +9,7 @@ import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
 import { Unify } from "effect"
 import type { Api, Route as EffectHttpRoute, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
-import { ApiEndpoint, ApiRequest, ApiSchema, OpenApi, ServerError, SwaggerRouter } from "effect-http"
+import { ApiEndpoint, ApiRequest, ApiSchema, HttpError, OpenApi, SwaggerRouter } from "effect-http"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type * as Pipeable from "effect/Pipeable"
@@ -230,11 +230,11 @@ const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R,
     route,
     handler.pipe(
       Effect.catchAll((error) => {
-        if (ServerError.isServerError(error)) {
-          return ServerError.toServerResponse(error)
+        if (HttpError.isHttpError(error)) {
+          return HttpError.toResponse(error)
         }
 
-        return Effect.fail(error as Exclude<Effect.Effect.Error<typeof handler>, ServerError.ServerError>)
+        return Effect.fail(error as Exclude<Effect.Effect.Error<typeof handler>, HttpError.HttpError>)
       })
     )
   )
@@ -279,7 +279,7 @@ export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEnd
           : Router.empty
       )
     ),
-    Effect.catchTag("RouteNotFound", () => ServerError.toServerResponse(ServerError.make(404, "Not Found")))
+    Effect.catchTag("RouteNotFound", () => HttpError.toResponse(HttpError.notFoundError("Not Found")))
   ) as any
 }
 

@@ -5,4 +5,4 @@
 /**
  * @since 1.0.0
  */
-export * from "effect-http/ServerError"
+export * from "effect-http/HttpError"

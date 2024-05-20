@@ -4,8 +4,8 @@ import * as Schema from "@effect/schema/Schema"
 import * as ApiEndpoint from "effect-http/ApiEndpoint"
 import * as ApiRequest from "effect-http/ApiRequest"
 import * as ApiSchema from "effect-http/ApiSchema"
+import * as HttpError from "effect-http/HttpError"
 import * as Security from "effect-http/Security"
-import * as ServerError from "effect-http/ServerError"
 import * as Effect from "effect/Effect"
 import * as Unify from "effect/Unify"
 import { formatParseError } from "./formatParseError.js"
@@ -19,14 +19,14 @@ interface ServerRequestParser {
   parseRequest: (
     request: ServerRequest.ServerRequest,
     context: Ctx
-  ) => Effect.Effect<{ query: any; path: any; body: any; headers: any; security: any }, ServerError.ServerError>
+  ) => Effect.Effect<{ query: any; path: any; body: any; headers: any; security: any }, HttpError.HttpError>
 }
 
 const createError = (
   location: "query" | "path" | "body" | "headers",
   message: string
 ) =>
-  ServerError.makeJson(400, {
+  HttpError.badRequest({
     error: "Request validation error",
     location,
     message

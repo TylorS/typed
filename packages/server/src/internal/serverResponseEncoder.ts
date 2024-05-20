@@ -6,8 +6,8 @@ import * as Schema from "@effect/schema/Schema"
 import * as ApiEndpoint from "effect-http/ApiEndpoint"
 import * as ApiResponse from "effect-http/ApiResponse"
 import * as ApiSchema from "effect-http/ApiSchema"
+import * as HttpError from "effect-http/HttpError"
 import type * as Representation from "effect-http/Representation"
-import * as ServerError from "effect-http/ServerError"
 import * as ReadonlyArray from "effect/Array"
 import * as Effect from "effect/Effect"
 import { flow, pipe } from "effect/Function"
@@ -18,10 +18,10 @@ interface ServerResponseEncoder {
   encodeResponse: (
     request: ServerRequest.ServerRequest,
     inputResponse: unknown
-  ) => Effect.Effect<ServerResponse.ServerResponse, ServerError.ServerError>
+  ) => Effect.Effect<ServerResponse.ServerResponse, HttpError.HttpError>
 }
 
-const createErrorResponse = (error: string, message: string) => ServerError.makeJson(500, { error, message })
+const createErrorResponse = (error: string, message: string) => HttpError.internalHttpError({ error, message })
 
 const make = (
   encodeResponse: ServerResponseEncoder["encodeResponse"]
