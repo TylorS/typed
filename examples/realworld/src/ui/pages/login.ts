@@ -63,16 +63,19 @@ function loginUser(ev: SubmitEvent) {
       const current = yield* _(CurrentUser)
 
       // Only allow one login request at a time
-      if (AsyncData.isLoadingOrRefreshing(current)) return
+      if (AsyncData.isLoadingOrRefreshing(current)) return current
 
       const data = new FormData(ev.target)
       const input = yield* _(data, parseFormData(LoginInput.fields))
 
       const updated = yield* _(RefAsyncData.runAsyncData(CurrentUser, Users.login(input)))
 
+      // Navigate to home page if login is successful
       if (AsyncData.isSuccess(updated)) {
-        yield* _(Router.navigate(Routes.home, { relative: false, params: {} }))
+        yield* _(Router.navigate(Routes.home, { history: "replace", relative: false, params: {} }))
       }
+
+      return updated
     }),
     "ParseError",
     (error) => {
