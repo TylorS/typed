@@ -128,7 +128,7 @@ function ArticleMeta<E, R>(ref: RefSubject.RefSubject<Article, E, R>) {
   const deleteArticle = Effect.gen(function*() {
     const slug = yield* article.slug
     yield* Articles.delete({ slug })
-    yield* Router.navigate(Routes.home)
+    yield* Router.navigate(Routes.home, { relative: false })
   })
 
   const currentUserActions = Fx.if(currentUserIsAuthor, {

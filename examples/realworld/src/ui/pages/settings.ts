@@ -25,7 +25,7 @@ export const main = Fx.gen(function*(_) {
 
   const logoutCurrentUser = RefSubject.set(CurrentUser, AsyncData.noData()).pipe(
     Effect.zipRight(Users.logout()),
-    Effect.zipRight(Router.navigate(Routes.login))
+    Effect.zipRight(Router.navigate(Routes.login, { relative: false }))
   )
 
   return html`<div class="settings-page">

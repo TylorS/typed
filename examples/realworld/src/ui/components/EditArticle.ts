@@ -43,7 +43,7 @@ export function useEditArticle<R, R2>(
         Effect.flatMap(onSubmit),
         Effect.catchTags({
           Unprocessable: (error) => RefSubject.set(errors, error.errors),
-          Unauthorized: () => Router.navigate(Routes.login),
+          Unauthorized: () => Router.navigate(Routes.login, { relative: false }),
           ParseError: (issue) => RefSubject.set(errors, [issue.message])
         })
       )
