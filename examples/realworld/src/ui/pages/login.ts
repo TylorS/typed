@@ -72,7 +72,7 @@ function loginUser(ev: SubmitEvent) {
 
       // Navigate to home page if login is successful
       if (AsyncData.isSuccess(updated)) {
-        yield* _(Router.navigate(Routes.home, { history: "replace", relative: false, params: {} }))
+        yield* _(Router.navigate(Routes.home, { history: "replace", relative: false }))
       }
 
       return updated
