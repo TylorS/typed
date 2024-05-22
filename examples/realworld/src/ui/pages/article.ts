@@ -123,7 +123,7 @@ function ArticleMeta<E, R>(ref: RefSubject.RefSubject<Article, E, R>) {
       </button>`
   })
 
-  const editArticleHref = RefSubject.map(article.slug, (slug) => Routes.editArticle.route.interpolate({ slug }))
+  const editArticleHref = RefSubject.map(article.slug, (slug) => Routes.editArticle.interpolate({ slug }))
 
   const deleteArticle = Effect.gen(function*() {
     const slug = yield* article.slug

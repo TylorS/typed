@@ -1,7 +1,7 @@
 import { ArrayFormatter } from "@effect/schema"
 import { AsyncData, Fx, RefAsyncData, RefSubject, Router } from "@typed/core"
 import { parseFormData } from "@typed/realworld/lib/Schema"
-import { CurrentUser, Users } from "@typed/realworld/services"
+import { CurrentUser, isAuthenticatedGuard, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { UpdateUserInput } from "@typed/realworld/services/UpdateUser"
 import * as Routes from "@typed/realworld/ui/common/routes"
@@ -9,7 +9,7 @@ import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
 import { EventHandler, html } from "@typed/template"
 import { Effect, Option } from "effect"
 
-export const route = Routes.settings
+export const route = Routes.settings.pipe(isAuthenticatedGuard)
 
 type SubmitEvent = Event & { target: HTMLFormElement }
 

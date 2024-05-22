@@ -1,6 +1,5 @@
-import { Route, Router } from "@typed/core"
+import { Route } from "@typed/core"
 import { ArticleSlug, Username } from "@typed/realworld/model"
-import { isAuthenticatedGuard } from "@typed/realworld/services"
 
 export const home = Route.home.concat(Route.queryParams({
   tag: Route.param("tag").optional(),
@@ -12,9 +11,9 @@ export const article = Route.literal("article").concat(
   Route.paramWithSchema("slug", ArticleSlug)
 )
 
-export const editor = Route.literal("editor").pipe(isAuthenticatedGuard)
+export const editor = Route.literal("editor", { end: true })
 
-export const editArticle = Router.concat(editor, Route.paramWithSchema("slug", ArticleSlug))
+export const editArticle = Route.literal("editor").concat(Route.paramWithSchema("slug", ArticleSlug, { end: true }))
 
 export const login = Route.literal("login")
 
@@ -22,4 +21,4 @@ export const profile = Route.literal("profile").concat(Route.paramWithSchema("us
 
 export const register = Route.literal("register")
 
-export const settings = Route.literal("settings").pipe(isAuthenticatedGuard)
+export const settings = Route.literal("settings")

@@ -1,12 +1,12 @@
 import { Fx, Router } from "@typed/core"
 import { RefSubject } from "@typed/fx"
 import { ArticleBody, ArticleDescription, ArticleTitle } from "@typed/realworld/model"
-import { Articles } from "@typed/realworld/services"
+import { Articles, isAuthenticatedGuard } from "@typed/realworld/services"
 import * as Routes from "@typed/realworld/ui/common/routes"
 import { Effect } from "effect"
 import { EditArticle, type EditArticleFields } from "../components/EditArticle"
 
-export const route = Routes.editor
+export const route = Routes.editor.pipe(isAuthenticatedGuard)
 
 export const main = Fx.gen(function*() {
   const initial = yield* RefSubject.of<EditArticleFields>({
