@@ -40,7 +40,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "effect": "^3.2.0"
+    "effect": "^3.2.2"
   },
   "peerDependencies": {
     "effect": "^2.4.0"
