@@ -10,6 +10,19 @@ This is a full-stack implementation of the [Realworld Example](https://realworld
 
 ## Getting started
 
+### Build the packages
+
+Because the project is linked up to local packages via `workspace:*`, it is necessary to build the Typed packages before running this example.
+
+```sh
+# Install all dependencies
+pnpm -w install
+# Build all @typed packages
+pnpm -w build
+```
+
+### Running Realworld Example
+
 You'll need two terminals. In the first terminal start the supporting docker containers:
 
 ```sh
