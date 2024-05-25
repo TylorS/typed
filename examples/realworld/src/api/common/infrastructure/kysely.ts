@@ -155,6 +155,20 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
 }
 
 function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
+  const findAll = <IR, II, IA, AR, AI extends object, A>(
+    options: {
+      readonly Request: Schema.Schema<IA, II, IR>
+      readonly Result: Schema.Schema<A, AI, AR>
+      readonly execute: (db: Kysely<DB>, request: II) => Compilable<AI>
+    }
+  ) =>
+  (
+    request: IA
+  ): Effect.Effect<ReadonlyArray<A>, ParseResult.ParseError | Sql.error.SqlError, IR | AR | KyselyDatabase<DB>> =>
+    Tag.withEffect(({ query }) =>
+      Sql.schema.findAll({ ...options, execute: (req) => query((db) => options.execute(db, req)) })(request)
+    )
+
   const select = <IR, II, IA, A, AI extends object, AR>(options: {
     readonly Request: Schema.Schema<IA, II, IR>
     readonly Result: Schema.Schema<A, AI, AR>
@@ -211,6 +225,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
     )
 
   return {
+    findAll,
     select,
     findOne,
     single,
