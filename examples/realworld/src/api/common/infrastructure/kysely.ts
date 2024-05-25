@@ -65,6 +65,7 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
         const db: Kysely<DB> = makeDb()
         const sql = makeClient(db)
         const kysely = <Out extends object>(f: (db: Kysely<DB>) => Compilable<Out>) => {
+          // We utilize compile() and sql.unsafe to enable utilizing Effect's notion of a Transaction
           const compiled = f(db).compile()
           return sql.unsafe<Out>(compiled.sql, compiled.parameters as any)
         }
