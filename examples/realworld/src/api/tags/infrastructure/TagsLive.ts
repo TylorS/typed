@@ -1,10 +1,10 @@
 import { Schema } from "@effect/schema"
+import { RealworldDb } from "@typed/realworld/api/common/infrastructure/db"
 import { ArticleTag } from "@typed/realworld/model"
 import { Tags } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { Effect } from "effect"
 import { sql } from "kysely"
-import { RealworldDb } from "../../common/infrastructure/kysely"
 
 const getTags = RealworldDb.schema.findAll({
   Request: Schema.Void,

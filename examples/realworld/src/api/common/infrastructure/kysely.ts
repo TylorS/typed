@@ -17,36 +17,22 @@ import type {
   Transaction
 } from "kysely"
 import { CompiledQuery } from "kysely"
-import type * as DbSchema from "./schema.js"
-
-export interface Database {
-  users: DbSchema.DbUserEncoded
-  articles: DbSchema.DbArticleEncoded
-  comments: DbSchema.DbCommentEncoded
-  tags: DbSchema.DbTagEncoded
-  article_tags: DbSchema.DbArticleTagEncoded
-  favorites: DbSchema.DbFavoriteEncoded
-  follows: DbSchema.DbFollowEncoded
-  jwt_tokens: DbSchema.DbJwtTokenEncoded
-}
-
-declare global {
-  interface ImportMetaEnv {
-    VITE_DATABASE_NAME: string
-    VITE_DATABASE_HOST: string
-    VITE_DATABASE_USER: string
-    VITE_DATABASE_PASSWORD: string
-    VITE_DATABASE_PORT: string
-  }
-}
 
 type Compilable<A = void> =
+  // Supported Kysely QueryBuilders to enable type-safety around A
   | SelectQueryBuilder<any, any, A>
   | DeleteQueryBuilder<any, any, A>
   | InsertQueryBuilder<any, any, A>
+  // Allow creatining migrations
   | CreateTableBuilder<any, any>
   | CreateIndexBuilder<any>
 
+/**
+ * KyselyDatabase is the interface that provides access to a Kysely database connection,
+ * the SQL Client derived from it, and a `kysely` wrapper. `kysely` is used to run Kysely queries within an Effect,
+ * and it will inherit an transactions from the Effect's scope automatically.
+ * @since 1.0.0
+ */
 export interface KyselyDatabase<DB> {
   readonly sql: Sql.client.Client
   readonly db: Kysely<DB>
@@ -55,10 +41,16 @@ export interface KyselyDatabase<DB> {
   ) => Effect.Effect<ReadonlyArray<Out>, Sql.error.SqlError, never>
 }
 
+// Create a new KyselyDatabase service
 export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
+  // Our Tag to represent our services
   const Tag = Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>("Kyseley/Database")
+  // Derive resolver helpers
   const resolver = makeResolver<DB>(Tag)
+  // Derive schema helpers
   const schema = makeSchema<DB>(Tag)
+
+  // Construct a Layer that will provide our KyselyDatabase service and Sql.client.Client
   const make = (makeDb: () => Kysely<DB>): Layer.Layer<KyselyDatabase<DB> | Sql.client.Client> =>
     Layer.flatMap(
       Tag.scoped(Effect.gen(function*(_) {
@@ -75,22 +67,26 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
 
         return { sql, db, kysely } as const
       })),
+      // Also provide the Sql.client.Client instance
       (ctx) => {
         const { sql } = Ctx.get(ctx, Tag)
         return Layer.succeedContext(Ctx.add(ctx, Sql.client.Client, sql))
       }
     )
 
+  // Helper for running an Effect within a transaction
   const withTransaction = <A, E, R>(
     effect: Effect.Effect<A, E, R>
   ): Effect.Effect<A, Sql.error.SqlError | E, KyselyDatabase<DB> | R> =>
     Tag.withEffect(({ sql }) => sql.withTransaction(effect))
 
+  // Helper for running a Kysely query within an Effect
   const kysely = <Out extends object>(
     f: (db: Kysely<DB>) => Compilable<Out>
   ): Effect.Effect<ReadonlyArray<Out>, Sql.error.SqlError, KyselyDatabase<DB>> =>
     Tag.withEffect(({ kysely }) => kysely(f))
 
+  // Helper for running a raw SQL query within an Effect
   const sql = (
     strings: TemplateStringsArray,
     ...args: Array<Sql.statement.Argument>
@@ -110,10 +106,10 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
   )
 }
 
+// Create a new KyselyDatabase service for a Postgres database
 export const makePg = <DB>() => make<DB>((db) => makeSqlClient(db, Pg.client.makeCompiler()))
 
-export const RealworldDb = makePg<Database>()
-
+// Wraps Sql.resolver helpers with the ability to utilize Kysely queries
 function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   const findById = <T extends string, I, II, RI, A, IA, Row extends object>(
     tag: T,
@@ -187,6 +183,7 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
   } as const
 }
 
+// Wraps Sql.schema helpers with the ability to utilize Kysely queries
 function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   const findAll = <IR, II, IA, AR, AI extends object, A>(
     options: {
@@ -266,9 +263,12 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
   } as const
 }
 
+// Create a new Sql.client.Client instance for a Kysely database and a Sql.statement.Compiler
 function makeSqlClient<DB>(database: Kysely<DB>, compiler: Sql.statement.Compiler): Sql.client.Client {
   const transformRows = Sql.statement.defaultTransforms((s) => s, false).array
 
+  // A Connection is a wrapper around a Kysely database connection, or Transaction, that provides
+  // the ability to run queries within Effects and captures any errors that may occur.
   class ConnectionImpl implements Connection {
     constructor(private readonly db: Kysely<DB>) {}
 
@@ -315,14 +315,20 @@ function makeSqlClient<DB>(database: Kysely<DB>, compiler: Sql.statement.Compile
   }
 
   return Sql.client.make({
+    // Our default connection is managed by Kysely
     acquirer: Effect.succeed(new ConnectionImpl(database)),
+    // Our SQL statement compiler
     compiler,
+    // Acquire a new transaction from the Kysely database
     transactionAcquirer: Effect.gen(function*(_) {
       const { trx } = yield* _(
+        // Acquire a transaction
         Effect.acquireRelease(Effect.promise(() => begin(database)), (trx, exit) =>
           Effect.sync(() =>
             Exit.match(exit, {
+              // If the scope fails we rollback the transaction
               onFailure: () => trx.rollback(),
+              // If the scope succeeds we commit the transaction
               onSuccess: () => trx.commit()
             })
           ))
@@ -330,6 +336,7 @@ function makeSqlClient<DB>(database: Kysely<DB>, compiler: Sql.statement.Compile
 
       return new ConnectionImpl(trx)
     }),
+    // Add OpenTelemetry attributes to all spans
     spanAttributes: [
       [Otel.SEMATTRS_DB_SYSTEM, Otel.DBSYSTEMVALUES_POSTGRESQL],
       [Otel.SEMATTRS_DB_NAME, "postgres"]
@@ -344,6 +351,8 @@ function compileSqlQuery(
   return CompiledQuery.raw(sql, params as any)
 }
 
+// Adapts Kysely's transaction API to Effect's API where we can manually
+// close the transaction by calling commit or rollback at a later point in time.
 async function begin<DB>(db: Kysely<DB>) {
   const connection = new DeferredPromise<Transaction<DB>>()
   const result = new DeferredPromise<any>()
@@ -368,6 +377,8 @@ async function begin<DB>(db: Kysely<DB>) {
     }
   }
 }
+
+// Helper for creating a deferred promise
 class DeferredPromise<T> {
   readonly _promise: Promise<T>
 
@@ -398,10 +409,12 @@ class DeferredPromise<T> {
   }
 }
 
+// Create a unique query ID
 function createQueryId() {
   return randomString(8)
 }
 
+// Our alphabet for generating random strings
 const CHARS = [
   "A",
   "B",
@@ -466,13 +479,17 @@ const CHARS = [
   "8",
   "9"
 ]
-export function randomString(length: number) {
+
+// Generate a random string of a given length
+function randomString(length: number) {
   let chars = ""
   for (let i = 0; i < length; ++i) {
     chars += randomChar()
   }
   return chars
 }
+
+// Select a random character from our alphabet
 function randomChar() {
   return CHARS[~~(Math.random() * CHARS.length)]
 }

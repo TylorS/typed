@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect"
 import { sql } from "kysely"
-import { RealworldDb } from "../kysely"
+import { RealworldDb } from "../db"
 
 const logTableCreate = (tableName: string) => Effect.logInfo(`Creating table ${tableName}...`)
 

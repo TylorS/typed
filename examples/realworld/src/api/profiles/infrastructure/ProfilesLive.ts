@@ -1,13 +1,13 @@
 import { Schema } from "@effect/schema"
 import * as Sql from "@effect/sql"
 import { getCurrentJwtUser, getOptionalCurrentJwtUser } from "@typed/realworld/api/common/infrastructure/CurrentJwt"
+import { RealworldDb } from "@typed/realworld/api/common/infrastructure/db"
 import { catchExpectedErrors } from "@typed/realworld/api/common/infrastructure/errors"
 import { DbProfile, DbUser } from "@typed/realworld/api/common/infrastructure/schema"
 import type { Profile, UserId } from "@typed/realworld/model"
 import { Username } from "@typed/realworld/model"
 import { Profiles } from "@typed/realworld/services"
 import { Effect, Option } from "effect"
-import { RealworldDb } from "../../common/infrastructure/kysely"
 
 export const ProfilesLive = Profiles.implement({
   get: (username) =>
