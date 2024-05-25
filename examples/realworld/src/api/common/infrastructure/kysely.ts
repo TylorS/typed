@@ -1,37 +1,15 @@
-import type { ParseResult } from "@effect/schema"
-import { Schema } from "@effect/schema"
+import type { ParseResult, Schema } from "@effect/schema"
 import * as Sql from "@effect/sql"
 import * as Pg from "@effect/sql-pg"
 import type { Connection } from "@effect/sql/Connection"
 import { type Primitive } from "@effect/sql/Statement"
 import * as Otel from "@opentelemetry/semantic-conventions"
-import { Tagged } from "@typed/context"
-import { UserId } from "@typed/realworld/model"
+import * as Ctx from "@typed/context"
 import type { Cause, Option, Types } from "effect"
-import { Effect, Exit } from "effect"
-import type {
-  DatabaseConnection,
-  DatabaseIntrospector,
-  DeleteQueryBuilder,
-  DialectAdapter,
-  Driver,
-  InsertQueryBuilder,
-  KyselyConfig,
-  QueryCompiler,
-  SelectQueryBuilder,
-  Transaction
-} from "kysely"
-import {
-  CompiledQuery,
-  Kysely,
-  PostgresAdapter,
-  PostgresDialect,
-  PostgresIntrospector,
-  PostgresQueryCompiler
-} from "kysely"
-import { Pool } from "pg"
-import { DbLive } from "./db.js"
-import * as DbSchema from "./schema.js"
+import { Chunk, Effect, Exit, Layer, Stream } from "effect"
+import type { DeleteQueryBuilder, InsertQueryBuilder, Kysely, SelectQueryBuilder, Transaction } from "kysely"
+import { CompiledQuery } from "kysely"
+import type * as DbSchema from "./schema.js"
 
 export interface Database {
   users: DbSchema.DbUserEncoded
@@ -49,19 +27,10 @@ declare global {
     VITE_DATABASE_NAME: string
     VITE_DATABASE_HOST: string
     VITE_DATABASE_USER: string
+    VITE_DATABASE_PASSWORD: string
     VITE_DATABASE_PORT: string
   }
 }
-
-export const dialect = new PostgresDialect({
-  pool: new Pool({
-    database: import.meta.env.VITE_DATABASE_NAME,
-    host: import.meta.env.VITE_DATABASE_HOST,
-    user: import.meta.env.VITE_DATABASE_USER,
-    port: parseInt(import.meta.env.VITE_DATABASE_PORT, 10),
-    max: 10
-  })
-})
 
 type Compilable<A> =
   | SelectQueryBuilder<any, any, A>
@@ -76,91 +45,43 @@ export interface KyselyDatabase<DB> {
   ) => Effect.Effect<ReadonlyArray<Out>, Sql.error.SqlError, never>
 }
 
-export const make = <DB>(dialect: {
-  createAdapter: () => DialectAdapter
-  createIntrospector: (db: Kysely<DB>) => DatabaseIntrospector
-  createQueryCompiler: () => QueryCompiler
-}) => {
-  const Tag = Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>("Kyseley/Database")
+export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
+  const Tag = Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>("Kyseley/Database")
   const resolver = makeResolver<DB>(Tag)
   const schema = makeSchema<DB>(Tag)
-
-  // TODO: We should probably allow for creating the DB via a function
-  const layer = (config?: Omit<KyselyConfig, "dialect">) =>
-    Tag.layer(Effect.gen(function*(_) {
-      const sql = yield* _(Sql.client.Client)
-      const db: Kysely<DB> = new Kysely<DB>({
-        ...config,
-        dialect: {
-          createAdapter: dialect.createAdapter,
-          createDriver() {
-            const driver: Driver = {
-              // This is handled by instantiating Sql.client.Client
-              init: async () => {},
-              destroy: async () => {},
-
-              // Adapt Client API to Kysely APIs
-              acquireConnection: async () => {
-                const conn: DatabaseConnection = {
-                  async executeQuery(compiledQuery: CompiledQuery<unknown>) {},
-                  async streamQuery(compiledQuery: CompiledQuery<unknown>, chunkSize?: number) {}
-                }
-
-                return conn
-              },
-              beginTransaction: async (conn, settings) => {},
-              commitTransaction: async (conn) => {},
-              rollbackTransaction: async (conn) => {},
-              releaseConnection: async (conn) => {}
-            }
-
-            return driver
-          },
-          createIntrospector() {
-            return dialect.createIntrospector(db)
-          },
-          createQueryCompiler: dialect.createQueryCompiler
+  const make = (makeDb: () => Kysely<DB>): Layer.Layer<KyselyDatabase<DB> | Sql.client.Client> =>
+    Layer.flatMap(
+      Tag.layer(Effect.sync(() => {
+        const db: Kysely<DB> = makeDb()
+        const sql = makeClient(db)
+        const query = <Out extends object>(f: (db: Kysely<DB>) => Compilable<Out>) => {
+          const compiled = f(db).compile()
+          return sql.unsafe<Out>(compiled.sql, compiled.parameters as any)
         }
-      })
-      const query = <Out extends object>(f: (db: Kysely<DB>) => Compilable<Out>) => {
-        const compiled = f(db).compile()
-        return sql.unsafe<Out>(compiled.sql, compiled.parameters as any)
+
+        return { sql, db, query } as const
+      })),
+      (ctx) => {
+        const { sql } = Ctx.get(ctx, Tag)
+        return Layer.succeedContext(Ctx.add(ctx, Sql.client.Client, sql))
       }
+    )
 
-      return { sql, db, query } as const
-    }))
-
-  return {
+  return Object.assign(
     Tag,
-    resolver,
-    schema,
-    layer
-  } as const
+    {
+      resolver,
+      schema,
+      make
+    } as const
+  )
 }
 
-export const makePg = <DB>() =>
-  make<DB>({
-    createAdapter: () => new PostgresAdapter(),
-    createIntrospector: (db) => new PostgresIntrospector(db),
-    createQueryCompiler: () => new PostgresQueryCompiler()
-  })
+export const makePg = <DB>() => make<DB>((db) => makeSqlCompiler(db, Pg.client.makeCompiler()))
 
-export const MyDatabase = makePg<Database>()
+export const RealworldDb = makePg<Database>()
 
-const findUserById = MyDatabase.schema.findOne(
-  {
-    Request: Schema.String,
-    Result: DbSchema.DbUser,
-    execute: (db, id) => db.selectFrom("users").selectAll().where("id", "=", id)
-  }
-)
-
-export const test = findUserById(UserId.make("Test")).pipe(
-  Effect.provide(MyDatabase.layer()),
-  Effect.provide(DbLive)
-)
-
-function makeResolver<DB>(Tag: Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
+function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   const findById = <T extends string, I, II, RI, A, IA, Row extends object>(
     tag: T,
     options: {
@@ -233,7 +154,7 @@ function makeResolver<DB>(Tag: Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   } as const
 }
 
-function makeSchema<DB>(Tag: Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
+function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   const select = <IR, II, IA, A, AI extends object, AR>(options: {
     readonly Request: Schema.Schema<IA, II, IR>
     readonly Result: Schema.Schema<A, AI, AR>
@@ -297,27 +218,57 @@ function makeSchema<DB>(Tag: Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>) {
   } as const
 }
 
-function makePgSqlClient<DB>(database: Kysely<DB>): Sql.client.Client {
+function makeSqlCompiler<DB>(database: Kysely<DB>, compiler: Sql.statement.Compiler): Sql.client.Client {
   const transformRows = Sql.statement.defaultTransforms((s) => s, false).array
 
   class ConnectionImpl implements Connection {
-    constructor(readonly db: Kysely<DB>) {}
+    constructor(private readonly db: Kysely<DB>) {}
 
-    executeRaw: (
-      sql: string,
-      params?: ReadonlyArray<Sql.statement.Primitive> | undefined
-    ) => Effect.Effect<ReadonlyArray<any>, Sql.error.SqlError, never> = (sql, params) =>
-      Effect.tryPromise(
-        {
-          try: () => database.executeQuery(compileSqlQuery(sql, params)).then((result) => result.rows),
-          catch: (error) => new Sql.error.SqlError({ error })
-        }
+    execute(sql: string, params: ReadonlyArray<Primitive>) {
+      return Effect.tryPromise({
+        try: () => this.db.executeQuery(compileSqlQuery(sql, params)).then((r) => transformRows(r.rows)),
+        catch: (error) => new Sql.error.SqlError({ error })
+      })
+    }
+
+    executeWithoutTransform(sql: string, params: ReadonlyArray<Primitive>) {
+      return Effect.tryPromise({
+        try: () => this.db.executeQuery(compileSqlQuery(sql, params)).then((r) => r.rows),
+        catch: (error) => new Sql.error.SqlError({ error })
+      })
+    }
+
+    executeValues(sql: string, params: ReadonlyArray<Primitive>) {
+      return Effect.map(
+        this.executeRaw(sql, params),
+        (results) => results.map((x) => Object.values(x as {}) as Array<Primitive>)
       )
+    }
+
+    executeRaw(sql: string, params?: ReadonlyArray<Primitive>) {
+      return Effect.tryPromise({
+        try: () => this.db.executeQuery(compileSqlQuery(sql, params)).then((r) => transformRows(r.rows)),
+        catch: (error) => new Sql.error.SqlError({ error })
+      })
+    }
+
+    executeStream(sql: string, params: ReadonlyArray<Primitive>) {
+      return Stream.suspend(() => {
+        const executor = this.db.getExecutor()
+        return Stream.mapChunks(
+          Stream.fromAsyncIterable(
+            executor.stream(compileSqlQuery(sql, params), 16, { queryId: createQueryId() }),
+            (error) => new Sql.error.SqlError({ error })
+          ),
+          Chunk.flatMap((result) => Chunk.unsafeFromArray(result.rows))
+        )
+      })
+    }
   }
 
   return Sql.client.make({
     acquirer: Effect.sync(() => new ConnectionImpl(database)),
-    compiler: Pg.client.makeCompiler(),
+    compiler,
     transactionAcquirer: Effect.gen(function*(_) {
       const { trx } = yield* _(
         Effect.acquireRelease(Effect.promise(() => begin(database)), (trx, exit) =>
@@ -341,7 +292,7 @@ function makePgSqlClient<DB>(database: Kysely<DB>): Sql.client.Client {
 function compileSqlQuery(
   sql: string,
   params?: ReadonlyArray<Primitive>
-): CompiledQuery {
+): CompiledQuery<object> {
   return CompiledQuery.raw(sql, params as any)
 }
 
@@ -397,4 +348,83 @@ class DeferredPromise<T> {
       this._reject(reason)
     }
   }
+}
+
+function createQueryId() {
+  return randomString(8)
+}
+
+const CHARS = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9"
+]
+export function randomString(length: number) {
+  let chars = ""
+  for (let i = 0; i < length; ++i) {
+    chars += randomChar()
+  }
+  return chars
+}
+function randomChar() {
+  return CHARS[~~(Math.random() * CHARS.length)]
 }

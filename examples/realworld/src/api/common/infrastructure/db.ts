@@ -1,19 +1,25 @@
 import * as Pg from "@effect/sql-pg"
 import * as Migrator from "@effect/sql-pg/Migrator"
-import { Config, Layer } from "effect"
+import { Layer } from "effect"
+import { Kysely, PostgresDialect } from "kysely"
+import PG from "pg"
+import { RealworldDb } from "./kysely"
 
-const PgLive = Pg.client.layer(Config.all({
-  host: Config.string("VITE_DATABASE_HOST"),
-  port: Config.number("VITE_DATABASE_PORT"),
-  database: Config.string("VITE_DATABASE_NAME"),
-  username: Config.string("VITE_DATABASE_USER"),
-  password: Config.secret("VITE_DATABASE_PASSWORD")
-}))
+const PgLive = RealworldDb.make(() =>
+  new Kysely({
+    dialect: new PostgresDialect({
+      pool: new PG.Pool({
+        database: import.meta.env.VITE_DATABASE_NAME,
+        host: import.meta.env.VITE_DATABASE_HOST,
+        user: import.meta.env.VITE_DATABASE_USER,
+        password: import.meta.env.VITE_DATABASE_PASSWORD,
+        port: parseInt(import.meta.env.VITE_DATABASE_PORT, 10)
+      })
+    })
+  })
+)
 
-export const DbLive = Layer.mergeAll(
-  Layer.provide(
-    Pg.migrator.layer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
-    PgLive
-  ),
+export const DbLive = Layer.provideMerge(
+  Pg.migrator.layer({ loader: Migrator.fromGlob(import.meta.glob("./migrations/*")) }),
   PgLive
 )
