@@ -85,12 +85,25 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
   ): Effect.Effect<A, Sql.error.SqlError | E, KyselyDatabase<DB> | R> =>
     Tag.withEffect(({ sql }) => sql.withTransaction(effect))
 
+  const kysely = <Out extends object>(
+    f: (db: Kysely<DB>) => Compilable<Out>
+  ): Effect.Effect<ReadonlyArray<Out>, Sql.error.SqlError, KyselyDatabase<DB>> =>
+    Tag.withEffect(({ kysely }) => kysely(f))
+
+  const sql = (
+    strings: TemplateStringsArray,
+    ...args: Array<Sql.statement.Argument>
+  ): Effect.Effect<ReadonlyArray<Sql.connection.Row>, Sql.error.SqlError, KyselyDatabase<DB>> =>
+    Tag.withEffect(({ sql }) => sql(strings, ...args))
+
   return Object.assign(
     Tag,
     {
       resolver,
       schema,
       withTransaction,
+      kysely,
+      sql,
       make
     } as const
   )

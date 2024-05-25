@@ -5,15 +5,11 @@ import { RealworldDb } from "../kysely"
 const logTableCreate = (tableName: string) => Effect.logInfo(`Creating table ${tableName}...`)
 
 export default Effect.gen(function*(_) {
-  const { kysely } = yield* _(RealworldDb)
-
-  // Users
-
   yield* _(Effect.logInfo("Creating tables..."))
 
+  // Users
   yield* _(logTableCreate("users"))
-
-  yield* _(kysely((db) =>
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("users")
       .addColumn("id", "varchar(21)", (c) => c.primaryKey())
       .addColumn("email", "varchar(255)", (c) => c.notNull())
@@ -25,10 +21,9 @@ export default Effect.gen(function*(_) {
       .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
   ))
 
-  yield* logTableCreate("articles")
-
   // Articles
-  yield* _(kysely((db) =>
+  yield* logTableCreate("articles")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("articles")
       .addColumn("id", "varchar(21)", (c) => c.primaryKey())
       .addColumn("author_id", "varchar(21)", (c) => c.references("users.id").notNull())
@@ -40,10 +35,9 @@ export default Effect.gen(function*(_) {
       .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
   ))
 
-  yield* logTableCreate("comments")
-
   // Comments
-  yield* _(kysely((db) =>
+  yield* logTableCreate("comments")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("comments")
       .addColumn("id", "varchar(21)", (c) => c.primaryKey())
       .addColumn("article_id", "varchar(21)", (c) => c.references("articles.id").notNull())
@@ -53,49 +47,44 @@ export default Effect.gen(function*(_) {
       .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
   ))
 
-  yield* logTableCreate("tags")
-
   // Tags
-  yield* _(kysely((db) =>
+  yield* logTableCreate("tags")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("tags")
       .addColumn("id", "varchar(21)", (c) => c.primaryKey())
       .addColumn("name", "varchar(255)", (c) => c.notNull())
   ))
 
-  yield* logTableCreate("article_tags")
-
   // ArticleTags
-  yield* _(kysely((db) =>
+  yield* logTableCreate("article_tags")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("article_tags")
       .addColumn("article_id", "varchar(21)", (col) => col.references("articles.id").notNull())
       .addColumn("tag_id", "varchar(255)", (col) => col.references("tags.id").notNull())
       .addPrimaryKeyConstraint("article_tags_pkey", ["article_id", "tag_id"])
   ))
 
-  yield* logTableCreate("favorites")
-
   // Favorites
-  yield* _(kysely((db) =>
+  yield* logTableCreate("favorites")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("favorites")
       .addColumn("user_id", "varchar(21)", (col) => col.references("users.id").notNull())
       .addColumn("article_id", "varchar(21)", (col) => col.references("articles.id").notNull())
       .addPrimaryKeyConstraint("favorites_pkey", ["user_id", "article_id"])
   ))
 
-  yield* logTableCreate("follows")
-
   // Follows
-  yield* _(kysely((db) =>
+  yield* logTableCreate("follows")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("follows")
       .addColumn("follower_id", "varchar(21)", (col) => col.references("users.id").notNull())
       .addColumn("followed_id", "varchar(21)", (col) => col.references("users.id").notNull())
       .addPrimaryKeyConstraint("follows_pkey", ["follower_id", "followed_id"])
   ))
 
-  yield* logTableCreate("jwt_tokens")
-
   // JWT
-  yield* _(kysely((db) =>
+  yield* logTableCreate("jwt_tokens")
+  yield* _(RealworldDb.kysely((db) =>
     db.schema.createTable("jwt_tokens")
       .addColumn("id", "varchar(21)", (c) => c.primaryKey())
       .addColumn("user_id", "varchar(21)", (c) => c.references("users.id").notNull())
@@ -104,19 +93,38 @@ export default Effect.gen(function*(_) {
   ))
 
   // Indexes
-
   yield* _(Effect.logInfo("Creating indexes..."))
 
-  yield* _(kysely((db) => db.schema.createIndex("articles_author_id_idx").on("articles").column("author_id")))
-  yield* _(kysely((db) => db.schema.createIndex("comments_article_id_idx").on("comments").column("article_id")))
-  yield* _(kysely((db) => db.schema.createIndex("comments_author_id_idx").on("comments").column("author_id")))
-  yield* _(kysely((db) => db.schema.createIndex("article_tags_article_id_idx").on("article_tags").column("article_id")))
-  yield* _(kysely((db) => db.schema.createIndex("article_tags_tag_id_idx").on("article_tags").column("tag_id")))
-  yield* _(kysely((db) => db.schema.createIndex("favorites_user_id_idx").on("favorites").column("user_id")))
-  yield* _(kysely((db) => db.schema.createIndex("favorites_article_id_idx").on("favorites").column("article_id")))
-  yield* _(kysely((db) => db.schema.createIndex("follows_follower_id_idx").on("follows").column("follower_id")))
-  yield* _(kysely((db) => db.schema.createIndex("follows_followed_id_idx").on("follows").column("followed_id")))
-  yield* _(kysely((db) => db.schema.createIndex("jwt_tokens_user_id_idx").on("jwt_tokens").column("user_id")))
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("articles_author_id_idx").on("articles").column("author_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("comments_article_id_idx").on("comments").column("article_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("comments_author_id_idx").on("comments").column("author_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) =>
+      db.schema.createIndex("article_tags_article_id_idx").on("article_tags").column("article_id")
+    )
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("article_tags_tag_id_idx").on("article_tags").column("tag_id"))
+  )
+  yield* _(RealworldDb.kysely((db) => db.schema.createIndex("favorites_user_id_idx").on("favorites").column("user_id")))
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("favorites_article_id_idx").on("favorites").column("article_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("follows_follower_id_idx").on("follows").column("follower_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("follows_followed_id_idx").on("follows").column("followed_id"))
+  )
+  yield* _(
+    RealworldDb.kysely((db) => db.schema.createIndex("jwt_tokens_user_id_idx").on("jwt_tokens").column("user_id"))
+  )
 
   yield* _(Effect.logInfo("Tables and indexes created!"))
 })
