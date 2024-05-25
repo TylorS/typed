@@ -7,6 +7,7 @@ import type { Profile, UserId } from "@typed/realworld/model"
 import { Username } from "@typed/realworld/model"
 import { Profiles } from "@typed/realworld/services"
 import { Effect, Option } from "effect"
+import { RealworldDb } from "../../common/infrastructure/kysely"
 
 export const ProfilesLive = Profiles.implement({
   get: (username) =>
@@ -78,19 +79,11 @@ function getProfileByUsername(username: Username, userId?: UserId) {
   })
 }
 
-function getDbUserByUsername(username: Username) {
-  return Effect.gen(function*(_) {
-    const sql = yield* _(Sql.client.Client)
-    return yield* _(
-      username,
-      Sql.schema.single({
-        Request: Username,
-        Result: DbUser,
-        execute: (t) => sql`select * from users where username = ${t}`
-      })
-    )
-  })
-}
+const getDbUserByUsername = RealworldDb.schema.single({
+  Request: Username,
+  Result: DbUser,
+  execute: (db, username) => db.selectFrom("users").selectAll().where("username", "=", username)
+})
 
 function dbProfileToProfile(db: DbProfile & { readonly following: boolean }): Profile {
   return {
