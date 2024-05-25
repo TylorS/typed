@@ -46,6 +46,7 @@ function fromNullableString<T extends string>(value: T | null | undefined): Opti
 }
 
 export type DbUser = S.Schema.Type<typeof DbUser>
+export type DbUserEncoded = S.Schema.Encoded<typeof DbUser>
 
 export const DbArticle = S.Struct({
   id: ArticleId,
@@ -77,10 +78,12 @@ export function dbArticleToArticle(
 }
 
 export type DbArticle = S.Schema.Type<typeof DbArticle>
+export type DbArticleEncoded = S.Schema.Encoded<typeof DbArticle>
 
 export const DbProfile = DbUser.pipe(S.pick("username", "email", "bio", "image"))
 
 export type DbProfile = S.Schema.Type<typeof DbProfile>
+export type DbProfileEncoded = S.Schema.Encoded<typeof DbProfile>
 
 const DbProfileJoin = S.Struct({
   author_username: Username,
@@ -114,6 +117,7 @@ export const DbComment = S.Struct({
 })
 
 export type DbComment = S.Schema.Type<typeof DbComment>
+export type DbCommentEncoded = S.Schema.Encoded<typeof DbComment>
 
 export const DbCommentWithAuthor = DbComment.pipe(S.extend(DbProfileJoin))
 
@@ -145,6 +149,7 @@ export const DbTag = S.Struct({
 })
 
 export type DbTag = S.Schema.Type<typeof DbTag>
+export type DbTagEncoded = S.Schema.Encoded<typeof DbTag>
 
 export const DbArticleTag = S.Struct({
   article_id: ArticleId,
@@ -152,6 +157,7 @@ export const DbArticleTag = S.Struct({
 })
 
 export type DbArticleTag = S.Schema.Type<typeof DbArticleTag>
+export type DbArticleTagEncoded = S.Schema.Encoded<typeof DbArticleTag>
 
 export const DbFavorite = S.Struct({
   user_id: UserId,
@@ -159,6 +165,7 @@ export const DbFavorite = S.Struct({
 })
 
 export type DbFavorite = S.Schema.Type<typeof DbFavorite>
+export type DbFavoriteEncoded = S.Schema.Encoded<typeof DbFavorite>
 
 export const DbFollow = S.Struct({
   follower_id: UserId,
@@ -166,6 +173,7 @@ export const DbFollow = S.Struct({
 })
 
 export type DbFollow = S.Schema.Type<typeof DbFollow>
+export type DbFollowEncoded = S.Schema.Encoded<typeof DbFollow>
 
 export const DbJwtToken = S.Struct({
   id: S.nanoId,
@@ -175,3 +183,4 @@ export const DbJwtToken = S.Struct({
 })
 
 export type DbJwtToken = S.Schema.Type<typeof DbJwtToken>
+export type DbJwtTokenEncoded = S.Schema.Encoded<typeof DbJwtToken>

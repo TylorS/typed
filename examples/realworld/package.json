@@ -27,6 +27,7 @@
     "@effect/sql-pg": "^0.2.15",
     "@opentelemetry/exporter-trace-otlp-http": "^0.51.1",
     "@opentelemetry/sdk-trace-base": "^1.24.1",
+    "@opentelemetry/semantic-conventions": "^1.24.1",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -54,7 +55,9 @@
     "effect-http-security": "^0.1.1",
     "effect-log": "^0.31.3",
     "jsonwebtoken": "^9.0.2",
+    "kysely": "^0.27.3",
     "path-to-regexp": "^6.2.2",
+    "pg": "^8.11.5",
     "postgres": "^3.4.4",
     "source-map-support": "^0.5.21",
     "ts-toolbelt": "^9.6.0"
@@ -62,6 +65,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
+    "@types/pg": "^8.11.6",
     "happy-dom": "14.11.0",
     "mock-storage": "^1.1.0",
     "rollup-plugin-visualizer": "^5.12.0",
