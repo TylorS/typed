@@ -1,108 +1,122 @@
-import * as Pg from "@effect/sql-pg"
 import * as Effect from "effect/Effect"
+import { sql } from "kysely"
+import { RealworldDb } from "../kysely"
 
-export default Effect.flatMap(
-  Pg.client.PgClient,
-  (sql) =>
-    sql`
-      -- Users
-      CREATE TABLE users(
-        id varchar(21) PRIMARY KEY,
-        email varchar(255) NOT NULL,
-        username varchar(50) NOT NULL,
-        password varchar(255) NOT NULL,
-        bio text,
-        image text,
-        created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      -- Articles
-      CREATE TABLE articles(
-        id varchar(21) PRIMARY KEY,
-        author_id varchar(21) NOT NULL,
-        slug varchar(255) NOT NULL,
-        title varchar(255) NOT NULL,
-        description text NOT NULL,
-        body text NOT NULL,
-        created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (author_id) REFERENCES users(id)
-      );
-      
-      -- Comments
-      CREATE TABLE comments(
-        id varchar(21) PRIMARY KEY,
-        article_id varchar(21) NOT NULL,
-        author_id varchar(21) NOT NULL,
-        body text NOT NULL,
-        created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (article_id) REFERENCES articles(id),
-        FOREIGN KEY (author_id) REFERENCES users(id)
-      );
-      
-      -- Tags
-      CREATE TABLE tags(
-        id varchar(21) PRIMARY KEY,
-        name varchar(255) NOT NULL
-      );
-      
-      -- ArticleTags
-      CREATE TABLE article_tags(
-        article_id varchar(21) NOT NULL,
-        tag_id varchar(255) NOT NULL,
-        PRIMARY KEY (article_id, tag_id),
-        FOREIGN KEY (article_id) REFERENCES articles(id),
-        FOREIGN KEY (tag_id) REFERENCES tags(id)
-      );
-      
-      -- Favorites
-      CREATE TABLE favorites(
-        user_id varchar(21) NOT NULL,
-        article_id varchar(21) NOT NULL,
-        PRIMARY KEY (user_id, article_id),
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (article_id) REFERENCES articles(id)
-      );
-      
-      -- Follows
-      CREATE TABLE follows(
-        follower_id varchar(21) NOT NULL,
-        followed_id varchar(21) NOT NULL,
-        PRIMARY KEY (follower_id, followed_id),
-        FOREIGN KEY (follower_id) REFERENCES users(id),
-        FOREIGN KEY (followed_id) REFERENCES users(id)
-      );
+const logTableCreate = (tableName: string) => Effect.logInfo(`Creating table ${tableName}...`)
 
-      -- JWT
-      CREATE TABLE jwt_tokens(
-        id varchar(21) PRIMARY KEY,
-        user_id varchar(21) NOT NULL,
-        token text NOT NULL,
-        created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-      
-      -- Indexes
-      CREATE INDEX articles_author_id_idx ON articles(author_id);
-      
-      CREATE INDEX comments_article_id_idx ON comments(article_id);
-      
-      CREATE INDEX comments_author_id_idx ON comments(author_id);
-      
-      CREATE INDEX article_tags_article_id_idx ON article_tags(article_id);
-      
-      CREATE INDEX article_tags_tag_id_idx ON article_tags(tag_id);
-      
-      CREATE INDEX favorites_user_id_idx ON favorites(user_id);
-      
-      CREATE INDEX favorites_article_id_idx ON favorites(article_id);
-      
-      CREATE INDEX follows_follower_id_idx ON follows(follower_id);
-      
-      CREATE INDEX follows_followed_id_idx ON follows(followed_id);
+export default Effect.gen(function*(_) {
+  const { kysely } = yield* _(RealworldDb)
 
-      CREATE INDEX jwt_tokens_user_id_idx ON jwt_tokens(user_id);
-    `
-)
+  // Users
+
+  yield* _(Effect.logInfo("Creating tables..."))
+
+  yield* _(logTableCreate("users"))
+
+  yield* _(kysely((db) =>
+    db.schema.createTable("users")
+      .addColumn("id", "varchar(21)", (c) => c.primaryKey())
+      .addColumn("email", "varchar(255)", (c) => c.notNull())
+      .addColumn("username", "varchar(50)", (c) => c.notNull())
+      .addColumn("password", "varchar(255)", (c) => c.notNull())
+      .addColumn("bio", "text")
+      .addColumn("image", "text")
+      .addColumn("created_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+  ))
+
+  yield* logTableCreate("articles")
+
+  // Articles
+  yield* _(kysely((db) =>
+    db.schema.createTable("articles")
+      .addColumn("id", "varchar(21)", (c) => c.primaryKey())
+      .addColumn("author_id", "varchar(21)", (c) => c.references("users.id").notNull())
+      .addColumn("slug", "varchar(255)", (c) => c.notNull())
+      .addColumn("title", "varchar(255)", (c) => c.notNull())
+      .addColumn("description", "text", (c) => c.notNull())
+      .addColumn("body", "text", (c) => c.notNull())
+      .addColumn("created_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+  ))
+
+  yield* logTableCreate("comments")
+
+  // Comments
+  yield* _(kysely((db) =>
+    db.schema.createTable("comments")
+      .addColumn("id", "varchar(21)", (c) => c.primaryKey())
+      .addColumn("article_id", "varchar(21)", (c) => c.references("articles.id").notNull())
+      .addColumn("author_id", "varchar(21)", (c) => c.references("users.id").notNull())
+      .addColumn("body", "text", (c) => c.notNull())
+      .addColumn("created_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn("updated_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+  ))
+
+  yield* logTableCreate("tags")
+
+  // Tags
+  yield* _(kysely((db) =>
+    db.schema.createTable("tags")
+      .addColumn("id", "varchar(21)", (c) => c.primaryKey())
+      .addColumn("name", "varchar(255)", (c) => c.notNull())
+  ))
+
+  yield* logTableCreate("article_tags")
+
+  // ArticleTags
+  yield* _(kysely((db) =>
+    db.schema.createTable("article_tags")
+      .addColumn("article_id", "varchar(21)", (col) => col.references("articles.id").notNull())
+      .addColumn("tag_id", "varchar(255)", (col) => col.references("tags.id").notNull())
+      .addPrimaryKeyConstraint("article_tags_pkey", ["article_id", "tag_id"])
+  ))
+
+  yield* logTableCreate("favorites")
+
+  // Favorites
+  yield* _(kysely((db) =>
+    db.schema.createTable("favorites")
+      .addColumn("user_id", "varchar(21)", (col) => col.references("users.id").notNull())
+      .addColumn("article_id", "varchar(21)", (col) => col.references("articles.id").notNull())
+      .addPrimaryKeyConstraint("favorites_pkey", ["user_id", "article_id"])
+  ))
+
+  yield* logTableCreate("follows")
+
+  // Follows
+  yield* _(kysely((db) =>
+    db.schema.createTable("follows")
+      .addColumn("follower_id", "varchar(21)", (col) => col.references("users.id").notNull())
+      .addColumn("followed_id", "varchar(21)", (col) => col.references("users.id").notNull())
+      .addPrimaryKeyConstraint("follows_pkey", ["follower_id", "followed_id"])
+  ))
+
+  yield* logTableCreate("jwt_tokens")
+
+  // JWT
+  yield* _(kysely((db) =>
+    db.schema.createTable("jwt_tokens")
+      .addColumn("id", "varchar(21)", (c) => c.primaryKey())
+      .addColumn("user_id", "varchar(21)", (c) => c.references("users.id").notNull())
+      .addColumn("token", "text", (c) => c.notNull())
+      .addColumn("created_at", "timestamp", (c) => c.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+  ))
+
+  // Indexes
+
+  yield* _(Effect.logInfo("Creating indexes..."))
+
+  yield* _(kysely((db) => db.schema.createIndex("articles_author_id_idx").on("articles").column("author_id")))
+  yield* _(kysely((db) => db.schema.createIndex("comments_article_id_idx").on("comments").column("article_id")))
+  yield* _(kysely((db) => db.schema.createIndex("comments_author_id_idx").on("comments").column("author_id")))
+  yield* _(kysely((db) => db.schema.createIndex("article_tags_article_id_idx").on("article_tags").column("article_id")))
+  yield* _(kysely((db) => db.schema.createIndex("article_tags_tag_id_idx").on("article_tags").column("tag_id")))
+  yield* _(kysely((db) => db.schema.createIndex("favorites_user_id_idx").on("favorites").column("user_id")))
+  yield* _(kysely((db) => db.schema.createIndex("favorites_article_id_idx").on("favorites").column("article_id")))
+  yield* _(kysely((db) => db.schema.createIndex("follows_follower_id_idx").on("follows").column("follower_id")))
+  yield* _(kysely((db) => db.schema.createIndex("follows_followed_id_idx").on("follows").column("followed_id")))
+  yield* _(kysely((db) => db.schema.createIndex("jwt_tokens_user_id_idx").on("jwt_tokens").column("user_id")))
+
+  yield* _(Effect.logInfo("Tables and indexes created!"))
+})

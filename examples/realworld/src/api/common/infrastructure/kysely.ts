@@ -7,7 +7,15 @@ import * as Otel from "@opentelemetry/semantic-conventions"
 import * as Ctx from "@typed/context"
 import type { Cause, Option, Types } from "effect"
 import { Chunk, Effect, Exit, Layer, Stream } from "effect"
-import type { DeleteQueryBuilder, InsertQueryBuilder, Kysely, SelectQueryBuilder, Transaction } from "kysely"
+import type {
+  CreateIndexBuilder,
+  CreateTableBuilder,
+  DeleteQueryBuilder,
+  InsertQueryBuilder,
+  Kysely,
+  SelectQueryBuilder,
+  Transaction
+} from "kysely"
 import { CompiledQuery } from "kysely"
 import type * as DbSchema from "./schema.js"
 
@@ -32,15 +40,17 @@ declare global {
   }
 }
 
-type Compilable<A> =
+type Compilable<A = void> =
   | SelectQueryBuilder<any, any, A>
   | DeleteQueryBuilder<any, any, A>
   | InsertQueryBuilder<any, any, A>
+  | CreateTableBuilder<any, any>
+  | CreateIndexBuilder<any>
 
 export interface KyselyDatabase<DB> {
   readonly sql: Sql.client.Client
   readonly db: Kysely<DB>
-  readonly query: <Out extends object>(
+  readonly kysely: <Out extends object>(
     f: (db: Kysely<DB>) => Compilable<Out>
   ) => Effect.Effect<ReadonlyArray<Out>, Sql.error.SqlError, never>
 }
@@ -51,15 +61,18 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
   const schema = makeSchema<DB>(Tag)
   const make = (makeDb: () => Kysely<DB>): Layer.Layer<KyselyDatabase<DB> | Sql.client.Client> =>
     Layer.flatMap(
-      Tag.layer(Effect.sync(() => {
+      Tag.scoped(Effect.gen(function*(_) {
         const db: Kysely<DB> = makeDb()
         const sql = makeClient(db)
-        const query = <Out extends object>(f: (db: Kysely<DB>) => Compilable<Out>) => {
+        const kysely = <Out extends object>(f: (db: Kysely<DB>) => Compilable<Out>) => {
           const compiled = f(db).compile()
           return sql.unsafe<Out>(compiled.sql, compiled.parameters as any)
         }
 
-        return { sql, db, query } as const
+        // Close connection when out of scope
+        yield* _(Effect.addFinalizer(() => Effect.promise(() => db.destroy())))
+
+        return { sql, db, kysely } as const
       })),
       (ctx) => {
         const { sql } = Ctx.get(ctx, Tag)
@@ -67,17 +80,23 @@ export const make = <DB>(makeClient: (db: Kysely<DB>) => Sql.client.Client) => {
       }
     )
 
+  const withTransaction = <A, E, R>(
+    effect: Effect.Effect<A, E, R>
+  ): Effect.Effect<A, Sql.error.SqlError | E, KyselyDatabase<DB> | R> =>
+    Tag.withEffect(({ sql }) => sql.withTransaction(effect))
+
   return Object.assign(
     Tag,
     {
       resolver,
       schema,
+      withTransaction,
       make
     } as const
   )
 }
 
-export const makePg = <DB>() => make<DB>((db) => makeSqlCompiler(db, Pg.client.makeCompiler()))
+export const makePg = <DB>() => make<DB>((db) => makeSqlClient(db, Pg.client.makeCompiler()))
 
 export const RealworldDb = makePg<Database>()
 
@@ -95,7 +114,7 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
     never,
     KyselyDatabase<DB>
   > =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.resolver.findById(tag, { ...options, execute: (requests) => query((db) => options.execute(db, requests)) })
     )
 
@@ -112,7 +131,7 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
       ) => Compilable<Row>
     }
   ): Effect.Effect<Sql.resolver.SqlResolver<T, I, Array<A>, Sql.error.SqlError, RI>, never, KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.resolver.grouped(tag, {
         ...options,
         execute: (requests) => query<Row>((db) => options.execute(db, requests))
@@ -131,7 +150,7 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
     never,
     KyselyDatabase<DB>
   > =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.resolver.ordered(tag, { ...options, execute: (requests) => query((db) => options.execute(db, requests)) })
     )
 
@@ -142,7 +161,7 @@ function makeResolver<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>
       readonly execute: (db: Kysely<DB>, requests: Array<Types.NoInfer<II>>) => Compilable<object>
     }
   ): Effect.Effect<Sql.resolver.SqlResolver<T, I, void, Sql.error.SqlError, RI>, never, KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.resolver.void(tag, { ...options, execute: (requests) => query((db) => options.execute(db, requests)) })
     )
 
@@ -165,7 +184,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
   (
     request: IA
   ): Effect.Effect<ReadonlyArray<A>, ParseResult.ParseError | Sql.error.SqlError, IR | AR | KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.schema.findAll({ ...options, execute: (req) => query((db) => options.execute(db, req)) })(request)
     )
 
@@ -177,7 +196,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
   (
     request: IA
   ): Effect.Effect<ReadonlyArray<A>, ParseResult.ParseError | Sql.error.SqlError, IR | AR | KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.schema.findAll({ ...options, execute: (req) => query((db) => options.execute(db, req)) })(request)
     )
 
@@ -191,7 +210,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
   (
     request: IA
   ): Effect.Effect<Option.Option<A>, ParseResult.ParseError | Sql.error.SqlError, IR | AR | KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.schema.findOne({ ...options, execute: (req) => query((db) => options.execute(db, req)) })(request)
     )
 
@@ -209,7 +228,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
     ParseResult.ParseError | Cause.NoSuchElementException | Sql.error.SqlError,
     IR | AR | KyselyDatabase<DB>
   > =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.schema.single({ ...options, execute: (req) => query((db) => options.execute(db, req)) })(request)
     )
 
@@ -220,7 +239,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
     }
   ) =>
   (request: IA): Effect.Effect<void, ParseResult.ParseError | Sql.error.SqlError, IR | KyselyDatabase<DB>> =>
-    Tag.withEffect(({ query }) =>
+    Tag.withEffect(({ kysely: query }) =>
       Sql.schema.void({ ...options, execute: (req) => query((db) => options.execute(req, db)) })(request)
     )
 
@@ -233,7 +252,7 @@ function makeSchema<DB>(Tag: Ctx.Tagged<KyselyDatabase<DB>, KyselyDatabase<DB>>)
   } as const
 }
 
-function makeSqlCompiler<DB>(database: Kysely<DB>, compiler: Sql.statement.Compiler): Sql.client.Client {
+function makeSqlClient<DB>(database: Kysely<DB>, compiler: Sql.statement.Compiler): Sql.client.Client {
   const transformRows = Sql.statement.defaultTransforms((s) => s, false).array
 
   class ConnectionImpl implements Connection {
@@ -282,7 +301,7 @@ function makeSqlCompiler<DB>(database: Kysely<DB>, compiler: Sql.statement.Compi
   }
 
   return Sql.client.make({
-    acquirer: Effect.sync(() => new ConnectionImpl(database)),
+    acquirer: Effect.succeed(new ConnectionImpl(database)),
     compiler,
     transactionAcquirer: Effect.gen(function*(_) {
       const { trx } = yield* _(
