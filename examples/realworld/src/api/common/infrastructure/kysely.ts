@@ -23,14 +23,14 @@ type Compilable<A = void> =
   | SelectQueryBuilder<any, any, A>
   | DeleteQueryBuilder<any, any, A>
   | InsertQueryBuilder<any, any, A>
-  // Allow creatining migrations
+  // Allow creating migrations
   | CreateTableBuilder<any, any>
   | CreateIndexBuilder<any>
 
 /**
  * KyselyDatabase is the interface that provides access to a Kysely database connection,
  * the SQL Client derived from it, and a `kysely` wrapper. `kysely` is used to run Kysely queries within an Effect,
- * and it will inherit an transactions from the Effect's scope automatically.
+ * and it will inherit any transactions from the Effect's scope automatically.
  * @since 1.0.0
  */
 export interface KyselyDatabase<DB> {
@@ -323,15 +323,18 @@ function makeSqlClient<DB>(database: Kysely<DB>, compiler: Sql.statement.Compile
     transactionAcquirer: Effect.gen(function*(_) {
       const { trx } = yield* _(
         // Acquire a transaction
-        Effect.acquireRelease(Effect.promise(() => begin(database)), (trx, exit) =>
-          Effect.sync(() =>
-            Exit.match(exit, {
-              // If the scope fails we rollback the transaction
-              onFailure: () => trx.rollback(),
-              // If the scope succeeds we commit the transaction
-              onSuccess: () => trx.commit()
-            })
-          ))
+        Effect.acquireRelease(
+          Effect.promise(() => begin(database)),
+          (trx, exit) =>
+            Effect.promise(() =>
+              Exit.match(exit, {
+                // If the scope fails we rollback the transaction
+                onFailure: () => trx.rollback(),
+                // If the scope succeeds we commit the transaction
+                onSuccess: () => trx.commit()
+              })
+            )
+        )
       )
 
       return new ConnectionImpl(trx)
@@ -358,12 +361,10 @@ async function begin<DB>(db: Kysely<DB>) {
   const result = new DeferredPromise<any>()
 
   // Do NOT await this line.
-  db.transaction().execute((trx) => {
+  const transaction = db.transaction().execute((trx) => {
     connection.resolve(trx)
     return result.promise
-  }).catch(() => {
-    // Don't do anything here. Just swallow the exception.
-  })
+  }).catch(() => null)
 
   const trx = await connection.promise
 
@@ -371,9 +372,11 @@ async function begin<DB>(db: Kysely<DB>) {
     trx,
     commit() {
       result.resolve(null)
+      return transaction
     },
     rollback() {
       result.reject(new Error("rollback"))
+      return transaction
     }
   }
 }
