@@ -6,17 +6,15 @@ import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { LoginInput } from "@typed/realworld/services/Login"
 import * as Routes from "@typed/realworld/ui/common/routes"
-import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
+import { useCurrentUserErrors } from "@typed/realworld/ui/components/CurrentUserErrors"
 import { Effect } from "effect"
 
 export const route = Routes.login
 
-type SubmitEvent = EventWithTarget<HTMLFormElement, Event>
-
 export const main = Fx.gen(function*(_) {
-  const hasSubmitted = yield* _(RefSubject.of<boolean>(false))
-  const onSubmit = EventHandler.preventDefault((ev: SubmitEvent) =>
-    Effect.zipRight(loginUser(ev), RefSubject.set(hasSubmitted, true))
+  const userErrors = yield* _(useCurrentUserErrors)
+  const onSubmit = EventHandler.target<HTMLFormElement>({ preventDefault: true })((ev) =>
+    Effect.zipRight(loginUser(ev), userErrors.onSubmit)
   )
 
   return html`<div class="auth-page">
@@ -28,7 +26,7 @@ export const main = Fx.gen(function*(_) {
             ${Link({ to: Routes.register.interpolate({}) }, `Need an account?`)}
           </p>
 
-          ${Fx.if(hasSubmitted, { onFalse: Fx.null, onTrue: CurrentUserErrors })}
+          ${userErrors.view}
 
           <form onsubmit=${onSubmit}>
             <fieldset class="form-group">
@@ -57,7 +55,7 @@ export const main = Fx.gen(function*(_) {
   </div>`
 })
 
-function loginUser(ev: SubmitEvent) {
+function loginUser(ev: EventWithTarget<HTMLFormElement, Event>) {
   return Effect.catchTag(
     Effect.gen(function*(_) {
       const current = yield* _(CurrentUser)

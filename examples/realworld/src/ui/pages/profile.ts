@@ -64,7 +64,7 @@ export const main = (params: RefSubject.RefSubject<Params>) =>
               ${
       Link(
         {
-          to: Routes.settings.interpolate({}),
+          to: Routes.settings.path,
           relative: false
         },
         html`<button

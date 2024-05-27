@@ -1,17 +1,23 @@
 import { ArrayFormatter } from "@effect/schema"
-import { AsyncData, EventHandler, html, Link, RefAsyncData, RefSubject } from "@typed/core"
+import { AsyncData, EventHandler, Fx, html, Link, RefAsyncData, RefSubject } from "@typed/core"
 import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { parseFormData } from "@typed/realworld/lib/Schema"
 import { CurrentUser, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { RegisterInput } from "@typed/realworld/services/Register"
 import * as Routes from "@typed/realworld/ui/common/routes"
-import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
+import { useCurrentUserErrors } from "@typed/realworld/ui/components/CurrentUserErrors"
 import { Effect } from "effect"
 
 export const route = Routes.register
 
-export const main = html`<div class="auth-page">
+export const main = Fx.gen(function*(_) {
+  const userErrors = yield* _(useCurrentUserErrors)
+  const onSubmit = EventHandler.target<HTMLFormElement>({ preventDefault: true })((ev) =>
+    Effect.zipRight(registerUser(ev), userErrors.onSubmit)
+  )
+
+  return html`<div class="auth-page">
   <div class="container page">
     <div class="row">
       <div class="col-md-6 col-xs-12 offset-md-3">
@@ -20,9 +26,9 @@ export const main = html`<div class="auth-page">
           ${Link({ to: Routes.login.interpolate({}) }, `Have an account?`)}
         </p>
 
-        ${CurrentUserErrors}
+        ${userErrors.view}
 
-        <form onsubmit=${EventHandler.preventDefault(registerUser)}>
+        <form onsubmit=${onSubmit}>
           <fieldset class="form-group">
             <input
               autocomplete="username"
@@ -56,6 +62,7 @@ export const main = html`<div class="auth-page">
     </div>
   </div>
 </div>`
+})
 
 function registerUser(ev: EventWithTarget<HTMLFormElement, Event>) {
   return Effect.gen(function*(_) {

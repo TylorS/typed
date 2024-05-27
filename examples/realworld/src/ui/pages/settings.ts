@@ -5,7 +5,7 @@ import { CurrentUser, isAuthenticatedGuard, Users } from "@typed/realworld/servi
 import { Unprocessable } from "@typed/realworld/services/errors"
 import { UpdateUserInput } from "@typed/realworld/services/UpdateUser"
 import * as Routes from "@typed/realworld/ui/common/routes"
-import { CurrentUserErrors } from "@typed/realworld/ui/services/CurrentUser"
+import { useCurrentUserErrors } from "@typed/realworld/ui/components/CurrentUserErrors"
 import { EventHandler, html } from "@typed/template"
 import { Effect, Option } from "effect"
 
@@ -13,10 +13,10 @@ export const route = Routes.settings.pipe(isAuthenticatedGuard)
 
 type SubmitEvent = Event & { target: HTMLFormElement }
 
-export const main = Fx.gen(function*(_) {
-  const hasSubmitted = yield* _(RefSubject.of<boolean>(false))
+export const main = Fx.gen(function* (_) {
+  const userErrors = yield* _(useCurrentUserErrors)
   const onSubmit = EventHandler.preventDefault((ev: SubmitEvent) =>
-    Effect.zipRight(updateUser(ev), RefSubject.set(hasSubmitted, true))
+    Effect.zipRight(updateUser(ev), userErrors.onSubmit)
   )
 
   // We expect this to be a success since we are guarding this route
@@ -34,7 +34,7 @@ export const main = Fx.gen(function*(_) {
       <div class="col-md-6 col-xs-12 offset-md-3">
         <h1 class="text-xs-center">Your Settings</h1>
       
-        ${Fx.if(hasSubmitted, { onFalse: Fx.null, onTrue: CurrentUserErrors })}
+        ${userErrors.view}
 
         <form onsubmit=${onSubmit}>
           <fieldset>
