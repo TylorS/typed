@@ -8,6 +8,7 @@ import type * as Fx from "@typed/fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
+import type { Cause } from "effect"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
 import type * as Layer from "effect/Layer"
@@ -318,16 +319,14 @@ export const navigate = <R extends Route.Route.Any>(
   route: R,
   ...[options]: NavigateOptions<R>
 ): Effect.Effect<
-  Option.Option<Navigation.Destination>,
-  Navigation.NavigationError,
+  Navigation.Destination,
+  Navigation.NavigationError | Cause.NoSuchElementException,
   Navigation.Navigation | CurrentRoute
 > =>
-  Effect.optionFromOptional(
-    Effect.gen(function*(_) {
-      const params = options?.params ?? ({} as Route.Route.Params<R>)
-      const path = options?.relative === false
-        ? route.interpolate(params)
-        : yield* _(makeHref<R>(route, params))
-      return yield* _(Navigation.navigate(path))
-    })
-  )
+  Effect.gen(function*(_) {
+    const params = options?.params ?? ({} as Route.Route.Params<R>)
+    const path = options?.relative === false
+      ? route.interpolate(params)
+      : yield* _(makeHref<R>(route, params))
+    return yield* _(Navigation.navigate(path))
+  })

@@ -57,7 +57,7 @@ export interface Route<
   /**
    * @since 5.0.0
    */
-  readonly path: P
+  readonly path: Path.PathJoin<[P]>
 
   /**
    * @since 5.0.0
@@ -345,11 +345,10 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
-  export type Concat<I extends Route.Any, I2 extends Route.Any> = [I2] extends [never] ? I
-    : Route<
-      Path.PathJoin<[PathWithoutQuery<I>, PathWithoutQuery<I2>, ConcatQuery<Query<I>, Query<I2>>]>,
-      ConcatSchemas<Schema<I>, Schema<I2>>
-    > extends Route<infer P, infer S> ? Route<P, S>
+  export type Concat<I extends Route.Any, I2 extends Route.Any> = Route<
+    Path.PathJoin<[PathWithoutQuery<I>, PathWithoutQuery<I2>, ConcatQuery<Query<I>, Query<I2>>]>,
+    ConcatSchemas<Schema<I>, Schema<I2>>
+  > extends Route<infer P, infer S> ? Route<P, S>
     : never
 
   /**
@@ -437,8 +436,8 @@ class RouteImpl<P extends string, S extends Sch.Schema.All> implements Route<P, 
   }
 
   private __path!: any
-  get path(): P {
-    return this.__path ??= AST.toPath(this.routeAst) as P
+  get path(): Path.PathJoin<[P]> {
+    return this.__path ??= AST.toPath(this.routeAst) as Path.PathJoin<[P]>
   }
 
   private __schema!: any
@@ -516,7 +515,7 @@ export interface RouteOptions {
 export const make = <P extends string, S extends Sch.Schema.All>(
   ast: AST.AST,
   options?: Partial<RouteOptions>
-): Route<P, S> => new RouteImpl(ast, options)
+): Route<P, S> => new RouteImpl<P, S>(ast, options)
 
 /**
  * @since 5.0.0
