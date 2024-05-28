@@ -1,3 +1,6 @@
+import * as NodeSdk from "@effect/opentelemetry/NodeSdk"
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base"
 import { getRandomValues } from "@typed/id"
 import { ArticlesLive } from "@typed/realworld/api/articles/infrastructure/ArticlesLive"
 import { CommentsLive } from "@typed/realworld/api/comments/infrastructure/CommentsLive"
@@ -14,7 +17,15 @@ export const Live = Layer.mergeAll(ArticlesLive, CommentsLive, ProfilesLive, Tag
   // You probably shouldn't use import.meta.env in a real application
   // as it will leak information into your bundle since Vite replaces these values at build time
   Layer.provide(Layer.setConfigProvider(ConfigProvider.fromJson(import.meta.env))),
-  Layer.provideMerge(NodeSwaggerFiles.SwaggerFilesLive)
+  Layer.provideMerge(NodeSwaggerFiles.SwaggerFilesLive),
+  Layer.provideMerge(NodeSdk.layer(() => ({
+    resource: { serviceName: "realworld" },
+    spanProcessor: new BatchSpanProcessor(
+      new OTLPTraceExporter({
+        url: import.meta.env.VITE_OTEL_TRACE_URL
+      })
+    )
+  })))
 )
 
 export { CurrentUserLive } from "@typed/realworld/api/users/infrastructure"

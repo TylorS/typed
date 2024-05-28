@@ -12,6 +12,7 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
 import * as Option from "effect/Option"
+import { type Pipeable, pipeArguments } from "effect/Pipeable"
 import { hasProperty } from "effect/Predicate"
 import type * as Scope from "effect/Scope"
 import * as Unify from "effect/Unify"
@@ -33,7 +34,7 @@ export type RouteMatcherTypeId = typeof RouteMatcherTypeId
 /**
  * @since 1.0.0
  */
-export interface RouteMatcher<Matches extends RouteMatch.RouteMatch.Any> {
+export interface RouteMatcher<Matches extends RouteMatch.RouteMatch.Any> extends Pipeable {
   readonly [RouteMatcherTypeId]: RouteMatcherTypeId
 
   readonly matches: ReadonlyArray<Matches>
@@ -161,6 +162,10 @@ class RouteMatcherImpl<Matches extends RouteMatch.RouteMatch.Any> implements Rou
     f: (value: MatchInput.Success<I>) => B
   ) {
     return this.match(input, Fx.map(f))
+  }
+
+  pipe() {
+    return pipeArguments(this, arguments)
   }
 }
 

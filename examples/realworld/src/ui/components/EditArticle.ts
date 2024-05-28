@@ -11,6 +11,7 @@ import {
 } from "@typed/realworld/model"
 import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import * as Routes from "@typed/realworld/ui/common/routes"
+import type { Cause } from "effect"
 import { Effect } from "effect"
 
 export type EditArticleFields = Pick<
@@ -21,14 +22,14 @@ export type EditArticleFields = Pick<
 export function useEditArticle<R, R2>(
   initial: RefSubject.Computed<
     EditArticleFields,
-    Unprocessable | Unauthorized | ParseError,
+    Unprocessable | Unauthorized | ParseError | Cause.NoSuchElementException,
     R
   >,
   onSubmit: (
     updated: EditArticleFields
   ) => Effect.Effect<
     unknown,
-    Unprocessable | Unauthorized | ParseError | NavigationError,
+    Unprocessable | Unauthorized | ParseError | NavigationError | Cause.NoSuchElementException,
     R2
   >
 ) {
@@ -43,9 +44,9 @@ export function useEditArticle<R, R2>(
         Effect.flatMap(onSubmit),
         Effect.catchTags({
           Unprocessable: (error) => RefSubject.set(errors, error.errors),
-          Unauthorized: () => Router.navigate(Routes.login, { relative: false }),
-          ParseError: (issue) => RefSubject.set(errors, [issue.message])
-        })
+          Unauthorized: () => Router.navigate(Routes.login, { relative: false })
+        }),
+        Effect.catchAll((issue) => RefSubject.set(errors, [issue.message]))
       )
     )
 
@@ -206,14 +207,14 @@ export function renderForm<R, R2>({
 export function EditArticle<R, R2>(
   initial: RefSubject.Computed<
     EditArticleFields,
-    Unprocessable | Unauthorized | ParseError,
+    Unprocessable | Unauthorized | ParseError | Cause.NoSuchElementException,
     R
   >,
   onSubmit: (
     updated: EditArticleFields
   ) => Effect.Effect<
     unknown,
-    Unprocessable | NavigationError | Unauthorized | ParseError,
+    Unprocessable | NavigationError | Unauthorized | ParseError | Cause.NoSuchElementException,
     R2
   >
 ) {

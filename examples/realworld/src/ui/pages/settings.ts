@@ -1,5 +1,6 @@
 import { ArrayFormatter } from "@effect/schema"
 import { AsyncData, Fx, RefAsyncData, RefSubject, Router } from "@typed/core"
+import type { EventWithTarget } from "@typed/dom/EventTarget"
 import { parseFormData } from "@typed/realworld/lib/Schema"
 import { CurrentUser, isAuthenticatedGuard, Users } from "@typed/realworld/services"
 import { Unprocessable } from "@typed/realworld/services/errors"
@@ -11,9 +12,9 @@ import { Effect, Option } from "effect"
 
 export const route = Routes.settings.pipe(isAuthenticatedGuard)
 
-type SubmitEvent = Event & { target: HTMLFormElement }
+type SubmitEvent = EventWithTarget<HTMLFormElement>
 
-export const main = Fx.gen(function* (_) {
+export const main = Fx.gen(function*(_) {
   const userErrors = yield* _(useCurrentUserErrors)
   const onSubmit = EventHandler.preventDefault((ev: SubmitEvent) =>
     Effect.zipRight(updateUser(ev), userErrors.onSubmit)
