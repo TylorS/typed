@@ -298,7 +298,7 @@ export const toPlatformRouter = <E, R>(
     platformRouter = PlatformRouter.mountApp(
       platformRouter,
       // TODO: Maybe we should do a best-effort to convert the path to a platform compatible path
-      MatchInput.getPath(mount.prefix),
+      MatchInput.getPath(mount.prefix) as any,
       Effect.gen(function*() {
         const ctx = yield* setupRouteContext
         const response = yield* runRouteMatcher<E, R>(

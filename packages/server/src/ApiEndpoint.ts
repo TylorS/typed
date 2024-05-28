@@ -3,6 +3,7 @@
  */
 
 import type { Method } from "@effect/platform/Http/Method"
+import type { PathInput } from "@effect/platform/Http/Router"
 import { getPropertySignatures } from "@effect/schema/AST"
 import type { Schema } from "@effect/schema/Schema"
 import type { MatchInput } from "@typed/router"
@@ -79,7 +80,7 @@ export function setRequestRoute<I extends MatchInput.Any>(
 ): <
   Id extends string,
   B,
-  _,
+  P,
   Q,
   H,
   R1,
@@ -88,7 +89,7 @@ export function setRequestRoute<I extends MatchInput.Any>(
 >(
   endpoint: ApiEndpoint.ApiEndpoint<
     Id,
-    ApiRequest.ApiRequest<B, _, Q, H, R1>,
+    ApiRequest.ApiRequest<B, P, Q, H, R1>,
     Response,
     S
   >
@@ -154,7 +155,7 @@ export function make<
   ApiResponse.ApiResponse.Default,
   Security.Security<void, never, never>
 > {
-  const path = getPath(route)
+  const path = getPath(route) as PathInput
   const endpoint = ApiEndpoint.make(method, id, path, options) as any
   return setRequestRoute(route)(endpoint)
 }

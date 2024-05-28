@@ -207,7 +207,10 @@ export function toPlatformRoute<I extends RouteHandler.Any>(
 ): <E, R>(
   self: PlatformRouter.Router<E, R>
 ) => PlatformRouter.Router<E | RouteHandler.Error<I>, R | RouteHandler.Context<I>> {
-  return PlatformRouter.route(handler.method)(Router.getPath(handler.route), toHttpApp(handler))
+  return PlatformRouter.route(handler.method)(
+    Router.getPath<I["route"]>(handler.route) as PlatformRouter.PathInput,
+    toHttpApp(handler)
+  )
 }
 
 /**

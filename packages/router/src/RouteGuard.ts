@@ -201,7 +201,7 @@ export const concat: {
     RouteGuard.Error<L> | RouteGuard.Error<R>,
     RouteGuard.Context<L> | RouteGuard.Context<R>
   >(
-    Route.concat(self.route, other.route) as Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
+    Route.concat(self.route, other.route) as any,
     (input) =>
       Effect.Do.pipe(
         Effect.bind("a", () => self.guard(input)),

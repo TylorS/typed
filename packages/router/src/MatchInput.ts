@@ -41,7 +41,7 @@ export namespace MatchInput {
   /**
    * @since 1.0.0
    */
-  export type Path<T> = Route.Route.Path<Route<T>>
+  export type Path<T> = _Path.PathJoin<[Route.Route.Path<Route<T>>]>
 
   /**
    * @since 1.0.0
@@ -278,5 +278,5 @@ export function getQuerySchema<I extends MatchInput.Any>(input: I): MatchInput.Q
  * @since 1.0.0
  */
 export function getPath<I extends MatchInput.Any>(input: I): MatchInput.Path<I> {
-  return asRouteGuard<I>(input).route.path
+  return asRouteGuard<I>(input).route.path as MatchInput.Path<I>
 }
