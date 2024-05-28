@@ -1,5 +1,35 @@
 # @typed/core
 
+## 3.5.0
+
+### Minor Changes
+
+- [`a96ca73`](https://github.com/TylorS/typed/commit/a96ca739362e40782cefa2e1eafbd27e023d9f48) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+### Patch Changes
+
+- [`7103937`](https://github.com/TylorS/typed/commit/7103937424a875d3095f8945cb9abc7fbbf22486) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect
+
+- [`419179f`](https://github.com/TylorS/typed/commit/419179f32cab52931da32359a00ed7c820ccdcc3) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- Updated dependencies [[`7103937`](https://github.com/TylorS/typed/commit/7103937424a875d3095f8945cb9abc7fbbf22486), [`3686d1f`](https://github.com/TylorS/typed/commit/3686d1f4085467365b42a397d4a1b1e6ba106632), [`4b067f8`](https://github.com/TylorS/typed/commit/4b067f8081b2ee40bdaf55fc002a17ab98382e75), [`a96ca73`](https://github.com/TylorS/typed/commit/a96ca739362e40782cefa2e1eafbd27e023d9f48), [`419179f`](https://github.com/TylorS/typed/commit/419179f32cab52931da32359a00ed7c820ccdcc3)]:
+  - @typed/environment@0.9.0
+  - @typed/vite-plugin@0.2.1
+  - @typed/async-data@0.10.0
+  - @typed/navigation@0.16.0
+  - @typed/template@0.12.0
+  - @typed/context@0.28.0
+  - @typed/decoder@0.19.0
+  - @typed/router@0.30.0
+  - @typed/server@0.3.0
+  - @typed/guard@0.4.0
+  - @typed/route@7.0.0
+  - @typed/path@0.13.0
+  - @typed/dom@16.0.0
+  - @typed/fx@1.30.0
+  - @typed/id@0.9.0
+  - @typed/ui@0.12.0
+
 ## 3.4.0
 
 ### Minor Changes
