@@ -1,5 +1,17 @@
 # @typed/decoder
 
+## 0.19.0
+
+### Minor Changes
+
+- [`a96ca73`](https://github.com/TylorS/typed/commit/a96ca739362e40782cefa2e1eafbd27e023d9f48) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+### Patch Changes
+
+- [`7103937`](https://github.com/TylorS/typed/commit/7103937424a875d3095f8945cb9abc7fbbf22486) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect
+
+- [`419179f`](https://github.com/TylorS/typed/commit/419179f32cab52931da32359a00ed7c820ccdcc3) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
 ## 0.18.0
 
 ### Minor Changes

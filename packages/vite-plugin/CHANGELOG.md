@@ -1,5 +1,11 @@
 # @typed/vite-plugin
 
+## 0.2.1
+
+### Patch Changes
+
+- [`7103937`](https://github.com/TylorS/typed/commit/7103937424a875d3095f8945cb9abc7fbbf22486) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect
+
 ## 0.2.0
 
 ### Minor Changes
