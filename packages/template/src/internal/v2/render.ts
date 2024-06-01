@@ -501,7 +501,7 @@ function unwrapRenderable<E, R>(renderable: unknown): Fx.Fx<any, E, R> {
           ? Fx.succeed(null)
           // TODO: We need to ensure the ordering of these values in server environments
           : Fx.map(Fx.tuple(renderable.map(unwrapRenderable)), (xs) => xs.flat()) as any
-      } else if (Fx.TypeId in renderable) {
+      } else if (Fx.FxTypeId in renderable) {
         return renderable as any
       } else if (Effect.EffectTypeId in renderable) {
         return Fx.fromFxEffect(Effect.map(renderable as any, unwrapRenderable<E, R>))

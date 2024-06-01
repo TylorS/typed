@@ -2,13 +2,13 @@
  * @since 1.18.0
  * @category symbols
  */
-export const TypeId = Symbol.for("@typed/fx/Fx")
+export const FxTypeId = Symbol.for("@typed/fx/Fx")
 
 /**
  * @since 1.18.0
  * @category symbols
  */
-export type TypeId = typeof TypeId
+export type FxTypeId = typeof FxTypeId
 
 /**
  * @since 1.18.0

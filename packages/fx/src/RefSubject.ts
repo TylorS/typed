@@ -32,7 +32,7 @@ import { hold } from "./internal/share.js"
 import type { UnionToTuple } from "./internal/UnionToTuple.js"
 import * as Sink from "./Sink.js"
 import * as Subject from "./Subject.js"
-import { ComputedTypeId, FilteredTypeId, RefSubjectTypeId, TypeId } from "./TypeId.js"
+import { ComputedTypeId, FilteredTypeId, FxTypeId, RefSubjectTypeId } from "./TypeId.js"
 import * as Versioned from "./Versioned.js"
 
 const UNBOUNDED = { concurrency: "unbounded" } as const
@@ -332,7 +332,7 @@ export const make: {
   options?: RefSubjectOptions<A>
 ): Effect.Effect<any, never, R | Scope.Scope> {
   if (RefSubjectTypeId in fxOrEffect) return fromRefSubject(fxOrEffect as RefSubject<A, E, R>, options)
-  else if (TypeId in fxOrEffect) return fromFx(fxOrEffect, options)
+  else if (FxTypeId in fxOrEffect) return fromFx(fxOrEffect, options)
   else return fromEffect(fxOrEffect, options)
 }
 

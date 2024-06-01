@@ -17,7 +17,7 @@ import { FxEffectBase } from "./internal/protos.js"
 import { hold } from "./internal/share.js"
 import * as RefSubject from "./RefSubject.js"
 import type * as Sink from "./Sink.js"
-import { RefSubjectTypeId, TypeId } from "./TypeId.js"
+import { FxTypeId, RefSubjectTypeId } from "./TypeId.js"
 import type * as Versioned from "./Versioned.js"
 
 /**
@@ -484,6 +484,6 @@ const propOf = <O, E, R>(
     | Effect.Effect<O, E, R>,
   key: keyof O
 ) => {
-  if (TypeId in input) return core.map(input, (o) => o[key])
+  if (FxTypeId in input) return core.map(input, (o) => o[key])
   else return Effect.map(input, (o) => o[key])
 }

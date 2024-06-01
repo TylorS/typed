@@ -40,6 +40,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@typed/core": "workspace:*"
+    "@typed/core": "workspace:*",
+    "effect": "^3.2.7"
   }
 }

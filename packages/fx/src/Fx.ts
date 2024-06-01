@@ -41,14 +41,14 @@ import * as coreWithKey from "./internal/withKey.js"
 import { type RefSubject, transform } from "./RefSubject.js"
 import * as Sink from "./Sink.js"
 import type * as Subject from "./Subject.js"
-import { TypeId } from "./TypeId.js"
+import { FxTypeId } from "./TypeId.js"
 
 /**
  * Fx is a push-based reactive primitive built atop of Effect.
  * @since 1.20.0
  */
 export interface Fx<out A, out E = never, out R = never> extends Pipeable.Pipeable {
-  readonly [TypeId]: Fx.Variance<A, E, R>
+  readonly [FxTypeId]: Fx.Variance<A, E, R>
 
   /**
    * @since 1.20.0
@@ -119,7 +119,7 @@ export const unify = <T extends Fx<any, any, any>>(fx: T): Unify<T> => fx as any
  * @since 1.20.0
  */
 export function isFx<A, E, R>(u: unknown): u is Fx<A, E, R> {
-  return u === null ? false : hasProperty(u, TypeId)
+  return u === null ? false : hasProperty(u, FxTypeId)
 }
 
 /**

@@ -4,7 +4,7 @@ import { identity } from "effect/Function"
 import { pipeArguments } from "effect/Pipeable"
 import type { Fx } from "../Fx.js"
 import type { Sink } from "../Sink.js"
-import { TypeId } from "../TypeId.js"
+import { FxTypeId } from "../TypeId.js"
 
 const Variance: Fx.Variance<never, never, never> = {
   _R: identity,
@@ -13,7 +13,7 @@ const Variance: Fx.Variance<never, never, never> = {
 }
 
 export abstract class FxBase<A, E, R> implements Fx<A, E, R> {
-  readonly [TypeId]: Fx.Variance<A, E, R> = Variance
+  readonly [FxTypeId]: Fx.Variance<A, E, R> = Variance
 
   abstract run<R2>(sink: Sink<A, E, R2>): Effect.Effect<unknown, never, R | R2>
 
@@ -25,7 +25,7 @@ export abstract class FxBase<A, E, R> implements Fx<A, E, R> {
 export abstract class FxEffectBase<A, E, R, B, E2, R2> extends Effectable.StructuralClass<B, E2, R2>
   implements Fx<A, E, R>, Effect.Effect<B, E2, R2>
 {
-  readonly [TypeId]: Fx.Variance<A, E, R> = Variance
+  readonly [FxTypeId]: Fx.Variance<A, E, R> = Variance
 
   abstract run<R3>(sink: Sink<A, E, R3>): Effect.Effect<unknown, never, R | R3>
 

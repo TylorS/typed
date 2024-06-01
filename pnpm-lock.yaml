@@ -543,6 +543,9 @@ importers:
       '@typed/core':
         specifier: workspace:*
         version: link:../core/dist
+      effect:
+        specifier: ^3.2.7
+        version: 3.2.7
     publishDirectory: dist
 
   packages/context:

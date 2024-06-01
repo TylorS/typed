@@ -22,7 +22,7 @@ import { awaitScopeClose, RingBuffer, withScope } from "./internal/helpers.js"
 import { FxBase } from "./internal/protos.js"
 import type { Push } from "./Push.js"
 import type { Sink } from "./Sink.js"
-import { TypeId } from "./TypeId.js"
+import { FxTypeId } from "./TypeId.js"
 
 /**
  * Subject is an Fx type which can also be imperatively pushed into.
@@ -307,7 +307,7 @@ export function tagged<A, E = never>(): {
 }
 
 const isDataFirst = (args: IArguments): boolean =>
-  args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], TypeId)
+  args.length === 2 || Effect.isEffect(args[0]) || hasProperty(args[0], FxTypeId)
 
 class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, A, E, never> implements Subject.Tagged<A, E, I> {
   readonly provide: Subject.Tagged<A, E, I>["provide"]
@@ -318,7 +318,7 @@ class TaggedImpl<A, E, I> extends FromTag<I, Subject<A, E>, A, E, never> impleme
     this.provide = dual(
       isDataFirst,
       <B, E2, R2>(fxOrEffect: Fx<B, E2, R2> | Effect.Effect<B, E2, R2>, replay?: number) => {
-        if (TypeId in fxOrEffect) return provide(fxOrEffect as Fx<B, E2, Exclude<R2, I>>, this.make(replay))
+        if (FxTypeId in fxOrEffect) return provide(fxOrEffect as Fx<B, E2, Exclude<R2, I>>, this.make(replay))
         else return Effect.provide(fxOrEffect as Effect.Effect<B, E2, R2>, this.make(replay))
       }
     )

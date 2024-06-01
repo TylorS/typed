@@ -5,7 +5,7 @@
 import type { CurrentEnvironment } from "@typed/environment"
 import * as Fx from "@typed/fx/Fx"
 import * as Sink from "@typed/fx/Sink"
-import { TypeId } from "@typed/fx/TypeId"
+import { FxTypeId } from "@typed/fx/TypeId"
 import { join } from "effect/Array"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -380,7 +380,7 @@ function unwrapRenderable<E, R>(
         return Fx.fromFxEffect(
           Effect.map(renderable as any, unwrapRenderable<any, any>)
         )
-      } else if (TypeId in renderable) {
+      } else if (FxTypeId in renderable) {
         return renderable as any
       } else return Fx.succeed(renderable as any)
     }

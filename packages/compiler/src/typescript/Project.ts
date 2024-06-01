@@ -12,6 +12,8 @@ export class Project {
   private languageService: ts.LanguageService
   private program: ts.Program
 
+  readonly typeChecker: ts.TypeChecker
+
   constructor(
     documentRegistry: ts.DocumentRegistry,
     diagnosticWriter: DiagnosticWriter,
@@ -98,12 +100,21 @@ export class Project {
       documentRegistry
     )
     this.program = this.languageService.getProgram()!
+    this.typeChecker = this.program.getTypeChecker()
   }
 
   addFile(filePath: string) {
     // Add snapshot
     this.externalFiles.getSnapshot(filePath)
     return this.program.getSourceFile(filePath)!
+  }
+
+  getType(node: ts.Node): ts.Type {
+    return this.typeChecker.getTypeAtLocation(node)
+  }
+
+  getSymbol(node: ts.Node): ts.Symbol | undefined {
+    return this.typeChecker.getSymbolAtLocation(node)
   }
 
   getCommandLine(): ts.ParsedCommandLine {
