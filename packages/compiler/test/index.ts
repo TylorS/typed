@@ -14,7 +14,7 @@ function makeCompiler() {
   const files = Object.fromEntries(
     fixtures.map((
       fixture
-    ) => [path.relative(fixturesDirectory, fixture), compiler.project.addSourceFileAtPath(fixture)])
+    ) => [path.relative(fixturesDirectory, fixture), compiler.project.addFile(fixture)])
   )
 
   return {
@@ -25,12 +25,9 @@ function makeCompiler() {
 
 describe("Compiler", () => {
   const { compiler, files } = makeCompiler()
-  const staticDivWithText = files["static-div-with-text.ts"]
-  const divWithInterpolatedText = files["div-with-interpolated-text.ts"]
-  const nestedTemplates = files["nested-templates.ts"]
 
   it("Static <div> with text", () => {
-    const templates = compiler.parseTemplates(staticDivWithText)
+    const templates = compiler.parseTemplates(files["static-div-with-text.ts"])
     expect(templates).toHaveLength(1)
     const [div] = templates
     const expected = new Template([new ElementNode("div", [], [new TextNode("Hello World")])], ``, [])
@@ -39,7 +36,7 @@ describe("Compiler", () => {
   })
 
   it("<div> with interpolated text", () => {
-    const templates = compiler.parseTemplates(divWithInterpolatedText)
+    const templates = compiler.parseTemplates(files["div-with-interpolated-text.ts"])
     expect(templates).toHaveLength(1)
     const [div] = templates
     const nodePart = new NodePart(0)
@@ -49,7 +46,7 @@ describe("Compiler", () => {
   })
 
   it("nested template", () => {
-    const templates = compiler.parseTemplates(nestedTemplates)
+    const templates = compiler.parseTemplates(files["nested-templates.ts"])
 
     expect(templates).toHaveLength(2)
 

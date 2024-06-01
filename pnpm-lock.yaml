@@ -540,18 +540,9 @@ importers:
 
   packages/compiler:
     dependencies:
-      '@rnx-kit/typescript-service':
-        specifier: ^1.5.8
-        version: 1.5.8(typescript@5.4.5)
-      '@ts-morph/common':
-        specifier: ^0.23.0
-        version: 0.23.0
       '@typed/core':
         specifier: workspace:*
         version: link:../core/dist
-      ts-morph:
-        specifier: ^22.0.0
-        version: 22.0.0
     publishDirectory: dist
 
   packages/context:
@@ -2641,14 +2632,6 @@ packages:
       '@types/react':
         optional: true
 
-  '@rnx-kit/tools-node@2.1.1':
-    resolution: {integrity: sha512-jZC/pmeM3fv4LwpkVWlLyv5dOh6haUw/dBaDC0e5zkfehkIdLtRhVwz4l7iH9MW/i4I9OySoc+2DtDpX7KZyZA==}
-
-  '@rnx-kit/typescript-service@1.5.8':
-    resolution: {integrity: sha512-43kvfBnu2FIejJdH9EhBlyt1tEToneu64zu8yNnvskgLpDv7reKyHb+6jYSOWb+DVAKLFYtUkUZoZJv9WJYHKg==}
-    peerDependencies:
-      typescript: '>=4.0'
-
   '@rollup/plugin-virtual@3.0.2':
     resolution: {integrity: sha512-10monEYsBp3scM4/ND4LNH5Rxvh3e/cVeL3jWTgZ2SrQ+BmUoQcopVQvnaMcOnykb1VkxUFuDAN+0FnpTFRy2A==}
     engines: {node: '>=14.0.0'}
@@ -3037,9 +3020,6 @@ packages:
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
-
-  '@ts-morph/common@0.23.0':
-    resolution: {integrity: sha512-m7Lllj9n/S6sOkCkRftpM7L24uvmfXQFedlW/4hENcuJH1HHm9u5EgxZb9uVjQSCGrbBWBkOGgcTxNg36r6ywA==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -3842,9 +3822,6 @@ packages:
   clone@1.0.4:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
-
-  code-block-writer@13.0.1:
-    resolution: {integrity: sha512-c5or4P6erEA69TxaxTNcHUNcIn+oyxSRTOWV+pSYF+z4epXqNvwvJ70XPGjPNgue83oAFAPBRQYwpAJ/Hpe/Sg==}
 
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -5711,11 +5688,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  mkdirp@3.0.1:
-    resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   mlly@1.7.0:
     resolution: {integrity: sha512-U9SDaXGEREBYQgfejV97coK0UL1r+qnF2SyO9A3qcI8MzKnsIFKHNVEkrDyNncQTKQQumsasmeq84eNMdBfsNQ==}
 
@@ -6918,9 +6890,6 @@ packages:
   ts-graphviz@1.8.2:
     resolution: {integrity: sha512-5YhbFoHmjxa7pgQLkB07MtGnGJ/yhvjmc9uhsnDBEICME6gkPf83SBwLDQqGDoCa3XzUMWLk1AU2Wn1u1naDtA==}
     engines: {node: '>=14.16'}
-
-  ts-morph@22.0.0:
-    resolution: {integrity: sha512-M9MqFGZREyeb5fTl6gNHKZLqBQA0TjA1lea+CR48R8EBTDuWrNqW6ccC5QvjNR4s6wDumD3LTCjOFSp9iwlzaw==}
 
   ts-node@10.9.2:
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
@@ -9234,13 +9203,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.3
 
-  '@rnx-kit/tools-node@2.1.1': {}
-
-  '@rnx-kit/typescript-service@1.5.8(typescript@5.4.5)':
-    dependencies:
-      '@rnx-kit/tools-node': 2.1.1
-      typescript: 5.4.5
-
   '@rollup/plugin-virtual@3.0.2(rollup@4.18.0)':
     optionalDependencies:
       rollup: 4.18.0
@@ -9984,13 +9946,6 @@ snapshots:
   '@testing-library/user-event@14.5.2(@testing-library/dom@9.3.4)':
     dependencies:
       '@testing-library/dom': 9.3.4
-
-  '@ts-morph/common@0.23.0':
-    dependencies:
-      fast-glob: 3.3.2
-      minimatch: 9.0.4
-      mkdirp: 3.0.1
-      path-browserify: 1.0.1
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -10908,8 +10863,6 @@ snapshots:
       shallow-clone: 3.0.1
 
   clone@1.0.4: {}
-
-  code-block-writer@13.0.1: {}
 
   color-convert@1.9.3:
     dependencies:
@@ -12998,8 +12951,6 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
-  mkdirp@3.0.1: {}
-
   mlly@1.7.0:
     dependencies:
       acorn: 8.11.3
@@ -14267,11 +14218,6 @@ snapshots:
   ts-dedent@2.2.0: {}
 
   ts-graphviz@1.8.2: {}
-
-  ts-morph@22.0.0:
-    dependencies:
-      '@ts-morph/common': 0.23.0
-      code-block-writer: 13.0.1
 
   ts-node@10.9.2(@swc/core@1.5.24)(@types/node@20.13.0)(typescript@5.4.5):
     dependencies:
