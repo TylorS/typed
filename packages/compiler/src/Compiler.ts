@@ -51,14 +51,10 @@ export class Compiler {
   parseTemplates(sourceFile: ts.SourceFile): ReadonlyArray<ParsedTemplate> {
     const templates: Array<ParsedTemplate> = []
 
-    getTaggedTemplateLiteralExpressions(sourceFile).forEach((expression) => {
-      const tag = expression.tag.getText()
-      // Only parse html tagged templates
-      if (tag === "html") {
-        const literal = expression.template
-        const [template, parts] = this.parseTemplateFromNode(literal)
-        templates.push({ literal, template, parts })
-      }
+    getHtmlTags(sourceFile).forEach((expression) => {
+      const literal = expression.template
+      const [template, parts] = this.parseTemplateFromNode(literal)
+      templates.push({ literal, template, parts })
     })
 
     return templates.sort(sortParsedTemplates)
@@ -95,12 +91,13 @@ export class Compiler {
     const type = this.project.getType(part)
     return {
       index,
-      kind: this.getPartType(type),
+      kind: this.getPartType(part, type),
       type
     }
   }
 
-  private getPartType(type: ts.Type): ParsedPart["kind"] {
+  private getPartType(node: ts.Node, type: ts.Type): ParsedPart["kind"] {
+    if (node.kind === ts.SyntaxKind.TaggedTemplateExpression) return "template"
     if (this.isPrimitiveType(type)) return "primitive"
 
     const properties = type.getProperties().map((p) => p.name)
@@ -147,23 +144,31 @@ export interface ParsedTemplate {
 
 export interface ParsedPart {
   readonly index: number
-  readonly kind: "placeholder" | "fxEffect" | "fx" | "effect" | "primitive" | "directive"
+  readonly kind: "placeholder" | "fxEffect" | "fx" | "effect" | "primitive" | "directive" | "template"
   readonly type: ts.Type
 }
 
-function getTaggedTemplateLiteralExpressions(node: ts.SourceFile) {
+function getHtmlTags(node: ts.SourceFile) {
   const toProcess: Array<ts.Node> = node.getChildren()
   const matches: Array<ts.TaggedTemplateExpression> = []
 
   while (toProcess.length) {
     const node = toProcess.shift()!
-
-    if (node.kind === ts.SyntaxKind.TaggedTemplateExpression) {
-      matches.push(node as ts.TaggedTemplateExpression)
+    if (isHtmlTag(node)) {
+      matches.push(node)
     }
 
     toProcess.push(...node.getChildren())
   }
 
   return matches
+}
+
+function isHtmlTag(node: ts.Node): node is ts.TaggedTemplateExpression {
+  if (node.kind === ts.SyntaxKind.TaggedTemplateExpression) {
+    const expr = node as ts.TaggedTemplateExpression
+    return expr.tag.getText() === "html"
+  }
+
+  return false
 }

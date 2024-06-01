@@ -158,6 +158,7 @@ describe("Compiler", () => {
 
     equalTemplates(p.template, expectedP)
     equalTemplates(div.template, expectedDiv)
+    equalParts(div.parts, { index: 0, kind: "template" })
   })
 })
 
