@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.55.1",
-    "@effect/platform-node": "^0.51.1",
-    "@effect/schema": "^0.67.14",
+    "@effect/platform": "^0.55.3",
+    "@effect/platform-node": "^0.51.3",
+    "@effect/schema": "^0.67.16",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
@@ -60,10 +60,10 @@
     "@typed/ui": "workspace:*",
     "@typed/vite-plugin": "workspace:*",
     "@typed/vite-plugin-types": "workspace:*",
-    "effect": "^3.2.5",
+    "effect": "^3.2.7",
     "vavite": "^4.1.1"
   },
   "devDependencies": {
-    "vite": "^5.2.11"
+    "vite": "^5.2.12"
   }
 }
