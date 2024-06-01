@@ -40,6 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@typed/core": "workspace:*"
+    "@rnx-kit/typescript-service": "^1.5.8",
+    "@ts-morph/common": "^0.23.0",
+    "@typed/core": "workspace:*",
+    "ts-morph": "^22.0.0"
   }
 }

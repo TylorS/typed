@@ -16,9 +16,6 @@
   ],
   "references": [
     {
-      "path": "./tsconfig.build.json"
-    },
-    {
       "path": "../async-data/tsconfig.test.json"
     },
     {

@@ -12,5 +12,10 @@
   "include": [
     "src",
     "test/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../core/tsconfig.test.json"
+    }
   ]
 }

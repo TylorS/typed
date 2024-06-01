@@ -63,10 +63,10 @@
       "path": "../../packages/ui/tsconfig.test.json"
     },
     {
-      "path": "../../packages/wire/tsconfig.test.json"
+      "path": "../../packages/vite-plugin/tsconfig.test.json"
     },
     {
-      "path": "../../packages/vite-plugin/tsconfig.test.json"
+      "path": "../../packages/wire/tsconfig.test.json"
     }
   ]
 }
