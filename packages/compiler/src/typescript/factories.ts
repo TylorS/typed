@@ -30,10 +30,15 @@ export function createFunctionCall(name: string, args: Array<ts.Expression>): ts
  * Creates a TypeScript method call
  * @since 1.0.0
  */
-export function createMethodCall(object: string, methodName: string, args: Array<ts.Expression>): ts.CallExpression {
+export function createMethodCall(
+  object: string,
+  methodName: string,
+  typeParams: Array<ts.TypeNode>,
+  args: Array<ts.Expression>
+): ts.CallExpression {
   return ts.factory.createCallExpression(
     ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(object), methodName),
-    undefined,
+    typeParams,
     args
   )
 }
@@ -44,6 +49,16 @@ export function createMethodCall(object: string, methodName: string, args: Array
  */
 export function createTypeReference(name: string, ...args: Array<ts.TypeNode>): ts.TypeReferenceNode {
   return ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(name), args)
+}
+
+/**
+ * Creates a TypeScript union types by name
+ * @since 1.0.0
+ */
+export function createUnion(types: Array<ts.TypeNode>): ts.TypeNode {
+  if (types.length === 0) return createTypeReference("never")
+  if (types.length === 1) return types[0]
+  return ts.factory.createUnionTypeNode(types)
 }
 
 /**
@@ -93,7 +108,7 @@ export const SVGElementType = createTypeReference("SVGElement")
  * @since 1.0.0
  */
 export function createDocumentFragment() {
-  return createMethodCall("document", "createDocumentFragment", [])
+  return createMethodCall("document", "createDocumentFragment", [], [])
 }
 
 /**
@@ -101,7 +116,7 @@ export function createDocumentFragment() {
  * @since 1.0.0
  */
 export function createElement(tagName: string) {
-  return createMethodCall("document", "createElement", [ts.factory.createStringLiteral(tagName)])
+  return createMethodCall("document", "createElement", [], [ts.factory.createStringLiteral(tagName)])
 }
 
 /**
@@ -109,7 +124,7 @@ export function createElement(tagName: string) {
  * @since 1.0.0
  */
 export function createText(text: string) {
-  return createMethodCall("document", "createTextNode", [ts.factory.createStringLiteral(text)])
+  return createMethodCall("document", "createTextNode", [], [ts.factory.createStringLiteral(text)])
 }
 
 /**
@@ -117,7 +132,7 @@ export function createText(text: string) {
  * @since 1.0.0
  */
 export function appendChild(parent: string, child: string) {
-  return createMethodCall(parent, "appendChild", [ts.factory.createIdentifier(child)])
+  return createMethodCall(parent, "appendChild", [], [ts.factory.createIdentifier(child)])
 }
 
 /**
@@ -125,7 +140,7 @@ export function appendChild(parent: string, child: string) {
  * @since 1.0.0
  */
 export function removeChild(parent: string, child: string) {
-  return createMethodCall(parent, "removeChild", [ts.factory.createIdentifier(child)])
+  return createMethodCall(parent, "removeChild", [], [ts.factory.createIdentifier(child)])
 }
 
 /**
@@ -133,8 +148,39 @@ export function removeChild(parent: string, child: string) {
  * @since 1.0.0
  */
 export function insertBefore(parent: string, child: string, reference?: string | null) {
-  return createMethodCall(parent, "insertBefore", [
+  return createMethodCall(parent, "insertBefore", [], [
     ts.factory.createIdentifier(child),
     ...(reference ? [ts.factory.createIdentifier(reference)] : [])
+  ])
+}
+
+export function createConst(varName: string, expression: ts.Expression): ts.Statement {
+  return ts.factory.createVariableStatement(
+    [],
+    ts.factory.createVariableDeclarationList(
+      [createVariableDeclaration(varName, undefined, expression)],
+      ts.NodeFlags.Const
+    )
+  )
+}
+
+export function createEffectYield(expression: ts.Expression): ts.Expression {
+  return ts.factory.createYieldExpression(
+    ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
+    ts.factory.createCallExpression(ts.factory.createIdentifier("_"), [], [expression])
+  )
+}
+
+export function setAttribute(element: string, name: string, value: string) {
+  return createMethodCall(element, "setAttribute", [], [
+    ts.factory.createStringLiteral(name),
+    ts.factory.createCallExpression(ts.factory.createIdentifier(`String`), [], [ts.factory.createStringLiteral(value)])
+  ])
+}
+
+export function toggleAttribute(element: string, name: string) {
+  return createMethodCall(element, "toggleAttribute", [], [
+    ts.factory.createStringLiteral(name),
+    ts.factory.createTrue()
   ])
 }

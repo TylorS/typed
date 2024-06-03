@@ -1,10 +1,10 @@
 import ts from "typescript"
-import { createDiagnosticWriter } from "./diagnostics.js"
+import { createDiagnosticWriter, type DiagnosticWriter } from "./diagnostics.js"
 import { Project } from "./Project.js"
 
 export class Service {
-  private documentRegistry
-  private diagnosticWriter
+  readonly documentRegistry: ts.DocumentRegistry
+  readonly diagnosticWriter: DiagnosticWriter
 
   constructor(write?: (message: string) => void) {
     this.documentRegistry = ts.createDocumentRegistry()

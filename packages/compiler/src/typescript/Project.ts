@@ -1,32 +1,29 @@
 import ts from "typescript"
 import { ExternalFileCache, ProjectFileCache } from "./cache.js"
-import type { DiagnosticWriter } from "./diagnostics"
+import type { DiagnosticWriter } from "./diagnostics.js"
 
 export class Project {
-  private diagnosticWriter: DiagnosticWriter
   private cmdLine: ts.ParsedCommandLine
 
-  private projectFiles: ProjectFileCache
-  private externalFiles: ExternalFileCache
-
-  private languageService: ts.LanguageService
-  private program: ts.Program
-
+  readonly projectFiles: ProjectFileCache
+  readonly externalFiles: ExternalFileCache
+  readonly languageService: ts.LanguageService
+  readonly program: ts.Program
   readonly typeChecker: ts.TypeChecker
+  readonly languageServiceHost: ts.LanguageServiceHost
 
   constructor(
     documentRegistry: ts.DocumentRegistry,
-    diagnosticWriter: DiagnosticWriter,
+    readonly diagnosticWriter: DiagnosticWriter,
     cmdLine: ts.ParsedCommandLine,
     enhanceLanguageServiceHost?: (host: ts.LanguageServiceHost) => void
   ) {
-    this.diagnosticWriter = diagnosticWriter
     this.cmdLine = cmdLine
 
     this.projectFiles = new ProjectFileCache(cmdLine.fileNames)
     this.externalFiles = new ExternalFileCache()
 
-    const languageServiceHost: ts.LanguageServiceHost = {
+    const languageServiceHost: ts.LanguageServiceHost = this.languageServiceHost = {
       getCompilationSettings: () => this.cmdLine.options,
       // getNewLine?(): string;
       // getProjectVersion?(): string;
@@ -105,8 +102,16 @@ export class Project {
 
   addFile(filePath: string) {
     // Add snapshot
-    this.externalFiles.getSnapshot(filePath)
+    this.projectFiles.getSnapshot(filePath)
     return this.program.getSourceFile(filePath)!
+  }
+
+  setFile(fileName: string, snapshot: ts.IScriptSnapshot): void {
+    this.projectFiles.set(fileName, snapshot)
+  }
+
+  getSnapshot(filePath: string) {
+    return this.languageServiceHost.getScriptSnapshot(filePath)
   }
 
   getType(node: ts.Node): ts.Type {
@@ -117,11 +122,7 @@ export class Project {
     return this.typeChecker.getSymbolAtLocation(node)
   }
 
-  getCommandLine(): ts.ParsedCommandLine {
-    return this.cmdLine
-  }
-
-  private getFileDiagnostics(fileName: string): Array<ts.Diagnostic> {
+  getFileDiagnostics(fileName: string): ReadonlyArray<ts.Diagnostic> {
     return [
       ...this.languageService.getSyntacticDiagnostics(fileName),
       ...this.languageService.getSemanticDiagnostics(fileName),
@@ -140,62 +141,14 @@ export class Project {
     return true
   }
 
-  validate(): boolean {
-    //  filter down the list of files to be checked
-    const matcher = this.cmdLine.options.checkJs ? /[.][jt]sx?$/ : /[.]tsx?$/
-    const files = this.projectFiles
-      .getFileNames()
-      .filter((f) => f.match(matcher))
-
-    //  check each file
-    let result = true
-    for (const file of files) {
-      //  always validate the file, even if others have failed
-      const fileResult = this.validateFile(file)
-      //  combine this file's result with the aggregate result
-      result = result && fileResult
-    }
-    return result
-  }
-
-  emitFile(fileName: string): boolean {
+  emitFile(fileName: string): Array<ts.OutputFile> {
     const output = this.languageService.getEmitOutput(fileName)
     if (!output || output.emitSkipped) {
       this.validateFile(fileName)
-      return false
+      return []
     }
-    output.outputFiles.forEach((o) => {
-      ts.sys.writeFile(o.name, o.text)
-    })
-    return true
-  }
 
-  emit(): boolean {
-    //  emit each file
-    let result = true
-    for (const file of this.projectFiles.getFileNames()) {
-      //  always emit the file, even if others have failed
-      const fileResult = this.emitFile(file)
-      //  combine this file's result with the aggregate result
-      result = result && fileResult
-    }
-    return result
-  }
-
-  hasFile(fileName: string): boolean {
-    return this.projectFiles.has(fileName)
-  }
-
-  setFile(fileName: string, snapshot?: ts.IScriptSnapshot): void {
-    this.projectFiles.set(fileName, snapshot)
-  }
-
-  removeFile(fileName: string): void {
-    this.projectFiles.remove(fileName)
-  }
-
-  removeAllFiles(): void {
-    this.projectFiles.removeAll()
+    return output.outputFiles
   }
 
   dispose(): void {
