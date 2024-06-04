@@ -1,23 +1,39 @@
+/// <reference types="vite/client" />
+/// <reference types="vitest" />
+
 import * as _ from "@typed/compiler"
-import { ElementNode, NodePart, Template, TextNode } from "@typed/template/Template"
+import { AttributeNode, ElementNode, NodePart, Template, TextNode } from "@typed/template/Template"
 import { Chunk } from "effect"
-import * as fs from "node:fs"
 import * as path from "node:path"
+import type ts from "typescript"
 
 const rootDirectory = path.dirname(import.meta.dirname)
 const testDirectory = path.join(rootDirectory, "test")
 const fixturesDirectory = path.join(testDirectory, "fixtures")
-const fixtures = fs.readdirSync(fixturesDirectory).map((name) => path.join(fixturesDirectory, name)).filter((x) =>
-  fs.statSync(x).isFile()
-)
 
 function makeCompiler() {
   const compiler = new _.Compiler(rootDirectory, "tsconfig.test.json")
-  const files = Object.fromEntries(
-    fixtures.map((
-      fixture
-    ) => [path.relative(fixturesDirectory, fixture), compiler.project.addFile(fixture)])
-  )
+
+  const target: {
+    [k: string]: ts.SourceFile
+  } = {}
+
+  const files = new Proxy(target, {
+    get(target, key) {
+      if (key in target) {
+        return target[key as string]
+      }
+
+      const filePath = path.join(fixturesDirectory, key as string)
+      const file = compiler.project.addFile(filePath)
+      target[key as string] = file
+      return file
+    }
+  })
+
+  afterAll(() => {
+    compiler.project.dispose()
+  })
 
   return {
     compiler,
@@ -153,12 +169,28 @@ describe("Compiler", () => {
 
       expect(templates).toHaveLength(2)
 
-      const [div, p] = templates
+      const [div, inner] = templates
       const nodePart = new NodePart(0)
-      const expectedDiv = new Template([new ElementNode("div", [], [nodePart])], "", [[nodePart, Chunk.of(0)]])
-      const expectedP = new Template([new ElementNode("p", [], [new TextNode("Hello World")])], "", [])
+      const expectedDiv = new Template(
+        [
+          new ElementNode("div", [new AttributeNode("style", "border: 1px solid #000;")], [nodePart])
+        ],
+        "",
+        [[
+          nodePart,
+          Chunk.of(0)
+        ]]
+      )
+      const expectedP = new Template(
+        [
+          new ElementNode("p", [], [new TextNode("Hello")]),
+          new ElementNode("b", [], [new TextNode("World")])
+        ],
+        "",
+        []
+      )
 
-      equalTemplates(p.template, expectedP)
+      equalTemplates(inner.template, expectedP)
       equalTemplates(div.template, expectedDiv)
       equalParts(div.parts, { index: 0, kind: "template" })
     })

@@ -16,8 +16,7 @@ import {
   createElement,
   createFunctionCall,
   createMethodCall,
-  createTypeReference,
-  createUnion,
+  createText,
   setAttribute,
   toggleAttribute
 } from "./typescript/factories.js"
@@ -139,28 +138,19 @@ export class Compiler {
     { parts, template }: ParsedTemplate,
     remaining: ReadonlyArray<ParsedTemplate>
   ): ts.Node {
-    // TODO: Generate our function block
-    //    - Generate all of our base elements
-    //    - Track the path of each element
-    //    - Connect optimized variants of interpolations
-    // TOOD: Generate Import types
-
-    const outputType = createTypeReference(`RenderEvent`)
-    const errorType = createUnion(parts.flatMap((p) => partToErrorTypes(this.checker, p)))
-    const contextType = createTypeReference(`SinkContext`)
-    const sink = ts.factory.createParameterDeclaration(
-      [],
-      undefined,
-      `sink`,
-      undefined,
-      createTypeReference(`Sink`, outputType, errorType, contextType)
+    const sink = ts.factory.createParameterDeclaration([], undefined, `sink`)
+    const setupNodes = createDomSetupStatements(
+      template,
+      new CreateNodeCtx(parts, remaining, Chunk.empty(), this.target, { value: -1 })
     )
-
     const domNodes = createDomTemplateStatements(
       template,
       new CreateNodeCtx(parts, remaining, Chunk.empty(), this.target, { value: -1 })
     )
-    const domEffects = createDomEffectStatements(template)
+    const domEffects = createDomEffectStatements(
+      template,
+      new CreateNodeCtx(parts, remaining, Chunk.empty(), this.target, { value: -1 })
+    )
 
     return createMethodCall(
       "Fx",
@@ -169,7 +159,7 @@ export class Compiler {
       [
         ts.factory.createArrowFunction(
           [],
-          [ts.factory.createTypeParameterDeclaration([], `SinkContext`)],
+          [],
           [sink],
           undefined,
           undefined,
@@ -181,7 +171,7 @@ export class Compiler {
               [],
               [ts.factory.createParameterDeclaration([], undefined, `_`)],
               undefined,
-              ts.factory.createBlock([...domNodes, ...domEffects], true)
+              ts.factory.createBlock([...setupNodes, ...domNodes, ...domEffects], true)
             )
           ])
         )
@@ -327,32 +317,64 @@ function isHtmlTag(node: ts.Node): node is ts.TaggedTemplateExpression {
   return false
 }
 
-function partToErrorTypes(checker: ts.TypeChecker, part: ParsedPart): Array<ts.TypeNode> {
-  if (part.kind === "primitive") return []
-  const [, errorType] = getTypeArguments(checker, part.type)
-  return errorType ? [errorType] : []
-}
-
-// function partToContextTypes(checker: ts.TypeChecker, part: ParsedPart): Array<ts.TypeNode> {
-//   if (part.kind === "primitive") return []
-//   const [, , contextType] = getTypeArguments(checker, part.type)
-//   return contextType ? [contextType] : []
+// function getTypeArguments(checker: ts.TypeChecker, type: ts.Type): Array<ts.TypeNode> {
+//   return checker.getTypeArguments(type as ts.TypeReference).map((t) => checker.typeToTypeNode(t, undefined, undefined)!)
 // }
-
-function getTypeArguments(checker: ts.TypeChecker, type: ts.Type): Array<ts.TypeNode> {
-  return checker.getTypeArguments(type as ts.TypeReference).map((t) => checker.typeToTypeNode(t, undefined, undefined)!)
-}
 
 function createDomTemplateStatements(
   template: Template.Template,
   currentCtx: CreateNodeCtx
 ): Array<ts.Statement> {
   return template.nodes.flatMap((node, i) =>
-    createNodeStatements(node, { ...currentCtx, path: Chunk.append(currentCtx.path, i) })
+    createDomNodeStatements(node, { ...currentCtx, path: Chunk.append(currentCtx.path, i) })
   )
 }
 
-function createDomEffectStatements(template: Template.Template) {
+function createDomSetupStatements(template: Template.Template, ctx: CreateNodeCtx): Array<ts.Statement> {
+  if (ctx.parts.length > 0 && ctx.parts.some((x) => x.kind !== "primitive")) {
+    const includeEventSource = template.parts.some(([x]) => x._tag === "event")
+
+    return [
+      createConst(`refCounter`, createEffectYield(ts.factory.createIdentifier(`makeRefCounter`))),
+      createConst(
+        `context`,
+        createEffectYield(createMethodCall(`Effect`, `context`, [], []))
+      ),
+      createConst(
+        `parentScope`,
+        createMethodCall(`Context`, `get`, [], [
+          ts.factory.createIdentifier(`context`),
+          ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Scope`), `Scope`)
+        ])
+      ),
+      createConst(
+        `scope`,
+        createEffectYield(
+          createMethodCall(`Scope`, `fork`, [], [
+            ts.factory.createIdentifier(`parentScope`),
+            ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`ExecutionStrategy`), `sequential`)
+          ])
+        )
+      ),
+      createConst(
+        `renderQueue`,
+        createMethodCall(`Context`, `get`, [], [
+          ts.factory.createIdentifier(`context`),
+          ts.factory.createIdentifier(`RenderQueue`)
+        ])
+      ),
+      ...(includeEventSource ?
+        [
+          createConst(`eventSource`, createFunctionCall(`makeEventSource`, []))
+        ] :
+        [])
+    ]
+  }
+
+  return []
+}
+
+function createDomEffectStatements(template: Template.Template, ctx: CreateNodeCtx) {
   const effects: Array<ts.Statement> = []
   const statements: Array<ts.Statement> = []
 
@@ -364,15 +386,34 @@ function createDomEffectStatements(template: Template.Template) {
         ts.factory.createCallExpression(
           ts.factory.createIdentifier(`persistent`),
           [],
-          [ts.factory.createArrayLiteralExpression(
-            template.nodes.map((_, i) => ts.factory.createIdentifier(`element${i}`))
-          )]
+          [
+            ts.factory.createIdentifier(`document`),
+            ts.factory.createArrayLiteralExpression(
+              template.nodes.map((_, i) =>
+                ts.factory.createIdentifier(
+                  createVarNameFromNode(_._tag, { ...ctx, path: Chunk.of(i) })
+                )
+              )
+            )
+          ]
         )
       )
     )
   }
 
-  // Emit our DOM effects
+  // Includes Events
+  if (template.parts.some(([x]) => x._tag === "event")) {
+    effects.push(
+      ts.factory.createExpressionStatement(createEffectYield(
+        createMethodCall(`eventSource`, `setup`, [], [
+          ts.factory.createIdentifier(template.nodes.length > 1 ? `wire` : `element0`),
+          ts.factory.createIdentifier(`parentScope`)
+        ])
+      ))
+    )
+  }
+
+  // Emit our DOM elements
   effects.push(
     ts.factory.createExpressionStatement(
       createEffectYield(
@@ -388,7 +429,25 @@ function createDomEffectStatements(template: Template.Template) {
   // Allow the template to last forever
   effects.push(
     ts.factory.createExpressionStatement(
-      createEffectYield(ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Effect`), `never`))
+      createEffectYield(
+        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Effect`), `never`),
+        ts.factory.createCallExpression(
+          ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Effect`), `onExit`),
+          [],
+          [ts.factory.createArrowFunction(
+            [],
+            [],
+            [ts.factory.createParameterDeclaration([], undefined, `exit`)],
+            undefined,
+            undefined,
+            ts.factory.createCallExpression(
+              ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Scope`), `close`),
+              [],
+              [ts.factory.createIdentifier(`scope`), ts.factory.createIdentifier(`exit`)]
+            )
+          )]
+        )
+      )
     )
   )
 
@@ -401,46 +460,74 @@ class CreateNodeCtx {
     readonly remaining: ReadonlyArray<ParsedTemplate>,
     readonly path: Chunk.Chunk<number>,
     readonly target: "dom" | "server" | "static",
-    readonly templateIndex: { value: number }
+    readonly templateIndex: { value: number },
+    readonly parent?: string
   ) {}
 }
 
-function createNodeStatements(node: Template.Node, ctx: CreateNodeCtx): Array<ts.Statement> {
+function createDomNodeStatements(node: Template.Node | Template.TextPartNode, ctx: CreateNodeCtx): Array<ts.Statement> {
+  const nested = { ...ctx, parent: node._tag }
+  const parentName = createNodeVarName(ctx.parent ?? "element", ctx)
   switch (node._tag) {
     case "element":
-      return createElementStatements(node, ctx)
+    case "self-closing-element":
+    case "text-only-element":
+      return createElementStatements(node, nested)
     case "node":
-      return createNodePartStatements(node, ctx)
+      return createNodePartStatements(node, nested)
+    case "text":
+      return createTextNodeStatements(parentName, node, nested)
+    case "text-part":
+      return createTextPartNodeStatements(parentName, node, nested)
+    case "comment":
+      return createCommentNodeStatements(node, nested)
+    case "comment-part":
+      return createCommentPartStatements(node, nested)
+    case "sparse-comment":
+      return createSparseCommentNodeStatements(node, nested)
+    // TODO: Handle for HTML
+    case "doctype":
+      return []
     default:
       return []
   }
 }
 
-function createElementStatements(node: Template.ElementNode, ctx: CreateNodeCtx): Array<ts.Statement> {
-  const statements: Array<ts.Statement> = []
-  const varName = createNodeVarName(node, ctx)
+function createElementStatements(
+  node: Template.ElementNode | Template.SelfClosingElementNode | Template.TextOnlyElement,
+  ctx: CreateNodeCtx
+): Array<ts.Statement> {
+  const varName = createNodeVarName(node._tag, ctx)
 
-  // Create the elements
-  statements.push(createConst(varName, createElement(node.tagName)))
-  // Setup any attributes
-  statements.push(...node.attributes.flatMap((attr) => createAttributeStatements(varName, attr)))
-  // Create the children
-  statements.push(
-    ...node.children.flatMap((child) => createNodeStatements(child, ctx))
-  )
-
-  return statements
+  return [
+    // Create the element
+    createConst(varName, createElement(node.tagName)),
+    // Setup any attributes
+    ...node.attributes.flatMap((attr) => createAttributeStatements(varName, attr, ctx)),
+    // Create the children
+    ...(node._tag === "self-closing-element"
+      ? []
+      : node.children.flatMap((child) => createDomNodeStatements(child, ctx)))
+  ]
 }
 
-function createNodeVarName(node: Pick<Template.Node, "_tag">, ctx: CreateNodeCtx): string {
-  const base = `${node._tag.replace("-", "_")}${Array.from(ctx.path).join("")}`
+function createVarNameFromNode(
+  tag: Template.Node["_tag"] | SplitLastHyphen<Template.Node["_tag"]>,
+  ctx: CreateNodeCtx
+): string {
+  const name = splitHypensTakeLast(tag)
+  return createNodeVarName(name, ctx)
+}
+
+function createNodeVarName(tag: string, ctx: CreateNodeCtx): string {
+  const base = `${tag}${Array.from(ctx.path).join("")}`
   if (ctx.templateIndex.value === -1) return base
   return `template${ctx.templateIndex.value}_${base}`
 }
 
 // Attributes
 
-function createAttributeStatements(parent: string, attr: Template.Attribute): Array<ts.Statement> {
+function createAttributeStatements(parent: string, attr: Template.Attribute, _ctx: CreateNodeCtx): Array<ts.Statement> {
   switch (attr._tag) {
     case "attribute":
       return createAttributeNodeStatements(parent, attr)
@@ -466,14 +553,18 @@ function createAttributeStatements(parent: string, attr: Template.Attribute): Ar
       return createSparseAttrNodeStatements(parent, attr)
     case "sparse-class-name":
       return createSparseClassNameNodeStatements(parent, attr)
+    // Shouldn't really happen
     case "text":
-      return createTextNodeStatements(parent, attr)
+      return []
   }
 }
 
-function createAttributeNodeStatements(parent: string, attr: Template.AttributeNode): Array<ts.Statement> {
+function createAttributeNodeStatements(
+  parent: string,
+  attr: Template.AttributeNode
+): Array<ts.Statement> {
   return [
-    ts.factory.createExpressionStatement(setAttribute(parent, attr.name, attr.value))
+    ts.factory.createExpressionStatement(setAttribute(parent, attr.name, attr.value, false))
   ]
 }
 
@@ -526,10 +617,6 @@ function createSparseClassNameNodeStatements(
   return []
 }
 
-function createTextNodeStatements(_parent: string, _attr: Template.TextNode): Array<ts.Statement> {
-  return []
-}
-
 // End of Attributes
 
 // Node Parts
@@ -579,6 +666,8 @@ function createFxEffectNodePartStatements(
   _node: Template.NodePart,
   _ctx: CreateNodeCtx
 ): Array<ts.Statement> {
+  // Create Part
+
   return []
 }
 
@@ -600,16 +689,68 @@ function createTemplateNodePartStatements(
   node: Template.NodePart,
   currentCtx: CreateNodeCtx
 ): Array<ts.Statement> {
-  const parentElement = createNodeVarName({ _tag: "element" }, currentCtx)
+  const parentElement = createNodeVarName("element", currentCtx)
   currentCtx.templateIndex.value++
   const parsedTemplate = currentCtx.remaining[node.index]
   const nestedCtx = { ...currentCtx, path: Chunk.empty() }
   return [
     ...createDomTemplateStatements(parsedTemplate.template, nestedCtx),
     ...parsedTemplate.template.nodes.map((node, i) => {
+      const varName = splitHypensTakeLast(node._tag)
       return ts.factory.createExpressionStatement(
-        appendChild(parentElement, createNodeVarName(node, { ...nestedCtx, path: Chunk.of(i) }))
+        appendChild(
+          parentElement,
+          createNodeVarName(varName, { ...nestedCtx, path: Chunk.of(i) })
+        )
       )
     })
   ]
+}
+
+function splitHypensTakeLast<S extends string>(str: S): SplitLastHyphen<S> {
+  const parts = str.split("-")
+  return parts[parts.length - 1] as SplitLastHyphen<S>
+}
+
+type SplitLastHyphen<S extends string> = S extends `${infer _}-${infer R}` ? SplitLastHyphen<R> : S
+
+function createTextNodeStatements(parent: string, text: Template.TextNode, ctx: CreateNodeCtx): Array<ts.Statement> {
+  // TODO: Special handling single text node
+
+  const varName = createVarNameFromNode(text._tag, ctx)
+  const textNode = createText(text.value)
+
+  return [
+    createConst(varName, textNode),
+    ts.factory.createExpressionStatement(appendChild(parent, varName))
+  ]
+}
+
+function createCommentNodeStatements(
+  _node: Template.CommentNode,
+  _ctx: CreateNodeCtx
+): Array<ts.Statement> {
+  return []
+}
+
+function createCommentPartStatements(
+  _node: Template.CommentPartNode,
+  _ctx: CreateNodeCtx
+): Array<ts.Statement> {
+  return []
+}
+
+function createSparseCommentNodeStatements(
+  _node: Template.SparseCommentNode,
+  _ctx: CreateNodeCtx
+): Array<ts.Statement> {
+  return []
+}
+
+function createTextPartNodeStatements(
+  _parent: string,
+  _node: Template.TextPartNode,
+  _ctx: CreateNodeCtx
+): Array<ts.Statement> {
+  return []
 }

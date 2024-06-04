@@ -164,17 +164,21 @@ export function createConst(varName: string, expression: ts.Expression): ts.Stat
   )
 }
 
-export function createEffectYield(expression: ts.Expression): ts.Expression {
+export function createEffectYield(...expressions: Array<ts.Expression>): ts.Expression {
   return ts.factory.createYieldExpression(
     ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
-    ts.factory.createCallExpression(ts.factory.createIdentifier("_"), [], [expression])
+    ts.factory.createCallExpression(ts.factory.createIdentifier("_"), [], expressions)
   )
 }
 
-export function setAttribute(element: string, name: string, value: string) {
+export function setAttribute(element: string, name: string, value: string, coerce: boolean = true) {
   return createMethodCall(element, "setAttribute", [], [
     ts.factory.createStringLiteral(name),
-    ts.factory.createCallExpression(ts.factory.createIdentifier(`String`), [], [ts.factory.createStringLiteral(value)])
+    coerce
+      ? ts.factory.createCallExpression(ts.factory.createIdentifier(`String`), [], [
+        ts.factory.createStringLiteral(value)
+      ])
+      : ts.factory.createStringLiteral(value)
   ])
 }
 
