@@ -24,6 +24,7 @@ import type { EventSource } from "../EventSource.js"
 import { makeEventSource } from "../EventSource.js"
 import type { IndexRefCounter } from "../indexRefCounter.js"
 import { makeRefCounter } from "../indexRefCounter.js"
+import type { ParentChildNodes } from "../utils.js"
 import { findHoleComment, findPath, keyToPartType } from "../utils.js"
 import { isNullOrUndefined } from "./helpers.js"
 import { EventPartImpl, RefPartImpl, syncPartToPart } from "./parts.js"
@@ -41,7 +42,6 @@ export type TemplateContext = {
    */
   spreadIndex: number
 
-  readonly content: DocumentFragment
   readonly context: Context.Context<Scope.Scope>
   readonly document: Document
   readonly eventSource: EventSource
@@ -76,15 +76,15 @@ export const renderTemplate: (
       Effect.gen(function*() {
         // Create a context for rendering our template
         const ctx = yield* makeTemplateContext<Values>(
-          entry.content,
           document,
           renderContext,
           values,
           sink.onFailure
         )
+        const content = document.importNode(entry.content, true)
 
         // Setup all parts
-        const effects = setupParts(entry.template.parts, ctx)
+        const effects = setupParts(entry.template.parts, content, ctx)
         if (effects.length > 0) {
           yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
         }
@@ -96,7 +96,7 @@ export const renderTemplate: (
         }
 
         // Create a persistent wire from our content
-        const wire = persistent(document, ctx.content)
+        const wire = persistent(document, content)
 
         // Setup our event listeners for our wire.
         // We use the parentScope to allow event listeners to exist
@@ -118,7 +118,6 @@ export const renderTemplate: (
 }
 
 export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>(
-  entry: DocumentFragment,
   document: Document,
   renderContext: RenderContext,
   values: ReadonlyArray<Renderable<any, any>>,
@@ -130,12 +129,10 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
     const queue = Context.get(context, RenderQueue)
     const parentScope = Context.get(context, Scope.Scope)
     const eventSource = makeEventSource()
-    const content = document.importNode(entry, true)
     const scope = yield* Scope.fork(parentScope, ExecutionStrategy.sequential)
     const templateContext: TemplateContext = {
       context: Context.add(context, Scope.Scope, scope),
       expected: 0,
-      content,
       document,
       eventSource,
       parentScope,
@@ -152,11 +149,15 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
   })
 }
 
-function setupParts(parts: Template.Template["parts"], ctx: TemplateContext) {
+function setupParts(
+  parts: Template.Template["parts"],
+  content: ParentChildNodes,
+  ctx: TemplateContext
+) {
   const effects: Array<Effect.Effect<void, any, any>> = []
 
   for (const [part, path] of parts) {
-    const effect = setupPart(part, path, ctx)
+    const effect = setupPart(part, content, path, ctx)
     if (effect) {
       effects.push(effect)
     }
@@ -167,56 +168,57 @@ function setupParts(parts: Template.Template["parts"], ctx: TemplateContext) {
 
 function setupPart(
   part: Template.PartNode | Template.SparsePartNode,
+  content: ParentChildNodes,
   path: Chunk<number>,
   ctx: TemplateContext
 ) {
   switch (part._tag) {
     case "attr":
-      return setupAttrPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
+      return setupAttrPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "boolean-part":
       return setupBooleanPart(
         part,
-        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        findPath(content, path) as HTMLElement | SVGElement,
         ctx,
         ctx.values[part.index]
       )
     case "className-part":
       return setupClassNamePart(
         part,
-        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        findPath(content, path) as HTMLElement | SVGElement,
         ctx,
         ctx.values[part.index]
       )
     case "comment-part":
-      return setupCommentPart(part, findPath(ctx.content, path) as Comment, ctx)
+      return setupCommentPart(part, findPath(content, path) as Comment, ctx)
     case "data":
-      return setupDataPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
+      return setupDataPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "event":
-      return setupEventPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
+      return setupEventPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "node": {
-      const parent = findPath(ctx.content, path) as Element
+      const parent = findPath(content, path) as Element
       const comment = findHoleComment(parent, part.index)
       return setupNodePart(part, comment, ctx, null, [])
     }
     case "properties":
-      return setupPropertiesPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
+      return setupPropertiesPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx)
     case "property":
       return setupPropertyPart(
         part,
-        findPath(ctx.content, path) as HTMLElement | SVGElement,
+        findPath(content, path) as HTMLElement | SVGElement,
         ctx,
         ctx.values[part.index]
       )
     case "ref":
-      return setupRefPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
+      return setupRefPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-attr":
-      return setupSparseAttrPart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
+      return setupSparseAttrPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-class-name":
-      return setupSparseClassNamePart(part, findPath(ctx.content, path) as HTMLElement | SVGElement, ctx)
+      return setupSparseClassNamePart(part, findPath(content, path) as HTMLElement | SVGElement, ctx)
     case "sparse-comment":
-      return setupSparseCommentPart(part, findPath(ctx.content, path) as Comment, ctx)
+      return setupSparseCommentPart(part, findPath(content, path) as Comment, ctx)
     case "text-part": {
-      const parent = findPath(ctx.content, path) as Element
+      const parent = findPath(content, path) as Element
       const comment = findHoleComment(parent, part.index)
       return setupTextPart(part, comment, ctx)
     }

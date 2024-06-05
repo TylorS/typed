@@ -214,7 +214,10 @@ function equalTemplates(actual: Template, expected: Template) {
   expect(actual.parts).toEqual(expected.parts)
 }
 
-function equalParts(actual: ReadonlyArray<_.ParsedPart>, ...expected: ReadonlyArray<Omit<_.ParsedPart, "type">>) {
+function equalParts(
+  actual: ReadonlyArray<_.ParsedPart>,
+  ...expected: ReadonlyArray<Omit<_.ParsedPart, "type" | "node">>
+) {
   actual.forEach((p, i) => {
     expect(p.index).toEqual(expected[i].index)
     expect(p.kind).toEqual(expected[i].kind)

@@ -46,7 +46,7 @@ import {
   setupTextPart
 } from "./render.js"
 
-type HydrateTemplateContext = TemplateContext & {
+export type HydrateTemplateContext = TemplateContext & {
   readonly where: HydrationNode
   readonly manyKey: string | undefined
   readonly makeHydrateContext: (where: HydrationNode, index: number) => HydrateContext
@@ -86,7 +86,7 @@ export const hydrateTemplate: (document: Document, ctx: RenderContext) => Render
     return Fx.make((sink) =>
       Effect.catchAllDefect(
         Effect.gen(function*() {
-          const ctx = yield* makeTemplateContext(entry.content, document, renderContext, values, sink.onFailure)
+          const ctx = yield* makeTemplateContext(document, renderContext, values, sink.onFailure)
           const hydrateCtx = unsafeGet(ctx.context, HydrateContext)
 
           // If we're not longer hydrating, just render normally
@@ -212,7 +212,7 @@ function setupPart(
   }
 }
 
-function setupHydratedNodePart(
+export function setupHydratedNodePart(
   part: Template.NodePart,
   hole: HydrationHole,
   ctx: HydrateTemplateContext

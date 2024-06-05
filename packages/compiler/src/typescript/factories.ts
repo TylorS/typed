@@ -22,8 +22,12 @@ export function createVariableDeclaration(
  * Creates a TypeScript function call
  * @since 1.0.0
  */
-export function createFunctionCall(name: string, args: Array<ts.Expression>): ts.CallExpression {
-  return ts.factory.createCallExpression(ts.factory.createIdentifier(name), undefined, args)
+export function createFunctionCall(name: string | ts.Expression, args: Array<ts.Expression>): ts.CallExpression {
+  return ts.factory.createCallExpression(
+    typeof name === "string" ? ts.factory.createIdentifier(name) : name,
+    undefined,
+    args
+  )
 }
 
 /**
@@ -31,13 +35,16 @@ export function createFunctionCall(name: string, args: Array<ts.Expression>): ts
  * @since 1.0.0
  */
 export function createMethodCall(
-  object: string,
+  object: string | ts.Expression,
   methodName: string,
   typeParams: Array<ts.TypeNode>,
   args: Array<ts.Expression>
 ): ts.CallExpression {
   return ts.factory.createCallExpression(
-    ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(object), methodName),
+    ts.factory.createPropertyAccessExpression(
+      typeof object === "string" ? ts.factory.createIdentifier(object) : object,
+      methodName
+    ),
     typeParams,
     args
   )
@@ -187,4 +194,8 @@ export function toggleAttribute(element: string, name: string) {
     ts.factory.createStringLiteral(name),
     ts.factory.createTrue()
   ])
+}
+
+export function createComment(value: string) {
+  return createMethodCall("document", "createComment", [], [ts.factory.createStringLiteral(value)])
 }

@@ -15,6 +15,7 @@ export interface Wire {
   readonly nodeType: 111
   readonly firstChild: Node | null
   readonly lastChild: Node | null
+  readonly childNodes: Array<Node>
   readonly valueOf: () => DocumentFragment
 }
 
@@ -64,19 +65,27 @@ export const persistent = (document: Document, fragment: DocumentFragment): Docu
   fragment.prepend(firstChild)
   fragment.append(lastChild)
 
+  const getChildNodes = () => {
+    const nodes = getAllSiblingsBetween(firstChild, lastChild)
+
+    if (fragment.childNodes.length !== nodes.length) {
+      fragment.replaceChildren(...nodes)
+    }
+
+    return nodes
+  }
+
   return {
     ELEMENT_NODE,
     DOCUMENT_FRAGMENT_NODE,
     nodeType,
     firstChild,
     lastChild,
+    get childNodes() {
+      return getChildNodes()
+    },
     valueOf(): DocumentFragment {
-      const nodes = getAllSiblingsBetween(firstChild, lastChild)
-
-      if (fragment.childNodes.length !== nodes.length) {
-        fragment.replaceChildren(...nodes)
-      }
-
+      getChildNodes()
       return fragment
     }
   }
