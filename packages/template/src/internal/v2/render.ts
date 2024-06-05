@@ -1,9 +1,10 @@
 import * as Context from "@typed/context"
 import * as Fx from "@typed/fx"
 import type { Rendered } from "@typed/wire"
-import { persistent } from "@typed/wire"
-import type * as Cause from "effect/Cause"
-import type { Chunk } from "effect/Chunk"
+import { isText, persistent } from "@typed/wire"
+import { Option } from "effect"
+import * as Cause from "effect/Cause"
+import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as ExecutionStrategy from "effect/ExecutionStrategy"
 import { flow } from "effect/Function"
@@ -11,6 +12,7 @@ import * as Scope from "effect/Scope"
 import { type Directive, isDirective } from "../../Directive.js"
 import * as ElementRef from "../../ElementRef.js"
 import * as ElementSource from "../../ElementSource.js"
+import type { BrowserEntry } from "../../Entry.js"
 import * as EventHandler from "../../EventHandler.js"
 import type { Placeholder } from "../../Placeholder.js"
 import type { ToRendered } from "../../Render.js"
@@ -20,13 +22,24 @@ import { DomRenderEvent, type RenderEvent } from "../../RenderEvent.js"
 import { DEFAULT_PRIORITY, RenderQueue } from "../../RenderQueue.js"
 import type { RenderTemplate } from "../../RenderTemplate.js"
 import type * as Template from "../../Template.js"
+import { CouldNotFindCommentError, isHydrationError } from "../errors.js"
 import type { EventSource } from "../EventSource.js"
 import { makeEventSource } from "../EventSource.js"
+import { HydrateContext } from "../HydrateContext.js"
 import type { IndexRefCounter } from "../indexRefCounter.js"
 import { makeRefCounter } from "../indexRefCounter.js"
 import type { ParentChildNodes } from "../utils.js"
-import { findHoleComment, findPath, keyToPartType } from "../utils.js"
+import { findHoleComment, findHydratePath, findPath, isCommentWithValue, keyToPartType } from "../utils.js"
 import { isNullOrUndefined } from "./helpers.js"
+import type { HydrationHole, HydrationNode, HydrationTemplate } from "./hydration-template.js"
+import {
+  findHydrationHole,
+  findHydrationMany,
+  findHydrationTemplate,
+  getChildNodes,
+  getNodes,
+  getPreviousNodes
+} from "./hydration-template.js"
 import { EventPartImpl, RefPartImpl, syncPartToPart } from "./parts.js"
 import { getBrowserEntry } from "./render-entry.js"
 import * as SyncPartsInternal from "./render-sync-parts.js"
@@ -52,6 +65,9 @@ export type TemplateContext = {
   readonly scope: Scope.CloseableScope
   readonly values: ReadonlyArray<Renderable<any, any>>
   readonly onCause: (cause: Cause.Cause<any>) => Effect.Effect<unknown>
+  readonly manyKey: string | undefined
+
+  readonly hydrateContext: Option.Option<HydrateContext>
 }
 
 export const renderTemplate: (
@@ -63,16 +79,15 @@ export const renderTemplate: (
   values: Values
 ) => {
   const entry = getBrowserEntry(document, renderContext, templateStrings)
-  if (entry.template.parts.length === 0) {
-    return Fx.succeed(DomRenderEvent(persistent(document, document.importNode(entry.content, true))))
-  }
 
   return Fx.make<
     RenderEvent,
     Placeholder.Error<Values[number]>,
     Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>
-  >((sink) =>
-    Effect.catchAllCause(
+  >(function render(
+    sink
+  ): Effect.Effect<unknown, never, Scope.Scope | RenderQueue | Placeholder.Context<Values[number]>> {
+    return Effect.catchAllCause(
       Effect.gen(function*() {
         // Create a context for rendering our template
         const ctx = yield* makeTemplateContext<Values>(
@@ -81,27 +96,18 @@ export const renderTemplate: (
           values,
           sink.onFailure
         )
-        const content = document.importNode(entry.content, true)
 
-        // Setup all parts
-        const effects = setupParts(entry.template.parts, content, ctx)
-        if (effects.length > 0) {
-          yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
-        }
-
-        // If there's anything to wait on and it's not already done, wait for an initial value
-        // for all asynchronous sources.
-        if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
-          yield* ctx.refCounter.wait
-        }
-
-        // Create a persistent wire from our content
-        const wire = persistent(document, content)
+        const [wire, isHydrating] = yield* setupTemplate(entry, ctx)
 
         // Setup our event listeners for our wire.
         // We use the parentScope to allow event listeners to exist
         // beyond the lifetime of the current Fiber, but no further than its parent template.
         yield* ctx.eventSource.setup(wire, ctx.parentScope)
+
+        // If we're hydrating, we need to mark this part of the stack as hydrated
+        if (isHydrating && Option.isSome(ctx.hydrateContext)) {
+          ctx.hydrateContext.value.hydrate = false
+        }
 
         // Emit our DomRenderEvent
         yield* sink.onSuccess(DomRenderEvent(wire)).pipe(
@@ -112,9 +118,19 @@ export const renderTemplate: (
           Effect.onExit((exit) => Scope.close(ctx.scope, exit))
         )
       }),
-      sink.onFailure
+      (cause) => {
+        const hydrationFailure = Chunk.findFirst(Cause.defects(cause), isHydrationError)
+        if (Option.isSome(hydrationFailure)) {
+          return HydrateContext.pipe(
+            Effect.tap((ctx) => ctx.hydrate = false),
+            Effect.flatMap(() => render(sink))
+          )
+        }
+
+        return sink.onFailure(cause)
+      }
     )
-  )
+  })
 }
 
 export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any, any>>>(
@@ -130,12 +146,15 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
     const parentScope = Context.get(context, Scope.Scope)
     const eventSource = makeEventSource()
     const scope = yield* Scope.fork(parentScope, ExecutionStrategy.sequential)
+    const hydrateContext = Context.getOption(context, HydrateContext)
     const templateContext: TemplateContext = {
       context: Context.add(context, Scope.Scope, scope),
       expected: 0,
       document,
       eventSource,
+      hydrateContext,
       parentScope,
+      manyKey: undefined,
       queue,
       refCounter,
       renderContext,
@@ -149,7 +168,66 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
   })
 }
 
-function setupParts(
+function setupTemplate(
+  entry: BrowserEntry,
+  ctx: TemplateContext
+) {
+  return Effect.gen(function*() {
+    if (Option.isSome(ctx.hydrateContext) && ctx.hydrateContext.value.hydrate) {
+      const hydrateCtx = ctx.hydrateContext.value
+      const where = findWhere(hydrateCtx, entry.template.hash)
+      if (where === null) {
+        hydrateCtx.hydrate = false
+      } else {
+        const wire = getWire(where)
+        const makeHydrateContext = (where: HydrationNode): HydrateContext => ({
+          where,
+          parentTemplate: entry.template,
+          hydrate: true
+        })
+
+        const effects = setupHydrateParts(entry.template.parts, {
+          ...ctx,
+          where,
+          manyKey: hydrateCtx.manyKey,
+          makeHydrateContext
+        })
+        if (effects.length > 0) {
+          yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
+        }
+
+        // If there's anything to wait on and it's not already done, wait for an initial value
+        // for all asynchronous sources.
+        if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
+          yield* ctx.refCounter.wait
+        }
+
+        return [wire, true] as const
+      }
+    }
+
+    // Standard Render
+
+    const content = ctx.document.importNode(entry.content, true)
+
+    // Setup all parts
+    const effects = setupRenderParts(entry.template.parts, content, ctx)
+    if (effects.length > 0) {
+      yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
+    }
+
+    // If there's anything to wait on and it's not already done, wait for an initial value
+    // for all asynchronous sources.
+    if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
+      yield* ctx.refCounter.wait
+    }
+
+    // Create a persistent wire from our content
+    return [persistent(ctx.document, content), false] as const
+  })
+}
+
+function setupRenderParts(
   parts: Template.Template["parts"],
   content: ParentChildNodes,
   ctx: TemplateContext
@@ -157,7 +235,7 @@ function setupParts(
   const effects: Array<Effect.Effect<void, any, any>> = []
 
   for (const [part, path] of parts) {
-    const effect = setupPart(part, content, path, ctx)
+    const effect = setupRenderPart(part, content, path, ctx)
     if (effect) {
       effects.push(effect)
     }
@@ -166,10 +244,10 @@ function setupParts(
   return effects
 }
 
-function setupPart(
+function setupRenderPart(
   part: Template.PartNode | Template.SparsePartNode,
   content: ParentChildNodes,
-  path: Chunk<number>,
+  path: Chunk.Chunk<number>,
   ctx: TemplateContext
 ) {
   switch (part._tag) {
@@ -190,7 +268,7 @@ function setupPart(
         ctx.values[part.index]
       )
     case "comment-part":
-      return setupCommentPart(part, findPath(content, path) as Comment, ctx)
+      return setupCommentPart(part, findPath(content, path) as Comment, ctx, ctx.values[part.index])
     case "data":
       return setupDataPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "event":
@@ -259,10 +337,10 @@ export function setupClassNamePart(
 export function setupCommentPart(
   { index }: Pick<Template.CommentPartNode, "index">,
   comment: Comment,
-  ctx: TemplateContext
+  ctx: TemplateContext,
+  renderable: Renderable<any, any>
 ) {
   const part = SyncPartsInternal.makeCommentPart(index, comment)
-  const renderable = ctx.values[index]
   return matchSyncPart(renderable, ctx, part)
 }
 
@@ -572,16 +650,170 @@ export function attachRoot<T extends RenderEvent | null>(
 }
 
 export function removeChildren(where: HTMLElement, previous: Rendered) {
-  for (const node of getNodes(previous)) {
+  for (const node of getNodesFromRendered(previous)) {
     where.removeChild(node)
   }
 }
 
 export function replaceChildren(where: HTMLElement, wire: Rendered) {
-  where.replaceChildren(...getNodes(wire))
+  where.replaceChildren(...getNodesFromRendered(wire))
 }
 
-export function getNodes(rendered: Rendered): Array<globalThis.Node> {
+export function getNodesFromRendered(rendered: Rendered): Array<globalThis.Node> {
   const value = rendered.valueOf() as globalThis.Node | Array<globalThis.Node>
   return Array.isArray(value) ? value : [value]
+}
+
+export type HydrateTemplateContext = TemplateContext & {
+  readonly where: HydrationNode
+  readonly makeHydrateContext: (where: HydrationNode, index: number) => HydrateContext
+}
+
+export function findWhere(hydrateCtx: HydrateContext, hash: string): HydrationTemplate | null {
+  // If there is not a manyKey, we can just find the template by its hash
+  if (hydrateCtx.manyKey === undefined) {
+    return findHydrationTemplate(getChildNodes(hydrateCtx.where), hash)
+  }
+
+  // If there is a manyKey, we need to find the many node first
+  const many = findHydrationMany(getChildNodes(hydrateCtx.where), hydrateCtx.manyKey)
+
+  if (many === null) return null
+
+  // Then we can find the template by its hash
+  return findHydrationTemplate(getChildNodes(many), hash)
+}
+
+export function setupHydrateParts(parts: Template.Template["parts"], ctx: HydrateTemplateContext) {
+  const effects: Array<Effect.Effect<void, any, any>> = []
+
+  for (const [part, path] of parts) {
+    const effect = setupHydratePart(part, path, ctx)
+    if (effect) {
+      effects.push(effect)
+    }
+  }
+
+  return effects
+}
+
+export function setupHydratePart(
+  part: Template.PartNode | Template.SparsePartNode,
+  path: Chunk.Chunk<number>,
+  ctx: HydrateTemplateContext
+) {
+  switch (part._tag) {
+    case "attr":
+      return setupAttrPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "boolean-part":
+      return setupBooleanPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "className-part":
+      return setupClassNamePart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "comment-part":
+      return setupCommentPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "data":
+      return setupDataPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "event":
+      return setupEventPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "node": {
+      const hole = findHydrationHole(getChildNodes(ctx.where), part.index)
+      if (hole === null) {
+        throw new CouldNotFindCommentError(part.index)
+      }
+      return setupHydratedNodePart(part, hole, ctx)
+    }
+    case "properties":
+      return setupPropertiesPart(findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "property":
+      return setupPropertyPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
+    case "ref":
+      return setupRefPart(part, findHydratePath(ctx.where, path) as any, ctx.values[part.index])
+    case "sparse-attr":
+      return setupSparseAttrPart(part, findHydratePath(ctx.where, path) as any, ctx)
+    case "sparse-class-name":
+      return setupSparseClassNamePart(part, findHydratePath(ctx.where, path) as any, ctx)
+    case "sparse-comment":
+      return setupSparseCommentPart(part, findHydratePath(ctx.where, path) as any, ctx)
+    case "text-part": {
+      const hole = findHydrationHole(getChildNodes(ctx.where), part.index)
+      if (hole === null) throw new CouldNotFindCommentError(part.index)
+      return setupTextPart(part, hole.endComment, ctx)
+    }
+  }
+}
+
+export function setupHydratedNodePart(
+  part: Template.NodePart,
+  hole: HydrationHole,
+  ctx: HydrateTemplateContext
+) {
+  const nestedCtx = ctx.makeHydrateContext(hole, part.index)
+  const previousNodes = getPreviousNodes(hole)
+  const text = previousNodes.length === 2 && isCommentWithValue(previousNodes[0], "text") && isText(previousNodes[1])
+    ? previousNodes[1]
+    : null
+  const effect = setupNodePart(part, hole.endComment, ctx, text, text === null ? previousNodes : [text])
+  if (effect === null) return null
+  return Effect.provideService(effect, HydrateContext, nestedCtx)
+}
+
+export function findRootParentChildNodes(where: HTMLElement): ParentChildNodes {
+  const childNodes = findRootChildNodes(where)
+
+  return {
+    parentNode: where,
+    childNodes
+  }
+}
+
+const START = "typed-start"
+const END = "typed-end"
+
+// Finds all of the childNodes between the "typed-start" and "typed-end" comments
+export function findRootChildNodes(where: HTMLElement): Array<Node> {
+  let start = -1
+  let end = -1
+
+  const { childNodes } = where
+  const length = childNodes.length
+
+  for (let i = 0; i < length; i++) {
+    const node = childNodes[i]
+
+    if (node.nodeType === node.COMMENT_NODE && node.nodeValue === START) {
+      start = i
+      break
+    }
+  }
+
+  for (let i = length - 1; i >= Math.max(start, 0); i--) {
+    const node = childNodes[i]
+
+    if (node.nodeType === node.COMMENT_NODE && node.nodeValue === END) {
+      end = i
+      break
+    }
+  }
+
+  // If we can't find the start and end comments, just return all childNodes
+  if (start === -1 && end === -1) {
+    return Array.from(childNodes)
+  }
+
+  start = start === -1 ? 0 : start
+  end = end === -1 ? length - 1 : end
+
+  const rootChildNodes: Array<Node> = Array(end - start)
+
+  for (let i = start + 1, j = 0; i <= end; i++) {
+    rootChildNodes[j++] = childNodes[i]
+  }
+
+  return rootChildNodes
+}
+
+export function getWire(where: HydrationNode) {
+  const nodes = getNodes(where)
+  if (nodes.length === 1) return nodes[0]
+  return nodes
 }

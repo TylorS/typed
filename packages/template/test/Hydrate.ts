@@ -20,7 +20,7 @@ describe("Hydrate", () => {
 
       const rendered = yield* _(elementRef)
       ok(rendered instanceof window.HTMLDivElement)
-      ok(rendered === div)
+      expect(rendered).toBe(div)
     }))
 
   it("hydrates a template using many", () =>

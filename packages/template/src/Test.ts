@@ -21,7 +21,7 @@ import type * as Scope from "effect/Scope"
 import * as ElementRef from "./ElementRef.js"
 import { ROOT_CSS_SELECTOR } from "./ElementSource.js"
 import { renderToHtml, renderToHtmlString, serverLayer, staticLayer } from "./Html.js"
-import { hydrate, hydrateLayer } from "./Hydrate.js"
+import { hydrate } from "./Hydrate.js"
 import { adjustTime } from "./internal/utils.js"
 import { render, renderLayer } from "./Render.js"
 import type * as RenderContext from "./RenderContext.js"
@@ -263,7 +263,7 @@ export function testHydrate<R, E, Elements>(
               fromRendered(rendered)
             )
         )),
-      Effect.provide(hydrateLayer(window)),
+      Effect.provide(renderLayer(window)),
       Effect.forkScoped
     )
 

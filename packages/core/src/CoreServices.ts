@@ -15,7 +15,6 @@ import {
   server as CurrentRouteServer
 } from "@typed/router/CurrentRoute"
 import { serverLayer, staticLayer } from "@typed/template/Html"
-import { hydrateLayer } from "@typed/template/Hydrate"
 import { renderLayer } from "@typed/template/Render"
 import type * as RenderContext from "@typed/template/RenderContext"
 import * as RenderQueue from "@typed/template/RenderQueue"
@@ -55,22 +54,6 @@ export function fromWindow(
     Navigation.fromWindow,
     CurrentRouteBrowser
   ).pipe(Layer.provideMerge(renderLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
-}
-
-/**
- * @since 1.0.0
- */
-export function hydrateFromWindow(
-  window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
-): Layer.Layer<CoreDomServices> {
-  return Layer.mergeAll(
-    GetRandomValues.implement((length: number) =>
-      Effect.succeed(window.crypto.getRandomValues(new Uint8Array(length)))
-    ),
-    Navigation.fromWindow,
-    CurrentRouteBrowser
-  ).pipe(Layer.provideMerge(hydrateLayer(window, options)), Layer.provideMerge(makeQueueLayer(options?.queue ?? "raf")))
 }
 
 /**

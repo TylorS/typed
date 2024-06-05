@@ -11,7 +11,6 @@ import type * as Chunk from "effect/Chunk"
 import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
 import * as utils from "./internal/utils.js"
-import * as hydrate from "./internal/v2/hydrate.js"
 import * as hydrationTemplate from "./internal/v2/hydration-template.js"
 import * as render from "./internal/v2/render.js"
 import type { Placeholder } from "./Placeholder.js"
@@ -72,7 +71,8 @@ export const setupClassNamePart: (
 export const setupCommentPart: (
   { index }: Pick<Template.CommentPartNode, "index">,
   comment: Comment,
-  ctx: render.TemplateContext
+  ctx: render.TemplateContext,
+  renderable: Renderable<any, any>
 ) => Effect.Effect<void, any, any> | null = render.setupCommentPart
 
 /**
@@ -112,8 +112,8 @@ export const setupNodePart: (
 export const setupHydratedNodePart: (
   part: Template.NodePart,
   hole: hydrationTemplate.HydrationHole,
-  ctx: hydrate.HydrateTemplateContext
-) => Effect.Effect<void, any, any> | null = hydrate.setupHydratedNodePart
+  ctx: render.HydrateTemplateContext
+) => Effect.Effect<void, any, any> | null = render.setupHydratedNodePart
 
 /**
  * @since 1.0.0

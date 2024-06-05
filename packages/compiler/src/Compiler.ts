@@ -127,7 +127,7 @@ export class Compiler {
               const template = templates[index]
               const remaining = templates.slice(index + 1)
               if (target === "dom" || target === "hydrate") {
-                return this.replaceDom(sourceFile, template, remaining, importManager, target === "hydrate")
+                return this.replaceDom(template, remaining, importManager, target === "hydrate")
               }
 
               // return this.replaceHtml(template, remaining, target === "static")
@@ -149,7 +149,6 @@ export class Compiler {
   }
 
   private replaceDom(
-    sourceFile: ts.SourceFile,
     { parts, template }: ParsedTemplate,
     remaining: Array<ParsedTemplate>,
     imports: ImportDeclarationManager,
@@ -1263,6 +1262,10 @@ function* createCommentPartStatements(
   const varName = createVarNameFromNode(node._tag, ctx)
   const commentNode = createComment("")
   const partVarName = `${varName}_part`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
 
   addCompilerToolsNamespace(ctx.imports)
 
@@ -1275,7 +1278,15 @@ function* createCommentPartStatements(
         ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(node.index))
       ]),
       ts.factory.createIdentifier(varName),
-      ts.factory.createIdentifier(`templateContext`)
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        node.index
+      )
     ])
   )
   yield runPartIfNotNull(partVarName, ctx)
