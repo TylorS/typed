@@ -11,14 +11,14 @@ const rootDirectory = path.dirname(import.meta.dirname)
 const testDirectory = path.join(rootDirectory, "test")
 const fixturesDirectory = path.join(testDirectory, "fixtures")
 
-function makeCompiler() {
-  const compiler = new _.Compiler(rootDirectory, "tsconfig.test.json")
+function makeCompiler(target: _.CompilerTarget) {
+  const compiler = new _.Compiler(rootDirectory, "tsconfig.test.json", target)
 
-  const target: {
+  const sourceFiles: {
     [k: string]: ts.SourceFile
   } = {}
 
-  const files = new Proxy(target, {
+  const files = new Proxy(sourceFiles, {
     get(target, key) {
       if (key in target) {
         return target[key as string]
@@ -43,7 +43,7 @@ function makeCompiler() {
 
 describe("Compiler", () => {
   describe("parseTemplates", () => {
-    const { compiler, files } = makeCompiler()
+    const { compiler, files } = makeCompiler("dom")
     it("Static <div> with text", () => {
       const templates = compiler.parseTemplates(files["static-div-with-text.ts"])
       expect(templates).toHaveLength(1)
@@ -197,17 +197,110 @@ describe("Compiler", () => {
   })
 
   describe("compileTemplates", () => {
-    const { compiler, files } = makeCompiler()
+    const { compiler, files } = makeCompiler("dom")
 
-    it("optimizes templates for the DOM", () => {
+    it("optimizes nested templates for the DOM", () => {
       const nestedTemplates = compiler.compileTemplates(files["nested-templates.ts"])
+      const text = getSnapshotText(nestedTemplates.js)
+      const expected = `import * as Document from "@typed/dom/Document";
+import * as RenderContext from "@typed/template/RenderContext";
+import * as Context from "@typed/context";
+import * as CompilerTools from "@typed/template/compiler-tools";
+import * as Effect from "effect/Effect";
+import * as Scope from "effect/Scope";
+import * as Fx from "@typed/fx";
+export const render = Fx.make(sink => Effect.gen(function* (_) {
+    const context = yield* _(Effect.context());
+    const document = Context.get(context, Document.Document);
+    const renderContext = Context.get(context, RenderContext.RenderContext);
+    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [[]], sink.onFailure);
+    const element0 = document.createElement("div");
+    element0.setAttribute("style", "border: 1px solid #000;");
+    const template0_element0 = document.createElement("p");
+    const template0_text0 = document.createTextNode("Hello");
+    template0_element0.appendChild(template0_text0);
+    const template0_element1 = document.createElement("b");
+    const template0_text1 = document.createTextNode("World");
+    template0_element1.appendChild(template0_text1);
+    element0.appendChild(template0_element0);
+    element0.appendChild(template0_element1);
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+        yield* _(templateContext.refCounter.wait);
+    }
+    yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+}));
+//# sourceMappingURL=nested-templates.js.map`
+
+      expect(text).toEqual(expected)
+    })
+
+    it("optimizes interpolated templates for the DOM", () => {
+      const divWithEffect = compiler.compileTemplates(files["div-with-interpolated-effect.ts"])
       const divWithRefSubject = compiler.compileTemplates(files["div-with-interpolated-refsubject.ts"])
 
-      console.log(nestedTemplates.js.getText(0, nestedTemplates.js.getLength()))
-      console.log(divWithRefSubject.js.getText(0, divWithRefSubject.js.getLength()))
+      expect(getSnapshotText(divWithEffect.js)).toEqual(`import * as Document from "@typed/dom/Document";
+import * as RenderContext from "@typed/template/RenderContext";
+import * as Context from "@typed/context";
+import * as CompilerTools from "@typed/template/compiler-tools";
+import * as Scope from "effect/Scope";
+import * as Fx from "@typed/fx";
+import * as Effect from "effect/Effect";
+export const render = Fx.make(sink => Effect.gen(function* (_) {
+    const context = yield* _(Effect.context());
+    const document = Context.get(context, Document.Document);
+    const renderContext = Context.get(context, RenderContext.RenderContext);
+    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [Effect.succeed(42n)], sink.onFailure);
+    const element0 = document.createElement("div");
+    const nodePart0_comment = document.createComment("hole0");
+    element0.appendChild(nodePart0_comment);
+    const nodePart0 = CompilerTools.setupNodePart({ index: 0 }, nodePart0_comment, templateContext, null, []);
+    if (nodePart0 !== null) {
+        yield* _(nodePart0, Effect.catchAllCause(sink.onFailure), Effect.forkIn(templateContext.scope));
+    }
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+        yield* _(templateContext.refCounter.wait);
+    }
+    yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+}));
+//# sourceMappingURL=div-with-interpolated-effect.js.map`)
+
+      expect(getSnapshotText(divWithRefSubject.js)).toEqual(`import * as Document from "@typed/dom/Document";
+import * as RenderContext from "@typed/template/RenderContext";
+import * as Context from "@typed/context";
+import * as CompilerTools from "@typed/template/compiler-tools";
+import * as Effect from "effect/Effect";
+import * as Scope from "effect/Scope";
+import * as Fx from "@typed/fx";
+import { RefSubject } from "@typed/core";
+const ref = RefSubject.tagged()("ref");
+export const render = Fx.make(sink => Effect.gen(function* (_) {
+    const context = yield* _(Effect.context());
+    const document = Context.get(context, Document.Document);
+    const renderContext = Context.get(context, RenderContext.RenderContext);
+    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [ref], sink.onFailure);
+    const element0 = document.createElement("div");
+    const nodePart0_comment = document.createComment("hole0");
+    element0.appendChild(nodePart0_comment);
+    const nodePart0 = CompilerTools.setupNodePart({ index: 0 }, nodePart0_comment, templateContext, null, []);
+    if (nodePart0 !== null) {
+        yield* _(nodePart0, Effect.catchAllCause(sink.onFailure), Effect.forkIn(templateContext.scope));
+    }
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+        yield* _(templateContext.refCounter.wait);
+    }
+    yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+}));
+//# sourceMappingURL=div-with-interpolated-refsubject.js.map`)
     })
   })
 })
+
+function getSnapshotText(snapshot: ts.IScriptSnapshot) {
+  return snapshot.getText(0, snapshot.getLength())
+}
 
 function equalTemplates(actual: Template, expected: Template) {
   expect(actual.nodes).toEqual(expected.nodes)
