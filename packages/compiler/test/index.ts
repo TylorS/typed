@@ -206,6 +206,7 @@ describe("Compiler", () => {
 import * as RenderContext from "@typed/template/RenderContext";
 import * as Context from "@typed/context";
 import * as CompilerTools from "@typed/template/compiler-tools";
+import * as RenderEvent from "@typed/template/RenderEvent";
 import * as Effect from "effect/Effect";
 import * as Scope from "effect/Scope";
 import * as Fx from "@typed/fx";
@@ -213,7 +214,7 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     const context = yield* _(Effect.context());
     const document = Context.get(context, Document.Document);
     const renderContext = Context.get(context, RenderContext.RenderContext);
-    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [[]], sink.onFailure);
+    const templateContext = yield* _(CompilerTools.makeTemplateContext(document, renderContext, [[]], sink.onFailure));
     const element0 = document.createElement("div");
     element0.setAttribute("style", "border: 1px solid #000;");
     const template0_element0 = document.createElement("p");
@@ -224,11 +225,11 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     template0_element1.appendChild(template0_text1);
     element0.appendChild(template0_element0);
     element0.appendChild(template0_element1);
-    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expect(templateContext.expected)))) {
         yield* _(templateContext.refCounter.wait);
     }
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
-    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }));
 //# sourceMappingURL=nested-templates.js.map`
 
@@ -243,6 +244,7 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
 import * as RenderContext from "@typed/template/RenderContext";
 import * as Context from "@typed/context";
 import * as CompilerTools from "@typed/template/compiler-tools";
+import * as RenderEvent from "@typed/template/RenderEvent";
 import * as Scope from "effect/Scope";
 import * as Fx from "@typed/fx";
 import * as Effect from "effect/Effect";
@@ -250,7 +252,7 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     const context = yield* _(Effect.context());
     const document = Context.get(context, Document.Document);
     const renderContext = Context.get(context, RenderContext.RenderContext);
-    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [Effect.succeed(42n)], sink.onFailure);
+    const templateContext = yield* _(CompilerTools.makeTemplateContext(document, renderContext, [Effect.succeed(42n)], sink.onFailure));
     const element0 = document.createElement("div");
     const nodePart0_comment = document.createComment("hole0");
     element0.appendChild(nodePart0_comment);
@@ -258,11 +260,11 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     if (nodePart0 !== null) {
         yield* _(nodePart0, Effect.catchAllCause(sink.onFailure), Effect.forkIn(templateContext.scope));
     }
-    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expect(templateContext.expected)))) {
         yield* _(templateContext.refCounter.wait);
     }
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
-    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }));
 //# sourceMappingURL=div-with-interpolated-effect.js.map`)
 
@@ -270,6 +272,7 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
 import * as RenderContext from "@typed/template/RenderContext";
 import * as Context from "@typed/context";
 import * as CompilerTools from "@typed/template/compiler-tools";
+import * as RenderEvent from "@typed/template/RenderEvent";
 import * as Effect from "effect/Effect";
 import * as Scope from "effect/Scope";
 import * as Fx from "@typed/fx";
@@ -279,7 +282,7 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     const context = yield* _(Effect.context());
     const document = Context.get(context, Document.Document);
     const renderContext = Context.get(context, RenderContext.RenderContext);
-    const templateContext = CompilerTools.makeTemplateContext(document, renderContext, [ref], sink.onFailure);
+    const templateContext = yield* _(CompilerTools.makeTemplateContext(document, renderContext, [ref], sink.onFailure));
     const element0 = document.createElement("div");
     const nodePart0_comment = document.createComment("hole0");
     element0.appendChild(nodePart0_comment);
@@ -287,13 +290,47 @@ export const render = Fx.make(sink => Effect.gen(function* (_) {
     if (nodePart0 !== null) {
         yield* _(nodePart0, Effect.catchAllCause(sink.onFailure), Effect.forkIn(templateContext.scope));
     }
-    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expected(templateContext.expected)))) {
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expect(templateContext.expected)))) {
         yield* _(templateContext.refCounter.wait);
     }
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
-    yield* _(Effect.never, Effect.onExit(exit => Scope.close(scope, exit)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }));
 //# sourceMappingURL=div-with-interpolated-refsubject.js.map`)
+    })
+
+    it("optimizes sparse classes", () => {
+      const { compiler, files } = makeCompiler("dom")
+      const divWithSparseClass = compiler.compileTemplates(files["div-with-sparse-class.ts"])
+      expect(getSnapshotText(divWithSparseClass.js)).toEqual(`import * as Document from "@typed/dom/Document";
+import * as RenderContext from "@typed/template/RenderContext";
+import * as Context from "@typed/context";
+import * as CompilerTools from "@typed/template/compiler-tools";
+import * as RenderEvent from "@typed/template/RenderEvent";
+import * as Effect from "effect/Effect";
+import * as Scope from "effect/Scope";
+import * as Fx from "@typed/fx";
+export const render = Fx.make(sink => Effect.gen(function* (_) {
+    const context = yield* _(Effect.context());
+    const document = Context.get(context, Document.Document);
+    const renderContext = Context.get(context, RenderContext.RenderContext);
+    const templateContext = yield* _(CompilerTools.makeTemplateContext(document, renderContext, [["foo", "bar"]], sink.onFailure));
+    const element0 = document.createElement("div");
+    const template0_element0 = document.createElement("div");
+    const template0_element0_class = CompilerTools.setupSparseClassNamePart({ nodes: [{ _tag: "className-part", index: 0 }, { _tag: "text", value: " " }, { _tag: "className-part", index: 1 }] }, template0_element0, { ...templateContext, values: templateContext.values[0] });
+    if (template0_element0_class !== null) {
+        yield* _(template0_element0_class, Effect.catchAllCause(sink.onFailure), Effect.forkIn(templateContext.scope));
+    }
+    const template0_text0 = document.createTextNode("Hello World");
+    template0_element0.appendChild(template0_text0);
+    element0.appendChild(template0_element0);
+    if (templateContext.expected > 0 && (yield* _(templateContext.refCounter.expect(templateContext.expected)))) {
+        yield* _(templateContext.refCounter.wait);
+    }
+    yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
+    yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
+}));
+//# sourceMappingURL=div-with-sparse-class.js.map`)
     })
   })
 })

@@ -201,7 +201,7 @@ function setupPart(
       return setupNodePart(part, comment, ctx, null, [])
     }
     case "properties":
-      return setupPropertiesPart(part, findPath(content, path) as HTMLElement | SVGElement, ctx)
+      return setupPropertiesPart(findPath(content, path) as HTMLElement | SVGElement, ctx, ctx.values[part.index])
     case "property":
       return setupPropertyPart(
         part,
@@ -350,10 +350,8 @@ export function setupPropertyPart(
 export function setupRefPart(
   { index }: Pick<Template.RefPartNode, "index">,
   element: HTMLElement | SVGElement,
-  ctx: TemplateContext
+  renderable: Renderable<any, any>
 ) {
-  const renderable = ctx.values[index]
-
   if (isNullOrUndefined(renderable)) return null
   else if (isDirective(renderable)) {
     return renderable(
@@ -368,11 +366,10 @@ export function setupRefPart(
 }
 
 export function setupPropertiesPart(
-  { index }: Pick<Template.PropertiesPartNode, "index">,
   element: HTMLElement | SVGElement,
-  ctx: TemplateContext
+  ctx: TemplateContext,
+  renderable: Renderable<any, any>
 ) {
-  const renderable = ctx.values[index]
   if (renderable && typeof renderable === "object") {
     const effects: Array<Effect.Effect<void, any, any>> = []
     const addEffect = (effect: Effect.Effect<void, any, any> | null | undefined) => {
@@ -412,7 +409,7 @@ export function setupPropertiesPart(
 }
 
 export function setupSparseAttrPart(
-  { name, nodes }: Template.SparseAttrNode,
+  { name, nodes }: Pick<Template.SparseAttrNode, "name" | "nodes">,
   element: HTMLElement | SVGElement,
   ctx: TemplateContext
 ) {
@@ -429,7 +426,7 @@ export function setupSparseAttrPart(
 }
 
 export function setupSparseClassNamePart(
-  { nodes }: Template.SparseClassNameNode,
+  { nodes }: Pick<Template.SparseClassNameNode, "nodes">,
   element: HTMLElement | SVGElement,
   ctx: TemplateContext
 ) {
@@ -444,7 +441,7 @@ export function setupSparseClassNamePart(
 }
 
 export function setupSparseCommentPart(
-  { nodes }: Template.SparseCommentNode,
+  { nodes }: Pick<Template.SparseCommentNode, "nodes">,
   comment: Comment,
   ctx: TemplateContext
 ) {

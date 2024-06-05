@@ -236,7 +236,6 @@ export class Compiler {
     } else {
       const [head, syntaxList] = node.getChildren()
       const children = syntaxList.getChildren()
-      const lastChild = children[children.length - 1]
       const parts: Array<ParsedPart> = []
 
       const parsePart = (child: ts.Node, i: number): Array<string> => {
@@ -244,7 +243,8 @@ export class Compiler {
           const [part, literal] = child.getChildren()
           parts.push(this.parsePart(part as ts.Expression, i))
           const text = literal.getText()
-          if (child === lastChild) return [text.slice(1, -1)]
+          if (literal.kind === ts.SyntaxKind.TemplateTail) return [text.slice(1, -1)]
+          if (literal.kind === ts.SyntaxKind.TemplateMiddle) return [text.slice(1, -2)]
           return [text.slice(1)]
         } else if (child.kind === ts.SyntaxKind.TemplateHead) {
           return [child.getText().slice(1)]
@@ -409,7 +409,7 @@ type NestedIterable<A> = Iterable<A | NestedIterable<A>>
 type NestedIterator<A> = Iterator<A | NestedIterable<A>>
 
 function createDomSetupStatements(ctx: CreateNodeCtx): Array<ts.Statement> {
-  if (ctx.parts.length > 0 && ctx.parts.some((x) => x.kind !== "primitive")) {
+  if (ctx.parts.length > 0) {
     ctx.imports.addImport(`@typed/dom/Document`, "Document")
     ctx.imports.addImport(`@typed/template/RenderContext`, "RenderContext")
     ctx.imports.addImport(`@typed/context`, "Context")
@@ -436,12 +436,12 @@ function createDomSetupStatements(ctx: CreateNodeCtx): Array<ts.Statement> {
       ),
       createConst(
         `templateContext`,
-        createMethodCall(`CompilerTools`, `makeTemplateContext`, [], [
+        createEffectYield(createMethodCall(`CompilerTools`, `makeTemplateContext`, [], [
           ts.factory.createIdentifier(`document`),
           ts.factory.createIdentifier(`renderContext`),
           partsToValues(ctx.parts),
           ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`sink`), `onFailure`)
-        ])
+        ]))
       )
     ]
   }
@@ -459,41 +459,46 @@ function partsToValues(parts: ReadonlyArray<ParsedPart>): ts.Expression {
 function createDomEffectStatements(template: Template.Template, ctx: CreateNodeCtx) {
   const effects: Array<ts.Statement> = []
 
-  // Wait on values to be ready before rendering
-  effects.push(
-    ts.factory.createIfStatement(
-      ts.factory.createBinaryExpression(
+  if (template.parts.length > 0) {
+    // Wait on values to be ready before rendering
+    effects.push(
+      ts.factory.createIfStatement(
         ts.factory.createBinaryExpression(
-          ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `expected`),
-          ts.SyntaxKind.GreaterThanToken,
-          ts.factory.createNumericLiteral(0)
-        ),
-        ts.SyntaxKind.AmpersandAmpersandToken,
-        ts.factory.createParenthesizedExpression(
-          createEffectYield(
-            createMethodCall(
-              ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `refCounter`),
-              `expected`,
-              [],
-              [ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `expected`)]
-            )
-          )
-        )
-      ),
-      ts.factory.createBlock(
-        [
-          ts.factory.createExpressionStatement(
+          ts.factory.createBinaryExpression(
+            ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `expected`),
+            ts.SyntaxKind.GreaterThanToken,
+            ts.factory.createNumericLiteral(0)
+          ),
+          ts.SyntaxKind.AmpersandAmpersandToken,
+          ts.factory.createParenthesizedExpression(
             createEffectYield(
-              ts.factory.createPropertyAccessExpression(
+              createMethodCall(
                 ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `refCounter`),
-                `wait`
+                `expect`,
+                [],
+                [ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `expected`)]
               )
             )
           )
-        ]
+        ),
+        ts.factory.createBlock(
+          [
+            ts.factory.createExpressionStatement(
+              createEffectYield(
+                ts.factory.createPropertyAccessExpression(
+                  ts.factory.createPropertyAccessExpression(
+                    ts.factory.createIdentifier(`templateContext`),
+                    `refCounter`
+                  ),
+                  `wait`
+                )
+              )
+            )
+          ]
+        )
       )
     )
-  )
+  }
 
   // If there's more than one element, we need to wire them together
   if (template.nodes.length > 1) {
@@ -537,6 +542,8 @@ function createDomEffectStatements(template: Template.Template, ctx: CreateNodeC
     )
   }
 
+  ctx.imports.addImport(`@typed/template/RenderEvent`, "RenderEvent")
+
   // Emit our DOM elements
   effects.push(
     ts.factory.createExpressionStatement(
@@ -573,7 +580,10 @@ function createDomEffectStatements(template: Template.Template, ctx: CreateNodeC
             ts.factory.createCallExpression(
               ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`Scope`), `close`),
               [],
-              [ts.factory.createIdentifier(`scope`), ts.factory.createIdentifier(`exit`)]
+              [
+                ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), `scope`),
+                ts.factory.createIdentifier(`exit`)
+              ]
             )
           )]
         )
@@ -674,23 +684,23 @@ function* createAttributeStatements(
     case "boolean":
       return yield createBooleanNodeStatements(parent, attr)
     case "boolean-part":
-      return yield createBooleanPartStatements(parent, attr)
+      return yield createBooleanPartStatements(parent, attr, ctx)
     case "className-part":
-      return yield createClassNamePartStatements(parent, attr)
+      return yield createClassNamePartStatements(parent, attr, ctx)
     case "data":
-      return yield createDataNodeStatements(parent, attr)
+      return yield createDataNodeStatements(parent, attr, ctx)
     case "event":
-      return yield createEventNodeStatements(parent, attr)
+      return yield createEventNodeStatements(parent, attr, ctx)
     case "properties":
-      return yield createPropertiesNodeStatements(parent, attr)
+      return yield createPropertiesNodeStatements(parent, attr, ctx)
     case "property":
-      return yield createPropertyNodeStatements(parent, attr)
+      return yield createPropertyNodeStatements(parent, attr, ctx)
     case "ref":
-      return yield createRefNodeStatements(parent, attr)
+      return yield createRefNodeStatements(parent, attr, ctx)
     case "sparse-attr":
-      return yield createSparseAttrNodeStatements(parent, attr)
+      return yield createSparseAttrNodeStatements(parent, attr, ctx)
     case "sparse-class-name":
-      return yield createSparseClassNameNodeStatements(parent, attr)
+      return yield createSparseClassNameNodeStatements(parent, attr, ctx)
     // Shouldn't really happen
     case "text":
   }
@@ -708,7 +718,7 @@ function* createAttributePartStatements(
   attr: Template.AttrPartNode,
   ctx: CreateNodeCtx
 ): Iterable<ts.Statement> {
-  const varName = createVarNameFromNode(`${parent}_attr_${attr.name}`, ctx)
+  const varName = `${parent}_attr_${attr.name}`
   const templateValues = ts.factory.createPropertyAccessExpression(
     ts.factory.createIdentifier(`templateContext`),
     `values`
@@ -743,46 +753,334 @@ function* createBooleanNodeStatements(parent: string, attr: Template.BooleanNode
   yield ts.factory.createExpressionStatement(toggleAttribute(parent, attr.name))
 }
 
-function createBooleanPartStatements(_parent: string, _attr: Template.BooleanPartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createClassNamePartStatements(_parent: string, _attr: Template.ClassNamePartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createDataNodeStatements(_parent: string, _attr: Template.DataPartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createEventNodeStatements(_parent: string, _attr: Template.EventPartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createPropertiesNodeStatements(
-  _parent: string,
-  _attr: Template.PropertiesPartNode
+function* createBooleanPartStatements(
+  parent: string,
+  attr: Template.BooleanPartNode,
+  ctx: CreateNodeCtx
 ): Iterable<ts.Statement> {
-  return []
+  const varName = `${parent}_attr_${attr.name}`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupBooleanPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index)),
+        ts.factory.createPropertyAssignment(`name`, ts.factory.createStringLiteral(attr.name))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
 }
 
-function createPropertyNodeStatements(_parent: string, _attr: Template.PropertyPartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createRefNodeStatements(_parent: string, _attr: Template.RefPartNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createSparseAttrNodeStatements(_parent: string, _attr: Template.SparseAttrNode): Iterable<ts.Statement> {
-  return []
-}
-
-function createSparseClassNameNodeStatements(
-  _parent: string,
-  _attr: Template.SparseClassNameNode
+function* createClassNamePartStatements(
+  parent: string,
+  attr: Template.ClassNamePartNode,
+  ctx: CreateNodeCtx
 ): Iterable<ts.Statement> {
-  return []
+  const varName = `${parent}_class`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupClassNamePart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function* createDataNodeStatements(
+  parent: string,
+  attr: Template.DataPartNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_data`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupDataPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function* createEventNodeStatements(
+  parent: string,
+  attr: Template.EventPartNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_event_${attr.name}`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupEventPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index)),
+        ts.factory.createPropertyAssignment(`name`, ts.factory.createStringLiteral(attr.name))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function* createPropertiesNodeStatements(
+  parent: string,
+  attr: Template.PropertiesPartNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_properties`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupPropertiesPart`, [], [
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function* createPropertyNodeStatements(
+  parent: string,
+  attr: Template.PropertyPartNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_property_${attr.name}`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupPropertyPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index)),
+        ts.factory.createPropertyAssignment(`name`, ts.factory.createStringLiteral(attr.name))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createIdentifier(`templateContext`),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function* createRefNodeStatements(
+  parent: string,
+  attr: Template.RefPartNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_ref`
+  const templateValues = ts.factory.createPropertyAccessExpression(
+    ts.factory.createIdentifier(`templateContext`),
+    `values`
+  )
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupRefPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(attr.index))
+      ]),
+      ts.factory.createIdentifier(parent),
+      ts.factory.createElementAccessExpression(
+        Chunk.reduce(
+          ctx.templatePath,
+          templateValues as ts.Expression,
+          (expr, index) => ts.factory.createElementAccessExpression(expr, index)
+        ),
+        attr.index
+      )
+    ])
+  )
+}
+
+function* createSparseAttrNodeStatements(
+  parent: string,
+  attr: Template.SparseAttrNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_attr_${attr.name}`
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupSparseAttrPart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(
+          `nodes`,
+          ts.factory.createArrayLiteralExpression(attr.nodes.map((node) =>
+            node._tag === "text" ?
+              ts.factory.createObjectLiteralExpression([
+                ts.factory.createPropertyAssignment(`_tag`, ts.factory.createStringLiteral(node._tag)),
+                ts.factory.createPropertyAssignment(`value`, ts.factory.createNumericLiteral(node.value))
+              ]) :
+              ts.factory.createObjectLiteralExpression([
+                ts.factory.createPropertyAssignment(`_tag`, ts.factory.createStringLiteral(node._tag)),
+                ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(node.index))
+              ])
+          ))
+        )
+      ]),
+      ts.factory.createIdentifier(parent),
+      createSparseTemplateContext(ctx)
+    ])
+  )
+}
+
+function* createSparseClassNameNodeStatements(
+  parent: string,
+  attr: Template.SparseClassNameNode,
+  ctx: CreateNodeCtx
+): Iterable<ts.Statement> {
+  const varName = `${parent}_class`
+
+  addCompilerToolsNamespace(ctx.imports)
+
+  yield createConst(
+    varName,
+    createMethodCall(`CompilerTools`, `setupSparseClassNamePart`, [], [
+      ts.factory.createObjectLiteralExpression([
+        ts.factory.createPropertyAssignment(
+          `nodes`,
+          ts.factory.createArrayLiteralExpression(attr.nodes.map((node) =>
+            node._tag === "text" ?
+              ts.factory.createObjectLiteralExpression([
+                ts.factory.createPropertyAssignment(`_tag`, ts.factory.createStringLiteral(node._tag)),
+                ts.factory.createPropertyAssignment(`value`, ts.factory.createStringLiteral(node.value))
+              ]) :
+              ts.factory.createObjectLiteralExpression([
+                ts.factory.createPropertyAssignment(`_tag`, ts.factory.createStringLiteral(node._tag)),
+                ts.factory.createPropertyAssignment(`index`, ts.factory.createNumericLiteral(node.index))
+              ])
+          ))
+        )
+      ]),
+      ts.factory.createIdentifier(parent),
+      createSparseTemplateContext(ctx)
+    ])
+  )
+
+  yield runPartIfNotNull(varName, ctx)
+}
+
+function createSparseTemplateContext(
+  ctx: CreateNodeCtx
+) {
+  if (Chunk.isEmpty(ctx.templatePath)) return ts.factory.createIdentifier(`templateContext`)
+  const last = Chunk.unsafeLast(ctx.templatePath)
+
+  return ts.factory.createObjectLiteralExpression([
+    ts.factory.createSpreadAssignment(ts.factory.createIdentifier(`templateContext`)),
+    ts.factory.createPropertyAssignment(
+      `values`,
+      ts.factory.createElementAccessExpression(
+        ts.factory.createPropertyAccessExpression(ts.factory.createIdentifier(`templateContext`), "values"),
+        last
+      )
+    )
+  ])
 }
 
 // End of Attributes
@@ -1021,7 +1319,9 @@ function* createSparseCommentNodeStatements(
             }
           }))
         )
-      ])
+      ]),
+      ts.factory.createIdentifier(varName),
+      createSparseTemplateContext(ctx)
     ])
   )
   yield runPartIfNotNull(partVarName, ctx)

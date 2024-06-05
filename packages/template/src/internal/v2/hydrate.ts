@@ -193,11 +193,11 @@ function setupPart(
       return setupHydratedNodePart(part, hole, ctx)
     }
     case "properties":
-      return setupPropertiesPart(part, findHydratePath(ctx.where, path) as any, ctx)
+      return setupPropertiesPart(findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
     case "property":
       return setupPropertyPart(part, findHydratePath(ctx.where, path) as any, ctx, ctx.values[part.index])
     case "ref":
-      return setupRefPart(part, findHydratePath(ctx.where, path) as any, ctx)
+      return setupRefPart(part, findHydratePath(ctx.where, path) as any, ctx.values[part.index])
     case "sparse-attr":
       return setupSparseAttrPart(part, findHydratePath(ctx.where, path) as any, ctx)
     case "sparse-class-name":

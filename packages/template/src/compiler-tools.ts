@@ -131,23 +131,23 @@ export const setupPropertyPart: (
 export const setupRefPart: (
   { index }: Pick<Template.RefPartNode, "index">,
   element: HTMLElement | SVGElement,
-  ctx: render.TemplateContext
-) => Effect.Effect<unknown, unknown, unknown> | null = render.setupRefPart
+  renderable: Renderable<any, any>
+) => Effect.Effect<void, any, any> | null = render.setupRefPart
 
 /**
  * @since 1.0.0
  */
 export const setupPropertiesPart: (
-  { index }: Pick<Template.PropertiesPartNode, "index">,
   element: HTMLElement | SVGElement,
-  ctx: render.TemplateContext
+  ctx: render.TemplateContext,
+  renderable: Renderable<any, any>
 ) => Effect.Effect<Array<void>, any, any> | null = render.setupPropertiesPart
 
 /**
  * @since 1.0.0
  */
 export const setupSparseAttrPart: (
-  { name, nodes }: Template.SparseAttrNode,
+  { name, nodes }: Pick<Template.SparseAttrNode, "name" | "nodes">,
   element: HTMLElement | SVGElement,
   ctx: render.TemplateContext
 ) => Effect.Effect<void, any, any> = render.setupSparseAttrPart
@@ -156,7 +156,7 @@ export const setupSparseAttrPart: (
  * @since 1.0.0
  */
 export const setupSparseClassNamePart: (
-  { nodes }: Template.SparseClassNameNode,
+  { nodes }: Pick<Template.SparseClassNameNode, "nodes">,
   element: HTMLElement | SVGElement,
   ctx: render.TemplateContext
 ) => Effect.Effect<void, any, any> = render.setupSparseClassNamePart
