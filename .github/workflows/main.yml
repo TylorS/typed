@@ -5,7 +5,7 @@ on:
     branches: [development]
 
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch: 
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,6 +40,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
         name: Setup Repo
+      - run: pnpm run build
       - run: pnpm run test
 
   lint:
@@ -54,6 +55,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
         name: Setup Repo
+      - run: pnpm run build
       - run: pnpm run lint
 
   docs:
@@ -68,8 +70,8 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
         name: Setup Repo
+      - run: pnpm run build
       - run: pnpm run docs
-
 
   publish:
     runs-on: ubuntu-latest

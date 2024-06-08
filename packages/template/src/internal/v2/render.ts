@@ -12,7 +12,6 @@ import * as Scope from "effect/Scope"
 import { type Directive, isDirective } from "../../Directive.js"
 import * as ElementRef from "../../ElementRef.js"
 import * as ElementSource from "../../ElementSource.js"
-import type { BrowserEntry } from "../../Entry.js"
 import * as EventHandler from "../../EventHandler.js"
 import type { Placeholder } from "../../Placeholder.js"
 import type { ToRendered } from "../../Render.js"
@@ -97,7 +96,44 @@ export const renderTemplate: (
           sink.onFailure
         )
 
-        const [wire, isHydrating] = yield* setupTemplate(entry, ctx)
+        const hydration = attemptHydration(ctx, entry.template.hash)
+
+        let effects: Array<Effect.Effect<void, any, any>>
+        let content: DocumentFragment
+        let wire: Rendered | undefined
+
+        if (Option.isSome(hydration)) {
+          const { hydrateCtx, where } = hydration.value
+          effects = setupHydrateParts(entry.template.parts, {
+            ...ctx,
+            where,
+            manyKey: hydrateCtx.manyKey,
+            makeHydrateContext: (where: HydrationNode): HydrateContext => ({
+              where,
+              hydrate: true
+            })
+          })
+
+          wire = getWire(where)
+        } else {
+          content = ctx.document.importNode(entry.content, true)
+          effects = setupRenderParts(entry.template.parts, content, ctx)
+        }
+
+        if (effects.length > 0) {
+          yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
+        }
+
+        // If there's anything to wait on and it's not already done, wait for an initial value
+        // for all asynchronous sources.
+        if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
+          yield* ctx.refCounter.wait
+        }
+
+        // If we're not hydrating, we need to create our wire from our content
+        if (wire === undefined) {
+          wire = persistent(ctx.document, content!)
+        }
 
         // Setup our event listeners for our wire.
         // We use the parentScope to allow event listeners to exist
@@ -105,8 +141,8 @@ export const renderTemplate: (
         yield* ctx.eventSource.setup(wire, ctx.parentScope)
 
         // If we're hydrating, we need to mark this part of the stack as hydrated
-        if (isHydrating && Option.isSome(ctx.hydrateContext)) {
-          ctx.hydrateContext.value.hydrate = false
+        if (Option.isSome(hydration)) {
+          hydration.value.hydrateCtx.hydrate = false
         }
 
         // Emit our DomRenderEvent
@@ -168,63 +204,22 @@ export function makeTemplateContext<Values extends ReadonlyArray<Renderable<any,
   })
 }
 
-function setupTemplate(
-  entry: BrowserEntry,
-  ctx: TemplateContext
-) {
-  return Effect.gen(function*() {
-    if (Option.isSome(ctx.hydrateContext) && ctx.hydrateContext.value.hydrate) {
-      const hydrateCtx = ctx.hydrateContext.value
-      const where = findWhere(hydrateCtx, entry.template.hash)
-      if (where === null) {
-        hydrateCtx.hydrate = false
-      } else {
-        const wire = getWire(where)
-        const makeHydrateContext = (where: HydrationNode): HydrateContext => ({
-          where,
-          parentTemplate: entry.template,
-          hydrate: true
-        })
-
-        const effects = setupHydrateParts(entry.template.parts, {
-          ...ctx,
-          where,
-          manyKey: hydrateCtx.manyKey,
-          makeHydrateContext
-        })
-        if (effects.length > 0) {
-          yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
-        }
-
-        // If there's anything to wait on and it's not already done, wait for an initial value
-        // for all asynchronous sources.
-        if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
-          yield* ctx.refCounter.wait
-        }
-
-        return [wire, true] as const
-      }
+export function attemptHydration(
+  ctx: TemplateContext,
+  hash: string
+): Option.Option<{ readonly where: HydrationTemplate; readonly hydrateCtx: HydrateContext }> {
+  if (Option.isSome(ctx.hydrateContext) && ctx.hydrateContext.value.hydrate) {
+    const hydrateCtx = ctx.hydrateContext.value
+    const where = findHydrationTemplateByHash(hydrateCtx, hash)
+    if (where === null) {
+      hydrateCtx.hydrate = false
+      return Option.none()
+    } else {
+      return Option.some({ where, hydrateCtx })
     }
+  }
 
-    // Standard Render
-
-    const content = ctx.document.importNode(entry.content, true)
-
-    // Setup all parts
-    const effects = setupRenderParts(entry.template.parts, content, ctx)
-    if (effects.length > 0) {
-      yield* Effect.forEach(effects, flow(Effect.catchAllCause(ctx.onCause), Effect.forkIn(ctx.scope)))
-    }
-
-    // If there's anything to wait on and it's not already done, wait for an initial value
-    // for all asynchronous sources.
-    if (ctx.expected > 0 && (yield* ctx.refCounter.expect(ctx.expected))) {
-      yield* ctx.refCounter.wait
-    }
-
-    // Create a persistent wire from our content
-    return [persistent(ctx.document, content), false] as const
-  })
+  return Option.none()
 }
 
 function setupRenderParts(
@@ -576,7 +571,6 @@ function unwrapRenderable<E, R>(renderable: unknown): Fx.Fx<any, E, R> {
       else if (Array.isArray(renderable)) {
         return renderable.length === 0
           ? Fx.succeed(null)
-          // TODO: We need to ensure the ordering of these values in server environments
           : Fx.map(Fx.tuple(renderable.map(unwrapRenderable)), (xs) => xs.flat()) as any
       } else if (Fx.FxTypeId in renderable) {
         return renderable as any
@@ -669,7 +663,7 @@ export type HydrateTemplateContext = TemplateContext & {
   readonly makeHydrateContext: (where: HydrationNode, index: number) => HydrateContext
 }
 
-export function findWhere(hydrateCtx: HydrateContext, hash: string): HydrationTemplate | null {
+export function findHydrationTemplateByHash(hydrateCtx: HydrateContext, hash: string): HydrationTemplate | null {
   // If there is not a manyKey, we can just find the template by its hash
   if (hydrateCtx.manyKey === undefined) {
     return findHydrationTemplate(getChildNodes(hydrateCtx.where), hash)

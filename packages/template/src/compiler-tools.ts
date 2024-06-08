@@ -6,10 +6,12 @@
  * @since 1.0.0
  */
 
+import type { Option } from "effect"
 import type * as Cause from "effect/Cause"
 import type * as Chunk from "effect/Chunk"
 import type * as Effect from "effect/Effect"
 import type * as Scope from "effect/Scope"
+import type * as internalHydrateContext from "./internal/HydrateContext.js"
 import * as utils from "./internal/utils.js"
 import * as hydrationTemplate from "./internal/v2/hydration-template.js"
 import * as render from "./internal/v2/render.js"
@@ -23,6 +25,41 @@ import type * as Template from "./Template.js"
  * @since 1.0.0
  */
 export interface TemplateContext extends render.TemplateContext {}
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrateContext extends internalHydrateContext.HydrateContext {}
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrationTemplate extends hydrationTemplate.HydrationTemplate {}
+
+/**
+ * @since 1.0.0
+ */
+export type HydrationNode = hydrationTemplate.HydrationNode
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrationHole extends hydrationTemplate.HydrationHole {}
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrationMany extends hydrationTemplate.HydrationMany {}
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrationElement extends hydrationTemplate.HydrationElement {}
+
+/**
+ * @since 1.0.0
+ */
+export interface HydrationLiteral extends hydrationTemplate.HydrationLiteral {}
 
 /**
  * @since 1.0.0
@@ -198,3 +235,16 @@ export const getChildNodes: (node: hydrationTemplate.HydrationNode) => Array<hyd
  */
 export const findHydratePath: (node: hydrationTemplate.HydrationNode, path: Chunk.Chunk<number>) => Node =
   utils.findHydratePath
+
+/**
+ * @since 1.0.0
+ */
+export const attemptHydration: (
+  ctx: TemplateContext,
+  hash: string
+) => Option.Option<
+  {
+    readonly where: HydrationTemplate
+    readonly hydrateCtx: HydrateContext
+  }
+> = render.attemptHydration

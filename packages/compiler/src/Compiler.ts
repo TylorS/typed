@@ -27,7 +27,7 @@ import { Service } from "./typescript/Service.js"
 
 // This whole file is a hack-and-a-half, really just prototyping features
 
-export type CompilerTarget = "dom" | "hydrate" | "server" | "static"
+export type CompilerTarget = "dom" | "server" | "static"
 
 /**
  * Compiler is an all-in-one cass for compile-time optimization and derivations
@@ -126,8 +126,8 @@ export class Compiler {
             if (index > -1) {
               const template = templates[index]
               const remaining = templates.slice(index + 1)
-              if (target === "dom" || target === "hydrate") {
-                return this.replaceDom(template, remaining, importManager, target === "hydrate")
+              if (target === "dom") {
+                return this.replaceDom(template, remaining, importManager)
               }
 
               // return this.replaceHtml(template, remaining, target === "static")
@@ -151,8 +151,7 @@ export class Compiler {
   private replaceDom(
     { parts, template }: ParsedTemplate,
     remaining: Array<ParsedTemplate>,
-    imports: ImportDeclarationManager,
-    isHydrating: boolean
+    imports: ImportDeclarationManager
   ): ts.Node {
     const sink = ts.factory.createParameterDeclaration([], undefined, `sink`)
     const ctx = new CreateNodeCtx(
@@ -160,41 +159,40 @@ export class Compiler {
       remaining,
       imports,
       Chunk.empty(),
-      isHydrating ? "hydrate" : "dom",
+      "dom",
       Chunk.empty()
     )
     const setupNodes = createDomSetupStatements(ctx)
+    const domNodes = Array.from(consumeNestedIterable(createDomTemplateStatements(template, ctx)))
     const domEffects = createDomEffectStatements(template, ctx)
-
-    // Must come last to avoid mutation affecting behaviors of other nodes above
-    const domNodesNestedIterable = createDomTemplateStatements(template, ctx)
 
     imports.addImport(`@typed/fx`, "Fx")
     imports.addImport(`effect/Effect`, "Effect")
-
-    const domNodes: Array<ts.Statement> = Array.from(consumeNestedIterable(domNodesNestedIterable))
 
     return createMethodCall(
       "Fx",
       "make",
       [],
       [
-        ts.factory.createArrowFunction(
+        ts.factory.createFunctionExpression(
           [],
+          undefined,
+          `render`,
           [],
           [sink],
           undefined,
-          undefined,
-          createMethodCall(`Effect`, `gen`, [], [
-            ts.factory.createFunctionExpression(
-              [],
-              ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
-              undefined,
-              [],
-              [ts.factory.createParameterDeclaration([], undefined, `_`)],
-              undefined,
-              ts.factory.createBlock([...setupNodes, ...domNodes, ...domEffects], true)
-            )
+          ts.factory.createBlock([
+            ts.factory.createReturnStatement(createMethodCall(`Effect`, `gen`, [], [
+              ts.factory.createFunctionExpression(
+                [],
+                ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
+                undefined,
+                [],
+                [ts.factory.createParameterDeclaration([], undefined, `_`)],
+                undefined,
+                ts.factory.createBlock([...setupNodes, ...domNodes, ...domEffects], true)
+              )
+            ]))
           ])
         )
       ]
@@ -219,6 +217,9 @@ export class Compiler {
           ...Array.isArray(original.after) ? original.after : original.after ? [original.after] : [],
           (ctx) => (sourceFile) => {
             const templates = this.templatesByFile.get(sourceFile.fileName) ?? this.parseTemplates(sourceFile)
+
+            if (templates.length === 0) return sourceFile
+
             const transformers = this.getTransformersByFileAndTarget(templates, this._compilerTarget)
             return transformers.reduce((file, transformer) => transformer(ctx)(file), sourceFile)
           }
@@ -368,6 +369,7 @@ function isHtmlTag(node: ts.Node): node is ts.TaggedTemplateExpression {
   return false
 }
 
+// Used to maintain stack-safety of recursive functions
 function* consumeNestedIterable(
   iterable: NestedIterable<ts.Statement>
 ): Iterable<ts.Statement> {

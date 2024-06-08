@@ -1,5 +1,4 @@
 import { Tagged } from "@typed/context"
-import type { Template } from "../Template.js"
 import type { HydrationNode } from "./v2/hydration-template.js"
 
 /**
@@ -8,7 +7,6 @@ import type { HydrationNode } from "./v2/hydration-template.js"
  */
 export type HydrateContext = {
   readonly where: HydrationNode
-  readonly parentTemplate: Template | null
 
   // Used to match sibling components using many() to the correct elements
   readonly manyKey?: string
