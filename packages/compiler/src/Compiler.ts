@@ -153,15 +153,7 @@ export class Compiler {
     remaining: Array<ParsedTemplate>,
     imports: ImportDeclarationManager
   ): ts.Node {
-    const sink = ts.factory.createParameterDeclaration([], undefined, `sink`)
-    const ctx = new CreateNodeCtx(
-      parts,
-      remaining,
-      imports,
-      Chunk.empty(),
-      "dom",
-      Chunk.empty()
-    )
+    const ctx = new CreateNodeCtx(parts, remaining, imports, Chunk.empty(), "dom", Chunk.empty())
     const setupNodes = createDomSetupStatements(ctx)
     const domNodes = Array.from(consumeNestedIterable(createDomTemplateStatements(template, ctx)))
     const domEffects = createDomEffectStatements(template, ctx)
@@ -179,7 +171,7 @@ export class Compiler {
           undefined,
           `render`,
           [],
-          [sink],
+          [ts.factory.createParameterDeclaration([], undefined, `sink`)],
           undefined,
           ts.factory.createBlock([
             ts.factory.createReturnStatement(createMethodCall(`Effect`, `gen`, [], [
@@ -482,20 +474,16 @@ function createDomEffectStatements(template: Template.Template, ctx: CreateNodeC
             )
           )
         ),
-        ts.factory.createBlock(
-          [
-            ts.factory.createExpressionStatement(
-              createEffectYield(
-                ts.factory.createPropertyAccessExpression(
-                  ts.factory.createPropertyAccessExpression(
-                    ts.factory.createIdentifier(`templateContext`),
-                    `refCounter`
-                  ),
-                  `wait`
-                )
-              )
+        ts.factory.createExpressionStatement(
+          createEffectYield(
+            ts.factory.createPropertyAccessExpression(
+              ts.factory.createPropertyAccessExpression(
+                ts.factory.createIdentifier(`templateContext`),
+                `refCounter`
+              ),
+              `wait`
             )
-          ]
+          )
         )
       )
     )
@@ -1136,27 +1124,22 @@ function* createStandardNodePartStatements(
       ts.SyntaxKind.ExclamationEqualsEqualsToken,
       ts.factory.createNull()
     ),
-    ts.factory.createBlock(
-      [
-        ts.factory.createExpressionStatement(
-          createEffectYield(
-            ts.factory.createIdentifier(varName),
-            createMethodCall(`Effect`, `catchAllCause`, [], [
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(`sink`),
-                `onFailure`
-              )
-            ]),
-            createMethodCall(`Effect`, `forkIn`, [], [
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(`templateContext`),
-                `scope`
-              )
-            ])
+    ts.factory.createExpressionStatement(
+      createEffectYield(
+        ts.factory.createIdentifier(varName),
+        createMethodCall(`Effect`, `catchAllCause`, [], [
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(`sink`),
+            `onFailure`
           )
-        )
-      ],
-      true
+        ]),
+        createMethodCall(`Effect`, `forkIn`, [], [
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(`templateContext`),
+            `scope`
+          )
+        ])
+      )
     )
   )
 }
@@ -1170,27 +1153,22 @@ function runPartIfNotNull(varName: string, ctx: CreateNodeCtx) {
       ts.SyntaxKind.ExclamationEqualsEqualsToken,
       ts.factory.createNull()
     ),
-    ts.factory.createBlock(
-      [
-        ts.factory.createExpressionStatement(
-          createEffectYield(
-            ts.factory.createIdentifier(varName),
-            createMethodCall(`Effect`, `catchAllCause`, [], [
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(`sink`),
-                `onFailure`
-              )
-            ]),
-            createMethodCall(`Effect`, `forkIn`, [], [
-              ts.factory.createPropertyAccessExpression(
-                ts.factory.createIdentifier(`templateContext`),
-                `scope`
-              )
-            ])
+    ts.factory.createExpressionStatement(
+      createEffectYield(
+        ts.factory.createIdentifier(varName),
+        createMethodCall(`Effect`, `catchAllCause`, [], [
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(`sink`),
+            `onFailure`
           )
-        )
-      ],
-      true
+        ]),
+        createMethodCall(`Effect`, `forkIn`, [], [
+          ts.factory.createPropertyAccessExpression(
+            ts.factory.createIdentifier(`templateContext`),
+            `scope`
+          )
+        ])
+      )
     )
   )
 }
