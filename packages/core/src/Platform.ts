@@ -48,16 +48,20 @@ export class GuardsNotMatched extends Data.TaggedError("GuardsNotMatched")<{
 export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = {
   readonly content: Content
   readonly request: ServerRequest
-  readonly head: Fx.Fx<
-    RenderEvent | null,
-    never,
-    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
-  >
-  readonly script: Fx.Fx<
-    RenderEvent | null,
-    never,
-    RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
-  >
+  readonly head:
+    | Fx.Fx<
+      RenderEvent | null,
+      never,
+      RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+    >
+    | null
+  readonly script:
+    | Fx.Fx<
+      RenderEvent | null,
+      never,
+      RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+    >
+    | null
 }
 
 /**
@@ -81,6 +85,7 @@ export function toHttpRouter<
 >(
   matcher: Router.RouteMatcher<M>,
   options?: {
+    clientEntry?: string
     layout?: LayoutTemplate<
       Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
       E2,
@@ -103,7 +108,12 @@ export function toHttpRouter<
     const withoutQuery = route.path.split("?")[0]
     return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
   })
-  const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
+  const { head, script } = options?.clientEntry ?
+    getHeadAndScript(typedOptions.clientEntries[options.clientEntry], assetManifest) :
+    {
+      head: null,
+      script: null
+    }
   const baseRoute = Route.parse(options?.base ?? "/")
   for (const [path, matches] of Object.entries(guardsByPath)) {
     const route = matches[0].route
@@ -365,6 +375,7 @@ export function toServerRouter<
 >(
   matcher: Router.RouteMatcher<M>,
   options?: {
+    clientEntry?: string
     layout?: LayoutTemplate<
       Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
       E2,
@@ -386,7 +397,12 @@ export function toServerRouter<
     const withoutQuery = route.path.split("?")[0]
     return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
   })
-  const { head, script } = getHeadAndScript(typedOptions.clientEntry, assetManifest)
+  const { head, script } = options?.clientEntry ?
+    getHeadAndScript(typedOptions.clientEntries[options.clientEntry], assetManifest) :
+    {
+      head: null,
+      script: null
+    }
   const baseRoute = Route.parse(options?.base ?? "/")
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
@@ -407,8 +423,8 @@ const fromMatches = <R extends Route.Route.Any>(
   baseRoute: Route.Route.Any,
   route: R,
   matches: Array.NonEmptyArray<Router.RouteMatch.RouteMatch.Any>,
-  head: ReturnType<typeof getHeadAndScript>["head"],
-  script: ReturnType<typeof getHeadAndScript>["script"],
+  head: ReturnType<typeof getHeadAndScript>["head"] | null,
+  script: ReturnType<typeof getHeadAndScript>["script"] | null,
   options?: {
     layout?: LayoutTemplate<
       Fx.Fx<RenderEvent | null, any, any>,

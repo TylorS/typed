@@ -16,7 +16,9 @@ export default defineConfig({
   },
   plugins: [
     makeTypedPlugin({
-      clientEntry: "./src/client.ts",
+      clientEntries: {
+        client: "./src/client.ts"
+      },
       serverEntry: "./src/server.ts",
       tsconfig: "tsconfig.build.json"
     })

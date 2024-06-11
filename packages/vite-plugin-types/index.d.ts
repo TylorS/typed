@@ -6,8 +6,8 @@ declare module "virtual:asset-manifest" {
 }
 
 declare module "virtual:typed-options" {
-  export const clientEntry: string
-  export const serverEntry: string
+  export const clientEntries: Record<string, string>
+  export const serverEntry: string | null
   export const relativeServerToClientOutputDirectory: string
   export const assetDirectory: string
 }

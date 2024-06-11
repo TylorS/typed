@@ -15,10 +15,10 @@ import type { TypedOptions } from "./types.js"
  * @since 1.0.0
  */
 export interface TypedPluginOptions {
-  readonly clientEntry: string
+  readonly clientEntries?: Record<string, string>
   readonly clientOutputDirectory?: string
 
-  readonly serverEntry: string
+  readonly serverEntry?: string
   readonly serverOutputDirectory?: string
 
   readonly rootDir?: string
@@ -38,8 +38,10 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
     : resolve(rootDir, "dist/server")
   const tsconfig = resolve(rootDir, pluginOptions.tsconfig ?? "tsconfig.json")
   const options: TypedOptions = {
-    clientEntry: relative(rootDir, resolve(rootDir, pluginOptions.clientEntry)),
-    serverEntry: relative(rootDir, resolve(rootDir, pluginOptions.serverEntry)),
+    clientEntries: pluginOptions.clientEntries ?
+      mapObject(pluginOptions.clientEntries, (value) => relative(rootDir, resolve(rootDir, value)))
+      : {},
+    serverEntry: pluginOptions.serverEntry ? relative(rootDir, resolve(rootDir, pluginOptions.serverEntry)) : null,
     relativeServerToClientOutputDirectory: relative(serverOutputDirectory, clientOutputDirectory),
     assetDirectory: "assets"
   }
@@ -72,7 +74,7 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
               config: {
                 build: {
                   outDir: clientOutputDirectory,
-                  rollupOptions: { input: options.clientEntry }
+                  rollupOptions: { input: options.clientEntries }
                 },
                 plugins: [
                   compression(),
@@ -84,25 +86,29 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
                 ]
               }
             },
-            {
-              name: "server",
-              config: {
-                build: {
-                  ssr: true,
-                  outDir: serverOutputDirectory,
-                  rollupOptions: { input: options.serverEntry }
+            ...options.serverEntry ?
+              [{
+                name: "server",
+                config: {
+                  build: {
+                    ssr: true,
+                    outDir: serverOutputDirectory,
+                    rollupOptions: { input: options.serverEntry }
+                  }
                 }
-              }
-            }
+              }] :
+              []
           ]
         }
       }
     },
     tsconfigPaths({ projects: [tsconfig] }),
-    vavite({
-      serverEntry: options.serverEntry,
-      serveClientAssetsInDev: true
-    }),
+    ...options.serverEntry ?
+      [vavite({
+        serverEntry: options.serverEntry,
+        serveClientAssetsInDev: true
+      })] :
+      [],
     exposeAssetManifest(clientOutputDirectory),
     exposeTypedOptions(options)
   ]
@@ -172,10 +178,21 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
       if (id === "virtual:typed-options") {
         const entries = Object.entries(options)
         const lines = entries.map(([key, value]) => `
-        export const ${key} = "${value}"`)
+        export const ${key} = ${JSON.stringify(value, null, 2)}`)
 
         return lines.join("\n") + "\n"
       }
     }
   }
+}
+
+function mapObject<T, U>(obj: Record<string, T>, fn: (value: T, key: string) => U): Record<string, U> {
+  const entries = Object.entries(obj)
+  const result: Record<string, U> = Object.create(null)
+
+  for (const [key, value] of entries) {
+    result[key] = fn(value, key)
+  }
+
+  return result
 }
