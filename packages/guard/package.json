@@ -40,7 +40,7 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.67.16",
-    "effect": "^3.2.7"
+    "@effect/schema": "^0.67.22",
+    "effect": "^3.3.1"
   }
 }

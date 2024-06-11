@@ -17,14 +17,14 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/opentelemetry": "^0.34.14",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.51.1",
-    "@opentelemetry/otlp-exporter-base": "^0.51.1",
-    "@opentelemetry/sdk-node": "^0.51.1",
-    "@opentelemetry/sdk-trace-base": "^1.24.1",
+    "@effect/opentelemetry": "^0.34.18",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0",
+    "@opentelemetry/otlp-exporter-base": "^0.52.0",
+    "@opentelemetry/sdk-node": "^0.52.0",
+    "@opentelemetry/sdk-trace-base": "^1.25.0",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
-    "effect": "3.2.7"
+    "effect": "3.3.1"
   }
 }
