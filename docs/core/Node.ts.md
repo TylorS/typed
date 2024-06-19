@@ -109,8 +109,8 @@ Added in v1.0.0
 
 ```ts
 export declare const run: <A, E>(
-  effect: Effect.Effect<A, E, CurrentEnvironment | NodeContext.NodeContext>,
-  options?: RunForkOptions & { readonly static?: boolean }
+  effect: Effect.Effect<A, E, CurrentEnvironment | NodeContext.NodeContext | CurrentRoute>,
+  options?: RunForkOptions & { readonly static?: boolean; readonly base?: string }
 ) => Disposable
 ```
 

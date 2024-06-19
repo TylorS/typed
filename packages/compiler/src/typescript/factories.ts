@@ -161,6 +161,9 @@ export function insertBefore(parent: string, child: string, reference?: string |
   ])
 }
 
+/**
+ * @since 1.0.0
+ */
 export function createConst(varName: string, expression: ts.Expression): ts.Statement {
   return ts.factory.createVariableStatement(
     [],
@@ -171,6 +174,9 @@ export function createConst(varName: string, expression: ts.Expression): ts.Stat
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function createEffectYield(...expressions: Array<ts.Expression>): ts.Expression {
   return ts.factory.createYieldExpression(
     ts.factory.createToken(ts.SyntaxKind.AsteriskToken),
@@ -178,6 +184,9 @@ export function createEffectYield(...expressions: Array<ts.Expression>): ts.Expr
   )
 }
 
+/**
+ * @since 1.0.0
+ */
 export function setAttribute(element: string, name: string, value: string, coerce: boolean = true) {
   return createMethodCall(element, "setAttribute", [], [
     ts.factory.createStringLiteral(name),
@@ -189,6 +198,9 @@ export function setAttribute(element: string, name: string, value: string, coerc
   ])
 }
 
+/**
+ * @since 1.0.0
+ */
 export function toggleAttribute(element: string, name: string) {
   return createMethodCall(element, "toggleAttribute", [], [
     ts.factory.createStringLiteral(name),
@@ -196,6 +208,9 @@ export function toggleAttribute(element: string, name: string) {
   ])
 }
 
+/**
+ * @since 1.0.0
+ */
 export function createComment(value: string) {
   return createMethodCall("document", "createComment", [], [ts.factory.createStringLiteral(value)])
 }

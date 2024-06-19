@@ -26,10 +26,10 @@ Added in v1.0.0
 
 ```ts
 export interface TypedPluginOptions {
-  readonly clientEntry: string
+  readonly clientEntries?: Record<string, string>
   readonly clientOutputDirectory?: string
 
-  readonly serverEntry: string
+  readonly serverEntry?: string
   readonly serverOutputDirectory?: string
 
   readonly rootDir?: string

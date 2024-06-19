@@ -1,11 +1,27 @@
+/**
+ * @since 1.0.0
+ */
+
 import ts from "typescript"
 import { getCanonicalFileName, getNewLine } from "./util.js"
 
+/**
+ * @since 1.0.0
+ */
 export type DiagnosticWriter = {
+  /**
+   * @since 1.0.0
+   */
   format: (diagnostic: ts.Diagnostic) => string
+  /**
+   * @since 1.0.0
+   */
   print: (diagnostic: ts.Diagnostic) => void
 }
 
+/**
+ * @since 1.0.0
+ */
 export function createDiagnosticWriter(
   write?: (message: string) => void
 ): DiagnosticWriter {

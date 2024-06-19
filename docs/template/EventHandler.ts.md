@@ -1,6 +1,6 @@
 ---
 title: EventHandler.ts
-nav_order: 5
+nav_order: 6
 parent: "@typed/template"
 ---
 
@@ -19,6 +19,7 @@ Added in v1.0.0
   - [EventHandlerTypeId](#eventhandlertypeid)
   - [EventHandlerTypeId (type alias)](#eventhandlertypeid-type-alias)
   - [EventOf (type alias)](#eventof-type-alias)
+  - [EventOptions (type alias)](#eventoptions-type-alias)
   - [keys](#keys)
   - [make](#make)
   - [preventDefault](#preventdefault)
@@ -90,6 +91,20 @@ Added in v1.0.0
 
 ```ts
 export type EventOf<T> = T extends EventHandler<infer Ev, infer _E, infer _R> ? Ev : never
+```
+
+Added in v1.0.0
+
+## EventOptions (type alias)
+
+**Signature**
+
+```ts
+export type EventOptions = {
+  readonly preventDefault?: boolean
+  readonly stopPropagation?: boolean
+  readonly stopImmediatePropagation?: boolean
+}
 ```
 
 Added in v1.0.0

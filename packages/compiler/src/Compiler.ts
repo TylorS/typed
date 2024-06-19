@@ -27,6 +27,9 @@ import { Service } from "./typescript/Service.js"
 
 // This whole file is a hack-and-a-half, really just prototyping features
 
+/**
+ * @since 1.0.0
+ */
 export type CompilerTarget = "dom" | "server" | "static"
 
 /**
@@ -50,7 +53,13 @@ export class Compiler {
   private templatesByFile: Map<string, Array<ParsedTemplate>> = new Map()
   private _compilerTarget: CompilerTarget
 
+  /**
+   * @since 1.0.0
+   */
   readonly project: Project
+  /**
+   * @since 1.0.0
+   */
   readonly checker: ts.TypeChecker
 
   constructor(
@@ -73,6 +82,9 @@ export class Compiler {
     }
   }
 
+  /**
+   * @since 1.0.0
+   */
   parseTemplates(sourceFile: ts.SourceFile): Array<ParsedTemplate> {
     const templates: Array<ParsedTemplate> = []
 
@@ -89,6 +101,9 @@ export class Compiler {
     return templates
   }
 
+  /**
+   * @since 1.0.0
+   */
   compileTemplates(
     sourceFile: ts.SourceFile,
     target?: CompilerTarget
@@ -108,6 +123,9 @@ export class Compiler {
     }
   }
 
+  /**
+   * @since 1.0.0
+   */
   private getTransformersByFileAndTarget(
     templates: Array<ParsedTemplate>,
     target: CompilerTarget
@@ -148,6 +166,9 @@ export class Compiler {
     ]
   }
 
+  /**
+   * @since 1.0.0
+   */
   private replaceDom(
     { parts, template }: ParsedTemplate,
     remaining: Array<ParsedTemplate>,
@@ -199,6 +220,9 @@ export class Compiler {
   //   return node
   // }
 
+  /**
+   * @since 1.0.0
+   */
   private enhanceLanguageServiceHost = (host: ts.LanguageServiceHost): void => {
     const originalGetCustomTransformers = host.getCustomTransformers
     host.getCustomTransformers = () => {
@@ -222,6 +246,9 @@ export class Compiler {
     // TODO: Enable virtual modules
   }
 
+  /**
+   * @since 1.0.0
+   */
   private parseTemplateFromNode(node: ts.TemplateLiteral): readonly [Template.Template, ReadonlyArray<ParsedPart>] {
     if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) {
       return [parse([node.getText().slice(1, -1)]), []]
@@ -253,6 +280,9 @@ export class Compiler {
     }
   }
 
+  /**
+   * @since 1.0.0
+   */
   private parsePart(part: ts.Expression, index: number): ParsedPart {
     const type = this.project.getType(part)
     const kind = this.getPartType(part, type)
@@ -277,6 +307,9 @@ export class Compiler {
     }
   }
 
+  /**
+   * @since 1.0.0
+   */
   private getPartType(node: ts.Node, type: ts.Type): ParsedPart["kind"] {
     if (node.kind === ts.SyntaxKind.TaggedTemplateExpression) return "template"
     if (this.isPrimitiveType(type)) return "primitive"
@@ -298,6 +331,9 @@ export class Compiler {
     return "placeholder"
   }
 
+  /**
+   * @since 1.0.0
+   */
   private isPrimitiveType(type: ts.Type) {
     return Object.values(this.primitives).some((t) => this.checker.isTypeAssignableTo(type, t))
   }
@@ -317,14 +353,23 @@ function getSpan(template: ParsedTemplate) {
   return [template.literal.getStart(), template.literal.getEnd()] as const
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface ParsedTemplate {
   readonly literal: ts.TemplateLiteral
   readonly parts: ReadonlyArray<ParsedPart>
   readonly template: Template.Template
 }
 
+/**
+ * @since 1.0.0
+ */
 export type ParsedPart = SimpleParsedPart | ParsedTemplatePart
 
+/**
+ * @since 1.0.0
+ */
 export type SimpleParsedPart = {
   readonly index: number
   readonly kind: "placeholder" | "fxEffect" | "fx" | "effect" | "primitive" | "directive"
@@ -332,6 +377,9 @@ export type SimpleParsedPart = {
   readonly type: ts.Type
 }
 
+/**
+ * @since 1.0.0
+ */
 export interface ParsedTemplatePart extends Omit<SimpleParsedPart, "kind">, ParsedTemplate {
   readonly kind: "template"
 }

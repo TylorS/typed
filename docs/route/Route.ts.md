@@ -23,15 +23,19 @@ Added in v5.0.0
     - [Any (type alias)](#any-type-alias)
     - [Concat (type alias)](#concat-type-alias)
     - [ConcatAll (type alias)](#concatall-type-alias)
+    - [ConcatQuery (type alias)](#concatquery-type-alias)
     - [ConcatSchemas (type alias)](#concatschemas-type-alias)
     - [Context (type alias)](#context-type-alias)
     - [Encoded (type alias)](#encoded-type-alias)
     - [Interpolate (type alias)](#interpolate-type-alias)
     - [Params (type alias)](#params-type-alias)
+    - [ParamsAreOptional (type alias)](#paramsareoptional-type-alias)
     - [ParamsList (type alias)](#paramslist-type-alias)
     - [Path (type alias)](#path-type-alias)
     - [PathSchema (type alias)](#pathschema-type-alias)
     - [PathSchemaFromInput (type alias)](#pathschemafrominput-type-alias)
+    - [PathWithoutQuery (type alias)](#pathwithoutquery-type-alias)
+    - [Query (type alias)](#query-type-alias)
     - [QuerySchema (type alias)](#queryschema-type-alias)
     - [QuerySchemaFromInput (type alias)](#queryschemafrominput-type-alias)
     - [Schema (type alias)](#schema-type-alias)
@@ -121,7 +125,7 @@ Added in v5.0.0
 **Signature**
 
 ```ts
-export declare const Order: O.Order<Route.Any>
+export declare const Order: Ord.Order<Route.Any>
 ```
 
 Added in v5.0.0
@@ -189,7 +193,7 @@ export interface Route<P extends string, S extends Sch.Schema.All = never> exten
   /**
    * @since 5.0.0
    */
-  readonly path: P
+  readonly path: Path.PathJoin<[P]>
 
   /**
    * @since 5.0.0
@@ -308,9 +312,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Concat<I extends Route.Any, I2 extends Route.Any> = [I2] extends [never]
-  ? I
-  : Route<Path.PathJoin<[Path<I>, Path<I2>]>, ConcatSchemas<Schema<I>, Schema<I2>>> extends Route<infer P, infer S>
+export type Concat<I extends Route.Any, I2 extends Route.Any> =
+  Route<
+    Path.PathJoin<[PathWithoutQuery<I>, PathWithoutQuery<I2>, ConcatQuery<Query<I>, Query<I2>>]>,
+    ConcatSchemas<Schema<I>, Schema<I2>>
+  > extends Route<infer P, infer S>
     ? Route<P, S>
     : never
 ```
@@ -331,6 +337,22 @@ export type ConcatAll<Routes extends ReadonlyArray<any>> = Routes extends readon
       ? R
       : never
     : never
+```
+
+Added in v1.0.0
+
+### ConcatQuery (type alias)
+
+**Signature**
+
+```ts
+export type ConcatQuery<Q1 extends string, Q2 extends string> = [Q1, Q2] extends ["", ""]
+  ? ""
+  : [Q1] extends [""]
+    ? `\\?${RemoveQuestionMark<Q2>}`
+    : [Q2] extends [""]
+      ? `\\?${RemoveQuestionMark<Q1>}`
+      : `\\?${RemoveQuestionMark<Q1>}&${RemoveQuestionMark<Q2>}`
 ```
 
 Added in v1.0.0
@@ -393,6 +415,18 @@ export type Params<R extends Route.Any> = Path.ParamsOf<Route.Path<R>>
 
 Added in v1.0.0
 
+### ParamsAreOptional (type alias)
+
+**Signature**
+
+```ts
+export type ParamsAreOptional<R extends Route.Any> = [keyof Params<R>] extends [never]
+  ? true
+  : KeysAreOptional<Params<R>>
+```
+
+Added in v1.0.0
+
 ### ParamsList (type alias)
 
 **Signature**
@@ -443,6 +477,27 @@ export type PathSchemaFromInput<P extends string, S extends Sch.Schema.All = nev
       PathSchema.GetPathTypeKeys<PathSchema.GetPath<P>>,
       PathSchema.GetPathEncodedKeys<PathSchema.GetPath<P>>
     >
+```
+
+Added in v1.0.0
+
+### PathWithoutQuery (type alias)
+
+**Signature**
+
+```ts
+export type PathWithoutQuery<T> = Path<T> extends `${infer P}\\?${infer _}` ? P : Path<T>
+```
+
+Added in v1.0.0
+
+### Query (type alias)
+
+**Signature**
+
+```ts
+export type Query<T> =
+  Path<T> extends `${string}\\?${infer Q}` ? `\\?${Q}` : Path<T> extends `${string}?${infer Q}` ? `?${Q}` : ""
 ```
 
 Added in v1.0.0
@@ -871,8 +926,25 @@ Added in v5.0.0
 
 ```ts
 export declare const concat: {
-  <R extends Route.Any>(right: R): <L extends Route.Any>(left: L) => Route.Concat<L, R>
-  <L extends Route.Any, R extends Route.Any>(left: L, right: R): Route.Concat<L, R>
+  <R extends Route.Any>(
+    right: R
+  ): <L extends Route.Any>(
+    left: L
+  ) => Route<
+    `${Path.FormatPart<Route.PathWithoutQuery<L>>}${`${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}`}` extends `//${infer R}`
+      ? `/${Path.RemoveLeadingSlash<R>}`
+      : `${Path.FormatPart<Route.PathWithoutQuery<L>>}${`${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}`}`,
+    Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>
+  >
+  <L extends Route.Any, R extends Route.Any>(
+    left: L,
+    right: R
+  ): Route<
+    `${Path.FormatPart<Route.PathWithoutQuery<L>>}${`${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}`}` extends `//${infer R}`
+      ? `/${Path.RemoveLeadingSlash<R>}`
+      : `${Path.FormatPart<Route.PathWithoutQuery<L>>}${`${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.PathWithoutQuery<R>>}${`${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}` extends `//${infer R}` ? `/${Path.RemoveLeadingSlash<R>}` : `${Path.FormatPart<Route.ConcatQuery<Route.Query<L>, Route.Query<R>>>}`}`}`,
+    Route.ConcatSchemas<Route.Schema<L>, Route.Schema<R>>
+  >
 }
 ```
 

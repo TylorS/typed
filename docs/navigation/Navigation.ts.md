@@ -84,28 +84,46 @@ export declare const BeforeNavigationEvent: Schema.Struct<{
   from: Schema.Struct<{
     id: Schema.Schema<Uuid, string, never>
     key: Schema.Schema<Uuid, string, never>
-    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-    state: Schema.Unknown
-    sameDocument: Schema.$Boolean
+    url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+    state: typeof Schema.Unknown
+    sameDocument: typeof Schema.Boolean
   }>
-  delta: Schema.$Number
+  delta: typeof Schema.Number
   to: Schema.Union<
     [
-      Schema.Schema<
-        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
-        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
+      Schema.SchemaClass<
+        Omit<
+          {
+            readonly id: Uuid
+            readonly key: Uuid
+            readonly url: URL
+            readonly state: unknown
+            readonly sameDocument: boolean
+          },
+          "id" | "key"
+        >,
+        Omit<
+          {
+            readonly id: string
+            readonly key: string
+            readonly url: string
+            readonly state: unknown
+            readonly sameDocument: boolean
+          },
+          "id" | "key"
+        >,
         never
       >,
       Schema.Struct<{
         id: Schema.Schema<Uuid, string, never>
         key: Schema.Schema<Uuid, string, never>
-        url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-        state: Schema.Unknown
-        sameDocument: Schema.$Boolean
+        url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+        state: typeof Schema.Unknown
+        sameDocument: typeof Schema.Boolean
       }>
     ]
   >
-  info: Schema.Unknown
+  info: typeof Schema.Unknown
 }>
 ```
 
@@ -215,9 +233,9 @@ Added in v1.0.0
 export declare const Destination: Schema.Struct<{
   id: Schema.Schema<Uuid, string, never>
   key: Schema.Schema<Uuid, string, never>
-  url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-  state: Schema.Unknown
-  sameDocument: Schema.$Boolean
+  url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+  state: typeof Schema.Unknown
+  sameDocument: typeof Schema.Boolean
 }>
 ```
 
@@ -249,7 +267,7 @@ Added in v1.0.0
 
 ```ts
 export declare const FileSchema: Schema.transformOrFail<
-  Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+  Schema.Struct<{ _id: Schema.Literal<["File"]>; name: typeof Schema.String; data: typeof Schema.String }>,
   Schema.instanceOf<File>,
   never
 >
@@ -264,8 +282,8 @@ Added in v1.0.0
 ```ts
 export declare const FileSchemaFrom: Schema.Struct<{
   _id: Schema.Literal<["File"]>
-  name: Schema.$String
-  data: Schema.$String
+  name: typeof Schema.String
+  data: typeof Schema.String
 }>
 ```
 
@@ -291,24 +309,24 @@ export declare const FormDataEvent: Schema.extend<
     from: Schema.Struct<{
       id: Schema.Schema<Uuid, string, never>
       key: Schema.Schema<Uuid, string, never>
-      url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-      state: Schema.Unknown
-      sameDocument: Schema.$Boolean
+      url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+      state: typeof Schema.Unknown
+      sameDocument: typeof Schema.Boolean
     }>
   }>,
   Schema.Struct<{
-    name: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-    action: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-    method: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-    encoding: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+    name: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    action: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    method: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    encoding: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
     data: Schema.transform<
-      Schema.$Record<
-        Schema.$String,
+      Schema.Record$<
+        typeof Schema.String,
         Schema.Union<
           [
-            Schema.$String,
+            typeof Schema.String,
             Schema.transformOrFail<
-              Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+              Schema.Struct<{ _id: Schema.Literal<["File"]>; name: typeof Schema.String; data: typeof Schema.String }>,
               Schema.instanceOf<File>,
               never
             >
@@ -365,13 +383,13 @@ Added in v1.0.0
 
 ```ts
 export declare const FormDataSchema: Schema.transform<
-  Schema.$Record<
-    Schema.$String,
+  Schema.Record$<
+    typeof Schema.String,
     Schema.Union<
       [
-        Schema.$String,
+        typeof Schema.String,
         Schema.transformOrFail<
-          Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+          Schema.Struct<{ _id: Schema.Literal<["File"]>; name: typeof Schema.String; data: typeof Schema.String }>,
           Schema.instanceOf<File>,
           never
         >
@@ -410,18 +428,18 @@ Added in v1.0.0
 
 ```ts
 export declare const FormInputSchema: Schema.Struct<{
-  name: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-  action: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-  method: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
-  encoding: Schema.PropertySignature<":", Option.Option<string>, never, "?:", string | null | undefined, never>
+  name: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  action: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  method: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  encoding: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
   data: Schema.transform<
-    Schema.$Record<
-      Schema.$String,
+    Schema.Record$<
+      typeof Schema.String,
       Schema.Union<
         [
-          Schema.$String,
+          typeof Schema.String,
           Schema.transformOrFail<
-            Schema.Struct<{ _id: Schema.Literal<["File"]>; name: Schema.$String; data: Schema.$String }>,
+            Schema.Struct<{ _id: Schema.Literal<["File"]>; name: typeof Schema.String; data: typeof Schema.String }>,
             Schema.instanceOf<File>,
             never
           >
@@ -542,11 +560,11 @@ export declare const NavigationEvent: Schema.Struct<{
   destination: Schema.Struct<{
     id: Schema.Schema<Uuid, string, never>
     key: Schema.Schema<Uuid, string, never>
-    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-    state: Schema.Unknown
-    sameDocument: Schema.$Boolean
+    url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+    state: typeof Schema.Unknown
+    sameDocument: typeof Schema.Boolean
   }>
-  info: Schema.Unknown
+  info: typeof Schema.Unknown
 }>
 ```
 
@@ -609,9 +627,27 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ProposedDestination: Schema.Schema<
-  { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
-  { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
+export declare const ProposedDestination: Schema.SchemaClass<
+  Omit<
+    {
+      readonly id: Uuid
+      readonly key: Uuid
+      readonly url: URL
+      readonly state: unknown
+      readonly sameDocument: boolean
+    },
+    "id" | "key"
+  >,
+  Omit<
+    {
+      readonly id: string
+      readonly key: string
+      readonly url: string
+      readonly state: unknown
+      readonly sameDocument: boolean
+    },
+    "id" | "key"
+  >,
   never
 >
 ```
@@ -658,23 +694,41 @@ export declare const Transition: Schema.Struct<{
   from: Schema.Struct<{
     id: Schema.Schema<Uuid, string, never>
     key: Schema.Schema<Uuid, string, never>
-    url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-    state: Schema.Unknown
-    sameDocument: Schema.$Boolean
+    url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+    state: typeof Schema.Unknown
+    sameDocument: typeof Schema.Boolean
   }>
   to: Schema.Union<
     [
-      Schema.Schema<
-        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
-        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
+      Schema.SchemaClass<
+        Omit<
+          {
+            readonly id: Uuid
+            readonly key: Uuid
+            readonly url: URL
+            readonly state: unknown
+            readonly sameDocument: boolean
+          },
+          "id" | "key"
+        >,
+        Omit<
+          {
+            readonly id: string
+            readonly key: string
+            readonly url: string
+            readonly state: unknown
+            readonly sameDocument: boolean
+          },
+          "id" | "key"
+        >,
         never
       >,
       Schema.Struct<{
         id: Schema.Schema<Uuid, string, never>
         key: Schema.Schema<Uuid, string, never>
-        url: Schema.transformOrFail<Schema.$String, Schema.instanceOf<URL>, never>
-        state: Schema.Unknown
-        sameDocument: Schema.$Boolean
+        url: Schema.transformOrFail<typeof Schema.String, Schema.Schema<URL, URL, never>, never>
+        state: typeof Schema.Unknown
+        sameDocument: typeof Schema.Boolean
       }>
     ]
   >

@@ -1,15 +1,45 @@
+/**
+ * @since 1.0.0
+ */
+
 import ts from "typescript"
 import { ExternalFileCache, ProjectFileCache } from "./cache.js"
 import type { DiagnosticWriter } from "./diagnostics.js"
 
+/**
+ * @since 1.0.0
+ */
 export class Project {
   private cmdLine: ts.ParsedCommandLine
 
+  /**
+   * @since 1.0.0
+   */
   readonly projectFiles: ProjectFileCache
+
+  /**
+   * @since 1.0.0
+   */
   readonly externalFiles: ExternalFileCache
+
+  /**
+   * @since 1.0.0
+   */
   readonly languageService: ts.LanguageService
+
+  /**
+   * @since 1.0.0
+   */
   readonly program: ts.Program
+
+  /**
+   * @since 1.0.0
+   */
   readonly typeChecker: ts.TypeChecker
+
+  /**
+   * @since 1.0.0
+   */
   readonly languageServiceHost: ts.LanguageServiceHost
 
   constructor(
@@ -100,28 +130,43 @@ export class Project {
     this.typeChecker = this.program.getTypeChecker()
   }
 
+  /**
+   * @since 1.0.0
+   */
   addFile(filePath: string) {
     // Add snapshot
     this.projectFiles.getSnapshot(filePath)
     return this.program.getSourceFile(filePath)!
   }
 
+  /**
+   * @since 1.0.0
+   */
   setFile(fileName: string, snapshot: ts.IScriptSnapshot): void {
     this.projectFiles.set(fileName, snapshot)
   }
 
+  /**
+   * @since 1.0.0
+   */
   getSnapshot(filePath: string) {
     return this.languageServiceHost.getScriptSnapshot(filePath)
   }
-
+  /**
+   * @since 1.0.0
+   */
   getType(node: ts.Node): ts.Type {
     return this.typeChecker.getTypeAtLocation(node)
   }
-
+  /**
+   * @since 1.0.0
+   */
   getSymbol(node: ts.Node): ts.Symbol | undefined {
     return this.typeChecker.getSymbolAtLocation(node)
   }
-
+  /**
+   * @since 1.0.0
+   */
   getFileDiagnostics(fileName: string): ReadonlyArray<ts.Diagnostic> {
     return [
       ...this.languageService.getSyntacticDiagnostics(fileName),
@@ -129,7 +174,9 @@ export class Project {
       ...this.languageService.getSuggestionDiagnostics(fileName)
     ]
   }
-
+  /**
+   * @since 1.0.0
+   */
   validateFile(fileName: string): boolean {
     const diagnostics = this.getFileDiagnostics(fileName).filter(
       (d) => d.category !== ts.DiagnosticCategory.Suggestion
@@ -140,7 +187,9 @@ export class Project {
     }
     return true
   }
-
+  /**
+   * @since 1.0.0
+   */
   emitFile(fileName: string): Array<ts.OutputFile> {
     const output = this.languageService.getEmitOutput(fileName)
     if (!output || output.emitSkipped) {
@@ -150,7 +199,9 @@ export class Project {
 
     return output.outputFiles
   }
-
+  /**
+   * @since 1.0.0
+   */
   dispose(): void {
     this.languageService.dispose()
 

@@ -52,7 +52,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface RouteMatcher<Matches extends RouteMatch.RouteMatch.Any> {
+export interface RouteMatcher<Matches extends RouteMatch.RouteMatch.Any> extends Pipeable {
   readonly [RouteMatcherTypeId]: RouteMatcherTypeId
 
   readonly matches: ReadonlyArray<Matches>

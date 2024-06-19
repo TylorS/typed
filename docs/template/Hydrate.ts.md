@@ -1,6 +1,6 @@
 ---
 title: Hydrate.ts
-nav_order: 8
+nav_order: 9
 parent: "@typed/template"
 ---
 
@@ -14,7 +14,6 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [hydrate](#hydrate)
-  - [hydrateLayer](#hydratelayer)
   - [hydrateToLayer](#hydratetolayer)
 
 ---
@@ -29,19 +28,6 @@ Added in v1.0.0
 export declare function hydrate<R, E, T extends RenderEvent | null>(
   rendered: Fx.Fx<T, E, R>
 ): Fx.Fx<ToRendered<T>, E, R | RenderTemplate | RenderContext.RenderContext | RootElement>
-```
-
-Added in v1.0.0
-
-## hydrateLayer
-
-**Signature**
-
-```ts
-export declare const hydrateLayer: (
-  window: Window & GlobalThis,
-  options?: DomServicesElementParams
-) => Layer.Layer<RenderTemplate | RenderContext.RenderContext | CurrentEnvironment | DomServices>
 ```
 
 Added in v1.0.0

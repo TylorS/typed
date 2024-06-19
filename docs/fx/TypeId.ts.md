@@ -17,12 +17,12 @@ Added in v1.18.0
   - [ComputedTypeId (type alias)](#computedtypeid-type-alias)
   - [FilteredTypeId](#filteredtypeid)
   - [FilteredTypeId (type alias)](#filteredtypeid-type-alias)
+  - [FxTypeId](#fxtypeid)
+  - [FxTypeId (type alias)](#fxtypeid-type-alias)
   - [PushTypeId](#pushtypeid)
   - [PushTypeId (type alias)](#pushtypeid-type-alias)
   - [RefSubjectTypeId](#refsubjecttypeid)
   - [RefSubjectTypeId (type alias)](#refsubjecttypeid-type-alias)
-  - [TypeId](#typeid)
-  - [TypeId (type alias)](#typeid-type-alias)
 
 ---
 
@@ -68,6 +68,26 @@ export type FilteredTypeId = typeof FilteredTypeId
 
 Added in v1.18.0
 
+## FxTypeId
+
+**Signature**
+
+```ts
+export declare const FxTypeId: typeof FxTypeId
+```
+
+Added in v1.18.0
+
+## FxTypeId (type alias)
+
+**Signature**
+
+```ts
+export type FxTypeId = typeof FxTypeId
+```
+
+Added in v1.18.0
+
 ## PushTypeId
 
 **Signature**
@@ -104,26 +124,6 @@ Added in v1.18.0
 
 ```ts
 export type RefSubjectTypeId = typeof RefSubjectTypeId
-```
-
-Added in v1.18.0
-
-## TypeId
-
-**Signature**
-
-```ts
-export declare const TypeId: typeof TypeId
-```
-
-Added in v1.18.0
-
-## TypeId (type alias)
-
-**Signature**
-
-```ts
-export type TypeId = typeof TypeId
 ```
 
 Added in v1.18.0

@@ -45,6 +45,7 @@ Added in v5.0.0
     - [\_tag (property)](#_tag-property-12)
   - [astToInterpolation](#asttointerpolation)
   - [astToMatcher](#asttomatcher)
+  - [concat](#concat)
   - [getAstSegments](#getastsegments)
   - [getOptionalQueryParams](#getoptionalqueryparams)
   - [getPathAndQuery](#getpathandquery)
@@ -73,7 +74,7 @@ export type AST =
   | OneOrMore<AST>
   | Optional<AST>
   | Prefix<string, AST>
-  | QueryParams<ReadonlyArray<QueryParam<string, AST>>>
+  | QueryParams<AST, ReadonlyArray<QueryParam<string, AST>>>
   | Concat<AST, AST>
   | WithSchema<AST, Schema.Schema.All>
 ```
@@ -300,7 +301,7 @@ Added in v5.0.0
 **Signature**
 
 ```ts
-export declare class QueryParams<P> { constructor(readonly params: P) }
+export declare class QueryParams<Previous, P> { constructor(readonly previous: Previous, readonly params: P) }
 ```
 
 Added in v5.0.0
@@ -395,6 +396,16 @@ export declare function astToMatcher(ast: AST, end: boolean = false): Matcher
 
 Added in v5.0.0
 
+## concat
+
+**Signature**
+
+```ts
+export declare const concat: (left: AST, right: AST) => AST
+```
+
+Added in v5.0.0
+
 ## getAstSegments
 
 **Signature**
@@ -430,7 +441,7 @@ Added in v5.0.0
 **Signature**
 
 ```ts
-export declare function getQueryParams(ast: AST): QueryParams<ReadonlyArray<QueryParam<string, AST>>> | null
+export declare function getQueryParams(ast: AST): QueryParams<AST, ReadonlyArray<QueryParam<string, AST>>> | null
 ```
 
 Added in v5.0.0

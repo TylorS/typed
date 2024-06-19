@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 12
+nav_order: 13
 parent: "@typed/server"
 ---
 
@@ -24,6 +24,7 @@ Added in v1.0.0
   - [From "./Cookies.js"](#from-cookiesjs)
   - [From "./ExampleServer.js"](#from-exampleserverjs)
   - [From "./Headers.js"](#from-headersjs)
+  - [From "./HttpError.js"](#from-httperrorjs)
   - [From "./Middlewares.js"](#from-middlewaresjs)
   - [From "./MockClient.js"](#from-mockclientjs)
   - [From "./OpenApi.js"](#from-openapijs)
@@ -34,7 +35,6 @@ Added in v1.0.0
   - [From "./Router.js"](#from-routerjs)
   - [From "./RouterBuilder.js"](#from-routerbuilderjs)
   - [From "./Security.js"](#from-securityjs)
-  - [From "./ServerError.js"](#from-servererrorjs)
   - [From "./SwaggerRouter.js"](#from-swaggerrouterjs)
 
 ---
@@ -173,6 +173,18 @@ export * as ServerHeaders from "./Headers.js"
 
 Added in v1.0.0
 
+## From "./HttpError.js"
+
+Re-exports all named exports from the "./HttpError.js" module as `HttpError`.
+
+**Signature**
+
+```ts
+export * as HttpError from "./HttpError.js"
+```
+
+Added in v1.0.0
+
 ## From "./Middlewares.js"
 
 Re-exports all named exports from the "./Middlewares.js" module as `Middlewares`.
@@ -289,18 +301,6 @@ Re-exports all named exports from the "./Security.js" module as `Security`.
 
 ```ts
 export * as Security from "./Security.js"
-```
-
-Added in v1.0.0
-
-## From "./ServerError.js"
-
-Re-exports all named exports from the "./ServerError.js" module as `ServerError`.
-
-**Signature**
-
-```ts
-export * as ServerError from "./ServerError.js"
 ```
 
 Added in v1.0.0

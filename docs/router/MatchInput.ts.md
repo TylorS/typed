@@ -156,7 +156,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Path<T> = Route.Route.Path<Route<T>>
+export type Path<T> = _Path.PathJoin<[Route.Route.Path<Route<T>>]>
 ```
 
 Added in v1.0.0

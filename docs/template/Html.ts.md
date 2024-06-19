@@ -1,6 +1,6 @@
 ---
 title: Html.ts
-nav_order: 6
+nav_order: 7
 parent: "@typed/template"
 ---
 
@@ -59,7 +59,7 @@ Added in v1.0.0
 
 ```ts
 export declare const serverLayer: Layer.Layer<
-  RenderTemplate | RenderQueue.RenderQueue | RenderContext.RenderContext | CurrentEnvironment,
+  RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment,
   never,
   never
 >
@@ -73,7 +73,7 @@ Added in v1.0.0
 
 ```ts
 export declare const staticLayer: Layer.Layer<
-  RenderTemplate | RenderQueue.RenderQueue | RenderContext.RenderContext | CurrentEnvironment,
+  RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | CurrentEnvironment,
   never,
   never
 >

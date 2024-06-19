@@ -192,13 +192,14 @@ Added in v1.20.0
 **Signature**
 
 ```ts
-export declare const dropAfter: {
-  <A>(predicate: Predicate.Predicate<A>): <E, R>(sink: Sink<A, E, R>) => Sink<A, E, R>
-  <A, E, R>(sink: Sink<A, E, R>, predicate: Predicate.Predicate<A>): Sink<A, E, R>
-}
+export declare const dropAfter: <A, E, R, R2>(
+  sink: Sink<A, E, R>,
+  predicate: Predicate.Predicate<A>,
+  f: (sink: Sink<A, E, R>) => Effect.Effect<unknown, E, R2>
+) => Effect.Effect<void, never, R | R2>
 ```
 
-Added in v1.20.0
+Added in v2.0.0
 
 ## dropAfterEffect
 

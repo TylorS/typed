@@ -1,6 +1,6 @@
 ---
 title: RouterBuilder.ts
-nav_order: 21
+nav_order: 22
 parent: "@typed/server"
 ---
 
@@ -50,7 +50,7 @@ export declare const handle: {
     R2
   >(
     id: Id,
-    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
   ): (
     builder: RouterBuilder<E, R, RemainingEndpoints>
   ) => RouterBuilder<
@@ -98,7 +98,7 @@ export declare const handle: {
   >(
     builder: RouterBuilder<E, R, RemainingEndpoints>,
     id: Id,
-    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
   ): RouterBuilder<
     | E
     | E2
@@ -250,8 +250,8 @@ Added in v1.0.0
 
 ```ts
 export declare const fromEndpoint: {
-  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
-    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  <E extends ApiEndpoint.ApiEndpoint.Any, E2, R2>(
+    handler: Handler.Handler.Function<E, E2, R2>
   ): (
     endpoint: E
   ) => <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
@@ -282,9 +282,9 @@ export declare const fromEndpoint: {
       >,
     Exclude<RemainingEndpoints, E>
   >
-  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+  <E extends ApiEndpoint.ApiEndpoint.Any, E2, R2>(
     endpoint: E,
-    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+    handler: Handler.Handler.Function<E, E2, R2>
   ): <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
     builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
   ) => RouterBuilder<

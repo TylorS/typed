@@ -1,5 +1,11 @@
+/**
+ * @since 1.0.0
+ */
 import ts from "typescript"
 
+/**
+ * @since 1.0.0
+ */
 export function findTsConfig(directory: string, fileName?: string): ts.ParsedCommandLine {
   const configPath = ts.findConfigFile(directory, ts.sys.fileExists, fileName)
 

@@ -114,6 +114,7 @@ export interface Wire {
   readonly nodeType: 111
   readonly firstChild: Node | null
   readonly lastChild: Node | null
+  readonly childNodes: Array<Node>
   readonly valueOf: () => DocumentFragment
 }
 ```

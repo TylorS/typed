@@ -47,12 +47,12 @@ export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = 
     RenderEvent | null,
     never,
     RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
-  >
+  > | null
   readonly script: Fx.Fx<
     RenderEvent | null,
     never,
     RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
-  >
+  > | null
 }
 ```
 
@@ -123,6 +123,7 @@ export declare function toHttpRouter<
 >(
   matcher: Router.RouteMatcher<M>,
   options?: {
+    clientEntry?: string
     layout?: LayoutTemplate<
       Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
       E2,
@@ -151,6 +152,7 @@ export declare function toServerRouter<
 >(
   matcher: Router.RouteMatcher<M>,
   options?: {
+    clientEntry?: string
     layout?: LayoutTemplate<
       Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
       E2,

@@ -1,6 +1,6 @@
 ---
 title: typescript/factories.ts
-nav_order: 3
+nav_order: 5
 parent: "@typed/compiler"
 ---
 
@@ -23,15 +23,21 @@ Added in v1.0.0
   - [SVGElementType](#svgelementtype)
   - [TextType](#texttype)
   - [appendChild](#appendchild)
+  - [createComment](#createcomment)
+  - [createConst](#createconst)
   - [createDocumentFragment](#createdocumentfragment)
+  - [createEffectYield](#createeffectyield)
   - [createElement](#createelement)
   - [createFunctionCall](#createfunctioncall)
   - [createMethodCall](#createmethodcall)
   - [createText](#createtext)
   - [createTypeReference](#createtypereference)
+  - [createUnion](#createunion)
   - [createVariableDeclaration](#createvariabledeclaration)
   - [insertBefore](#insertbefore)
   - [removeChild](#removechild)
+  - [setAttribute](#setattribute)
+  - [toggleAttribute](#toggleattribute)
 
 ---
 
@@ -133,6 +139,26 @@ export declare function appendChild(parent: string, child: string)
 
 Added in v1.0.0
 
+## createComment
+
+**Signature**
+
+```ts
+export declare function createComment(value: string)
+```
+
+Added in v1.0.0
+
+## createConst
+
+**Signature**
+
+```ts
+export declare function createConst(varName: string, expression: ts.Expression): ts.Statement
+```
+
+Added in v1.0.0
+
 ## createDocumentFragment
 
 Create document fragment
@@ -141,6 +167,16 @@ Create document fragment
 
 ```ts
 export declare function createDocumentFragment()
+```
+
+Added in v1.0.0
+
+## createEffectYield
+
+**Signature**
+
+```ts
+export declare function createEffectYield(...expressions: Array<ts.Expression>): ts.Expression
 ```
 
 Added in v1.0.0
@@ -164,7 +200,7 @@ Creates a TypeScript function call
 **Signature**
 
 ```ts
-export declare function createFunctionCall(name: string, args: Array<ts.Expression>): ts.CallExpression
+export declare function createFunctionCall(name: string | ts.Expression, args: Array<ts.Expression>): ts.CallExpression
 ```
 
 Added in v1.0.0
@@ -177,8 +213,9 @@ Creates a TypeScript method call
 
 ```ts
 export declare function createMethodCall(
-  object: string,
+  object: string | ts.Expression,
   methodName: string,
+  typeParams: Array<ts.TypeNode>,
   args: Array<ts.Expression>
 ): ts.CallExpression
 ```
@@ -205,6 +242,18 @@ Creates a TypeScript type reference by name
 
 ```ts
 export declare function createTypeReference(name: string, ...args: Array<ts.TypeNode>): ts.TypeReferenceNode
+```
+
+Added in v1.0.0
+
+## createUnion
+
+Creates a TypeScript union types by name
+
+**Signature**
+
+```ts
+export declare function createUnion(types: Array<ts.TypeNode>): ts.TypeNode
 ```
 
 Added in v1.0.0
@@ -245,6 +294,26 @@ Remove child
 
 ```ts
 export declare function removeChild(parent: string, child: string)
+```
+
+Added in v1.0.0
+
+## setAttribute
+
+**Signature**
+
+```ts
+export declare function setAttribute(element: string, name: string, value: string, coerce: boolean = true)
+```
+
+Added in v1.0.0
+
+## toggleAttribute
+
+**Signature**
+
+```ts
+export declare function toggleAttribute(element: string, name: string)
 ```
 
 Added in v1.0.0

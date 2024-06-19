@@ -18,7 +18,15 @@ Added in v1.0.0
   - [addResponse](#addresponse)
   - [delete](#delete)
   - [get](#get)
+  - [getId](#getid)
+  - [getMethod](#getmethod)
+  - [getOptions](#getoptions)
+  - [getPath](#getpath)
+  - [getRequest](#getrequest)
+  - [getResponse](#getresponse)
+  - [getSecurity](#getsecurity)
   - [head](#head)
+  - [isFullResponse](#isfullresponse)
   - [make](#make)
   - [options](#options-1)
   - [patch](#patch)
@@ -122,6 +130,125 @@ export declare const get: <const Id extends string, I extends MatchInput.Any, O 
 
 Added in v1.0.0
 
+## getId
+
+**Signature**
+
+```ts
+export declare const getId: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => Id
+```
+
+Added in v1.0.0
+
+## getMethod
+
+**Signature**
+
+```ts
+export declare const getMethod: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => Method
+```
+
+Added in v1.0.0
+
+## getOptions
+
+**Signature**
+
+```ts
+export declare const getOptions: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => ApiEndpoint.Options
+```
+
+Added in v1.0.0
+
+## getPath
+
+**Signature**
+
+```ts
+export declare const getPath: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => PathInput
+```
+
+Added in v1.0.0
+
+## getRequest
+
+**Signature**
+
+```ts
+export declare const getRequest: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => Request
+```
+
+Added in v1.0.0
+
+## getResponse
+
+**Signature**
+
+```ts
+export declare const getResponse: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => readonly Response[]
+```
+
+Added in v1.0.0
+
+## getSecurity
+
+**Signature**
+
+```ts
+export declare const getSecurity: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => Security
+```
+
+Added in v1.0.0
+
 ## head
 
 **Signature**
@@ -143,6 +270,23 @@ export declare const head: <const Id extends string, I extends MatchInput.Any, O
   ApiResponse.ApiResponse.Default,
   Security.Security<void, never, never>
 >
+```
+
+Added in v1.0.0
+
+## isFullResponse
+
+**Signature**
+
+```ts
+export declare const isFullResponse: <
+  Id extends string,
+  Request extends ApiRequest.ApiRequest.Any,
+  Response extends ApiResponse.ApiResponse.Any,
+  Security extends Security.Security.Any
+>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
+) => boolean
 ```
 
 Added in v1.0.0
@@ -396,8 +540,8 @@ Added in v1.0.0
 ```ts
 export declare function setRequestRoute<I extends MatchInput.Any>(
   route: I
-): <Id extends string, B, _, Q, H, R1, Response extends ApiResponse.ApiResponse.Any, S extends Security.Security.Any>(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, ApiRequest.ApiRequest<B, _, Q, H, R1>, Response, S>
+): <Id extends string, B, P, Q, H, R1, Response extends ApiResponse.ApiResponse.Any, S extends Security.Security.Any>(
+  endpoint: ApiEndpoint.ApiEndpoint<Id, ApiRequest.ApiRequest<B, P, Q, H, R1>, Response, S>
 ) => ApiEndpoint.ApiEndpoint<
   Id,
   ApiRequest.ApiRequest<B, GetSchemaPathType<I>, GetSchemaQueryType<I>, H, MatchInput.Context<I> | R1>,

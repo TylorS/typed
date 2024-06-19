@@ -1,6 +1,6 @@
 ---
 title: Many.ts
-nav_order: 10
+nav_order: 11
 parent: "@typed/template"
 ---
 

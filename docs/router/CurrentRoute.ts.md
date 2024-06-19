@@ -18,12 +18,14 @@ Added in v1.0.0
   - [CurrentRoute (interface)](#currentroute-interface)
   - [CurrentSearchParams](#currentsearchparams)
   - [CurrentState](#currentstate)
+  - [NavigateOptions (type alias)](#navigateoptions-type-alias)
   - [browser](#browser)
   - [decode](#decode)
   - [isActive](#isactive)
   - [layer](#layer)
   - [makeCurrentRoute](#makecurrentroute)
   - [makeHref](#makehref)
+  - [navigate](#navigate)
   - [server](#server)
   - [withCurrentRoute](#withcurrentroute)
 
@@ -39,7 +41,7 @@ Added in v1.0.0
 export declare const CurrentParams: Fx.RefSubject.Filtered<
   Readonly<Record<string, string | readonly string[]>>,
   never,
-  Navigation | CurrentRoute
+  Navigation.Navigation | CurrentRoute
 >
 ```
 
@@ -73,7 +75,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentSearchParams: Fx.RefSubject.Computed<Readonly<Record<string, string>>, never, Navigation>
+export declare const CurrentSearchParams: Fx.RefSubject.Computed<URLSearchParams, never, Navigation.Navigation>
 ```
 
 Added in v1.0.0
@@ -83,7 +85,32 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const CurrentState: Fx.RefSubject.Computed<unknown, never, Navigation>
+export declare const CurrentState: Fx.RefSubject.Computed<unknown, never, Navigation.Navigation>
+```
+
+Added in v1.0.0
+
+## NavigateOptions (type alias)
+
+**Signature**
+
+```ts
+export type NavigateOptions<R extends Route.Route.Any> =
+  Route.Route.ParamsAreOptional<R> extends true
+    ? [
+        options?: Navigation.NavigateOptions & {
+          readonly params?: Route.Route.Params<R> | undefined
+        } & {
+          readonly relative?: boolean
+        }
+      ]
+    : [
+        options: Navigation.NavigateOptions & {
+          readonly params: Route.Route.Params<R>
+        } & {
+          readonly relative?: boolean
+        }
+      ]
 ```
 
 Added in v1.0.0
@@ -108,7 +135,7 @@ export declare function decode<R extends Route.Route.Any>(
 ): Fx.RefSubject.Filtered<
   Route.Route.Type<R>,
   Route.RouteDecodeError<R>,
-  Navigation | CurrentRoute | Route.Route.Context<R>
+  Navigation.Navigation | CurrentRoute | Route.Route.Context<R>
 >
 ```
 
@@ -122,11 +149,11 @@ Added in v1.0.0
 export declare function isActive<R extends Route.Route.Any>(
   route: R,
   ...[params]: Route.Route.ParamsList<R>
-): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
+): RefSubject.Computed<boolean, never, Navigation.Navigation | CurrentRoute>
 export declare function isActive<R extends Route.Route.Any>(
   route: R,
   params: Route.Route.Params<R>
-): RefSubject.Computed<boolean, never, Navigation | CurrentRoute>
+): RefSubject.Computed<boolean, never, Navigation.Navigation | CurrentRoute>
 ```
 
 Added in v1.0.0
@@ -165,7 +192,28 @@ Added in v1.0.0
 export declare function makeHref<const R extends Route.Route.Any>(
   route: R,
   ...[params]: Route.Route.ParamsList<R>
-): RefSubject.Filtered<string, never, Navigation | CurrentRoute>
+): RefSubject.Filtered<string, never, Navigation.Navigation | CurrentRoute>
+export declare function makeHref<const R extends Route.Route.Any>(
+  route: R,
+  params: Route.Route.Params<R>
+): RefSubject.Filtered<string, never, Navigation.Navigation | CurrentRoute>
+```
+
+Added in v1.0.0
+
+## navigate
+
+**Signature**
+
+```ts
+export declare const navigate: <R extends Route.Route.Any>(
+  route: R,
+  ...[options]: NavigateOptions<R>
+) => Effect.Effect<
+  Navigation.Destination,
+  Navigation.NavigationError | Cause.NoSuchElementException,
+  Navigation.Navigation | CurrentRoute
+>
 ```
 
 Added in v1.0.0

@@ -1,6 +1,6 @@
 ---
 title: Template.ts
-nav_order: 22
+nav_order: 23
 parent: "@typed/template"
 ---
 
@@ -550,7 +550,9 @@ export declare class Template { constructor(
     readonly hash: string,
     // Parts are a array of Parts to the respective path from the root node to access it prior to rendering
     /// any nodes/elements into the template.
-    readonly parts: ReadonlyArray<readonly [part: PartNode | SparsePartNode, path: Chunk<number>]>
+    readonly parts: ReadonlyArray<
+      readonly [part: PartNode | SparsePartNode, path: Chunk<number> | NonEmptyChunk<number>]
+    >
   ) }
 ```
 

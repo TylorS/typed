@@ -591,7 +591,7 @@ Fx is a push-based reactive primitive built atop of Effect.
 
 ```ts
 export interface Fx<out A, out E = never, out R = never> extends Pipeable.Pipeable {
-  readonly [TypeId]: Fx.Variance<A, E, R>
+  readonly [FxTypeId]: Fx.Variance<A, E, R>
 
   /**
    * @since 1.20.0

@@ -1,6 +1,6 @@
 ---
 title: Placeholder.ts
-nav_order: 14
+nav_order: 15
 parent: "@typed/template"
 ---
 

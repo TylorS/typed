@@ -18,7 +18,6 @@ Added in v1.0.0
   - [CoreDomServices (type alias)](#coredomservices-type-alias)
   - [CoreServices (type alias)](#coreservices-type-alias)
   - [fromWindow](#fromwindow)
-  - [hydrateFromWindow](#hydratefromwindow)
   - [server](#server)
   - [static](#static)
 
@@ -68,19 +67,6 @@ export declare function fromWindow(
 
 Added in v1.0.0
 
-## hydrateFromWindow
-
-**Signature**
-
-```ts
-export declare function hydrateFromWindow(
-  window: Window & GlobalThis,
-  options?: DomServicesElementParams & { readonly queue?: "raf" | "sync" | ["idle", IdleRequestOptions] }
-): Layer.Layer<CoreDomServices>
-```
-
-Added in v1.0.0
-
 ## server
 
 **Signature**
@@ -88,11 +74,11 @@ Added in v1.0.0
 ```ts
 export declare const server: Layer.Layer<
   | CurrentEnvironment
+  | CurrentRoute
   | GetRandomValues
   | RenderTemplate
   | RenderContext.RenderContext
-  | RenderQueue.RenderQueue
-  | CurrentRoute,
+  | RenderQueue.RenderQueue,
   never,
   never
 >
@@ -107,11 +93,11 @@ Added in v1.0.0
 ```ts
 export declare const static: Layer.Layer<
   | CurrentEnvironment
+  | CurrentRoute
   | GetRandomValues
   | RenderTemplate
   | RenderContext.RenderContext
-  | RenderQueue.RenderQueue
-  | CurrentRoute,
+  | RenderQueue.RenderQueue,
   never,
   never
 >

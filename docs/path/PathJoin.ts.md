@@ -99,7 +99,7 @@ Composes other path parts into a single path
 
 ```ts
 export type PathJoin<A> = A extends readonly [infer Head extends string, ...infer Tail extends ReadonlyArray<string>]
-  ? `${FormatPart<Head>}${PathJoin<Tail>}`
+  ? RemoveLeadingDoubleSlash<`${FormatPart<Head>}${PathJoin<Tail>}`>
   : ``
 ```
 
