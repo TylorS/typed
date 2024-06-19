@@ -5,7 +5,7 @@ on:
     branches: [development]
 
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch: 
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,7 +33,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,7 +46,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -61,7 +59,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.11.0]
-    needs: [build]
     steps:
       - uses: actions/checkout@v3
         with:
