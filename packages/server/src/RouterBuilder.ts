@@ -3,7 +3,7 @@
  */
 import type { Default } from "@effect/platform/Http/App"
 import type { PathInput } from "@effect/platform/Http/Router"
-import { ServerRequest } from "@effect/platform/Http/ServerRequest"
+import { ParsedSearchParams, ServerRequest } from "@effect/platform/Http/ServerRequest"
 import type { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
@@ -100,7 +100,7 @@ export const handle: {
     R2
   >(
     id: Id,
-    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
   ): (builder: RouterBuilder<E, R, RemainingEndpoints>) => RouterBuilder<
     | E
     | RouteHandler.RouteHandler.Error<
@@ -123,7 +123,7 @@ export const handle: {
   >(
     builder: RouterBuilder<E, R, RemainingEndpoints>,
     id: Id,
-    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, E2, R2>
   ): RouterBuilder<
     | E
     | RouteHandler.RouteHandler.Error<
@@ -212,13 +212,16 @@ const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R,
   const handler = Effect.gen(function*(_) {
     const request = yield* ServerRequest
     const { params, queryParams } = yield* RouteHandler.getCurrentParams(route)
-    const response = yield* _(Effect.flatMap(
-      requestParser.parseRequest({ params, queryParams }),
-      (input: any) => {
-        const { security, ...restInput } = input
-        return fn(restInput, security)
-      }
-    ))
+    const response = yield* _(
+      Effect.flatMap(
+        requestParser.parseRequest({ params, queryParams }),
+        (input: any) => {
+          const { security, ...restInput } = input
+          return fn(restInput, security)
+        }
+      ),
+      Effect.provideService(ParsedSearchParams, ParsedSearchParams.of(urlSearchParamsToRecord(queryParams)))
+    )
 
     return yield* responseEncoder.encodeResponse(request, response)
   })
@@ -284,8 +287,8 @@ export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEnd
  * @since 1.0.0
  */
 export const fromEndpoint: {
-  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
-    handler: Handler.Handler.Function<E, R2, E2>
+  <E extends ApiEndpoint.ApiEndpoint.Any, E2, R2>(
+    handler: Handler.Handler.Function<E, E2, R2>
   ): (endpoint: E) => <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
     builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
   ) => RouterBuilder<
@@ -302,9 +305,9 @@ export const fromEndpoint: {
     Exclude<RemainingEndpoints, E>
   >
 
-  <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+  <E extends ApiEndpoint.ApiEndpoint.Any, E2, R2>(
     endpoint: E,
-    handler: Handler.Handler.Function<E, R2, E2>
+    handler: Handler.Handler.Function<E, E2, R2>
   ): <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
     builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
   ) => RouterBuilder<
@@ -320,9 +323,9 @@ export const fromEndpoint: {
     >,
     Exclude<RemainingEndpoints, E>
   >
-} = dual(2, <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
+} = dual(2, <E extends ApiEndpoint.ApiEndpoint.Any, E2, R2>(
   endpoint: E,
-  handler: Handler.Handler.Function<E, R2, E2>
+  handler: Handler.Handler.Function<E, E2, R2>
 ) =>
 <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
@@ -339,3 +342,15 @@ export const fromEndpoint: {
   >,
   Exclude<RemainingEndpoints, E>
 > => handle(builder, ApiEndpoint.getId(endpoint) as ApiEndpoint.ApiEndpoint.Id<E>, handler as any) as any)
+
+function urlSearchParamsToRecord(searchParams: URLSearchParams) {
+  const result: Record<string, string | Array<string>> = {}
+
+  for (const key of searchParams.keys()) {
+    const values = searchParams.getAll(key)
+
+    result[key] = values.length === 1 ? values[0] : values
+  }
+
+  return result
+}

@@ -5,7 +5,9 @@ import { ArticleSlug } from "@typed/realworld/model"
 import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect"
 
-export const DeleteArticleInput = Schema.Struct({ slug: ArticleSlug }).pipe(Schema.identifier("DeleteArticleInput"))
+export const DeleteArticleInput = Schema.Struct({ slug: ArticleSlug }).pipe(
+  Schema.annotations({ identifier: "DeleteArticleInput" })
+)
 export type DeleteArticleInput = Schema.Schema.Type<typeof DeleteArticleInput>
 
 export type DeleteArticleError = Unauthorized | Unprocessable

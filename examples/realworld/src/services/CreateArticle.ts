@@ -6,7 +6,7 @@ import type { Effect } from "effect"
 
 export const CreateArticleInput = Article.pipe(
   Schema.pick("title", "description", "body", "tagList"),
-  Schema.identifier("CreateArticleInput")
+  Schema.annotations({ identifier: "CreateArticleInput" })
 )
 export type CreateArticleInput = Schema.Schema.Type<typeof CreateArticleInput>
 

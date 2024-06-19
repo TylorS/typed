@@ -24,7 +24,7 @@ export function handleExpectedErrors<
       return new Unprocessable({ errors: [(error as Sql.error.SqlError).message] })
     case "ParseError":
     case "SchemaError":
-      return new Unprocessable({ errors: [TreeFormatter.formatIssueSync((error as ParseError).error)] })
+      return new Unprocessable({ errors: [TreeFormatter.formatIssueSync((error as ParseError).issue)] })
     case "And":
     case "InvalidData":
     case "MissingData":

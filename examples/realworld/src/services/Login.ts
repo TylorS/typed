@@ -8,9 +8,8 @@ import type { Effect } from "effect/Effect"
 export const LoginInput = Schema.Struct({
   email: Email,
   password: Password
-}).pipe(
-  Schema.identifier("LoginInput")
-)
+}).annotations({ identifier: "LoginInput" })
+
 export type LoginInput = Schema.Schema.Type<typeof LoginInput>
 
 export type LoginError = Unauthorized | Unprocessable

@@ -9,7 +9,7 @@ export const RegisterInput = Schema.Struct({
   email: Email,
   username: Username,
   password: Password
-}).pipe(Schema.identifier("RegisterInput"))
+}).annotations({ identifier: "RegisterInput" })
 export type RegisterInput = Schema.Schema.Type<typeof RegisterInput>
 
 export type RegisterError = Unprocessable

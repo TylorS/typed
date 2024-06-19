@@ -11,9 +11,7 @@ export const GetArticlesInput = Schema.Struct({
   favorited: Schema.optionalOrNull(Username),
   limit: Schema.optionalOrNull(Schema.NumberFromString),
   offset: Schema.optionalOrNull(Schema.NumberFromString)
-}).pipe(
-  Schema.identifier("GetArticlesInput")
-)
+}).annotations({ identifier: "GetArticlesInput" })
 
 export type GetArticlesInput = Schema.Schema.Type<typeof GetArticlesInput>
 

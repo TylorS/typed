@@ -7,9 +7,7 @@ import type { Effect } from "effect"
 export const GetFeedInput = Schema.Struct({
   limit: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" }),
   offset: Schema.optional(Schema.NumberFromString, { exact: true, as: "Option" })
-}).pipe(
-  Schema.identifier("GetFeedInput")
-)
+}).annotations({ identifier: "GetFeedInput" })
 export type GetFeedInput = Schema.Schema.Type<typeof GetFeedInput>
 
 export type GetFeedError = Unprocessable | Unauthorized

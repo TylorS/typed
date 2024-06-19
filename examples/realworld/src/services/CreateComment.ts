@@ -7,7 +7,7 @@ import type { Effect } from "effect"
 
 export const CreateCommentInput = Comment.pipe(
   Schema.omit("id", "author", "createdAt", "updatedAt"),
-  Schema.identifier("CreateCommentInput")
+  Schema.annotations({ identifier: "CreateCommentInput" })
 )
 export type CreateCommentInput = Schema.Schema.Type<typeof CreateCommentInput>
 

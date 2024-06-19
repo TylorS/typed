@@ -5,9 +5,7 @@ import { CreateArticleInput } from "@typed/realworld/services/CreateArticle"
 import type { Unauthorized, Unprocessable } from "@typed/realworld/services/errors"
 import type { Effect } from "effect"
 
-export const UpdateArticleInput = Schema.partial(CreateArticleInput).pipe(
-  Schema.identifier("UpdateArticleInput")
-)
+export const UpdateArticleInput = Schema.partial(CreateArticleInput).annotations({ identifier: "UpdateArticleInput" })
 export type UpdateArticleInput = Schema.Schema.Type<typeof UpdateArticleInput>
 
 export type UpdateArticleError = Unauthorized | Unprocessable
