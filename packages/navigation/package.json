@@ -40,19 +40,19 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.57.0",
-    "@effect/schema": "^0.67.22",
+    "@effect/platform": "^0.57.4",
+    "@effect/schema": "^0.68.1",
     "@typed/context": "workspace:*",
     "@typed/dom": "workspace:*",
     "@typed/fx": "workspace:*",
     "@typed/id": "workspace:*",
-    "effect": "^3.3.1"
+    "effect": "^3.3.5"
   },
   "optionalPeerDependencies": {
     "@virtualstate/navigation": "1.0.1-alpha.199"
   },
   "devDependencies": {
-    "@effect/platform-node": "^0.51.9",
+    "@effect/platform-node": "^0.51.13",
     "@virtualstate/navigation": "1.0.1-alpha.203",
     "happy-dom": "14.12.0"
   }

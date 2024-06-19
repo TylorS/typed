@@ -8,7 +8,7 @@ import type { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
 import { Unify } from "effect"
-import type { Api, Route as EffectHttpRoute, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
+import type { Api, Handler, RouterBuilder as EffectHttpRouterBuilder } from "effect-http"
 import { ApiEndpoint, ApiRequest, ApiSchema, HttpError, OpenApi, SwaggerRouter } from "effect-http"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
@@ -100,7 +100,7 @@ export const handle: {
     R2
   >(
     id: Id,
-    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
   ): (builder: RouterBuilder<E, R, RemainingEndpoints>) => RouterBuilder<
     | E
     | RouteHandler.RouteHandler.Error<
@@ -123,7 +123,7 @@ export const handle: {
   >(
     builder: RouterBuilder<E, R, RemainingEndpoints>,
     id: Id,
-    handler: EffectHttpRoute.HandlerFunction<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
+    handler: Handler.Handler.Function<ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>, R2, E2>
   ): RouterBuilder<
     | E
     | RouteHandler.RouteHandler.Error<
@@ -145,7 +145,7 @@ export const handle: {
 >(
   builder: RouterBuilder<E, R, RemainingEndpoints>,
   id: Id,
-  handler: EffectHttpRoute.HandlerFunction<
+  handler: Handler.Handler.Function<
     ApiEndpoint.ApiEndpoint.ExtractById<RemainingEndpoints, Id>,
     R2,
     E2
@@ -192,11 +192,11 @@ type HandlerFromEndpoint<Endpoint extends ApiEndpoint.ApiEndpoint.Any, E, R> = R
 
 const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
   endpoint: Endpoint,
-  fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
+  fn: Handler.Handler.Function<Endpoint, E, R>,
   options?: Partial<Options>
 ) => HandlerFromEndpoint<Endpoint, E, R> = <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R, E>(
   endpoint: Endpoint,
-  fn: EffectHttpRoute.HandlerFunction<Endpoint, R, E>,
+  fn: Handler.Handler.Function<Endpoint, E, R>,
   options?: Partial<Options>
 ) => {
   const responseEncoder = ServerResponseEncoder.create(endpoint)
@@ -213,10 +213,7 @@ const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R,
     const request = yield* ServerRequest
     const { params, queryParams } = yield* RouteHandler.getCurrentParams(route)
     const response = yield* _(Effect.flatMap(
-      requestParser.parseRequest(request, {
-        params,
-        searchParams: Object.fromEntries(queryParams.entries())
-      }),
+      requestParser.parseRequest({ params, queryParams }),
       (input: any) => {
         const { security, ...restInput } = input
         return fn(restInput, security)
@@ -288,7 +285,7 @@ export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEnd
  */
 export const fromEndpoint: {
   <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
-    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+    handler: Handler.Handler.Function<E, R2, E2>
   ): (endpoint: E) => <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
     builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
   ) => RouterBuilder<
@@ -307,7 +304,7 @@ export const fromEndpoint: {
 
   <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
     endpoint: E,
-    handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+    handler: Handler.Handler.Function<E, R2, E2>
   ): <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
     builder: RouterBuilder<E1, R1, E | RemainingEndpoints>
   ) => RouterBuilder<
@@ -325,7 +322,7 @@ export const fromEndpoint: {
   >
 } = dual(2, <E extends ApiEndpoint.ApiEndpoint.Any, R2, E2>(
   endpoint: E,
-  handler: EffectHttpRoute.HandlerFunction<E, R2, E2>
+  handler: Handler.Handler.Function<E, R2, E2>
 ) =>
 <E1, R1, RemainingEndpoints extends ApiEndpoint.ApiEndpoint.Any>(
   builder: RouterBuilder<E1, R1, E | RemainingEndpoints>

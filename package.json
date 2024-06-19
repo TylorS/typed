@@ -50,16 +50,16 @@
     "@effect/eslint-plugin": "^0.1.2",
     "@effect/language-service": "0.1.0",
     "@types/chai": "^4.3.16",
-    "@types/node": "^20.14.2",
-    "@typescript-eslint/eslint-plugin": "^7.13.0",
-    "@typescript-eslint/parser": "^7.13.0",
+    "@types/node": "^20.14.5",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/expect": "^1.6.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "cac": "^6.7.14",
     "concurrently": "^8.2.2",
-    "effect": "^3.3.1",
+    "effect": "^3.3.5",
     "eslint": "^8.57.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-codegen": "0.28.0",
@@ -72,16 +72,16 @@
     "shx": "^0.3.4",
     "syncpack": "12.3.2",
     "ts-node": "^10.9.2",
-    "tsx": "^4.15.2",
+    "tsx": "^4.15.6",
     "typescript": "^5.4.5",
     "ultra-runner": "^3.10.5",
-    "vite": "^5.2.13",
+    "vite": "^5.3.1",
     "vite-plugin-tsconfig-paths": "^1.4.1",
     "vitest": "1.6.0",
     "zx": "^8.1.2"
   },
   "dependencies": {
-    "@effect/vitest": "^0.5.11"
+    "@effect/vitest": "^0.5.15"
   },
   "packageManager": "pnpm@9.0.6+sha1.648f6014eb363abb36618f2ba59282a9eeb3e879"
 }

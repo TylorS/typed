@@ -3,30 +3,34 @@ import type * as Headers from "@effect/platform/Http/Headers"
 import type * as ServerRequest from "@effect/platform/Http/ServerRequest"
 import * as ServerResponse from "@effect/platform/Http/ServerResponse"
 import * as Schema from "@effect/schema/Schema"
-import * as ApiEndpoint from "effect-http/ApiEndpoint"
-import * as ApiResponse from "effect-http/ApiResponse"
-import * as ApiSchema from "effect-http/ApiSchema"
-import * as HttpError from "effect-http/HttpError"
-import type * as Representation from "effect-http/Representation"
-import * as ReadonlyArray from "effect/Array"
+import * as HttpError from "effect-http-error/HttpError"
+import * as Array from "effect/Array"
 import * as Effect from "effect/Effect"
 import { flow, pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import { formatParseError } from "./formatParseError.js"
+import * as Unify from "effect/Unify"
+import * as ApiEndpoint from "../ApiEndpoint.js"
+import * as ApiResponse from "../ApiResponse.js"
+import * as ApiSchema from "../ApiSchema.js"
+import type * as Representation from "../Representation.js"
 
+/** @internal */
 interface ServerResponseEncoder {
   encodeResponse: (
-    request: ServerRequest.ServerRequest,
+    inputRequest: ServerRequest.ServerRequest,
     inputResponse: unknown
   ) => Effect.Effect<ServerResponse.ServerResponse, HttpError.HttpError>
 }
 
-const createErrorResponse = (error: string, message: string) => HttpError.internalHttpError({ error, message })
+/** @internal */
+const createErrorResponse = (error: string, message: string) => HttpError.make(500, { error, message })
 
+/** @internal */
 const make = (
   encodeResponse: ServerResponseEncoder["encodeResponse"]
 ): ServerResponseEncoder => ({ encodeResponse })
 
+/** @internal */
 export const create = (
   endpoint: ApiEndpoint.ApiEndpoint.Any
 ): ServerResponseEncoder => {
@@ -38,32 +42,37 @@ export const create = (
   )
 
   return make((request, inputResponse) =>
-    Effect.gen(function*() {
-      const _input = isFullResponse ?
-        yield* parseFullResponseInput(inputResponse).pipe(
-          Effect.mapError(() => createErrorResponse("Invalid response", "Server handler returned unexpected response"))
+    pipe(
+      Unify.unify(
+        isFullResponse ?
+          Effect.mapError(
+            parseFullResponseInput(inputResponse),
+            () => createErrorResponse("Invalid response", "Server handler returned unexpected response")
+          )
+          : Effect.succeed({ status: ApiResponse.getStatus(responses[0]), body: inputResponse })
+      ),
+      Effect.flatMap((parseInputResponse) => {
+        const response = statusToSpec[parseInputResponse.status]
+        const setBody = createBodySetter(response)
+        const setHeaders = createHeadersSetter(response)
+
+        const representation = representationFromRequest(
+          ApiResponse.getRepresentations(response),
+          request
         )
-        : { status: ApiResponse.getStatus(responses[0]), body: inputResponse }
 
-      const response = statusToSpec[_input.status]
-      const setBody = createBodySetter(response)
-      const setHeaders = createHeadersSetter(response)
-
-      const representation = representationFromRequest(
-        ApiResponse.getRepresentations(response),
-        request
-      )
-
-      return yield* ServerResponse.empty({ status: _input.status }).pipe(
-        setBody(_input, representation),
-        Effect.flatMap(setHeaders(_input))
-      )
-    })
+        return ServerResponse.empty({ status: parseInputResponse.status }).pipe(
+          setBody(parseInputResponse, representation),
+          Effect.flatMap(setHeaders(parseInputResponse))
+        )
+      })
+    )
   )
 }
 
+/** @internal */
 const representationFromRequest = (
-  representations: ReadonlyArray.NonEmptyReadonlyArray<Representation.Representation>,
+  representations: Array.NonEmptyReadonlyArray<Representation.Representation>,
   request: ServerRequest.ServerRequest
 ): Representation.Representation => {
   if (representations.length === 0) {
@@ -75,21 +84,22 @@ const representationFromRequest = (
   // TODO: this logic needs to be improved a lot!
   return pipe(
     representations,
-    ReadonlyArray.filter(
+    Array.filter(
       (representation) => representation.contentType === accept
     ),
-    ReadonlyArray.head,
+    Array.head,
     Option.getOrElse(() => representations[0])
   )
 }
 
+/** @internal */
 const encodeBody = (schema: Schema.Schema<any, any, never>) => {
   const encode = Schema.encode(schema)
 
   return (body: unknown, representation: Representation.Representation) => (response: ServerResponse.ServerResponse) =>
     pipe(
       encode(body),
-      Effect.mapError((error) => createErrorResponse("Invalid response body", formatParseError(error))),
+      Effect.mapError((error) => createErrorResponse("Invalid response body", error.message)),
       Effect.flatMap(
         flow(
           representation.stringify,
@@ -106,6 +116,7 @@ const encodeBody = (schema: Schema.Schema<any, any, never>) => {
     )
 }
 
+/** @internal */
 const createBodySetter = (response: ApiResponse.ApiResponse.Any) => {
   const body = ApiResponse.getBodySchema(response)
   const bodySchema = ApiSchema.isIgnored(body) ? undefined : body
@@ -128,6 +139,7 @@ const createBodySetter = (response: ApiResponse.ApiResponse.Any) => {
   }
 }
 
+/** @internal */
 const createHeadersSetter = (schema: ApiResponse.ApiResponse.Any) => {
   const headers = ApiResponse.getHeadersSchema(schema)
 
@@ -152,18 +164,22 @@ const createHeadersSetter = (schema: ApiResponse.ApiResponse.Any) => {
       Effect.mapError((error) =>
         createErrorResponse(
           "Invalid response headers",
-          formatParseError(error)
+          error.message
         )
       )
     )
   }
 }
 
+/** @internal */
 const FullResponseInput = Schema.Struct({
   body: Schema.optional(Schema.Unknown),
   headers: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
   status: Schema.Number
 })
+
+/** @internal */
 type FullResponseInput = Schema.Schema.Type<typeof FullResponseInput>
 
+/** @internal */
 const parseFullResponseInput = Schema.decodeUnknown(FullResponseInput)

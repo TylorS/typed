@@ -13,9 +13,9 @@ describe.concurrent("Form", () => {
     const Foo = Schema.Struct({
       id: Schema.String.pipe(
         Schema.minLength(1),
-        Schema.message(() => "Cannot be empty ID"),
+        Schema.annotations({ message: () => "Cannot be empty ID" }),
         Schema.maxLength(20),
-        Schema.message(() => "ID cannot be longer than 20 characters")
+        Schema.annotations({ message: () => "ID cannot be longer than 20 characters" })
       ),
       timestamp: Schema.compose(Schema.DateFromString, Schema.ValidDateFromSelf)
     })
@@ -48,10 +48,10 @@ describe.concurrent("Form", () => {
         ok(Either.isLeft(parseError))
 
         deepEqual(
-          ArrayFormatter.formatIssueSync(parseError.left.error),
+          ArrayFormatter.formatIssueSync(parseError.left.issue),
           [{
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
+            message: "Expected ValidDateFromSelf, actual Invalid Date",
             path: ["timestamp"]
           }]
         )
@@ -63,14 +63,14 @@ describe.concurrent("Form", () => {
         ok(Either.isLeft(parseError))
 
         deepEqual(
-          ArrayFormatter.formatIssueSync(parseError.left.error),
+          ArrayFormatter.formatIssueSync(parseError.left.issue),
           [{
             _tag: "Refinement",
             message: "Cannot be empty ID",
             path: ["id"]
           }, {
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
+            message: "Expected ValidDateFromSelf, actual Invalid Date",
             path: ["timestamp"]
           }]
         )
@@ -80,7 +80,7 @@ describe.concurrent("Form", () => {
         ok(Either.isLeft(idParseError))
 
         deepEqual(
-          ArrayFormatter.formatIssueSync(idParseError.left.error),
+          ArrayFormatter.formatIssueSync(idParseError.left.issue),
           [{
             _tag: "Refinement",
             message: "Cannot be empty ID",
@@ -93,10 +93,10 @@ describe.concurrent("Form", () => {
         ok(Either.isLeft(timestampParseError))
 
         deepEqual(
-          ArrayFormatter.formatIssueSync(timestampParseError.left.error),
+          ArrayFormatter.formatIssueSync(timestampParseError.left.issue),
           [{
             _tag: "Type",
-            message: "Expected ValidDateFromSelf (a valid Date instance), actual Invalid Date",
+            message: "Expected ValidDateFromSelf, actual Invalid Date",
             path: []
           }]
         )
@@ -108,7 +108,7 @@ describe.concurrent("Form", () => {
         ok(Either.isLeft(idParseError))
 
         deepEqual(
-          ArrayFormatter.formatIssueSync(idParseError.left.error),
+          ArrayFormatter.formatIssueSync(idParseError.left.issue),
           [{
             _tag: "Refinement",
             message: "ID cannot be longer than 20 characters",

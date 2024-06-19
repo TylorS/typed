@@ -25,6 +25,38 @@ export {
   /**
    * @since 1.0.0
    */
+  getId,
+  /**
+   * @since 1.0.0
+   */
+  getMethod,
+  /**
+   * @since 1.0.0
+   */
+  getOptions,
+  /**
+   * @since 1.0.0
+   */
+  getPath,
+  /**
+   * @since 1.0.0
+   */
+  getRequest,
+  /**
+   * @since 1.0.0
+   */
+  getResponse,
+  /**
+   * @since 1.0.0
+   */
+  getSecurity,
+  /**
+   * @since 1.0.0
+   */
+  isFullResponse,
+  /**
+   * @since 1.0.0
+   */
   type Options,
   /**
    * @since 1.0.0

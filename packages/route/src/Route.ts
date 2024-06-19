@@ -878,7 +878,7 @@ export const decode: {
   const params = route.match(path) as Option.Option<Route.Params<R>>
   const decode = flow(
     Sch.decode(route.schema),
-    Effect.catchAll((error) => new RouteDecodeError({ route, issue: error.error }))
+    Effect.catchAll((error) => new RouteDecodeError({ route, issue: error.issue }))
   ) as (params: Route.Params<R>) => Effect.Effect<
     Route.Type<R>,
     RouteDecodeError<R>,
@@ -958,7 +958,7 @@ export const encode: {
   return pipe(
     params,
     Sch.encode(route.schema),
-    Effect.catchAll((error) => new RouteEncodeError({ route, issue: error.error })),
+    Effect.catchAll((error) => new RouteEncodeError({ route, issue: error.issue })),
     Effect.map((params) => route.interpolate(params as Route.Params<R>))
   ) as any
 })

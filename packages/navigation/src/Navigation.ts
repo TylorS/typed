@@ -4,6 +4,7 @@
 
 import type * as HttpClient from "@effect/platform/HttpClient"
 import { ParseResult } from "@effect/schema"
+import * as Equivalence from "@effect/schema/Equivalence"
 import * as Schema from "@effect/schema/Schema"
 import { Tagged } from "@typed/context"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -82,7 +83,7 @@ export interface Navigation {
  */
 export const Navigation: Tagged<Navigation> = Tagged<Navigation, Navigation>("@typed/navigation/Navigation")
 
-const urlSchema_ = Schema.instanceOf(URL).pipe(Schema.equivalence((a, b) => a.href === b.href))
+const urlSchema_ = Schema.instanceOf(URL).pipe(Equivalence.equivalence(() => (a, b) => a.href === b.href))
 
 const urlSchema = Schema.String.pipe(
   Schema.transformOrFail(
