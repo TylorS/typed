@@ -1,5 +1,18 @@
 # @typed/environment
 
+## 0.10.0
+
+### Minor Changes
+
+- [`308d020`](https://github.com/TylorS/typed/commit/308d020ee7afd4a103e8a3a0425e48e4198e5a8d) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect + Effect-Http Deps
+
+### Patch Changes
+
+- [`0eda56b`](https://github.com/TylorS/typed/commit/0eda56bbb56c27c828e3589dd44560c7220f4284) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade Effect deps
+
+- Updated dependencies [[`308d020`](https://github.com/TylorS/typed/commit/308d020ee7afd4a103e8a3a0425e48e4198e5a8d), [`0eda56b`](https://github.com/TylorS/typed/commit/0eda56bbb56c27c828e3589dd44560c7220f4284)]:
+  - @typed/context@0.29.0
+
 ## 0.9.0
 
 ### Minor Changes
