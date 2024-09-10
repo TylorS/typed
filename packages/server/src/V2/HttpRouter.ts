@@ -13,20 +13,20 @@ import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
+import * as HttpRouteHandler from "./HttpRouteHandler.js"
 import { RouterImpl, RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
-import * as RouteHandler from "./RouteHandler.js"
 
 /**
  * @since 1.0.0
  */
-export interface Router<E, R> extends
+export interface HttpRouter<E, R> extends
   HttpApp.Default<
-    E | HttpServerError.RouteNotFound,
-    TypedRouter.CurrentRoute | Exclude<R, RouteHandler.CurrentParams<any> | Navigation.Navigation>
+    E | HttpServerError.HttpServerError,
+    TypedRouter.CurrentRoute | Exclude<R, HttpRouteHandler.CurrentParams<any> | Navigation.Navigation>
   >
 {
   readonly [RouterTypeId]: RouterTypeId
-  readonly routes: Chunk.Chunk<RouteHandler.RouteHandler<MatchInput.MatchInput.Any, E, R>>
+  readonly routes: Chunk.Chunk<HttpRouteHandler.RouteHandler<MatchInput.MatchInput.Any, E, R>>
   readonly mounts: Chunk.Chunk<Mount<E, R>>
 }
 
@@ -44,27 +44,41 @@ export class Mount<E, R> {
 /**
  * @since 1.0.0
  */
-export const empty: Router<never, never> = new RouterImpl(Chunk.empty(), Chunk.empty())
+export const empty: HttpRouter<never, never> = new RouterImpl(Chunk.empty(), Chunk.empty())
 
 /**
  * @since 1.0.0
  */
 export const addHandler: {
-  <I extends RouteHandler.RouteHandler.Any>(
+  <I extends HttpRouteHandler.RouteHandler.Any>(
     handler: I
   ): <E, R>(
-    router: Router<E, R>
-  ) => Router<E | RouteHandler.RouteHandler.Error<I>, R | RouteHandler.RouteHandler.Context<I>>
+    router: HttpRouter<E, R>
+  ) => HttpRouter<
+    E | HttpRouteHandler.RouteHandler.Error<I>,
+    R | HttpRouteHandler.RouteHandler.Context<I>
+  >
 
-  <E, R, I extends RouteHandler.RouteHandler.Any>(
-    router: Router<E, R>,
+  <E, R, I extends HttpRouteHandler.RouteHandler.Any>(
+    router: HttpRouter<E, R>,
     handler: I
-  ): Router<E | RouteHandler.RouteHandler.Error<I>, R | RouteHandler.RouteHandler.Context<I>>
-} = dual(2, <E, R, I extends RouteHandler.RouteHandler.Any>(
-  router: Router<E, R>,
+  ): HttpRouter<
+    E | HttpRouteHandler.RouteHandler.Error<I>,
+    R | HttpRouteHandler.RouteHandler.Context<I>
+  >
+} = dual(2, <E, R, I extends HttpRouteHandler.RouteHandler.Any>(
+  router: HttpRouter<E, R>,
   handler: I
-): Router<E | RouteHandler.RouteHandler.Error<I>, R | RouteHandler.RouteHandler.Context<I>> => {
-  return new RouterImpl<E | RouteHandler.RouteHandler.Error<I>, R | RouteHandler.RouteHandler.Context<I>, E, R>(
+): HttpRouter<
+  E | HttpRouteHandler.RouteHandler.Error<I>,
+  R | HttpRouteHandler.RouteHandler.Context<I>
+> => {
+  return new RouterImpl<
+    E | HttpRouteHandler.RouteHandler.Error<I>,
+    R | HttpRouteHandler.RouteHandler.Context<I>,
+    E,
+    R
+  >(
     Chunk.append(router.routes, handler),
     router.mounts
   )
@@ -73,21 +87,21 @@ export const addHandler: {
 const make = (method: HttpMethod.HttpMethod | "*") =>
 <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
-) => addHandler(RouteHandler.make(method)(route, handler))
+  handler: HttpRouteHandler.Handler<I, E2, R2>
+) => addHandler(HttpRouteHandler.make(method)(route, handler))
 
 /**
  * @since 1.0.0
  */
 export const get: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("GET")
 
@@ -96,13 +110,13 @@ export const get: <I extends MatchInput.MatchInput.Any, E2, R2>(
  */
 export const post: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("POST")
 
@@ -111,25 +125,25 @@ export const post: <I extends MatchInput.MatchInput.Any, E2, R2>(
  */
 export const put: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("PUT")
 
 const delete_: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E | E2 | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E | E2 | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("DELETE")
 
@@ -145,13 +159,13 @@ export {
  */
 export const patch: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  RouteHandler.RouteNotMatched | E2 | E | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  HttpRouteHandler.RouteNotMatched | E2 | E | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("PATCH")
 
@@ -160,13 +174,13 @@ export const patch: <I extends MatchInput.MatchInput.Any, E2, R2>(
  */
 export const options: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("OPTIONS")
 
@@ -175,13 +189,13 @@ export const options: <I extends MatchInput.MatchInput.Any, E2, R2>(
  */
 export const head: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("HEAD")
 
@@ -190,13 +204,13 @@ export const head: <I extends MatchInput.MatchInput.Any, E2, R2>(
  */
 export const all: <I extends MatchInput.MatchInput.Any, E2, R2>(
   route: I,
-  handler: RouteHandler.Handler<I, E2, R2>
+  handler: HttpRouteHandler.Handler<I, E2, R2>
 ) => <E, R>(
-  router: Router<E, R>
-) => Router<
-  E2 | E | RouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
+  router: HttpRouter<E, R>
+) => HttpRouter<
+  E2 | E | HttpRouteHandler.RouteNotMatched | MatchInput.MatchInput.Error<I>,
   | R
-  | Exclude<Exclude<R2, RouteHandler.CurrentParams<I>>, Navigation.Navigation>
+  | Exclude<Exclude<R2, HttpRouteHandler.CurrentParams<I>>, Navigation.Navigation>
   | Exclude<MatchInput.MatchInput.Context<I>, Navigation.Navigation>
 > = make("*")
 
@@ -208,22 +222,22 @@ export const mountApp: {
     prefix: Prefix,
     app: HttpApp.Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
-  ): <E, R>(router: Router<E, R>) => Router<E2 | E, R2 | R>
+  ): <E, R>(router: HttpRouter<E, R>) => HttpRouter<E2 | E, R2 | R>
 
   <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     prefix: Prefix,
     app: HttpApp.Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
-  ): Router<E | E2, R | R2>
+  ): HttpRouter<E | E2, R | R2>
 } = dual(
   (args) => typeof args[0] === "object" && RouterTypeId in args[0],
   <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     prefix: Prefix,
     app: HttpApp.Default<E2, R2>,
     options?: { includePrefix?: boolean | undefined }
-  ): Router<E | E2, R | R2> => {
+  ): HttpRouter<E | E2, R | R2> => {
     const prefixRoute = getRouteGuard(prefix)
 
     return new RouterImpl<E | E2, R | R2, E, R>(
@@ -246,25 +260,28 @@ export const mountApp: {
 export const mount: {
   <Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
     prefix: Prefix,
-    router: Router<E2, R2>
-  ): <E, R>(parentRouter: Router<E, R>) => Router<E | E2, R | R2>
+    router: HttpRouter<E2, R2>
+  ): <E, R>(parentRouter: HttpRouter<E, R>) => HttpRouter<E | E2, R | R2>
 
   <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
-    parentRouter: Router<E, R>,
+    parentRouter: HttpRouter<E, R>,
     prefix: Prefix,
-    router: Router<E2, R2>
-  ): Router<E | E2, R | R2>
+    router: HttpRouter<E2, R2>
+  ): HttpRouter<E | E2, R | R2>
 } = dual(3, <E, R, Prefix extends MatchInput.MatchInput.Any | string, E2, R2>(
-  parentRouter: Router<E, R>,
+  parentRouter: HttpRouter<E, R>,
   prefix: Prefix,
-  router: Router<E2, R2>
-): Router<E | E2, R | R2> => {
+  router: HttpRouter<E2, R2>
+): HttpRouter<E | E2, R | R2> => {
   const prefixRoute = getRouteGuard(prefix)
 
   return new RouterImpl<E | E2, R | R2, E | E2, R | R2>(
     Chunk.appendAll(
       parentRouter.routes,
-      Chunk.map(router.routes, (r) => RouteHandler.make(r.method)(MatchInput.concat(prefixRoute, r.route), r.handler))
+      Chunk.map(
+        router.routes,
+        (r) => HttpRouteHandler.make(r.method)(MatchInput.concat(prefixRoute, r.route), r.handler)
+      )
     ),
     Chunk.appendAll(
       parentRouter.mounts,
@@ -284,13 +301,13 @@ function getRouteGuard<const I extends MatchInput.MatchInput.Any | string>(route
  * @since 1.0.0
  */
 export const toPlatformRouter = <E, R>(
-  router: Router<E, R>
+  router: HttpRouter<E, R>
 ): HttpRouter.HttpRouter<
-  E | HttpServerError.RouteNotFound | RouteHandler.RouteNotMatched,
+  E | HttpServerError.RouteNotFound | HttpRouteHandler.RouteNotMatched,
   TypedRouter.CurrentRoute | R
 > => {
   let platformRouter: HttpRouter.HttpRouter<
-    E | RouteHandler.RouteNotMatched,
+    E | HttpRouteHandler.RouteNotMatched,
     R | TypedRouter.CurrentRoute
   > = HttpRouter.empty
 
@@ -313,14 +330,14 @@ export const toPlatformRouter = <E, R>(
           return response.value
         }
 
-        return yield* new RouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix })
+        return yield* new HttpRouteHandler.RouteNotMatched({ request: ctx.request, route: mount.prefix })
       }),
       mount.options
     )
   }
 
   for (const routeHandler of router.routes) {
-    platformRouter = RouteHandler.toPlatformRoute(routeHandler)(platformRouter)
+    platformRouter = HttpRouteHandler.toPlatformRoute(routeHandler)(platformRouter)
   }
 
   return platformRouter
@@ -331,8 +348,8 @@ export const toPlatformRouter = <E, R>(
  */
 export const fromPlatformRouter = <E, R>(
   platformRouter: HttpRouter.HttpRouter<E, R>
-): Router<E, R> => {
-  let router: Router<any, any> = empty
+): HttpRouter<E, R> => {
+  let router: HttpRouter<any, any> = empty
 
   for (const [prefix, app, options] of platformRouter.mounts) {
     router = mountApp(router, Route.parse(prefix), app, options)
@@ -341,7 +358,7 @@ export const fromPlatformRouter = <E, R>(
   for (const platformRoute of platformRouter.routes) {
     router = addHandler(
       router,
-      RouteHandler.make(platformRoute.method)(
+      HttpRouteHandler.make(platformRoute.method)(
         Route.parse(platformRoute.path),
         platformRoute.handler.pipe(Effect.flatMap(HttpServerRespondable.toResponse))
       )
@@ -357,18 +374,18 @@ export const fromPlatformRouter = <E, R>(
 export const catchAllCause: {
   <E, E2, R2>(
     onCause: (cause: Cause.Cause<E>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): <R>(router: Router<E, R>) => Router<E2, R | R2>
+  ): <R>(router: HttpRouter<E, R>) => HttpRouter<E2, R | R2>
 
   <E, R, E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     onCause: (cause: Cause.Cause<E>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): Router<E2, R | R2>
+  ): HttpRouter<E2, R | R2>
 } = dual(2, <E, R, E2, R2>(
-  router: Router<E, R>,
+  router: HttpRouter<E, R>,
   onCause: (cause: Cause.Cause<E>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-): Router<E2, R | R2> =>
+): HttpRouter<E2, R | R2> =>
   new RouterImpl(
-    Chunk.map(router.routes, (handler) => RouteHandler.catchAllCause(handler, onCause)),
+    Chunk.map(router.routes, (handler) => HttpRouteHandler.catchAllCause(handler, onCause)),
     Chunk.map(
       router.mounts,
       (mount) => new Mount(mount.prefix, Effect.catchAllCause(mount.app, onCause), mount.options)
@@ -381,18 +398,18 @@ export const catchAllCause: {
 export const catchAll: {
   <E, E2, R2>(
     onCause: (cause: E) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): <R>(router: Router<E, R>) => Router<E2, R | R2>
+  ): <R>(router: HttpRouter<E, R>) => HttpRouter<E2, R | R2>
 
   <E, R, E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     onCause: (cause: E) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): Router<E2, R | R2>
+  ): HttpRouter<E2, R | R2>
 } = dual(2, <E, R, E2, R2>(
-  router: Router<E, R>,
+  router: HttpRouter<E, R>,
   onCause: (cause: E) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-): Router<E2, R | R2> =>
+): HttpRouter<E2, R | R2> =>
   new RouterImpl(
-    Chunk.map(router.routes, (handler) => RouteHandler.catchAll(handler, onCause)),
+    Chunk.map(router.routes, (handler) => HttpRouteHandler.catchAll(handler, onCause)),
     Chunk.map(router.mounts, (mount) =>
       new Mount(
         mount.prefix,
@@ -408,22 +425,22 @@ export const catchTag: {
   <E, const Tag extends E extends { readonly _tag: string } ? E["_tag"] : never, E2, R2>(
     tag: Tag,
     onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): <R>(router: Router<E, R>) => Router<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
+  ): <R>(router: HttpRouter<E, R>) => HttpRouter<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
 
   <E, R, const Tag extends E extends { readonly _tag: string } ? E["_tag"] : never, E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     tag: Tag,
     onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): Router<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
+  ): HttpRouter<E2 | Exclude<E, { readonly _tag: Tag }>, R | R2>
 } = dual(
   3,
   <E, R, const Tag extends (E extends { readonly _tag: string } ? E["_tag"] : never), E2, R2>(
-    router: Router<E, R>,
+    router: HttpRouter<E, R>,
     tag: Tag,
     onError: (error: Extract<E, { readonly _tag: Tag }>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E2, R2>
-  ): Router<Exclude<E, { readonly _tag: Tag }> | E2, R | R2> =>
+  ): HttpRouter<Exclude<E, { readonly _tag: Tag }> | E2, R | R2> =>
     new RouterImpl(
-      Chunk.map(router.routes, (handler) => RouteHandler.catchTag(handler, tag, onError)),
+      Chunk.map(router.routes, (handler) => HttpRouteHandler.catchTag(handler, tag, onError)),
       Chunk.map(router.mounts, (mount) =>
         new Mount(mount.prefix, Effect.catchTag(mount.app, tag as any, onError), mount.options))
     )

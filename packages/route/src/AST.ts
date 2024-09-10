@@ -342,7 +342,7 @@ function toSchema_<A extends AST>(ast: A, includeQueryParams: boolean): Schema.S
   const schemas = toSchemas(ast, includeQueryParams)
 
   if (schemas.length === 0) {
-    return Schema.Record(Schema.String, Schema.Unknown)
+    return Schema.Record({ key: Schema.String, value: Schema.Unknown })
   }
 
   return schemas.reduce(Schema.extend)
@@ -399,7 +399,7 @@ function toQuerySchema_<A extends AST>(ast: A): Schema.Schema.All {
     const ctx: { unnamed: number } = { unnamed: 0 }
     return queryParams.params.flatMap(({ value }) => toSchemas(value, true, ctx)).reduce(Schema.extend)
   } else {
-    return Schema.Record(Schema.String, Schema.Unknown)
+    return Schema.Record({ key: Schema.String, value: Schema.Unknown })
   }
 }
 

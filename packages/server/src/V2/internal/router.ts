@@ -1,5 +1,5 @@
-import type { HttpApp, HttpServerResponse } from "@effect/platform"
-import { HttpServerError, HttpServerRequest } from "@effect/platform"
+import type { HttpServerResponse } from "@effect/platform"
+import { HttpServerError, HttpServerRequest, HttpServerRespondable } from "@effect/platform"
 
 import * as Navigation from "@typed/navigation"
 import { removeTrailingSlash } from "@typed/path"
@@ -14,9 +14,9 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type * as Order from "effect/Order"
 import * as Record from "effect/Record"
-import type { CurrentParams, RouteHandler } from "../RouteHandler.js"
-import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../RouteHandler.js"
-import type { Mount, Router } from "../Router.js"
+import type { CurrentParams, Handler, RouteHandler } from "../HttpRouteHandler.js"
+import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../HttpRouteHandler.js"
+import type { HttpRouter, Mount } from "../HttpRouter.js"
 
 export const RouterTypeId = Symbol.for("@typed/http/Router")
 export type RouterTypeId = typeof RouterTypeId
@@ -25,7 +25,7 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   HttpServerResponse.HttpServerResponse,
   E | E2 | HttpServerError.RouteNotFound,
   CurrentRoute | Exclude<R | R2, CurrentParams<any> | Navigation.Navigation> | HttpServerRequest.HttpServerRequest
-> implements Router<E | E2, R | R2> {
+> implements HttpRouter<E | E2, R | R2> {
   readonly [RouterTypeId]: RouterTypeId = RouterTypeId
 
   private _httpApp!: Effect.Effect<
@@ -65,7 +65,7 @@ export const setupRouteContext = Effect.gen(function*() {
 })
 
 function toHttpApp<E, R>(
-  router: Router<E, R>
+  router: HttpRouter<E, R>
 ): Effect.Effect<
   HttpServerResponse.HttpServerResponse,
   E | HttpServerError.RouteNotFound,
@@ -197,7 +197,7 @@ function toHttpApp<E, R>(
 
 export function runRouteMatcher<E, R>(
   input: MatchInput.Any,
-  handler: HttpApp.Default<E, R>,
+  handler: Handler<MatchInput.Any, E, R>,
   path: string,
   url: URL,
   existingParams: Option.Option<CurrentParams<any>>
@@ -233,7 +233,7 @@ export function runRouteMatcher<E, R>(
       })
     )
 
-    return Effect.asSome(Effect.provide(handler, layer))
+    return Effect.asSome(Effect.provide(handler.pipe(Effect.flatMap(HttpServerRespondable.toResponse)), layer))
   })
 }
 

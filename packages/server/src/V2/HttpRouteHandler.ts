@@ -3,7 +3,7 @@
  */
 
 import type { HttpApp, HttpMethod, HttpServerResponse } from "@effect/platform"
-import { Headers, HttpRouter, HttpServerRequest } from "@effect/platform"
+import { Headers, HttpRouter, HttpServerRequest, HttpServerRespondable } from "@effect/platform"
 
 import { Tagged } from "@typed/context"
 import * as Navigation from "@typed/navigation"
@@ -59,14 +59,13 @@ export interface CurrentParams<I extends Router.MatchInput.Any> {
 }
 
 const CurrentParams = Tagged<CurrentParams<Router.MatchInput.Any>, CurrentParams<Router.MatchInput.Any>>(
-  "@typed/http/CurrentParams"
+  "@/http/CurrentParams"
 )
 
 /**
  * @since 1.0.0
  */
-export type Handler<Route extends Router.MatchInput.Any, E, R> = Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
+export type Handler<Route extends Router.MatchInput.Any, E, R> = HttpRouter.Route.Handler<
   E,
   R | Router.CurrentRoute | CurrentParams<Route> | Navigation.Navigation | HttpServerRequest.HttpServerRequest
 >
@@ -129,8 +128,10 @@ export const put: <I extends Router.MatchInput.Any, E, R>(
   handler: Handler<I, E, R>
 ) => RouteHandler<I, E, R> = make("PUT")
 
-const delete_: <I extends Router.MatchInput.Any, E, R>(route: I, handler: Handler<I, E, R>) => RouteHandler<I, E, R> =
-  make("DELETE")
+const delete_: <I extends Router.MatchInput.Any, E, R>(
+  route: I,
+  handler: Handler<I, E, R>
+) => RouteHandler<I, E, R> = make("DELETE")
 
 export {
   /**
@@ -216,8 +217,7 @@ export function toPlatformRoute<I extends RouteHandler.Any>(
 export function toHttpApp<I extends RouteHandler.Any>(
   { handler, route: input }: I,
   parent?: Router.CurrentRoute
-): HttpApp.HttpApp<
-  HttpServerResponse.HttpServerResponse,
+): HttpApp.Default<
   RouteHandler.Error<I>,
   RouteHandler.Context<I>
 > {
@@ -247,6 +247,7 @@ export function toHttpApp<I extends RouteHandler.Any>(
           )
         ))
       }),
+      Effect.flatMap(HttpServerRespondable.toResponse),
       Effect.provide(layer)
     )
   })

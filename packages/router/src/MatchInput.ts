@@ -6,6 +6,7 @@ import type * as Schema from "@effect/schema/Schema"
 import type { Guard } from "@typed/guard"
 import type * as _Path from "@typed/path"
 import * as Route from "@typed/route"
+import type { Types } from "effect"
 import type * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import type * as Option from "effect/Option"
@@ -102,6 +103,26 @@ export namespace MatchInput {
    * @since 1.0.0
    */
   export type QuerySchema<T> = Route.Route.QuerySchema<MatchInput.Route<T>>
+
+  /**
+   * @since 1.0.0
+   */
+  export type Concat<L extends MatchInput.Any, R extends MatchInput.Any> = [
+    MatchInput.Schema<L>,
+    MatchInput.Schema<R>
+  ] extends [infer LSchema, infer RSchema] ? MatchInput<
+      _Path.PathJoin<[MatchInput.Path<L>, MatchInput.Path<R>]>,
+      Schema.Schema<
+        Types.Simplify<Schema.Schema.Type<LSchema> & Schema.Schema.Type<RSchema>>,
+        Types.Simplify<Schema.Schema.Encoded<LSchema> & Schema.Schema.Encoded<RSchema>>,
+        Schema.Schema.Context<LSchema> | Schema.Schema.Context<RSchema>
+      >,
+      MatchInput.Success<R>,
+      | Exclude<MatchInput.Error<L> | MatchInput.Error<R>, Route.RouteDecodeError<any>>
+      | Route.RouteDecodeError<Route.Route.Concat<MatchInput.Route<L>, MatchInput.Route<R>>>,
+      MatchInput.Context<L> | MatchInput.Context<R>
+    > :
+    never
 }
 
 /**

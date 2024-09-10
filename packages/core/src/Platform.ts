@@ -6,9 +6,11 @@
 /// <reference types="@typed/vite-plugin-types" />
 
 import { FileSystem } from "@effect/platform/FileSystem"
-import type { PathInput } from "@effect/platform/Http/Router"
-import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
-import * as Http from "@effect/platform/HttpServer"
+import * as Headers from "@effect/platform/Headers"
+import type * as HttpApp from "@effect/platform/HttpApp"
+import * as HttpRouter from "@effect/platform/HttpRouter"
+import { HttpServerRequest } from "@effect/platform/HttpServerRequest"
+import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import { Path } from "@effect/platform/Path"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
@@ -21,6 +23,7 @@ import * as typedOptions from "virtual:typed-options"
 import { getHeadAndScript } from "./Vite.js"
 
 import type { BadArgument, PlatformError } from "@effect/platform/Error"
+import type { HttpPlatform } from "@effect/platform/HttpPlatform"
 import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
@@ -37,7 +40,7 @@ import type * as Scope from "effect/Scope"
  * @since 1.0.0
  */
 export class GuardsNotMatched extends Data.TaggedError("GuardsNotMatched")<{
-  readonly request: Http.request.ServerRequest
+  readonly request: HttpServerRequest
   readonly route: Route.Route.Any
   readonly matches: Array.NonEmptyReadonlyArray<Router.RouteMatch.RouteMatch.Any>
 }> {}
@@ -47,7 +50,7 @@ export class GuardsNotMatched extends Data.TaggedError("GuardsNotMatched")<{
  */
 export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = {
   readonly content: Content
-  readonly request: ServerRequest
+  readonly request: HttpServerRequest
   readonly head:
     | Fx.Fx<
       RenderEvent | null,
@@ -94,16 +97,16 @@ export function toHttpRouter<
     base?: string
     environment?: "server" | "static"
   }
-): Http.router.Router<
+): HttpRouter.HttpRouter<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  | ServerRequest
+  | HttpServerRequest
   | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 > {
-  let router: Http.router.Router<
+  let router: HttpRouter.HttpRouter<
     Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
     | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
-    | ServerRequest
-  > = Http.router.empty
+    | HttpServerRequest
+  > = HttpRouter.empty
   const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => {
     const withoutQuery = route.path.split("?")[0]
     return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
@@ -118,10 +121,10 @@ export function toHttpRouter<
   for (const [path, matches] of Object.entries(guardsByPath)) {
     const route = matches[0].route
 
-    router = Http.router.get(
+    router = HttpRouter.get(
       router,
-      path as PathInput,
-      Effect.flatMap(Http.request.ServerRequest, (request) => {
+      path as HttpRouter.PathInput,
+      Effect.flatMap(HttpServerRequest, (request) => {
         const url = getUrlFromServerRequest(request)
         const path = Navigation.getCurrentPathFromUrl(url)
 
@@ -190,24 +193,24 @@ export function staticFiles(
     }
   }
 ): <E, R>(
-  self: Http.app.Default<E, R>
+  self: HttpApp.Default<E, R>
 ) => Effect.Effect<
-  Http.response.ServerResponse,
+  HttpServerResponse.HttpServerResponse,
   E | BadArgument | PlatformError,
-  ServerRequest | R | Http.platform.Platform | FileSystem | Path
+  HttpServerRequest | R | HttpPlatform | FileSystem | Path
 > {
   if (!enabled) {
     return identity as any
   }
 
   return <E, R>(
-    self: Http.app.Default<E, R>
-  ): Http.app.Default<
+    self: HttpApp.Default<E, R>
+  ): HttpApp.Default<
     E | BadArgument | PlatformError,
-    ServerRequest | Http.platform.Platform | FileSystem | Path | R
-  > =>
-    Effect.gen(function*() {
-      const request = yield* Http.request.ServerRequest
+    HttpServerRequest | HttpPlatform | FileSystem | Path | R
+  > => {
+    return Effect.gen(function*() {
+      const request = yield* HttpServerRequest
       const fs = yield* FileSystem
       const path = yield* Path
       // TODO: We should probably modify the request url to also look for html files
@@ -218,19 +221,20 @@ export function staticFiles(
       const gzipFilePath = filePath + ".gz"
 
       if (yield* isFile(fs, gzipFilePath)) {
-        return yield* Http.response.file(gzipFilePath, {
-          headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
+        return yield* HttpServerResponse.file(gzipFilePath, {
+          headers: Headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
           contentType: getContentType(filePath)
         })
       } else if (yield* isFile(fs, filePath)) {
         // TODO: We should support gzip'ing files on the fly
-        return yield* Http.response.file(filePath, {
-          headers: Http.headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
+        return yield* HttpServerResponse.file(filePath, {
+          headers: Headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
         })
       } else {
         return yield* self
       }
     })
+  }
 }
 
 function isFile(fs: FileSystem, path: string) {
@@ -385,13 +389,13 @@ export function toServerRouter<
   }
 ): ServerRouter.Router<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  | ServerRequest
+  | HttpServerRequest
   | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 > {
   let router: ServerRouter.Router<
     Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
     | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
-    | ServerRequest
+    | HttpServerRequest
   > = ServerRouter.empty
   const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => {
     const withoutQuery = route.path.split("?")[0]
@@ -436,7 +440,7 @@ const fromMatches = <R extends Route.Route.Any>(
 ) => {
   return RouteHandler.get(
     route,
-    Effect.flatMap(Http.request.ServerRequest, (request) => {
+    Effect.flatMap(HttpServerRequest, (request) => {
       const url = RouteHandler.getUrlFromServerRequest(request)
       const path = Navigation.getCurrentPathFromUrl(url)
 

@@ -40,18 +40,18 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.57.4",
-    "@effect/schema": "^0.68.1",
+    "@effect/platform": "^0.64.0",
+    "@effect/schema": "^0.72.3",
     "@typed/context": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/path": "workspace:*",
     "@typed/route": "workspace:*",
     "@typed/router": "workspace:*",
-    "effect": "^3.3.5",
-    "effect-http": "^0.69.0",
-    "effect-http-error": "^0.2.0",
-    "effect-http-node": "^0.14.0",
-    "effect-http-security": "^0.2.0",
-    "schema-openapi": "^0.39.0"
+    "effect": "^3.7.2",
+    "effect-http": "^0.78.0",
+    "effect-http-error": "^0.4.0",
+    "effect-http-node": "^0.18.0",
+    "effect-http-security": "^0.4.0",
+    "schema-openapi": "^0.39.1"
   }
 }

@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import type { Default } from "@effect/platform/Http/App"
-import type { PathInput } from "@effect/platform/Http/Router"
-import { ParsedSearchParams, ServerRequest } from "@effect/platform/Http/ServerRequest"
+import type { Default } from "@effect/platform/HttpApp"
+import type { PathInput } from "@effect/platform/HttpRouter"
+import { HttpServerRequest, ParsedSearchParams } from "@effect/platform/HttpServerRequest"
 import type { Schema } from "@effect/schema"
 import * as Route from "@typed/route"
 import type { CurrentRoute } from "@typed/router"
@@ -210,7 +210,7 @@ const makeHandlerFromEndpoint: <Endpoint extends ApiEndpoint.ApiEndpoint.Any, R,
       Extract<ApiRequest.ApiRequest.Path<ApiEndpoint.ApiEndpoint.Request<Endpoint>>, Schema.Schema.All>
     >
   const handler = Effect.gen(function*(_) {
-    const request = yield* ServerRequest
+    const request = yield* HttpServerRequest
     const { params, queryParams } = yield* RouteHandler.getCurrentParams(route)
     const response = yield* _(
       Effect.flatMap(
@@ -279,7 +279,7 @@ export const buildPartial = <E, R, RemainingEndpoints extends ApiEndpoint.ApiEnd
           : Router.empty
       )
     ),
-    Effect.catchTag("RouteNotFound", () => HttpError.toResponse(HttpError.notFoundError("Not Found")))
+    Effect.catchTag("RouteNotFound", () => HttpError.toResponse(HttpError.notFound("Not Found")))
   ) as any
 }
 

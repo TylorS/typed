@@ -136,12 +136,16 @@ const failureArbitrary = <E>(
  */
 export type FailureFrom<E> = {
   readonly _tag: "Failure"
-  readonly cause: Schema.CauseEncoded<E>
+  readonly cause: Schema.CauseEncoded<E, unknown>
   readonly timestamp: number
   readonly refreshing?: LoadingFrom | undefined
 }
 
-const FailureFrom = <E>(cause: Schema.CauseEncoded<E>, timestamp: number, refreshing?: LoadingFrom): FailureFrom<E> => {
+const FailureFrom = <E>(
+  cause: Schema.CauseEncoded<E, unknown>,
+  timestamp: number,
+  refreshing?: LoadingFrom
+): FailureFrom<E> => {
   const base = {
     _tag: "Failure",
     cause,
@@ -465,7 +469,7 @@ export const AsyncDataFromSelf = <A, AI, R1, E, EI, R2>(
   error: Schema.Schema<E, EI, R1>
 ): Schema.Schema<_AsyncData.AsyncData<A, E>, _AsyncData.AsyncData<AI, EI>, R1 | R2> => {
   const schema = Schema.declare(
-    [value, Schema.CauseFromSelf({ error })],
+    [value, Schema.CauseFromSelf({ error, defect: Schema.Unknown })],
     {
       decode: (valueSchema, causeSchema) => {
         const parseCause = ParseResult.decode(causeSchema)
@@ -645,7 +649,7 @@ function loadingToJson(loading: _AsyncData.Loading): LoadingFrom {
   return from
 }
 
-function causeFromToCause<E>(from: Schema.CauseEncoded<E>): Cause.Cause<E> {
+function causeFromToCause<E>(from: Schema.CauseEncoded<E, unknown>): Cause.Cause<E> {
   switch (from._tag) {
     case "Die":
       return Cause.die(from.defect)
@@ -673,7 +677,7 @@ function fiberIdFromToFiberId(id: Schema.FiberIdEncoded): FiberId.FiberId {
   }
 }
 
-function causeToCauseEncoded<E>(cause: Cause.Cause<E>): Schema.CauseEncoded<E> {
+function causeToCauseEncoded<E>(cause: Cause.Cause<E>): Schema.CauseEncoded<E, unknown> {
   switch (cause._tag) {
     case "Die":
       return { _tag: "Die", defect: cause.defect }

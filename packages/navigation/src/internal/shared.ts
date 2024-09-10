@@ -1,4 +1,5 @@
-import * as HttpClient from "@effect/platform/HttpClient"
+import type { HttpClientError, HttpClientResponse } from "@effect/platform"
+import { Headers, HttpClient, HttpClientRequest } from "@effect/platform"
 
 import { Schema } from "@effect/schema"
 import type * as Context from "@typed/context"
@@ -120,14 +121,14 @@ export function setupFromModelAndIntent(
   const runFormDataHandlers = (
     event: FormDataEvent
   ): Effect.Effect<
-    Either.Either<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Either.Either<Option.Option<HttpClientResponse.HttpClientResponse>, RedirectError | CancelNavigation>,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Default
   > =>
     Effect.gen(function*() {
       const handlers = yield* formDataHandlers
       const matches: Array<
-        Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>
+        Effect.Effect<Option.Option<HttpClientResponse.HttpClientResponse>, RedirectError | CancelNavigation>
       > = []
 
       for (const [handler, ctx] of handlers) {
@@ -389,9 +390,9 @@ export function setupFromModelAndIntent(
     data: FormData,
     input?: Omit<FormInputFrom, "data">
   ): Effect.Effect<
-    Option.Option<HttpClient.response.ClientResponse>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Option.Option<HttpClientResponse.HttpClientResponse>,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Default
   > =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*() {
@@ -410,7 +411,7 @@ export function setupFromModelAndIntent(
 
         if (Either.isLeft(either)) {
           yield* handleError(either.left, get, set, 0)
-          return Option.none<HttpClient.response.ClientResponse>()
+          return Option.none<HttpClientResponse.HttpClientResponse>()
         } else {
           if (Option.isNone(either.right)) {
             return either.right
@@ -420,7 +421,7 @@ export function setupFromModelAndIntent(
 
           // If it is a redirect
           if (REDIRECT_STATUS_CODES.has(response.status)) {
-            const location = HttpClient.headers.get(response.headers, "location")
+            const location = Headers.get(response.headers, "location")
 
             // And we have a location header
             if (Option.isSome(location)) {
@@ -627,7 +628,7 @@ export function makeHandlersState() {
 }
 
 function makeFormDataRequest(event: FormDataEvent, url: string) {
-  const headers = new Headers()
+  const headers = new globalThis.Headers()
 
   if (Option.isSome(event.encoding)) {
     headers.set("Content-Type", event.encoding.value)
@@ -635,13 +636,12 @@ function makeFormDataRequest(event: FormDataEvent, url: string) {
   const method = Option.getOrElse(event.method, () => "POST")
 
   return Effect.flatMap(
-    HttpClient.client.Client,
+    HttpClient.HttpClient,
     (client) =>
       client(
-        HttpClient.request.make(method as "POST")(url, {
-          headers: HttpClient.headers.fromInput(headers),
-          body: HttpClient.body.formData(event.data)
-        })
+        HttpClientRequest.make(method as "POST")(url, {
+          headers: Headers.fromInput(headers)
+        }).pipe(HttpClientRequest.formDataBody(event.data))
       )
   )
 }

@@ -2,9 +2,8 @@
  * @since 1.0.0
  */
 
-import * as Headers from "@effect/platform/Http/Headers"
-import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
-import * as HttpServer from "@effect/platform/HttpServer"
+import type { HttpServerRequest } from "@effect/platform"
+import { Headers, HttpServerResponse } from "@effect/platform"
 import type * as Fx from "@typed/fx/Fx"
 import { toStream } from "@typed/fx/Stream"
 import * as Effect from "effect/Effect"
@@ -22,10 +21,10 @@ const HYPHENATED_CONTENT_TYPE = { "content-type": HTML_CONTENT_TYPE }
  */
 export function htmlResponse<E, R>(
   fx: Fx.Fx<RenderEvent | null, E, R>,
-  options?: HttpServer.response.Options
-): Effect.Effect<HttpServer.response.ServerResponse, E, R> {
+  options?: HttpServerResponse.Options
+): Effect.Effect<HttpServerResponse.HttpServerResponse, E, R> {
   return Effect.contextWithEffect((ctx) =>
-    HttpServer.response.stream(
+    HttpServerResponse.stream(
       Stream.provideContext(Stream.encodeText(toStream(renderToHtml(fx))), ctx),
       {
         ...CAMEL_CASE_CONTENT_TYPE,
@@ -41,9 +40,9 @@ export function htmlResponse<E, R>(
  */
 export function htmlResponseString(
   html: string,
-  options?: HttpServer.response.Options
-): HttpServer.response.ServerResponse {
-  return HttpServer.response.raw(
+  options?: HttpServerResponse.Options
+): HttpServerResponse.HttpServerResponse {
+  return HttpServerResponse.raw(
     html,
     {
       ...CAMEL_CASE_CONTENT_TYPE,
@@ -56,7 +55,7 @@ export function htmlResponseString(
 /**
  * @since 1.0.0
  */
-export function getUrlFromServerRequest(request: ServerRequest): URL {
+export function getUrlFromServerRequest(request: HttpServerRequest.HttpServerRequest): URL {
   const { headers } = request
   const host = Headers.get(headers, "x-forwarded-host").pipe(
     Option.orElse(() => Headers.get(headers, "host")),

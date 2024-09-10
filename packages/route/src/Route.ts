@@ -651,7 +651,7 @@ export const base64Url: <const Name extends string>(
 > = (
   name,
   options
-) => paramWithSchema(name, Sch.Base64Url, options)
+) => paramWithSchema(name, Sch.Uint8ArrayFromBase64Url, options)
 
 /**
  * @since 5.0.0
