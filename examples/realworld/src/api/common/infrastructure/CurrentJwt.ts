@@ -4,7 +4,7 @@ import { DbUser, dbUserToUser } from "@typed/realworld/api/common/infrastructure
 import type { User } from "@typed/realworld/model"
 import { JwtToken } from "@typed/realworld/model"
 import { Unauthorized } from "@typed/realworld/services/errors"
-import { Cookies, ServerHeaders, ServerRequest } from "@typed/server"
+import { Cookies, Headers, HttpServerRequest } from "@typed/server/V2"
 import { Config, Effect, Option } from "effect"
 
 export const CurrentJwt = Tagged<JwtToken>()("CurrentJwt")
@@ -12,13 +12,13 @@ export const CurrentJwt = Tagged<JwtToken>()("CurrentJwt")
 export const getCurrentJwtOption = Effect.serviceOption(CurrentJwt)
 
 export const getJwtTokenFromRequest = Effect.gen(function*(_) {
-  const { headers } = yield* _(ServerRequest.ServerRequest)
-  return ServerHeaders.get(headers, "cookie").pipe(
+  const { headers } = yield* _(HttpServerRequest.HttpServerRequest)
+  return Headers.get(headers, "cookie").pipe(
     Option.map(Cookies.parseHeader),
     Option.flatMap((_) => Option.fromNullable(_["conduit-token"])),
     Option.map((token) => JwtToken.make(token)),
     Option.orElse(() =>
-      ServerHeaders.get(headers, "authorization").pipe(
+      Headers.get(headers, "authorization").pipe(
         Option.map((authorization) => JwtToken.make(authorization.split(" ")[1]))
       )
     )

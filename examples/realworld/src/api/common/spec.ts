@@ -1,118 +1,14 @@
-import * as HttpClient from "@effect/platform/HttpClient"
-import * as Schema from "@typed/realworld/lib/Schema"
-import type { JwtToken } from "@typed/realworld/model"
-import { Unauthorized } from "@typed/realworld/services/errors"
-import type { ApiEndpoint, ApiRequest, ApiSchema } from "@typed/server"
-import { Api, ApiResponse, Security } from "@typed/server"
-import { Effect, Option } from "effect"
-import { getJwtTokenFromRequest } from "./infrastructure/CurrentJwt"
+// import { Api, ApiResponse, Security } from "@typed/server"
+import { HttpApiSecurity } from "@typed/server/V2"
 
-export const optionalJwtTokenSecurity = Security.make(getJwtTokenFromRequest, {
-  jwtToken: {
-    type: "http",
-    scheme: "bearer",
-    bearerFormat: "JWT"
-  }
-})
-
-export const jwtTokenSecurity = Security.make(getJwtTokenFromRequest, {}).pipe(
-  Security.mapEffect((token) => Option.isSome(token) ? Effect.succeed(token.value) : new Unauthorized())
+export const jwtTokenSecurity = HttpApiSecurity.authorization("Token").pipe(
+  HttpApiSecurity.or(HttpApiSecurity.apiKey({
+    key: "conduit-token",
+    in: "cookie"
+  }))
 )
+
+export const optionalJwtTokenSecurity = HttpApiSecurity.optional(jwtTokenSecurity)
 
 export type JwtTokenSecurity = typeof jwtTokenSecurity
-
 export type OptionalJwtTokenSecurity = typeof optionalJwtTokenSecurity
-
-export const addUnauthorizedResponse: <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response1 extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<
-  Id,
-  Request,
-  ApiResponse.ApiResponse<401, ApiSchema.Ignored, ApiSchema.Ignored, never> | Response1,
-  Security
-> = Api.addResponse(ApiResponse.make(401))
-
-export const addUnprocessableResponse: <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response1 extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<
-  Id,
-  Request,
-  ApiResponse.ApiResponse<422, { readonly errors: ReadonlyArray<string> }, ApiSchema.Ignored, never> | Response1,
-  Security
-> = Api.addResponse(
-  ApiResponse.make(422, Schema.Struct({ errors: Schema.Array(Schema.String) }))
-)
-
-export const add200: <A = void, I = void, R = never>(
-  schema?: Schema.Schema<A, I, R> | undefined
-) => <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response1 extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<200, A, ApiSchema.Ignored, R>, Security> =
-  <A, I, R>(schema?: Schema.Schema<A, I, R>) => (endpoint) => Api.setResponse(ApiResponse.make(200, schema))(endpoint)
-
-export const add201: <A, I, R>(
-  schema: Schema.Schema<A, I, R>
-) => <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response1 extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response1, Security>
-) => ApiEndpoint.ApiEndpoint<Id, Request, ApiResponse.ApiResponse<201, A, ApiSchema.Ignored, R>, Security> = <A, I, R>(
-  schema: Schema.Schema<A, I, R>
-) => Api.setResponse(ApiResponse.make(201, schema))
-
-export const addJwtTokenSecurity: <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
-) => ApiEndpoint.ApiEndpoint<
-  Id,
-  Request,
-  Response,
-  JwtTokenSecurity
-> = Api.setSecurity(jwtTokenSecurity)
-
-export const addOptionalJwtTokenSecurity: <
-  Id extends string,
-  Request extends ApiRequest.ApiRequest.Any,
-  Response extends ApiResponse.ApiResponse.Any,
-  Security extends Security.Security.Any
->(
-  endpoint: ApiEndpoint.ApiEndpoint<Id, Request, Response, Security>
-) => ApiEndpoint.ApiEndpoint<
-  Id,
-  Request,
-  Response,
-  OptionalJwtTokenSecurity
-> = Api.setSecurity(optionalJwtTokenSecurity)
-
-export const addJwtTokenToRequest =
-  (token: JwtToken) => (request: HttpClient.request.ClientRequest): HttpClient.request.ClientRequest =>
-    request.pipe(HttpClient.request.setHeader("Authorization", `Token ${token}`))
-
-export const addOptionalJwtTokenToRequest =
-  (token: Option.Option<JwtToken>) => (request: HttpClient.request.ClientRequest): HttpClient.request.ClientRequest =>
-    Option.match(token, {
-      onNone: () => request,
-      onSome: (token) => request.pipe(HttpClient.request.setHeader("Authorization", `Token ${token}`))
-    })

@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { HttpApiEndpoint as PlatformHttpApiEndpoint } from "@effect/platform"
 import type { HttpMethod } from "@effect/platform/HttpMethod"
 import type { PathInput } from "@effect/platform/HttpRouter"
 import type { Schema } from "@effect/schema"
-import { Route } from "@typed/core"
 import * as MatchInput from "@typed/router/MatchInput"
-import type { Context, Option } from "effect"
+import type { Context, Effect, Option, Types } from "effect"
+import { Chunk } from "effect"
 import { dual, pipe } from "effect/Function"
-import type { CurrentParams } from "./HttpRouteHandler"
+import * as HttpApiHandlers from "./HttpApiHandlers.js"
+import type { CurrentParams } from "./HttpRouteHandler.js"
+import type { HttpRouter } from "./HttpRouter.js"
 
 export interface HttpApiEndpoint<
   Name extends string,
@@ -21,7 +24,7 @@ export interface HttpApiEndpoint<
   PlatformHttpApiEndpoint.HttpApiEndpoint<
     Name,
     Method,
-    MatchInput.MatchInput.Schema<Route>,
+    Schema.Schema.Type<MatchInput.MatchInput.Schema<Route>>,
     Payload,
     Headers,
     Success,
@@ -49,7 +52,12 @@ export namespace HttpApiEndpoint {
 
   export type Headers<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.Headers<Endpoint>
 
-  export type Request<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.Request<Endpoint>
+  export type Request<Endpoint extends Any> =
+    & {
+      readonly path: MatchInput.MatchInput.Success<Endpoint["route"]>
+    }
+    & ([Payload<Endpoint>] extends [infer P] ? [P] extends [never] ? {} : { readonly payload: P } : {})
+    & ([Headers<Endpoint>] extends [infer H] ? [H] extends [never] ? {} : { readonly headers: H } : {})
 
   export type Context<Endpoint extends Any> =
     | PlatformHttpApiEndpoint.HttpApiEndpoint.Context<Endpoint>
@@ -61,7 +69,9 @@ export namespace HttpApiEndpoint {
     Headers
   >
 
-  export type Handler<Endpoint extends Any, E, R> = PlatformHttpApiEndpoint.HttpApiEndpoint.Handler<Endpoint, E, R>
+  export type Handler<Endpoint extends Any, E, R> = (
+    request: Types.Simplify<Request<Endpoint>>
+  ) => Effect.Effect<Success<Endpoint>, E, R>
 
   export type HandlerRedacted<Endpoint extends Any, E, R> = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerRedacted<
     Endpoint,
@@ -74,6 +84,9 @@ export namespace HttpApiEndpoint {
     E,
     R
   >
+
+  export type HandlerResponseWithName<Endpoint extends Any, Name extends Endpoint["name"], E, R> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerResponseWithName<Endpoint, Name, E, R>
 
   export type WithPrefix<Prefix extends MatchInput.MatchInput.Any, Endpoint extends Any> = Endpoint extends
     HttpApiEndpoint<
@@ -96,6 +109,31 @@ export namespace HttpApiEndpoint {
       Context
     > :
     never
+
+  export type Provided = HttpRouter.Provided
+  export type ExcludeProvided<R> = HttpRouter.ExcludeProvided<R>
+
+  export type HandlerWithName<Endpoints extends Any, Name extends Endpoints["name"], E, R> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerWithName<
+      Endpoints,
+      Name,
+      E,
+      R
+    >
+
+  export type ErrorWithName<Endpoints extends Any, Name extends Endpoints["name"]> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.ErrorWithName<
+      Endpoints,
+      Name
+    >
+
+  export type ExcludeName<Endpoints extends Any, Name extends Endpoints["name"]> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.ExcludeName<Endpoints, Name>
+
+  export type Builder<Endpoint extends Any, E, R> = {
+    readonly endpoint: Endpoint
+    readonly handler: Handler<Endpoint, E, R>
+  }
 }
 
 export const isTypedHttpApiEndpoint = (u: any): u is HttpApiEndpoint.Any =>
@@ -105,9 +143,20 @@ export const make =
   <Method extends HttpMethod>(method: Method) =>
   <const Name extends string, R extends MatchInput.MatchInput.Any>(
     name: Name,
-    route: R
-  ): HttpApiEndpoint<Name, Method, R> =>
-    Object.assign(PlatformHttpApiEndpoint.make(method)(name, MatchInput.getPath(route) as PathInput), { route }) as any
+    input: R
+  ): HttpApiEndpoint<Name, Method, R> => {
+    const { route } = MatchInput.asRouteGuard(input)
+
+    return Object.assign(
+      PlatformHttpApiEndpoint.make(method)(
+        name,
+        MatchInput.getPath(route) as PathInput
+      ).pipe(
+        PlatformHttpApiEndpoint.setPath(route.pathSchema)
+      ),
+      { route: input }
+    ) as any
+  }
 
 export const get: <const Name extends string, R extends MatchInput.MatchInput.Any>(
   name: Name,
@@ -347,65 +396,6 @@ export const setPayload: {
 )
 
 /**
- * Set the schema for the path parameters of the endpoint. The schema will be
- * used to validate the path parameters before the handler is called.
- *
- * @since 1.0.0
- * @category request
- */
-export const setPath: {
-  <Path extends Schema.Schema.Any>(
-    schema: Path & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePath<Path>
-  ): <
-    Name extends string,
-    Method extends HttpMethod,
-    _Route extends MatchInput.MatchInput.Any,
-    _P,
-    _H,
-    _S,
-    _E,
-    _R
-  >(
-    self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>
-  ) => HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R | Schema.Schema.Context<Path>>
-  <
-    Name extends string,
-    Method extends HttpMethod,
-    _Route extends MatchInput.MatchInput.Any,
-    _P,
-    _H,
-    _S,
-    _E,
-    _R,
-    Path extends Schema.Schema.Any
-  >(
-    self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
-    schema: Path & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePath<Path>
-  ): HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R | Schema.Schema.Context<Path>>
-} = dual(
-  2,
-  <
-    Name extends string,
-    Method extends HttpMethod,
-    _Route extends MatchInput.MatchInput.Any,
-    _P,
-    _H,
-    _S,
-    _E,
-    _R,
-    Path extends Schema.Schema.Any
-  >(
-    self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
-    schema: Path & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePath<Path>
-  ): HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R | Schema.Schema.Context<Path>> =>
-    pipe(
-      self,
-      PlatformHttpApiEndpoint.setPath(schema),
-      (x) => Object.assign(x, { route: self.route }) as any
-    )
-)
-
-/**
  * Set the schema for the headers of the endpoint. The schema will be
  * used to validate the headers before the handler is called.
  *
@@ -492,11 +482,6 @@ export const prefix: {
     )
 )
 
-const foo = Route.parse("/foo")
-const bar = Route.parse("/:bar")
-
-export const endpoint = get("bar", bar).pipe(prefix(foo))
-
 /**
  * @since 1.0.0
  * @category reflection
@@ -559,4 +544,33 @@ export const annotate: {
       PlatformHttpApiEndpoint.annotate(tag, value),
       (x) => Object.assign(x, { route: self.route }) as A
     )
+)
+
+export const handle: {
+  <Endpoint extends HttpApiEndpoint.Any, E2, R2>(
+    handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
+  ): (endpoint: Endpoint) => <E, R, Endpoints extends HttpApiEndpoint.Any>(
+    handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
+  ) => HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>
+
+  <Endpoint extends HttpApiEndpoint.Any, E2, R2>(
+    endpoint: Endpoint,
+    handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
+  ): <E, R, Endpoints extends HttpApiEndpoint.Any>(
+    handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
+  ) => HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>
+} = dual(
+  2,
+  <E, R, Endpoints extends HttpApiEndpoint.Any, Endpoint extends HttpApiEndpoint.Any, E2, R2>(
+    endpoint: Endpoint,
+    handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
+  ) =>
+  (
+    handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
+  ): HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>> => {
+    return HttpApiHandlers.makeHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>({
+      group: handlers.group,
+      handlers: Chunk.append(handlers.handlers, HttpApiHandlers.makeHandler(endpoint, handler))
+    })
+  }
 )

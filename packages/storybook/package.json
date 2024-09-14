@@ -40,10 +40,10 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.72.3",
-    "@storybook/builder-vite": "^8.2.9",
-    "@storybook/core": "^8.2.9",
-    "@storybook/types": "^8.2.9",
+    "@effect/schema": "^0.72.4",
+    "@storybook/builder-vite": "^8.3.0",
+    "@storybook/core": "^8.3.0",
+    "@storybook/types": "^8.3.0",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/core": "workspace:*",
@@ -58,7 +58,7 @@
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
-    "effect": "^3.7.2",
-    "storybook": "^8.2.9"
+    "effect": "^3.7.3",
+    "storybook": "^8.3.0"
   }
 }

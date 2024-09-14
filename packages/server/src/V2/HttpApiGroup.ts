@@ -2,34 +2,19 @@
  * @since 1.0.0
  */
 import type { HttpApiDecodeError } from "@effect/platform/HttpApiError"
-import type * as PlatformHttpApiGroup from "@effect/platform/HttpApiGroup"
-import * as HttpApiSchema from "@effect/platform/HttpApiSchema"
-import * as Schema from "@effect/schema/Schema"
+import * as PlatformHttpApiGroup from "@effect/platform/HttpApiGroup"
+import type * as Schema from "@effect/schema/Schema"
 import type * as Router from "@typed/router"
 import * as Chunk from "effect/Chunk"
-import * as Context from "effect/Context"
+import type * as Context from "effect/Context"
 import { dual } from "effect/Function"
-import { pipeArguments } from "effect/Pipeable"
-import * as Predicate from "effect/Predicate"
 import * as HttpApiEndpoint from "./HttpApiEndpoint.js"
-
-/**
- * @since 1.0.0
- * @category type ids
- */
-export const TypeId: unique symbol = Symbol.for("@effect/platform/HttpApiGroup")
-
-/**
- * @since 1.0.0
- * @category type ids
- */
-export type TypeId = typeof TypeId
 
 /**
  * @since 1.0.0
  * @category guards
  */
-export const isHttpApiGroup = (u: unknown): u is HttpApiGroup.Any => Predicate.hasProperty(u, TypeId)
+export const isHttpApiGroup: (u: unknown) => u is HttpApiGroup.Any = PlatformHttpApiGroup.isHttpApiGroup
 
 /**
  * An `HttpApiGroup` is a collection of `HttpApiEndpoint`s. You can use an `HttpApiGroup` to
@@ -40,12 +25,12 @@ export const isHttpApiGroup = (u: unknown): u is HttpApiGroup.Any => Predicate.h
  * @since 1.0.0
  * @category models
  */
-export interface HttpApiGroup<
-  out Name extends string,
-  out Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any = never,
-  in out Error = HttpApiDecodeError,
-  out ErrorR = never
-> extends PlatformHttpApiGroup.HttpApiGroup<Name, Endpoints, Error, ErrorR> {}
+export type HttpApiGroup<
+  Name extends string,
+  Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any = never,
+  Error = HttpApiDecodeError,
+  ErrorR = never
+> = PlatformHttpApiGroup.HttpApiGroup<Name, Endpoints, Error, ErrorR>
 
 /**
  * @since 1.0.0
@@ -127,24 +112,6 @@ export declare namespace HttpApiGroup {
   export type ContextWithName<Group extends Any, Name extends string> = Context<WithName<Group, Name>>
 }
 
-const Proto = {
-  [TypeId]: TypeId,
-  pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
-
-const makeProto = <Name extends string, Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any, Error, ErrorR>(options: {
-  readonly identifier: Name
-  readonly endpoints: Chunk.Chunk<Endpoints>
-  readonly errorSchema: Schema.Schema<Error, unknown, ErrorR>
-  readonly annotations: Context.Context<never>
-}): HttpApiGroup<Name, Endpoints, Error, ErrorR> => {
-  function HttpApiGroup() {}
-  Object.setPrototypeOf(HttpApiGroup, Proto)
-  return Object.assign(HttpApiGroup, options) as any
-}
-
 /**
  * An `HttpApiGroup` is a collection of `HttpApiEndpoint`s. You can use an `HttpApiGroup` to
  * represent a portion of your domain.
@@ -154,13 +121,7 @@ const makeProto = <Name extends string, Endpoints extends HttpApiEndpoint.HttpAp
  * @since 1.0.0
  * @category constructors
  */
-export const make = <Name extends string>(identifier: Name): HttpApiGroup<Name> =>
-  makeProto({
-    identifier,
-    endpoints: Chunk.empty(),
-    errorSchema: Schema.Never as any,
-    annotations: Context.empty()
-  })
+export const make: <Name extends string>(identifier: Name) => HttpApiGroup<Name> = PlatformHttpApiGroup.make
 
 /**
  * Add an `HttpApiEndpoint` to an `HttpApiGroup`.
@@ -193,13 +154,7 @@ export const add: {
 >(
   self: HttpApiGroup<Name, Endpoints, Error, ErrorR>,
   endpoint: A
-): HttpApiGroup<Name, Endpoints | A, Error, ErrorR> =>
-  makeProto({
-    identifier: self.identifier,
-    errorSchema: self.errorSchema,
-    annotations: self.annotations,
-    endpoints: Chunk.append(self.endpoints, endpoint)
-  }))
+): HttpApiGroup<Name, Endpoints | A, Error, ErrorR> => PlatformHttpApiGroup.add(self, endpoint))
 
 /**
  * Add an error schema to an `HttpApiGroup`, which is shared by all endpoints in the
@@ -224,27 +179,7 @@ export const addError: {
       readonly status?: number | undefined
     }
   ): HttpApiGroup<Name, Endpoints, Error | A, ErrorR | R>
-} = dual(
-  (args) => isHttpApiGroup(args[0]),
-  <Name extends string, Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any, Error, ErrorR, A, I, R>(
-    self: HttpApiGroup<Name, Endpoints, Error, ErrorR>,
-    schema: Schema.Schema<A, I, R>,
-    annotations?: {
-      readonly status?: number | undefined
-    }
-  ): HttpApiGroup<Name, Endpoints, Error | A, ErrorR | R> =>
-    makeProto({
-      identifier: self.identifier,
-      annotations: self.annotations,
-      endpoints: self.endpoints,
-      errorSchema: HttpApiSchema.UnionUnify(
-        self.errorSchema,
-        schema.annotations(HttpApiSchema.annotations({
-          status: annotations?.status ?? HttpApiSchema.getStatusError(schema)
-        }))
-      )
-    })
-)
+} = PlatformHttpApiGroup.addError
 
 /**
  * Add a path prefix to all endpoints in an `HttpApiGroup`. Note that this will only
@@ -296,12 +231,10 @@ export const prefix: {
     Error,
     ErrorR
   > =>
-    makeProto({
-      identifier: self.identifier,
-      errorSchema: self.errorSchema,
-      annotations: self.annotations,
-      endpoints: Chunk.map(self.endpoints, (endpoint) => HttpApiEndpoint.prefix(prefix)(endpoint))
-    })
+    Object.assign(
+      self,
+      { endpoints: Chunk.map(self.endpoints, (endpoint) => HttpApiEndpoint.prefix(prefix)(endpoint)) }
+    )
 )
 
 /**
@@ -313,14 +246,7 @@ export const prefix: {
 export const annotateMerge: {
   <I>(context: Context.Context<I>): <A extends HttpApiGroup.Any>(self: A) => A
   <A extends HttpApiGroup.Any, I>(self: A, context: Context.Context<I>): A
-} = dual(
-  2,
-  <A extends HttpApiGroup.Any, I>(self: A, context: Context.Context<I>): A =>
-    makeProto({
-      ...self as any,
-      annotations: Context.merge(self.annotations, context)
-    }) as A
-)
+} = PlatformHttpApiGroup.annotateMerge
 
 /**
  * Add an annotation to an `HttpApiGroup`.
@@ -331,16 +257,7 @@ export const annotateMerge: {
 export const annotate: {
   <I, S>(tag: Context.Tag<I, S>, value: S): <A extends HttpApiGroup.Any>(self: A) => A
   <A extends HttpApiGroup.Any, I, S>(self: A, tag: Context.Tag<I, S>, value: S): A
-} = dual(
-  3,
-  <A extends HttpApiGroup.Any, I, S>(self: A, tag: Context.Tag<I, S>, value: S): A =>
-    makeProto({
-      identifier: self.identifier,
-      errorSchema: self.errorSchema as any,
-      endpoints: self.endpoints,
-      annotations: Context.add(self.annotations, tag, value)
-    }) as A
-)
+} = PlatformHttpApiGroup.annotate
 
 /**
  * For each endpoint in an `HttpApiGroup`, update the annotations with a new
@@ -354,16 +271,7 @@ export const annotate: {
 export const annotateEndpointsMerge: {
   <I>(context: Context.Context<I>): <A extends HttpApiGroup.Any>(self: A) => A
   <A extends HttpApiGroup.Any, I>(self: A, context: Context.Context<I>): A
-} = dual(
-  2,
-  <A extends HttpApiGroup.Any, I>(self: A, context: Context.Context<I>): A =>
-    makeProto({
-      identifier: self.identifier,
-      errorSchema: self.errorSchema as any,
-      annotations: self.annotations,
-      endpoints: Chunk.map(self.endpoints, HttpApiEndpoint.annotateMerge(context))
-    }) as A
-)
+} = PlatformHttpApiGroup.annotateEndpointsMerge
 
 /**
  * For each endpoint in an `HttpApiGroup`, add an annotation.
@@ -377,13 +285,4 @@ export const annotateEndpointsMerge: {
 export const annotateEndpoints: {
   <I, S>(tag: Context.Tag<I, S>, value: S): <A extends HttpApiGroup.Any>(self: A) => A
   <A extends HttpApiGroup.Any, I, S>(self: A, tag: Context.Tag<I, S>, value: S): A
-} = dual(
-  3,
-  <A extends HttpApiGroup.Any, I, S>(self: A, tag: Context.Tag<I, S>, value: S): A =>
-    makeProto({
-      identifier: self.identifier,
-      errorSchema: self.errorSchema as any,
-      annotations: self.annotations,
-      endpoints: Chunk.map(self.endpoints, HttpApiEndpoint.annotate(tag, value))
-    }) as A
-)
+} = PlatformHttpApiGroup.annotateEndpoints

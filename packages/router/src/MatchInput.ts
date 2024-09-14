@@ -35,8 +35,8 @@ export namespace MatchInput {
   /**
    * @since 1.0.0
    */
-  export type Route<T> = T extends Route.Route<infer P, infer S> ? Route.Route<P, S>
-    : T extends RouteGuard.RouteGuard<Route.Route<infer P, infer S>, infer _A, infer _E, infer _R> ? Route.Route<P, S>
+  export type Route<T> = T extends Route.Route<any, any> ? T
+    : T extends RouteGuard.RouteGuard<infer U, infer _A, infer _E, infer _R> ? U
     : never
 
   /**

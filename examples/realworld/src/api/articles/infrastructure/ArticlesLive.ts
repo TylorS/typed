@@ -77,7 +77,7 @@ export const ArticlesLive = Articles.implement({
       }
       const dbArticle = yield* _(
         updatedArticle,
-        Sql.schema.single(
+        Sql.SqlSchema.single(
           {
             Request: DbArticle,
             Result: DbArticle,
@@ -162,7 +162,7 @@ export const ArticlesLive = Articles.implement({
       }
 
       const [articles, { count: articlesCount }] = yield* _(Effect.all([
-        Sql.schema.findAll(
+        Sql.SqlSchema.findAll(
           {
             Request: Schema.Void,
             Result: DbArticleWithFavoritesAndTags,
@@ -213,7 +213,7 @@ export const ArticlesLive = Articles.implement({
           `
           }
         )(undefined),
-        Sql.schema.single(
+        Sql.SqlSchema.single(
           {
             Request: Schema.Void,
             Result: Schema.Struct({ count: Schema.NumberFromString }),
@@ -248,12 +248,12 @@ export const ArticlesLive = Articles.implement({
     }).pipe(catchExpectedErrors),
   feed: (input) =>
     Effect.gen(function*(_) {
-      const sql = yield* _(Sql.client.Client)
+      const sql = yield* _(Sql.SqlClient.SqlClient)
       const user = yield* _(getCurrentJwtUser)
       const limit = sql`limit ${Option.getOrElse(input.limit, () => 10)}`
       const offset = sql`offset ${Option.getOrElse(input.offset, () => 0)}`
       const [articles, { count: articlesCount }] = yield* _(Effect.all([
-        Sql.schema.findAll(
+        Sql.SqlSchema.findAll(
           {
             Request: Schema.Void,
             Result: DbArticleWithFavoritesAndTags,
@@ -292,7 +292,7 @@ export const ArticlesLive = Articles.implement({
           `
           }
         )(undefined),
-        Sql.schema.single(
+        Sql.SqlSchema.single(
           {
             Request: Schema.Void,
             Result: Schema.Struct({ count: Schema.NumberFromString }),
@@ -343,12 +343,12 @@ function dbArticleFromCreateArticleInput(input: CreateArticleInput, author_id: U
 
 function getArticleFromSlug(slug: ArticleSlug, currentUserId?: UserId) {
   return Effect.gen(function*(_) {
-    const sql = yield* _(Sql.client.Client)
+    const sql = yield* _(Sql.SqlClient.SqlClient)
 
     if (currentUserId) {
       return yield* _(
         slug,
-        Sql.schema.single(
+        Sql.SqlSchema.single(
           {
             Request: ArticleSlug,
             Result: DbArticleWithFavoritesAndTags,
@@ -385,7 +385,7 @@ function getArticleFromSlug(slug: ArticleSlug, currentUserId?: UserId) {
 
     return yield* _(
       slug,
-      Sql.schema.single(
+      Sql.SqlSchema.single(
         {
           Request: ArticleSlug,
           Result: DbArticleWithFavoritesAndTags,
@@ -425,10 +425,10 @@ function tagListToTags(list: ReadonlyArray<ArticleTag>) {
     list,
     (tag) =>
       Effect.gen(function*(_) {
-        const sql = yield* _(Sql.client.Client)
+        const sql = yield* _(Sql.SqlClient.SqlClient)
         const existing = yield* _(
           tag,
-          Sql.schema.findOne({
+          Sql.SqlSchema.findOne({
             Request: ArticleTag,
             Result: DbTag,
             execute: (t) => sql`select * from tags where name = ${t};`

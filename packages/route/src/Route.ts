@@ -324,6 +324,11 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
+  export type QueryParams<R extends Route.Any> = Path.QueryParams<Route.Path<R>>
+
+  /**
+   * @since 1.0.0
+   */
   export type Context<R extends Route.Any> = Sch.Schema.Context<R>
 
   /**

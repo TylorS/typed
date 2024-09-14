@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 /**
  * @since 1.0.0
  */
 
 import type { HttpApp, HttpMethod, HttpServerError, HttpServerResponse } from "@effect/platform"
-import { HttpRouter, HttpServerRespondable } from "@effect/platform"
+import { HttpRouter as PlatformHttpRouter, HttpServerRespondable } from "@effect/platform"
+import type { Router } from "@typed/core"
+import { Context } from "@typed/core"
 import type * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import type * as TypedRouter from "@typed/router"
 import * as MatchInput from "@typed/router/MatchInput"
+import type { Scope } from "effect"
+import { Layer } from "effect"
 import type * as Cause from "effect/Cause"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Option from "effect/Option"
+import type { Mutable } from "effect/Types"
 import * as HttpRouteHandler from "./HttpRouteHandler.js"
 import { RouterImpl, RouterTypeId, runRouteMatcher, setupRouteContext } from "./internal/router.js"
 
@@ -26,8 +32,53 @@ export interface HttpRouter<E, R> extends
   >
 {
   readonly [RouterTypeId]: RouterTypeId
-  readonly routes: Chunk.Chunk<HttpRouteHandler.RouteHandler<MatchInput.MatchInput.Any, E, R>>
+  readonly routes: Chunk.Chunk<HttpRouteHandler.HttpRouteHandler<MatchInput.MatchInput.Any, E, R>>
   readonly mounts: Chunk.Chunk<Mount<E, R>>
+}
+
+export namespace HttpRouter {
+  export type DefaultServices = TypedRouter.CurrentRoute
+
+  export type Provided = HttpRouteHandler.CurrentParams<any> | Navigation.Navigation
+
+  export type ExcludeProvided<R> = Exclude<R, HttpRouteHandler.CurrentParams<any> | Navigation.Navigation>
+
+  export interface Service<E, R> {
+    readonly router: Effect.Effect<HttpRouter<E, R>>
+    readonly addHandler: <R2 extends MatchInput.MatchInput.Any>(
+      handler: HttpRouteHandler.HttpRouteHandler<R2, E, R>
+    ) => Effect.Effect<
+      void
+    >
+
+    readonly mount: <R2 extends MatchInput.MatchInput.Any>(
+      prefix: R2,
+      app: HttpRouter<E, R>,
+      options?: { readonly includePrefix?: boolean | undefined }
+    ) => Effect.Effect<
+      void
+    >
+
+    readonly mountApp: <R2 extends MatchInput.MatchInput.Any>(
+      prefix: R2,
+      app: HttpApp.Default<E, R>,
+      options?: { readonly includePrefix?: boolean | undefined }
+    ) => Effect.Effect<
+      void
+    >
+
+    readonly concat: (that: HttpRouter<E, R>) => Effect.Effect<void>
+  }
+
+  export interface TagClass<Self, Name extends string, E, R> extends Context.TagClass<Self, Name, Service<E, R>> {
+    readonly Live: Layer.Layer<Self>
+    readonly router: Effect.Effect<HttpRouter<E, R>, never, Self>
+    readonly use: <XA, XE, XR>(f: (router: Service<E, R>) => Effect.Effect<XA, XE, XR>) => Layer.Layer<never, XE, XR>
+    readonly useScoped: <XA, XE, XR>(
+      f: (router: Service<E, R>) => Effect.Effect<XA, XE, XR>
+    ) => Layer.Layer<never, XE, Exclude<XR, Scope.Scope>>
+    readonly unwrap: <XA, XE, XR>(f: (router: HttpRouter<E, R>) => Layer.Layer<XA, XE, XR>) => Layer.Layer<XA, XE, XR>
+  }
 }
 
 /**
@@ -50,32 +101,32 @@ export const empty: HttpRouter<never, never> = new RouterImpl(Chunk.empty(), Chu
  * @since 1.0.0
  */
 export const addHandler: {
-  <I extends HttpRouteHandler.RouteHandler.Any>(
+  <I extends HttpRouteHandler.HttpRouteHandler.Any>(
     handler: I
   ): <E, R>(
     router: HttpRouter<E, R>
   ) => HttpRouter<
-    E | HttpRouteHandler.RouteHandler.Error<I>,
-    R | HttpRouteHandler.RouteHandler.Context<I>
+    E | HttpRouteHandler.HttpRouteHandler.Error<I>,
+    R | HttpRouteHandler.HttpRouteHandler.Context<I>
   >
 
-  <E, R, I extends HttpRouteHandler.RouteHandler.Any>(
+  <E, R, I extends HttpRouteHandler.HttpRouteHandler.Any>(
     router: HttpRouter<E, R>,
     handler: I
   ): HttpRouter<
-    E | HttpRouteHandler.RouteHandler.Error<I>,
-    R | HttpRouteHandler.RouteHandler.Context<I>
+    E | HttpRouteHandler.HttpRouteHandler.Error<I>,
+    R | HttpRouteHandler.HttpRouteHandler.Context<I>
   >
-} = dual(2, <E, R, I extends HttpRouteHandler.RouteHandler.Any>(
+} = dual(2, <E, R, I extends HttpRouteHandler.HttpRouteHandler.Any>(
   router: HttpRouter<E, R>,
   handler: I
 ): HttpRouter<
-  E | HttpRouteHandler.RouteHandler.Error<I>,
-  R | HttpRouteHandler.RouteHandler.Context<I>
+  E | HttpRouteHandler.HttpRouteHandler.Error<I>,
+  R | HttpRouteHandler.HttpRouteHandler.Context<I>
 > => {
   return new RouterImpl<
-    E | HttpRouteHandler.RouteHandler.Error<I>,
-    R | HttpRouteHandler.RouteHandler.Context<I>,
+    E | HttpRouteHandler.HttpRouteHandler.Error<I>,
+    R | HttpRouteHandler.HttpRouteHandler.Context<I>,
     E,
     R
   >(
@@ -240,7 +291,7 @@ export const mountApp: {
   ): HttpRouter<E | E2, R | R2> => {
     const prefixRoute = getRouteGuard(prefix)
 
-    return new RouterImpl<E | E2, R | R2, E, R>(
+    return new RouterImpl<E, R, E | E2, R | R2>(
       router.routes,
       Chunk.append(
         router.mounts,
@@ -302,17 +353,17 @@ function getRouteGuard<const I extends MatchInput.MatchInput.Any | string>(route
  */
 export const toPlatformRouter = <E, R>(
   router: HttpRouter<E, R>
-): HttpRouter.HttpRouter<
+): PlatformHttpRouter.HttpRouter<
   E | HttpServerError.RouteNotFound | HttpRouteHandler.RouteNotMatched,
   TypedRouter.CurrentRoute | R
 > => {
-  let platformRouter: HttpRouter.HttpRouter<
+  let platformRouter: PlatformHttpRouter.HttpRouter<
     E | HttpRouteHandler.RouteNotMatched,
     R | TypedRouter.CurrentRoute
-  > = HttpRouter.empty
+  > = PlatformHttpRouter.empty
 
   for (const mount of router.mounts) {
-    platformRouter = HttpRouter.mountApp(
+    platformRouter = PlatformHttpRouter.mountApp(
       platformRouter,
       // TODO: Maybe we should do a best-effort to convert the path to a platform compatible path
       MatchInput.getPath(mount.prefix) as any,
@@ -347,7 +398,7 @@ export const toPlatformRouter = <E, R>(
  * @since 1.0.0
  */
 export const fromPlatformRouter = <E, R>(
-  platformRouter: HttpRouter.HttpRouter<E, R>
+  platformRouter: PlatformHttpRouter.HttpRouter<E, R>
 ): HttpRouter<E, R> => {
   let router: HttpRouter<any, any> = empty
 
@@ -445,3 +496,190 @@ export const catchTag: {
         new Mount(mount.prefix, Effect.catchTag(mount.app, tag as any, onError), mount.options))
     )
 )
+
+export const catchTags: {
+  <
+    E,
+    Cases extends E extends { _tag: string } ? {
+        [K in E["_tag"]]+?: ((error: Extract<E, { _tag: K }>) => HttpRouteHandler.Handler<any, any, any>) | undefined
+      }
+      : {}
+  >(
+    cases: Cases
+  ): <R>(
+    self: HttpRouter<E, R>
+  ) => HttpRouter<
+    | Exclude<E, { _tag: keyof Cases }>
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
+    }[keyof Cases],
+    | R
+    | HttpRouter.ExcludeProvided<
+      {
+        [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
+      }[keyof Cases]
+    >
+  >
+  <
+    R,
+    E,
+    Cases extends E extends { _tag: string } ? {
+        [K in E["_tag"]]+?: ((error: Extract<E, { _tag: K }>) => HttpRouteHandler.Handler<any, any, any>) | undefined
+      } :
+      {}
+  >(
+    self: HttpRouter<E, R>,
+    cases: Cases
+  ): HttpRouter<
+    | Exclude<E, { _tag: keyof Cases }>
+    | {
+      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
+    }[keyof Cases],
+    | R
+    | HttpRouter.ExcludeProvided<
+      {
+        [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
+      }[keyof Cases]
+    >
+  >
+} = dual(2, <
+  E,
+  R,
+  Cases extends E extends { _tag: string } ? {
+      [K in E["_tag"]]+?: ((error: Extract<E, { _tag: K }>) => HttpRouteHandler.Handler<any, any, any>) | undefined
+    } :
+    {}
+>(
+  router: HttpRouter<E, R>,
+  cases: Cases
+) =>
+  new RouterImpl(
+    Chunk.map(router.routes, (handler) => HttpRouteHandler.catchTags(handler, cases)),
+    Chunk.map(router.mounts, (mount) =>
+      new Mount(
+        mount.prefix,
+        Effect.flatMap(Effect.catchTags(mount.app, cases as any) as any, HttpServerRespondable.toResponse),
+        mount.options
+      ))
+  ))
+
+export const append: {
+  <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+    handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+  ): (router: HttpRouter<E, R>) => HttpRouter<E | E2, R | R3>
+
+  <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+    router: HttpRouter<E, R>,
+    handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+  ): HttpRouter<E | E2, R | R3>
+} = dual(2, <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+  router: HttpRouter<E, R>,
+  handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+) => new RouterImpl<E | E2, R | R3, E, R>(Chunk.append(router.routes, handler), router.mounts))
+
+export const prepend: {
+  <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+    handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+  ): (router: HttpRouter<E, R>) => HttpRouter<E | E2, R | R3>
+
+  <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+    router: HttpRouter<E, R>,
+    handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+  ): HttpRouter<E | E2, R | R3>
+} = dual(2, <E, R, R2 extends Router.MatchInput.Any, E2, R3>(
+  router: HttpRouter<E, R>,
+  handler: HttpRouteHandler.HttpRouteHandler<R2, E2, R3>
+) => new RouterImpl<E | E2, R | R3, E, R>(Chunk.prepend(router.routes, handler), router.mounts))
+
+export const concat: {
+  <E2, R2>(
+    router2: HttpRouter<E2, R2>
+  ): <E, R>(router: HttpRouter<E, R>) => HttpRouter<E | E2, R | R2>
+
+  <E, R, E2, R2>(
+    router: HttpRouter<E, R>,
+    router2: HttpRouter<E2, R2>
+  ): HttpRouter<E | E2, R | R2>
+} = dual(2, <E, R, E2, R2>(
+  router: HttpRouter<E, R>,
+  router2: HttpRouter<E2, R2>
+) =>
+  new RouterImpl<E | E2, R | R2, E | E2, R | R2>(
+    Chunk.appendAll(router.routes, router2.routes),
+    Chunk.appendAll(router.mounts, router2.mounts)
+  ))
+
+export const Tag = <const Name extends string>(id: Name) =>
+<Self, R = never, E = unknown>(): HttpRouter.TagClass<
+  Self,
+  Name,
+  E,
+  R | HttpRouter.DefaultServices
+> => {
+  const Err = globalThis.Error as any
+  const limit = Err.stackTraceLimit
+  Err.stackTraceLimit = 2
+  const creationError = new Err()
+  Err.stackTraceLimit = limit
+
+  function TagClass() {}
+  const TagClass_ = TagClass as any as Mutable<HttpRouter.TagClass<Self, Name, E, R>>
+  Object.setPrototypeOf(TagClass, Object.getPrototypeOf(Context.Tag<Self, any>(id)))
+  TagClass.key = id
+  Object.defineProperty(TagClass, "stack", {
+    get() {
+      return creationError.stack
+    }
+  })
+  TagClass_.Live = Layer.sync(TagClass_, makeService)
+  TagClass_.router = Effect.flatMap(TagClass_, (_) => _.router)
+  TagClass_.use = (f) =>
+    Layer.effectDiscard(Effect.flatMap(TagClass_, f)).pipe(
+      Layer.provide(TagClass_.Live)
+    )
+  TagClass_.useScoped = (f) =>
+    TagClass_.pipe(
+      Effect.flatMap(f),
+      Layer.scopedDiscard,
+      Layer.provide(TagClass_.Live)
+    )
+  TagClass_.unwrap = (f) =>
+    TagClass_.pipe(
+      Effect.flatMap((_) => _.router),
+      Effect.map(f),
+      Layer.unwrapEffect,
+      Layer.provide(TagClass_.Live)
+    )
+  return TagClass as any
+}
+
+const makeService = <E, R>(): HttpRouter.Service<E, R> => {
+  let router = empty as HttpRouter<E, R>
+  return {
+    router: Effect.sync(() => router),
+    addHandler(handler) {
+      return Effect.sync(() => {
+        router = addHandler(router, handler) as any
+      })
+    },
+    mount(path, that) {
+      return Effect.sync(() => {
+        router = mount(router, path, that)
+      })
+    },
+    mountApp(path, app, options) {
+      return Effect.sync(() => {
+        router = mountApp(router, path, app, options)
+      })
+    },
+    concat(that) {
+      return Effect.sync(() => {
+        router = concat(router, that)
+      })
+    }
+  }
+}
+
+export function fromIterable<E, R>(handlers: Iterable<HttpRouteHandler.HttpRouteHandler<any, E, R>>): HttpRouter<E, R> {
+  return new RouterImpl(Chunk.fromIterable(handlers), Chunk.empty())
+}

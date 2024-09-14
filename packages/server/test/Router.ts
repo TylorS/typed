@@ -1,6 +1,6 @@
-import * as ServerRequest from "@effect/platform/Http/ServerRequest"
-import * as ServerResponse from "@effect/platform/Http/ServerResponse"
-import { html } from "@effect/platform/Http/ServerResponse"
+import * as ServerRequest from "@effect/platform/HttpServerRequest"
+import * as ServerResponse from "@effect/platform/HttpServerResponse"
+import { html } from "@effect/platform/HttpServerResponse"
 import * as Route from "@typed/route"
 import { CurrentRoute, makeCurrentRoute } from "@typed/router"
 import { getCurrentParams } from "@typed/server/RouteHandler"
@@ -33,7 +33,7 @@ describe("Router", () => {
   function makeRequest(url: string, init?: RequestInit) {
     const request = ServerRequest.fromWeb(new Request(url, init))
     return router.pipe(
-      Effect.provideService(ServerRequest.ServerRequest, request),
+      Effect.provideService(ServerRequest.HttpServerRequest, request),
       Effect.map(ServerResponse.toWeb),
       CurrentRoute.provide(makeCurrentRoute(Route.end))
     )
@@ -98,7 +98,7 @@ describe("Router", () => {
     function makePlatformRequest(url: string, init?: RequestInit) {
       const request = ServerRequest.fromWeb(new Request(url, init))
       return platformRouter.pipe(
-        Effect.provideService(ServerRequest.ServerRequest, request),
+        Effect.provideService(ServerRequest.HttpServerRequest, request),
         Effect.map(ServerResponse.toWeb),
         CurrentRoute.provide(makeCurrentRoute(Route.end))
       )

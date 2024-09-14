@@ -20,17 +20,17 @@
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.2.9",
-    "@storybook/addon-interactions": "^8.2.9",
-    "@storybook/addon-links": "^8.2.9",
-    "@storybook/blocks": "^8.2.9",
-    "@storybook/html": "^8.2.9",
-    "@storybook/html-vite": "^8.2.9",
-    "@storybook/test": "^8.2.9",
-    "@storybook/types": "^8.2.9",
+    "@storybook/addon-essentials": "^8.3.0",
+    "@storybook/addon-interactions": "^8.3.0",
+    "@storybook/addon-links": "^8.3.0",
+    "@storybook/blocks": "^8.3.0",
+    "@storybook/html": "^8.3.0",
+    "@storybook/html-vite": "^8.3.0",
+    "@storybook/test": "^8.3.0",
+    "@storybook/types": "^8.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "storybook": "^8.2.9",
-    "vite": "^5.4.3"
+    "storybook": "^8.3.0",
+    "vite": "^5.4.5"
   }
 }

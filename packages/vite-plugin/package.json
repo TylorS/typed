@@ -44,8 +44,8 @@
     "vite": "^5.4.3"
   },
   "devDependencies": {
-    "rollup": "^4.21.2",
-    "vite": "^5.4.3"
+    "rollup": "^4.21.3",
+    "vite": "^5.4.5"
   },
   "dependencies": {
     "@typed/vite-plugin-types": "workspace:*",

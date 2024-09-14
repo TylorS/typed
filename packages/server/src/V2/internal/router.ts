@@ -14,7 +14,7 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import type * as Order from "effect/Order"
 import * as Record from "effect/Record"
-import type { CurrentParams, Handler, RouteHandler } from "../HttpRouteHandler.js"
+import type { CurrentParams, Handler, HttpRouteHandler } from "../HttpRouteHandler.js"
 import { currentParamsLayer, getCurrentParamsOption, getUrlFromServerRequest } from "../HttpRouteHandler.js"
 import type { HttpRouter, Mount } from "../HttpRouter.js"
 
@@ -37,8 +37,8 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   >
 
   constructor(
-    readonly routes: Chunk<RouteHandler<MatchInput.Any, E, R>>,
-    readonly mounts: Chunk<Mount<E, R>>
+    readonly routes: Chunk<HttpRouteHandler<MatchInput.Any, E, R>>,
+    readonly mounts: Chunk<Mount<E2, R2>>
   ) {
     super()
   }
@@ -48,7 +48,7 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   }
 }
 
-const routePartsOrder: Order.Order<RouteHandler<any, any, any>> = (a, b) =>
+const routePartsOrder: Order.Order<HttpRouteHandler<any, any, any>> = (a, b) =>
   Route.Order(getRoute(a.route), getRoute(b.route))
 
 const allMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
