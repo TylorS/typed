@@ -41,6 +41,6 @@
   "sideEffects": [],
   "dependencies": {
     "@typed/core": "workspace:*",
-    "effect": "^3.7.3"
+    "effect": "^3.8.4"
   }
 }

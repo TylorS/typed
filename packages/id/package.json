@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.72.4",
+    "@effect/schema": "^0.74.1",
     "@typed/context": "workspace:*",
-    "effect": "^3.7.3",
+    "effect": "^3.8.4",
     "fast-check": "^3.22.0"
   }
 }
