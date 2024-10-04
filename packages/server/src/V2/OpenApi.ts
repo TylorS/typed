@@ -167,17 +167,41 @@ export const fromApi = <A extends HttpApi.HttpApi.Any>(api: A): OpenAPISpec => {
     security: []
   }
   const securityMap = new Map<HttpApiSecurity, string>()
-  let securityCount = 0
-  function registerSecurity(security: HttpApiSecurity): string {
+  const securityCounts = new Map<HttpApiSecurity["_tag"], number>()
+
+  function registerSecurity(security: HttpApiSecurity): Array<OpenAPISecurityRequirement> {
     if (securityMap.has(security)) {
-      return securityMap.get(security)!
+      const id = securityMap.get(security)!
+      return [{ [id]: [] }]
     }
-    const count = securityCount++
-    const id = `${security._tag}${count === 0 ? "" : count}`
-    const scheme = makeSecurityScheme(security)
-    spec.components!.securitySchemes![id] = scheme
-    securityMap.set(security, id)
-    return id
+
+    switch (security._tag) {
+      case "Optional": {
+        const inner = registerSecurity(security.security)
+        return [...inner, {}]
+      }
+      case "Or": {
+        return [
+          ...registerSecurity(security.first),
+          ...registerSecurity(security.second)
+        ]
+      }
+      case "And": {
+        const first = registerSecurity(security.first)
+        const second = registerSecurity(security.second)
+
+        return first.flatMap((f) => second.map((s) => ({ ...f, ...s })))
+      }
+      default: {
+        const count = securityCounts.get(security._tag) ?? 0
+        securityCounts.set(security._tag, count + 1)
+        const id = `${security._tag}${count === 0 ? "" : count}`
+        const scheme = makeSecurityScheme(security)
+        spec.components!.securitySchemes![id] = scheme
+        securityMap.set(security, id)
+        return [{ [id]: [] }]
+      }
+    }
   }
   Option.map(Context.getOption(api.annotations, Description), (description) => {
     spec.info.description = description
@@ -186,9 +210,7 @@ export const fromApi = <A extends HttpApi.HttpApi.Any>(api: A): OpenAPISpec => {
     spec.info.license = license
   })
   Option.map(Context.getOption(api.annotations, Security), (apiSecurity) => {
-    spec.security!.push({
-      [registerSecurity(apiSecurity)]: []
-    })
+    spec.security!.push(...registerSecurity(apiSecurity))
   })
   HttpApi.reflect(api as any, {
     onGroup({ group }) {
@@ -224,9 +246,7 @@ export const fromApi = <A extends HttpApi.HttpApi.Any>(api: A): OpenAPISpec => {
         op.externalDocs = externalDocs
       })
       Option.map(Context.getOption(mergedAnnotations, Security), (apiSecurity) => {
-        op.security!.push({
-          [registerSecurity(apiSecurity)]: []
-        })
+        op.security!.push(...registerSecurity(apiSecurity))
       })
       endpoint.payloadSchema.pipe(
         Option.filter(() => HttpMethod.hasBody(endpoint.method)),
@@ -315,8 +335,8 @@ export const fromApi = <A extends HttpApi.HttpApi.Any>(api: A): OpenAPISpec => {
   return spec
 }
 
-const makeSecurityScheme = (security: HttpApiSecurity): OpenAPISecurityScheme => {
-  const meta: Mutable<Partial<OpenAPISecurityScheme.Base>> = {}
+const makeSecurityScheme = (security: HttpApiSecurity.Base): OpenAPISecurityScheme => {
+  const meta: Mutable<Partial<OpenAPISecurityScheme>> = {}
   Option.map(Context.getOption(security.annotations, Description), (description) => {
     meta.description = description
   })
@@ -342,27 +362,6 @@ const makeSecurityScheme = (security: HttpApiSecurity): OpenAPISecurityScheme =>
         name: security.key,
         in: security.in
       }
-    }
-    case "Or": {
-      return [
-        {
-          ...meta,
-          ...makeSecurityScheme(security.first)
-        },
-        {
-          ...meta,
-          ...makeSecurityScheme(security.second)
-        }
-      ]
-    }
-    case "Optional": {
-      const inner = makeSecurityScheme(security.security)
-      return Array.isArray(inner) ?
-        [
-          ...inner,
-          {}
-        ] :
-        [inner, {}]
     }
   }
 }
@@ -656,18 +655,11 @@ export interface OpenAPIOpenIdConnectSecurityScheme {
  * @since 1.0.0
  */
 export type OpenAPISecurityScheme =
-  | OpenAPISecurityScheme.Base
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  | Array<OpenAPISecurityScheme.Base | {}>
-
-export namespace OpenAPISecurityScheme {
-  export type Base =
-    | OpenAPIHTTPSecurityScheme
-    | OpenAPIApiKeySecurityScheme
-    | OpenAPIMutualTLSSecurityScheme
-    | OpenAPIOAuth2SecurityScheme
-    | OpenAPIOpenIdConnectSecurityScheme
-}
+  | OpenAPIHTTPSecurityScheme
+  | OpenAPIApiKeySecurityScheme
+  | OpenAPIMutualTLSSecurityScheme
+  | OpenAPIOAuth2SecurityScheme
+  | OpenAPIOpenIdConnectSecurityScheme
 
 /**
  * @category models

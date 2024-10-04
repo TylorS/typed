@@ -542,6 +542,11 @@ export const securityDecode = <Security extends HttpApiSecurity.HttpApiSecurity>
         Effect.orElse(() => securityDecode(self.second))
       ) as any
     }
+    case "And":
+      return Effect.all([
+        securityDecode(self.first),
+        securityDecode(self.second)
+      ], { concurrency: 2 }) as any
     case "Optional":
       return securityDecode(self.security).pipe(
         Effect.asSome,

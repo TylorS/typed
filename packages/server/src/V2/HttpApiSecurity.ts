@@ -28,6 +28,7 @@ export type HttpApiSecurity =
   | HttpApiSecurity.Base
   | Optional<HttpApiSecurity>
   | Or<HttpApiSecurity, HttpApiSecurity>
+  | And<HttpApiSecurity, HttpApiSecurity>
 
 /**
  * @since 1.0.0
@@ -111,6 +112,18 @@ export interface Or<A extends HttpApiSecurity, B extends HttpApiSecurity>
   readonly _tag: "Or"
   readonly first: A
   readonly second: B
+}
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
+export interface And<A extends HttpApiSecurity, B extends HttpApiSecurity>
+  extends HttpApiSecurity.Proto<readonly [HttpApiSecurity.Type<A>, HttpApiSecurity.Type<B>]>
+{
+  readonly _tag: "And"
+  readonly first: A
+  readonly second: A
 }
 
 const Proto = {
@@ -204,6 +217,24 @@ export const or: {
       annotations: Context.empty()
     })
 )
+
+/**
+ * @since 1.0.0
+ */
+export const and: {
+  <B extends HttpApiSecurity>(second: B): <A extends HttpApiSecurity>(first: A) => Or<A, B>
+  <A extends HttpApiSecurity, B extends HttpApiSecurity>(first: A, second: B): Or<A, B>
+} = dual(
+  2,
+  <A extends HttpApiSecurity, B extends HttpApiSecurity>(first: A, second: B): Or<A, B> =>
+    Object.assign(Object.create(Proto), {
+      _tag: "And",
+      first,
+      second,
+      annotations: Context.empty()
+    })
+)
+
 /**
  * @since 1.0.0
  * @category annotations
