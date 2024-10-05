@@ -81,7 +81,7 @@ Added in v1.0.0
 ```ts
 export declare const takeOneIfNotDomEnvironment: <A, E, R>(
   fx: RefSubject.RefSubject<A, E, R>
-) => RefSubject.RefSubject<A, E, CurrentEnvironment | R>
+) => RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -94,11 +94,11 @@ Added in v1.0.0
 export declare const takeOneIfNotEnvironment: {
   (
     environments: ReadonlyArray<Environment>
-  ): <A, E, R>(fx: RefSubject.RefSubject<A, E, R>) => RefSubject.RefSubject<A, E, CurrentEnvironment | R>
+  ): <A, E, R>(fx: RefSubject.RefSubject<A, E, R>) => RefSubject.RefSubject<A, E, R | CurrentEnvironment>
   <A, E, R>(
     fx: RefSubject.RefSubject<A, E, R>,
     environments: ReadonlyArray<Environment>
-  ): RefSubject.RefSubject<A, E, CurrentEnvironment | R>
+  ): RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 }
 ```
 

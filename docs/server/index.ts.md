@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 13
+nav_order: 21
 parent: "@typed/server"
 ---
 
@@ -13,129 +13,31 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Api.js"](#from-apijs)
-  - [From "./ApiEndpoint.js"](#from-apiendpointjs)
-  - [From "./ApiGroup.js"](#from-apigroupjs)
-  - [From "./ApiRequest.js"](#from-apirequestjs)
-  - [From "./ApiResponse.js"](#from-apiresponsejs)
-  - [From "./ApiSchema.js"](#from-apischemajs)
-  - [From "./Client.js"](#from-clientjs)
-  - [From "./ClientError.js"](#from-clienterrorjs)
   - [From "./Cookies.js"](#from-cookiesjs)
-  - [From "./ExampleServer.js"](#from-exampleserverjs)
   - [From "./Headers.js"](#from-headersjs)
-  - [From "./HttpError.js"](#from-httperrorjs)
-  - [From "./Middlewares.js"](#from-middlewaresjs)
-  - [From "./MockClient.js"](#from-mockclientjs)
+  - [From "./HttpApi.js"](#from-httpapijs)
+  - [From "./HttpApiBuilder.js"](#from-httpapibuilderjs)
+  - [From "./HttpApiClient.js"](#from-httpapiclientjs)
+  - [From "./HttpApiEndpoint.js"](#from-httpapiendpointjs)
+  - [From "./HttpApiError.js"](#from-httpapierrorjs)
+  - [From "./HttpApiGroup.js"](#from-httpapigroupjs)
+  - [From "./HttpApiHandlers.js"](#from-httpapihandlersjs)
+  - [From "./HttpApiSchema.js"](#from-httpapischemajs)
+  - [From "./HttpApiSecurity.js"](#from-httpapisecurityjs)
+  - [From "./HttpApiSwagger.js"](#from-httpapiswaggerjs)
+  - [From "./HttpApp.js"](#from-httpappjs)
+  - [From "./HttpMethod.js"](#from-httpmethodjs)
+  - [From "./HttpMiddleware.js"](#from-httpmiddlewarejs)
+  - [From "./HttpRouteHandler.js"](#from-httproutehandlerjs)
+  - [From "./HttpRouter.js"](#from-httprouterjs)
+  - [From "./HttpServer.js"](#from-httpserverjs)
+  - [From "./HttpServerRequest.js"](#from-httpserverrequestjs)
+  - [From "./HttpServerResponse.js"](#from-httpserverresponsejs)
   - [From "./OpenApi.js"](#from-openapijs)
-  - [From "./Representation.js"](#from-representationjs)
-  - [From "./Request.js"](#from-requestjs)
-  - [From "./Response.js"](#from-responsejs)
-  - [From "./RouteHandler.js"](#from-routehandlerjs)
-  - [From "./Router.js"](#from-routerjs)
-  - [From "./RouterBuilder.js"](#from-routerbuilderjs)
-  - [From "./Security.js"](#from-securityjs)
-  - [From "./SwaggerRouter.js"](#from-swaggerrouterjs)
 
 ---
 
 # exports
-
-## From "./Api.js"
-
-Re-exports all named exports from the "./Api.js" module as `Api`.
-
-**Signature**
-
-```ts
-export * as Api from "./Api.js"
-```
-
-Added in v1.0.0
-
-## From "./ApiEndpoint.js"
-
-Re-exports all named exports from the "./ApiEndpoint.js" module as `ApiEndpoint`.
-
-**Signature**
-
-```ts
-export * as ApiEndpoint from "./ApiEndpoint.js"
-```
-
-Added in v1.0.0
-
-## From "./ApiGroup.js"
-
-Re-exports all named exports from the "./ApiGroup.js" module as `ApiGroup`.
-
-**Signature**
-
-```ts
-export * as ApiGroup from "./ApiGroup.js"
-```
-
-Added in v1.0.0
-
-## From "./ApiRequest.js"
-
-Re-exports all named exports from the "./ApiRequest.js" module as `ApiRequest`.
-
-**Signature**
-
-```ts
-export * as ApiRequest from "./ApiRequest.js"
-```
-
-Added in v1.0.0
-
-## From "./ApiResponse.js"
-
-Re-exports all named exports from the "./ApiResponse.js" module as `ApiResponse`.
-
-**Signature**
-
-```ts
-export * as ApiResponse from "./ApiResponse.js"
-```
-
-Added in v1.0.0
-
-## From "./ApiSchema.js"
-
-Re-exports all named exports from the "./ApiSchema.js" module as `ApiSchema`.
-
-**Signature**
-
-```ts
-export * as ApiSchema from "./ApiSchema.js"
-```
-
-Added in v1.0.0
-
-## From "./Client.js"
-
-Re-exports all named exports from the "./Client.js" module as `Client`.
-
-**Signature**
-
-```ts
-export * as Client from "./Client.js"
-```
-
-Added in v1.0.0
-
-## From "./ClientError.js"
-
-Re-exports all named exports from the "./ClientError.js" module as `ClientError`.
-
-**Signature**
-
-```ts
-export * as ClientError from "./ClientError.js"
-```
-
-Added in v1.0.0
 
 ## From "./Cookies.js"
 
@@ -149,62 +51,230 @@ export * as Cookies from "./Cookies.js"
 
 Added in v1.0.0
 
-## From "./ExampleServer.js"
-
-Re-exports all named exports from the "./ExampleServer.js" module as `ExampleServer`.
-
-**Signature**
-
-```ts
-export * as ExampleServer from "./ExampleServer.js"
-```
-
-Added in v1.0.0
-
 ## From "./Headers.js"
 
-Re-exports all named exports from the "./Headers.js" module as `ServerHeaders`.
+Re-exports all named exports from the "./Headers.js" module as `Headers`.
 
 **Signature**
 
 ```ts
-export * as ServerHeaders from "./Headers.js"
+export * as Headers from "./Headers.js"
 ```
 
 Added in v1.0.0
 
-## From "./HttpError.js"
+## From "./HttpApi.js"
 
-Re-exports all named exports from the "./HttpError.js" module as `HttpError`.
+Re-exports all named exports from the "./HttpApi.js" module as `HttpApi`.
 
 **Signature**
 
 ```ts
-export * as HttpError from "./HttpError.js"
+export * as HttpApi from "./HttpApi.js"
 ```
 
 Added in v1.0.0
 
-## From "./Middlewares.js"
+## From "./HttpApiBuilder.js"
 
-Re-exports all named exports from the "./Middlewares.js" module as `Middlewares`.
+Re-exports all named exports from the "./HttpApiBuilder.js" module as `HttpApiBuilder`.
 
 **Signature**
 
 ```ts
-export * as Middlewares from "./Middlewares.js"
+export * as HttpApiBuilder from "./HttpApiBuilder.js"
 ```
 
 Added in v1.0.0
 
-## From "./MockClient.js"
+## From "./HttpApiClient.js"
 
-Re-exports all named exports from the "./MockClient.js" module as `MockClient`.
+Re-exports all named exports from the "./HttpApiClient.js" module as `HttpApiClient`.
 
 **Signature**
 
 ```ts
-export * as MockClient from "./MockClient.js"
+export * as HttpApiClient from "./HttpApiClient.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiEndpoint.js"
+
+Re-exports all named exports from the "./HttpApiEndpoint.js" module as `HttpApiEndpoint`.
+
+**Signature**
+
+```ts
+export * as HttpApiEndpoint from "./HttpApiEndpoint.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiError.js"
+
+Re-exports all named exports from the "./HttpApiError.js" module as `HttpApiError`.
+
+**Signature**
+
+```ts
+export * as HttpApiError from "./HttpApiError.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiGroup.js"
+
+Re-exports all named exports from the "./HttpApiGroup.js" module as `HttpApiGroup`.
+
+**Signature**
+
+```ts
+export * as HttpApiGroup from "./HttpApiGroup.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiHandlers.js"
+
+Re-exports all named exports from the "./HttpApiHandlers.js" module as `HttpApiHandlers`.
+
+**Signature**
+
+```ts
+export * as HttpApiHandlers from "./HttpApiHandlers.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiSchema.js"
+
+Re-exports all named exports from the "./HttpApiSchema.js" module as `HttpApiSchema`.
+
+**Signature**
+
+```ts
+export * as HttpApiSchema from "./HttpApiSchema.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiSecurity.js"
+
+Re-exports all named exports from the "./HttpApiSecurity.js" module as `HttpApiSecurity`.
+
+**Signature**
+
+```ts
+export * as HttpApiSecurity from "./HttpApiSecurity.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApiSwagger.js"
+
+Re-exports all named exports from the "./HttpApiSwagger.js" module as `HttpApiSwagger`.
+
+**Signature**
+
+```ts
+export * as HttpApiSwagger from "./HttpApiSwagger.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpApp.js"
+
+Re-exports all named exports from the "./HttpApp.js" module as `HttpApp`.
+
+**Signature**
+
+```ts
+export * as HttpApp from "./HttpApp.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpMethod.js"
+
+Re-exports all named exports from the "./HttpMethod.js" module as `HttpMethod`.
+
+**Signature**
+
+```ts
+export * as HttpMethod from "./HttpMethod.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpMiddleware.js"
+
+Re-exports all named exports from the "./HttpMiddleware.js" module as `HttpMiddleware`.
+
+**Signature**
+
+```ts
+export * as HttpMiddleware from "./HttpMiddleware.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpRouteHandler.js"
+
+Re-exports all named exports from the "./HttpRouteHandler.js" module as `HttpRouteHandler`.
+
+**Signature**
+
+```ts
+export * as HttpRouteHandler from "./HttpRouteHandler.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpRouter.js"
+
+Re-exports all named exports from the "./HttpRouter.js" module as `HttpRouter`.
+
+**Signature**
+
+```ts
+export * as HttpRouter from "./HttpRouter.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpServer.js"
+
+Re-exports all named exports from the "./HttpServer.js" module as `HttpServer`.
+
+**Signature**
+
+```ts
+export * as HttpServer from "./HttpServer.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpServerRequest.js"
+
+Re-exports all named exports from the "./HttpServerRequest.js" module as `HttpServerRequest`.
+
+**Signature**
+
+```ts
+export * as HttpServerRequest from "./HttpServerRequest.js"
+```
+
+Added in v1.0.0
+
+## From "./HttpServerResponse.js"
+
+Re-exports all named exports from the "./HttpServerResponse.js" module as `HttpServerResponse`.
+
+**Signature**
+
+```ts
+export * as HttpServerResponse from "./HttpServerResponse.js"
 ```
 
 Added in v1.0.0
@@ -217,102 +287,6 @@ Re-exports all named exports from the "./OpenApi.js" module as `OpenApi`.
 
 ```ts
 export * as OpenApi from "./OpenApi.js"
-```
-
-Added in v1.0.0
-
-## From "./Representation.js"
-
-Re-exports all named exports from the "./Representation.js" module as `Representation`.
-
-**Signature**
-
-```ts
-export * as Representation from "./Representation.js"
-```
-
-Added in v1.0.0
-
-## From "./Request.js"
-
-Re-exports all named exports from the "./Request.js" module as `ServerRequest`.
-
-**Signature**
-
-```ts
-export * as ServerRequest from "./Request.js"
-```
-
-Added in v1.0.0
-
-## From "./Response.js"
-
-Re-exports all named exports from the "./Response.js" module as `ServerResponse`.
-
-**Signature**
-
-```ts
-export * as ServerResponse from "./Response.js"
-```
-
-Added in v1.0.0
-
-## From "./RouteHandler.js"
-
-Re-exports all named exports from the "./RouteHandler.js" module as `RouteHandler`.
-
-**Signature**
-
-```ts
-export * as RouteHandler from "./RouteHandler.js"
-```
-
-Added in v1.0.0
-
-## From "./Router.js"
-
-Re-exports all named exports from the "./Router.js" module as `ServerRouter`.
-
-**Signature**
-
-```ts
-export * as ServerRouter from "./Router.js"
-```
-
-Added in v1.0.0
-
-## From "./RouterBuilder.js"
-
-Re-exports all named exports from the "./RouterBuilder.js" module as `ServerRouterBuilder`.
-
-**Signature**
-
-```ts
-export * as ServerRouterBuilder from "./RouterBuilder.js"
-```
-
-Added in v1.0.0
-
-## From "./Security.js"
-
-Re-exports all named exports from the "./Security.js" module as `Security`.
-
-**Signature**
-
-```ts
-export * as Security from "./Security.js"
-```
-
-Added in v1.0.0
-
-## From "./SwaggerRouter.js"
-
-Re-exports all named exports from the "./SwaggerRouter.js" module as `SwaggerRouter`.
-
-**Signature**
-
-```ts
-export * as SwaggerRouter from "./SwaggerRouter.js"
 ```
 
 Added in v1.0.0

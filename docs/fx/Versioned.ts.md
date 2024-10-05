@@ -75,7 +75,7 @@ export declare const mapEffect: {
     onEffect: (b: B) => Effect.Effect<D, E4, R4>
   }): <R0, E0, R, E, R2, E2>(
     versioned: Versioned<R0, E0, A, E, R, B, E2, R2>
-  ) => Versioned<never, never, C, E3 | E, R3 | R, D, E4 | E0 | E2, R4 | R0 | R2>
+  ) => Versioned<never, never, C, E | E3, R | R3, D, E0 | E2 | E4, R0 | R2 | R4>
   <R0, E0, A, E, R, B, E2, R2, C, E3, R3, D, E4, R4>(
     versioned: Versioned<R0, E0, A, E, R, B, E2, R2>,
     options: { onFx: (a: A) => Effect.Effect<C, E3, R3>; onEffect: (b: B) => Effect.Effect<D, E4, R4> }

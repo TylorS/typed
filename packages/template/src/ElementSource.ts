@@ -40,7 +40,10 @@ export interface ElementSource<
   readonly selector: Selector
 
   readonly query: {
-    <S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
+    <
+      S extends string,
+      Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>
+    >(
       selector: S
     ): ElementSource<ParseSelector<S, Element>, Ev>
 
@@ -54,33 +57,44 @@ export interface ElementSource<
   readonly events: <Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ) => Fx.Fx<EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>, never, Scope.Scope>
+  ) => Fx.Fx<
+    EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>,
+    never,
+    Scope.Scope
+  >
 
-  readonly dispatchEvent: (event: Event, wait?: DurationInput) => Effect.Effect<void, NoSuchElementException>
+  readonly dispatchEvent: (
+    event: Event,
+    wait?: DurationInput
+  ) => Effect.Effect<void, NoSuchElementException>
 }
 
 /**
  * @since 1.0.0
  */
-export function ElementSource<T extends Rendered, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: RefSubject.Filtered<T>
-): ElementSource<T, EventMap> {
+export function ElementSource<
+  T extends Rendered,
+  EventMap extends {} = DefaultEventMap<T>
+>(rootElement: RefSubject.Filtered<T>): ElementSource<T, EventMap> {
   return new ElementSourceImpl<T, EventMap>(rootElement) as any
 }
 
 /**
  * @since 1.0.0
  */
-export function fromElement<T extends Element, EventMap extends {} = DefaultEventMap<T>>(
-  rootElement: T
-): ElementSource<T, EventMap> {
+export function fromElement<
+  T extends Element,
+  EventMap extends {} = DefaultEventMap<T>
+>(rootElement: T): ElementSource<T, EventMap> {
   return ElementSourceImpl.fromElement(rootElement) as any
 }
 
 /**
  * @since 1.0.0
  */
-export type ParseSelector<T extends string, Fallback> = [T] extends [typeof ROOT_CSS_SELECTOR] ? Fallback
+export type ParseSelector<T extends string, Fallback> = [T] extends [
+  typeof ROOT_CSS_SELECTOR
+] ? Fallback
   : Fallback extends globalThis.Element ? Extract<TQS.ParseSelector<T, Fallback>, globalThis.Element>
   : Fallback
 
@@ -106,7 +120,9 @@ type RenderedWithoutArray = Exclude<Rendered, ReadonlyArray<Rendered>>
 /**
  * @since 1.0.0
  */
-export function getElements<T extends Rendered>(element: T): ReadonlyArray<Element> {
+export function getElements<T extends Rendered>(
+  element: T
+): ReadonlyArray<Element> {
   if (Array.isArray(element)) return element.flatMap(getElements)
   if (isWire(element as RenderedWithoutArray)) {
     return Array.from((element.valueOf() as DocumentFragment).children)
@@ -117,12 +133,16 @@ export function getElements<T extends Rendered>(element: T): ReadonlyArray<Eleme
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  if ((element as Node).parentElement) return [(element as Node).parentElement!]
+  if ((element as Node).parentElement) {
+    return [(element as Node).parentElement!]
+  }
 
   return []
 }
 
-function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<string>) {
+function findMostSpecificElement<T extends Element>(
+  cssSelectors: ReadonlyArray<string>
+) {
   return function(element: Rendered): T {
     const elements = getElements(element)
 
@@ -140,7 +160,9 @@ function findMostSpecificElement<T extends Element>(cssSelectors: ReadonlyArray<
   }
 }
 
-function findMatchingElements<El extends Element = Element>(cssSelectors: ReadonlyArray<string>) {
+function findMatchingElements<El extends Element = Element>(
+  cssSelectors: ReadonlyArray<string>
+) {
   if (cssSelectors.length === 0) return getElements
 
   const cssSelector = cssSelectors.join(" ")
@@ -175,13 +197,15 @@ function makeEventStream<Ev extends Event>(
       elements.map((element) =>
         Fx.filter(
           Fx.make<Ev>((sink) =>
-            Effect.scoped(Effect.zipRight(
-              addEventListener(element, {
-                eventName,
-                handler: (ev) => sink.onSuccess(ev as any as Ev)
-              }),
-              Effect.never
-            ))
+            Effect.scoped(
+              Effect.zipRight(
+                addEventListener(element, {
+                  eventName,
+                  handler: (ev) => sink.onSuccess(ev as any as Ev)
+                }),
+                Effect.never
+              )
+            )
           ),
           (event: Ev) =>
             ensureMatches(cssSelector, element, event, capture) ||
@@ -211,15 +235,20 @@ function makeElementEventStream<Ev extends Event>(
       elements.map((element) =>
         Fx.filter(
           Fx.make<Ev>((sink) =>
-            Effect.scoped(Effect.zipRight(
-              addEventListener(element, {
-                eventName,
-                handler: (ev) => sink.onSuccess(ev as any as Ev)
-              }),
-              Effect.never
-            ))
+            Effect.scoped(
+              Effect.zipRight(
+                addEventListener(element, {
+                  eventName,
+                  handler: (ev) => sink.onSuccess(ev as any as Ev)
+                }),
+                Effect.never
+              )
+            )
           ),
-          (event: Ev) => event.target ? currentTarget.contains(event.target as Element) : false
+          (event: Ev) =>
+            event.target
+              ? currentTarget.contains(event.target as Element)
+              : false
         )
       )
     )
@@ -262,24 +291,39 @@ const EVENT_PROPERTY_TO_REPLACE = "currentTarget"
 function cloneEvent<E extends Event>(event: E, currentTarget: Element): E {
   return new Proxy(event, {
     get(target: E, property: string | symbol) {
-      return property === EVENT_PROPERTY_TO_REPLACE ? currentTarget : target[property as keyof E]
+      return property === EVENT_PROPERTY_TO_REPLACE
+        ? currentTarget
+        : target[property as keyof E]
     }
   })
 }
 
-function ensureMatches(cssSelector: string, element: Element, ev: Event, capture = false): boolean {
+function ensureMatches(
+  cssSelector: string,
+  element: Element,
+  ev: Event,
+  capture = false
+): boolean {
   let target = ev.target as Element
 
-  if (!cssSelector) return (capture && element.contains(target)) || target === element
+  if (!cssSelector) {
+    return (capture && element.contains(target)) || target === element
+  }
 
-  for (; target && target !== element; target = target.parentElement as Element) {
+  for (
+    ;
+    target && target !== element;
+    target = target.parentElement as Element
+  ) {
     if (target.matches(cssSelector)) return true
   }
 
   return element.matches(cssSelector)
 }
 
-function isDocumentFragment(element: RenderedWithoutArray): element is DocumentFragment {
+function isDocumentFragment(
+  element: RenderedWithoutArray
+): element is DocumentFragment {
   return element.nodeType === element.DOCUMENT_FRAGMENT_NODE
 }
 
@@ -291,13 +335,18 @@ function isElement(element: RenderedWithoutArray): element is Element {
  * @internal
  * @since 1.0.0
  */
-// @ts-expect-error Doesn't implement Placeholder
+// @ts-expect-error Missing PlaceholderTypeId
 export class ElementSourceImpl<
   T extends Rendered,
   EventMap extends {} = DefaultEventMap<Rendered.Elements<T>[number]>
-> extends FxEffectBase<Rendered.Elements<T>, never, Scope.Scope, Rendered.Elements<T>, NoSuchElementException, never>
-  implements ElementSource<T, EventMap>
-{
+> extends FxEffectBase<
+  Rendered.Elements<T>,
+  never,
+  Scope.Scope,
+  Rendered.Elements<T>,
+  NoSuchElementException,
+  never
+> implements ElementSource<T, EventMap> {
   private bubbleMap = new Map<any, Fx.Fx<any, never, Scope.Scope>>()
   private captureMap = new Map<any, Fx.Fx<any, never, Scope.Scope>>()
 
@@ -312,18 +361,23 @@ export class ElementSourceImpl<
     this.query = this.query.bind(this)
     this.events = this.events.bind(this)
 
-    this.elements = this.selector._tag === "css" ?
-      RefSubject.map(this.rootElement, findMatchingElements<any>(this.selector.selectors)) :
-      RefSubject.filterMapEffect(
+    this.elements = this.selector._tag === "css"
+      ? RefSubject.map(
+        this.rootElement,
+        findMatchingElements<any>(this.selector.selectors)
+      )
+      : (RefSubject.filterMapEffect(
         Versioned.of(this.selector.element),
         (x) => Effect.succeedSome([x] as any as Rendered.Elements<T>)
-      ) as any
+      ) as any)
 
     this.version = this.elements.version
   }
 
   static fromElement<T extends Rendered>(rootElement: T): ElementSource<T> {
-    return new ElementSourceImpl<T>(RefSubject.filterMapEffect(Versioned.of(rootElement), Effect.succeedSome)) as any
+    return new ElementSourceImpl<T>(
+      RefSubject.filterMapEffect(Versioned.of(rootElement), Effect.succeedSome)
+    ) as any
   }
 
   toEffect(): Effect.Effect<Rendered.Elements<T>, NoSuchElementException> {
@@ -334,26 +388,39 @@ export class ElementSourceImpl<
     return this.elements
   }
 
-  query<S extends string, Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>>(
-    selector: S
-  ): ElementSource<ParseSelector<S, Element>, Ev> {
+  query<
+    S extends string,
+    Ev extends {} = DefaultEventMap<ParseSelector<S, Element>>
+  >(selector: S): ElementSource<ParseSelector<S, Element>, Ev> {
     if (selector === ROOT_CSS_SELECTOR) {
       return this as any
     } else if (typeof selector === "string") {
       if (this.selector._tag === "css") {
-        return new ElementSourceImpl(this.rootElement, CssSelectors([...this.selector.selectors, selector])) as any
+        return new ElementSourceImpl(
+          this.rootElement,
+          CssSelectors([...this.selector.selectors, selector])
+        ) as any
       } else {
-        return ElementSourceImpl.fromElement(this.selector.element).query(selector) as any
+        return ElementSourceImpl.fromElement(this.selector.element).query(
+          selector
+        ) as any
       }
     } else {
-      return new ElementSourceImpl(this.rootElement, ElementSelector(selector)) as any
+      return new ElementSourceImpl(
+        this.rootElement,
+        ElementSelector(selector)
+      ) as any
     }
   }
 
   events<Type extends keyof EventMap>(
     type: Type,
     options?: AddEventListenerOptions
-  ): Fx.Fx<EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>, never, Scope.Scope> {
+  ): Fx.Fx<
+    EventWithCurrentTarget<Rendered.Elements<T>[number], EventMap[Type]>,
+    never,
+    Scope.Scope
+  > {
     const capture = options?.capture === true
     const map = capture ? this.captureMap : this.bubbleMap
 
@@ -361,13 +428,24 @@ export class ElementSourceImpl<
 
     if (current === undefined) {
       if (this.selector._tag === "css") {
-        current = RefSubject.map(this.rootElement, findMostSpecificElement(this.selector.selectors)).pipe(
-          Fx.switchMap(makeEventStream(this.selector.selectors, type as any, options)),
+        current = RefSubject.map(
+          this.rootElement,
+          findMostSpecificElement(this.selector.selectors)
+        ).pipe(
+          Fx.switchMap(
+            makeEventStream(this.selector.selectors, type as any, options)
+          ),
           Fx.multicast
         )
       } else {
         current = this.rootElement.pipe(
-          Fx.switchMap(makeElementEventStream(this.selector.element, type as string, options)),
+          Fx.switchMap(
+            makeElementEventStream(
+              this.selector.element,
+              type as string,
+              options
+            )
+          ),
           Fx.multicast
         )
       }

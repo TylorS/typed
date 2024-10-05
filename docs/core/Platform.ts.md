@@ -42,7 +42,7 @@ Added in v1.0.0
 ```ts
 export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = {
   readonly content: Content
-  readonly request: ServerRequest
+  readonly request: HttpServerRequest
   readonly head: Fx.Fx<
     RenderEvent | null,
     never,
@@ -101,11 +101,11 @@ export declare function staticFiles({
     readonly immutable?: boolean
   }
 }): <E, R>(
-  self: Http.app.Default<E, R>
+  self: HttpApp.Default<E, R>
 ) => Effect.Effect<
-  Http.response.ServerResponse,
+  HttpServerResponse.HttpServerResponse,
   E | BadArgument | PlatformError,
-  ServerRequest | R | Http.platform.Platform | FileSystem | Path
+  HttpServerRequest | R | HttpPlatform | FileSystem | Path
 >
 ```
 
@@ -132,9 +132,9 @@ export declare function toHttpRouter<
     base?: string
     environment?: "server" | "static"
   }
-): Http.router.Router<
+): HttpRouter.HttpRouter<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  ServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
+  HttpServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 >
 ```
 
@@ -160,9 +160,9 @@ export declare function toServerRouter<
     >
     base?: string
   }
-): ServerRouter.Router<
+): ServerRouter.HttpRouter<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  ServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
+  HttpServerRequest | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
 >
 ```
 

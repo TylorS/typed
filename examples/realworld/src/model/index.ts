@@ -1,5 +1,0 @@
-export * from "./Article"
-export * from "./Comment"
-export * from "./Password"
-export * from "./Profile"
-export * from "./User"

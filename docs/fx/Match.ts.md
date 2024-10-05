@@ -125,7 +125,7 @@ Added in v1.18.0
 **Signature**
 
 ```ts
-export declare const type: <I>() => TypeMatcher<I, never, never, never>
+export declare const type: <I>() => TypeMatcher<I>
 ```
 
 Added in v1.18.0

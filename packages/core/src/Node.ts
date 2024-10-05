@@ -5,8 +5,10 @@
 /// <reference types="vite/client" />
 /// <reference types="@typed/vite-plugin-types" />
 
+import type { HttpApp, HttpServerError, HttpServerRequest } from "@effect/platform"
+import { HttpMiddleware, HttpServer } from "@effect/platform"
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
-import * as Http from "@effect/platform/HttpServer"
+import type { HttpPlatform } from "@effect/platform/HttpPlatform"
 import { defaultTeardown } from "@effect/platform/Runtime"
 import { CurrentEnvironment, Environment } from "@typed/environment"
 import type { GetRandomValues } from "@typed/id"
@@ -178,7 +180,7 @@ export type Options = {
 }
 
 const logServerAddress = Effect.gen(function*() {
-  const server = yield* Http.server.Server
+  const server = yield* HttpServer.HttpServer
   const address = server.address._tag === "UnixAddress"
     ? server.address.path
     : `${server.address.hostname}:${server.address.port}`
@@ -201,17 +203,16 @@ const defaultCacheControl = (filePath: string) => {
  */
 export const listen: {
   (options: Options): <E, R>(
-    app: Http.app.Default<E, R>
+    app: HttpApp.Default<E, R>
   ) => Effect.Effect<
     never,
-    Http.error.ServeError,
+    HttpServerError.HttpServerError,
     Exclude<
       R,
-      | Http.request.ServerRequest
+      | HttpServerRequest.HttpServerRequest
       | Scope.Scope
-      | Http.server.Server
-      | Http.platform.Platform
-      | Http.etag.Generator
+      | HttpServer.HttpServer
+      | HttpPlatform
       | CurrentEnvironment
       | GetRandomValues
       | RenderContext.RenderContext
@@ -221,18 +222,17 @@ export const listen: {
   >
 
   <E, R>(
-    app: Http.app.Default<E, R>,
+    app: HttpApp.Default<E, R>,
     options: Options
   ): Effect.Effect<
     never,
-    Http.error.ServeError,
+    HttpServerError.HttpServerError,
     Exclude<
       R,
-      | Http.request.ServerRequest
+      | HttpServerRequest.HttpServerRequest
       | Scope.Scope
-      | Http.server.Server
-      | Http.platform.Platform
-      | Http.etag.Generator
+      | HttpServer.HttpServer
+      | HttpPlatform
       | CurrentEnvironment
       | GetRandomValues
       | RenderContext.RenderContext
@@ -240,7 +240,7 @@ export const listen: {
       | RenderTemplate
     >
   >
-} = dual(2, function listen<E, R>(app: Http.app.Default<E, R>, options: Options) {
+} = dual(2, function listen<E, R>(app: HttpApp.Default<E, R>, options: Options) {
   return app.pipe(
     staticFiles({
       serverOutputDirectory: options.serverDirectory,
@@ -248,13 +248,13 @@ export const listen: {
       options: typedOptions,
       cacheControl: options?.cacheControl ?? defaultCacheControl
     }),
-    Http.middleware.logger,
+    HttpMiddleware.logger,
     (app) =>
       Effect.zipRight(
         logServerAddress,
-        Layer.launch(Http.server.serve(app))
+        Layer.launch(HttpServer.serve(app))
       ),
-    Effect.provide(NodeHttpServer.server.layer(getOrCreateServer, options)),
+    Effect.provide(NodeHttpServer.layer(getOrCreateServer, options)),
     Effect.provide(options.static ? CoreServices.static : CoreServices.server),
     Effect.scoped,
     Logger.withMinimumLogLevel(options.logLevel ?? LogLevel.Info)

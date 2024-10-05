@@ -76,9 +76,9 @@ export declare const server: Layer.Layer<
   | CurrentEnvironment
   | CurrentRoute
   | GetRandomValues
-  | RenderTemplate
   | RenderContext.RenderContext
-  | RenderQueue.RenderQueue,
+  | RenderQueue.RenderQueue
+  | RenderTemplate,
   never,
   never
 >
@@ -95,9 +95,9 @@ export declare const static: Layer.Layer<
   | CurrentEnvironment
   | CurrentRoute
   | GetRandomValues
-  | RenderTemplate
   | RenderContext.RenderContext
-  | RenderQueue.RenderQueue,
+  | RenderQueue.RenderQueue
+  | RenderTemplate,
   never,
   never
 >

@@ -350,10 +350,10 @@ Get multiple services from the context that corresponds to the given tags.
 
 ```ts
 export declare const getMany: {
-  <Services, T extends readonly ValidTagsById<Services>[]>(
+  <Services, T extends ReadonlyArray<ValidTagsById<Services>>>(
     ...tags: T
   ): (self: Context<Services>) => { readonly [K in keyof T]: Tag.Service<T[K]> }
-  <Services, T extends readonly ValidTagsById<Services>[]>(
+  <Services, T extends ReadonlyArray<ValidTagsById<Services>>>(
     self: Context<Services>,
     ...tags: T
   ): { readonly [K in keyof T]: Tag.Service<T[K]> }
@@ -401,7 +401,7 @@ Omits specified services from a given `Context`.
 **Signature**
 
 ```ts
-export declare const omit: <Services, S extends ValidTagsById<Services>[]>(
+export declare const omit: <Services, S extends Array<ValidTagsById<Services>>>(
   ...tags: S
 ) => (self: Context<Services>) => Context<Exclude<Services, { [k in keyof S]: Tag.Identifier<S[k]> }[keyof S]>>
 ```
@@ -415,7 +415,7 @@ Returns a new `Context` that contains only the specified services.
 **Signature**
 
 ```ts
-export declare const pick: <Services, S extends ValidTagsById<Services>[]>(
+export declare const pick: <Services, S extends Array<ValidTagsById<Services>>>(
   ...tags: S
 ) => (self: Context<Services>) => Context<{ [k in keyof S]: Tag.Identifier<S[k]> }[number]>
 ```

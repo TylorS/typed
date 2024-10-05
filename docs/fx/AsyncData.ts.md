@@ -90,11 +90,7 @@ Await for the AsyncData to stop loading.
 ```ts
 export declare const awaitLoading: <A, E, R>(
   data: RefAsyncData<A, E, R>
-) => Effect.Effect<
-  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<A, E>,
-  never,
-  Scope.Scope | R
->
+) => Effect.Effect<Exclude<AsyncData.AsyncData<A, E>, AsyncData.Loading>, never, R | Scope.Scope>
 ```
 
 Added in v1.20.0
@@ -108,11 +104,7 @@ Await for the AsyncData to stop loading or refreshing.
 ```ts
 export declare const awaitLoadingOrRefreshing: <A, E, R>(
   data: RefAsyncData<A, E, R>
-) => Effect.Effect<
-  AsyncData.NoData | AsyncData.Failure<E> | AsyncData.Success<A> | AsyncData.Optimistic<A, E>,
-  never,
-  Scope.Scope | R
->
+) => Effect.Effect<Exclude<AsyncData.AsyncData<A, E>, AsyncData.Loading>, never, R | Scope.Scope>
 ```
 
 Added in v1.20.0
@@ -275,18 +267,18 @@ export declare const matchAsyncData: {
   <E1, A, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(matchers: {
     readonly NoData: Fx.Fx<B, E2, R2>
     readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
-    readonly Failure: (error: RefSubject.Computed<E1, never, never>) => Fx.Fx<D, E4, R4>
-    readonly Success: (value: RefSubject.RefSubject<A, never, never>) => Fx.Fx<F, E5, R5>
+    readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+    readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
   }): <E, R>(
     fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>
-  ) => Fx.Fx<B | C | D | F, E2 | E3 | E4 | E5 | E, R2 | R3 | R4 | R5 | R>
+  ) => Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
   <R, E, E1, A, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
     fx: Fx.Fx<AsyncData.AsyncData<A, E1>, E, R>,
     matchers: {
       readonly NoData: Fx.Fx<B, E2, R2>
       readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
-      readonly Failure: (error: RefSubject.Computed<E1, never, never>) => Fx.Fx<D, E4, R4>
-      readonly Success: (value: RefSubject.RefSubject<A, never, never>) => Fx.Fx<F, E5, R5>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>) => Fx.Fx<F, E5, R5>
     }
   ): Fx.Fx<B | C | D | F, E | E2 | E3 | E4 | E5, R | R2 | R3 | R4 | R5>
 }
@@ -305,22 +297,22 @@ export declare const matchAsyncDataArray: {
     matchers: {
       readonly NoData: Fx.Fx<B, E2, R2>
       readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
-      readonly Failure: (error: RefSubject.Computed<E1, never, never>) => Fx.Fx<D, E4, R4>
-      readonly Success: (value: RefSubject.RefSubject<A, never, never>, key: K) => Fx.Fx<F, E5, R5>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>, key: K) => Fx.Fx<F, E5, R5>
     }
   ): <E, R>(
-    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>
-  ) => Fx.Fx<B | C | D | readonly F[], E2 | E3 | E4 | E5 | E, Scope.Scope | R2 | R3 | R4 | R5 | R>
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
+  ) => Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
   <R, E, E1, A, K extends PropertyKey, B, E2, R2, C, E3, R3, D, E4, R4, F, E5, R5>(
-    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => K,
     matchers: {
       readonly NoData: Fx.Fx<B, E2, R2>
       readonly Loading: (progress: RefSubject.Filtered<Progress>) => Fx.Fx<C, E3, R3>
-      readonly Failure: (error: RefSubject.Computed<E1, never, never>) => Fx.Fx<D, E4, R4>
-      readonly Success: (value: RefSubject.RefSubject<A, never, never>, key: K) => Fx.Fx<F, E5, R5>
+      readonly Failure: (error: RefSubject.Computed<E1>) => Fx.Fx<D, E4, R4>
+      readonly Success: (value: RefSubject.RefSubject<A>, key: K) => Fx.Fx<F, E5, R5>
     }
-  ): Fx.Fx<B | C | D | readonly F[], E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
+  ): Fx.Fx<B | C | D | ReadonlyArray<F>, E | E2 | E3 | E4 | E5, Scope.Scope | R | R2 | R3 | R4 | R5>
 }
 ```
 
@@ -356,7 +348,7 @@ Added in v1.20.0
 export declare const runAsyncData: {
   <R2, A, E>(
     effect: Effect.Effect<A, E, R2>
-  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
   <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>
@@ -375,7 +367,7 @@ export declare const runIfExpired: {
   <R2, A, E>(
     effect: Effect.Effect<A, E, R2>,
     options: { readonly ttl: Duration.DurationInput; readonly now?: number }
-  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
   <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>,
@@ -394,7 +386,7 @@ Added in v1.20.0
 export declare const runIfNoData: {
   <R2, A, E>(
     effect: Effect.Effect<A, E, R2>
-  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R2 | R>
+  ): <R>(ref: RefAsyncData<A, E, R>) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R | R2>
   <A, E, R, R2>(
     ref: RefAsyncData<A, E, R>,
     effect: Effect.Effect<A, E, R2>

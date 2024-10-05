@@ -484,8 +484,8 @@ Added in v1.18.0
 
 ```ts
 export declare const compact: {
-  <A, E, R>(ref: Computed<Option.Option<A>, E, R>): Filtered<A, never, never>
-  <A, E, R>(ref: Filtered<Option.Option<A>, E, R>): Filtered<A, never, never>
+  <A, E, R>(ref: Computed<Option.Option<A>, E, R>): Filtered<A>
+  <A, E, R>(ref: Filtered<Option.Option<A>, E, R>): Filtered<A>
   <R0, E0, A, E, R, E2, R2>(
     versioned: Versioned.Versioned<R0, E0, Option.Option<A>, E, R, Option.Option<A>, E2, R2>
   ): Filtered<
@@ -625,8 +625,8 @@ export declare const filterMapEffect: {
   <A, B, E2, R2>(
     f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
   ): {
-    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Filtered<B, E2 | E, R2 | R>
-    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E2 | E, R2 | R>
+    <E, R>(ref: RefSubject<A, E, R> | Computed<A, E, R>): Filtered<B, E | E2, R | R2>
+    <E, R>(ref: Filtered<A, E, R>): Filtered<B, E | E2, R | R2>
     <R0, E0, B, E, R, E2, R2>(
       versioned: Versioned.Versioned<R0, E0, A, E, R, A, E2, R2>,
       f: (a: A) => Effect.Effect<Option.Option<B>, E2, R2>
@@ -790,16 +790,16 @@ Added in v1.20.0
 export declare const make: {
   <A, E = never, R = never>(
     ref: RefSubject<A, E, R>,
-    options?: RefSubjectOptions<A> | undefined
+    options?: RefSubjectOptions<A>
   ): Effect.Effect<RefSubject.Derived<A, E, R>, never, R | Scope.Scope>
   <A, E = never, R = never>(
     fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R>,
-    options?: RefSubjectOptions<A> | undefined
-  ): Effect.Effect<RefSubject<A, E, never>, never, R | Scope.Scope>
+    options?: RefSubjectOptions<A>
+  ): Effect.Effect<RefSubject<A, E>, never, R | Scope.Scope>
   <A, E = never, R = never>(
     fxOrEffect: Fx<A, E, R> | Effect.Effect<A, E, R> | RefSubject<A, E, R>,
-    options?: RefSubjectOptions<A> | undefined
-  ): Effect.Effect<RefSubject<A, E, never> | RefSubject.Derived<A, E, R>, never, R | Scope.Scope>
+    options?: RefSubjectOptions<A>
+  ): Effect.Effect<RefSubject<A, E> | RefSubject.Derived<A, E, R>, never, R | Scope.Scope>
 }
 ```
 
@@ -812,12 +812,8 @@ Added in v1.20.0
 ```ts
 export declare const map: {
   <T extends RefSubject.Any | Computed.Any | Filtered.Any, B>(
-    f: (a: RefSubject.Success<T>) => B
-  ): (
-    ref: T
-  ) => T extends Filtered.Any
-    ? Filtered<B, RefSubject.Error<T>, RefSubject.Context<T>>
-    : Computed<B, RefSubject.Error<T>, RefSubject.Context<T>>
+    f: (a: Success<T>) => B
+  ): (ref: T) => T extends Filtered.Any ? Filtered<B, Error<T>, Context<T>> : Computed<B, Error<T>, Context<T>>
   <A, E, R, B>(ref: RefSubject<A, E, R> | Computed<A, E, R>, f: (a: A) => B): Computed<B, E, R>
   <A, E, R, B>(filtered: Filtered<A, E, R>, f: (a: A) => B): Filtered<B, E, R>
   <R0, E0, A, E, R, B, E2, R2>(
@@ -838,12 +834,12 @@ Added in v1.20.0
 ```ts
 export declare const mapEffect: {
   <T extends RefSubject.Any | Computed.Any | Filtered.Any, B, E2, R2>(
-    f: (a: RefSubject.Success<T>) => Effect.Effect<B, E2, R2>
+    f: (a: Success<T>) => Effect.Effect<B, E2, R2>
   ): (
     ref: T
   ) => T extends Filtered.Any
-    ? Filtered<B, E2 | RefSubject.Error<T>, R2 | RefSubject.Context<T>>
-    : Computed<B, E2 | RefSubject.Error<T>, R2 | RefSubject.Context<T>>
+    ? Filtered<B, Error<T> | E2, Context<T> | R2>
+    : Computed<B, Error<T> | E2, Context<T> | R2>
   <A, E, R, B, E2, R2>(
     ref: RefSubject<A, E, R> | Computed<A, E, R>,
     f: (a: A) => Effect.Effect<B, E2, R2>
@@ -879,7 +875,7 @@ Added in v1.20.0
 export declare const modifyEffect: {
   <A, B, E2, R2>(
     f: (value: A) => Effect.Effect<readonly [B, A], E2, R2>
-  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E2 | E, R2 | R>
+  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<B, E | E2, R | R2>
   <A, E, R, B, E2, R2>(
     ref: RefSubject<A, E, R>,
     f: (value: A) => Effect.Effect<readonly [B, A], E2, R2>
@@ -916,16 +912,16 @@ export declare const provide: {
   <R2, S>(
     layer: Layer.Layer<S, never, R2>
   ): {
-    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<A, E, R2 | Exclude<R, S>>
-    <A, E, R>(computed: Computed<A, E, R>): Computed<A, E, R2 | Exclude<R, S>>
-    <A, E, R>(ref: RefSubject<A, E, R>): RefSubject<A, E, R2 | Exclude<R, S>>
+    <A, E, R>(filtered: Filtered<A, E, R>): Filtered<A, E, Exclude<R, S> | R2>
+    <A, E, R>(computed: Computed<A, E, R>): Computed<A, E, Exclude<R, S> | R2>
+    <A, E, R>(ref: RefSubject<A, E, R>): RefSubject<A, E, Exclude<R, S> | R2>
   }
   <A, E, R, S>(filtered: Filtered<A, E, R>, context: C.Context<S> | Runtime.Runtime<S>): Filtered<A, E, Exclude<R, S>>
   <A, E, R, S>(computed: Computed<A, E, R>, context: C.Context<S> | Runtime.Runtime<S>): Computed<A, E, Exclude<R, S>>
   <A, E, R, S>(ref: RefSubject<A, E, R>, context: C.Context<S> | Runtime.Runtime<S>): RefSubject<A, E, Exclude<R, S>>
-  <A, E, R, R2, S>(filtered: Filtered<A, E, R>, layer: Layer.Layer<S, never, R2>): Filtered<A, E, R2 | Exclude<R, S>>
-  <A, E, R, R2, S>(computed: Computed<A, E, R>, layer: Layer.Layer<S, never, R2>): Computed<A, E, R2 | Exclude<R, S>>
-  <A, E, R, R2, S>(ref: RefSubject<A, E, R>, layer: Layer.Layer<S, never, R2>): RefSubject<A, E, R2 | Exclude<R, S>>
+  <A, E, R, R2, S>(filtered: Filtered<A, E, R>, layer: Layer.Layer<S, never, R2>): Filtered<A, E, Exclude<R, S> | R2>
+  <A, E, R, R2, S>(computed: Computed<A, E, R>, layer: Layer.Layer<S, never, R2>): Computed<A, E, Exclude<R, S> | R2>
+  <A, E, R, R2, S>(ref: RefSubject<A, E, R>, layer: Layer.Layer<S, never, R2>): RefSubject<A, E, Exclude<R, S> | R2>
 }
 ```
 
@@ -939,10 +935,10 @@ Extract all values from an object using a Proxy
 
 ```ts
 export declare const proxy: {
-  <A extends readonly any[] | Readonly<Record<PropertyKey, any>>, E, R>(
+  <A extends ReadonlyArray<any> | Readonly<Record<PropertyKey, any>>, E, R>(
     source: Computed<A, E, R>
   ): { readonly [K in keyof A]: Computed<A[K], E, R> }
-  <A extends readonly any[] | Readonly<Record<PropertyKey, any>>, E, R>(
+  <A extends ReadonlyArray<any> | Readonly<Record<PropertyKey, any>>, E, R>(
     source: Filtered<A, E, R>
   ): { readonly [K in keyof A]: Filtered<A[K], E, R> }
 }
@@ -1201,7 +1197,7 @@ Added in v1.20.0
 export declare const updateEffect: {
   <A, E2, R2>(
     f: (value: A) => Effect.Effect<A, E2, R2>
-  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E2 | E, R2 | R>
+  ): <E, R>(ref: RefSubject<A, E, R>) => Effect.Effect<A, E | E2, R | R2>
   <A, E, R, E2, R2>(
     ref: RefSubject<A, E, R>,
     f: (value: A) => Effect.Effect<A, E2, R2>

@@ -26,7 +26,7 @@
     "build-mjs": "babel build/esm --config-file ../../.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
     "build-post": "build-utils pack-v2",
     "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
-    "build-all": "tsc -b tsconfig.json",
+    "build-all": "tsc -b tsconfig.build.json",
     "build-watch": "tsc -b tsconfig.json --watch",
     "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
     "docs": "docgen",
@@ -40,9 +40,9 @@
   "license": "MIT",
   "sideEffects": [],
   "dependencies": {
-    "@effect/platform": "^0.57.4",
-    "@effect/platform-node": "^0.51.13",
-    "@effect/schema": "^0.68.1",
+    "@effect/platform": "^0.66.2",
+    "@effect/platform-node": "^0.61.3",
+    "@effect/schema": "^0.74.1",
     "@typed/async-data": "workspace:*",
     "@typed/context": "workspace:*",
     "@typed/decoder": "workspace:*",
@@ -60,10 +60,10 @@
     "@typed/ui": "workspace:*",
     "@typed/vite-plugin": "workspace:*",
     "@typed/vite-plugin-types": "workspace:*",
-    "effect": "^3.3.5",
-    "vavite": "^4.1.1"
+    "effect": "^3.8.4",
+    "vavite": "^5.0.0"
   },
   "devDependencies": {
-    "vite": "^5.3.1"
+    "vite": "^5.4.8"
   }
 }

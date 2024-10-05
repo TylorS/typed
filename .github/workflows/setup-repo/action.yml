@@ -1,5 +1,5 @@
-name: 'Setup Repo'
-description: 'Setup Typed Repo'
+name: "Setup Repo"
+description: "Setup Typed Repo"
 runs:
   using: "composite"
   steps:
@@ -26,5 +26,6 @@ runs:
           ${{ runner.os }}-pnpm-store-
     - run: pnpm install
       shell: bash
-
-
+    - name: Build
+      run: pnpm run build
+      shell: bash

@@ -385,7 +385,7 @@ export interface ParsedTemplatePart extends Omit<SimpleParsedPart, "kind">, Pars
 }
 
 function getHtmlTags(sourceFile: ts.SourceFile) {
-  const toProcess: Array<ts.Node> = sourceFile.getChildren(sourceFile)
+  const toProcess: Array<ts.Node> = [...sourceFile.getChildren(sourceFile)]
   const matches: Array<ts.TaggedTemplateExpression> = []
 
   while (toProcess.length) {

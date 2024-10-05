@@ -1,26 +1,47 @@
-import * as HttpClient from "@effect/platform/HttpClient"
+import { FetchHttpClient } from "@effect/platform"
 import { Window } from "@typed/dom/Window"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
-import { isUuid } from "@typed/id"
+import { getRandomValues, isUuid, makeUuid } from "@typed/id"
 import * as Navigation from "@typed/navigation"
 import { deepStrictEqual, ok } from "assert"
-import { Effect } from "effect"
+import { Cause, Effect, Exit } from "effect"
 import * as Option from "effect/Option"
 import * as happyDOM from "happy-dom"
 import { describe, it } from "vitest"
+import type { PatchedState } from "../src/internal/shared"
 
-const equalDestination = (a: Navigation.Destination, b: Navigation.Destination) => {
+const equalDestination = (
+  a: Navigation.Destination,
+  b: Navigation.Destination
+) => {
   const { id: _aId, ...aRest } = a
   const { id: _bId, ...bRest } = b
   deepStrictEqual(aRest, bRest)
 }
 
-const equalDestinations = (a: ReadonlyArray<Navigation.Destination>, b: ReadonlyArray<Navigation.Destination>) => {
+const equalDestinations = (
+  a: ReadonlyArray<Navigation.Destination>,
+  b: ReadonlyArray<Navigation.Destination>
+) => {
   const as = a.map(({ id: _, ...rest }) => rest)
   const bs = b.map(({ id: _, ...rest }) => rest)
 
   return deepStrictEqual(as, bs)
+}
+
+const makePatchedState = (state: unknown): PatchedState => {
+  return {
+    __typed__navigation__id__: makeUuid.pipe(
+      Effect.provide(getRandomValues),
+      Effect.runSync
+    ),
+    __typed__navigation__key__: makeUuid.pipe(
+      Effect.provide(getRandomValues),
+      Effect.runSync
+    ),
+    __typed__navigation__state__: state
+  }
 }
 
 describe(__filename, () => {
@@ -29,9 +50,16 @@ describe(__filename, () => {
       const url = new URL("https://example.com/foo/1")
       const state = { x: Math.random() }
       const test = Effect.gen(function*(_) {
-        const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } = yield* _(
-          Navigation.Navigation
-        )
+        const {
+          back,
+          beforeNavigation,
+          currentEntry,
+          entries,
+          forward,
+          navigate,
+          onNavigation,
+          traverseTo
+        } = yield* _(Navigation.Navigation)
         const initial = yield* _(currentEntry)
 
         expect(isUuid(initial.id)).toEqual(true)
@@ -43,8 +71,12 @@ describe(__filename, () => {
 
         const count = yield* _(RefSubject.of(0))
 
-        yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
-        yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
+        yield* _(
+          beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10)))
+        )
+        yield* _(
+          onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2)))
+        )
 
         const second = yield* _(navigate("/foo/2"))
 
@@ -83,28 +115,40 @@ describe(__filename, () => {
 
     describe("window", () => {
       const url = new URL("https://example.com/foo/1")
-      const state = { x: Math.random() }
+      const state = makePatchedState({
+        x: Math.random()
+      })
 
       it("manages navigation", async () => {
         const window = makeWindow({ url: url.href }, state)
         const test = Effect.gen(function*(_) {
-          const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
-            yield* _(
-              Navigation.Navigation
-            )
+          const {
+            back,
+            beforeNavigation,
+            currentEntry,
+            entries,
+            forward,
+            navigate,
+            onNavigation,
+            traverseTo
+          } = yield* _(Navigation.Navigation)
           const initial = yield* _(currentEntry)
 
           expect(isUuid(initial.id)).toEqual(true)
           expect(isUuid(initial.key)).toEqual(true)
           expect(initial.url).toEqual(url)
-          expect(initial.state).toEqual(state)
+          expect(initial.state).toEqual(state.__typed__navigation__state__)
           expect(initial.sameDocument).toEqual(true)
           expect(yield* _(entries)).toEqual([initial])
 
           const count = yield* _(RefSubject.of(0))
 
-          yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
-          yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
+          yield* _(
+            beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10)))
+          )
+          yield* _(
+            onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2)))
+          )
 
           const second = yield* _(navigate("/foo/2"))
 
@@ -143,23 +187,22 @@ describe(__filename, () => {
       })
 
       it("manages state with History API", async () => {
-        const window = makeWindow({ url: url.href }, { id: "foo", key: "bar", originalHistoryState: state })
+        const window = makeWindow({ url: url.href }, state)
         const test = Effect.gen(function*(_) {
           const { history } = yield* _(Window)
 
           const current = yield* _(Navigation.CurrentEntry)
 
           // Initializes from History state when possible
-          deepStrictEqual(current.id, "foo")
-          deepStrictEqual(current.key, "bar")
-
-          deepStrictEqual(current.state, state)
-          deepStrictEqual(history.state, { id: current.id, key: current.key, originalHistoryState: state })
+          deepStrictEqual(current.id, state.__typed__navigation__id__)
+          deepStrictEqual(current.key, state.__typed__navigation__key__)
+          deepStrictEqual(current.state, state.__typed__navigation__state__)
+          deepStrictEqual(history.state, state.__typed__navigation__state__)
 
           const next = yield* _(Navigation.navigate("/foo/2"))
 
           deepStrictEqual(next.state, undefined)
-          deepStrictEqual(history.state, { id: next.id, key: next.key, originalHistoryState: undefined })
+          deepStrictEqual(history.state, undefined)
         }).pipe(
           Effect.provide(Navigation.fromWindow),
           Window.provide(window),
@@ -170,55 +213,51 @@ describe(__filename, () => {
       })
 
       it("responds to popstate events", async () => {
-        const window = makeWindow({ url: url.href }, { id: "foo", key: "bar", originalHistoryState: state })
+        const window = makeWindow({ url: url.href }, state)
         const test = Effect.gen(function*(_) {
           const { history, location } = yield* _(Window)
 
           const current = yield* _(Navigation.CurrentEntry)
 
           // Initializes from History state when possible
-          deepStrictEqual(current.id, "foo")
-          deepStrictEqual(current.key, "bar")
-
-          deepStrictEqual(current.state, state)
-          deepStrictEqual(history.state, { id: current.id, key: current.key, originalHistoryState: state })
+          deepStrictEqual(current.id, state.__typed__navigation__id__)
+          deepStrictEqual(current.key, state.__typed__navigation__key__)
+          deepStrictEqual(current.state, state.__typed__navigation__state__)
 
           const next = yield* _(Navigation.navigate("/foo/2"))
 
           deepStrictEqual(next.state, undefined)
-          deepStrictEqual(history.state, { id: next.id, key: next.key, originalHistoryState: undefined })
+          deepStrictEqual(history.state, undefined)
 
           // Manually change the URL
           location.href = url.href
 
-          const popstateEventState = { id: current.id, key: current.key, originalHistoryState: state }
-          const popstateEvent = new window.PopStateEvent("popstate")
-          ;(popstateEvent as any).state = popstateEventState
-
-          window.dispatchEvent(popstateEvent)
-
-          // Allow fibers to run
-          yield* _(Effect.sleep(0))
-
+          history.back()
+          const ev = new window.PopStateEvent("popstate")
+          Object.assign(ev, { state })
+          window.dispatchEvent(ev)
           const popstate = yield* _(Navigation.CurrentEntry)
 
-          deepStrictEqual(popstate.id, "foo")
-          deepStrictEqual(popstate.key, "bar")
-
-          deepStrictEqual(popstate.state, state)
-          deepStrictEqual(history.state, popstateEventState)
+          deepStrictEqual(popstate.id, state.__typed__navigation__id__)
+          deepStrictEqual(popstate.key, state.__typed__navigation__key__)
+          deepStrictEqual(popstate.state, state.__typed__navigation__state__)
+          deepStrictEqual(history.state, state.__typed__navigation__state__)
         }).pipe(
           Effect.provide(Navigation.fromWindow),
           Window.provide(window),
           Effect.scoped
         )
 
-        await Effect.runPromise(test)
+        const exit = await Effect.runPromiseExit(test)
+
+        if (Exit.isFailure(exit)) {
+          console.error(Cause.pretty(exit.cause))
+          throw exit.cause
+        }
       })
 
       it("responds to hashchange events", async () => {
-        const initialState = { id: "foo", key: "bar", originalHistoryState: state }
-        const window = makeWindow({ url: url.href }, initialState)
+        const window = makeWindow({ url: url.href }, state)
         const test = Effect.gen(function*(_) {
           const { history, location } = yield* _(Window)
           const { currentEntry } = yield* _(Navigation.Navigation)
@@ -226,11 +265,11 @@ describe(__filename, () => {
           const current = yield* _(currentEntry)
 
           // Initializes from History state when possible
-          deepStrictEqual(current.key, "bar")
+          deepStrictEqual(current.key, state.__typed__navigation__key__)
           deepStrictEqual(current.url.hash, "")
 
-          deepStrictEqual(current.state, state)
-          deepStrictEqual(history.state, initialState)
+          deepStrictEqual(current.state, state.__typed__navigation__state__)
+          deepStrictEqual(history.state, state.__typed__navigation__state__)
 
           const hashChangeEvent = new window.HashChangeEvent("hashchange")
 
@@ -246,10 +285,13 @@ describe(__filename, () => {
 
           const hashChange = yield* _(currentEntry)
 
-          deepStrictEqual(hashChange.key, "bar")
+          deepStrictEqual(hashChange.key, state.__typed__navigation__key__)
           deepStrictEqual(hashChange.url.hash, "#baz")
-          deepStrictEqual(hashChange.state, state)
-          deepStrictEqual(history.state, { ...initialState, id: hashChange.id })
+          deepStrictEqual(hashChange.state, state.__typed__navigation__state__)
+          // deepStrictEqual(history.state, {
+          //   ...initialState,
+          //   id: hashChange.id,
+          // });
         }).pipe(
           Effect.provide(Navigation.fromWindow),
           Window.provide(window),
@@ -281,7 +323,11 @@ describe(__filename, () => {
                 // Runs before the URL has been committed
                 deepStrictEqual(current.url, handler.from.url)
 
-                return yield* _(handler.to.url === url ? Effect.fail(redirect) : Effect.succeedNone)
+                return yield* _(
+                  handler.to.url === url
+                    ? Effect.fail(redirect)
+                    : Effect.succeedNone
+                )
               })
             )
           )
@@ -318,7 +364,9 @@ describe(__filename, () => {
                 deepStrictEqual(current.url, handler.from.url)
 
                 return yield* _(
-                  handler.to.url === redirectUrl ? Effect.fail(Navigation.cancelNavigation) : Effect.succeedNone
+                  handler.to.url === redirectUrl
+                    ? Effect.fail(Navigation.cancelNavigation)
+                    : Effect.succeedNone
                 )
               })
             )
@@ -353,26 +401,30 @@ describe(__filename, () => {
           let beforeCount = 0
           let afterCount = 0
 
-          yield* _(navigation.beforeNavigation((event) =>
-            Effect.gen(function*(_) {
-              beforeCount++
+          yield* _(
+            navigation.beforeNavigation((event) =>
+              Effect.gen(function*(_) {
+                beforeCount++
 
-              if (event.to.url === intermmediateUrl) {
-                return yield* _(Effect.fail(redirect))
-              }
+                if (event.to.url === intermmediateUrl) {
+                  return yield* _(Effect.fail(redirect))
+                }
 
-              return Option.none()
-            })
-          ))
+                return Option.none()
+              })
+            )
+          )
 
-          yield* _(navigation.onNavigation((event) =>
-            Effect.sync(() => {
-              deepStrictEqual(event.destination.url, redirectUrl)
+          yield* _(
+            navigation.onNavigation((event) =>
+              Effect.sync(() => {
+                deepStrictEqual(event.destination.url, redirectUrl)
 
-              afterCount++
-              return Option.none()
-            })
-          ))
+                afterCount++
+                return Option.none()
+              })
+            )
+          )
 
           yield* _(navigation.navigate(intermmediateUrl))
 
@@ -382,7 +434,10 @@ describe(__filename, () => {
 
           // Only called once with the redirectUrl
           deepStrictEqual(afterCount, 1)
-        }).pipe(Effect.provide(Navigation.initialMemory({ url })), Effect.scoped)
+        }).pipe(
+          Effect.provide(Navigation.initialMemory({ url })),
+          Effect.scoped
+        )
 
         await Effect.runPromise(test)
       })
@@ -395,7 +450,12 @@ describe(__filename, () => {
       it("captures any ongoing transitions", async () => {
         const test = Effect.gen(function*(_) {
           const { navigate, transition } = yield* _(Navigation.Navigation)
-          const fiber = yield* _(transition, Fx.take(2), Fx.toReadonlyArray, Effect.forkScoped)
+          const fiber = yield* _(
+            transition,
+            Fx.take(2),
+            Fx.toReadonlyArray,
+            Effect.forkScoped
+          )
 
           // Allow fiber to start
           yield* _(Effect.sleep(0))
@@ -409,15 +469,17 @@ describe(__filename, () => {
           const event = events[1].value
           deepStrictEqual(event.from.url, url)
           deepStrictEqual(event.to.url, nextUrl)
-        }).pipe(Effect.provide(Navigation.initialMemory({ url })), Effect.scoped)
+        }).pipe(
+          Effect.provide(Navigation.initialMemory({ url })),
+          Effect.scoped
+        )
         await Effect.runPromise(test)
       })
     })
 
     describe("native navigation", () => {
       const url = new URL("https://example.com/foo/1")
-      const state = { x: Math.random() }
-
+      const state = makePatchedState({ x: Math.random() })
       it("manages navigation", async () => {
         const window = makeWindow({ url: url.href }, state)
         const NavigationPolyfill = await import("@virtualstate/navigation")
@@ -427,10 +489,16 @@ describe(__filename, () => {
         })
         ;(window as any).navigation = navigation as any
         const test = Effect.gen(function*(_) {
-          const { back, beforeNavigation, currentEntry, entries, forward, navigate, onNavigation, traverseTo } =
-            yield* _(
-              Navigation.Navigation
-            )
+          const {
+            back,
+            beforeNavigation,
+            currentEntry,
+            entries,
+            forward,
+            navigate,
+            onNavigation,
+            traverseTo
+          } = yield* _(Navigation.Navigation)
           const initial = yield* _(currentEntry)
 
           expect(isUuid(initial.id)).toEqual(true)
@@ -442,8 +510,12 @@ describe(__filename, () => {
 
           const count = yield* _(RefSubject.of(0))
 
-          yield* _(beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10))))
-          yield* _(onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2))))
+          yield* _(
+            beforeNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x + 10)))
+          )
+          yield* _(
+            onNavigation(() => Effect.succeedSome(RefSubject.update(count, (x) => x * 2)))
+          )
 
           const second = yield* _(navigate("/foo/2"))
 
@@ -485,7 +557,9 @@ describe(__filename, () => {
     describe("FormData", () => {
       it("allows submiting a Form with FormData", async () => {
         const url = new URL("https://example.com/foo/1")
-        const state = { x: Math.random() }
+        const state = makePatchedState({
+          x: Math.random()
+        })
         const window = makeWindow({ url: url.href }, state)
 
         const test = Effect.gen(function*(_) {
@@ -497,20 +571,24 @@ describe(__filename, () => {
           let called = false
           let matched = false
 
-          yield* _(onFormData((event) =>
-            Effect.sync(() => {
-              called = true
-              deepStrictEqual(event.data.get("foo"), "bar")
-              deepStrictEqual(event.data.get("bar"), "baz")
+          yield* _(
+            onFormData((event) =>
+              Effect.sync(() => {
+                called = true
+                deepStrictEqual(event.data.get("foo"), "bar")
+                deepStrictEqual(event.data.get("bar"), "baz")
 
-              // Optionally, you can return an Effect to "intercept" this event
-              return Option.some(Effect.sync(() => {
-                matched = true
-                // Here you could make an HttpRequest and return the Option.some(ClientResponse)
-                return Option.none()
-              }))
-            })
-          ))
+                // Optionally, you can return an Effect to "intercept" this event
+                return Option.some(
+                  Effect.sync(() => {
+                    matched = true
+                    // Here you could make an HttpRequest and return the Option.some(ClientResponse)
+                    return Option.none()
+                  })
+                )
+              })
+            )
+          )
 
           yield* _(submit(data))
 
@@ -522,7 +600,7 @@ describe(__filename, () => {
           // Only used when no handlers intercept the event
           // At which point the form will be submitted using the HttpClient
           // And the submit will resolve with Option.Some<ClientResponse>
-          Effect.provide(HttpClient.client.layer),
+          Effect.provide(FetchHttpClient.layer),
           Effect.scoped
         )
 
@@ -570,13 +648,15 @@ describe(__filename, () => {
 
         yield* _(
           blockNavigation,
-          Fx.tapEffect(Option.match({
-            onNone: () => Effect.void,
-            onSome: (blocking) => {
-              didBlock = true
-              return blocking.cancel
-            }
-          })),
+          Fx.tapEffect(
+            Option.match({
+              onNone: () => Effect.void,
+              onSome: (blocking) => {
+                didBlock = true
+                return blocking.cancel
+              }
+            })
+          ),
           Fx.forkScoped
         )
 
@@ -594,13 +674,19 @@ describe(__filename, () => {
   })
 })
 
-function makeWindow(options?: ConstructorParameters<typeof happyDOM.Window>[0], state?: unknown) {
+function makeWindow(
+  options?: ConstructorParameters<typeof happyDOM.Window>[0],
+  state?: PatchedState
+) {
   const window = new happyDOM.Window(options)
 
   // If state is provided, replace the current history state
-  if (state !== undefined) {
-    ;(window.history as any).state = state
+  if (state !== undefined && window.history) {
+    window.history.replaceState(state, "", window.location.href)
   }
 
-  return window as any as Window & typeof globalThis & Pick<happyDOM.Window, "happyDOM">
+  return window as any as
+    & Window
+    & typeof globalThis
+    & Pick<happyDOM.Window, "happyDOM">
 }

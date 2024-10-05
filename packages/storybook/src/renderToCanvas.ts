@@ -21,26 +21,17 @@ import type { TypedRenderer } from "./types.js"
  * @since 1.0.0
  */
 export async function renderToCanvas(
-  {
-    showError,
-    showMain,
-    storyContext,
-    storyFn
-  }: RenderContext<TypedRenderer>,
+  { showError, showMain, storyContext, storyFn }: RenderContext<TypedRenderer>,
   rootElement: TypedRenderer["canvasElement"]
 ) {
   const onCause = (cause: Cause.Cause<unknown>) =>
     Effect.sync(() => {
-      showError({ title: `Cause`, description: Cause.pretty(cause) })
+      showError({ title: `Render Failure`, description: Cause.pretty(cause) })
     })
 
   const renderable = Fx.switchMapCause(
     storyFn(storyContext),
-    (cause) =>
-      Fx.mergeFirst(
-        Fx.never,
-        Fx.fromEffect(onCause(cause))
-      )
+    (cause) => Fx.mergeFirst(Fx.never, Fx.fromEffect(onCause(cause)))
   )
 
   const program = renderToLayer(renderable).pipe(

@@ -187,7 +187,7 @@ Add an event listener to the document
 ```ts
 export declare const addDocumentListener: <EventName extends string, R = never>(
   options: AddEventListenerOptions<Document, EventName, R>
-) => Effect.Effect<void, never, Scope.Scope | Document | R>
+) => Effect.Effect<void, never, R | Document | Scope.Scope>
 ```
 
 Added in v8.19.0

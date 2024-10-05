@@ -106,7 +106,7 @@ that have not yet been pulled.
 export declare const toStreamQueued: {
   <E, A, R2, E2>(
     make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>
-  ): <R>(fx: Fx.Fx<A, E, R>) => Stream.Stream<A, E | E2, R2 | R>
+  ): <R>(fx: Fx.Fx<A, E, R>) => Stream.Stream<A, E | E2, R | R2>
   <A, E, R, R2, E2>(
     fx: Fx.Fx<A, E, R>,
     make: Effect.Effect<Queue.Queue<Exit.Exit<A, Option.Option<E>>>, E2, R2>

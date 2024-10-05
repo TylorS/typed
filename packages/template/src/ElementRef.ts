@@ -23,8 +23,17 @@ export type ElementRefTypeId = typeof ElementRefTypeId
  * A reference to a rendered element.
  * @since 1.0.0
  */
-export interface ElementRef<T extends Rendered = Rendered>
-  extends Versioned<never, never, T, never, Scope.Scope, T, NoSuchElementException, never>
+export interface ElementRef<T extends Rendered = Rendered> extends
+  Versioned<
+    never,
+    never,
+    T,
+    never,
+    Scope.Scope,
+    T,
+    NoSuchElementException,
+    never
+  >
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<Option.Option<T>>
 
@@ -39,7 +48,11 @@ const strictEqual = Option.getEquivalence((a, b) => a === b)
 /**
  * @since 1.0.0
  */
-export function make<T extends Rendered = Rendered>(): Effect.Effect<ElementRef<T>, never, Scope.Scope> {
+export function make<T extends Rendered = Rendered>(): Effect.Effect<
+  ElementRef<T>,
+  never,
+  Scope.Scope
+> {
   return Effect.map(
     RefSubject.of(Option.none<T>(), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
@@ -49,23 +62,22 @@ export function make<T extends Rendered = Rendered>(): Effect.Effect<ElementRef<
 /**
  * @since 1.0.0
  */
-export function of<T extends Rendered>(rendered: T): Effect.Effect<ElementRef<T>, never, Scope.Scope> {
+export function of<T extends Rendered>(
+  rendered: T
+): Effect.Effect<ElementRef<T>, never, Scope.Scope> {
   return Effect.map(
     RefSubject.of(Option.some<T>(rendered), { eq: strictEqual }),
     (ref) => new ElementRefImpl(ref) as any as ElementRef<T>
   )
 }
 
-// @ts-expect-error does not implement Placeholder
+// @ts-expect-error Missing PlaceholderTypeId
 class ElementRefImpl<T extends Rendered> extends FxEffectBase<T, never, Scope.Scope, T, NoSuchElementException, never>
   implements ElementRef<T>
 {
   readonly [ElementRefTypeId]: RefSubject.RefSubject<Option.Option<T>>
 
-  private source: ElementSource<
-    T,
-    DefaultEventMap<T>
-  >
+  private source: ElementSource<T, DefaultEventMap<T>>
 
   readonly query: ElementRef<T>["query"]
   readonly events: ElementRef<T>["events"]
@@ -97,16 +109,26 @@ class ElementRefImpl<T extends Rendered> extends FxEffectBase<T, never, Scope.Sc
  * @since 1.0.0
  */
 export const set: {
-  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<A>
+  <A extends Rendered>(
+    value: A
+  ): (elementRef: ElementRef<A>) => Effect.Effect<A>
   <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<A>
-} = dual(2, function set<A extends Rendered>(elementRef: ElementRef<A>, value: A) {
-  return Effect.as(RefSubject.set(elementRef[ElementRefTypeId], Option.some(value)), value)
+} = dual(2, function set<
+  A extends Rendered
+>(elementRef: ElementRef<A>, value: A) {
+  return Effect.as(
+    RefSubject.set(elementRef[ElementRefTypeId], Option.some(value)),
+    value
+  )
 })
 
 /**
  * @since 1.0.0
  */
-export function dispatchEvent<T extends Rendered>(ref: ElementRef<T>, event: Event) {
+export function dispatchEvent<T extends Rendered>(
+  ref: ElementRef<T>,
+  event: Event
+) {
   return ref.pipe(
     Effect.flatMap((rendered) => {
       const elements = getElements(rendered)

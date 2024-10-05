@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 
+import type { HttpClientError, HttpClientResponse } from "@effect/platform"
 import type * as HttpClient from "@effect/platform/HttpClient"
 import { ParseResult } from "@effect/schema"
 import * as Equivalence from "@effect/schema/Equivalence"
@@ -68,9 +69,9 @@ export interface Navigation {
     data: FormData,
     formInput?: Simplify<Omit<FormInputFrom, "data">>
   ) => Effect.Effect<
-    Option.Option<HttpClient.response.ClientResponse>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Option.Option<HttpClientResponse.HttpClientResponse>,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Service
   >
 
   readonly onFormData: <R = never, R2 = never>(
@@ -234,7 +235,7 @@ export type FormDataHandler<R, R2> = (
   event: FormDataEvent
 ) => Effect.Effect<
   Option.Option<
-    Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation, R2>
+    Effect.Effect<Option.Option<HttpClientResponse.HttpClientResponse>, RedirectError | CancelNavigation, R2>
   >,
   RedirectError | CancelNavigation,
   R
@@ -283,8 +284,8 @@ export const FileSchemaFrom = Schema.Struct({
  */
 export type FileSchemaFrom = Schema.Schema.Encoded<typeof FileSchemaFrom>
 
-const decodeBase64 = ParseResult.decode(Schema.Base64)
-const encodeBase64 = ParseResult.encode(Schema.Base64)
+const decodeBase64 = ParseResult.decode(Schema.Uint8ArrayFromBase64Url)
+const encodeBase64 = ParseResult.encode(Schema.Uint8ArrayFromBase64Url)
 
 /**
  * @since 1.0.0
@@ -306,27 +307,28 @@ export const FileSchema = FileSchemaFrom.pipe(
 /**
  * @since 1.0.0
  */
-export const FormDataSchema = Schema.Record(Schema.String, Schema.Union(Schema.String, FileSchema)).pipe(
-  Schema.transform(
-    Schema.instanceOf(FormData),
-    {
-      decode: (formData) => {
-        const data = new FormData()
+export const FormDataSchema = Schema.Record({ key: Schema.String, value: Schema.Union(Schema.String, FileSchema) })
+  .pipe(
+    Schema.transform(
+      Schema.instanceOf(FormData),
+      {
+        decode: (formData) => {
+          const data = new FormData()
 
-        for (const [key, value] of Object.entries(formData)) {
-          if (value instanceof File) {
-            data.append(key, value, value.name)
-          } else {
-            data.append(key, value)
+          for (const [key, value] of Object.entries(formData)) {
+            if (value instanceof File) {
+              data.append(key, value, value.name)
+            } else {
+              data.append(key, value)
+            }
           }
-        }
 
-        return data
-      },
-      encode: (formData) => Object.fromEntries(formData.entries())
-    }
+          return data
+        },
+        encode: (formData) => Object.fromEntries(formData.entries())
+      }
+    )
   )
-)
 
 const optionNullable = { as: "Option", nullable: true } as const
 
@@ -334,10 +336,10 @@ const optionNullable = { as: "Option", nullable: true } as const
  * @since 1.0.0
  */
 export const FormInputSchema = Schema.Struct({
-  name: Schema.optional(Schema.String, optionNullable),
-  action: Schema.optional(Schema.String, optionNullable),
-  method: Schema.optional(Schema.String, optionNullable),
-  encoding: Schema.optional(Schema.String, optionNullable),
+  name: Schema.optionalWith(Schema.String, optionNullable),
+  action: Schema.optionalWith(Schema.String, optionNullable),
+  method: Schema.optionalWith(Schema.String, optionNullable),
+  encoding: Schema.optionalWith(Schema.String, optionNullable),
   data: FormDataSchema
 })
 
@@ -515,9 +517,9 @@ export function submit(
   data: FormData,
   formInput?: Simplify<Omit<FormInputFrom, "data">>
 ): Effect.Effect<
-  Option.Option<HttpClient.response.ClientResponse>,
-  NavigationError | HttpClient.error.HttpClientError,
-  Navigation | HttpClient.client.Client.Default | Scope.Scope
+  Option.Option<HttpClientResponse.HttpClientResponse>,
+  NavigationError | HttpClientError.HttpClientError,
+  Navigation | HttpClient.HttpClient.Service | Scope.Scope
 > {
   return Navigation.withEffect((n) => n.submit(data, formInput))
 }

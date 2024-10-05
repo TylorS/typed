@@ -366,7 +366,9 @@ class MicroTaskImpl extends BaseImpl implements RenderQueue {
     })
     return Effect.sync(() => {
       this.scheduled = false
-      id && this._clear(id)
+      if (id) {
+        this._clear(id)
+      }
     })
   })
 

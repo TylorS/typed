@@ -1,4 +1,5 @@
-import * as HttpClient from "@effect/platform/HttpClient"
+import type { HttpClientError, HttpClientResponse } from "@effect/platform"
+import { Headers, HttpClient, HttpClientRequest } from "@effect/platform"
 
 import { Schema } from "@effect/schema"
 import type * as Context from "@typed/context"
@@ -50,9 +51,13 @@ export type ModelAndIntent = {
   readonly beforeHandlers: RefSubject.RefSubject<
     Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>
   >
-  readonly handlers: RefSubject.RefSubject<Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>>
+  readonly handlers: RefSubject.RefSubject<
+    Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>
+  >
 
-  readonly formDataHandlers: RefSubject.RefSubject<Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>>
+  readonly formDataHandlers: RefSubject.RefSubject<
+    Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>
+  >
 
   readonly commit: Commit
 }
@@ -66,7 +71,15 @@ export function setupFromModelAndIntent(
   getRandomValues: Context.Fn.FnOf<typeof GetRandomValues>,
   newNavigationState?: () => NavigationState
 ) {
-  const { beforeHandlers, canGoBack, canGoForward, commit, formDataHandlers, handlers, state } = modelAndIntent
+  const {
+    beforeHandlers,
+    canGoBack,
+    canGoForward,
+    commit,
+    formDataHandlers,
+    handlers,
+    state
+  } = modelAndIntent
   const entries = RefSubject.map(state, (s) => s.entries)
   const currentEntry = RefSubject.map(state, (s) => s.entries[s.index])
   const transition = RefSubject.map(state, (s) => s.transition)
@@ -74,10 +87,15 @@ export function setupFromModelAndIntent(
   const runBeforeHandlers = (event: BeforeNavigationEvent) =>
     Effect.gen(function*() {
       const handlers = yield* beforeHandlers
-      const matches: Array<Effect.Effect<unknown, RedirectError | CancelNavigation>> = []
+      const matches: Array<
+        Effect.Effect<unknown, RedirectError | CancelNavigation>
+      > = []
 
       for (const [handler, ctx] of handlers) {
-        const exit = yield* handler(event).pipe(Effect.provide(ctx), Effect.either)
+        const exit = yield* handler(event).pipe(
+          Effect.provide(ctx),
+          Effect.either
+        )
         if (Either.isRight(exit)) {
           const match = exit.right
           if (Option.isSome(match)) {
@@ -120,18 +138,27 @@ export function setupFromModelAndIntent(
   const runFormDataHandlers = (
     event: FormDataEvent
   ): Effect.Effect<
-    Either.Either<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Either.Either<
+      Option.Option<HttpClientResponse.HttpClientResponse>,
+      RedirectError | CancelNavigation
+    >,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Service
   > =>
     Effect.gen(function*() {
       const handlers = yield* formDataHandlers
       const matches: Array<
-        Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation>
+        Effect.Effect<
+          Option.Option<HttpClientResponse.HttpClientResponse>,
+          RedirectError | CancelNavigation
+        >
       > = []
 
       for (const [handler, ctx] of handlers) {
-        const exit = yield* handler(event).pipe(Effect.provide(ctx), Effect.either)
+        const exit = yield* handler(event).pipe(
+          Effect.provide(ctx),
+          Effect.either
+        )
         if (Either.isRight(exit)) {
           const match = exit.right
           if (Option.isSome(match)) {
@@ -153,7 +180,10 @@ export function setupFromModelAndIntent(
         }
       } else {
         // Only if there are 0 matches, we'll make a request to the server ourselves
-        const response = yield* makeFormDataRequest(event, Option.getOrElse(event.action, () => event.from.url.href))
+        const response = yield* makeFormDataRequest(
+          event,
+          Option.getOrElse(event.action, () => event.from.url.href)
+        )
 
         return Either.right(Option.some(response))
       }
@@ -170,7 +200,10 @@ export function setupFromModelAndIntent(
   ): Effect.Effect<Destination, NavigationError> =>
     Effect.gen(function*() {
       let current = yield* get
-      current = yield* set({ ...current, transition: Option.some(beforeEvent) })
+      current = yield* set({
+        ...current,
+        transition: Option.some(beforeEvent)
+      })
 
       if (!skipCommit) {
         const beforeError = yield* runBeforeHandlers(beforeEvent)
@@ -180,7 +213,9 @@ export function setupFromModelAndIntent(
         }
       }
 
-      const to = isDestination(beforeEvent.to) ? beforeEvent.to : yield* upgradeProposedDestination(beforeEvent.to)
+      const to = isDestination(beforeEvent.to)
+        ? beforeEvent.to
+        : yield* upgradeProposedDestination(beforeEvent.to)
 
       if (!skipCommit) {
         yield* commit(to, beforeEvent)
@@ -215,7 +250,11 @@ export function setupFromModelAndIntent(
           const { delta } = beforeEvent
           const nextIndex = current.index + delta
 
-          yield* set({ ...current, index: nextIndex, transition: Option.none() })
+          yield* set({
+            ...current,
+            index: nextIndex,
+            transition: Option.none()
+          })
         }
 
         yield* runHandlers(event)
@@ -249,16 +288,27 @@ export function setupFromModelAndIntent(
       }
     }).pipe(GetRandomValues.provide(getRandomValues))
 
-  const navigate = (pathOrUrl: string | URL, options?: NavigateOptions, skipCommit: boolean = false) =>
+  const navigate = (
+    pathOrUrl: string | URL,
+    options?: NavigateOptions,
+    skipCommit: boolean = false
+  ) =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*() {
         const state = yield* get
         const from = state.entries[state.index]
         const history = options?.history ?? "auto"
-        const to = yield* makeOrUpdateDestination(state, getUrl(origin, pathOrUrl), options?.state, origin).pipe(
-          GetRandomValues.provide(getRandomValues)
-        )
-        const type = history === "auto" ? from.key === to.key ? "replace" : "push" : history
+        const to = yield* makeOrUpdateDestination(
+          state,
+          getUrl(origin, pathOrUrl),
+          options?.state,
+          origin
+        ).pipe(GetRandomValues.provide(getRandomValues))
+        const type = history === "auto"
+          ? from.key === to.key
+            ? "replace"
+            : "push"
+          : history
         const event: BeforeNavigationEvent = {
           type,
           from,
@@ -271,7 +321,11 @@ export function setupFromModelAndIntent(
       })
     )
 
-  const traverseTo = (key: Destination["key"], options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
+  const traverseTo = (
+    key: Destination["key"],
+    options?: { readonly info?: unknown },
+    skipCommit: boolean = false
+  ) =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*() {
         const state = yield* get
@@ -281,7 +335,9 @@ export function setupFromModelAndIntent(
 
         if (nextIndex === -1) return from
 
-        const id = yield* makeUuid.pipe(GetRandomValues.provide(getRandomValues))
+        const id = yield* makeUuid.pipe(
+          GetRandomValues.provide(getRandomValues)
+        )
         const to = { ...entries[nextIndex], id }
         const delta = nextIndex - index
         const event: BeforeNavigationEvent = {
@@ -296,7 +352,10 @@ export function setupFromModelAndIntent(
       })
     )
 
-  const back = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
+  const back = (
+    options?: { readonly info?: unknown },
+    skipCommit: boolean = false
+  ) =>
     Effect.gen(function*() {
       const { entries, index } = yield* state
       if (index === 0) return entries[index]
@@ -305,7 +364,10 @@ export function setupFromModelAndIntent(
       return yield* traverseTo(key, options, skipCommit)
     })
 
-  const forward = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
+  const forward = (
+    options?: { readonly info?: unknown },
+    skipCommit: boolean = false
+  ) =>
     Effect.gen(function*() {
       const { entries, index } = yield* state
       if (index === entries.length - 1) return entries[index]
@@ -314,7 +376,10 @@ export function setupFromModelAndIntent(
       return yield* traverseTo(key, options, skipCommit)
     })
 
-  const reload = (options?: { readonly info?: unknown }, skipCommit: boolean = false) =>
+  const reload = (
+    options?: { readonly info?: unknown },
+    skipCommit: boolean = false
+  ) =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*() {
         const { entries, index } = yield* state
@@ -339,7 +404,10 @@ export function setupFromModelAndIntent(
       const entry = [handler, ctx] as const
 
       return Effect.zipRight(
-        RefSubject.update(beforeHandlers, (handlers) => new Set([...handlers, entry])),
+        RefSubject.update(
+          beforeHandlers,
+          (handlers) => new Set([...handlers, entry])
+        ),
         Effect.addFinalizer(() =>
           RefSubject.update(beforeHandlers, (handlers) => {
             const updated = new Set(handlers)
@@ -357,7 +425,10 @@ export function setupFromModelAndIntent(
       const entry = [handler, ctx] as const
 
       return Effect.zipRight(
-        RefSubject.update(handlers, (handlers) => new Set([...handlers, entry])),
+        RefSubject.update(
+          handlers,
+          (handlers) => new Set([...handlers, entry])
+        ),
         Effect.addFinalizer(() =>
           RefSubject.update(handlers, (handlers) => {
             const updated = new Set(handlers)
@@ -389,9 +460,9 @@ export function setupFromModelAndIntent(
     data: FormData,
     input?: Omit<FormInputFrom, "data">
   ): Effect.Effect<
-    Option.Option<HttpClient.response.ClientResponse>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Option.Option<HttpClientResponse.HttpClientResponse>,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Service
   > =>
     state.runUpdates(({ get, set }) =>
       Effect.gen(function*() {
@@ -410,7 +481,7 @@ export function setupFromModelAndIntent(
 
         if (Either.isLeft(either)) {
           yield* handleError(either.left, get, set, 0)
-          return Option.none<HttpClient.response.ClientResponse>()
+          return Option.none<HttpClientResponse.HttpClientResponse>()
         } else {
           if (Option.isNone(either.right)) {
             return either.right
@@ -420,7 +491,7 @@ export function setupFromModelAndIntent(
 
           // If it is a redirect
           if (REDIRECT_STATUS_CODES.has(response.status)) {
-            const location = HttpClient.headers.get(response.headers, "location")
+            const location = Headers.get(response.headers, "location")
 
             // And we have a location header
             if (Option.isSome(location)) {
@@ -441,7 +512,10 @@ export function setupFromModelAndIntent(
       const entry = [handler, ctx] as const
 
       return Effect.zipRight(
-        RefSubject.update(formDataHandlers, (handlers) => new Set([...handlers, entry])),
+        RefSubject.update(
+          formDataHandlers,
+          (handlers) => new Set([...handlers, entry])
+        ),
         Effect.addFinalizer(() =>
           RefSubject.update(formDataHandlers, (handlers) => {
             const updated = new Set(handlers)
@@ -503,7 +577,8 @@ export function makeOrUpdateDestination(
 ) {
   return Effect.gen(function*() {
     const current = navigationState.entries[navigationState.index]
-    const isSameOriginAndPath = url.origin === current.url.origin && url.pathname === current.url.pathname
+    const isSameOriginAndPath = url.origin === current.url.origin &&
+      url.pathname === current.url.pathname
 
     if (isSameOriginAndPath) {
       const id = yield* makeUuid
@@ -526,10 +601,10 @@ export function makeDestination(url: URL, state: unknown, origin: string) {
   return Effect.gen(function*() {
     if (isPatchedState(state)) {
       const destination: Destination = {
-        id: state.id,
-        key: state.key,
+        id: state.__typed__navigation__id__,
+        key: state.__typed__navigation__key__,
         url,
-        state: state.originalHistoryState,
+        state: state.__typed__navigation__state__,
         sameDocument: url.origin === origin
       }
 
@@ -569,19 +644,26 @@ export function upgradeProposedDestination(proposed: ProposedDestination) {
 }
 
 export type PatchedState = {
-  readonly id: Uuid
-  readonly key: Uuid
-  readonly originalHistoryState: unknown
+  readonly __typed__navigation__id__: Uuid
+  readonly __typed__navigation__key__: Uuid
+  readonly __typed__navigation__state__: unknown
 }
 
 export function isPatchedState(state: unknown): state is PatchedState {
-  if (state === null || !(typeof state === "object") || Array.isArray(state)) return false
-  if ("id" in state && "key" in state && "originalHistoryState" in state) return true
+  if (state === null || !(typeof state === "object") || Array.isArray(state)) {
+    return false
+  }
+  if (
+    "__typed__navigation__id__" in state &&
+    "__typed__navigation__key__" in state
+  ) {
+    return true
+  }
   return false
 }
 
 export function getOriginalState(state: unknown) {
-  if (isPatchedState(state)) return state.originalHistoryState
+  if (isPatchedState(state)) return state.__typed__navigation__state__
   return state
 }
 
@@ -597,7 +679,9 @@ export function getOriginFromUrl(url: string | URL) {
   }
 }
 
-export function isDestination(proposed: ProposedDestination): proposed is Destination {
+export function isDestination(
+  proposed: ProposedDestination
+): proposed is Destination {
   return "id" in proposed && "key" in proposed
 }
 
@@ -606,15 +690,27 @@ const strictEqual = <A>(a: A, b: A) => a === b
 export function makeHandlersState() {
   return Effect.gen(function*() {
     const beforeHandlers = yield* RefSubject.fromEffect(
-      Effect.sync(() => new Set<readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]>()),
+      Effect.sync(
+        () =>
+          new Set<
+            readonly [BeforeNavigationHandler<any, any>, Context.Context<any>]
+          >()
+      ),
       { eq: strictEqual }
     )
     const handlers = yield* RefSubject.fromEffect(
-      Effect.sync(() => new Set<readonly [NavigationHandler<any, any>, Context.Context<any>]>()),
+      Effect.sync(
+        () =>
+          new Set<
+            readonly [NavigationHandler<any, any>, Context.Context<any>]
+          >()
+      ),
       { eq: strictEqual }
     )
     const formDataHandlers = yield* RefSubject.fromEffect(
-      Effect.sync(() => new Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>()),
+      Effect.sync(
+        () => new Set<readonly [FormDataHandler<any, any>, Context.Context<any>]>()
+      ),
       { eq: strictEqual }
     )
 
@@ -627,21 +723,17 @@ export function makeHandlersState() {
 }
 
 function makeFormDataRequest(event: FormDataEvent, url: string) {
-  const headers = new Headers()
+  const headers = new globalThis.Headers()
 
   if (Option.isSome(event.encoding)) {
     headers.set("Content-Type", event.encoding.value)
   }
   const method = Option.getOrElse(event.method, () => "POST")
 
-  return Effect.flatMap(
-    HttpClient.client.Client,
-    (client) =>
-      client(
-        HttpClient.request.make(method as "POST")(url, {
-          headers: HttpClient.headers.fromInput(headers),
-          body: HttpClient.body.formData(event.data)
-        })
-      )
-  )
+  return Effect.flatMap(HttpClient.HttpClient, (client) =>
+    client.execute(
+      HttpClientRequest.make(method as "POST")(url, {
+        headers: Headers.fromInput(headers)
+      }).pipe(HttpClientRequest.bodyFormData(event.data))
+    ))
 }

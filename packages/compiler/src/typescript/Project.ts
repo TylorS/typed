@@ -53,7 +53,7 @@ export class Project {
     this.projectFiles = new ProjectFileCache(cmdLine.fileNames)
     this.externalFiles = new ExternalFileCache()
 
-    const languageServiceHost: ts.LanguageServiceHost = this.languageServiceHost = {
+    const languageServiceHost: ts.LanguageServiceHost = (this.languageServiceHost = {
       getCompilationSettings: () => this.cmdLine.options,
       // getNewLine?(): string;
       // getProjectVersion?(): string;
@@ -63,7 +63,9 @@ export class Project {
       getScriptSnapshot: (fileName) =>
         this.projectFiles.getSnapshot(fileName) ??
           this.externalFiles.getSnapshot(fileName),
-      getProjectReferences: (): ReadonlyArray<ts.ProjectReference> | undefined => cmdLine.projectReferences,
+      getProjectReferences: ():
+        | ReadonlyArray<ts.ProjectReference>
+        | undefined => cmdLine.projectReferences,
       // getLocalizedDiagnosticMessages?(): any;
       // getCancellationToken?(): HostCancellationToken;
       getCurrentDirectory: () => process.cwd(),
@@ -116,7 +118,7 @@ export class Project {
       // getParsedCommandLine?(fileName: string): ParsedCommandLine | undefined;
 
       directoryExists: ts.sys.directoryExists
-    }
+    })
 
     if (enhanceLanguageServiceHost) {
       enhanceLanguageServiceHost(languageServiceHost)
@@ -134,6 +136,7 @@ export class Project {
    * @since 1.0.0
    */
   addFile(filePath: string) {
+    console.log("addFile", { filePath })
     // Add snapshot
     this.projectFiles.getSnapshot(filePath)
     return this.program.getSourceFile(filePath)!

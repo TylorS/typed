@@ -4,7 +4,7 @@ import { DEFAULT_PRIORITY } from "@typed/template/RenderQueue"
 import { html } from "@typed/template/RenderTemplate"
 import { testRender } from "@typed/template/Test"
 import { describe, it, test } from "@typed/template/Vitest"
-import { isComment, isHtmlElement, isWire } from "@typed/wire"
+import { isComment, isElement, isHtmlElement, isWire } from "@typed/wire"
 import { deepStrictEqual, ok } from "assert"
 import { range } from "effect/Array"
 import * as Effect from "effect/Effect"
@@ -12,143 +12,174 @@ import * as Effect from "effect/Effect"
 describe("Render", () => {
   test("renders a simple template", () => {
     return Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(testRender(html`<div>Hello, world!</div>`))
+      const { elementRef, window } = yield* _(
+        testRender(html`<div>Hello, world!</div>`)
+      )
       const rendered = yield* _(elementRef)
 
       ok(rendered instanceof window.HTMLDivElement)
-      deepStrictEqual(rendered.innerText, "Hello, world!")
+      deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
     })
   })
 
   test("renders a simple template with attributes", () =>
     Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">Hello, world!</div>`))
+      const { elementRef, window } = yield* _(
+        testRender(html`<div class="foo" id="bar">Hello, world!</div>`)
+      )
       const rendered = yield* _(elementRef)
 
-      ok(
-        rendered instanceof window.HTMLDivElement
-      )
+      ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.className, "foo")
       deepStrictEqual(rendered.id, "bar")
-      deepStrictEqual(rendered.innerText, "Hello, world!")
+      deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
     }))
 
   it("renders a simple template with attributes", () =>
     Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">Hello, world!</div>`))
+      const { elementRef, window } = yield* _(
+        testRender(html`<div class="foo" id="bar">Hello, world!</div>`)
+      )
       const rendered = yield* _(elementRef)
 
       ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.className, "foo")
       deepStrictEqual(rendered.id, "bar")
-      deepStrictEqual(rendered.innerText, "Hello, world!")
+      deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
     }))
 
   test("renders a nested templates", () =>
     Effect.gen(function*(_) {
-      const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">${html`Hello, world!`}</div>`))
+      const { elementRef, window } = yield* _(
+        testRender(html`<div class="foo" id="bar">${html`Hello, world!`}</div>`)
+      )
       const rendered = yield* _(elementRef)
 
       ok(rendered instanceof window.HTMLDivElement)
       deepStrictEqual(rendered.className, "foo")
       deepStrictEqual(rendered.id, "bar")
-      deepStrictEqual(rendered.innerText, "Hello, world!")
+      deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
     }))
 
   describe("attributes", () => {
     it("renders a simple template with attributes", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<div class="foo" id="bar">Hello, world!</div>`))
+        const { elementRef, window } = yield* _(
+          testRender(html`<div class="foo" id="bar">Hello, world!</div>`)
+        )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.className, "foo")
         deepStrictEqual(rendered.id, "bar")
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     describe("interpolations", () => {
       it("renders a simple template with string interpolations", () =>
         Effect.gen(function*(_) {
-          const { elementRef, window } = yield* _(testRender(html`<div class=${"foo"} id=${"bar"}>Hello, world!</div>`))
+          const { elementRef, window } = yield* _(
+            testRender(
+              html`<div class=${"foo"} id=${"bar"}>Hello, world!</div>`
+            )
+          )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "foo")
           deepStrictEqual(rendered.id, "bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with number interpolations", () =>
         Effect.gen(function*(_) {
-          const { elementRef, window } = yield* _(testRender(html`<div class=${1} id=${2}>Hello, world!</div>`))
+          const { elementRef, window } = yield* _(
+            testRender(html`<div class=${1} id=${2}>Hello, world!</div>`)
+          )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "1")
           deepStrictEqual(rendered.id, "2")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with boolean interpolations", () =>
         Effect.gen(function*(_) {
-          const { elementRef, window } = yield* _(testRender(html`<div class=${true} id=${false}>Hello, world!</div>`))
+          const { elementRef, window } = yield* _(
+            testRender(html`<div class=${true} id=${false}>Hello, world!</div>`)
+          )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "true")
           deepStrictEqual(rendered.id, "false")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with null interpolations", () =>
         Effect.gen(function*(_) {
-          const { elementRef, window } = yield* _(testRender(html`<div class=${null} id=${null}>Hello, world!</div>`))
+          const { elementRef, window } = yield* _(
+            testRender(html`<div class=${null} id=${null}>Hello, world!</div>`)
+          )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "")
           deepStrictEqual(rendered.id, "")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with undefined interpolations", () =>
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div class=${undefined} id=${undefined}>Hello, world!</div>`)
+            testRender(
+              html`<div class=${undefined} id=${undefined}>Hello, world!</div>`
+            )
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "")
           deepStrictEqual(rendered.id, "")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with a Effect interpolation", () =>
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div class=${Effect.succeed("foo")} id=${Effect.succeed("bar")}>Hello, world!</div>`)
+            testRender(
+              html`<div
+                class=${Effect.succeed("foo")}
+                id=${Effect.succeed("bar")}
+              >
+                Hello, world!
+              </div>`
+            )
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "foo")
           deepStrictEqual(rendered.id, "bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders a simple template with a Fx interpolation", () =>
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div class=${Fx.succeed("foo")} id=${Fx.succeed("bar")}>Hello, world!</div>`)
+            testRender(
+              html`<div class=${Fx.succeed("foo")} id=${Fx.succeed("bar")}>
+                Hello, world!
+              </div>`
+            )
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "foo")
           deepStrictEqual(rendered.id, "bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
     })
 
@@ -157,7 +188,8 @@ describe("Render", () => {
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
             testRender(
-              html`<div data-foo=${
+              html`<div
+                data-foo=${
                 Directive.attribute((part) =>
                   Effect.gen(function*(_) {
                     yield* _(part.update("foo", DEFAULT_PRIORITY))
@@ -165,7 +197,10 @@ describe("Render", () => {
                     yield* _(part.update("bar", DEFAULT_PRIORITY))
                   })
                 )
-              }>Hello, world!</div>`
+              }
+              >
+                Hello, world!
+              </div>`
             )
           )
           const rendered = yield* _(elementRef)
@@ -189,31 +224,39 @@ describe("Render", () => {
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.id, "foo bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders Effect interpolations", () =>
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div id="${Effect.succeed("foo")} ${Effect.succeed("bar")}">Hello, world!</div>`)
+            testRender(
+              html`<div id="${Effect.succeed("foo")} ${Effect.succeed("bar")}">
+                Hello, world!
+              </div>`
+            )
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.id, "foo bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
 
       it("renders Fx interpolations", () =>
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div id="${Fx.succeed("foo")} ${Fx.succeed("bar")}">Hello, world!</div>`)
+            testRender(
+              html`<div id="${Fx.succeed("foo")} ${Fx.succeed("bar")}">
+                Hello, world!
+              </div>`
+            )
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.id, "foo bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
     })
   })
@@ -222,47 +265,64 @@ describe("Render", () => {
     it("renders a simple template with boolean attributes", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<div ?disabled=${true} ?hidden=${false}>Hello, world!</div>`)
+          testRender(
+            html`<div ?disabled=${true} ?hidden=${false}>Hello, world!</div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.hasAttribute("disabled"), true)
         deepStrictEqual(rendered.hasAttribute("hidden"), false)
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     it("Effect", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<div ?disabled=${Effect.succeed(true)} ?hidden=${Effect.succeed(false)}>Hello, world!</div>`)
+          testRender(
+            html`<div
+              ?disabled=${Effect.succeed(true)}
+              ?hidden=${Effect.succeed(false)}
+            >
+              Hello, world!
+            </div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.hasAttribute("disabled"), true)
         deepStrictEqual(rendered.hasAttribute("hidden"), false)
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     it("Fx", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<div ?disabled=${Fx.succeed(true)} ?hidden=${Fx.succeed(false)}>Hello, world!</div>`)
+          testRender(
+            html`<div
+              ?disabled=${Fx.succeed(true)}
+              ?hidden=${Fx.succeed(false)}
+            >
+              Hello, world!
+            </div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.hasAttribute("disabled"), true)
         deepStrictEqual(rendered.hasAttribute("hidden"), false)
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     test("directive", ({ clock }) =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
           testRender(
-            html`<div ?disabled=${
+            html`<div
+              ?disabled=${
               Directive.boolean((part) =>
                 Effect.gen(function*(_) {
                   yield* _(part.update(true, DEFAULT_PRIORITY))
@@ -270,7 +330,10 @@ describe("Render", () => {
                   yield* _(part.update(false, DEFAULT_PRIORITY))
                 })
               )
-            }>Hello, world!</div>`
+            }
+            >
+              Hello, world!
+            </div>`
           )
         )
         const rendered = yield* _(elementRef)
@@ -286,43 +349,52 @@ describe("Render", () => {
   describe("class", () => {
     it("renders a simple template with className", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<div class="foo bar baz">Hello, world!</div>`))
+        const { elementRef, window } = yield* _(
+          testRender(html`<div class="foo bar baz">Hello, world!</div>`)
+        )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.className, "foo bar baz")
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     it("Effect", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<div class=${Effect.succeed("foo bar baz")}>Hello, world!</div>`)
+          testRender(
+            html`<div class=${Effect.succeed("foo bar baz")}>
+              Hello, world!
+            </div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.className, "foo bar baz")
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     it("Fx", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<div class=${Fx.succeed("foo bar baz")}>Hello, world!</div>`)
+          testRender(
+            html`<div class=${Fx.succeed("foo bar baz")}>Hello, world!</div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
         ok(rendered instanceof window.HTMLDivElement)
         deepStrictEqual(rendered.className, "foo bar baz")
-        deepStrictEqual(rendered.innerText, "Hello, world!")
+        deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
       }))
 
     test("directive", ({ clock }) =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
           testRender(
-            html`<div class=${
+            html`<div
+              class=${
               Directive.className((part) =>
                 Effect.gen(function*(_) {
                   yield* _(part.update(["foo"], DEFAULT_PRIORITY))
@@ -330,7 +402,10 @@ describe("Render", () => {
                   yield* _(part.update(["bar"], DEFAULT_PRIORITY))
                 })
               )
-            }>Hello, world!</div>`
+            }
+            >
+              Hello, world!
+            </div>`
           )
         )
         const rendered = yield* _(elementRef)
@@ -345,24 +420,30 @@ describe("Render", () => {
     describe("sparse class", () => {
       it("renders simple interpolations", () =>
         Effect.gen(function*(_) {
-          const { elementRef, window } = yield* _(testRender(html`<div class="${"foo"} ${"bar"}">Hello, world!</div>`))
-          const rendered = yield* _(elementRef)
-
-          ok(rendered instanceof window.HTMLDivElement)
-          deepStrictEqual(rendered.className, "foo bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
-        }))
-
-      it("Effect/Fx", () =>
-        Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
-            testRender(html`<div class="${Effect.succeed("foo")} ${Fx.succeed("bar")}">Hello, world!</div>`)
+            testRender(html`<div class="${"foo"} ${"bar"}">Hello, world!</div>`)
           )
           const rendered = yield* _(elementRef)
 
           ok(rendered instanceof window.HTMLDivElement)
           deepStrictEqual(rendered.className, "foo bar")
-          deepStrictEqual(rendered.innerText, "Hello, world!")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
+        }))
+
+      it("Effect/Fx", () =>
+        Effect.gen(function*(_) {
+          const { elementRef, window } = yield* _(
+            testRender(
+              html`<div class="${Effect.succeed("foo")} ${Fx.succeed("bar")}">
+                Hello, world!
+              </div>`
+            )
+          )
+          const rendered = yield* _(elementRef)
+
+          ok(rendered instanceof window.HTMLDivElement)
+          deepStrictEqual(rendered.className, "foo bar")
+          deepStrictEqual(rendered.innerText.trim(), "Hello, world!")
         }))
     })
   })
@@ -370,43 +451,49 @@ describe("Render", () => {
   describe("comment", () => {
     it("renders a simple template with a comment", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<!--Hello, world!-->`))
+        const { elementRef } = yield* _(testRender(html`<!--Hello, world!-->`))
         const rendered = yield* _(elementRef)
 
-        ok(rendered instanceof window.Comment)
+        ok(isComment(rendered))
         deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     it("renders a simple template with a comment part", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<!--${"Hello, world!"}-->`))
+        const { elementRef } = yield* _(
+          testRender(html`<!--${"Hello, world!"}-->`)
+        )
         const rendered = yield* _(elementRef)
 
-        ok(rendered instanceof window.Comment)
+        ok(isComment(rendered))
         deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     it("Effect", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<!-- ${Effect.succeed("Hello, world!")} -->`))
+        const { elementRef } = yield* _(
+          testRender(html`<!-- ${Effect.succeed("Hello, world!")} -->`)
+        )
         const rendered = yield* _(elementRef)
 
-        ok(rendered instanceof window.Comment)
+        ok(isComment(rendered))
         deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     it("Fx", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<!-- ${Fx.succeed("Hello, world!")} -->`))
+        const { elementRef } = yield* _(
+          testRender(html`<!-- ${Fx.succeed("Hello, world!")} -->`)
+        )
         const rendered = yield* _(elementRef)
 
-        ok(rendered instanceof window.Comment)
+        ok(isComment(rendered))
         deepStrictEqual(rendered.data, "Hello, world!")
       }))
 
     test("directive", ({ clock }) =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(
+        const { elementRef } = yield* _(
           testRender(
             html`<!-- ${
               Directive.comment((part) =>
@@ -421,7 +508,7 @@ describe("Render", () => {
         )
         const rendered = yield* _(elementRef)
 
-        ok(rendered instanceof window.Comment)
+        ok(isComment(rendered))
         deepStrictEqual(rendered.data, "Hello, world!")
         yield* _(clock.adjust(100))
         deepStrictEqual(rendered.data, "Goodbye, world!")
@@ -431,7 +518,9 @@ describe("Render", () => {
   describe("property", () => {
     it("renders a simple template with property", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<input .value=${"foo"} />`))
+        const { elementRef, window } = yield* _(
+          testRender(html`<input .value=${"foo"} />`)
+        )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLInputElement)
         deepStrictEqual(rendered.value, "foo")
@@ -439,7 +528,9 @@ describe("Render", () => {
 
     it("Effect", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<input .value=${Effect.succeed("foo")} />`))
+        const { elementRef, window } = yield* _(
+          testRender(html`<input .value=${Effect.succeed("foo")} />`)
+        )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLInputElement)
         deepStrictEqual(rendered.value, "foo")
@@ -447,7 +538,9 @@ describe("Render", () => {
 
     it("Fx", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<input .value=${Fx.succeed("foo")} />`))
+        const { elementRef, window } = yield* _(
+          testRender(html`<input .value=${Fx.succeed("foo")} />`)
+        )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLInputElement)
         deepStrictEqual(rendered.value, "foo")
@@ -458,7 +551,8 @@ describe("Render", () => {
         Effect.gen(function*(_) {
           const { elementRef, window } = yield* _(
             testRender(
-              html`<input .value=${
+              html`<input
+                .value=${
                 Directive.property((part) =>
                   Effect.gen(function*(_) {
                     yield* _(part.update("foo", DEFAULT_PRIORITY))
@@ -466,7 +560,8 @@ describe("Render", () => {
                     yield* _(part.update("bar", DEFAULT_PRIORITY))
                   })
                 )
-              } />`
+              }
+              />`
             )
           )
           const rendered = yield* _(elementRef)
@@ -493,7 +588,14 @@ describe("Render", () => {
     it("Effect/Fx", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<input ...${{ ".value": Effect.succeed("foo"), type: Fx.succeed("text") }} />`)
+          testRender(
+            html`<input
+              ...${{
+              ".value": Effect.succeed("foo"),
+              type: Fx.succeed("text")
+            }}
+            />`
+          )
         )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLInputElement)
@@ -505,20 +607,37 @@ describe("Render", () => {
   describe("text-only elements", () => {
     it("renders a simple template with a text-only element", () =>
       Effect.gen(function*(_) {
-        const { elementRef, window } = yield* _(testRender(html`<script>alert("Hello, world!")</script>`))
+        const { elementRef, window } = yield* _(
+          testRender(
+            html`<script>
+              alert("Hello, world!");
+            </script>`
+          )
+        )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLScriptElement)
-        deepStrictEqual(rendered.textContent, "alert(\"Hello, world!\")")
+        deepStrictEqual(
+          rendered.textContent?.trim(),
+          "alert(\"Hello, world!\");"
+        )
       }))
 
     it("renders a simple template with a text-only element with interpolations", () =>
       Effect.gen(function*(_) {
         const { elementRef, window } = yield* _(
-          testRender(html`<script>alert("${Effect.succeed("Hello, world!")}")</script>`)
+          testRender(
+            html`<script>
+              alert("${Effect.succeed("Hello, world!")}");
+            </script>`
+          )
         )
         const rendered = yield* _(elementRef)
+        ok(isElement(rendered))
         ok(rendered instanceof window.HTMLScriptElement)
-        deepStrictEqual(rendered.textContent, `alert("Hello, world!")`)
+        deepStrictEqual(
+          rendered.textContent?.trim(),
+          `alert("Hello, world!");`
+        )
       }))
 
     test("renders a simple template with a text-only element with a directive", ({ clock }) =>
@@ -532,14 +651,22 @@ describe("Render", () => {
         )
         const { elementRef, window } = yield* _(
           testRender(
-            html`<script>alert("${directive}")</script>`
+            html`<script>
+              alert("${directive}");
+            </script>`
           )
         )
         const rendered = yield* _(elementRef)
         ok(rendered instanceof window.HTMLScriptElement)
-        deepStrictEqual(rendered.textContent, `alert("Hello, world!")`)
+        deepStrictEqual(
+          rendered.textContent?.trim(),
+          `alert("Hello, world!");`
+        )
         yield* _(clock.adjust(100))
-        deepStrictEqual(rendered.textContent, `alert("Goodbye, world!")`)
+        deepStrictEqual(
+          rendered.textContent?.trim(),
+          `alert("Goodbye, world!");`
+        )
       }))
   })
 
@@ -549,13 +676,20 @@ describe("Render", () => {
 
       return Effect.gen(function*(_) {
         const count = yield* _(Fx.RefSubject.of(0))
-        const rendered = yield* _(testRender(
-          html`
-          <button class="dec" onclick=${Fx.RefSubject.update(count, decrement)}>-</button>
-          <p>${count}</p>
-          <button class="inc" onclick=${Fx.RefSubject.increment(count)}>-</button>
-        `
-        ))
+        const rendered = yield* _(
+          testRender(html`
+            <button
+              class="dec"
+              onclick=${Fx.RefSubject.update(count, decrement)}
+            >
+              -
+            </button>
+            <p>${count}</p>
+            <button class="inc" onclick=${Fx.RefSubject.increment(count)}>
+              -
+            </button>
+          `)
+        )
 
         const dec = rendered.click({ selector: ".dec" })
         const inc = rendered.click({ selector: ".inc" })
@@ -573,7 +707,10 @@ describe("Render", () => {
     it("renders a fragment", () =>
       Effect.gen(function*(_) {
         const { elementRef } = yield* _(
-          testRender(html`<div>Hello, world!</div><div>Goodbye, world!</div>`)
+          testRender(
+            html`<div>Hello, world!</div>
+              <div>Goodbye, world!</div>`
+          )
         )
         const rendered = yield* _(elementRef)
 
@@ -599,7 +736,9 @@ describe("Render", () => {
       Effect.gen(function*(_) {
         const timeout = 100
         const content = Fx.mergeAll([
-          html`<p>1</p><p>2</p><p>3</p>`,
+          html`<p>1</p>
+            <p>2</p>
+            <p>3</p>`,
           Fx.delay(html`<b>4</b><b>5</b><b>6</b>`, timeout)
         ])
 

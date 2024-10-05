@@ -324,6 +324,11 @@ export namespace Route {
   /**
    * @since 1.0.0
    */
+  export type QueryParams<R extends Route.Any> = Path.QueryParams<Route.Path<R>>
+
+  /**
+   * @since 1.0.0
+   */
   export type Context<R extends Route.Any> = Sch.Schema.Context<R>
 
   /**
@@ -651,7 +656,7 @@ export const base64Url: <const Name extends string>(
 > = (
   name,
   options
-) => paramWithSchema(name, Sch.Base64Url, options)
+) => paramWithSchema(name, Sch.Uint8ArrayFromBase64Url, options)
 
 /**
  * @since 5.0.0

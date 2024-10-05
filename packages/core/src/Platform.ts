@@ -6,14 +6,16 @@
 /// <reference types="@typed/vite-plugin-types" />
 
 import { FileSystem } from "@effect/platform/FileSystem"
-import type { PathInput } from "@effect/platform/Http/Router"
-import type { ServerRequest } from "@effect/platform/Http/ServerRequest"
-import * as Http from "@effect/platform/HttpServer"
+import * as Headers from "@effect/platform/Headers"
+import type * as HttpApp from "@effect/platform/HttpApp"
+import * as HttpRouter from "@effect/platform/HttpRouter"
+import { HttpServerRequest } from "@effect/platform/HttpServerRequest"
+import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import { Path } from "@effect/platform/Path"
 import * as Fx from "@typed/fx/Fx"
 import * as RefSubject from "@typed/fx/RefSubject"
 import * as Router from "@typed/router"
-import { RouteHandler, ServerRouter } from "@typed/server"
+import { HttpRouteHandler, HttpRouter as ServerRouter } from "@typed/server"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
 import assetManifest from "virtual:asset-manifest"
@@ -21,6 +23,7 @@ import * as typedOptions from "virtual:typed-options"
 import { getHeadAndScript } from "./Vite.js"
 
 import type { BadArgument, PlatformError } from "@effect/platform/Error"
+import type { HttpPlatform } from "@effect/platform/HttpPlatform"
 import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
@@ -37,7 +40,7 @@ import type * as Scope from "effect/Scope"
  * @since 1.0.0
  */
 export class GuardsNotMatched extends Data.TaggedError("GuardsNotMatched")<{
-  readonly request: Http.request.ServerRequest
+  readonly request: HttpServerRequest
   readonly route: Route.Route.Any
   readonly matches: Array.NonEmptyReadonlyArray<Router.RouteMatch.RouteMatch.Any>
 }> {}
@@ -47,19 +50,25 @@ export class GuardsNotMatched extends Data.TaggedError("GuardsNotMatched")<{
  */
 export type LayoutParams<Content extends Fx.Fx<RenderEvent | null, any, any>> = {
   readonly content: Content
-  readonly request: ServerRequest
+  readonly request: HttpServerRequest
   readonly head:
     | Fx.Fx<
       RenderEvent | null,
       never,
-      RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+      | RenderContext.RenderContext
+      | RenderQueue.RenderQueue
+      | RenderTemplate
+      | Scope.Scope
     >
     | null
   readonly script:
     | Fx.Fx<
       RenderEvent | null,
       never,
-      RenderContext.RenderContext | RenderQueue.RenderQueue | RenderTemplate | Scope.Scope
+      | RenderContext.RenderContext
+      | RenderQueue.RenderQueue
+      | RenderTemplate
+      | Scope.Scope
     >
     | null
 }
@@ -71,15 +80,21 @@ export type LayoutTemplate<
   Content extends Fx.Fx<RenderEvent | null, any, any>,
   E,
   R
-> = (
-  params: LayoutParams<Content>
-) => Fx.Fx<RenderEvent | null, E, R>
+> = (params: LayoutParams<Content>) => Fx.Fx<RenderEvent | null, E, R>
 
 /**
  * @since 1.0.0
  */
 export function toHttpRouter<
-  M extends Router.RouteMatch.RouteMatch<Route.Route.Any, any, any, any, RenderEvent | null, any, any>,
+  M extends Router.RouteMatch.RouteMatch<
+    Route.Route.Any,
+    any,
+    any,
+    any,
+    RenderEvent | null,
+    any,
+    any
+  >,
   E2 = never,
   R2 = never
 >(
@@ -87,30 +102,45 @@ export function toHttpRouter<
   options?: {
     clientEntry?: string
     layout?: LayoutTemplate<
-      Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
+      Fx.Fx<
+        RenderEvent | null,
+        Router.RouteMatch.RouteMatch.Error<M>,
+        Router.RouteMatch.RouteMatch.Context<M>
+      >,
       E2,
       R2
     >
     base?: string
     environment?: "server" | "static"
   }
-): Http.router.Router<
+): HttpRouter.HttpRouter<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  | ServerRequest
-  | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
+  | HttpServerRequest
+  | Exclude<
+    Router.RouteMatch.RouteMatch.Context<M> | R2,
+    Navigation.Navigation | Router.CurrentRoute
+  >
 > {
-  let router: Http.router.Router<
+  let router: HttpRouter.HttpRouter<
     Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-    | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
-    | ServerRequest
-  > = Http.router.empty
+    | Exclude<
+      Router.RouteMatch.RouteMatch.Context<M> | R2,
+      Navigation.Navigation | Router.CurrentRoute
+    >
+    | HttpServerRequest
+  > = HttpRouter.empty
   const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => {
     const withoutQuery = route.path.split("?")[0]
-    return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
+    return withoutQuery.endsWith("\\")
+      ? withoutQuery.slice(0, -1)
+      : withoutQuery
   })
-  const { head, script } = options?.clientEntry ?
-    getHeadAndScript(typedOptions.clientEntries[options.clientEntry], assetManifest) :
-    {
+  const { head, script } = options?.clientEntry
+    ? getHeadAndScript(
+      typedOptions.clientEntries[options.clientEntry],
+      assetManifest
+    )
+    : {
       head: null,
       script: null
     }
@@ -118,10 +148,10 @@ export function toHttpRouter<
   for (const [path, matches] of Object.entries(guardsByPath)) {
     const route = matches[0].route
 
-    router = Http.router.get(
+    router = HttpRouter.get(
       router,
-      path as PathInput,
-      Effect.flatMap(Http.request.ServerRequest, (request) => {
+      path as HttpRouter.PathInput,
+      Effect.flatMap(HttpServerRequest, (request) => {
         const url = getUrlFromServerRequest(request)
         const path = Navigation.getCurrentPathFromUrl(url)
 
@@ -132,30 +162,37 @@ export function toHttpRouter<
           for (const match of matches) {
             const matched = yield* match.guard(path)
             if (Option.isSome(matched)) {
-              yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
+              yield* Effect.logDebug(`Matched guard for path`).pipe(Effect.annotateLogs("route.params", matched.value))
 
               const ref = yield* RefSubject.of(matched.value)
-              const content = match.match(RefSubject.take(ref, 1)).pipe(Fx.provide(Router.layer(route)))
-              const template = Fx.unify(options?.layout ? options.layout({ content, request, head, script }) : content)
-                .pipe(
-                  Fx.withSpan("render_template"),
-                  Fx.onExit((exit) =>
-                    exit.pipe(
-                      Effect.matchCauseEffect({
-                        onFailure: (cause) => Effect.logError(`Failed to render Template`, cause),
-                        onSuccess: () => Effect.logDebug(`Rendered Template`)
-                      }),
-                      Effect.annotateLogs("route.params", matched.value)
-                    )
-                  ),
-                  Fx.annotateSpans("route.params", matched.value),
-                  Fx.annotateLogs("route.params", matched.value)
-                )
+              const content = match
+                .match(RefSubject.take(ref, 1))
+                .pipe(Fx.provide(Router.layer(route)))
+              const template = Fx.unify(
+                options?.layout
+                  ? options.layout({ content, request, head, script })
+                  : content
+              ).pipe(
+                Fx.withSpan("render_template"),
+                Fx.onExit((exit) =>
+                  exit.pipe(
+                    Effect.matchCauseEffect({
+                      onFailure: (cause) => Effect.logError(`Failed to render Template`, cause),
+                      onSuccess: () => Effect.logDebug(`Rendered Template`)
+                    }),
+                    Effect.annotateLogs("route.params", matched.value)
+                  )
+                ),
+                Fx.annotateSpans("route.params", matched.value),
+                Fx.annotateLogs("route.params", matched.value)
+              )
 
               return yield* htmlResponse(template)
             }
           }
-          return yield* Effect.fail(new GuardsNotMatched({ request, route, matches }))
+          return yield* Effect.fail(
+            new GuardsNotMatched({ request, route, matches })
+          )
         }).pipe(
           Effect.provide(
             Layer.mergeAll(
@@ -179,35 +216,38 @@ export function toHttpRouter<
  *
  * @since 1.0.0
  */
-export function staticFiles(
-  { cacheControl, enabled, options, serverOutputDirectory }: {
-    serverOutputDirectory: string
-    enabled: boolean
-    options: TypedOptions
-    cacheControl?: (filePath: string) => {
-      readonly maxAge: number
-      readonly immutable?: boolean
-    }
+export function staticFiles({
+  cacheControl,
+  enabled,
+  options,
+  serverOutputDirectory
+}: {
+  serverOutputDirectory: string
+  enabled: boolean
+  options: TypedOptions
+  cacheControl?: (filePath: string) => {
+    readonly maxAge: number
+    readonly immutable?: boolean
   }
-): <E, R>(
-  self: Http.app.Default<E, R>
+}): <E, R>(
+  self: HttpApp.Default<E, R>
 ) => Effect.Effect<
-  Http.response.ServerResponse,
+  HttpServerResponse.HttpServerResponse,
   E | BadArgument | PlatformError,
-  ServerRequest | R | Http.platform.Platform | FileSystem | Path
+  HttpServerRequest | R | HttpPlatform | FileSystem | Path
 > {
   if (!enabled) {
     return identity as any
   }
 
   return <E, R>(
-    self: Http.app.Default<E, R>
-  ): Http.app.Default<
+    self: HttpApp.Default<E, R>
+  ): HttpApp.Default<
     E | BadArgument | PlatformError,
-    ServerRequest | Http.platform.Platform | FileSystem | Path | R
-  > =>
-    Effect.gen(function*() {
-      const request = yield* Http.request.ServerRequest
+    HttpServerRequest | HttpPlatform | FileSystem | Path | R
+  > => {
+    return Effect.gen(function*() {
+      const request = yield* HttpServerRequest
       const fs = yield* FileSystem
       const path = yield* Path
       // TODO: We should probably modify the request url to also look for html files
@@ -218,19 +258,24 @@ export function staticFiles(
       const gzipFilePath = filePath + ".gz"
 
       if (yield* isFile(fs, gzipFilePath)) {
-        return yield* Http.response.file(gzipFilePath, {
-          headers: Http.headers.unsafeFromRecord(gzipHeaders(filePath, cacheControl)),
+        return yield* HttpServerResponse.file(gzipFilePath, {
+          headers: Headers.unsafeFromRecord(
+            gzipHeaders(filePath, cacheControl)
+          ),
           contentType: getContentType(filePath)
         })
       } else if (yield* isFile(fs, filePath)) {
         // TODO: We should support gzip'ing files on the fly
-        return yield* Http.response.file(filePath, {
-          headers: Http.headers.unsafeFromRecord(cacheControlHeaders(filePath, cacheControl))
+        return yield* HttpServerResponse.file(filePath, {
+          headers: Headers.unsafeFromRecord(
+            cacheControlHeaders(filePath, cacheControl)
+          )
         })
       } else {
         return yield* self
       }
     })
+  }
 }
 
 function isFile(fs: FileSystem, path: string) {
@@ -240,7 +285,10 @@ function isFile(fs: FileSystem, path: string) {
   )
 }
 
-function gzipHeaders(filePath: string, cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }) {
+function gzipHeaders(
+  filePath: string,
+  cacheControl?: (filePath: string) => { maxAge: number; immutable?: boolean }
+) {
   return {
     "content-encoding": "gzip",
     "content-type": getContentType(filePath),
@@ -269,7 +317,18 @@ const mimeTypesToExtensions = {
   "application/json": ["json"],
   "application/mac-binhex40": ["hqx"],
   "application/msword": ["doc"],
-  "application/octet-stream": ["bin", "exe", "dll", "deb", "dmg", "iso", "img", "msi", "msp", "msm"],
+  "application/octet-stream": [
+    "bin",
+    "exe",
+    "dll",
+    "deb",
+    "dmg",
+    "iso",
+    "img",
+    "msi",
+    "msp",
+    "msm"
+  ],
   "application/pdf": ["pdf"],
   "application/postscript": ["ps", "eps", "ai"],
   "application/rss+xml": ["rss"],
@@ -284,9 +343,13 @@ const mimeTypesToExtensions = {
   "application/vnd.oasis.opendocument.presentation": ["odp"],
   "application/vnd.oasis.opendocument.spreadsheet": ["ods"],
   "application/vnd.oasis.opendocument.text": ["odt"],
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation": ["pptx"],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [
+    "pptx"
+  ],
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    "docx"
+  ],
   "application/vnd.wap.wmlc": ["wmlc"],
   "application/wasm": ["wasm"],
   "application/x-7z-compressed": ["7z"],
@@ -369,7 +432,15 @@ export const getContentType = (filePath: string) => {
  * @since 1.0.0
  */
 export function toServerRouter<
-  M extends Router.RouteMatch.RouteMatch<Route.Route.Any, any, any, any, RenderEvent | null, any, any>,
+  M extends Router.RouteMatch.RouteMatch<
+    Route.Route.Any,
+    any,
+    any,
+    any,
+    RenderEvent | null,
+    any,
+    any
+  >,
   E2 = never,
   R2 = never
 >(
@@ -377,29 +448,44 @@ export function toServerRouter<
   options?: {
     clientEntry?: string
     layout?: LayoutTemplate<
-      Fx.Fx<RenderEvent | null, Router.RouteMatch.RouteMatch.Error<M>, Router.RouteMatch.RouteMatch.Context<M>>,
+      Fx.Fx<
+        RenderEvent | null,
+        Router.RouteMatch.RouteMatch.Error<M>,
+        Router.RouteMatch.RouteMatch.Context<M>
+      >,
       E2,
       R2
     >
     base?: string
   }
-): ServerRouter.Router<
+): ServerRouter.HttpRouter<
   Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-  | ServerRequest
-  | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
+  | HttpServerRequest
+  | Exclude<
+    Router.RouteMatch.RouteMatch.Context<M> | R2,
+    Navigation.Navigation | Router.CurrentRoute
+  >
 > {
-  let router: ServerRouter.Router<
+  let router: ServerRouter.HttpRouter<
     Router.RouteMatch.RouteMatch.Error<M> | E2 | GuardsNotMatched,
-    | Exclude<Router.RouteMatch.RouteMatch.Context<M> | R2, Navigation.Navigation | Router.CurrentRoute>
-    | ServerRequest
+    | Exclude<
+      Router.RouteMatch.RouteMatch.Context<M> | R2,
+      Navigation.Navigation | Router.CurrentRoute
+    >
+    | HttpServerRequest
   > = ServerRouter.empty
   const guardsByPath = Array.groupBy(matcher.matches, ({ route }) => {
     const withoutQuery = route.path.split("?")[0]
-    return withoutQuery.endsWith("\\") ? withoutQuery.slice(0, -1) : withoutQuery
+    return withoutQuery.endsWith("\\")
+      ? withoutQuery.slice(0, -1)
+      : withoutQuery
   })
-  const { head, script } = options?.clientEntry ?
-    getHeadAndScript(typedOptions.clientEntries[options.clientEntry], assetManifest) :
-    {
+  const { head, script } = options?.clientEntry
+    ? getHeadAndScript(
+      typedOptions.clientEntries[options.clientEntry],
+      assetManifest
+    )
+    : {
       head: null,
       script: null
     }
@@ -407,11 +493,21 @@ export function toServerRouter<
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
     if (matches.length === 1) {
-      router = ServerRouter.addHandler(router, fromMatches(baseRoute, matches[0].route, matches, head, script, options))
+      router = ServerRouter.addHandler(
+        router,
+        fromMatches(baseRoute, matches[0].route, matches, head, script, options)
+      )
     } else {
       router = ServerRouter.addHandler(
         router,
-        fromMatches(baseRoute, Route.parse(path), matches, head, script, options)
+        fromMatches(
+          baseRoute,
+          Route.parse(path),
+          matches,
+          head,
+          script,
+          options
+        )
       )
     }
   }
@@ -426,18 +522,14 @@ const fromMatches = <R extends Route.Route.Any>(
   head: ReturnType<typeof getHeadAndScript>["head"] | null,
   script: ReturnType<typeof getHeadAndScript>["script"] | null,
   options?: {
-    layout?: LayoutTemplate<
-      Fx.Fx<RenderEvent | null, any, any>,
-      any,
-      any
-    >
+    layout?: LayoutTemplate<Fx.Fx<RenderEvent | null, any, any>, any, any>
     base?: string
   }
 ) => {
-  return RouteHandler.get(
+  return HttpRouteHandler.get(
     route,
-    Effect.flatMap(Http.request.ServerRequest, (request) => {
-      const url = RouteHandler.getUrlFromServerRequest(request)
+    Effect.flatMap(HttpServerRequest, (request) => {
+      const url = HttpRouteHandler.getUrlFromServerRequest(request)
       const path = Navigation.getCurrentPathFromUrl(url)
 
       return Effect.gen(function*() {
@@ -449,7 +541,9 @@ const fromMatches = <R extends Route.Route.Any>(
           // Attempt to match a guard
           const matched = yield* match.guard(path)
           if (Option.isSome(matched)) {
-            yield* Effect.logDebug(`Matched guard for path`), Effect.annotateLogs("route.params", matched.value)
+            yield* Effect.logDebug(`Matched guard for path`).pipe(
+              Effect.annotateLogs("route.params", matched.value)
+            )
 
             const ref = yield* RefSubject.of(matched.value)
             const content = match.match(RefSubject.take(ref, 1)).pipe(
@@ -457,36 +551,41 @@ const fromMatches = <R extends Route.Route.Any>(
               Fx.provide(Router.CurrentRoute.layer(currentRoute))
             )
             const template = Fx.unify(
-              options?.layout ?
-                options.layout({ request, content, head, script }).pipe(Fx.provide(
-                  // Ensure layout only receives the parent route
-                  Router.CurrentRoute.layer(Option.match(currentRoute.parent, {
-                    onNone: () => Router.makeCurrentRoute(Route.end),
-                    onSome: identity
-                  }))
-                )) :
-                content
-            )
-              .pipe(
-                Fx.withSpan("render_template"),
-                Fx.onExit((exit) =>
-                  exit.pipe(
-                    Effect.matchCauseEffect({
-                      onFailure: (cause) => Effect.logError(`Failed to render Template`, cause),
-                      onSuccess: () => Effect.logDebug(`Rendered Template`)
-                    }),
-                    Effect.annotateLogs("route.params", matched.value)
+              options?.layout
+                ? options.layout({ request, content, head, script }).pipe(
+                  Fx.provide(
+                    // Ensure layout only receives the parent route
+                    Router.CurrentRoute.layer(
+                      Option.match(currentRoute.parent, {
+                        onNone: () => Router.makeCurrentRoute(Route.end),
+                        onSome: identity
+                      })
+                    )
                   )
-                ),
-                Fx.annotateSpans("route.params", matched.value),
-                Fx.annotateLogs("route.params", matched.value)
-              )
+                )
+                : content
+            ).pipe(
+              Fx.withSpan("render_template"),
+              Fx.onExit((exit) =>
+                exit.pipe(
+                  Effect.matchCauseEffect({
+                    onFailure: (cause) => Effect.logError(`Failed to render Template`, cause),
+                    onSuccess: () => Effect.logDebug(`Rendered Template`)
+                  }),
+                  Effect.annotateLogs("route.params", matched.value)
+                )
+              ),
+              Fx.annotateSpans("route.params", matched.value),
+              Fx.annotateLogs("route.params", matched.value)
+            )
 
             return yield* htmlResponse(template)
           }
         }
 
-        return yield* Effect.fail(new GuardsNotMatched({ request, route, matches }))
+        return yield* Effect.fail(
+          new GuardsNotMatched({ request, route, matches })
+        )
       }).pipe(
         Effect.provide(
           Layer.mergeAll(

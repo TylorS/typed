@@ -28,8 +28,12 @@ export interface TypedPluginOptions {
 /**
  * @since 1.0.0
  */
-export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<PluginOption> {
-  const rootDir = pluginOptions.rootDir ? resolve(pluginOptions.rootDir) : process.cwd()
+export function makeTypedPlugin(
+  pluginOptions: TypedPluginOptions
+): Array<PluginOption> {
+  const rootDir = pluginOptions.rootDir
+    ? resolve(pluginOptions.rootDir)
+    : process.cwd()
   const clientOutputDirectory = pluginOptions.clientOutputDirectory
     ? resolve(rootDir, pluginOptions.clientOutputDirectory)
     : resolve(rootDir, "dist/client")
@@ -38,11 +42,16 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
     : resolve(rootDir, "dist/server")
   const tsconfig = resolve(rootDir, pluginOptions.tsconfig ?? "tsconfig.json")
   const options: TypedOptions = {
-    clientEntries: pluginOptions.clientEntries ?
-      mapObject(pluginOptions.clientEntries, (value) => relative(rootDir, resolve(rootDir, value)))
+    clientEntries: pluginOptions.clientEntries
+      ? mapObject(pluginOptions.clientEntries, (value) => relative(rootDir, resolve(rootDir, value)))
       : {},
-    serverEntry: pluginOptions.serverEntry ? relative(rootDir, resolve(rootDir, pluginOptions.serverEntry)) : null,
-    relativeServerToClientOutputDirectory: relative(serverOutputDirectory, clientOutputDirectory),
+    serverEntry: pluginOptions.serverEntry
+      ? relative(rootDir, resolve(rootDir, pluginOptions.serverEntry))
+      : null,
+    relativeServerToClientOutputDirectory: relative(
+      serverOutputDirectory,
+      clientOutputDirectory
+    ),
     assetDirectory: "assets"
   }
 
@@ -54,7 +63,11 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
         config.optimizeDeps = {
           ...config.optimizeDeps,
           exclude: Array.from(
-            new Set([...(config.optimizeDeps?.exclude ?? []), "@typed/core/Node", "@typed/core/Platform"])
+            new Set([
+              ...(config.optimizeDeps?.exclude ?? []),
+              "@typed/core/Node",
+              "@typed/core/Platform"
+            ])
           )
         }
 
@@ -80,35 +93,42 @@ export function makeTypedPlugin(pluginOptions: TypedPluginOptions): Array<Plugin
                   compression(),
                   visualizer({
                     gzipSize: true,
-                    filename: join(clientOutputDirectory, ".vite/dependency-visualizer.html"),
+                    filename: join(
+                      clientOutputDirectory,
+                      ".vite/dependency-visualizer.html"
+                    ),
                     title: "Dependency Visualizer"
                   })
                 ]
               }
             },
-            ...options.serverEntry ?
-              [{
-                name: "server",
-                config: {
-                  build: {
-                    ssr: true,
-                    outDir: serverOutputDirectory,
-                    rollupOptions: { input: options.serverEntry }
+            ...(options.serverEntry
+              ? [
+                {
+                  name: "server",
+                  config: {
+                    build: {
+                      ssr: true,
+                      outDir: serverOutputDirectory,
+                      rollupOptions: { input: options.serverEntry }
+                    }
                   }
                 }
-              }] :
-              []
+              ]
+              : [])
           ]
         }
       }
     },
     tsconfigPaths({ projects: [tsconfig] }),
-    ...options.serverEntry ?
-      [vavite({
-        serverEntry: options.serverEntry,
-        serveClientAssetsInDev: true
-      })] :
-      [],
+    ...(options.serverEntry
+      ? [
+        vavite({
+          serverEntry: options.serverEntry,
+          serveClientAssetsInDev: true
+        })
+      ]
+      : []),
     exposeAssetManifest(clientOutputDirectory),
     exposeTypedOptions(options)
   ]
@@ -177,8 +197,10 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
     async load(id) {
       if (id === "virtual:typed-options") {
         const entries = Object.entries(options)
-        const lines = entries.map(([key, value]) => `
-        export const ${key} = ${JSON.stringify(value, null, 2)}`)
+        const lines = entries.map(
+          ([key, value]) => `
+        export const ${key} = ${JSON.stringify(value, null, 2)}`
+        )
 
         return lines.join("\n") + "\n"
       }
@@ -186,7 +208,10 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
   }
 }
 
-function mapObject<T, U>(obj: Record<string, T>, fn: (value: T, key: string) => U): Record<string, U> {
+function mapObject<T, U>(
+  obj: Record<string, T>,
+  fn: (value: T, key: string) => U
+): Record<string, U> {
   const entries = Object.entries(obj)
   const result: Record<string, U> = Object.create(null)
 

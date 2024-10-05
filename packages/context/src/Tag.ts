@@ -14,13 +14,16 @@ import { identifierToString, makeIdentifier } from "./Identifier.js"
  * provide a more ergonomic API for working with Effect + Fx.
  * @since 1.0.0
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Tag<I, S = I> extends C.Tag<I, S> {}
 
 /**
  * Construct a Tag implementation to be utilized from the Effect Context.
  * @since 1.0.0
  */
-export function Tag<const I extends IdentifierFactory<any>, S = I>(id: I | string): Tag<IdentifierOf<I>, S>
+export function Tag<const I extends IdentifierFactory<any>, S = I>(
+  id: I | string
+): Tag<IdentifierOf<I>, S>
 export function Tag<const I, S = I>(id: I | string): Tag<IdentifierOf<I>, S>
 export function Tag<const I, S>(id: I): Tag<IdentifierOf<I>, S>
 export function Tag<S>(): {
@@ -36,8 +39,12 @@ export function Tag<S>(id?: unknown) {
   }
 }
 
-function makeTag<const I extends IdentifierInput<any>, S>(id: I): Tag<IdentifierOf<I>, S> {
-  return C.GenericTag<IdentifierOf<I>, S>(identifierToString(makeIdentifier(id)))
+function makeTag<const I extends IdentifierInput<any>, S>(
+  id: I
+): Tag<IdentifierOf<I>, S> {
+  return C.GenericTag<IdentifierOf<I>, S>(
+    identifierToString(makeIdentifier(id))
+  )
 }
 
 /**

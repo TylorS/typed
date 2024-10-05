@@ -106,8 +106,8 @@ Added in v1.0.0
 
 ```ts
 export declare const set: {
-  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<A, never, never>
-  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<A, never, never>
+  <A extends Rendered>(value: A): (elementRef: ElementRef<A>) => Effect.Effect<A>
+  <A extends Rendered>(elementRef: ElementRef<A>, value: A): Effect.Effect<A>
 }
 ```
 

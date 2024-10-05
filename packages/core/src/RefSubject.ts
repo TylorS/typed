@@ -21,7 +21,9 @@ export * from "@typed/fx/RefSubject"
  * @since 1.0.0
  */
 export const takeOneIfEnvironment: {
-  (environments: ReadonlyArray<Environment>): <A, E, R>(
+  (
+    environments: ReadonlyArray<Environment>
+  ): <A, E, R>(
     fx: RefSubject.RefSubject<A, E, R>
   ) => RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 
@@ -30,21 +32,28 @@ export const takeOneIfEnvironment: {
     environments: ReadonlyArray<Environment>
   ): RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 } = function takeOneIfEnvironment<A, E, R>(
-  ...args: [ReadonlyArray<Environment>] | [RefSubject.RefSubject<A, E, R>, ReadonlyArray<Environment>]
+  ...args:
+    | [ReadonlyArray<Environment>]
+    | [RefSubject.RefSubject<A, E, R>, ReadonlyArray<Environment>]
 ): any {
   if (args.length === 1) {
     return (fx: RefSubject.RefSubject<A, E, R>) => takeOneIfEnvironment(fx, args[0])
   }
 
   const [fx, environments] = args
-  return new RefSubjectSimpleFxTransform(fx, Fx.takeOneIfEnvironment(environments))
+  return new RefSubjectSimpleFxTransform(
+    fx,
+    Fx.takeOneIfEnvironment(environments)
+  )
 }
 
 /**
  * @since 1.0.0
  */
 export const takeOneIfNotEnvironment: {
-  (environments: ReadonlyArray<Environment>): <A, E, R>(
+  (
+    environments: ReadonlyArray<Environment>
+  ): <A, E, R>(
     fx: RefSubject.RefSubject<A, E, R>
   ) => RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 
@@ -53,14 +62,19 @@ export const takeOneIfNotEnvironment: {
     environments: ReadonlyArray<Environment>
   ): RefSubject.RefSubject<A, E, R | CurrentEnvironment>
 } = function takeOneIfNotEnvironment<A, E, R>(
-  ...args: [ReadonlyArray<Environment>] | [RefSubject.RefSubject<A, E, R>, ReadonlyArray<Environment>]
+  ...args:
+    | [ReadonlyArray<Environment>]
+    | [RefSubject.RefSubject<A, E, R>, ReadonlyArray<Environment>]
 ): any {
   if (args.length === 1) {
     return (fx: RefSubject.RefSubject<A, E, R>) => takeOneIfNotEnvironment(fx, args[0])
   }
 
   const [fx, environments] = args
-  return new RefSubjectSimpleFxTransform(fx, Fx.takeOneIfNotEnvironment(environments))
+  return new RefSubjectSimpleFxTransform(
+    fx,
+    Fx.takeOneIfNotEnvironment(environments)
+  )
 }
 
 /**
@@ -75,7 +89,9 @@ export const takeOneIfNotDomEnvironment: <A, E, R>(
  */
 export const takeOneIfDomEnvironment: <A, E, R>(
   fx: RefSubject.RefSubject<A, E, R>
-) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(["dom", "test:dom"])
+) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(
+  ["dom", "test:dom"]
+)
 
 /**
  * @since 1.0.0
@@ -89,7 +105,9 @@ export const takeOneIfNotServerEnvironment: <A, E, R>(
  */
 export const takeOneIfServerEnvironment: <A, E, R>(
   fx: RefSubject.RefSubject<A, E, R>
-) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(["server", "test:server"])
+) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(
+  ["server", "test:server"]
+)
 
 /**
  * @since 1.0.0
@@ -103,9 +121,11 @@ export const takeOneIfNotStaticEnvironment: <A, E, R>(
  */
 export const takeOneIfStaticEnvironment: <A, E, R>(
   fx: RefSubject.RefSubject<A, E, R>
-) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(["static", "test:static"])
+) => RefSubject.RefSubject<A, E, CurrentEnvironment | R> = takeOneIfEnvironment(
+  ["static", "test:static"]
+)
 
-// @ts-expect-error
+// @ts-expect-error Missing PlaceholderTypeId
 class RefSubjectSimpleFxTransform<A, E, R, R2> extends Fx.FxEffectBase<A, E, R | R2 | Scope.Scope, A, E, R>
   implements RefSubject.RefSubject<A, E, R | R2>
 {
@@ -118,7 +138,9 @@ class RefSubjectSimpleFxTransform<A, E, R, R2> extends Fx.FxEffectBase<A, E, R |
 
   constructor(
     readonly ref: RefSubject.RefSubject<A, E, R>,
-    readonly transform: (fx: Fx.Fx<A, E, Scope.Scope | R>) => Fx.Fx<A, E, Scope.Scope | R | R2>
+    readonly transform: (
+      fx: Fx.Fx<A, E, Scope.Scope | R>
+    ) => Fx.Fx<A, E, Scope.Scope | R | R2>
   ) {
     super()
 

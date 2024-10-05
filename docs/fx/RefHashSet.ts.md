@@ -105,8 +105,8 @@ Map the values with their indexes of a RefHashSet.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A) => B): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<readonly B[], E, R>
-  <A, E, R, B>(ref: RefHashSet<A, E, R>, f: (a: A) => B): RefSubject.Computed<readonly B[], E, R>
+  <A, B>(f: (a: A) => B): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
+  <A, E, R, B>(ref: RefHashSet<A, E, R>, f: (a: A) => B): RefSubject.Computed<ReadonlyArray<B>, E, R>
 }
 ```
 
@@ -122,11 +122,11 @@ Partition the values of a RefHashSet using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<readonly [readonly B[], HashSet.HashSet<A>], E, R>
+  ): <E, R>(ref: RefHashSet<A, E, R>) => RefSubject.Computed<readonly [ReadonlyArray<B>, HashSet.HashSet<A>], E, R>
   <A, E, R>(
     ref: RefHashSet<A, E, R>,
     predicate: (a: A) => boolean
-  ): RefSubject.Computed<readonly [readonly A[], HashSet.HashSet<A>], E, never>
+  ): RefSubject.Computed<readonly [ReadonlyArray<A>, HashSet.HashSet<A>], E>
 }
 ```
 
