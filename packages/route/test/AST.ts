@@ -1,4 +1,5 @@
-import { describe, it } from "@effect/vitest"
+import { describe } from "@effect/vitest"
+import { it } from 'vitest'
 import * as AST from "@typed/route/AST"
 import * as Route from "@typed/route/Route"
 import { deepEqual } from "assert"

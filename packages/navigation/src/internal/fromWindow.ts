@@ -1,22 +1,27 @@
-import * as Equivalence from "@effect/schema/Equivalence"
-import * as Context from "@typed/context"
-import { Window } from "@typed/dom/Window"
-import * as RefSubject from "@typed/fx/RefSubject"
-import { GetRandomValues, Uuid } from "@typed/id"
+import * as Equivalence from "@effect/schema/Equivalence";
+import * as Context from "@typed/context";
+import { Window } from "@typed/dom/Window";
+import * as RefSubject from "@typed/fx/RefSubject";
+import { GetRandomValues, Uuid } from "@typed/id";
 
-import * as Effect from "effect/Effect"
-import type * as Fiber from "effect/Fiber"
-import * as Option from "effect/Option"
-import * as Runtime from "effect/Runtime"
-import * as Scope from "effect/Scope"
+import * as Effect from "effect/Effect";
+import type * as Fiber from "effect/Fiber";
+import * as Option from "effect/Option";
+import * as Runtime from "effect/Runtime";
+import * as Scope from "effect/Scope";
 
-import * as Schema from "@effect/schema/Schema"
-import * as Exit from "effect/Exit"
-import type * as Layer from "effect/Layer"
-import type { Commit } from "../Layer.js"
-import type { BeforeNavigationEvent, Destination, NavigationEvent, Transition } from "../Navigation.js"
-import { Navigation, NavigationError } from "../Navigation.js"
-import type { ModelAndIntent } from "./shared.js"
+import * as Schema from "@effect/schema/Schema";
+import * as Exit from "effect/Exit";
+import type * as Layer from "effect/Layer";
+import type { Commit } from "../Layer.js";
+import type {
+  BeforeNavigationEvent,
+  Destination,
+  NavigationEvent,
+  Transition,
+} from "../Navigation.js";
+import { Navigation, NavigationError } from "../Navigation.js";
+import type { ModelAndIntent, PatchedState } from "./shared.js";
 import {
   getOriginalState,
   getUrl,
@@ -24,154 +29,197 @@ import {
   makeDestination,
   makeHandlersState,
   NavigationState,
-  setupFromModelAndIntent
-} from "./shared.js"
+  setupFromModelAndIntent,
+} from "./shared.js";
 
 /* eslint-disable @typescript-eslint/consistent-type-imports */
-type NativeNavigation = import("@virtualstate/navigation").Navigation
-type NativeEntry = import("@virtualstate/navigation").NavigationHistoryEntry
-type NativeEvent = import("@virtualstate/navigation").NavigationEventMap["navigate"]
+type NativeNavigation = import("@virtualstate/navigation").Navigation;
+type NativeEntry = import("@virtualstate/navigation").NavigationHistoryEntry;
+type NativeEvent =
+  import("@virtualstate/navigation").NavigationEventMap["navigate"];
 /* eslint-enable @typescript-eslint/consistent-type-imports */
 
 declare global {
   export interface Window {
-    navigation?: NativeNavigation
+    navigation?: NativeNavigation;
   }
 }
 
-export const fromWindow: Layer.Layer<Navigation, never, Window> = Navigation.scoped(
-  Window.withEffect((window) => {
-    const getRandomValues = (length: number) => Effect.sync(() => window.crypto.getRandomValues(new Uint8Array(length)))
-    return Effect.gen(function*() {
-      const { run, runPromise } = yield* scopedRuntime<never>()
-      const hasNativeNavigation = !!window.navigation
-      const modelAndIntent = yield* hasNativeNavigation
-        ? setupWithNavigation(window.navigation!, runPromise)
-        : setupWithHistory(window, (event) => run(handleHistoryEvent(event)))
+export const fromWindow: Layer.Layer<Navigation, never, Window> =
+  Navigation.scoped(
+    Window.withEffect((window) => {
+      const getRandomValues = (length: number) =>
+        Effect.sync(() =>
+          window.crypto.getRandomValues(new Uint8Array(length))
+        );
+      return Effect.gen(function* () {
+        const { run, runPromise } = yield* scopedRuntime<never>();
+        const hasNativeNavigation = !!window.navigation;
+        const modelAndIntent = yield* hasNativeNavigation
+          ? setupWithNavigation(window.navigation!, runPromise)
+          : setupWithHistory(window, (event) => run(handleHistoryEvent(event)));
 
-      const navigation = setupFromModelAndIntent(
-        modelAndIntent,
-        window.location.origin,
-        getBaseHref(window),
-        getRandomValues,
-        hasNativeNavigation ? () => getNavigationState(window.navigation!) : undefined
-      )
+        const navigation = setupFromModelAndIntent(
+          modelAndIntent,
+          window.location.origin,
+          getBaseHref(window),
+          getRandomValues,
+          hasNativeNavigation
+            ? () => getNavigationState(window.navigation!)
+            : undefined
+        );
 
-      return navigation
+        return navigation;
 
-      function handleHistoryEvent(event: HistoryEvent) {
-        return Effect.gen(function*() {
-          if (event._tag === "PushState") {
-            return yield* navigation.navigate(event.url, {}, event.skipCommit)
-          } else if (event._tag === "ReplaceState") {
-            if (Option.isSome(event.url)) {
+        function handleHistoryEvent(event: HistoryEvent) {
+          return Effect.gen(function* () {
+            if (event._tag === "PushState") {
               return yield* navigation.navigate(
-                event.url.value,
-                { history: "replace", state: event.state },
+                event.url,
+                {},
                 event.skipCommit
-              )
-            } else {
-              return yield* navigation.updateCurrentEntry(event)
-            }
-          } else if (event._tag === "Traverse") {
-            const { entries, index } = yield* modelAndIntent.state
-            const toIndex = Math.min(Math.max(0, index + event.delta), entries.length - 1)
-            const to = entries[toIndex]
+              );
+            } else if (event._tag === "ReplaceState") {
+              if (Option.isSome(event.url)) {
+                return yield* navigation.navigate(
+                  event.url.value,
+                  { history: "replace", state: event.state },
+                  event.skipCommit
+                );
+              } else {
+                return yield* navigation.updateCurrentEntry(event);
+              }
+            } else if (event._tag === "Traverse") {
+              const { entries, index } = yield* modelAndIntent.state;
+              const toIndex = Math.min(
+                Math.max(0, index + event.delta),
+                entries.length - 1
+              );
+              const to = entries[toIndex];
 
-            return yield* navigation.traverseTo(to.key, {}, event.skipCommit)
-          } else {
-            yield* navigation.traverseTo(event.key, {}, event.skipCommit)
-            return yield* navigation.updateCurrentEntry({ state: event.state })
-          }
-        })
-      }
-    }).pipe(
-      GetRandomValues.provide(getRandomValues)
-    )
-  })
-)
+              const result = yield* navigation.traverseTo(
+                to.key,
+                {},
+                event.skipCommit
+              );
+
+              return result;
+            } else {
+              yield* navigation.traverseTo(event.key, {}, event.skipCommit);
+              return yield* navigation.updateCurrentEntry({
+                state: event.state,
+              });
+            }
+          });
+        }
+      }).pipe(GetRandomValues.provide(getRandomValues));
+    })
+  );
 
 function getBaseHref(window: Window) {
-  const base = window.document.querySelector("base")
-  return base ? base.href : "/"
+  const base = window.document.querySelector("base");
+  return base ? base.href : "/";
 }
 
 const getNavigationState = (navigation: NativeNavigation): NavigationState => {
-  const entries = navigation.entries().map(nativeEntryToDestination)
-  const { index } = navigation.currentEntry
+  const entries = navigation.entries().map(nativeEntryToDestination);
+  const { index } = navigation.currentEntry;
 
   return {
     entries,
     index,
-    transition: Option.none<Transition>()
-  }
-}
+    transition: Option.none<Transition>(),
+  };
+};
 
 function setupWithNavigation(
   navigation: NativeNavigation,
   runPromise: <E, A>(effect: Effect.Effect<A, E, Scope.Scope>) => Promise<A>
 ): Effect.Effect<ModelAndIntent, never, Scope.Scope | GetRandomValues> {
-  return Effect.gen(function*() {
+  return Effect.gen(function* () {
     const state = yield* RefSubject.fromEffect(
       Effect.sync((): NavigationState => getNavigationState(navigation)),
-      { eq: Equivalence.make(Schema.typeSchema(Schema.typeSchema(NavigationState))) }
-    )
-    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
-    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, formDataHandlers, handlers } = yield* makeHandlersState()
+      {
+        eq: Equivalence.make(
+          Schema.typeSchema(Schema.typeSchema(NavigationState))
+        ),
+      }
+    );
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0);
+    const canGoForward = RefSubject.map(
+      state,
+      (s) => s.index < s.entries.length - 1
+    );
+    const { beforeHandlers, formDataHandlers, handlers } =
+      yield* makeHandlersState();
     const commit: Commit = (to: Destination, event: BeforeNavigationEvent) =>
-      Effect.gen(function*(_) {
-        const { key, state, url } = to
-        const { info, type } = event
+      Effect.gen(function* (_) {
+        const { key, state, url } = to;
+        const { info, type } = event;
 
         if (type === "push" || type === "replace") {
           yield* _(
-            Effect.promise(() => navigation.navigate(url.toString(), { history: type, state, info }).committed),
-            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
-          )
+            Effect.promise(
+              () =>
+                navigation.navigate(url.toString(), {
+                  history: type,
+                  state,
+                  info,
+                }).committed
+            ),
+            Effect.catchAllDefect((error) =>
+              Effect.fail(new NavigationError({ error }))
+            )
+          );
         } else if (event.type === "reload") {
           yield* _(
             Effect.promise(() => navigation.reload({ state, info }).committed),
-            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
-          )
+            Effect.catchAllDefect((error) =>
+              Effect.fail(new NavigationError({ error }))
+            )
+          );
         } else {
           yield* _(
-            Effect.promise(() => navigation.traverseTo(key, { info }).committed),
-            Effect.catchAllDefect((error) => Effect.fail(new NavigationError({ error })))
-          )
+            Effect.promise(
+              () => navigation.traverseTo(key, { info }).committed
+            ),
+            Effect.catchAllDefect((error) =>
+              Effect.fail(new NavigationError({ error }))
+            )
+          );
         }
-      })
+      });
 
     const runHandlers = (native: NativeEvent) =>
-      Effect.gen(function*() {
-        const eventHandlers = yield* handlers
-        const matches: Array<Effect.Effect<unknown>> = []
+      Effect.gen(function* () {
+        const eventHandlers = yield* handlers;
+        const matches: Array<Effect.Effect<unknown>> = [];
 
         const event: NavigationEvent = {
           type: native.navigationType,
           destination: nativeEntryToDestination(navigation.currentEntry),
-          info: native.info
-        }
+          info: native.info,
+        };
 
         for (const [handler, ctx] of eventHandlers) {
-          const match = yield* Effect.provide(handler(event), ctx)
+          const match = yield* Effect.provide(handler(event), ctx);
           if (Option.isSome(match)) {
-            matches.push(Effect.provide(match.value, ctx))
+            matches.push(Effect.provide(match.value, ctx));
           }
         }
 
         if (matches.length > 0) {
-          yield* Effect.all(matches)
+          yield* Effect.all(matches);
         }
-      })
+      });
 
     navigation.addEventListener("navigate", (ev) => {
-      if (shouldNotIntercept(ev)) return
+      if (shouldNotIntercept(ev)) return;
 
       ev.intercept({
-        handler: () => runPromise(runHandlers(ev))
-      })
-    })
+        handler: () => runPromise(runHandlers(ev)),
+      });
+    });
 
     return {
       state,
@@ -180,9 +228,9 @@ function setupWithNavigation(
       beforeHandlers,
       handlers,
       formDataHandlers,
-      commit
-    } as const
-  })
+      commit,
+    } as const;
+  });
 }
 
 function nativeEntryToDestination(
@@ -193,8 +241,8 @@ function nativeEntryToDestination(
     key: Uuid(entry.key),
     url: new URL(entry.url!),
     state: entry.getState(),
-    sameDocument: entry.sameDocument
-  }
+    sameDocument: entry.sameDocument,
+  };
 }
 
 function shouldNotIntercept(navigationEvent: NativeEvent): boolean {
@@ -209,49 +257,90 @@ function shouldNotIntercept(navigationEvent: NativeEvent): boolean {
     // If this is a form submission,
     // let that go to the server.
     !!navigationEvent.formData
-  )
+  );
 }
 
 function setupWithHistory(
   window: Window,
   onEvent: (event: HistoryEvent) => void
 ): Effect.Effect<ModelAndIntent, never, GetRandomValues | Scope.Scope> {
-  return Effect.gen(function*() {
-    const { location } = window
-    const { original: history, unpatch } = patchHistory(window, onEvent)
+  return Effect.gen(function* () {
+    const { location } = window;
+    const {
+      original: history,
+      unpatch,
+      getHistoryState,
+    } = patchHistory(window, onEvent);
 
-    yield* Effect.addFinalizer(() => unpatch)
+    yield* Effect.addFinalizer(() => unpatch);
 
     const state = yield* RefSubject.fromEffect(
       Effect.suspend(() =>
         Effect.map(
           makeDestination(
             new URL(location.href),
-            history.state,
+            getHistoryState(),
             location.origin
           ),
-          (destination): NavigationState => ({ entries: [destination], index: 0, transition: Option.none() })
+          (destination): NavigationState => ({
+            entries: [destination],
+            index: 0,
+            transition: Option.none(),
+          })
         )
       ),
       { eq: Equivalence.make(Schema.typeSchema(NavigationState)) }
-    )
-    const canGoBack = RefSubject.map(state, (s) => s.index > 0)
-    const canGoForward = RefSubject.map(state, (s) => s.index < s.entries.length - 1)
-    const { beforeHandlers, formDataHandlers, handlers } = yield* makeHandlersState()
-    const commit: Commit = ({ id, key, state, url }: Destination, event: BeforeNavigationEvent) =>
+    );
+    const canGoBack = RefSubject.map(state, (s) => s.index > 0);
+    const canGoForward = RefSubject.map(
+      state,
+      (s) => s.index < s.entries.length - 1
+    );
+    const { beforeHandlers, formDataHandlers, handlers } =
+      yield* makeHandlersState();
+    const commit: Commit = (
+      { id, key, state, url }: Destination,
+      event: BeforeNavigationEvent
+    ) =>
       Effect.sync(() => {
-        const { type } = event
+        const { type } = event;
 
         if (type === "push") {
-          history.pushState({ id, key, originalHistoryState: state }, "", url)
+          history.pushState(
+            {
+              __typed__navigation__id__: id,
+              __typed__navigation__key__: key,
+              __typed__navigation__state__: state,
+            },
+            "",
+            url
+          );
         } else if (type === "replace") {
-          history.replaceState({ id, key, originalHistoryState: state }, "", url)
+          history.replaceState(
+            {
+              __typed__navigation__id__: id,
+              __typed__navigation__key__: key,
+              __typed__navigation__state__: state,
+            },
+            "",
+            url
+          );
         } else if (event.type === "reload") {
-          location.reload()
+          location.reload();
         } else {
-          history.go(event.delta)
+          history.go(event.delta);
+
+          history.replaceState(
+            {
+              __typed__navigation__id__: id,
+              __typed__navigation__key__: key,
+              __typed__navigation__state__: state,
+            },
+            "",
+            window.location.href
+          );
         }
-      })
+      });
 
     return {
       state,
@@ -260,168 +349,240 @@ function setupWithHistory(
       beforeHandlers,
       handlers,
       formDataHandlers,
-      commit
-    } satisfies ModelAndIntent
-  })
+      commit,
+    } satisfies ModelAndIntent;
+  });
 }
 
-type HistoryEvent = PushStateEvent | ReplaceStateEvent | TraverseEvent | TraverseToEvent
+type HistoryEvent =
+  | PushStateEvent
+  | ReplaceStateEvent
+  | TraverseEvent
+  | TraverseToEvent;
 
-type PushStateEvent = { _tag: "PushState"; state: unknown; url: URL; skipCommit: boolean }
-type ReplaceStateEvent = { _tag: "ReplaceState"; state: unknown; url: Option.Option<URL>; skipCommit: boolean }
-type TraverseEvent = { _tag: "Traverse"; delta: number; skipCommit: boolean }
-type TraverseToEvent = { _tag: "TraverseTo"; key: Uuid; state: unknown; skipCommit: boolean }
+type PushStateEvent = {
+  _tag: "PushState";
+  state: unknown;
+  url: URL;
+  skipCommit: boolean;
+};
+type ReplaceStateEvent = {
+  _tag: "ReplaceState";
+  state: unknown;
+  url: Option.Option<URL>;
+  skipCommit: boolean;
+};
+type TraverseEvent = { _tag: "Traverse"; delta: number; skipCommit: boolean };
+type TraverseToEvent = {
+  _tag: "TraverseTo";
+  key: Uuid;
+  state: unknown;
+  skipCommit: boolean;
+};
 
 function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
-  const { history, location } = window
-  const stateDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), "state")
+  const { history, location } = window;
+  const stateDescriptor =
+    Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), "state") ||
+    Object.getOwnPropertyDescriptor(history, "state");
 
   const methods = {
     pushState: history.pushState.bind(history),
     replaceState: history.replaceState.bind(history),
     go: history.go.bind(history),
     back: history.back.bind(history),
-    forward: history.forward.bind(history)
-  }
-  const getState = stateDescriptor?.get?.bind(history)
+    forward: history.forward.bind(history),
+  };
+  const getStateDescriptor = stateDescriptor?.get?.bind(history);
+
+  const getHistoryState = () => getStateDescriptor?.();
 
   const original: History = {
     get length() {
-      return history.length
+      return history.length;
     },
     get scrollRestoration() {
-      return history.scrollRestoration
+      return history.scrollRestoration;
     },
     set scrollRestoration(mode) {
-      history.scrollRestoration = mode
+      history.scrollRestoration = mode;
     },
     get state() {
-      return getState?.() ?? history.state
+      return getHistoryState();
     },
     ...methods,
     pushState(data, _, url) {
-      if (!stateDescriptor) {
-        ;(history as any).state = data
-      }
-
-      return methods.pushState(data, _, url)
+      return methods.pushState(data, _, url?.toString());
     },
     replaceState(data, _, url) {
-      if (!stateDescriptor) {
-        ;(history as any).state = data
-      }
-
-      return methods.replaceState(data, _, url)
-    }
-  }
+      return methods.replaceState(data, _, url?.toString());
+    },
+  };
 
   history.pushState = (state, _, url) => {
     if (url) {
-      onEvent({ _tag: "PushState", state, url: getUrl(location.origin, url), skipCommit: false })
+      onEvent({
+        _tag: "PushState",
+        state,
+        url: getUrl(location.origin, url),
+        skipCommit: false,
+      });
     } else {
-      onEvent({ _tag: "ReplaceState", state, url: Option.none(), skipCommit: false })
+      onEvent({
+        _tag: "ReplaceState",
+        state,
+        url: Option.none(),
+        skipCommit: false,
+      });
     }
-  }
+  };
   history.replaceState = (state, _, url) => {
     onEvent({
       _tag: "ReplaceState",
       state,
       url: url ? Option.some(getUrl(location.origin, url)) : Option.none(),
-      skipCommit: false
-    })
-  }
+      skipCommit: false,
+    });
+  };
   history.go = (delta) => {
     if (delta && delta !== 0) {
-      onEvent({ _tag: "Traverse", delta, skipCommit: false })
+      onEvent({ _tag: "Traverse", delta, skipCommit: false });
     }
-  }
+  };
   history.back = () => {
-    onEvent({ _tag: "Traverse", delta: -1, skipCommit: false })
-  }
+    onEvent({ _tag: "Traverse", delta: -1, skipCommit: false });
+  };
   history.forward = () => {
-    onEvent({ _tag: "Traverse", delta: 1, skipCommit: false })
-  }
-
-  // In a proper browser this will allow patching to hide the id/key's associated with the state
-  if (stateDescriptor) {
-    try {
-      Object.defineProperty(history, "state", {
-        get() {
-          return getOriginalState(stateDescriptor.get!.call(history))
-        }
-      })
-    } catch {
-      // We tried, but it didn't work
-    }
-  }
+    onEvent({ _tag: "Traverse", delta: 1, skipCommit: false });
+  };
 
   const onHashChange = (ev: HashChangeEvent) => {
-    onEvent({ _tag: "ReplaceState", state: history.state, url: Option.some(new URL(ev.newURL)), skipCommit: false })
-  }
+    onEvent({
+      _tag: "ReplaceState",
+      state: history.state,
+      url: Option.some(new URL(ev.newURL)),
+      skipCommit: false,
+    });
+  };
 
-  window.addEventListener("hashchange", onHashChange, { capture: true })
+  window.addEventListener("hashchange", onHashChange, { capture: true });
 
   const onPopState = (ev: PopStateEvent) => {
     if (isPatchedState(ev.state)) {
-      onEvent({ _tag: "TraverseTo", key: ev.state.key, state: ev.state.originalHistoryState, skipCommit: true })
+      onEvent({
+        _tag: "TraverseTo",
+        key: ev.state.__typed__navigation__key__,
+        state: ev.state.__typed__navigation__state__,
+        skipCommit: true,
+      });
     } else {
-      onEvent({ _tag: "ReplaceState", state: ev.state, url: Option.some(new URL(location.href)), skipCommit: true })
+      onEvent({
+        _tag: "ReplaceState",
+        state: ev.state,
+        url: Option.some(new URL(location.href)),
+        skipCommit: true,
+      });
     }
-  }
+  };
 
-  window.addEventListener("popstate", onPopState, { capture: true })
+  window.addEventListener("popstate", onPopState, { capture: true });
 
   const unpatch = Effect.sync(() => {
-    history.pushState = original.pushState
-    history.replaceState = original.replaceState
-    history.go = original.go
-    history.back = original.back
-    history.forward = original.forward
+    history.pushState = original.pushState;
+    history.replaceState = original.replaceState;
+    history.go = original.go;
+    history.back = original.back;
+    history.forward = original.forward;
 
     if (stateDescriptor) {
       try {
-        Object.defineProperty(history, "state", stateDescriptor)
+        Object.defineProperty(history, "state", stateDescriptor);
       } catch {
         // We tried, but it didn't work
       }
     }
 
-    window.removeEventListener("hashchange", onHashChange)
-    window.removeEventListener("popstate", onPopState)
-  })
+    window.removeEventListener("hashchange", onHashChange);
+    window.removeEventListener("popstate", onPopState);
+  });
+
+  Object.defineProperty(history, "state", {
+    get() {
+      console.log("here");
+      return getOriginalState(getStateDescriptor?.() ?? history.state);
+    },
+    set(value) {
+      const { __typed__navigation__id__, __typed__navigation__key__ } =
+        getStateDescriptor?.() ?? original.state;
+
+      if (isPatchedState(value)) {
+        // The setter is not actually modifying the history.state
+        // We need to call the original replaceState to update the actual state
+        original.replaceState.call(history, value, "", location.href);
+      } else {
+        // The setter is not actually modifying the history.state
+        // We need to call the original replaceState to update the actual state
+        original.replaceState.call(
+          history,
+          {
+            __typed__navigation__id__,
+            __typed__navigation__key__,
+            __typed__navigation__state__: value,
+          } satisfies PatchedState,
+          "",
+          location.href
+        );
+      }
+
+      return value;
+    },
+  });
 
   return {
+    getHistoryState,
     original,
     patched: history,
-    unpatch
-  } as const
+    unpatch,
+  } as const;
 }
 
 type ScopedRuntime<R> = {
-  readonly runtime: Runtime.Runtime<R | Scope.Scope>
-  readonly scope: Scope.Scope
-  readonly run: <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>) => Fiber.RuntimeFiber<A, E>
-  readonly runPromise: <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>) => Promise<A>
-}
+  readonly runtime: Runtime.Runtime<R | Scope.Scope>;
+  readonly scope: Scope.Scope;
+  readonly run: <E, A>(
+    effect: Effect.Effect<A, E, R | Scope.Scope>
+  ) => Fiber.RuntimeFiber<A, E>;
+  readonly runPromise: <E, A>(
+    effect: Effect.Effect<A, E, R | Scope.Scope>
+  ) => Promise<A>;
+};
 
-function scopedRuntime<R>(): Effect.Effect<ScopedRuntime<R>, never, R | Scope.Scope> {
+function scopedRuntime<R>(): Effect.Effect<
+  ScopedRuntime<R>,
+  never,
+  R | Scope.Scope
+> {
   return Effect.map(Effect.runtime<R | Scope.Scope>(), (runtime) => {
-    const scope = Context.get(runtime.context, Scope.Scope)
-    const runFork = Runtime.runFork(runtime)
-    const runPromise = <E, A>(effect: Effect.Effect<A, E, R | Scope.Scope>): Promise<A> =>
+    const scope = Context.get(runtime.context, Scope.Scope);
+    const runFork = Runtime.runFork(runtime);
+    const runPromise = <E, A>(
+      effect: Effect.Effect<A, E, R | Scope.Scope>
+    ): Promise<A> =>
       new Promise((resolve, reject) => {
-        const fiber = runFork(effect, { scope })
-        fiber.addObserver(Exit.match({
-          onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
-          onSuccess: resolve
-        }))
-      })
+        const fiber = runFork(effect, { scope });
+        fiber.addObserver(
+          Exit.match({
+            onFailure: (cause) => reject(Runtime.makeFiberFailure(cause)),
+            onSuccess: resolve,
+          })
+        );
+      });
 
     return {
       runtime,
       scope: Context.unsafeGet(runtime.context, Scope.Scope),
       run: (eff) => runFork(eff, { scope }),
-      runPromise
-    } as const
-  })
+      runPromise,
+    } as const;
+  });
 }

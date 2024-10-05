@@ -27,7 +27,7 @@
     "build-post": "build-utils pack-v2",
     "dts-exports": "",
     "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
-    "build-all": "tsc -b tsconfig.json",
+    "build-all": "tsc -b tsconfig.build.json",
     "build-watch": "tsc -b tsconfig.json --watch",
     "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
     "docs": "docgen",

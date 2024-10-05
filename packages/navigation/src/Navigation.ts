@@ -71,7 +71,7 @@ export interface Navigation {
   ) => Effect.Effect<
     Option.Option<HttpClientResponse.HttpClientResponse>,
     NavigationError | HttpClientError.HttpClientError,
-    Scope.Scope | HttpClient.HttpClient.Default
+    Scope.Scope | HttpClient.HttpClient.Service
   >
 
   readonly onFormData: <R = never, R2 = never>(
@@ -519,7 +519,7 @@ export function submit(
 ): Effect.Effect<
   Option.Option<HttpClientResponse.HttpClientResponse>,
   NavigationError | HttpClientError.HttpClientError,
-  Navigation | HttpClient.HttpClient.Default | Scope.Scope
+  Navigation | HttpClient.HttpClient.Service | Scope.Scope
 > {
   return Navigation.withEffect((n) => n.submit(data, formInput))
 }

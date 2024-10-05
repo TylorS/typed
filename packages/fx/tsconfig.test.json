@@ -7,12 +7,10 @@
     "rootDir": "../../",
     "types": [
       "vitest/globals"
-    ],
-    "noEmit": true
+    ]
   },
   "include": [
-    "test",
-    "../../"
+    "test"
   ],
   "references": [
     {

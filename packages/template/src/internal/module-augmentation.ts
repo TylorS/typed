@@ -1,4 +1,4 @@
-import type { Placeholder } from "../Placeholder.js"
+import type { Placeholder } from "../Placeholder.js";
 
 declare global {
   export interface String extends Placeholder<string> {}
@@ -11,21 +11,19 @@ declare global {
 
   export interface BigInt extends Placeholder<bigint> {}
 
-  export interface Array<T> extends
-    Placeholder<
+  export interface Array<T>
+    extends Placeholder<
       Array<Placeholder.Success<T>>,
       Placeholder.Error<T>,
       Placeholder.Context<T>
-    >
-  {}
+    > {}
 
-  export interface ReadonlyArray<T> extends
-    Placeholder<
+  export interface ReadonlyArray<T>
+    extends Placeholder<
       ReadonlyArray<Placeholder.Success<T>>,
       Placeholder.Error<T>,
       Placeholder.Context<T>
-    >
-  {}
+    > {}
 
   // DOM types
   export interface Node extends Placeholder<Node> {}
@@ -37,8 +35,4 @@ declare global {
   export interface HTMLElement extends Placeholder<HTMLElement> {}
 
   export interface SVGElement extends Placeholder<SVGElement> {}
-}
-
-declare module "@typed/fx/Fx" {
-  export interface Fx<A, E, R> extends Placeholder<A, E, R> {}
 }
