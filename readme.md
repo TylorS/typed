@@ -22,7 +22,7 @@ Leverage Effect, and the decades of collective knowledge of its maintainers, to 
 - Type-safe error tracking
 - Type-safe dependency tracking
 - Type-safe routing
-- Type-safe servers and clients end-to-end, including mocks
+- Type-safe servers and clients end-to-end
 
 **Model your user's behavior like the browser:**
 
