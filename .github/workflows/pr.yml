@@ -25,7 +25,6 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/workflows/setup-repo
         name: Setup Repo
-      - run: pnpm run build
       - run: pnpm run circular
 
   test:
