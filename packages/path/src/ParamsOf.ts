@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import type { A } from "ts-toolbelt";
+import type { A } from "ts-toolbelt"
 
 import type {
   Modifier,
@@ -19,8 +19,8 @@ import type {
   SegmentAST,
   SuffixNode,
   TextNode,
-  UnnamedParamNode,
-} from "./internal/ast.js";
+  UnnamedParamNode
+} from "./internal/ast.js"
 
 /* eslint-disable */
 

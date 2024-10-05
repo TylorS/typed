@@ -2,24 +2,19 @@
  * @since 1.0.0
  */
 
-import type { HttpApp, HttpMethod, HttpServerResponse } from "@effect/platform";
-import {
-  Headers,
-  HttpRouter,
-  HttpServerRequest,
-  HttpServerRespondable,
-} from "@effect/platform";
-import { Tagged } from "@typed/context";
-import * as Navigation from "@typed/navigation";
-import * as Router from "@typed/router";
-import type { Runtime } from "effect";
-import { Context, Record } from "effect";
-import type * as Cause from "effect/Cause";
-import * as Data from "effect/Data";
-import * as Effect from "effect/Effect";
-import { dual } from "effect/Function";
-import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
+import type { HttpApp, HttpMethod, HttpServerResponse } from "@effect/platform"
+import { Headers, HttpRouter, HttpServerRequest, HttpServerRespondable } from "@effect/platform"
+import { Tagged } from "@typed/context"
+import * as Navigation from "@typed/navigation"
+import * as Router from "@typed/router"
+import type { Runtime } from "effect"
+import { Context, Record } from "effect"
+import type * as Cause from "effect/Cause"
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
+import { dual } from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
@@ -27,9 +22,9 @@ import * as Option from "effect/Option";
  * @since 1.0.0
  */
 export interface HttpRouteHandler<Route extends Router.MatchInput.Any, E, R> {
-  readonly method: HttpMethod.HttpMethod | "*";
-  readonly route: Route;
-  readonly handler: Handler<Route, E, R>;
+  readonly method: HttpMethod.HttpMethod | "*"
+  readonly route: Route
+  readonly handler: Handler<Route, E, R>
 }
 
 /**
@@ -39,36 +34,33 @@ export namespace HttpRouteHandler {
   /**
    * @since 1.0.0
    */
-  export type Any = HttpRouteHandler<Router.MatchInput.Any, any, any>;
+  export type Any = HttpRouteHandler<Router.MatchInput.Any, any, any>
 
   /**
    * @since 1.0.0
    */
-  export type Error<T> =
-    T extends HttpRouteHandler<infer I, infer E, any>
-      ? E | Router.MatchInput.Error<I> | RouteNotMatched
-      : never;
+  export type Error<T> = T extends HttpRouteHandler<infer I, infer E, any>
+    ? E | Router.MatchInput.Error<I> | RouteNotMatched
+    : never
 
   /**
    * @since 1.0.0
    */
-  export type Context<T> =
-    T extends HttpRouteHandler<infer I, any, infer R>
-      ? Exclude<
-          Exclude<R, CurrentParams<I>> | Router.MatchInput.Context<I>,
-          Navigation.Navigation
-        >
-      : never;
+  export type Context<T> = T extends HttpRouteHandler<infer I, any, infer R> ? Exclude<
+      Exclude<R, CurrentParams<I>> | Router.MatchInput.Context<I>,
+      Navigation.Navigation
+    >
+    : never
 }
 
 /**
  * @since 1.0.0
  */
 export interface CurrentParams<
-  I extends Router.MatchInput.Any = Router.MatchInput.Any,
+  I extends Router.MatchInput.Any = Router.MatchInput.Any
 > {
-  readonly params: Router.MatchInput.Success<I>;
-  readonly queryParams: URLSearchParams;
+  readonly params: Router.MatchInput.Success<I>
+  readonly queryParams: URLSearchParams
 }
 
 /**
@@ -77,7 +69,7 @@ export interface CurrentParams<
 export const CurrentParams = Tagged<
   CurrentParams<Router.MatchInput.Any>,
   CurrentParams<Router.MatchInput.Any>
->("@/http/CurrentParams");
+>("@/http/CurrentParams")
 
 /**
  * @since 1.0.0
@@ -85,7 +77,7 @@ export const CurrentParams = Tagged<
 export type Handler<
   Route extends Router.MatchInput.Any,
   E,
-  R,
+  R
 > = HttpRouter.Route.Handler<
   E,
   | R
@@ -93,7 +85,7 @@ export type Handler<
   | CurrentParams<Route>
   | Navigation.Navigation
   | HttpServerRequest.HttpServerRequest
->;
+>
 
 /**
  * @since 1.0.0
@@ -103,13 +95,13 @@ export function getCurrentParams<I extends Router.MatchInput.Any>(
 ): Effect.Effect<CurrentParams<I>, never, CurrentParams<I>> {
   return CurrentParams.with(
     (params) => params as any as CurrentParams<I>
-  ) as any;
+  ) as any
 }
 
 /**
  * @since 1.0.0
  */
-export const getCurrentParamsOption = Effect.serviceOption(CurrentParams);
+export const getCurrentParamsOption = Effect.serviceOption(CurrentParams)
 
 /**
  * @since 1.0.0
@@ -117,22 +109,21 @@ export const getCurrentParamsOption = Effect.serviceOption(CurrentParams);
 export function currentParamsLayer<I extends Router.MatchInput.Any>(
   params: CurrentParams<I>
 ): Layer.Layer<CurrentParams<I>> {
-  return CurrentParams.layer(params);
+  return CurrentParams.layer(params)
 }
 
 /**
  * @since 1.0.0
  */
-export const make =
-  (method: HttpMethod.HttpMethod | "*") =>
-  <I extends Router.MatchInput.Any, E, R>(
-    route: I,
-    handler: Handler<I, E, R>
-  ): HttpRouteHandler<I, E, R> => ({
-    method,
-    route,
-    handler,
-  });
+export const make = (method: HttpMethod.HttpMethod | "*") =>
+<I extends Router.MatchInput.Any, E, R>(
+  route: I,
+  handler: Handler<I, E, R>
+): HttpRouteHandler<I, E, R> => ({
+  method,
+  route,
+  handler
+})
 
 /**
  * @since 1.0.0
@@ -140,33 +131,33 @@ export const make =
 export const get: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("GET");
+) => HttpRouteHandler<I, E, R> = make("GET")
 /**
  * @since 1.0.0
  */
 export const post: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("POST");
+) => HttpRouteHandler<I, E, R> = make("POST")
 /**
  * @since 1.0.0
  */
 export const put: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("PUT");
+) => HttpRouteHandler<I, E, R> = make("PUT")
 
 const delete_: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("DELETE");
+) => HttpRouteHandler<I, E, R> = make("DELETE")
 
 export {
   /**
    * @since 1.0.0
    */
-  delete_ as delete,
-};
+  delete_ as delete
+}
 
 /**
  * @since 1.0.0
@@ -174,7 +165,7 @@ export {
 export const patch: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("PATCH");
+) => HttpRouteHandler<I, E, R> = make("PATCH")
 
 /**
  * @since 1.0.0
@@ -182,7 +173,7 @@ export const patch: <I extends Router.MatchInput.Any, E, R>(
 export const options: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("OPTIONS");
+) => HttpRouteHandler<I, E, R> = make("OPTIONS")
 
 /**
  * @since 1.0.0
@@ -190,7 +181,7 @@ export const options: <I extends Router.MatchInput.Any, E, R>(
 export const head: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("HEAD");
+) => HttpRouteHandler<I, E, R> = make("HEAD")
 
 /**
  * @since 1.0.0
@@ -198,7 +189,7 @@ export const head: <I extends Router.MatchInput.Any, E, R>(
 export const all: <I extends Router.MatchInput.Any, E, R>(
   route: I,
   handler: Handler<I, E, R>
-) => HttpRouteHandler<I, E, R> = make("*");
+) => HttpRouteHandler<I, E, R> = make("*")
 
 /**
  * @since 1.0.0
@@ -206,25 +197,25 @@ export const all: <I extends Router.MatchInput.Any, E, R>(
 export function getUrlFromServerRequest(
   request: HttpServerRequest.HttpServerRequest
 ): URL {
-  const { headers } = request;
+  const { headers } = request
   const host = Headers.get(headers, "x-forwarded-host").pipe(
     Option.orElse(() => Headers.get(headers, "host")),
     Option.getOrElse(() => "localhost")
-  );
+  )
   const protocol = Headers.get(headers, "x-forwarded-proto").pipe(
     Option.orElse(() => Headers.get(headers, "protocol")),
     Option.getOrElse(() => "http")
-  );
+  )
 
-  return new URL(request.url, `${protocol}://${host}`);
+  return new URL(request.url, `${protocol}://${host}`)
 }
 
 /**
  * @since 1.0.0
  */
 export class RouteNotMatched extends Data.TaggedError("RouteNotMatched")<{
-  readonly request: HttpServerRequest.HttpServerRequest;
-  readonly route: Router.MatchInput.Any;
+  readonly request: HttpServerRequest.HttpServerRequest
+  readonly route: Router.MatchInput.Any
 }> {}
 
 /**
@@ -241,7 +232,7 @@ export function toPlatformRoute<I extends HttpRouteHandler.Any>(
   return HttpRouter.route(handler.method)(
     Router.getPath<I["route"]>(handler.route) as HttpRouter.PathInput,
     toHttpApp(handler)
-  );
+  )
 }
 
 /**
@@ -251,24 +242,24 @@ export function toHttpApp<I extends HttpRouteHandler.Any>(
   { handler, route: input }: I,
   parent?: Router.CurrentRoute
 ): HttpApp.Default<HttpRouteHandler.Error<I>, HttpRouteHandler.Context<I>> {
-  const { guard, route } = Router.asRouteGuard<I["route"]>(input);
+  const { guard, route } = Router.asRouteGuard<I["route"]>(input)
   const currentRouteLayer = Router.CurrentRoute.layer({
     route,
-    parent: Option.fromNullable(parent),
-  });
+    parent: Option.fromNullable(parent)
+  })
 
   return Effect.flatMap(HttpServerRequest.HttpServerRequest, (request) => {
-    const url = getUrlFromServerRequest(request);
-    const path = Navigation.getCurrentPathFromUrl(url);
+    const url = getUrlFromServerRequest(request)
+    const path = Navigation.getCurrentPathFromUrl(url)
     const layer = Layer.mergeAll(
       Navigation.initialMemory({ url }),
       currentRouteLayer
-    );
+    )
 
     return guard(path).pipe(
       Effect.flatMap((params) => {
         if (Option.isNone(params)) {
-          return new RouteNotMatched({ request, route: input });
+          return new RouteNotMatched({ request, route: input })
         }
         return Effect.serviceOption(CurrentParams).pipe(
           Effect.flatMap((existingParams) =>
@@ -277,18 +268,18 @@ export function toHttpApp<I extends HttpRouteHandler.Any>(
               currentParamsLayer<I["route"]>({
                 params: Option.match(existingParams, {
                   onNone: () => params.value,
-                  onSome: (existing) => ({ ...existing, ...params.value }),
+                  onSome: (existing) => ({ ...existing, ...params.value })
                 }),
-                queryParams: url.searchParams,
+                queryParams: url.searchParams
               })
             )
           )
-        );
+        )
       }),
       Effect.flatMap(HttpServerRespondable.toResponse),
       Effect.provide(layer)
-    );
-  });
+    )
+  })
 }
 
 /**
@@ -301,21 +292,24 @@ export const catchAllCause: {
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
   ): <R extends Router.MatchInput.Any, R2>(
     handler: HttpRouteHandler<R, E2, R2>
-  ) => HttpRouteHandler<R, E3, R2 | R3>;
+  ) => HttpRouteHandler<R, E3, R2 | R3>
 
   <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
     handler: HttpRouteHandler<R, E2, R2>,
     onCause: (
       cause: Cause.Cause<E2>
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
-  ): HttpRouteHandler<R, E3, R2 | R3>;
+  ): HttpRouteHandler<R, E3, R2 | R3>
 } = dual(2, function catchAllCause<
   R extends Router.MatchInput.Any,
   E2,
   R2,
   E3,
-  R3,
->(handler: HttpRouteHandler<R, E2, R2>, onCause: (cause: Cause.Cause<E2>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>): HttpRouteHandler<
+  R3
+>(
+  handler: HttpRouteHandler<R, E2, R2>,
+  onCause: (cause: Cause.Cause<E2>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
+): HttpRouteHandler<
   R,
   E3,
   R2 | R3
@@ -323,8 +317,8 @@ export const catchAllCause: {
   return make(handler.method)(
     handler.route,
     Effect.catchAllCause(handler.handler, onCause)
-  );
-});
+  )
+})
 
 /**
  * @since 1.0.0
@@ -336,21 +330,24 @@ export const catchAll: {
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
   ): <R extends Router.MatchInput.Any, R2>(
     handler: HttpRouteHandler<R, E2, R2>
-  ) => HttpRouteHandler<R, E3, R2 | R3>;
+  ) => HttpRouteHandler<R, E3, R2 | R3>
 
   <R extends Router.MatchInput.Any, E2, R2, E3, R3>(
     handler: HttpRouteHandler<R, E2, R2>,
     onError: (
       error: E2
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
-  ): HttpRouteHandler<R, E3, R2 | R3>;
+  ): HttpRouteHandler<R, E3, R2 | R3>
 } = dual(2, function catchAll<
   R extends Router.MatchInput.Any,
   E2,
   R2,
   E3,
-  R3,
->(handler: HttpRouteHandler<R, E2, R2>, onError: (error: E2) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>): HttpRouteHandler<
+  R3
+>(
+  handler: HttpRouteHandler<R, E2, R2>,
+  onError: (error: E2) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
+): HttpRouteHandler<
   R,
   E3,
   R2 | R3
@@ -358,8 +355,8 @@ export const catchAll: {
   return make(handler.method)(
     handler.route,
     Effect.catchAll(handler.handler, onError)
-  );
-});
+  )
+})
 
 /**
  * @since 1.0.0
@@ -369,7 +366,7 @@ export const catchTag: {
     E2,
     const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never,
     E3,
-    R3,
+    R3
   >(
     tag: Tag,
     onError: (
@@ -377,7 +374,7 @@ export const catchTag: {
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
   ): <R extends Router.MatchInput.Any, R2>(
     handler: HttpRouteHandler<R, E2, R2>
-  ) => HttpRouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>;
+  ) => HttpRouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>
 
   <
     R extends Router.MatchInput.Any,
@@ -385,22 +382,26 @@ export const catchTag: {
     R2,
     const Tag extends E2 extends { readonly _tag: string } ? E2["_tag"] : never,
     E3,
-    R3,
+    R3
   >(
     handler: HttpRouteHandler<R, E2, R2>,
     tag: Tag,
     onError: (
       error: Extract<E2, { readonly _tag: Tag }>
     ) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
-  ): HttpRouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>;
+  ): HttpRouteHandler<R, E3 | Exclude<E2, { readonly _tag: Tag }>, R2 | R3>
 } = dual(3, function catchTag<
   R extends Router.MatchInput.Any,
   E2,
   R2,
   const Tag extends E2 extends { _tag: string } ? E2["_tag"] : never,
   E3,
-  R3,
->(handler: HttpRouteHandler<R, E2, R2>, tag: Tag, onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>): HttpRouteHandler<
+  R3
+>(
+  handler: HttpRouteHandler<R, E2, R2>,
+  tag: Tag,
+  onError: (error: Extract<E2, { readonly _tag: Tag }>) => Effect.Effect<HttpServerResponse.HttpServerResponse, E3, R3>
+): HttpRouteHandler<
   R,
   Exclude<E2, { readonly _tag: Tag }> | E3,
   R2 | R3
@@ -408,8 +409,8 @@ export const catchTag: {
   return make(handler.method)(
     handler.route,
     Effect.catchTag(handler.handler, tag, onError)
-  );
-});
+  )
+})
 
 /**
  * @since 1.0.0
@@ -418,13 +419,12 @@ export const catchTags: {
   <
     R extends Router.MatchInput.Any,
     E,
-    Cases extends E extends { _tag: string }
-      ? {
-          [K in E["_tag"]]+?:
-            | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
-            | undefined;
-        }
-      : Record<never, never>,
+    Cases extends E extends { _tag: string } ? {
+        [K in E["_tag"]]+?:
+          | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
+          | undefined
+      }
+      : Record<never, never>
   >(
     cases: Cases
   ): <R2>(
@@ -434,19 +434,18 @@ export const catchTags: {
     E | Effect.Effect.Error<Extract<Cases[keyof Cases], Handler<R, any, any>>>,
     | R2
     | Effect.Effect.Context<Extract<Cases[keyof Cases], Handler<R, any, any>>>
-  >;
+  >
 
   <
     R extends Router.MatchInput.Any,
     E,
     R2,
-    Cases extends E extends { _tag: string }
-      ? {
-          [K in E["_tag"]]+?:
-            | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
-            | undefined;
-        }
-      : Record<never, never>,
+    Cases extends E extends { _tag: string } ? {
+        [K in E["_tag"]]+?:
+          | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
+          | undefined
+      }
+      : Record<never, never>
   >(
     handler: HttpRouteHandler<R, E, R2>,
     cases: Cases
@@ -455,20 +454,19 @@ export const catchTags: {
     E | Effect.Effect.Error<Extract<Cases[keyof Cases], Handler<R, any, any>>>,
     | R2
     | Effect.Effect.Context<Extract<Cases[keyof Cases], Handler<R, any, any>>>
-  >;
+  >
 } = dual(
   2,
   <
     R extends Router.MatchInput.Any,
     E,
     R2,
-    Cases extends E extends { _tag: string }
-      ? {
-          [K in E["_tag"]]+?:
-            | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
-            | undefined;
-        }
-      : Record<never, never>,
+    Cases extends E extends { _tag: string } ? {
+        [K in E["_tag"]]+?:
+          | ((error: Extract<E, { _tag: K }>) => Handler<R, any, any>)
+          | undefined
+      }
+      : Record<never, never>
   >(
     handler: HttpRouteHandler<R, E, R2>,
     cases: Cases
@@ -484,14 +482,13 @@ export const catchTags: {
         handler.handler,
         Record.map(
           cases as {},
-          (f: (error: Extract<E, { _tag: any }>) => Handler<R, any, any>) =>
-            (error: any) =>
-              Effect.flatMap(f(error), HttpServerRespondable.toResponse)
+          (f: (error: Extract<E, { _tag: any }>) => Handler<R, any, any>) => (error: any) =>
+            Effect.flatMap(f(error), HttpServerRespondable.toResponse)
         ) as any
       ) as any
-    );
+    )
   }
-);
+)
 
 /**
  * @since 1.0.0
@@ -511,7 +508,7 @@ export const provide: {
     | Exclude<Navigation.Navigation, R3>
     | Exclude<HttpServerRequest.HttpServerRequest, R3>
     | Exclude<R2, R3>
-  >;
+  >
 
   <R3>(
     context: Context.Context<R3> | Runtime.Runtime<R3>
@@ -526,7 +523,7 @@ export const provide: {
     | Exclude<Navigation.Navigation, R3>
     | Exclude<HttpServerRequest.HttpServerRequest, R3>
     | Exclude<R2, R3>
-  >;
+  >
 
   <R extends Router.MatchInput.Any, E2, R2, R3, E3 = never, R4 = never>(
     handler: HttpRouteHandler<R, E2, R2>,
@@ -541,7 +538,7 @@ export const provide: {
     | Exclude<Navigation.Navigation, R3>
     | Exclude<HttpServerRequest.HttpServerRequest, R3>
     | Exclude<R2, R3>
-  >;
+  >
 } = dual(
   2,
   <R extends Router.MatchInput.Any, E2, R2, R3, E3, R4>(
@@ -561,9 +558,9 @@ export const provide: {
     return make(handler.method)(
       handler.route,
       Effect.provide(handler.handler, layer)
-    );
+    )
   }
-);
+)
 
 /**
  * @since 1.0.0
@@ -582,5 +579,5 @@ export const provideService = <R extends Router.MatchInput.Any, E2, R2, I, S>(
   | Exclude<HttpServerRequest.HttpServerRequest, I>
   | Exclude<R2, I>
 > => {
-  return provide(handler, Context.make(tag, service));
-};
+  return provide(handler, Context.make(tag, service))
+}
