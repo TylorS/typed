@@ -8,9 +8,7 @@ import type * as Effect from "effect/Effect"
 /**
  * @since 1.0.0
  */
-export type Environment =
-  | Environment.Value
-  | `test:${Environment.Value}`
+export type Environment = Environment.Value | `test:${Environment.Value}`
 
 /**
  * @since 1.0.0
@@ -43,7 +41,9 @@ export type EnvironmentValue<T extends Environment.Value> = T & {
   readonly test: `test:${T}`
 }
 
-function EnvironmentValue<const T extends Environment.Value>(value: T): EnvironmentValue<T> {
+function EnvironmentValue<const T extends Environment.Value>(
+  value: T
+): EnvironmentValue<T> {
   return new EnvironmentValueImpl(value) as any
 }
 
@@ -61,13 +61,17 @@ export const Environment = {
 /**
  * @since 1.0.0
  */
-export const CurrentEnvironment = Context.Tagged<Environment>()((
-  _
-) => (class CurrentEnvironment extends _("@typed/environment/CurrentEnvironment") {}))
+export const CurrentEnvironment = Context.Tagged<Environment>()(
+  (_) =>
+    class CurrentEnvironment extends _(
+      "@typed/environment/CurrentEnvironment"
+    ) {}
+)
 
 /**
  * @since 1.0.0
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CurrentEnvironment extends Context.Tag.Identifier<typeof CurrentEnvironment> {}
 
 /**
@@ -99,9 +103,11 @@ export const isTest: Effect.Effect<boolean, never, CurrentEnvironment> = Current
 /**
  * @since 1.0.0
  */
-export const isServiceWorker: Effect.Effect<boolean, never, CurrentEnvironment> = CurrentEnvironment.with((e) =>
-  e === "serviceWorker"
-)
+export const isServiceWorker: Effect.Effect<
+  boolean,
+  never,
+  CurrentEnvironment
+> = CurrentEnvironment.with((e) => e === "serviceWorker")
 
 /**
  * @since 1.0.0

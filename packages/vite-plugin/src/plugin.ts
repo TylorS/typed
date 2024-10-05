@@ -2,27 +2,27 @@
  * @since 1.0.0
  */
 
-import { readFile } from "fs/promises";
-import { join, relative, resolve } from "path";
-import { visualizer } from "rollup-plugin-visualizer";
-import { vavite } from "vavite";
-import type { Plugin, PluginOption } from "vite";
-import compression from "vite-plugin-compression";
-import tsconfigPaths from "vite-tsconfig-paths";
-import type { TypedOptions } from "./types.js";
+import { readFile } from "fs/promises"
+import { join, relative, resolve } from "path"
+import { visualizer } from "rollup-plugin-visualizer"
+import { vavite } from "vavite"
+import type { Plugin, PluginOption } from "vite"
+import compression from "vite-plugin-compression"
+import tsconfigPaths from "vite-tsconfig-paths"
+import type { TypedOptions } from "./types.js"
 
 /**
  * @since 1.0.0
  */
 export interface TypedPluginOptions {
-  readonly clientEntries?: Record<string, string>;
-  readonly clientOutputDirectory?: string;
+  readonly clientEntries?: Record<string, string>
+  readonly clientOutputDirectory?: string
 
-  readonly serverEntry?: string;
-  readonly serverOutputDirectory?: string;
+  readonly serverEntry?: string
+  readonly serverOutputDirectory?: string
 
-  readonly rootDir?: string;
-  readonly tsconfig?: string;
+  readonly rootDir?: string
+  readonly tsconfig?: string
 }
 
 /**
@@ -33,19 +33,17 @@ export function makeTypedPlugin(
 ): Array<PluginOption> {
   const rootDir = pluginOptions.rootDir
     ? resolve(pluginOptions.rootDir)
-    : process.cwd();
+    : process.cwd()
   const clientOutputDirectory = pluginOptions.clientOutputDirectory
     ? resolve(rootDir, pluginOptions.clientOutputDirectory)
-    : resolve(rootDir, "dist/client");
+    : resolve(rootDir, "dist/client")
   const serverOutputDirectory = pluginOptions.serverOutputDirectory
     ? resolve(rootDir, pluginOptions.serverOutputDirectory)
-    : resolve(rootDir, "dist/server");
-  const tsconfig = resolve(rootDir, pluginOptions.tsconfig ?? "tsconfig.json");
+    : resolve(rootDir, "dist/server")
+  const tsconfig = resolve(rootDir, pluginOptions.tsconfig ?? "tsconfig.json")
   const options: TypedOptions = {
     clientEntries: pluginOptions.clientEntries
-      ? mapObject(pluginOptions.clientEntries, (value) =>
-          relative(rootDir, resolve(rootDir, value))
-        )
+      ? mapObject(pluginOptions.clientEntries, (value) => relative(rootDir, resolve(rootDir, value)))
       : {},
     serverEntry: pluginOptions.serverEntry
       ? relative(rootDir, resolve(rootDir, pluginOptions.serverEntry))
@@ -54,42 +52,42 @@ export function makeTypedPlugin(
       serverOutputDirectory,
       clientOutputDirectory
     ),
-    assetDirectory: "assets",
-  };
+    assetDirectory: "assets"
+  }
 
   const plugins: Array<PluginOption> = [
     {
       name: "vite-plugin-typed",
       config(config, env) {
-        config.root = rootDir;
+        config.root = rootDir
         config.optimizeDeps = {
           ...config.optimizeDeps,
           exclude: Array.from(
             new Set([
               ...(config.optimizeDeps?.exclude ?? []),
               "@typed/core/Node",
-              "@typed/core/Platform",
+              "@typed/core/Platform"
             ])
-          ),
-        };
+          )
+        }
 
         if (config.build?.assetsDir) {
           Object.assign(options, {
             assetDirectory: relative(
               clientOutputDirectory,
               resolve(clientOutputDirectory, config.build.assetsDir)
-            ),
-          });
+            )
+          })
         }
 
         if (env.mode === "multibuild") {
-          (config as any).buildSteps = [
+          ;(config as any).buildSteps = [
             {
               name: "client",
               config: {
                 build: {
                   outDir: clientOutputDirectory,
-                  rollupOptions: { input: options.clientEntries },
+                  rollupOptions: { input: options.clientEntries }
                 },
                 plugins: [
                   compression(),
@@ -99,93 +97,93 @@ export function makeTypedPlugin(
                       clientOutputDirectory,
                       ".vite/dependency-visualizer.html"
                     ),
-                    title: "Dependency Visualizer",
-                  }),
-                ],
-              },
+                    title: "Dependency Visualizer"
+                  })
+                ]
+              }
             },
             ...(options.serverEntry
               ? [
-                  {
-                    name: "server",
-                    config: {
-                      build: {
-                        ssr: true,
-                        outDir: serverOutputDirectory,
-                        rollupOptions: { input: options.serverEntry },
-                      },
-                    },
-                  },
-                ]
-              : []),
-          ];
+                {
+                  name: "server",
+                  config: {
+                    build: {
+                      ssr: true,
+                      outDir: serverOutputDirectory,
+                      rollupOptions: { input: options.serverEntry }
+                    }
+                  }
+                }
+              ]
+              : [])
+          ]
         }
-      },
+      }
     },
     tsconfigPaths({ projects: [tsconfig] }),
     ...(options.serverEntry
       ? [
-          vavite({
-            serverEntry: options.serverEntry,
-            serveClientAssetsInDev: true,
-          }),
-        ]
+        vavite({
+          serverEntry: options.serverEntry,
+          serveClientAssetsInDev: true
+        })
+      ]
       : []),
     exposeAssetManifest(clientOutputDirectory),
-    exposeTypedOptions(options),
-  ];
+    exposeTypedOptions(options)
+  ]
 
-  return plugins;
+  return plugins
 }
 
 function exposeAssetManifest(clientOutputDirectory: string): Plugin {
-  let isDev = true;
-  let isClient = false;
-  let path = join(clientOutputDirectory, ".vite/manifest.json");
+  let isDev = true
+  let isClient = false
+  let path = join(clientOutputDirectory, ".vite/manifest.json")
   return {
     name: "expose-asset-manifest",
     config(config, env) {
-      config.build ??= {};
-      config.build.sourcemap = true;
+      config.build ??= {}
+      config.build.sourcemap = true
 
       if (!config.build.manifest) {
-        config.build.manifest = true;
+        config.build.manifest = true
       }
 
-      isDev = env.command !== "build";
+      isDev = env.command !== "build"
 
       if (!isDev) {
-        Object.assign(config.build, { minify: true, cssMinify: true });
+        Object.assign(config.build, { minify: true, cssMinify: true })
       }
     },
     configResolved(config) {
       if (typeof config.build.manifest === "string") {
-        path = resolve(clientOutputDirectory, config.build.manifest);
+        path = resolve(clientOutputDirectory, config.build.manifest)
       }
 
       if (config.build.outDir === clientOutputDirectory) {
-        isClient = true;
+        isClient = true
       }
     },
     resolveId(id) {
       if (id === "virtual:asset-manifest") {
-        return id;
+        return id
       }
     },
     async load(id) {
       if (id === "virtual:asset-manifest") {
         if (isDev || isClient) {
           return `
-        export default {}`;
+        export default {}`
         }
 
-        const content = JSON.parse(await readFile(path, "utf-8"));
+        const content = JSON.parse(await readFile(path, "utf-8"))
 
         return `
-        export default ${JSON.stringify(content, null, 2)}`;
+        export default ${JSON.stringify(content, null, 2)}`
       }
-    },
-  };
+    }
+  }
 }
 
 function exposeTypedOptions(options: TypedOptions): Plugin {
@@ -193,33 +191,33 @@ function exposeTypedOptions(options: TypedOptions): Plugin {
     name: "expose-typed-options",
     resolveId(id) {
       if (id === "virtual:typed-options") {
-        return id;
+        return id
       }
     },
     async load(id) {
       if (id === "virtual:typed-options") {
-        const entries = Object.entries(options);
+        const entries = Object.entries(options)
         const lines = entries.map(
           ([key, value]) => `
         export const ${key} = ${JSON.stringify(value, null, 2)}`
-        );
+        )
 
-        return lines.join("\n") + "\n";
+        return lines.join("\n") + "\n"
       }
-    },
-  };
+    }
+  }
 }
 
 function mapObject<T, U>(
   obj: Record<string, T>,
   fn: (value: T, key: string) => U
 ): Record<string, U> {
-  const entries = Object.entries(obj);
-  const result: Record<string, U> = Object.create(null);
+  const entries = Object.entries(obj)
+  const result: Record<string, U> = Object.create(null)
 
   for (const [key, value] of entries) {
-    result[key] = fn(value, key);
+    result[key] = fn(value, key)
   }
 
-  return result;
+  return result
 }

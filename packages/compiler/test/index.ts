@@ -1,282 +1,276 @@
 /// <reference types="vite/client" />
 /// <reference types="vitest" />
 
-import * as _ from "@typed/compiler";
-import {
-  AttributeNode,
-  ElementNode,
-  NodePart,
-  Template,
-  TextNode,
-} from "@typed/template/Template";
-import { Chunk } from "effect";
-import * as path from "node:path";
-import type ts from "typescript";
+import * as _ from "@typed/compiler"
+import { AttributeNode, ElementNode, NodePart, Template, TextNode } from "@typed/template/Template"
+import { Chunk } from "effect"
+import * as path from "node:path"
+import type ts from "typescript"
 
 function makeCompiler(target: _.CompilerTarget) {
-  const rootDirectory = path.dirname(import.meta.dirname);
-  const testDirectory = path.join(rootDirectory, "test");
-  const fixturesDirectory = path.join(testDirectory, "fixtures");
-  const compiler = new _.Compiler(rootDirectory, "tsconfig.test.json", target);
+  const rootDirectory = path.dirname(import.meta.dirname)
+  const testDirectory = path.join(rootDirectory, "test")
+  const fixturesDirectory = path.join(testDirectory, "fixtures")
+  const compiler = new _.Compiler(rootDirectory, "tsconfig.test.json", target)
 
   const sourceFiles: {
-    [k: string]: ts.SourceFile;
-  } = {};
+    [k: string]: ts.SourceFile
+  } = {}
 
   const files = new Proxy(sourceFiles, {
     get(target, key) {
       if (key in target) {
-        return target[key as string];
+        return target[key as string]
       }
 
-      const filePath = path.join(fixturesDirectory, key as string);
-      const file = compiler.project.addFile(filePath);
-      target[key as string] = file;
-      return file;
-    },
-  });
+      const filePath = path.join(fixturesDirectory, key as string)
+      const file = compiler.project.addFile(filePath)
+      target[key as string] = file
+      return file
+    }
+  })
 
   afterAll(() => {
-    compiler.project.dispose();
-  });
+    compiler.project.dispose()
+  })
 
   return {
     compiler,
-    files,
-  };
+    files
+  }
 }
 
 describe("Compiler", () => {
   describe("parseTemplates", () => {
-    const { compiler, files } = makeCompiler("dom");
+    const { compiler, files } = makeCompiler("dom")
 
     it("Static <div> with text", () => {
       const templates = compiler.parseTemplates(
         files["static-div-with-text.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
       const expected = new Template(
         [new ElementNode("div", [], [new TextNode("Hello World")])],
         ``,
         []
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      expect(div.parts).toEqual([]);
-    });
+      equalTemplates(div.template, expected)
+      expect(div.parts).toEqual([])
+    })
 
     it("<div> with interpolated text", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-text.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated bigint", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-bigint.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated null", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-null.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated number", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-number.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated undefined", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-undefined.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated void", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-void.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "primitive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "primitive" })
+    })
 
     it("<div> with interpolated effect", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-effect.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "effect" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "effect" })
+    })
 
     it("<div> with interpolated fx", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-fx.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "fx" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "fx" })
+    })
 
     it("<div> with interpolated RefSubject", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-refsubject.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "fxEffect" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "fxEffect" })
+    })
 
     it("<div> with interpolated Directive", () => {
       const templates = compiler.parseTemplates(
         files["div-with-interpolated-directive.ts"]
-      );
-      expect(templates).toHaveLength(1);
-      const [div] = templates;
-      const nodePart = new NodePart(0);
+      )
+      expect(templates).toHaveLength(1)
+      const [div] = templates
+      const nodePart = new NodePart(0)
       const expected = new Template(
         [new ElementNode("div", [], [nodePart])],
         ``,
         [[nodePart, Chunk.of(0)]]
-      );
+      )
 
-      equalTemplates(div.template, expected);
-      equalParts(div.parts, { index: 0, kind: "directive" });
-    });
+      equalTemplates(div.template, expected)
+      equalParts(div.parts, { index: 0, kind: "directive" })
+    })
 
     it("nested template", () => {
-      const templates = compiler.parseTemplates(files["nested-templates.ts"]);
+      const templates = compiler.parseTemplates(files["nested-templates.ts"])
 
-      expect(templates).toHaveLength(2);
+      expect(templates).toHaveLength(2)
 
-      const [div, inner] = templates;
-      const nodePart = new NodePart(0);
+      const [div, inner] = templates
+      const nodePart = new NodePart(0)
       const expectedDiv = new Template(
         [
           new ElementNode(
             "div",
             [new AttributeNode("style", "border: 1px solid #000;")],
             [nodePart]
-          ),
+          )
         ],
         "",
         [[nodePart, Chunk.of(0)]]
-      );
+      )
       const expectedP = new Template(
         [
           new ElementNode("p", [], [new TextNode("Hello")]),
-          new ElementNode("b", [], [new TextNode("World")]),
+          new ElementNode("b", [], [new TextNode("World")])
         ],
         "",
         []
-      );
+      )
 
-      equalTemplates(inner.template, expectedP);
-      equalTemplates(div.template, expectedDiv);
-      equalParts(div.parts, { index: 0, kind: "template" });
-    });
-  });
+      equalTemplates(inner.template, expectedP)
+      equalTemplates(div.template, expectedDiv)
+      equalParts(div.parts, { index: 0, kind: "template" })
+    })
+  })
 
   describe.skip("compileTemplates", () => {
-    const { compiler, files } = makeCompiler("dom");
+    const { compiler, files } = makeCompiler("dom")
 
     it("optimizes nested templates for the DOM", () => {
       const nestedTemplates = compiler.compileTemplates(
         files["nested-templates.ts"]
-      );
-      const text = getSnapshotText(nestedTemplates.js);
+      )
+      const text = getSnapshotText(nestedTemplates.js)
       const expected = `import * as Document from "@typed/dom/Document";
 import * as RenderContext from "@typed/template/RenderContext";
 import * as Context from "@typed/context";
@@ -305,18 +299,18 @@ export const render = Fx.make(function render(sink) { return Effect.gen(function
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
     yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }); });
-//# sourceMappingURL=nested-templates.js.map`;
+//# sourceMappingURL=nested-templates.js.map`
 
-      expect(text).toEqual(expected);
-    });
+      expect(text).toEqual(expected)
+    })
 
     it("optimizes interpolated templates for the DOM", () => {
       const divWithEffect = compiler.compileTemplates(
         files["div-with-interpolated-effect.ts"]
-      );
+      )
       const divWithRefSubject = compiler.compileTemplates(
         files["div-with-interpolated-refsubject.ts"]
-      );
+      )
 
       expect(getSnapshotText(divWithEffect.js))
         .toEqual(`import * as Document from "@typed/dom/Document";
@@ -343,7 +337,7 @@ export const render = Fx.make(function render(sink) { return Effect.gen(function
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
     yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }); });
-//# sourceMappingURL=div-with-interpolated-effect.js.map`);
+//# sourceMappingURL=div-with-interpolated-effect.js.map`)
 
       expect(getSnapshotText(divWithRefSubject.js))
         .toEqual(`import * as Document from "@typed/dom/Document";
@@ -372,14 +366,14 @@ export const render = Fx.make(function render(sink) { return Effect.gen(function
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
     yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }); });
-//# sourceMappingURL=div-with-interpolated-refsubject.js.map`);
-    });
+//# sourceMappingURL=div-with-interpolated-refsubject.js.map`)
+    })
 
     it("optimizes sparse classes", () => {
-      const { compiler, files } = makeCompiler("dom");
+      const { compiler, files } = makeCompiler("dom")
       const divWithSparseClass = compiler.compileTemplates(
         files["div-with-sparse-class.ts"]
-      );
+      )
       expect(getSnapshotText(divWithSparseClass.js))
         .toEqual(`import * as Document from "@typed/dom/Document";
 import * as RenderContext from "@typed/template/RenderContext";
@@ -407,18 +401,18 @@ export const render = Fx.make(function render(sink) { return Effect.gen(function
     yield* _(sink.onSuccess(RenderEvent.DomRenderEvent(element0)));
     yield* _(Effect.never, Effect.onExit(exit => Scope.close(templateContext.scope, exit)));
 }); });
-//# sourceMappingURL=div-with-sparse-class.js.map`);
-    });
-  });
-});
+//# sourceMappingURL=div-with-sparse-class.js.map`)
+    })
+  })
+})
 
 function getSnapshotText(snapshot: ts.IScriptSnapshot) {
-  return snapshot.getText(0, snapshot.getLength());
+  return snapshot.getText(0, snapshot.getLength())
 }
 
 function equalTemplates(actual: Template, expected: Template) {
-  expect(actual.nodes).toEqual(expected.nodes);
-  expect(actual.parts).toEqual(expected.parts);
+  expect(actual.nodes).toEqual(expected.nodes)
+  expect(actual.parts).toEqual(expected.parts)
 }
 
 function equalParts(
@@ -426,7 +420,7 @@ function equalParts(
   ...expected: ReadonlyArray<Omit<_.ParsedPart, "type" | "node">>
 ) {
   actual.forEach((p, i) => {
-    expect(p.index).toEqual(expected[i].index);
-    expect(p.kind).toEqual(expected[i].kind);
-  });
+    expect(p.index).toEqual(expected[i].index)
+    expect(p.kind).toEqual(expected[i].kind)
+  })
 }

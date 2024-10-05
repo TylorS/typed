@@ -1,10 +1,10 @@
 import { describe } from "@effect/vitest"
-import { it } from 'vitest'
 import * as AST from "@typed/route/AST"
 import * as Route from "@typed/route/Route"
 import { deepEqual } from "assert"
 import { Option } from "effect"
 import { inspect } from "util"
+import { it } from "vitest"
 
 describe("AST", () => {
   const foo = Route.literal("foo").concat(Route.end, Route.integer("fooId").prefix("foo-"))
