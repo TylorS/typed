@@ -1,5 +1,16 @@
 # @typed/id
 
+## 0.11.0
+
+### Minor Changes
+
+- [#64](https://github.com/TylorS/typed/pull/64) [`3a6453d`](https://github.com/TylorS/typed/commit/3a6453dedfeec2edd1f36e0feeca36489a8b96cf) Thanks [@TylorS](https://github.com/TylorS)! - Upgrade to latest Effect + Rewrite @typed/server in HttpApiBuilder style
+
+### Patch Changes
+
+- Updated dependencies [[`3a6453d`](https://github.com/TylorS/typed/commit/3a6453dedfeec2edd1f36e0feeca36489a8b96cf)]:
+  - @typed/context@0.30.0
+
 ## 0.10.0
 
 ### Minor Changes
