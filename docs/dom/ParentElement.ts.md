@@ -69,7 +69,7 @@ Add an event listener to the current ParentElement
 ```ts
 export declare const addParentElementListener: <EventName extends string, R = never>(
   options: EventTarget.AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
-) => Effect.Effect<void, never, Scope.Scope | ParentElement | R>
+) => Effect.Effect<void, never, R | ParentElement | Scope.Scope>
 ```
 
 Added in v8.19.0
@@ -97,7 +97,7 @@ Query for multiple elements using a CSS selector, relative to the current Parent
 ```ts
 export declare const querySelectorAll: <A extends HTMLElement>(
   selector: string
-) => Effect.Effect<readonly A[], never, ParentElement>
+) => Effect.Effect<ReadonlyArray<A>, never, ParentElement>
 ```
 
 Added in v8.19.0

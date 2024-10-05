@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 /**
  * Type-level parameter extraction of the path-to-regexp syntax
  *
@@ -23,6 +21,8 @@ import type {
   TextNode,
   UnnamedParamNode,
 } from "./internal/ast.js";
+
+/* eslint-disable */
 
 /**
  * Extract the parameters from a path

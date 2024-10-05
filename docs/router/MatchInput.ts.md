@@ -16,6 +16,7 @@ Added in v1.0.0
   - [MatchInput (type alias)](#matchinput-type-alias)
   - [MatchInput (namespace)](#matchinput-namespace)
     - [Any (type alias)](#any-type-alias)
+    - [Concat (type alias)](#concat-type-alias)
     - [Context (type alias)](#context-type-alias)
     - [Error (type alias)](#error-type-alias)
     - [HasParams (type alias)](#hasparams-type-alias)
@@ -67,6 +68,32 @@ Added in v1.0.0
 
 ```ts
 export type Any = MatchInput<any, any, any, any, any> | MatchInput<any, never, any, any, any>
+```
+
+Added in v1.0.0
+
+### Concat (type alias)
+
+**Signature**
+
+```ts
+export type Concat<L extends MatchInput.Any, R extends MatchInput.Any> = [
+  MatchInput.Schema<L>,
+  MatchInput.Schema<R>
+] extends [infer LSchema, infer RSchema]
+  ? MatchInput<
+      _Path.PathJoin<[MatchInput.Path<L>, MatchInput.Path<R>]>,
+      Schema.Schema<
+        Types.Simplify<Schema.Schema.Type<LSchema> & Schema.Schema.Type<RSchema>>,
+        Types.Simplify<Schema.Schema.Encoded<LSchema> & Schema.Schema.Encoded<RSchema>>,
+        Schema.Schema.Context<LSchema> | Schema.Schema.Context<RSchema>
+      >,
+      MatchInput.Success<R>,
+      | Exclude<MatchInput.Error<L> | MatchInput.Error<R>, Route.RouteDecodeError<any>>
+      | Route.RouteDecodeError<Route.Route.Concat<MatchInput.Route<L>, MatchInput.Route<R>>>,
+      MatchInput.Context<L> | MatchInput.Context<R>
+    >
+  : never
 ```
 
 Added in v1.0.0
@@ -187,10 +214,10 @@ Added in v1.0.0
 
 ```ts
 export type Route<T> =
-  T extends Route.Route<infer P, infer S>
-    ? Route.Route<P, S>
-    : T extends RouteGuard.RouteGuard<Route.Route<infer P, infer S>, infer _A, infer _E, infer _R>
-      ? Route.Route<P, S>
+  T extends Route.Route<any, any>
+    ? T
+    : T extends RouteGuard.RouteGuard<infer U, infer _A, infer _E, infer _R>
+      ? U
       : never
 ```
 

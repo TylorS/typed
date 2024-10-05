@@ -1,10 +1,10 @@
-/* eslint-disable */
-
 /**
  * Type-level interpolation of the path-to-regexp syntax
  *
  * @since 1.0.0
  */
+
+/* eslint-disable */
 
 import type { A, S } from "ts-toolbelt";
 import type {

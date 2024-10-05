@@ -26,7 +26,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare function getUrlFromServerRequest(request: ServerRequest): URL
+export declare function getUrlFromServerRequest(request: HttpServerRequest.HttpServerRequest): URL
 ```
 
 Added in v1.0.0
@@ -38,8 +38,8 @@ Added in v1.0.0
 ```ts
 export declare function htmlResponse<E, R>(
   fx: Fx.Fx<RenderEvent | null, E, R>,
-  options?: HttpServer.response.Options
-): Effect.Effect<HttpServer.response.ServerResponse, E, R>
+  options?: HttpServerResponse.Options
+): Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>
 ```
 
 Added in v1.0.0
@@ -51,8 +51,8 @@ Added in v1.0.0
 ```ts
 export declare function htmlResponseString(
   html: string,
-  options?: HttpServer.response.Options
-): HttpServer.response.ServerResponse
+  options?: HttpServerResponse.Options
+): HttpServerResponse.HttpServerResponse
 ```
 
 Added in v1.0.0

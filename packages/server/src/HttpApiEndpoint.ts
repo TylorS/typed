@@ -1,16 +1,24 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import { HttpApiEndpoint as PlatformHttpApiEndpoint } from "@effect/platform"
-import type { HttpMethod } from "@effect/platform/HttpMethod"
-import type { PathInput } from "@effect/platform/HttpRouter"
-import type { Schema } from "@effect/schema"
-import * as MatchInput from "@typed/router/MatchInput"
-import type { Context, Effect, Option, Types } from "effect"
-import { Chunk } from "effect"
-import { dual, pipe } from "effect/Function"
-import * as HttpApiHandlers from "./HttpApiHandlers.js"
-import type { CurrentParams } from "./HttpRouteHandler.js"
-import type { HttpRouter } from "./HttpRouter.js"
+/**
+ * @since 1.0.0
+ */
 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { HttpApiEndpoint as PlatformHttpApiEndpoint } from "@effect/platform";
+import type { HttpMethod } from "@effect/platform/HttpMethod";
+import type { PathInput } from "@effect/platform/HttpRouter";
+import type { Schema } from "@effect/schema";
+import * as MatchInput from "@typed/router/MatchInput";
+import type { Context, Effect, Option, Types } from "effect";
+import { Chunk } from "effect";
+import { dual, pipe } from "effect/Function";
+import * as HttpApiHandlers from "./HttpApiHandlers.js";
+import type { CurrentParams } from "./HttpRouteHandler.js";
+import type { HttpRouter } from "./HttpRouter.js";
+
+/**
+ * @since 1.0.0
+ * @category models
+ */
 export interface HttpApiEndpoint<
   Name extends string,
   Method extends HttpMethod,
@@ -19,9 +27,8 @@ export interface HttpApiEndpoint<
   Headers = never,
   Success = void,
   Error = never,
-  R = never
-> extends
-  PlatformHttpApiEndpoint.HttpApiEndpoint<
+  R = never,
+> extends PlatformHttpApiEndpoint.HttpApiEndpoint<
     Name,
     Method,
     Schema.Schema.Type<MatchInput.MatchInput.Schema<Route>>,
@@ -30,66 +37,133 @@ export interface HttpApiEndpoint<
     Success,
     Error,
     Exclude<R, CurrentParams<Route>>
-  >
-{
-  readonly route: Route
+  > {
+  readonly route: Route;
 }
 
+/**
+ * @since 1.0.0
+ */
 export namespace HttpApiEndpoint {
+  /**
+   * @since 1.0.0
+   */
   export interface Any extends PlatformHttpApiEndpoint.HttpApiEndpoint.All {
-    readonly route: MatchInput.MatchInput.Any
+    readonly route: MatchInput.MatchInput.Any;
   }
 
-  export type Success<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.Success<Endpoint>
+  /**
+   * @since 1.0.0
+   */
+  export type Success<Endpoint extends Any> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.Success<Endpoint>;
 
+  /**
+   * @since 1.0.0
+   */
   export type Error<Endpoint extends Any> =
     | PlatformHttpApiEndpoint.HttpApiEndpoint.Error<Endpoint>
-    | MatchInput.MatchInput.Error<Endpoint["route"]>
+    | MatchInput.MatchInput.Error<Endpoint["route"]>;
 
-  export type PathParsed<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.PathParsed<Endpoint>
+  /**
+   * @since 1.0.0
+   */
+  export type PathParsed<Endpoint extends Any> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.PathParsed<Endpoint>;
 
-  export type Payload<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.Payload<Endpoint>
+  /**
+   * @since 1.0.0
+   */
+  export type Payload<Endpoint extends Any> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.Payload<Endpoint>;
 
-  export type Headers<Endpoint extends Any> = PlatformHttpApiEndpoint.HttpApiEndpoint.Headers<Endpoint>
+  /**
+   * @since 1.0.0
+   */
+  export type Headers<Endpoint extends Any> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.Headers<Endpoint>;
 
-  export type Request<Endpoint extends Any> =
-    & {
-      readonly path: MatchInput.MatchInput.Success<Endpoint["route"]>
-    }
-    & ([Payload<Endpoint>] extends [infer P] ? [P] extends [never] ? {} : { readonly payload: P } : {})
-    & ([Headers<Endpoint>] extends [infer H] ? [H] extends [never] ? {} : { readonly headers: H } : {})
+  /**
+   * @since 1.0.0
+   */
+  export type Request<Endpoint extends Any> = {
+    readonly path: MatchInput.MatchInput.Success<Endpoint["route"]>;
+  } & ([Payload<Endpoint>] extends [infer P]
+    ? [P] extends [never]
+      ? {}
+      : { readonly payload: P }
+    : {}) &
+    ([Headers<Endpoint>] extends [infer H]
+      ? [H] extends [never]
+        ? {}
+        : { readonly headers: H }
+      : {});
 
+  /**
+   * @since 1.0.0
+   */
   export type Context<Endpoint extends Any> =
     | PlatformHttpApiEndpoint.HttpApiEndpoint.Context<Endpoint>
-    | MatchInput.MatchInput.Context<Endpoint["route"]>
+    | MatchInput.MatchInput.Context<Endpoint["route"]>;
 
-  export type ClientRequest<Path, Payload, Headers> = PlatformHttpApiEndpoint.HttpApiEndpoint.ClientRequest<
-    Path,
-    Payload,
-    Headers
-  >
+  /**
+   * @since 1.0.0
+   */
+  export type ClientRequest<Path, Payload, Headers> =
+    PlatformHttpApiEndpoint.HttpApiEndpoint.ClientRequest<
+      Path,
+      Payload,
+      Headers
+    >;
 
+  /**
+   * @since 1.0.0
+   */
   export type Handler<Endpoint extends Any, E, R> = (
     request: Types.Simplify<Request<Endpoint>>
-  ) => Effect.Effect<Success<Endpoint>, E, R>
+  ) => Effect.Effect<Success<Endpoint>, E, R>;
 
-  export type HandlerRedacted<Endpoint extends Any, E, R> = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerRedacted<
+  /**
+   * @since 1.0.0
+   */
+  export type HandlerRedacted<
+    Endpoint extends Any,
+    E,
+    R,
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerRedacted<Endpoint, E, R>;
+
+  /**
+   * @since 1.0.0
+   */
+  export type HandlerResponse<
+    Endpoint extends Any,
+    E,
+    R,
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerResponse<Endpoint, E, R>;
+
+  /**
+   * @since 1.0.0
+   */
+  export type HandlerResponseWithName<
+    Endpoint extends Any,
+    Name extends Endpoint["name"],
+    E,
+    R,
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerResponseWithName<
     Endpoint,
+    Name,
     E,
     R
-  >
+  >;
 
-  export type HandlerResponse<Endpoint extends Any, E, R> = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerResponse<
-    Endpoint,
-    E,
-    R
-  >
-
-  export type HandlerResponseWithName<Endpoint extends Any, Name extends Endpoint["name"], E, R> =
-    PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerResponseWithName<Endpoint, Name, E, R>
-
-  export type WithPrefix<Prefix extends MatchInput.MatchInput.Any, Endpoint extends Any> = Endpoint extends
-    HttpApiEndpoint<
+  /**
+   * @since 1.0.0
+   */
+  export type WithPrefix<
+    Prefix extends MatchInput.MatchInput.Any,
+    Endpoint extends Any,
+  > =
+    Endpoint extends HttpApiEndpoint<
       infer Name,
       infer Method,
       infer Route,
@@ -98,100 +172,171 @@ export namespace HttpApiEndpoint {
       infer Success,
       infer Error,
       infer Context
-    > ? HttpApiEndpoint<
-      Name,
-      Method,
-      MatchInput.MatchInput.Concat<Prefix, Route>,
-      Headers,
-      Payload,
-      Success,
-      Error,
-      Context
-    > :
-    never
-
-  export type Provided = HttpRouter.Provided
-  export type ExcludeProvided<R> = HttpRouter.ExcludeProvided<R>
-
-  export type HandlerWithName<Endpoints extends Any, Name extends Endpoints["name"], E, R> =
-    PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerWithName<
-      Endpoints,
-      Name,
-      E,
-      R
     >
+      ? HttpApiEndpoint<
+          Name,
+          Method,
+          MatchInput.MatchInput.Concat<Prefix, Route>,
+          Headers,
+          Payload,
+          Success,
+          Error,
+          Context
+        >
+      : never;
 
-  export type ErrorWithName<Endpoints extends Any, Name extends Endpoints["name"]> =
-    PlatformHttpApiEndpoint.HttpApiEndpoint.ErrorWithName<
-      Endpoints,
-      Name
-    >
+  /**
+   * @since 1.0.0
+   */
+  export type Provided = HttpRouter.Provided;
 
-  export type ExcludeName<Endpoints extends Any, Name extends Endpoints["name"]> =
-    PlatformHttpApiEndpoint.HttpApiEndpoint.ExcludeName<Endpoints, Name>
+  /**
+   * @since 1.0.0
+   */
+  export type ExcludeProvided<R> = HttpRouter.ExcludeProvided<R>;
 
+  /**
+   * @since 1.0.0
+   */
+  export type HandlerWithName<
+    Endpoints extends Any,
+    Name extends Endpoints["name"],
+    E,
+    R,
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.HandlerWithName<
+    Endpoints,
+    Name,
+    E,
+    R
+  >;
+
+  /**
+   * @since 1.0.0
+   */
+  export type ErrorWithName<
+    Endpoints extends Any,
+    Name extends Endpoints["name"],
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.ErrorWithName<Endpoints, Name>;
+
+  /**
+   * @since 1.0.0
+   */
+  export type ExcludeName<
+    Endpoints extends Any,
+    Name extends Endpoints["name"],
+  > = PlatformHttpApiEndpoint.HttpApiEndpoint.ExcludeName<Endpoints, Name>;
+
+  /**
+   * @since 1.0.0
+   */
   export type Builder<Endpoint extends Any, E, R> = {
-    readonly endpoint: Endpoint
-    readonly handler: Handler<Endpoint, E, R>
-  }
+    readonly endpoint: Endpoint;
+    readonly handler: Handler<Endpoint, E, R>;
+  };
 }
 
+/**
+ * @since 1.0.0
+ */
 export const isTypedHttpApiEndpoint = (u: any): u is HttpApiEndpoint.Any =>
-  PlatformHttpApiEndpoint.isHttpApiEndpoint(u) && "route" in u
+  PlatformHttpApiEndpoint.isHttpApiEndpoint(u) && "route" in u;
 
+/**
+ * @since 1.0.0
+ */
 export const make =
   <Method extends HttpMethod>(method: Method) =>
   <const Name extends string, R extends MatchInput.MatchInput.Any>(
     name: Name,
     input: R
   ): HttpApiEndpoint<Name, Method, R> => {
-    const { route } = MatchInput.asRouteGuard(input)
+    const { route } = MatchInput.asRouteGuard(input);
 
     return Object.assign(
       PlatformHttpApiEndpoint.make(method)(
         name,
         MatchInput.getPath(route) as PathInput
-      ).pipe(
-        PlatformHttpApiEndpoint.setPath(route.pathSchema)
-      ),
+      ).pipe(PlatformHttpApiEndpoint.setPath(route.pathSchema)),
       { route: input }
-    ) as any
-  }
+    ) as any;
+  };
 
-export const get: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const get: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "GET", R> = make("GET")
+) => HttpApiEndpoint<Name, "GET", R> = make("GET");
 
-export const post: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const post: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "POST", R> = make("POST")
+) => HttpApiEndpoint<Name, "POST", R> = make("POST");
 
-export const put: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const put: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "PUT", R> = make("PUT")
+) => HttpApiEndpoint<Name, "PUT", R> = make("PUT");
 
-export const patch: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const patch: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "PATCH", R> = make("PATCH")
+) => HttpApiEndpoint<Name, "PATCH", R> = make("PATCH");
 
-export const del: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const del: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "DELETE", R> = make("DELETE")
+) => HttpApiEndpoint<Name, "DELETE", R> = make("DELETE");
 
-export const options: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const options: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "OPTIONS", R> = make("OPTIONS")
+) => HttpApiEndpoint<Name, "OPTIONS", R> = make("OPTIONS");
 
-export const head: <const Name extends string, R extends MatchInput.MatchInput.Any>(
+/**
+ * @since 1.0.0
+ */
+export const head: <
+  const Name extends string,
+  R extends MatchInput.MatchInput.Any,
+>(
   name: Name,
   route: R
-) => HttpApiEndpoint<Name, "HEAD", R> = make("HEAD")
+) => HttpApiEndpoint<Name, "HEAD", R> = make("HEAD");
 
 /**
  * Set the schema for the success response of the endpoint. The status code
@@ -204,7 +349,7 @@ export const setSuccess: {
   <S extends Schema.Schema.Any>(
     schema: S,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
   ): <
     Name extends string,
@@ -214,10 +359,19 @@ export const setSuccess: {
     _H,
     _S,
     _E,
-    _R
+    _R,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>
-  ) => HttpApiEndpoint<Name, Method, _Route, _P, _H, Schema.Schema.Type<S>, _E, _R | Schema.Schema.Context<S>>
+  ) => HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    _H,
+    Schema.Schema.Type<S>,
+    _E,
+    _R | Schema.Schema.Context<S>
+  >;
   <
     Name extends string,
     Method extends HttpMethod,
@@ -227,14 +381,23 @@ export const setSuccess: {
     _S,
     _E,
     _R,
-    S extends Schema.Schema.Any
+    S extends Schema.Schema.Any,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: S,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
-  ): HttpApiEndpoint<Name, Method, _Route, _P, _H, Schema.Schema.Type<S>, _E, _R | Schema.Schema.Context<S>>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    _H,
+    Schema.Schema.Type<S>,
+    _E,
+    _R | Schema.Schema.Context<S>
+  >;
 } = dual(
   (args) => isTypedHttpApiEndpoint(args[0]),
   <
@@ -246,26 +409,38 @@ export const setSuccess: {
     _S,
     _E,
     _R,
-    S extends Schema.Schema.Any
+    S extends Schema.Schema.Any,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: S,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
-  ): HttpApiEndpoint<Name, Method, _Route, _P, _H, Schema.Schema.Type<S>, _E, _R | Schema.Schema.Context<S>> =>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    _H,
+    Schema.Schema.Type<S>,
+    _E,
+    _R | Schema.Schema.Context<S>
+  > =>
     pipe(
       self,
       PlatformHttpApiEndpoint.setSuccess(schema, annotations),
       (x) => Object.assign(x, { route: self.route }) as any
     )
-)
+);
 
+/**
+ * @since 1.0.0
+ */
 export const addError: {
   <E extends Schema.Schema.All>(
     schema: E,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
   ): <
     Name extends string,
@@ -275,10 +450,19 @@ export const addError: {
     _H,
     _S,
     _E,
-    _R
+    _R,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>
-  ) => HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E | Schema.Schema.Type<E>, _R | Schema.Schema.Context<E>>
+  ) => HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    _H,
+    _S,
+    _E | Schema.Schema.Type<E>,
+    _R | Schema.Schema.Context<E>
+  >;
   <
     Name extends string,
     Method extends HttpMethod,
@@ -288,14 +472,23 @@ export const addError: {
     _S,
     _E,
     _R,
-    E extends Schema.Schema.All
+    E extends Schema.Schema.All,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: E,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
-  ): HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E | Schema.Schema.Type<E>, _R | Schema.Schema.Context<E>>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    _H,
+    _S,
+    _E | Schema.Schema.Type<E>,
+    _R | Schema.Schema.Context<E>
+  >;
 } = dual(
   (args) => PlatformHttpApiEndpoint.isHttpApiEndpoint(args[0]),
   <
@@ -307,12 +500,12 @@ export const addError: {
     _S,
     _E,
     _R,
-    E extends Schema.Schema.All
+    E extends Schema.Schema.All,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: E,
     annotations?: {
-      readonly status?: number | undefined
+      readonly status?: number | undefined;
     }
   ): HttpApiEndpoint<
     Name,
@@ -329,7 +522,7 @@ export const addError: {
       PlatformHttpApiEndpoint.addError(schema, annotations),
       (x) => Object.assign(x, { route: self.route }) as any
     )
-)
+);
 
 /**
  * Set the schema for the request body of the endpoint. The schema will be
@@ -346,7 +539,8 @@ export const addError: {
  */
 export const setPayload: {
   <Method extends HttpMethod, P extends Schema.Schema.All>(
-    schema: P & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
+    schema: P &
+      PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
   ): <
     Name extends string,
     _Route extends MatchInput.MatchInput.Any,
@@ -354,10 +548,19 @@ export const setPayload: {
     _H,
     _S,
     _E,
-    _R
+    _R,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>
-  ) => HttpApiEndpoint<Name, Method, _Route, Schema.Schema.Type<P>, _H, _S, _E, _R | Schema.Schema.Context<P>>
+  ) => HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    Schema.Schema.Type<P>,
+    _H,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<P>
+  >;
   <
     Name extends string,
     Method extends HttpMethod,
@@ -367,11 +570,21 @@ export const setPayload: {
     _S,
     _E,
     _R,
-    P extends Schema.Schema.All
+    P extends Schema.Schema.All,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
-    schema: P & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
-  ): HttpApiEndpoint<Name, Method, _Route, Schema.Schema.Type<P>, _H, _S, _E, _R | Schema.Schema.Context<P>>
+    schema: P &
+      PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    Schema.Schema.Type<P>,
+    _H,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<P>
+  >;
 } = dual(
   2,
   <
@@ -383,17 +596,27 @@ export const setPayload: {
     _S,
     _E,
     _R,
-    P extends Schema.Schema.All
+    P extends Schema.Schema.All,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
-    schema: P & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
-  ): HttpApiEndpoint<Name, Method, _Route, Schema.Schema.Type<P>, _H, _S, _E, _R | Schema.Schema.Context<P>> =>
+    schema: P &
+      PlatformHttpApiEndpoint.HttpApiEndpoint.ValidatePayload<Method, P>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    Schema.Schema.Type<P>,
+    _H,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<P>
+  > =>
     pipe(
       self,
       PlatformHttpApiEndpoint.setPayload(schema),
       (x) => Object.assign(x, { route: self.route }) as any
     )
-)
+);
 
 /**
  * Set the schema for the headers of the endpoint. The schema will be
@@ -412,10 +635,19 @@ export const setHeaders: {
     _H,
     _S,
     _E,
-    _R
+    _R,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>
-  ) => HttpApiEndpoint<Name, Method, _Route, _P, Schema.Schema.Type<H>, _S, _E, _R | Schema.Schema.Context<H>>
+  ) => HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    Schema.Schema.Type<H>,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<H>
+  >;
   <
     Name extends string,
     Method extends HttpMethod,
@@ -425,11 +657,20 @@ export const setHeaders: {
     _S,
     _E,
     _R,
-    H extends Schema.Schema.Any
+    H extends Schema.Schema.Any,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: H & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidateHeaders<H>
-  ): HttpApiEndpoint<Name, Method, _Route, _P, Schema.Schema.Type<H>, _S, _E, _R | Schema.Schema.Context<H>>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    Schema.Schema.Type<H>,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<H>
+  >;
 } = dual(
   2,
   <
@@ -441,17 +682,26 @@ export const setHeaders: {
     _S,
     _E,
     _R,
-    H extends Schema.Schema.Any
+    H extends Schema.Schema.Any,
   >(
     self: HttpApiEndpoint<Name, Method, _Route, _P, _H, _S, _E, _R>,
     schema: H & PlatformHttpApiEndpoint.HttpApiEndpoint.ValidateHeaders<H>
-  ): HttpApiEndpoint<Name, Method, _Route, _P, Schema.Schema.Type<H>, _S, _E, _R | Schema.Schema.Context<H>> =>
+  ): HttpApiEndpoint<
+    Name,
+    Method,
+    _Route,
+    _P,
+    Schema.Schema.Type<H>,
+    _S,
+    _E,
+    _R | Schema.Schema.Context<H>
+  > =>
     pipe(
       self,
       PlatformHttpApiEndpoint.setHeaders(schema),
       (x) => Object.assign(x, { route: self.route }) as any
     )
-)
+);
 
 /**
  * Add a prefix to the path of the endpoint.
@@ -464,11 +714,11 @@ export const prefix: {
     prefix: Prefix
   ): <A extends HttpApiEndpoint.Any>(
     self: A
-  ) => HttpApiEndpoint.WithPrefix<Prefix, A>
+  ) => HttpApiEndpoint.WithPrefix<Prefix, A>;
   <A extends HttpApiEndpoint.Any, Prefix extends MatchInput.MatchInput.Any>(
     self: A,
     prefix: Prefix
-  ): HttpApiEndpoint.WithPrefix<Prefix, A>
+  ): HttpApiEndpoint.WithPrefix<Prefix, A>;
 } = dual(
   2,
   <A extends HttpApiEndpoint.Any, Prefix extends MatchInput.MatchInput.Any>(
@@ -478,9 +728,12 @@ export const prefix: {
     pipe(
       self,
       PlatformHttpApiEndpoint.prefix(MatchInput.getPath(prefix) as PathInput),
-      (x) => Object.assign(x, { route: MatchInput.concat(prefix, self.route) }) as any
+      (x) =>
+        Object.assign(x, {
+          route: MatchInput.concat(prefix, self.route),
+        }) as any
     )
-)
+);
 
 /**
  * @since 1.0.0
@@ -489,8 +742,12 @@ export const prefix: {
 export const schemaSuccess = <A extends HttpApiEndpoint.Any>(
   self: A
 ): Option.Option<
-  Schema.Schema<PlatformHttpApiEndpoint.HttpApiEndpoint.Success<A>, unknown, HttpApiEndpoint.Context<A>>
-> => PlatformHttpApiEndpoint.schemaSuccess(self)
+  Schema.Schema<
+    PlatformHttpApiEndpoint.HttpApiEndpoint.Success<A>,
+    unknown,
+    HttpApiEndpoint.Context<A>
+  >
+> => PlatformHttpApiEndpoint.schemaSuccess(self);
 
 /**
  * Merge the annotations of the endpoint with the provided context.
@@ -501,20 +758,17 @@ export const schemaSuccess = <A extends HttpApiEndpoint.Any>(
 export const annotateMerge: {
   <I>(
     context: Context.Context<I>
-  ): <A extends HttpApiEndpoint.Any>(self: A) => A
-  <A extends HttpApiEndpoint.Any, I>(self: A, context: Context.Context<I>): A
+  ): <A extends HttpApiEndpoint.Any>(self: A) => A;
+  <A extends HttpApiEndpoint.Any, I>(self: A, context: Context.Context<I>): A;
 } = dual(
   2,
-  <A extends HttpApiEndpoint.Any, I>(
-    self: A,
-    context: Context.Context<I>
-  ): A =>
+  <A extends HttpApiEndpoint.Any, I>(self: A, context: Context.Context<I>): A =>
     pipe(
       self,
       PlatformHttpApiEndpoint.annotateMerge(context),
       (x) => Object.assign(x, { route: self.route }) as A
     )
-)
+);
 
 /**
  * Add an annotation to the endpoint.
@@ -526,12 +780,12 @@ export const annotate: {
   <I, S>(
     tag: Context.Tag<I, S>,
     value: S
-  ): <A extends HttpApiEndpoint.Any>(self: A) => A
+  ): <A extends HttpApiEndpoint.Any>(self: A) => A;
   <A extends HttpApiEndpoint.Any, I, S>(
     self: A,
     tag: Context.Tag<I, S>,
     value: S
-  ): A
+  ): A;
 } = dual(
   3,
   <A extends HttpApiEndpoint.Any, I, S>(
@@ -544,33 +798,64 @@ export const annotate: {
       PlatformHttpApiEndpoint.annotate(tag, value),
       (x) => Object.assign(x, { route: self.route }) as A
     )
-)
+);
 
+/**
+ * @since 1.0.0
+ */
 export const handle: {
   <Endpoint extends HttpApiEndpoint.Any, E2, R2>(
     handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
-  ): (endpoint: Endpoint) => <E, R, Endpoints extends HttpApiEndpoint.Any>(
+  ): (
+    endpoint: Endpoint
+  ) => <E, R, Endpoints extends HttpApiEndpoint.Any>(
     handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
-  ) => HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>
+  ) => HttpApiHandlers.HttpApiHandlers<
+    E | E2,
+    R | R2,
+    HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>
+  >;
 
   <Endpoint extends HttpApiEndpoint.Any, E2, R2>(
     endpoint: Endpoint,
     handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
   ): <E, R, Endpoints extends HttpApiEndpoint.Any>(
     handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
-  ) => HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>
+  ) => HttpApiHandlers.HttpApiHandlers<
+    E | E2,
+    R | R2,
+    HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>
+  >;
 } = dual(
   2,
-  <E, R, Endpoints extends HttpApiEndpoint.Any, Endpoint extends HttpApiEndpoint.Any, E2, R2>(
+  <
+    E,
+    R,
+    Endpoints extends HttpApiEndpoint.Any,
+    Endpoint extends HttpApiEndpoint.Any,
+    E2,
+    R2,
+  >(
     endpoint: Endpoint,
     handler: HttpApiEndpoint.Handler<Endpoint, E2, R2>
   ) =>
-  (
-    handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
-  ): HttpApiHandlers.HttpApiHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>> => {
-    return HttpApiHandlers.makeHandlers<E | E2, R | R2, HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>>({
-      group: handlers.group,
-      handlers: Chunk.append(handlers.handlers, HttpApiHandlers.makeHandler(endpoint, handler))
-    })
-  }
-)
+    (
+      handlers: HttpApiHandlers.HttpApiHandlers<E, R, Endpoints>
+    ): HttpApiHandlers.HttpApiHandlers<
+      E | E2,
+      R | R2,
+      HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>
+    > => {
+      return HttpApiHandlers.makeHandlers<
+        E | E2,
+        R | R2,
+        HttpApiEndpoint.ExcludeName<Endpoints, Endpoint["name"]>
+      >({
+        group: handlers.group,
+        handlers: Chunk.append(
+          handlers.handlers,
+          HttpApiHandlers.makeHandler(endpoint, handler)
+        ),
+      });
+    }
+);

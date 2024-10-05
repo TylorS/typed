@@ -50,7 +50,7 @@ export declare const repeat: {
   <R2, A, E, R3>(
     schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
-  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<unknown, unknown, R2>,
@@ -73,7 +73,7 @@ export declare const schedule: {
   <R2, A, E, R3>(
     schedule: Schedule.Schedule<unknown, unknown, R2>,
     sink: Sink<A, E, R3>
-  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R2 | R3 | R>
+  ): <R>(pull: Pull<A, E, R>) => Effect.Effect<unknown, never, R | R2 | R3>
   <A, E, R, R2, R3>(
     pull: Pull<A, E, R>,
     schedule: Schedule.Schedule<unknown, unknown, R2>,

@@ -181,7 +181,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeTemplateContext: <Values extends readonly Renderable<any, any>[]>(
+export declare const makeTemplateContext: <Values extends ReadonlyArray<Renderable<any, any>>>(
   document: Document,
   renderContext: RenderContext,
   values: ReadonlyArray<Renderable<any, any>>,

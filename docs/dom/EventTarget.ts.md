@@ -79,11 +79,11 @@ Add an event listener to an EventTarget
 export declare const addEventListener: {
   <T extends EventTarget, EventName extends string, R = never>(
     options: AddEventListenerOptions<T, EventName, R>
-  ): (target: T) => Effect.Effect<void, never, Scope.Scope | R>
+  ): (target: T) => Effect.Effect<void, never, R | Scope.Scope>
   <T extends EventTarget, EventName extends string, R = never>(
     target: T,
     options: AddEventListenerOptions<T, EventName, R>
-  ): Effect.Effect<void, never, Scope.Scope | R>
+  ): Effect.Effect<void, never, R | Scope.Scope>
 }
 ```
 

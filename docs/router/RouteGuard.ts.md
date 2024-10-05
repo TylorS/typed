@@ -127,12 +127,7 @@ export declare const concat: {
   ): <L extends RouteGuard.Any>(
     self: L
   ) => RouteGuard<
-    Route.Route<
-      `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<L>>>}${`${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}`}` extends `//${infer R}`
-        ? `/${RemoveLeadingSlash<R>}`
-        : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<L>>>}${`${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}`}`,
-      Route.Route.ConcatSchemas<Route.Route.Schema<RouteGuard.Route<L>>, Route.Route.Schema<RouteGuard.Route<R>>>
-    >,
+    Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
     RouteGuard.Success<L> & RouteGuard.Success<R>,
     RouteGuard.Error<L> | RouteGuard.Error<R>,
     RouteGuard.Context<L> | RouteGuard.Context<R>
@@ -141,12 +136,7 @@ export declare const concat: {
     self: L,
     other: R
   ): RouteGuard<
-    Route.Route<
-      `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<L>>>}${`${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}`}` extends `//${infer R}`
-        ? `/${RemoveLeadingSlash<R>}`
-        : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<L>>>}${`${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.PathWithoutQuery<RouteGuard.Route<R>>>}${`${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}` extends `//${infer R}` ? `/${RemoveLeadingSlash<R>}` : `${FormatPart<Route.Route.ConcatQuery<Route.Route.Query<RouteGuard.Route<L>>, Route.Route.Query<RouteGuard.Route<R>>>>}`}`}`,
-      Route.Route.ConcatSchemas<Route.Route.Schema<RouteGuard.Route<L>>, Route.Route.Schema<RouteGuard.Route<R>>>
-    >,
+    Route.Route.Concat<RouteGuard.Route<L>, RouteGuard.Route<R>>,
     RouteGuard.Success<L> & RouteGuard.Success<R>,
     RouteGuard.Error<L> | RouteGuard.Error<R>,
     RouteGuard.Context<L> | RouteGuard.Context<R>

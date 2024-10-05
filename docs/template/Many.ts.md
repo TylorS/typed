@@ -53,15 +53,15 @@ export declare const manyAsyncData: {
     matchers: {
       NoData: () => NoData
       Loading: (data: RefSubject.Filtered<Progress>) => Loading
-      Failure: (data: RefSubject.Computed<E1, never, never>) => Failure
-      Success: (value: RefSubject.Computed<A, never, never>) => Success
+      Failure: (data: RefSubject.Computed<E1>) => Failure
+      Success: (value: RefSubject.Computed<A>) => Success
     }
   ): <E, R>(
-    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>
   ) => Fx.Fx<
-    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>,
-    E | Fx.Fx.Error<NoData> | Fx.Fx.Error<Loading> | Fx.Fx.Error<Failure> | Fx.Fx.Error<Success>,
-    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>
+    Fx.Fx.Success<NoData | Loading | Failure | Success>,
+    E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
+    R | Fx.Fx.Context<NoData | Loading | Failure | Success>
   >
   <
     R,
@@ -74,18 +74,18 @@ export declare const manyAsyncData: {
     Failure extends Fx.Fx<any, any, any>,
     Success extends Fx.Fx<any, any, any>
   >(
-    fx: Fx.Fx<AsyncData.AsyncData<readonly A[], E1>, E, R>,
+    fx: Fx.Fx<AsyncData.AsyncData<ReadonlyArray<A>, E1>, E, R>,
     getKey: (a: A) => B,
     matchers: {
       NoData: () => NoData
       Loading: (data: RefSubject.Filtered<Progress>) => Loading
-      Failure: (data: RefSubject.Computed<E1, never, never>) => Failure
-      Success: (value: RefSubject.Computed<A, never, never>) => Success
+      Failure: (data: RefSubject.Computed<E1>) => Failure
+      Success: (value: RefSubject.Computed<A>) => Success
     }
   ): Fx.Fx<
-    Fx.Fx.Success<NoData> | Fx.Fx.Success<Loading> | Fx.Fx.Success<Failure> | Fx.Fx.Success<Success>,
-    E | Fx.Fx.Error<NoData> | Fx.Fx.Error<Loading> | Fx.Fx.Error<Failure> | Fx.Fx.Error<Success>,
-    R | Fx.Fx.Context<NoData> | Fx.Fx.Context<Loading> | Fx.Fx.Context<Failure> | Fx.Fx.Context<Success>
+    Fx.Fx.Success<NoData | Loading | Failure | Success>,
+    E | Fx.Fx.Error<NoData | Loading | Failure | Success>,
+    R | Fx.Fx.Context<NoData | Loading | Failure | Success>
   >
 }
 ```

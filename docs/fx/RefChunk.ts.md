@@ -306,8 +306,8 @@ Map the values with their indexes of a RefChunk.
 
 ```ts
 export declare const mapValues: {
-  <A, B>(f: (a: A, index: number) => B): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<readonly B[], E, R>
-  <A, E, R, B>(ref: RefChunk<A, E, R>, f: (a: A, index: number) => B): RefSubject.Computed<readonly B[], E, R>
+  <A, B>(f: (a: A, index: number) => B): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<ReadonlyArray<B>, E, R>
+  <A, E, R, B>(ref: RefChunk<A, E, R>, f: (a: A, index: number) => B): RefSubject.Computed<ReadonlyArray<B>, E, R>
 }
 ```
 
@@ -323,11 +323,11 @@ Partition the values of a RefChunk using a predicate.
 export declare const partition: {
   <A, B extends A>(
     predicate: (a: A) => a is B
-  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<readonly [readonly B[], Chunk.Chunk<A>], E, R>
+  ): <E, R>(ref: RefChunk<A, E, R>) => RefSubject.Computed<readonly [ReadonlyArray<B>, Chunk.Chunk<A>], E, R>
   <A, E, R>(
     ref: RefChunk<A, E, R>,
     predicate: (a: A) => boolean
-  ): RefSubject.Computed<readonly [readonly A[], Chunk.Chunk<A>], E, never>
+  ): RefSubject.Computed<readonly [ReadonlyArray<A>, Chunk.Chunk<A>], E>
 }
 ```
 

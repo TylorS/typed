@@ -48,7 +48,7 @@ Join together path parts
 **Signature**
 
 ```ts
-export declare const pathJoin: <P extends readonly string[]>(...parts: P) => PathJoin<P>
+export declare const pathJoin: <P extends ReadonlyArray<string>>(...parts: P) => PathJoin<P>
 ```
 
 Added in v1.0.0

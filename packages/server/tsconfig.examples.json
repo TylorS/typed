@@ -2,10 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "build/tsbuildinfo/examples.tsbuildinfo",
-    "rootDir": "examples",
+    "rootDir": ".",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "build/examples"
+    "outDir": "build/examples",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": [
     "examples/**/*.ts"

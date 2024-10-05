@@ -60,42 +60,40 @@ export declare const listen: {
   (
     options: Options
   ): <E, R>(
-    app: Http.app.Default<E, R>
+    app: HttpApp.Default<E, R>
   ) => Effect.Effect<
     never,
-    Http.error.ServeError,
+    HttpServerError.HttpServerError,
     Exclude<
       R,
+      | HttpServerRequest.HttpServerRequest
+      | Scope.Scope
+      | HttpServer.HttpServer
+      | HttpPlatform
       | CurrentEnvironment
       | GetRandomValues
-      | RenderTemplate
-      | Http.request.ServerRequest
-      | Scope.Scope
-      | Http.server.Server
-      | Http.platform.Platform
-      | Http.etag.Generator
       | RenderContext.RenderContext
       | RenderQueue.RenderQueue
+      | RenderTemplate
     >
   >
   <E, R>(
-    app: Http.app.Default<E, R>,
+    app: HttpApp.Default<E, R>,
     options: Options
   ): Effect.Effect<
     never,
-    Http.error.ServeError,
+    HttpServerError.HttpServerError,
     Exclude<
       R,
+      | HttpServerRequest.HttpServerRequest
+      | Scope.Scope
+      | HttpServer.HttpServer
+      | HttpPlatform
       | CurrentEnvironment
       | GetRandomValues
-      | RenderTemplate
-      | Http.request.ServerRequest
-      | Scope.Scope
-      | Http.server.Server
-      | Http.platform.Platform
-      | Http.etag.Generator
       | RenderContext.RenderContext
       | RenderQueue.RenderQueue
+      | RenderTemplate
     >
   >
 }
@@ -109,7 +107,7 @@ Added in v1.0.0
 
 ```ts
 export declare const run: <A, E>(
-  effect: Effect.Effect<A, E, CurrentEnvironment | NodeContext.NodeContext | CurrentRoute>,
+  effect: Effect.Effect<A, E, NodeContext.NodeContext | CurrentEnvironment | CurrentRoute>,
   options?: RunForkOptions & { readonly static?: boolean; readonly base?: string }
 ) => Disposable
 ```

@@ -52,7 +52,7 @@ Add an event listener to the Window
 ```ts
 export declare const addWindowListener: <EventName extends string, R = never>(
   options: EventTarget.AddEventListenerOptions<Window, EventName, R>
-) => Effect.Effect<void, never, Window | R | Scope.Scope>
+) => Effect.Effect<void, never, Scope.Scope | Window | R>
 ```
 
 Added in v8.19.0

@@ -61,7 +61,7 @@ Add an event listener to the root of your application.
 ```ts
 export declare const addRootElementListener: <EventName extends string, R = never>(
   options: AddEventListenerOptions<ParentNode & HTMLElement, EventName, R>
-) => Effect.Effect<void, never, Scope.Scope | R | RootElement>
+) => Effect.Effect<void, never, R | RootElement | Scope.Scope>
 ```
 
 Added in v8.19.0

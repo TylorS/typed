@@ -1,6 +1,6 @@
 {
   "exclude": ["src/internal/**/*.ts"],
   "theme": "mikearnaldi/just-the-docs",
-  "parseCompilerOptions": "./tsconfig.build.json",
+  "parseCompilerOptions": "./tsconfig.docs.json",
   "examplesCompilerOptions": "./tsconfig.examples.json"
 }

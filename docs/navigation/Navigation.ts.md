@@ -92,26 +92,8 @@ export declare const BeforeNavigationEvent: Schema.Struct<{
   to: Schema.Union<
     [
       Schema.SchemaClass<
-        Omit<
-          {
-            readonly id: Uuid
-            readonly key: Uuid
-            readonly url: URL
-            readonly state: unknown
-            readonly sameDocument: boolean
-          },
-          "id" | "key"
-        >,
-        Omit<
-          {
-            readonly id: string
-            readonly key: string
-            readonly url: string
-            readonly state: unknown
-            readonly sameDocument: boolean
-          },
-          "id" | "key"
-        >,
+        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
+        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
         never
       >,
       Schema.Struct<{
@@ -315,10 +297,10 @@ export declare const FormDataEvent: Schema.extend<
     }>
   }>,
   Schema.Struct<{
-    name: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-    action: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-    method: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-    encoding: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    name: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    action: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    method: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+    encoding: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
     data: Schema.transform<
       Schema.Record$<
         typeof Schema.String,
@@ -369,7 +351,9 @@ Added in v1.0.0
 export type FormDataHandler<R, R2> = (
   event: FormDataEvent
 ) => Effect.Effect<
-  Option.Option<Effect.Effect<Option.Option<HttpClient.response.ClientResponse>, RedirectError | CancelNavigation, R2>>,
+  Option.Option<
+    Effect.Effect<Option.Option<HttpClientResponse.HttpClientResponse>, RedirectError | CancelNavigation, R2>
+  >,
   RedirectError | CancelNavigation,
   R
 >
@@ -428,10 +412,10 @@ Added in v1.0.0
 
 ```ts
 export declare const FormInputSchema: Schema.Struct<{
-  name: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-  action: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-  method: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
-  encoding: Schema.optionalWithOptions<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  name: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  action: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  method: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
+  encoding: Schema.optionalWith<typeof Schema.String, { readonly as: "Option"; readonly nullable: true }>
   data: Schema.transform<
     Schema.Record$<
       typeof Schema.String,
@@ -527,9 +511,9 @@ export interface Navigation {
     data: FormData,
     formInput?: Simplify<Omit<FormInputFrom, "data">>
   ) => Effect.Effect<
-    Option.Option<HttpClient.response.ClientResponse>,
-    NavigationError | HttpClient.error.HttpClientError,
-    Scope.Scope | HttpClient.client.Client.Default
+    Option.Option<HttpClientResponse.HttpClientResponse>,
+    NavigationError | HttpClientError.HttpClientError,
+    Scope.Scope | HttpClient.HttpClient.Service
   >
 
   readonly onFormData: <R = never, R2 = never>(
@@ -628,26 +612,8 @@ Added in v1.0.0
 
 ```ts
 export declare const ProposedDestination: Schema.SchemaClass<
-  Omit<
-    {
-      readonly id: Uuid
-      readonly key: Uuid
-      readonly url: URL
-      readonly state: unknown
-      readonly sameDocument: boolean
-    },
-    "id" | "key"
-  >,
-  Omit<
-    {
-      readonly id: string
-      readonly key: string
-      readonly url: string
-      readonly state: unknown
-      readonly sameDocument: boolean
-    },
-    "id" | "key"
-  >,
+  { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
+  { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
   never
 >
 ```
@@ -701,26 +667,8 @@ export declare const Transition: Schema.Struct<{
   to: Schema.Union<
     [
       Schema.SchemaClass<
-        Omit<
-          {
-            readonly id: Uuid
-            readonly key: Uuid
-            readonly url: URL
-            readonly state: unknown
-            readonly sameDocument: boolean
-          },
-          "id" | "key"
-        >,
-        Omit<
-          {
-            readonly id: string
-            readonly key: string
-            readonly url: string
-            readonly state: unknown
-            readonly sameDocument: boolean
-          },
-          "id" | "key"
-        >,
+        { readonly url: URL; readonly state: unknown; readonly sameDocument: boolean },
+        { readonly url: string; readonly state: unknown; readonly sameDocument: boolean },
         never
       >,
       Schema.Struct<{
@@ -901,9 +849,9 @@ export declare function submit(
   data: FormData,
   formInput?: Simplify<Omit<FormInputFrom, "data">>
 ): Effect.Effect<
-  Option.Option<HttpClient.response.ClientResponse>,
-  NavigationError | HttpClient.error.HttpClientError,
-  Navigation | HttpClient.client.Client.Default | Scope.Scope
+  Option.Option<HttpClientResponse.HttpClientResponse>,
+  NavigationError | HttpClientError.HttpClientError,
+  Navigation | HttpClient.HttpClient.Service | Scope.Scope
 >
 ```
 

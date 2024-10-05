@@ -46,7 +46,7 @@ one or more path parts will be matched to this param
 **Signature**
 
 ```ts
-export declare const oneOrMore: <A extends string>(param: A) => `${A}+`
+export declare const oneOrMore: <A extends string>(param: A) => OneOrMore<A>
 ```
 
 Added in v1.0.0
@@ -56,7 +56,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const optional: <A extends string>(param: A) => `${A}?`
+export declare const optional: <A extends string>(param: A) => Optional<A>
 ```
 
 Added in v1.0.0
@@ -66,7 +66,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const param: <A extends string>(param: A) => `:${A}`
+export declare const param: <A extends string>(param: A) => Param<A>
 ```
 
 Added in v1.0.0
@@ -76,10 +76,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const paramWithOptions: <const A extends string, Options extends readonly string[]>(
+export declare const paramWithOptions: <const A extends string, Options extends ReadonlyArray<string>>(
   param: A,
   ...options: Options
-) => `:${A}(${S.Join<Options, "|">})`
+) => ParamWithOptions<A, Options>
 ```
 
 Added in v1.0.0
@@ -89,7 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const prefix: <P extends string, A extends string>(prefix: P, param: A) => `{${P}${A}}`
+export declare const prefix: <P extends string, A extends string>(prefix: P, param: A) => Prefix<P, A>
 ```
 
 Added in v1.0.0
@@ -111,7 +111,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const queryParams: <P extends readonly [any, ...any[]]>(...params: P) => QueryParams<P, "">
+export declare const queryParams: <P extends readonly [QueryParam<any, any>, ...QueryParam<any, any>]>(
+  ...params: P
+) => QueryParams<P>
 ```
 
 Added in v1.0.0
@@ -131,7 +133,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const zeroOrMore: <A extends string>(param: A) => `${A}*`
+export declare const zeroOrMore: <A extends string>(param: A) => ZeroOrMore<A>
 ```
 
 Added in v1.0.0

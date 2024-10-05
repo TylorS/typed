@@ -72,7 +72,7 @@ Added in v1.0.0
 ```ts
 export type FailureFrom<E> = {
   readonly _tag: "Failure"
-  readonly cause: Schema.CauseEncoded<E>
+  readonly cause: Schema.CauseEncoded<E, unknown>
   readonly timestamp: number
   readonly refreshing?: LoadingFrom | undefined
 }

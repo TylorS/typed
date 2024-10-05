@@ -60,8 +60,8 @@ Added in v1.0.0
 
 ```ts
 export declare const takeOneIfEnvironment: {
-  (environments: ReadonlyArray<Environment>): <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, CurrentEnvironment | R>
-  <A, E, R>(fx: Fx.Fx<A, E, R>, environments: ReadonlyArray<Environment>): Fx.Fx<A, E, CurrentEnvironment | R>
+  (environments: ReadonlyArray<Environment>): <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, R | CurrentEnvironment>
+  <A, E, R>(fx: Fx.Fx<A, E, R>, environments: ReadonlyArray<Environment>): Fx.Fx<A, E, R | CurrentEnvironment>
 }
 ```
 
@@ -72,7 +72,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const takeOneIfNotDomEnvironment: <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, CurrentEnvironment | R>
+export declare const takeOneIfNotDomEnvironment: <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, R | CurrentEnvironment>
 ```
 
 Added in v1.0.0
@@ -83,8 +83,8 @@ Added in v1.0.0
 
 ```ts
 export declare const takeOneIfNotEnvironment: {
-  (environments: ReadonlyArray<Environment>): <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, CurrentEnvironment | R>
-  <A, E, R>(fx: Fx.Fx<A, E, R>, environments: ReadonlyArray<Environment>): Fx.Fx<A, E, CurrentEnvironment | R>
+  (environments: ReadonlyArray<Environment>): <A, E, R>(fx: Fx.Fx<A, E, R>) => Fx.Fx<A, E, R | CurrentEnvironment>
+  <A, E, R>(fx: Fx.Fx<A, E, R>, environments: ReadonlyArray<Environment>): Fx.Fx<A, E, R | CurrentEnvironment>
 }
 ```
 
