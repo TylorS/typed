@@ -200,6 +200,43 @@ importers:
         specifier: 3.8.4
         version: 3.8.4
 
+  examples/simple-fullstack:
+    dependencies:
+      '@effect/platform':
+        specifier: ^0.66.2
+        version: 0.66.2(@effect/schema@0.74.1(effect@3.8.4))(effect@3.8.4)
+      '@effect/platform-node':
+        specifier: ^0.61.3
+        version: 0.61.3(@effect/platform@0.66.2(@effect/schema@0.74.1(effect@3.8.4))(effect@3.8.4))(effect@3.8.4)
+      '@typed/core':
+        specifier: workspace:*
+        version: link:../../packages/core/dist
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../../packages/fx/dist
+      '@typed/route':
+        specifier: workspace:*
+        version: link:../../packages/route/dist
+      '@typed/router':
+        specifier: workspace:*
+        version: link:../../packages/router/dist
+      '@typed/template':
+        specifier: workspace:*
+        version: link:../../packages/template/dist
+      effect:
+        specifier: 3.8.4
+        version: 3.8.4
+    devDependencies:
+      '@typed/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin/dist
+      tsx:
+        specifier: ^4.19.1
+        version: 4.19.1
+      vavite:
+        specifier: ^4.1.1
+        version: 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+
   examples/simple-ssr:
     dependencies:
       '@effect/platform':
@@ -3133,13 +3170,29 @@ packages:
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
+  '@vavite/connect@4.1.3':
+    resolution: {integrity: sha512-0gkJsdaxa4pSOpXqBYgqxAqhGjfqzrqMuIHUOu1EJfD7jY066bK08MMcrf/erapGGBs/IdisjjgDDyf40JzxmA==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
   '@vavite/connect@5.0.0':
     resolution: {integrity: sha512-2fDU1kvnZnTPsIegNLmjEmjvFTTA3/BZ0oQC85lsOARNh1qSQcFyZZ5XifUNNN7rGgIO97768YwhLAgvT3Vmew==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
+  '@vavite/expose-vite-dev-server@4.1.3':
+    resolution: {integrity: sha512-XXSXh19SnU0v+OxOroZtHPFu7Z64JjUXpzRiyfBI2OYyeREDdBm+SVsdh1wRzzuQvckI50b+Yp1b7wXhUxi0aw==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
   '@vavite/expose-vite-dev-server@5.0.0':
     resolution: {integrity: sha512-s5qC27fkK+H4LzrpoOgdfaDyYhh28JBMvY+eB77dhJ6qrLbVE4fcQ4rzjXyPHadMY5otWiP0rUjyKtL5qP9GPg==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
+  '@vavite/multibuild-cli@4.1.3':
+    resolution: {integrity: sha512-eyxYl9ccO21wyVIsbVVI7Sk5K6rWA6vaQUYQIL9dJtWvcA9bil4KV7g28qWn/itsj6nf06qW6LpEUpEuWJS5zA==}
+    hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
@@ -3149,14 +3202,30 @@ packages:
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
+  '@vavite/multibuild@4.1.3':
+    resolution: {integrity: sha512-V+6mskWf4GMQVb53w2fdJ5aR+zVkzpuCE9q3lDDo0v8AHjQApOeXydj/5rTERIFkO46yNHmr3insg2I/tC0TtA==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
   '@vavite/multibuild@5.0.0':
     resolution: {integrity: sha512-j07Cm2Dtmx4oUVL0RTv47lR+ZXWSQr8J+UMlbb7ghdmn+W1GvUBbnFRoNCr203SBTlg4CsSIHfDAe9pq1om3Zw==}
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
+  '@vavite/node-loader@4.1.3':
+    resolution: {integrity: sha512-Z5lIC8hWmZhLSoQdEoyCmFbx+rLtCiy97oKXSjylZUSytXBrrP2oSYIKYO+cU/echxHHdGMTzyy9kAk++zyyQg==}
+    hasBin: true
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
   '@vavite/node-loader@5.0.0':
     resolution: {integrity: sha512-ZjMC3/8mQrWf+2rfKesr7xCxNmr2cTc5Qme0KBWFET6rXew7dq/g28qZU1gqntOqZluT6vgXvUgItMnRjvsPHA==}
     hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
+  '@vavite/reloader@4.1.3':
+    resolution: {integrity: sha512-Tn8WX7MwdA4Ak/mh7lWF3CxGK1eckXhWrjAfW+AVNbwP55/0bIy1DohUBdIwYjSXhq6a15TqBDfif2X3ELyYPw==}
     peerDependencies:
       vite: ^2.8.1 || 3 || 4 || 5
 
@@ -6411,6 +6480,12 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
+  vavite@4.1.3:
+    resolution: {integrity: sha512-TEVY+DZjkZwtCw3tAHKo9tXHgORdOglB7PZ1yxHkf23Ufh0guTQlbyyczQ14tl+Id+VpjkUcNJjEDTILkrENMw==}
+    hasBin: true
+    peerDependencies:
+      vite: ^2.8.1 || 3 || 4 || 5
+
   vavite@5.0.0:
     resolution: {integrity: sha512-Eke5Hfo5M0FmGrAwmB4hbgl2KM5smtbq2qK5ppHa1C5w8V/Smtle6I3HVXk1kv/vwxyjK1V+UtnVVxaaXPgQww==}
     hasBin: true
@@ -9169,19 +9244,43 @@ snapshots:
     dependencies:
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
+  '@vavite/connect@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
+      '@types/node': 18.19.54
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
   '@vavite/connect@5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
     dependencies:
       '@types/node': 18.19.54
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
+  '@vavite/expose-vite-dev-server@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
   '@vavite/expose-vite-dev-server@5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
     dependencies:
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
+  '@vavite/multibuild-cli@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
+      '@types/node': 18.19.54
+      '@vavite/multibuild': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      cac: 6.7.14
+      picocolors: 1.1.0
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
   '@vavite/multibuild-cli@5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
     dependencies:
       '@types/node': 18.19.54
       '@vavite/multibuild': 5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      cac: 6.7.14
+      picocolors: 1.1.0
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
+  '@vavite/multibuild@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
+      '@types/node': 18.19.54
       cac: 6.7.14
       picocolors: 1.1.0
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
@@ -9193,7 +9292,15 @@ snapshots:
       picocolors: 1.1.0
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
+  '@vavite/node-loader@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
   '@vavite/node-loader@5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
+    dependencies:
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
+
+  '@vavite/reloader@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))':
     dependencies:
       vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
@@ -12797,6 +12904,18 @@ snapshots:
   validate-npm-package-name@5.0.1: {}
 
   vary@1.1.2: {}
+
+  vavite@4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1)):
+    dependencies:
+      '@vavite/connect': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      '@vavite/expose-vite-dev-server': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      '@vavite/multibuild': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      '@vavite/multibuild-cli': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      '@vavite/node-loader': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      '@vavite/reloader': 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+      cac: 6.7.14
+      picocolors: 1.1.0
+      vite: 5.4.8(@types/node@22.7.4)(terser@5.34.1)
 
   vavite@5.0.0(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1)):
     dependencies:

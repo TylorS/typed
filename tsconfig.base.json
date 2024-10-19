@@ -272,17 +272,17 @@
       "@typed/fx-tracing/examples/*": [
         "examples/fx-tracing/examples/*"
       ],
-      "@typed/realworld": [
-        "examples/realworld/src/index.ts"
+      "@typed/simple-fullstack": [
+        "examples/simple-fullstack/src/index.ts"
       ],
-      "@typed/realworld/*": [
-        "examples/realworld/src/*"
+      "@typed/simple-fullstack/*": [
+        "examples/simple-fullstack/src/*"
       ],
-      "@typed/realworld/test/*": [
-        "examples/realworld/test/*"
+      "@typed/simple-fullstack/test/*": [
+        "examples/simple-fullstack/test/*"
       ],
-      "@typed/realworld/examples/*": [
-        "examples/realworld/examples/*"
+      "@typed/simple-fullstack/examples/*": [
+        "examples/simple-fullstack/examples/*"
       ],
       "@typed/simple-ssr": [
         "examples/simple-ssr/src/index.ts"

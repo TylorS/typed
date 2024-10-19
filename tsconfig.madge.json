@@ -271,17 +271,17 @@
       "@typed/fx-tracing/examples/*": [
         "examples/fx-tracing/build/examples/*"
       ],
-      "@typed/realworld": [
-        "examples/realworld/build/esm/index.js"
+      "@typed/simple-fullstack": [
+        "examples/simple-fullstack/build/esm/index.js"
       ],
-      "@typed/realworld/*": [
-        "examples/realworld/build/esm/*"
+      "@typed/simple-fullstack/*": [
+        "examples/simple-fullstack/build/esm/*"
       ],
-      "@typed/realworld/test/*": [
-        "examples/realworld/build/test/*"
+      "@typed/simple-fullstack/test/*": [
+        "examples/simple-fullstack/build/test/*"
       ],
-      "@typed/realworld/examples/*": [
-        "examples/realworld/build/examples/*"
+      "@typed/simple-fullstack/examples/*": [
+        "examples/simple-fullstack/build/examples/*"
       ],
       "@typed/simple-ssr": [
         "examples/simple-ssr/build/esm/index.js"
@@ -376,9 +376,9 @@
     "packages/fx-tracing/build/esm/**/*",
     "packages/fx-tracing/build/test/**/*",
     "packages/fx-tracing/build/examples/**/*",
-    "packages/realworld/build/esm/**/*",
-    "packages/realworld/build/test/**/*",
-    "packages/realworld/build/examples/**/*",
+    "packages/simple-fullstack/build/esm/**/*",
+    "packages/simple-fullstack/build/test/**/*",
+    "packages/simple-fullstack/build/examples/**/*",
     "packages/simple-ssr/build/esm/**/*",
     "packages/simple-ssr/build/test/**/*",
     "packages/simple-ssr/build/examples/**/*",
