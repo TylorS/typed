@@ -1,5 +1,13 @@
-# @typed/fx-tracing
+# @typed/simple-fullstack
 
-> WIP
+Barebones demonstration of server-side rendering with hydration.
 
-Docs: https://tylors.github.io/typed/docs/fx-tracing
+### Commands
+
+```sh
+# Run the dev server
+pnpm start
+
+# Build for production
+pnpm build
+```
