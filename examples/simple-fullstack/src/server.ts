@@ -1,8 +1,6 @@
-import type { Fx, RenderEvent } from "@typed/core"
-import { html } from "@typed/core"
+import { type Fx, html, type RenderEvent } from "@typed/core"
 import * as Node from "@typed/core/Node"
-import type { LayoutParams } from "@typed/core/Platform"
-import { toServerRouter } from "@typed/core/Platform"
+import { type LayoutParams, toServerRouter } from "@typed/core/Platform"
 import { router } from "./app"
 
 const layout = <Content extends Fx.Fx<RenderEvent | null, any, any>>({ content, script }: LayoutParams<Content>) =>

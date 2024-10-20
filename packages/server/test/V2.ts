@@ -7,7 +7,7 @@ import { Effect, flow, Layer, ManagedRuntime } from "effect"
 import getPort from "get-port"
 import { createServer } from "http"
 import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup } from "../src"
-import { HttpApiBuilderRouter } from "../src/HttpApiBuilder"
+import { HttpApiRouter } from "../src/HttpApiRouter"
 
 describe("V2", () => {
   it.effect("should work", () =>
@@ -49,7 +49,7 @@ describe("V2", () => {
         Layer.provide(
           NodeHttpServer.layer(createServer, { port: port as number })
         ), // Use the available port
-        Layer.provideMerge(HttpApiBuilderRouter.Live),
+        Layer.provideMerge(HttpApiRouter.Default),
         Layer.provideMerge(Router.layer(Route.end))
       )
 

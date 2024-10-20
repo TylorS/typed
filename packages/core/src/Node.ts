@@ -32,6 +32,21 @@ import { staticFiles } from "./Platform.js"
 const EFFECT_HANDLER = Symbol.for("@typed/core/Node/EffectHandler")
 const EFFECT_UPGRADE_HANDLER_TYPEID = Symbol.for("@typed/core/Node/EffectUpgradeHandler")
 
+const ALL_PROCESS_INTERRUPTS = [
+  "SIGINT",
+  "SIGTERM",
+  "SIGQUIT",
+  "SIGHUP",
+  "SIGBREAK",
+  "SIGUSR1",
+  "SIGUSR2",
+  "SIGKILL",
+  "SIGSTOP",
+  "SIGTSTP",
+  "SIGTTIN",
+  "SIGTTOU"
+]
+
 type Handler = (req: any, socket: any, head: any) => void
 
 type CombinedHandler = Handler & {
@@ -286,13 +301,10 @@ export const run = <A, E>(
 
   function onDispose() {
     clearInterval(keepAlive)
-    process.removeListener("SIGINT", onDispose)
-    process.removeListener("SIGTERM", onDispose)
     fiber.unsafeInterruptAsFork(fiber.id())
   }
 
-  process.once("SIGINT", onDispose)
-  process.once("SIGTERM", onDispose)
+  ALL_PROCESS_INTERRUPTS.forEach((signal) => process.once(signal, onDispose))
 
   if (import.meta.hot) {
     import.meta.hot.dispose(onDispose)

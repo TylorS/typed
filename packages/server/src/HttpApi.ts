@@ -70,6 +70,18 @@ export declare namespace HttpApi {
    * @category models
    */
   export type Context<A> = PlatformHttpApi.HttpApi.Context<A>
+
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export type Groups<A> = A extends HttpApi<infer Groups, any, any> ? Groups : never
+
+  /**
+   * @since 1.0.0
+   * @category models
+   */
+  export type Error<A> = A extends HttpApi<any, infer Error, any> ? Error : never
 }
 
 /**
