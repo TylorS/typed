@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 import * as HttpRouter from "./HttpRouter.js"
 
 /**
