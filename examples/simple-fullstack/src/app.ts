@@ -1,8 +1,4 @@
-import * as Fx from "@typed/fx"
-import * as RefSubject from "@typed/fx/RefSubject"
-import * as Route from "@typed/route"
-import * as Router from "@typed/router"
-import { html } from "@typed/template"
+import { Fx, html, RefSubject, Route, Router } from "@typed/core"
 
 const CounterRoute = Route.literal("counter")
 const Counter = Fx.gen(function*() {

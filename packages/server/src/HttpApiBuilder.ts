@@ -29,6 +29,7 @@ import * as HttpApiEndpoint from "./HttpApiEndpoint.js"
 import { HttpApiDecodeError } from "./HttpApiError.js"
 import type * as HttpApiGroup from "./HttpApiGroup.js"
 import * as HttpApiHandlers from "./HttpApiHandlers.js"
+import { HttpApiRouter } from "./HttpApiRouter.js"
 import * as HttpApiSchema from "./HttpApiSchema.js"
 import * as HttpApiSecurity from "./HttpApiSecurity.js"
 import * as HttpApp from "./HttpApp.js"
@@ -40,16 +41,6 @@ import * as HttpServer from "./HttpServer.js"
 import * as HttpServerRequest from "./HttpServerRequest.js"
 import * as HttpServerResponse from "./HttpServerResponse.js"
 import * as OpenApi from "./OpenApi.js"
-
-/**
- * The router that the API endpoints are attached to.
- *
- * @since 1.0.0
- * @category router
- */
-export class HttpApiBuilderRouter
-  extends HttpRouter.Tag("@typed/server/HttpApiBuilder/Router")<HttpApiBuilderRouter>()
-{}
 
 /**
  * Build an `HttpApp` from an `HttpApi` instance, and serve it using an
@@ -72,6 +63,7 @@ export const serve: {
     | HttpRouter.HttpRouter.DefaultServices
     | Exclude<R, Scope | HttpServerRequest.HttpServerRequest>
     | HttpApi.HttpApi.Service
+    | HttpApiRouter
   >
 } = (middleware?: HttpMiddleware.HttpMiddleware.Applied<any, never, any>): Layer.Layer<
   never,
@@ -80,8 +72,7 @@ export const serve: {
 > =>
   httpApp.pipe(
     Effect.map(HttpServer.serve(middleware!)),
-    Layer.unwrapEffect,
-    Layer.provide(HttpApiBuilderRouter.Live)
+    Layer.unwrapEffect
   )
 
 /**
@@ -93,10 +84,10 @@ export const serve: {
 export const httpApp: Effect.Effect<
   HttpApp.Default<never, HttpRouter.HttpRouter.DefaultServices>,
   never,
-  HttpApiBuilderRouter | HttpApi.HttpApi.Service
+  HttpApiRouter | HttpApi.HttpApi.Service
 > = Effect.gen(function*() {
   const api = yield* HttpApi.HttpApi
-  const router = yield* HttpApiBuilderRouter.router
+  const router = yield* HttpApiRouter.router
   const apiMiddleware = yield* Effect.serviceOption(Middleware)
   const errorSchema = makeErrorSchema(api as any)
   const encodeError = Schema.encodeUnknown(errorSchema)
@@ -139,14 +130,14 @@ export const httpApp: Effect.Effect<
  */
 export const toWebHandler = <R, ER>(
   runtime: ManagedRuntime<
-    R | HttpApi.HttpApi.Service | HttpApiBuilderRouter | HttpRouter.HttpRouter.DefaultServices,
+    R | HttpApi.HttpApi.Service | HttpApiRouter | HttpRouter.HttpRouter.DefaultServices,
     ER
   >,
   middleware?: (
     httpApp: HttpApp.Default
   ) => HttpApp.Default<
     never,
-    R | HttpApi.HttpApi.Service | HttpApiBuilderRouter | HttpRouter.HttpRouter.DefaultServices
+    R | HttpApi.HttpApi.Service | HttpApiRouter | HttpRouter.HttpRouter.DefaultServices
   >
 ): (request: Request) => Promise<Response> => {
   const handlerPromise = httpApp.pipe(
@@ -212,7 +203,7 @@ export const group = <
   EX,
   RX | RH | HttpApiGroup.HttpApiGroup.ContextWithName<Groups, Name> | ApiErrorR
 > =>
-  HttpApiBuilderRouter.use((router) =>
+  HttpApiRouter.use((router) =>
     Effect.gen(function*() {
       const context = yield* Effect.context<any>()
       const group = Chunk.findFirst(api.groups, (group) => group.identifier === groupName)
@@ -500,7 +491,7 @@ export const middlewareOpenApi = (
     readonly path?: PathInput | undefined
   } | undefined
 ): Layer.Layer<never, never, HttpApi.HttpApi.Service> =>
-  HttpApiBuilderRouter.use((router) =>
+  HttpApiRouter.use((router) =>
     Effect.gen(function*() {
       const api = yield* HttpApi.HttpApi
       const spec = OpenApi.fromApi(api)

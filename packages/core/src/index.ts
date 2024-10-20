@@ -30,6 +30,11 @@ export * as AsyncData from "./AsyncData.js"
 /**
  * @since 1.0.0
  */
+export * as Browser from "./Browser.js"
+
+/**
+ * @since 1.0.0
+ */
 export * as Context from "./Context.js"
 
 /**

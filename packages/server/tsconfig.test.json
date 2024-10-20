@@ -15,6 +15,9 @@
   ],
   "references": [
     {
+      "path": "../core/tsconfig.test.json"
+    },
+    {
       "path": "../context/tsconfig.test.json"
     },
     {

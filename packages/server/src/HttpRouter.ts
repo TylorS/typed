@@ -90,7 +90,8 @@ export namespace HttpRouter {
    * @since 1.0.0
    */
   export interface TagClass<Self, Name extends string, E, R> extends Context.TagClass<Self, Name, Service<E, R>> {
-    readonly Live: Layer.Layer<Self>
+    readonly Default: Layer.Layer<Self>
+    readonly layer: <R>(router: HttpRouter<E, R>) => Layer.Layer<Self, never, R>
     readonly router: Effect.Effect<HttpRouter<E, R>, never, Self>
     readonly use: <XA, XE, XR>(
       f: (router: Service<E, R>) => Effect.Effect<XA, XE, XR>
@@ -818,24 +819,24 @@ export const Tag = <const Name extends string>(id: Name) =>
       return creationError.stack
     }
   })
-  TagClass_.Live = Layer.sync(TagClass_, makeService)
+  TagClass_.Default = Layer.sync(TagClass_, makeService)
   TagClass_.router = Effect.flatMap(TagClass_, (_) => _.router)
   TagClass_.use = (f) =>
     Layer.effectDiscard(Effect.flatMap(TagClass_, f)).pipe(
-      Layer.provide(TagClass_.Live)
+      Layer.provide(TagClass_.Default)
     )
   TagClass_.useScoped = (f) =>
     TagClass_.pipe(
       Effect.flatMap(f),
       Layer.scopedDiscard,
-      Layer.provide(TagClass_.Live)
+      Layer.provide(TagClass_.Default)
     )
   TagClass_.unwrap = (f) =>
     TagClass_.pipe(
       Effect.flatMap((_) => _.router),
       Effect.map(f),
       Layer.unwrapEffect,
-      Layer.provide(TagClass_.Live)
+      Layer.provide(TagClass_.Default)
     )
   return TagClass as any
 }
