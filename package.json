@@ -19,7 +19,7 @@
     "build-all": "tsc -b tsconfig.build.json",
     "build-watch": "tsc -b tsconfig.build.json --watch",
     "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning packages/*/build/esm -x '(fx|template)/build/esm/(Computed|Filtered|vitest).js'",
-    "test": "vitest --run",
+    "test": "ultra -r test",
     "test-watch": "vitest",
     "autofix": "ultra -r autofix",
     "docs": "ultra -r docs && pnpm docs-cp",
