@@ -581,3 +581,15 @@ export const provideService = <R extends Router.MatchInput.Any, E2, R2, I, S>(
 > => {
   return provide(handler, Context.make(tag, service))
 }
+
+/**
+ * @since 1.0.0
+ */
+export const prefix = <Route extends Router.MatchInput.Any, E, R, Prefix extends Router.MatchInput.Any>(
+  handler: HttpRouteHandler<Route, E, R>,
+  prefix: Prefix
+): HttpRouteHandler<Router.MatchInput.Concat<Prefix, Route>, E, R> =>
+  make(handler.method)(
+    Router.concat(prefix, handler.route),
+    handler.handler as any
+  ) as any

@@ -1,14 +1,27 @@
 /**
  * @since 1.0.0
  */
-import type { HttpApiDecodeError } from "@effect/platform/HttpApiError"
+import {
+  HttpApiSchema,
+  HttpMethod,
+  HttpServerRequest,
+  HttpServerRespondable,
+  HttpServerResponse
+} from "@effect/platform"
+import { HttpApiDecodeError } from "@effect/platform/HttpApiError"
 import * as PlatformHttpApiGroup from "@effect/platform/HttpApiGroup"
-import type * as Schema from "@effect/schema/Schema"
-import type * as Router from "@typed/router"
-import * as Chunk from "effect/Chunk"
-import type * as Context from "effect/Context"
-import { dual } from "effect/Function"
+import * as Schema from "@effect/schema/Schema"
+import type { Route } from "@typed/route"
+import * as Router from "@typed/router"
+import type { Layer } from "effect"
+import { Chunk, Context, Effect, Option, Unify } from "effect"
+import { dual, flow } from "effect/Function"
+import type { Mutable } from "effect/Types"
 import * as HttpApiEndpoint from "./HttpApiEndpoint.js"
+import * as HttpApiHandlers from "./HttpApiHandlers.js"
+import { HttpApiRouter } from "./HttpApiRouter.js"
+import * as HttpRouteHandler from "./HttpRouteHandler.js"
+import { fromIterable } from "./HttpRouter.js"
 
 /**
  * @since 1.0.0
@@ -286,3 +299,194 @@ export const annotateEndpoints: {
   <I, S>(tag: Context.Tag<I, S>, value: S): <A extends HttpApiGroup.Any>(self: A) => A
   <A extends HttpApiGroup.Any, I, S>(self: A, tag: Context.Tag<I, S>, value: S): A
 } = PlatformHttpApiGroup.annotateEndpoints
+
+/**
+ * @since 1.0.0
+ */
+export const build = <
+  Name extends string,
+  Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any,
+  Error,
+  ErrorR,
+  EH,
+  RH,
+  EX = never,
+  RX = never
+>(
+  group: HttpApiGroup<Name, Endpoints, Error, ErrorR>,
+  builder: (
+    handlers: HttpApiHandlers.HttpApiHandlers<never, ErrorR, HttpApiGroup.Endpoints<typeof group>>
+  ) =>
+    | HttpApiHandlers.HttpApiHandlers<EH | HttpApiGroup.Error<typeof group>, RH>
+    | Effect.Effect<
+      HttpApiHandlers.HttpApiHandlers<EH | HttpApiGroup.Error<typeof group>, RH>,
+      EX,
+      RX
+    >
+): Layer.Layer<
+  HttpApiGroup.ToService<typeof group>,
+  EX,
+  RH | RX | HttpApiGroup.ContextWithName<typeof group, Name> | HttpApiRouter
+> =>
+  HttpApiRouter.use((router) =>
+    Effect.gen(function*() {
+      const context = yield* Effect.context<any>()
+      const currentRoute = Context.getOption(context, Router.CurrentRoute)
+      const result = builder(HttpApiHandlers.makeHandlers({ group, handlers: Chunk.empty() }))
+      const { handlers } = Effect.isEffect(result) ? (yield* result) : result
+      const routes: Array<HttpRouteHandler.HttpRouteHandler<any, any, any>> = []
+
+      for (const item of handlers) {
+        if (item._tag === "Middleware") {
+          for (const route of routes) {
+            const handler = route.handler
+            ;(route as Mutable<HttpRouteHandler.HttpRouteHandler<any, any, any>>).handler = item.middleware(
+              Option.match(
+                currentRoute,
+                {
+                  onNone: () => handler as any,
+                  onSome: (currentRoute) => HttpRouteHandler.prefix(handler as any, currentRoute.route)
+                }
+              )
+            )
+          }
+        } else {
+          routes.push(apiHandlerToRouteHandler(
+            Option.match(
+              currentRoute,
+              {
+                onNone: () => item.endpoint,
+                onSome: (currentRoute) => HttpApiEndpoint.prefix(item.endpoint, currentRoute.route)
+              }
+            ),
+            function(request) {
+              return Effect.mapInputContext(
+                item.handler(request),
+                (input) => Context.merge(context, input)
+              )
+            },
+            item.withFullResponse
+          ))
+        }
+      }
+
+      yield* router.concat(fromIterable(routes))
+    })
+  ) as any
+
+// internal
+
+const requestPayload = (
+  request: HttpServerRequest.HttpServerRequest,
+  urlParams: URLSearchParams,
+  isMultipart: boolean
+) =>
+  Unify.unify(
+    HttpMethod.hasBody(request.method)
+      ? isMultipart
+        ? Effect.orDie(request.multipart)
+        : Effect.orDie(request.json)
+      : Effect.succeed(urlParams)
+  )
+
+const apiHandlerToRouteHandler = (
+  endpoint: HttpApiEndpoint.HttpApiEndpoint.Any,
+  handler: HttpApiEndpoint.HttpApiEndpoint.Handler<any, any, any>,
+  isFullResponse: boolean
+): HttpRouteHandler.HttpRouteHandler<Route.Any, any, any> => {
+  const isMultipart = endpoint.payloadSchema.pipe(
+    Option.map((schema) => HttpApiSchema.getMultipart(schema.ast)),
+    Option.getOrElse(() => false)
+  )
+  const decodePayload = Option.map(endpoint.payloadSchema as Option.Option<Schema.Schema.Any>, Schema.decodeUnknown)
+    .pipe(
+      Option.map((_) => flow(_, Effect.catchAll(HttpApiDecodeError.refailParseError)))
+    )
+  const decodeHeaders = Option.map(endpoint.headersSchema as Option.Option<Schema.Schema.Any>, Schema.decodeUnknown)
+    .pipe(
+      Option.map((_) => flow(_, Effect.catchAll(HttpApiDecodeError.refailParseError)))
+    )
+  const encoding = HttpApiSchema.getEncoding(endpoint.successSchema.ast)
+  const successStatus = HttpApiSchema.getStatusSuccess(endpoint.successSchema)
+  const encodeSuccess = Option.map(HttpApiEndpoint.schemaSuccess(endpoint), (schema) => {
+    const encode = Schema.encodeUnknown(schema)
+    switch (encoding.kind) {
+      case "Json": {
+        return (body: unknown) =>
+          Effect.orDie(
+            Effect.flatMap(encode(body), (json) =>
+              HttpServerResponse.json(json, {
+                status: successStatus,
+                contentType: encoding.contentType
+              }))
+          )
+      }
+      case "Text": {
+        return (body: unknown) =>
+          Effect.map(Effect.orDie(encode(body)), (text) =>
+            HttpServerResponse.text(text as any, {
+              status: successStatus,
+              contentType: encoding.contentType
+            }))
+      }
+      case "Uint8Array": {
+        return (body: unknown) =>
+          Effect.map(Effect.orDie(encode(body)), (data) =>
+            HttpServerResponse.uint8Array(data as any, {
+              status: successStatus,
+              contentType: encoding.contentType
+            }))
+      }
+      case "UrlParams": {
+        return (body: unknown) =>
+          Effect.map(Effect.orDie(encode(body)), (params) =>
+            HttpServerResponse.urlParams(params as any, {
+              status: successStatus,
+              contentType: encoding.contentType
+            }))
+      }
+    }
+  }).pipe(
+    Option.map((_) => flow(_, Effect.catchAll(HttpApiDecodeError.refailParseError)))
+  )
+
+  return HttpRouteHandler.make(endpoint.method)(
+    endpoint.route as any,
+    Effect.gen(function*() {
+      const request = yield* HttpServerRequest.HttpServerRequest
+      const { params, queryParams } = (yield* HttpRouteHandler.CurrentParams) as HttpRouteHandler.CurrentParams<
+        typeof endpoint.route
+      >
+
+      const input: {
+        path: any
+        payload?: unknown
+        headers?: unknown
+      } = {
+        path: params
+      }
+
+      if (Option.isSome(decodePayload)) {
+        input.payload = yield* requestPayload(request, queryParams, isMultipart).pipe(
+          Effect.flatMap((raw) => decodePayload.value(raw))
+        )
+      }
+
+      if (Option.isSome(decodeHeaders)) {
+        input.headers = yield* decodeHeaders.value(request.headers)
+      }
+
+      const response = yield* handler(input as any)
+
+      if (isFullResponse) {
+        return yield* HttpServerRespondable.toResponse(response as any)
+      }
+
+      if (Option.isSome(encodeSuccess)) {
+        return yield* encodeSuccess.value(response)
+      }
+
+      return yield* HttpServerResponse.empty({ status: successStatus })
+    })
+  )
+}

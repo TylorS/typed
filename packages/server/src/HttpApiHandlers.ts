@@ -3,6 +3,7 @@
  */
 import type { HttpApp, HttpRouter } from "@effect/platform"
 import { type Chunk, identity, type Types } from "effect"
+import type { Pipeable } from "effect/Pipeable"
 import { pipeArguments } from "effect/Pipeable"
 import type * as HttpApiEndpoint from "./HttpApiEndpoint.js"
 import type * as HttpApiGroup from "./HttpApiGroup.js"
@@ -25,7 +26,7 @@ export interface HttpApiHandlers<
   E,
   R,
   Endpoints extends HttpApiEndpoint.HttpApiEndpoint.Any = never
-> {
+> extends Pipeable {
   readonly [HttpApiHandlersTypeId]: {
     readonly _Endpoints: Types.Covariant<Endpoints>
   }

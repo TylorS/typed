@@ -1,12 +1,11 @@
 import type { HttpServerResponse } from "@effect/platform"
 import { HttpServerError, HttpServerRequest, HttpServerRespondable } from "@effect/platform"
-
 import * as Navigation from "@typed/navigation"
 import { removeTrailingSlash } from "@typed/path"
 import * as Route from "@typed/route"
 import { asRouteGuard, CurrentRoute, getRoute, makeCurrentRoute, type MatchInput } from "@typed/router"
-import { groupBy, sortBy } from "effect/Array"
-import type { Chunk } from "effect/Chunk"
+import * as Array from "effect/Array"
+import type * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Effectable from "effect/Effectable"
 import { pipe } from "effect/Function"
@@ -37,8 +36,8 @@ export class RouterImpl<E, R, E2, R2> extends Effectable.StructuralClass<
   >
 
   constructor(
-    readonly routes: Chunk<HttpRouteHandler<MatchInput.Any, E, R>>,
-    readonly mounts: Chunk<Mount<E2, R2>>
+    readonly routes: Chunk.Chunk<HttpRouteHandler<MatchInput.Any, E, R>>,
+    readonly mounts: Chunk.Chunk<Mount<E2, R2>>
   ) {
     super()
   }
@@ -74,9 +73,10 @@ function toHttpApp<E, R>(
   | HttpServerRequest.HttpServerRequest
 > {
   const routesByMethod = Record.map(
-    groupBy(router.routes, (route) => route.method),
-    sortBy(routePartsOrder)
+    Array.groupBy(router.routes, (route) => route.method),
+    Array.sortBy(routePartsOrder)
   )
+
   const hasMounts = router.mounts.length > 0
 
   // Translate "all" routes to all methods for quick lookup
@@ -84,7 +84,7 @@ function toHttpApp<E, R>(
     allMethods.forEach((method) => {
       routesByMethod[method].push(...routesByMethod["*"])
       // Re-sort the routes
-      routesByMethod[method] = pipe(routesByMethod[method], sortBy(routePartsOrder))
+      routesByMethod[method] = pipe(routesByMethod[method], Array.sortBy(routePartsOrder))
     })
   }
 
@@ -126,6 +126,36 @@ function toHttpApp<E, R>(
       return Option.none()
     })
 
+  const runRoutes = Effect.gen(function*(_) {
+    const { existingParams, path, request, url } = yield* setupRouteContext
+    const routes = routesByMethod[request.method]
+
+    yield* _(Effect.logDebug(`Checking routes for method: ${request.method} at URL: ${url.href}`))
+
+    if (routes !== undefined) {
+      for (const { handler, route } of routes) {
+        const routePath = getRoute(route).path
+        yield* Effect.logDebug(`Checking route: ${routePath}`)
+        const response = yield* runRouteMatcher(
+          route,
+          handler,
+          path,
+          url,
+          existingParams
+        )
+
+        if (Option.isSome(response)) {
+          yield* Effect.logDebug(`Route matched: ${routePath}`)
+
+          return response.value
+        }
+      }
+    }
+
+    // No route found
+    return yield* new HttpServerError.RouteNotFound({ request })
+  })
+
   if (hasMounts) {
     return Effect.gen(function*(_) {
       const data = yield* setupRouteContext
@@ -138,60 +168,10 @@ function toHttpApp<E, R>(
         return response.value
       }
 
-      const { existingParams, path, request, url } = data
-      const routes = routesByMethod[request.method]
-      if (routes !== undefined) {
-        for (const { handler, route } of routes) {
-          const routePath = getRoute(route).path
-          yield* Effect.logDebug(`Checking route: ${routePath}`)
-          const response = yield* runRouteMatcher(
-            route,
-            handler,
-            path,
-            url,
-            existingParams
-          )
-
-          if (Option.isSome(response)) {
-            yield* Effect.logDebug(`Route matched: ${routePath}`)
-            return response.value
-          }
-        }
-      }
-
-      // No route found
-      return yield* new HttpServerError.RouteNotFound({ request: data.request })
+      return yield* runRoutes
     })
   } else {
-    return Effect.gen(function*(_) {
-      const { existingParams, path, request, url } = yield* setupRouteContext
-      const routes = routesByMethod[request.method]
-
-      yield* _(Effect.logDebug(`Checking routes for method: ${request.method} at URL: ${url.href}`))
-
-      if (routes !== undefined) {
-        for (const { handler, route } of routes) {
-          const routePath = getRoute(route).path
-          yield* Effect.logDebug(`Checking route: ${routePath}`)
-          const response = yield* runRouteMatcher(
-            route,
-            handler,
-            path,
-            url,
-            existingParams
-          )
-
-          if (Option.isSome(response)) {
-            yield* Effect.logDebug(`Route matched: ${routePath}`)
-
-            return response.value
-          }
-        }
-      }
-
-      // No route found
-      return yield* new HttpServerError.RouteNotFound({ request })
-    })
+    return runRoutes
   }
 }
 

@@ -41,6 +41,10 @@ export * as HttpApiHandlers from "./HttpApiHandlers.js"
 /**
  * @since 1.0.0
  */
+export * as HttpApiRouter from "./HttpApiRouter.js"
+/**
+ * @since 1.0.0
+ */
 export * as HttpApiSchema from "./HttpApiSchema.js"
 /**
  * @since 1.0.0

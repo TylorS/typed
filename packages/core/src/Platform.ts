@@ -5,7 +5,6 @@
 /// <reference types="vite/client" />
 /// <reference types="@typed/vite-plugin-types" />
 
-import type { BadArgument, PlatformError } from "@effect/platform/Error"
 import { FileSystem } from "@effect/platform/FileSystem"
 import * as Headers from "@effect/platform/Headers"
 import type * as HttpApp from "@effect/platform/HttpApp"
@@ -19,7 +18,8 @@ import * as RefSubject from "@typed/fx/RefSubject"
 import * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
 import * as Router from "@typed/router"
-import { HttpRouteHandler, HttpRouter as ServerRouter } from "@typed/server"
+import { HttpApiRouter, HttpRouteHandler, HttpRouter as ServerRouter } from "@typed/server"
+import { middlewareLayer } from "@typed/server/HttpApiBuilder.js"
 import type { RenderContext, RenderQueue, RenderTemplate } from "@typed/template"
 import { getUrlFromServerRequest, htmlResponse } from "@typed/template/Platform"
 import type { RenderEvent } from "@typed/template/RenderEvent"
@@ -196,7 +196,7 @@ export function toHttpRouter<
           Effect.provide(
             Layer.mergeAll(
               Navigation.initialMemory({ url, base: options?.base }),
-              Router.layer(baseRoute)
+              Router.prefix(baseRoute)
             )
           ),
           Effect.withSpan("check_route_guards"),
@@ -211,6 +211,24 @@ export function toHttpRouter<
 }
 
 /**
+ * @since 1.0.0
+ */
+export type StaticFilesOptions = {
+  readonly serverOutputDirectory: string
+  readonly enabled: boolean
+  readonly options: TypedOptions
+  readonly cacheControl?: (filePath: string) => {
+    readonly maxAge: number
+    readonly immutable?: boolean
+  }
+}
+
+/**
+ * @since 1.0.0
+ */
+export type StaticFilesContext = HttpServerRequest | FileSystem | Path | HttpPlatform
+
+/**
  * A very simple static file middleware with support for gzip'd files.
  *
  * @since 1.0.0
@@ -220,20 +238,12 @@ export function staticFiles({
   enabled,
   options,
   serverOutputDirectory
-}: {
-  serverOutputDirectory: string
-  enabled: boolean
-  options: TypedOptions
-  cacheControl?: (filePath: string) => {
-    readonly maxAge: number
-    readonly immutable?: boolean
-  }
-}): <E, R>(
+}: StaticFilesOptions): <E, R>(
   self: HttpApp.Default<E, R>
 ) => Effect.Effect<
   HttpServerResponse.HttpServerResponse,
-  E | BadArgument | PlatformError,
-  HttpServerRequest | R | HttpPlatform | FileSystem | Path
+  E,
+  R | StaticFilesContext
 > {
   if (!enabled) {
     return identity as any
@@ -242,8 +252,8 @@ export function staticFiles({
   return <E, R>(
     self: HttpApp.Default<E, R>
   ): HttpApp.Default<
-    E | BadArgument | PlatformError,
-    HttpServerRequest | HttpPlatform | FileSystem | Path | R
+    E,
+    R | StaticFilesContext
   > => {
     return Effect.gen(function*() {
       const request = yield* HttpServerRequest
@@ -262,19 +272,32 @@ export function staticFiles({
             gzipHeaders(filePath, cacheControl)
           ),
           contentType: getContentType(filePath)
-        })
+        }).pipe(
+          Effect.orDie
+        )
       } else if (yield* isFile(fs, filePath)) {
         // TODO: We should support gzip'ing files on the fly
         return yield* HttpServerResponse.file(filePath, {
           headers: Headers.unsafeFromRecord(
             cacheControlHeaders(filePath, cacheControl)
           )
-        })
+        }).pipe(
+          Effect.orDie
+        )
       } else {
         return yield* self
       }
     })
   }
+}
+
+/**
+ * @since 1.0.0
+ */
+export function staticFilesMiddleware(
+  options: StaticFilesOptions
+): Layer.Layer<never, never, Exclude<StaticFilesContext, HttpServerRequest>> {
+  return middlewareLayer<StaticFilesContext>(staticFiles(options), { withContext: true })
 }
 
 function isFile(fs: FileSystem, path: string) {
@@ -491,27 +514,62 @@ export function toServerRouter<
   const baseRoute = Route.parse(options?.base ?? "/")
 
   for (const [path, matches] of Object.entries(guardsByPath)) {
-    if (matches.length === 1) {
-      router = ServerRouter.addHandler(
-        router,
-        fromMatches(baseRoute, matches[0].route, matches, head, script, options)
+    router = ServerRouter.addHandler(
+      router,
+      fromMatches(
+        baseRoute,
+        Route.parse(path),
+        matches,
+        head,
+        script,
+        options
       )
-    } else {
-      router = ServerRouter.addHandler(
-        router,
-        fromMatches(
-          baseRoute,
-          Route.parse(path),
-          matches,
-          head,
-          script,
-          options
-        )
-      )
-    }
+    )
   }
 
   return router
+}
+
+/**
+ * @since 1.0.0
+ */
+export function toHttpApiRouter<
+  M extends Router.RouteMatch.RouteMatch<
+    Route.Route.Any,
+    any,
+    any,
+    any,
+    RenderEvent | null,
+    any,
+    any
+  >,
+  E2 = never,
+  R2 = never
+>(
+  matcher: Router.RouteMatcher<M>,
+  options?: {
+    clientEntry?: string
+    layout?: LayoutTemplate<
+      Fx.Fx<
+        RenderEvent | null,
+        Router.RouteMatch.RouteMatch.Error<M>,
+        Router.RouteMatch.RouteMatch.Context<M>
+      >,
+      E2,
+      R2
+    >
+    base?: string
+  }
+): Layer.Layer<
+  HttpApiRouter.HttpApiRouter,
+  never,
+  | Exclude<Exclude<R2, Navigation.Navigation | Router.CurrentRoute>, HttpServerRequest>
+  | Exclude<
+    Exclude<Router.RouteMatch.RouteMatch.Context<M>, Navigation.Navigation | Router.CurrentRoute>,
+    HttpServerRequest
+  >
+> {
+  return HttpApiRouter.layer(toServerRouter(matcher, options))
 }
 
 const fromMatches = <R extends Route.Route.Any>(
@@ -533,7 +591,6 @@ const fromMatches = <R extends Route.Route.Any>(
 
       return Effect.gen(function*() {
         yield* Effect.logDebug(`Attempting guards`)
-
         const currentRoute = yield* Router.CurrentRoute
 
         for (const match of matches) {
@@ -582,14 +639,12 @@ const fromMatches = <R extends Route.Route.Any>(
           }
         }
 
-        return yield* Effect.fail(
-          new GuardsNotMatched({ request, route, matches })
-        )
+        return yield* new GuardsNotMatched({ request, route, matches })
       }).pipe(
         Effect.provide(
           Layer.mergeAll(
             Navigation.initialMemory({ url, base: options?.base }),
-            Router.layer(baseRoute)
+            Router.prefix(baseRoute)
           )
         ),
         Effect.withSpan("check_route_guards"),

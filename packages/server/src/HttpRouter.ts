@@ -2,12 +2,12 @@
  * @since 1.0.0
  */
 
-import type { HttpApp, HttpMethod, HttpServerError, HttpServerResponse } from "@effect/platform"
+import type { HttpApp, HttpMethod, HttpServerError, HttpServerRequest, HttpServerResponse } from "@effect/platform"
 import { HttpRouter as PlatformHttpRouter, HttpServerRespondable } from "@effect/platform"
 import * as Context from "@typed/context"
 import type * as Navigation from "@typed/navigation"
 import * as Route from "@typed/route"
-import type * as TypedRouter from "@typed/router"
+import * as TypedRouter from "@typed/router"
 import * as MatchInput from "@typed/router/MatchInput"
 import type { Scope } from "effect"
 import { Layer } from "effect"
@@ -59,7 +59,7 @@ export namespace HttpRouter {
    */
   export type ExcludeProvided<R> = Exclude<
     R,
-    HttpRouteHandler.CurrentParams<any> | Navigation.Navigation
+    HttpRouteHandler.CurrentParams<any> | Navigation.Navigation | HttpServerRequest.HttpServerRequest
   >
 
   /**
@@ -91,17 +91,19 @@ export namespace HttpRouter {
    */
   export interface TagClass<Self, Name extends string, E, R> extends Context.TagClass<Self, Name, Service<E, R>> {
     readonly Default: Layer.Layer<Self>
-    readonly layer: <R>(router: HttpRouter<E, R>) => Layer.Layer<Self, never, R>
+    readonly layer: <E2, R2>(
+      router: HttpRouter<E2, R2>
+    ) => Layer.Layer<Self, never, HttpRouter.ExcludeProvided<R2>>
     readonly router: Effect.Effect<HttpRouter<E, R>, never, Self>
     readonly use: <XA, XE, XR>(
       f: (router: Service<E, R>) => Effect.Effect<XA, XE, XR>
-    ) => Layer.Layer<never, XE, XR>
+    ) => Layer.Layer<never, XE, XR | Self>
     readonly useScoped: <XA, XE, XR>(
       f: (router: Service<E, R>) => Effect.Effect<XA, XE, XR>
-    ) => Layer.Layer<never, XE, Exclude<XR, Scope.Scope>>
+    ) => Layer.Layer<never, XE, Exclude<XR, Scope.Scope> | Self>
     readonly unwrap: <XA, XE, XR>(
       f: (router: HttpRouter<E, R>) => Layer.Layer<XA, XE, XR>
-    ) => Layer.Layer<XA, XE, XR>
+    ) => Layer.Layer<XA, XE, XR | Self>
   }
 }
 
@@ -819,30 +821,25 @@ export const Tag = <const Name extends string>(id: Name) =>
       return creationError.stack
     }
   })
-  TagClass_.Default = Layer.sync(TagClass_, makeService)
+  TagClass_.Default = Layer.sync(TagClass_, () => makeService(empty) as any)
+  TagClass_.layer = (router) => Layer.succeed(TagClass_, makeService(router) as any)
   TagClass_.router = Effect.flatMap(TagClass_, (_) => _.router)
-  TagClass_.use = (f) =>
-    Layer.effectDiscard(Effect.flatMap(TagClass_, f)).pipe(
-      Layer.provide(TagClass_.Default)
-    )
+  TagClass_.use = (f) => Layer.effectDiscard(Effect.flatMap(TagClass_, f))
   TagClass_.useScoped = (f) =>
     TagClass_.pipe(
       Effect.flatMap(f),
-      Layer.scopedDiscard,
-      Layer.provide(TagClass_.Default)
+      Layer.scopedDiscard
     )
   TagClass_.unwrap = (f) =>
     TagClass_.pipe(
       Effect.flatMap((_) => _.router),
       Effect.map(f),
-      Layer.unwrapEffect,
-      Layer.provide(TagClass_.Default)
+      Layer.unwrapEffect
     )
   return TagClass as any
 }
 
-const makeService = <E, R>(): HttpRouter.Service<E, R> => {
-  let router = empty as HttpRouter<E, R>
+const makeService = <E, R>(router: HttpRouter<E, R>): HttpRouter.Service<E, R> => {
   return {
     router: Effect.sync(() => router),
     addHandler(handler) {
@@ -876,3 +873,15 @@ export function fromIterable<E, R>(
 ): HttpRouter<E, R> {
   return new RouterImpl(Chunk.fromIterable(handlers), Chunk.empty())
 }
+
+/**
+ * @since 1.0.0
+ */
+export const prefix = <E, R, Prefix extends TypedRouter.MatchInput.Any>(
+  router: HttpRouter<E, R>,
+  prefix: Prefix
+): HttpRouter<E, R> =>
+  new RouterImpl(
+    Chunk.map(router.routes, (handler) => HttpRouteHandler.prefix(handler, prefix)),
+    Chunk.map(router.mounts, (mount) => new Mount(TypedRouter.concat(prefix, mount.prefix), mount.app, mount.options))
+  )

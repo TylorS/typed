@@ -489,7 +489,6 @@ function patchHistory(window: Window, onEvent: (event: HistoryEvent) => void) {
 
   Object.defineProperty(history, "state", {
     get() {
-      console.log("here")
       return getOriginalState(getStateDescriptor?.() ?? history.state)
     },
     set(value) {

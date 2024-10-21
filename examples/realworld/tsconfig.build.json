@@ -1,0 +1,31 @@
+{
+  "extends": [
+    "../../tsconfig.base.json"
+  ],
+  "compilerOptions": {
+    "outDir": "build/esm",
+    "declarationDir": "build/dts",
+    "tsBuildInfoFile": "build/tsbuildinfo/esm.tsbuildinfo",
+    "rootDir": "src"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/fx/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/route/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/router/tsconfig.build.json"
+    },
+    {
+      "path": "../../packages/template/tsconfig.build.json"
+    }
+  ]
+}

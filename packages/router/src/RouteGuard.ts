@@ -203,15 +203,16 @@ export const concat: {
   >(
     Route.concat(self.route, other.route) as any,
     (input) =>
-      Effect.Do.pipe(
-        Effect.bind("a", () => self.guard(input)),
-        Effect.bind("b", () => other.guard(input)),
-        Effect.map((options) =>
-          Option.map(
-            Option.all(options),
-            ({ a, b }) => ({ ...a, ...b }) as RouteGuard.Success<L> & RouteGuard.Success<R>
-          )
-        )
-      )
+      Effect.gen(function*() {
+        const aParams = self.route.match(input)
+        if (Option.isNone(aParams)) return Option.none()
+        const aGuardParams = yield* self.guard(input)
+        if (Option.isNone(aGuardParams)) return Option.none()
+        const aBasePath = self.route.interpolate(aParams)
+        const bPath = input.replace(aBasePath, "")
+        const bGuardParams = yield* other.guard(bPath)
+        if (Option.isNone(bGuardParams)) return Option.none()
+        return Option.some({ ...aGuardParams.value, ...bGuardParams.value } as any)
+      })
   )
 })

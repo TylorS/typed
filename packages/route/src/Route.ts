@@ -10,6 +10,7 @@ import type { NanoId } from "@typed/id/NanoId"
 import * as ID from "@typed/id/Schema"
 import type { Uuid } from "@typed/id/Uuid"
 import * as Path from "@typed/path"
+import type { NonEmptyArray } from "effect/Array"
 import { sortBy } from "effect/Array"
 import type { BigDecimal } from "effect/BigDecimal"
 import type { NoSuchElementException } from "effect/Cause"
@@ -880,6 +881,7 @@ export const decode: {
   route: R,
   path: string
 ): Effect.Effect<Route.Type<R>, NoSuchElementException | RouteDecodeError<R>, Route.Context<R>> {
+  console.log("decode", { route, path })
   const params = route.match(path) as Option.Option<Route.Params<R>>
   const decode = flow(
     Sch.decode(route.schema),
@@ -890,7 +892,12 @@ export const decode: {
     Route.Context<R>
   >
 
-  return Effect.flatMap(params, decode)
+  return Effect.flatMap(params, decode).pipe(
+    Effect.tapBoth({
+      onFailure: (error) => Effect.logError(`Route decode error: ${error}`),
+      onSuccess: (params) => Effect.logDebug(`Route decoded: ${JSON.stringify(params)}`)
+    })
+  )
 })
 
 /**
@@ -1222,11 +1229,16 @@ export const Order: Ord.Order<Route.Any> = Ord.make((a, b) => {
  */
 export function sortRoutes<Routes extends ReadonlyArray<Route.Any>>(
   routes: Routes
-): Routes extends ReadonlyArray<infer R> ? ReadonlyArray<R> : never {
+): Routes extends NonEmptyArray<infer R> ? NonEmptyArray<R>
+  : Routes extends ReadonlyArray<infer R> ? ReadonlyArray<R>
+  : never
+{
   return sortBy(Order)(routes) as any
 }
 
 function guessComplexity(part: string): number {
+  if (part === "") return -1
+
   let complexity: number = 0
 
   for (let i = 0; i < part.length; i++) {

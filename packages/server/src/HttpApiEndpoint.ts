@@ -244,14 +244,15 @@ export const make =
     input: R
   ): HttpApiEndpoint<Name, Method, R> => {
     const { route } = MatchInput.asRouteGuard(input)
-
-    return Object.assign(
+    const endpoint = Object.assign(
       PlatformHttpApiEndpoint.make(method)(
         name,
         MatchInput.getPath(route) as PathInput
       ).pipe(PlatformHttpApiEndpoint.setPath(route.pathSchema)),
       { route: input }
     ) as any
+
+    return endpoint
   }
 
 /**
@@ -720,8 +721,8 @@ export const prefix: {
   <A extends HttpApiEndpoint.Any, Prefix extends MatchInput.MatchInput.Any>(
     self: A,
     prefix: Prefix
-  ): HttpApiEndpoint.WithPrefix<Prefix, A> =>
-    pipe(
+  ): HttpApiEndpoint.WithPrefix<Prefix, A> => {
+    return pipe(
       self,
       PlatformHttpApiEndpoint.prefix(MatchInput.getPath(prefix) as PathInput),
       (x) =>
@@ -729,6 +730,7 @@ export const prefix: {
           route: MatchInput.concat(prefix, self.route)
         }) as any
     )
+  }
 )
 
 /**

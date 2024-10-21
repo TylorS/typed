@@ -11,7 +11,7 @@ import * as Route from "@typed/route"
 import type { Cause } from "effect"
 import * as Effect from "effect/Effect"
 import { dual, pipe } from "effect/Function"
-import type * as Layer from "effect/Layer"
+import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 
 /**
@@ -101,6 +101,22 @@ export const withCurrentRoute: {
       )
     })
 )
+
+/**
+ * @since 1.0.0
+ */
+export const prefix = <R extends Route.Route.Any>(route: R): Layer.Layer<CurrentRoute> =>
+  Layer.fresh(Layer.effectContext(Effect.contextWith<never, Context.Context<CurrentRoute>>((ctx) => {
+    const parent = Context.getOption(ctx, CurrentRoute)
+
+    if (Option.isNone(parent)) {
+      return CurrentRoute.context(makeCurrentRoute(route))
+    }
+
+    return CurrentRoute.context(
+      makeCurrentRoute(parent.value.route.concat(route), parent)
+    )
+  })))
 
 const makeHref_ = (
   currentPath: string,

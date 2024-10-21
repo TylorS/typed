@@ -1,0 +1,36 @@
+{
+  "name": "@typed/example-realworld",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tylors/typed.git"
+  },
+  "homepage": "https://github.com/tylors/typed",
+  "scripts": {
+    "build": "vavite",
+    "start": "vite --config ./vite.config.mts serve --force src"
+  },
+  "keywords": [],
+  "author": "Typed contributors",
+  "license": "MIT",
+  "sideEffects": [],
+  "dependencies": {
+    "@effect/platform": "^0.66.2",
+    "@effect/platform-node": "^0.61.3",
+    "@effect/schema": "^0.74.1",
+    "@typed/core": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/route": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/server": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "3.8.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "vavite": "^4.1.1",
+    "@typed/vite-plugin": "workspace:*"
+  }
+}

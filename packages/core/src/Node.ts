@@ -5,7 +5,7 @@
 /// <reference types="vite/client" />
 /// <reference types="@typed/vite-plugin-types" />
 
-import type { HttpApp, HttpServerError, HttpServerRequest } from "@effect/platform"
+import type { Etag, HttpApp, HttpServerError, HttpServerRequest } from "@effect/platform"
 import { HttpMiddleware, HttpServer } from "@effect/platform"
 import { NodeContext, NodeHttpServer } from "@effect/platform-node"
 import type { HttpPlatform } from "@effect/platform/HttpPlatform"
@@ -27,24 +27,17 @@ import { createServer } from "node:http"
 import viteHttpServer from "vavite/http-dev-server"
 import * as typedOptions from "virtual:typed-options"
 import * as CoreServices from "./CoreServices.js"
-import { staticFiles } from "./Platform.js"
+import { staticFiles, staticFilesMiddleware } from "./Platform.js"
 
 const EFFECT_HANDLER = Symbol.for("@typed/core/Node/EffectHandler")
 const EFFECT_UPGRADE_HANDLER_TYPEID = Symbol.for("@typed/core/Node/EffectUpgradeHandler")
 
-const ALL_PROCESS_INTERRUPTS = [
+const ALL_PROCESS_INTERRUPTS: Array<NodeJS.Signals> = [
+  "SIGABRT",
   "SIGINT",
-  "SIGTERM",
   "SIGQUIT",
-  "SIGHUP",
-  "SIGBREAK",
-  "SIGUSR1",
-  "SIGUSR2",
-  "SIGKILL",
-  "SIGSTOP",
-  "SIGTSTP",
-  "SIGTTIN",
-  "SIGTTOU"
+  "SIGTERM",
+  "SIGKILL"
 ]
 
 type Handler = (req: any, socket: any, head: any) => void
@@ -279,6 +272,34 @@ export const listen: {
 /**
  * @since 1.0.0
  */
+export const layer = (
+  options: Options
+): Layer.Layer<
+  | HttpPlatform
+  | HttpServer.HttpServer
+  | Etag.Generator
+  | NodeContext.NodeContext
+  | CurrentEnvironment
+  | GetRandomValues
+  | CurrentRoute
+  | RenderContext.RenderContext
+  | RenderQueue.RenderQueue
+  | RenderTemplate,
+  HttpServerError.ServeError
+> =>
+  staticFilesMiddleware({
+    serverOutputDirectory: options.serverDirectory,
+    enabled: options?.serveStatic ?? import.meta.env.PROD,
+    options: typedOptions,
+    cacheControl: options?.cacheControl ?? defaultCacheControl
+  }).pipe(
+    Layer.provideMerge(NodeHttpServer.layer(getOrCreateServer, options)),
+    Layer.provideMerge(options.static ? CoreServices.static : CoreServices.server)
+  )
+
+/**
+ * @since 1.0.0
+ */
 export const run = <A, E>(
   effect: Effect.Effect<A, E, NodeContext.NodeContext | CurrentEnvironment | CurrentRoute>,
   options?: RunForkOptions & { readonly static?: boolean; readonly base?: string }
@@ -301,6 +322,7 @@ export const run = <A, E>(
 
   function onDispose() {
     clearInterval(keepAlive)
+    ALL_PROCESS_INTERRUPTS.forEach((signal) => process.off(signal, onDispose))
     fiber.unsafeInterruptAsFork(fiber.id())
   }
 
@@ -313,4 +335,14 @@ export const run = <A, E>(
   return {
     [Symbol.dispose]: onDispose
   }
+}
+
+/**
+ * @since 1.0.0
+ */
+export const launch = <A, E>(
+  layer: Layer.Layer<A, E, NodeContext.NodeContext | CurrentEnvironment | CurrentRoute | Scope.Scope>,
+  options?: RunForkOptions & { readonly static?: boolean; readonly base?: string }
+): Disposable => {
+  return run(Effect.scoped(Layer.launch(layer)), options)
 }

@@ -1,9 +1,9 @@
-import type { Fx } from "@typed/fx"
 import { hydrateToLayer, type RenderEvent } from "@typed/template"
 import { Effect, Layer } from "effect"
 import type { Scope } from "effect/Scope"
-import type { CoreDomServices } from "./CoreServices"
-import { fromWindow } from "./CoreServices"
+import type { CoreDomServices } from "./CoreServices.js"
+import { fromWindow } from "./CoreServices.js"
+import type { Fx } from "./Fx.js"
 
 export const run = <A extends RenderEvent | null, E>(App: Fx<A, E, CoreDomServices | Scope>): Disposable => {
   const fiber = App.pipe(

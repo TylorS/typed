@@ -200,6 +200,49 @@ importers:
         specifier: 3.8.4
         version: 3.8.4
 
+  examples/realworld:
+    dependencies:
+      '@effect/platform':
+        specifier: ^0.66.2
+        version: 0.66.2(@effect/schema@0.74.1(effect@3.8.4))(effect@3.8.4)
+      '@effect/platform-node':
+        specifier: ^0.61.3
+        version: 0.61.3(@effect/platform@0.66.2(@effect/schema@0.74.1(effect@3.8.4))(effect@3.8.4))(effect@3.8.4)
+      '@effect/schema':
+        specifier: ^0.74.1
+        version: 0.74.1(effect@3.8.4)
+      '@typed/core':
+        specifier: workspace:*
+        version: link:../../packages/core/dist
+      '@typed/fx':
+        specifier: workspace:*
+        version: link:../../packages/fx/dist
+      '@typed/route':
+        specifier: workspace:*
+        version: link:../../packages/route/dist
+      '@typed/router':
+        specifier: workspace:*
+        version: link:../../packages/router/dist
+      '@typed/server':
+        specifier: workspace:*
+        version: link:../../packages/server/dist
+      '@typed/template':
+        specifier: workspace:*
+        version: link:../../packages/template/dist
+      effect:
+        specifier: 3.8.4
+        version: 3.8.4
+    devDependencies:
+      '@typed/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin/dist
+      tsx:
+        specifier: ^4.19.1
+        version: 4.19.1
+      vavite:
+        specifier: ^4.1.1
+        version: 4.1.3(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
+
   examples/simple-fullstack:
     dependencies:
       '@effect/platform':
