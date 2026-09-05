@@ -62,6 +62,25 @@ test(
     await page.waitForFunction(() =>
       document.querySelector(".release-demo output")?.textContent?.includes("1 / 3"),
     );
+    // Shiki emits light colors inline and dark colors as custom properties.
+    // Both must survive the site's theme styles and switching back again.
+    for (const theme of ["matrix-light", "matrix", "matrix-light", "matrix"]) {
+      await page.evaluate((theme) => { document.documentElement.dataset.theme = theme; }, theme);
+      const highlights = await page.locator(".astro-code span[style]").evaluateAll((tokens, theme) =>
+        tokens.flatMap((token) => {
+          if (!(token instanceof HTMLElement)) return [];
+          const color = theme === "matrix"
+            ? token.style.getPropertyValue("--shiki-dark")
+            : token.style.color;
+          if (!color) return [];
+          const expected = document.createElement("span");
+          expected.style.color = color;
+          return [{ actual: getComputedStyle(token).color, expected: expected.style.color }];
+        }), theme);
+      assert(highlights.length > 0, `${theme}: highlighted tokens exist`);
+      assert(new Set(highlights.map(({ actual }) => actual)).size > 2, `${theme}: distinct syntax colors`);
+      assert(highlights.every(({ actual, expected }) => actual === expected), `${theme}: token colors match Shiki`);
+    }
     await page.getByRole("button", { name: "Switch color theme" }).click();
     await page.waitForFunction(() => document.documentElement.dataset.theme === "matrix-light");
     assert.equal(await page.locator("html").getAttribute("data-theme"), "matrix-light");

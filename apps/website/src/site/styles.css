@@ -650,11 +650,6 @@ html[data-theme="matrix"] .astro-code span {
   color: var(--shiki-dark) !important;
   background-color: var(--shiki-dark-bg) !important;
 }
-html[data-theme="matrix-light"] .astro-code,
-html[data-theme="matrix-light"] .astro-code span {
-  color: var(--shiki-light) !important;
-  background-color: var(--shiki-light-bg) !important;
-}
 .prose blockquote {
   padding: 0.1rem 1.3rem;
   border-left: 2px solid var(--color-primary);
