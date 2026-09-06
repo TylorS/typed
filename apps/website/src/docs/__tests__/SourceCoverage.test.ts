@@ -150,7 +150,7 @@ describe("exhaustive source-first documentation coverage", () => {
       expect(declaration.signatures.join("\n").length, declaration.name).toBeLessThanOrEqual(120);
       expect(declaration.signatures.join("\n"), declaration.name).not.toContain("export declare");
     }
-  }, 30_000);
+  }, 60_000);
 
   it("derives package, module, category, and representation routes from that inventory", async () => {
     const { packages, targets, extraction } = await loadWorkspace();

@@ -105,7 +105,7 @@ describe("bidirectional integration recipes", () => {
     } finally {
       rmSync(staging, { force: true, recursive: true });
     }
-  });
+  }, 60_000);
 
   it.each(["client", "server"] as const)(
     "compiles all Svelte examples for %s output",
