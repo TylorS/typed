@@ -40,7 +40,10 @@ describe("exhaustive source-first documentation coverage", () => {
       extraction.expectedExposures.map(({ id }) => id),
     );
     expect(inventory.exposures.length).toBeGreaterThan(1_000);
-    expect(inventory.packages).toHaveLength(10);
+    expect(inventory.packages).toHaveLength(13);
+    expect(inventory.packages.map(({ packageName }) => packageName)).toEqual(
+      expect.arrayContaining(["@typed/react", "@typed/svelte", "@typed/vue"]),
+    );
     expect(inventory.packages.some(({ packageName }) => packageName === "@typed/astro")).toBe(true);
     expect(inventory.modules).toHaveLength(targets.length);
     expect(inventory.modules.length).toBeGreaterThan(100);

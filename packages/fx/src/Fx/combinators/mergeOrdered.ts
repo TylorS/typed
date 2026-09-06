@@ -2,6 +2,7 @@ import * as Cause from "effect/Cause";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
+import * as Fiber from "effect/Fiber";
 import * as Sink from "../../Sink/Sink.js";
 import { make } from "../constructors/make.js";
 import type { Fx } from "../Fx.js";
@@ -54,12 +55,21 @@ export function mergeOrdered<FX extends ReadonlyArray<Fx<any, any, any>>>(
 ): Fx<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Services<FX[number]>> {
   return make<Fx.Success<FX[number]>, Fx.Error<FX[number]>, Fx.Services<FX[number]>>(
     Effect.fn(function* (sink) {
-      const { makeSink, onEnd } = withBuffers(fx.length, sink);
+      const { makeSink, onEnd, discard } = withBuffers(fx.length, sink);
+      const run = Effect.forEach(
+        fx,
+        (fx, i) => Effect.onExit(fx.run(makeSink(i)), () => onEnd(i)),
+        {
+          concurrency: "unbounded",
+          discard: true,
+        },
+      );
 
-      yield* Effect.forEach(fx, (fx, i) => Effect.onExit(fx.run(makeSink(i)), () => onEnd(i)), {
-        concurrency: "unbounded",
-        discard: true,
-      });
+      yield* Effect.acquireUseRelease(
+        run.pipe(Effect.forkChild({ startImmediately: true })),
+        Fiber.join,
+        (fiber) => discard.pipe(Effect.andThen(Fiber.interrupt(fiber))),
+      );
     }),
   );
 }
@@ -68,6 +78,9 @@ function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
   const buffers = indexedBuffers(size, sink);
   const onSuccess = (index: number, value: A) => buffers.get(index)!.onSuccess(value);
   const onEnd = (index: number) => buffers.get(index)!.onEnd;
+  const discard = Effect.sync(() => {
+    for (const buffer of buffers.values()) buffer.discard();
+  });
 
   const makeSink = (index: number) =>
     Sink.make<A, E, R>(
@@ -78,6 +91,7 @@ function withBuffers<A, E, R>(size: number, sink: Sink.Sink<A, E, R>) {
   return {
     onSuccess,
     onEnd,
+    discard,
     makeSink,
   } as const;
 }
@@ -126,12 +140,16 @@ function IndexedBuffer<A, E, R>(
   onDone: Effect.Effect<void>,
 ) {
   let buffer: Array<A> = [];
+  let active = true;
+  const forward = (value: A) =>
+    Effect.suspend(() => (active ? sink.onSuccess(value) : Effect.void));
 
   const onSuccess = (value: A) => {
+    if (!active) return Effect.void;
     if (state.ready) {
-      if (buffer.length === 0) return sink.onSuccess(value);
+      if (buffer.length === 0) return forward(value);
       buffer.push(value);
-      const effect = Effect.forEach(buffer, sink.onSuccess);
+      const effect = Effect.forEach(buffer, forward);
       buffer = [];
       return effect;
     } else {
@@ -140,16 +158,25 @@ function IndexedBuffer<A, E, R>(
     }
   };
 
-  const onEnd = Effect.flatMap(Deferred.await(state.deferred), () => {
-    if (buffer.length === 0) return onDone;
-    const effect = Effect.forEach(buffer, sink.onSuccess);
-    buffer = [];
-    return Effect.ensuring(effect, onDone);
+  const onEnd = Effect.suspend(() => {
+    if (!active) return Effect.void;
+    return Effect.flatMap(Deferred.await(state.deferred), () => {
+      if (!active) return Effect.void;
+      if (buffer.length === 0) return onDone;
+      const effect = Effect.forEach(buffer, forward);
+      buffer = [];
+      return Effect.ensuring(effect, onDone);
+    });
   });
 
   return {
     state,
     onSuccess,
     onEnd,
+    discard: () => {
+      active = false;
+      buffer = [];
+      Deferred.doneUnsafe(state.deferred, Exit.void);
+    },
   };
 }

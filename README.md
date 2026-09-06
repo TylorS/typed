@@ -10,6 +10,19 @@ Start with the [documentation](https://tylors.github.io/typed-smol/),
 [package reference](https://tylors.github.io/typed-smol/reference/).
 Typed builds on [Effect](https://effect.website/).
 
+## Packages
+
+The core toolkit is [`@typed/fx`](packages/fx/README.md) for reactive state,
+[`@typed/template`](packages/template/README.md) for HTML and DOM rendering,
+[`@typed/router`](packages/router/README.md) for routes, and
+[`@typed/ui`](packages/ui/README.md) for accessible components.
+
+Use the integration that fits your application:
+
+- [`@typed/react`](apps/website/content/recipes/react.md), [`@typed/svelte`](apps/website/content/recipes/svelte.md), and [`@typed/vue`](apps/website/content/recipes/vue.md) render components in either direction with SSR and hydration, native reactive state, Effect services, and shared routing.
+- [`@typed/template/WebComponent`](apps/website/content/recipes/web-component.md) defines native custom elements with Typed views, server rendering, and hydration.
+- [`@typed/astro`](packages/astro/README.md) renders and hydrates Typed islands in Astro pages.
+
 ## Documentation website
 
 `apps/website` is an Astro static site for GitHub Pages. Guides, integration recipes, the Quick

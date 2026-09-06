@@ -1,27 +1,33 @@
+import * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
-import * as Exit from "effect/Exit";
 import * as Fx from "@typed/fx/Fx";
+import * as Subject from "@typed/fx/Subject";
 import { DomRenderTemplate, render } from "@typed/template/Render";
 import { DomRenderEvent } from "@typed/template/RenderEvent";
 import * as Component from "./Component.js";
 
-interface Mounted {
-  readonly fiber: Fiber.Fiber<never, unknown>;
-  readonly unmount: () => void;
+interface Request {
+  readonly component: Parameters<typeof Component.view>[0];
+  readonly props: Record<string, unknown>;
+  readonly slots: Record<string, string>;
+  readonly client: string;
+  readonly resolve: () => void;
+  readonly reject: (reason: unknown) => void;
 }
 
-const mounted = new WeakMap<HTMLElement, Mounted>();
-const revisions = new WeakMap<HTMLElement, number>();
-const initializedSlots = new WeakSet<HTMLElement>();
+const islands = new WeakMap<HTMLElement, (request: Request) => void>();
 
 /** Adopt only this island's slots; nested islands keep their own renderer ownership. */
-function slotsFromAstro(element: HTMLElement, slots: Record<string, string>): Component.Slots {
+function slotsFromAstro(
+  element: HTMLElement,
+  slots: Record<string, string>,
+  initialized: boolean,
+): Component.Slots {
   const existing = Array.from(element.querySelectorAll<HTMLElement>("astro-slot")).filter(
-    (slot) => slot.closest("astro-island") === element || !slot.closest("astro-island"),
+    (slot) => slot.closest("astro-island") === element,
   );
-  const initialized = initializedSlots.has(element);
-  initializedSlots.add(element);
+
   return Object.fromEntries(
     Object.entries(slots).map(([name, content]) => {
       let slot = existing.find((node) => (node.getAttribute("name") ?? "default") === name);
@@ -40,73 +46,106 @@ function slotsFromAstro(element: HTMLElement, slots: Record<string, string>): Co
 }
 
 /**
- * Creates Astro's browser renderer for one island element.
- * Replacement waits for the previous render's interruption; astro:unmount ends
- * its subscriptions. Setup failures reject hydration, while later failures are
- * reported by typed:error on the island. Astro invokes this renderer entry.
+ * Creates Astro's native hydration entry. Each island owns its reactive render
+ * lifetime; replacement and unmount close the previous render before proceeding.
  *
  * @since 1.0.0
  * @category Hydration and lifecycle
  */
 export default (element: HTMLElement) =>
-  async (
+  (
     component: unknown,
     props: Record<string, unknown>,
     slots: Record<string, string> = {},
     { client }: { client: string } = { client: "load" },
   ): Promise<void> => {
     if (!Component.isComponent(component)) {
-      throw new TypeError("@typed/astro requires a component created with component");
+      return Promise.reject(
+        new TypeError("@typed/astro requires a component created with component"),
+      );
     }
-    const revision = (revisions.get(element) ?? 0) + 1;
-    revisions.set(element, revision);
-    const previous = mounted.get(element);
-    if (previous) {
-      await Effect.runPromise(Fiber.interrupt(previous.fiber));
-      element.removeEventListener("astro:unmount", previous.unmount);
-    }
-    if (revisions.get(element) !== revision) return;
-    if (client === "only") element.replaceChildren();
-    const children = slotsFromAstro(element, slots);
-    let ready = false;
-    const { promise, resolve, reject } = Promise.withResolvers<void>();
 
-    const fiber = Effect.runFork(
-      Effect.suspend(() =>
-        render(Component.view(component, props, children), element).pipe(
-          Fx.provide(DomRenderTemplate.using(element.ownerDocument)),
-          Fx.observe(() => {
-            ready = true;
-            resolve();
-          }),
-          Effect.andThen(
-            Effect.suspend(() =>
-              ready
-                ? Effect.never
-                : Effect.die(new Error("Typed component completed without rendering")),
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    const submit = islands.get(element) ?? mount(element);
+    submit({ component, props, slots, client, resolve, reject });
+
+    return promise;
+  };
+
+function mount(element: HTMLElement): (request: Request) => void {
+  const requests = Subject.unsafeMake<Request | null>();
+  let current: Request | null = null;
+  let initialized = false;
+
+  const rendering = requests.pipe(
+    Fx.switchMap((request) => {
+      let ready = false;
+
+      return Fx.unwrapScoped(
+        Effect.sync(() => {
+          if (request === null || request !== current) return Fx.empty;
+
+          if (request.client === "only" && !initialized) element.replaceChildren();
+          const children = slotsFromAstro(element, request.slots, initialized);
+          initialized = true;
+
+          return render(Component.view(request.component, request.props, children), element).pipe(
+            Fx.provide(DomRenderTemplate.using(element.ownerDocument)),
+            Fx.tap(() => {
+              ready = true;
+              request.resolve();
+            }),
+            Fx.continueWith(() =>
+              ready ? Fx.never : Fx.die(new Error("Typed component completed without rendering")),
             ),
-          ),
-          Effect.scoped,
-        ),
+          );
+        }),
+      ).pipe(
+        Fx.catchCause((cause) => {
+          if (request !== null && request === current && !Cause.hasInterruptsOnly(cause)) {
+            if (!ready) request.reject(cause);
+            else element.dispatchEvent(new CustomEvent("typed:error", { detail: cause }));
+          }
+
+          return Fx.empty;
+        }),
+      );
+    }),
+    Fx.ensuring(
+      Effect.sync(() => {
+        if (islands.get(element) === submit) islands.delete(element);
+        element.removeEventListener("astro:unmount", unmount);
+      }),
+    ),
+  );
+
+  const fiber = Effect.runFork(Effect.scoped(Fx.drain(rendering)));
+
+  function submit(request: Request) {
+    current?.resolve();
+    current = request;
+    Effect.runFork(requests.onSuccess(request));
+  }
+
+  function unmount() {
+    current?.resolve();
+    current = null;
+    initialized = false;
+
+    Effect.runFork(
+      requests.onSuccess(null).pipe(
+        Effect.andThen(() => {
+          if (current !== null) return Effect.void;
+
+          if (islands.get(element) === submit) islands.delete(element);
+          return Fiber.interrupt(fiber);
+        }),
       ),
     );
-    const unmount = () => {
-      revisions.set(element, (revisions.get(element) ?? revision) + 1);
-      void Effect.runPromise(Fiber.interrupt(fiber));
-    };
-    mounted.set(element, { fiber, unmount });
-    element.addEventListener("astro:unmount", unmount, { once: true });
-    fiber.addObserver((exit) => {
-      if (Exit.isFailure(exit)) {
-        if (!ready) reject(exit.cause);
-        else if (mounted.get(element)?.fiber === fiber && revisions.get(element) === revision) {
-          element.dispatchEvent(new CustomEvent("typed:error", { detail: exit.cause }));
-        }
-      }
-      if (mounted.get(element)?.fiber === fiber) {
-        mounted.delete(element);
-        element.removeEventListener("astro:unmount", unmount);
-      }
-    });
-    await promise;
-  };
+  }
+
+  islands.set(element, submit);
+  element.addEventListener("astro:unmount", unmount);
+
+  return submit;
+}

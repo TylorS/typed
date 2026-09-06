@@ -117,6 +117,21 @@ describe("Typed Astro browser renderer", () => {
     expect(finalized).toHaveBeenCalledOnce();
   });
 
+  it("rejects a throwing component pipeline and allows the island to retry", async () => {
+    const View = component(
+      function* (_props: {}) {
+        return html`<p>unreachable</p>`;
+      },
+      () => {
+        throw new Error("pipeline failed");
+      },
+    );
+    const hydrate = client(host());
+
+    await expect(hydrate(View, {})).rejects.toBeDefined();
+    await hydrate(counter(), { initial: 3 });
+  });
+
   it("updates changed slot content while retaining unchanged slot DOM", async () => {
     const View = component(function* (_props: {}, slots: Slots) {
       return html`<main>${slots.default}${slots.heading}</main>`;
@@ -128,6 +143,29 @@ describe("Typed Astro browser renderer", () => {
     await hydrate(View, {}, { default: "<p>After</p>", heading: "<h2>Title</h2>" });
     expect(element.querySelector("p")!.textContent).toBe("After");
     expect(element.querySelector("h2")).toBe(heading);
+  });
+
+  it("adopts mutable slot children again when the same island remounts", async () => {
+    const View = component(function* (_props: {}, slots: Slots) {
+      return html`<main>${slots.default}</main>`;
+    });
+    const element = host();
+    const hydrate = client(element);
+    const slots = { default: "<button>Server</button>" };
+
+    await hydrate(View, {}, slots);
+    element.dispatchEvent(new Event("astro:unmount"));
+
+    const child = element.querySelector("button")!;
+    const clicked = vi.fn();
+    child.textContent = "Child state";
+    child.addEventListener("click", clicked);
+
+    await hydrate(View, {}, slots);
+    expect(element.querySelector("button")).toBe(child);
+    expect(child.textContent).toBe("Child state");
+    child.click();
+    expect(clicked).toHaveBeenCalledOnce();
   });
 
   it("retains mutable borrowed slot children when Astro reserializes them on a parent update", async () => {
@@ -176,6 +214,30 @@ describe("Typed Astro browser renderer", () => {
     child!.click();
     expect(click).toHaveBeenCalledOnce();
     expect(element.querySelector("h2")!.textContent).toBe("Title");
+  });
+
+  it("leaves nested island slot nodes to their own renderer", async () => {
+    const View = component(function* (_props: {}, slots: Slots) {
+      return html`<main>${slots.default}${slots.heading}</main>`;
+    });
+    const element = host();
+    element.innerHTML =
+      '<astro-slot><astro-island><astro-slot name="heading"><h2>Nested</h2></astro-slot></astro-island></astro-slot><astro-slot name="heading"><h2>Parent</h2></astro-slot>';
+    const parent = element.querySelector(':scope > astro-slot[name="heading"] > h2')!;
+    const nested = element.querySelector("astro-island h2")!;
+
+    await client(element)(
+      View,
+      {},
+      {
+        default: element.querySelector("astro-slot")!.innerHTML,
+        heading: "<h2>Parent</h2>",
+      },
+    );
+
+    expect(element.querySelector('main > astro-slot[name="heading"] > h2')).toBe(parent);
+    expect(element.querySelector("main astro-island h2")).toBe(nested);
+    expect(nested.textContent).toBe("Nested");
   });
 });
 

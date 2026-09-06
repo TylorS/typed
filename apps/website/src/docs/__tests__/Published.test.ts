@@ -274,7 +274,7 @@ describe("published package graph", () => {
     ).flat();
     const specifiers = modules.map(({ consumerSpecifier }) => consumerSpecifier);
 
-    expect(packages).toHaveLength(10);
+    expect(packages).toHaveLength(13);
     expect(specifiers).toEqual([...new Set(specifiers)].sort());
     expect(specifiers.every((specifier) => !specifier.includes("*"))).toBe(true);
     expect(specifiers.length).toBeGreaterThan(

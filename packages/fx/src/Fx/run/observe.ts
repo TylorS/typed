@@ -3,6 +3,7 @@ import type { Effect } from "effect/Effect";
 import {
   callback,
   catchCause,
+  ensuring,
   failCause,
   forkScoped,
   isEffect,
@@ -10,9 +11,10 @@ import {
   runForkWith,
   contextWith,
   sync,
+  suspend,
   void as void_,
 } from "effect/Effect";
-import { interrupt } from "effect/Fiber";
+import { interrupt, type Fiber } from "effect/Fiber";
 import { dual } from "effect/Function";
 import type { Layer } from "effect/Layer";
 import { effectDiscard } from "effect/Layer";
@@ -37,7 +39,9 @@ import type { Fx } from "../Fx.js";
  * run and completes when the source completes. Interruption interrupts the internal
  * fiber and source cleanup. Callback invocation follows the producer's delivery
  * behavior; `observe` adds no buffer or concurrency of its own. A source cause or a
- * callback failure fails the returned Effect as `E | E2`.
+ * callback failure fails the returned Effect as `E | E2` and stops further
+ * deliveries. The producer fiber finishes cleanup before observation settles;
+ * resources acquired in the caller's Scope retain that Scope's lifetime.
  *
  * @example
  * ```ts
@@ -72,22 +76,34 @@ export const observe: {
     fx: Fx<A, E, R>,
     f: (value: A) => void | Effect<unknown, E2, R2>,
   ): Effect<unknown, E | E2, R | R2> =>
-    contextWith((services) =>
-      callback<void, E | E2, R | R2>((resume) => {
-        const onFailure = (cause: Cause<E | E2>) => sync(() => resume(failCause(cause)));
-        const onSuccess = (value: A) => {
-          const result = f(value);
-          return isEffect(result) ? catchCause(result, onFailure) : void_;
-        };
-        const onDone = () => sync(() => resume(void_));
+    contextWith((services) => {
+      let fiber: Fiber<unknown, never> | undefined;
 
-        return fx.run(make(onFailure, onSuccess)).pipe(
-          matchCauseEffect(make(onFailure, onDone)),
-          runForkWith(services),
-          interrupt, // Interrupt fiber when callback is interrupted
-        );
-      }),
-    ),
+      return callback<void, E | E2, R | R2>((resume) => {
+        let done = false;
+
+        const complete = (result: Effect<void, E | E2>) =>
+          sync(() => {
+            if (done) return;
+            done = true;
+            resume(result);
+          });
+
+        const onFailure = (cause: Cause<E | E2>) => complete(failCause(cause));
+
+        const onSuccess = (value: A) =>
+          suspend(() => {
+            if (done) return void_;
+
+            const result = f(value);
+            return isEffect(result) ? catchCause(result, onFailure) : void_;
+          });
+
+        fiber = fx
+          .run(make(onFailure, onSuccess))
+          .pipe(matchCauseEffect(make(onFailure, () => complete(void_))), runForkWith(services));
+      }).pipe(ensuring(suspend(() => (fiber === undefined ? void_ : interrupt(fiber)))));
+    }),
 );
 
 /**

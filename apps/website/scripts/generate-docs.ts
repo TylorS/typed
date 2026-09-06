@@ -183,39 +183,49 @@ const validateAuthoredExampleCompilation = (
 ): void => {
   const staging = nodeFs.mkdtempSync(path.join(root, ".recipe-check-"));
   const files: Array<string> = [];
+  const vueFiles: Array<string> = [];
   try {
     for (const document of documents) {
       for (const [index, { code, extension, fileName }] of extractTypeScriptFenceDocuments(
         document.body,
       ).entries()) {
         const file = path.join(staging, document.slug, fileName ?? `${index}.${extension}`);
-        if (files.includes(file))
+        if (files.includes(file) || vueFiles.includes(file))
           throw new Error(`Duplicate example file: ${document.slug}/${fileName}`);
         nodeFs.mkdirSync(path.dirname(file), { recursive: true });
         nodeFs.writeFileSync(file, code);
-        files.push(file);
+        (document.slug === "vue" ? vueFiles : files).push(file);
       }
     }
-    const program = ts.createProgram(files, {
-      allowJs: false,
-      esModuleInterop: true,
-      module: ts.ModuleKind.NodeNext,
-      moduleResolution: ts.ModuleResolutionKind.NodeNext,
-      noEmit: true,
-      jsx: ts.JsxEmit.ReactJSX,
-      skipLibCheck: true,
-      strict: true,
-      target: ts.ScriptTarget.ES2022,
-    });
-    const diagnostics = ts.getPreEmitDiagnostics(program);
-    if (diagnostics.length > 0) {
-      throw new Error(
-        `Authored examples do not compile:\n${ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-          getCanonicalFileName: (fileName) => fileName,
-          getCurrentDirectory: () => root,
-          getNewLine: () => "\n",
-        })}`,
-      );
+    for (const [examples, jsxImportSource] of [
+      [files, "react"],
+      [vueFiles, "vue"],
+    ] as const) {
+      const program = ts.createProgram(examples, {
+        allowJs: false,
+        esModuleInterop: true,
+        module: ts.ModuleKind.NodeNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        noEmit: true,
+        jsx: jsxImportSource === "vue" ? ts.JsxEmit.Preserve : ts.JsxEmit.ReactJSX,
+        jsxImportSource,
+        skipLibCheck: true,
+        strict: true,
+        target: ts.ScriptTarget.ES2022,
+      });
+      const diagnostics = ts.getPreEmitDiagnostics(program);
+      if (diagnostics.length > 0) {
+        throw new Error(
+          `Authored examples do not compile:\n${ts.formatDiagnosticsWithColorAndContext(
+            diagnostics,
+            {
+              getCanonicalFileName: (fileName) => fileName,
+              getCurrentDirectory: () => root,
+              getNewLine: () => "\n",
+            },
+          )}`,
+        );
+      }
     }
   } finally {
     nodeFs.rmSync(staging, { recursive: true, force: true });

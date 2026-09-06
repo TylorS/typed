@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 import { DomRenderTemplate, render } from "@typed/template";
-import { assert, describe, it } from "vitest";
+import { assert, describe, it, vi } from "vitest";
 import * as RadioGroup from "../RadioGroup.js";
 
 describe("typed/ui/RadioGroup in Chromium", () => {
@@ -27,9 +27,12 @@ describe("typed/ui/RadioGroup in Chromium", () => {
       assert.strictEqual((yield* state).value, "large");
 
       yield* RadioGroup.setValue(state, "small", "small");
-      yield* Effect.sleep(20);
-      assert.strictEqual((document.querySelector("#small") as HTMLInputElement).checked, true);
-      assert.strictEqual(large.checked, false);
+      yield* Effect.promise(() =>
+        vi.waitFor(() => {
+          assert.strictEqual((document.querySelector("#small") as HTMLInputElement).checked, true);
+          assert.strictEqual(large.checked, false);
+        }),
+      );
     }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
   });
 });

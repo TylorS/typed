@@ -1,0 +1,77 @@
+{
+  "name": "@typed/vue",
+  "version": "1.0.0-beta.7",
+  "description": "Vue components and Typed views with scoped reactivity, SSR, and hydration.",
+  "homepage": "https://github.com/TylorS/typed-smol/tree/main/packages/vue#readme",
+  "bugs": "https://github.com/TylorS/typed-smol/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TylorS/typed-smol.git",
+    "directory": "packages/vue"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./Typed": {
+      "types": "./dist/Typed.d.ts",
+      "import": "./dist/Typed.js"
+    },
+    "./Runtime": {
+      "types": "./dist/Runtime.d.ts",
+      "import": "./dist/Runtime.js"
+    },
+    "./Reactive": {
+      "types": "./dist/Reactive.d.ts",
+      "import": "./dist/Reactive.js"
+    },
+    "./AsyncData": {
+      "types": "./dist/AsyncData.d.ts",
+      "import": "./dist/AsyncData.js"
+    },
+    "./Router": {
+      "types": "./dist/Router.d.ts",
+      "import": "./dist/Router.js"
+    },
+    "./view": {
+      "types": "./dist/view.d.ts",
+      "import": "./dist/view.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
+    "test": "pnpm run test:node && pnpm run test:browser && pnpm run test:types",
+    "test:node": "vitest run --config vitest.config.ts",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:types": "pnpm run build && tsc -p tsconfig.type-tests.json && tsc -p tsconfig.tests.json"
+  },
+  "dependencies": {
+    "@typed/async-data": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/navigation": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@vitest/browser-playwright": "catalog:",
+    "playwright": "^1.62.1",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.42"
+  }
+}

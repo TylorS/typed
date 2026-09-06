@@ -4,7 +4,31 @@ import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
 import * as Scheduler from "effect/Scheduler";
 import { describe, expect, it } from "vitest";
+import * as Sink from "../Sink/Sink.js";
 import { Fx } from "../index.js";
+import type { Fx as FxType } from "../Fx.js";
+
+function acknowledge<A, E, R>(
+  fx: FxType<A, E, R>,
+  acknowledgements: Array<Deferred.Deferred<void>>,
+) {
+  return Fx.make<A, E, R>((sink) =>
+    fx.run(
+      Sink.make(sink.onFailure, (value: A) => {
+        const acknowledgement = acknowledgements.shift();
+        return sink
+          .onSuccess(value)
+          .pipe(
+            Effect.andThen(
+              acknowledgement === undefined
+                ? Effect.void
+                : Deferred.succeed(acknowledgement, undefined),
+            ),
+          );
+      }),
+    ),
+  );
+}
 
 describe("Fx.keyed", () => {
   it("fails duplicate keys through the typed error channel before starting keyed values", () =>
@@ -27,9 +51,15 @@ describe("Fx.keyed", () => {
 
   it("emits the parent array when items only move", () =>
     Effect.gen(function* () {
-      const values = Fx.concat(
-        Fx.succeed([{ id: "a" }, { id: "b" }]),
-        Fx.at([{ id: "b" }, { id: "a" }], 10),
+      const first = yield* Deferred.make<void>();
+      const second = yield* Deferred.make<void>();
+      const acknowledgements = [first, second];
+      const values = Fx.make<ReadonlyArray<{ id: string }>>((sink) =>
+        Effect.gen(function* () {
+          yield* sink.onSuccess([{ id: "a" }, { id: "b" }]);
+          yield* Deferred.await(first);
+          yield* sink.onSuccess([{ id: "b" }, { id: "a" }]);
+        }),
       );
 
       const keyed = Fx.keyed(values, {
@@ -37,7 +67,7 @@ describe("Fx.keyed", () => {
         onValue: (_ref, key) => Fx.succeed(key),
       });
 
-      expect(yield* Fx.collectAll(keyed)).toEqual([
+      expect(yield* Fx.collectAll(acknowledge(keyed, acknowledgements))).toEqual([
         ["a", "b"],
         ["b", "a"],
       ]);
@@ -45,32 +75,33 @@ describe("Fx.keyed", () => {
 
   it("emits a later removal and addition after items move", () =>
     Effect.gen(function* () {
-      const values = Fx.succeed([
-        { id: "a", label: "A" },
-        { id: "b", label: "B" },
-        { id: "c", label: "C" },
-      ]).pipe(
-        Fx.concat(
-          Fx.at(
-            [
-              { id: "c", label: "C" },
-              { id: "a", label: "A" },
-              { id: "b", label: "B" },
-            ],
-            10,
-          ),
-        ),
-        Fx.concat(
-          Fx.at(
-            [
-              { id: "c", label: "C" },
-              { id: "a", label: "A2" },
-              { id: "d", label: "D" },
-            ],
-            10,
-          ),
-        ),
-        Fx.concat(Fx.at([], 10)),
+      const first = yield* Deferred.make<void>();
+      const second = yield* Deferred.make<void>();
+      const third = yield* Deferred.make<void>();
+      const fourth = yield* Deferred.make<void>();
+      const acknowledgements = [first, second, third, fourth];
+      const values = Fx.make<ReadonlyArray<{ id: string; label: string }>>((sink) =>
+        Effect.gen(function* () {
+          yield* sink.onSuccess([
+            { id: "a", label: "A" },
+            { id: "b", label: "B" },
+            { id: "c", label: "C" },
+          ]);
+          yield* Deferred.await(first);
+          yield* sink.onSuccess([
+            { id: "c", label: "C" },
+            { id: "a", label: "A" },
+            { id: "b", label: "B" },
+          ]);
+          yield* Deferred.await(second);
+          yield* sink.onSuccess([
+            { id: "c", label: "C" },
+            { id: "a", label: "A2" },
+            { id: "d", label: "D" },
+          ]);
+          yield* Deferred.await(third);
+          yield* sink.onSuccess([]);
+        }),
       );
 
       const keyed = Fx.keyed(values, {
@@ -78,7 +109,7 @@ describe("Fx.keyed", () => {
         onValue: (ref, key) => Fx.map(ref, (value) => `${key}:${value.label}`),
       });
 
-      expect(yield* Fx.collectAll(keyed)).toEqual([
+      expect(yield* Fx.collectAll(acknowledge(keyed, acknowledgements))).toEqual([
         ["a:A", "b:B", "c:C"],
         ["c:C", "a:A", "b:B"],
         ["c:C", "a:A2", "d:D"],

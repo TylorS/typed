@@ -27,7 +27,8 @@ describe("Consuming Fx guide", () => {
     expect(guide.body).toContain("Fx.collectUpTo");
     expect(guide.body).toContain("Fx.toStream");
     expect(guide.body).toContain("Fx.runPromiseExit");
-    expect(guide.body).toContain("Effect.forkScoped");
+    expect(guide.body).not.toContain("Effect.forkScoped");
+    expect(guide.body).not.toContain("Effect.never");
     expectExampleCalls(guide.body, [
       "Fx.observe",
       "Fx.drain",
@@ -35,7 +36,7 @@ describe("Consuming Fx guide", () => {
       "Fx.collectAll",
       "Fx.collectUpTo",
       "Fx.toStream",
-      "Effect.forkScoped",
+      "Effect.runPromise",
       "Fx.runPromiseExit",
     ]);
   });

@@ -10,9 +10,13 @@ Astro owns the page and its Markdown. Typed owns the order island, its reactive 
 
 ## Install the integration
 
-The integration is currently available in this repository as `packages/astro`. Its npm release is separate from the existing Typed beta packages. To try it before publication, use this workspace or build and pack the package for local installation.
+Install the published beta package with the matching Typed beta dependencies:
 
-The workspace website declares `@typed/astro` as a `workspace:*` dependency. It uses Astro 7, Effect v4, and the matching versions of `@typed/fx`, `@typed/template`, and `@typed/ui`.
+```sh
+pnpm add @typed/astro@beta @typed/fx@beta @typed/template@beta @typed/ui@beta astro@^7.3.1 effect@4.0.0-rc.112
+```
+
+The `beta` dist-tag keeps the integration and its Typed dependencies on the same release family. Astro 7 and Effect v4 are supported by the current integration.
 
 Register the integration in `astro.config.ts`:
 
@@ -64,14 +68,14 @@ Astro passes serializable props to the browser. The component recreates its stat
 
 ## Match island loading to when the order control is needed
 
-| Directive | When to use it |
-| --- | --- |
-| No client directive | Render HTML only; no event handlers run in the browser. |
-| `client:load` | Controls people may use immediately. |
-| `client:idle` | Secondary controls that can wait until the browser is idle. |
-| `client:visible` | Examples and widgets lower down the page. |
-| `client:media="(min-width: 60rem)"` | An island needed only for a matching media query. |
-| `client:only="@typed/astro"` | A component that requires the browser during setup and should skip server rendering. |
+| Directive                           | When to use it                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| No client directive                 | Render HTML only; no event handlers run in the browser.                              |
+| `client:load`                       | Controls people may use immediately.                                                 |
+| `client:idle`                       | Secondary controls that can wait until the browser is idle.                          |
+| `client:visible`                    | Examples and widgets lower down the page.                                            |
+| `client:media="(min-width: 60rem)"` | An island needed only for a matching media query.                                    |
+| `client:only="@typed/astro"`        | A component that requires the browser during setup and should skip server rendering. |
 
 With server rendering, the Typed renderer writes hydration markers. The browser renderer uses those markers to adopt matching nodes and attach live state and listeners. The [Astro directives documentation](https://docs.astro.build/en/reference/directives-reference/) defines the loading policies.
 

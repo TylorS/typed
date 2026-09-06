@@ -19,8 +19,8 @@ import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template";
 
 export default component(function* (props: { initial: number }) {
-    const count = yield* RefSubject.make(props.initial);
-    return html`<button @click=${RefSubject.update(count, (n) => n + 1)}>Count: ${count}</button>`;
+  const count = yield* RefSubject.make(props.initial);
+  return html`<button @click=${RefSubject.update(count, (n) => n + 1)}>Count: ${count}</button>`;
 });
 ```
 
@@ -31,7 +31,7 @@ import Counter from "./Counter";
 <Counter initial={1} client:load />
 ```
 
-`component` uses the same generator and argument-forwarding conventions as `@typed/ui/Component`. A generator with no parameters produces a lazy Fx value; a generator with parameters produces a function. Return any Renderable, including strings, arrays, Effects, and templates. Optional pipeline functions receive the Fx and the original arguments, preserving errors and required services. Astro normalizes the generator return inside a template boundary, so its Fx emits `RenderEvent` values and requires `Scope | RenderTemplate` in addition to the generator and returned value’s services. This installs hydration context before nested templates run. Pipeline callbacks receive this normalized Fx; keep the final result renderable. A zero-argument pipeline that returns a primitive instead of an object throws because it cannot carry an island brand. The explicit Astro brand lets the renderer recognize values and functions without running them.
+`component` uses the same generator and argument-forwarding conventions as `@typed/ui/Component`. A generator with no parameters produces a lazy Fx value; a generator with parameters produces a function. Return any Renderable, including strings, arrays, Effects, and templates. Optional pipeline functions receive the Fx and the original arguments, preserving errors and required services. Astro normalizes the generator return inside a template boundary, so its Fx emits `RenderEvent` values and requires `Scope | RenderTemplate` in addition to the generator and returned value’s services. This installs hydration context before nested templates run. Pipeline callbacks receive this normalized Fx; keep the final result renderable. A zero-argument pipeline that returns a primitive instead of an object throws because it cannot carry an island brand. The explicit Astro brand identifies candidates without running them; it does not validate that a final pipeline result is renderable.
 
 The integration supplies `RenderTemplate` and `Scope`. Provide additional application services with an Fx pipeline before exporting an island. State acquired inside the generator is recreated separately for each request and browser island, including zero-argument component values.
 
@@ -49,9 +49,9 @@ import { html } from "@typed/template";
 
 export default component(function* (_props: {}, slots: Slots) {
   return html`<article>
-      ${slots.heading}
-      <main>${slots.default}</main>
-    </article>`;
+    ${slots.heading}
+    <main>${slots.default}</main>
+  </article>`;
 });
 ```
 

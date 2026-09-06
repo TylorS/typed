@@ -1,19 +1,26 @@
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { compile as compileSvelte } from "svelte/compiler";
 import {
   extractTypeScriptFenceDocuments,
   extractTypeScriptFences,
-  recipes,
   validateRecipeExamples,
 } from "../Recipes.js";
 import { renderMarkdown } from "../../site/Markdown.js";
+import { loadRecipeContent } from "../Frontmatter.js";
+
+const recipes = loadRecipeContent(
+  fileURLToPath(new URL("../../../content/recipes/", import.meta.url)),
+);
 
 describe("integration recipes", () => {
   it("keeps named source files so examples can import one another", () => {
-    expect(extractTypeScriptFenceDocuments('```ts file="src/Save.ts"\nexport const save = 1;\n```')).toEqual([
-      { code: "export const save = 1;", extension: "ts", fileName: "src/Save.ts" },
-    ]);
-    expect(() => extractTypeScriptFenceDocuments('```ts file="../Save.ts"\nexport {};\n```')).toThrow("Invalid example file name");
+    expect(
+      extractTypeScriptFenceDocuments('```ts file="src/Save.ts"\nexport const save = 1;\n```'),
+    ).toEqual([{ code: "export const save = 1;", extension: "ts", fileName: "src/Save.ts" }]);
+    expect(() =>
+      extractTypeScriptFenceDocuments('```ts file="../Save.ts"\nexport {};\n```'),
+    ).toThrow("Invalid example file name");
   });
 
   const domRecipe = recipes.find(({ slug }) => slug === "dom-output")!;
@@ -45,7 +52,8 @@ describe("integration recipes", () => {
     expect(validateRecipeExamples(recipes)).toEqual([]);
   });
 
-  it("uses React's real public types in the React adapter", () => {
+  it("uses the public React integration and native framework types", () => {
+    expect(reactRecipe.body).toContain('from "@typed/react"');
     expect(reactRecipe.body).toContain('from "react"');
     expect(reactRecipe.body).toContain('from "react-dom/client"');
     expect(reactRecipe.body).not.toContain("Local stand-ins");
@@ -87,7 +95,7 @@ hydrateRoot(document.body, <main />)
     ).toEqual([]);
   });
 
-  it("compiles every Svelte component shown by the Svelte adapter", () => {
+  it("compiles every authored Svelte component", () => {
     const fences = Array.from(
       svelteRecipe.body.matchAll(/^```svelte\s*\r?\n([\s\S]*?)^```\s*$/gmu),
       ([, code]) => code!,

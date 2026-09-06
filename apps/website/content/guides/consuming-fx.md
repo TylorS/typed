@@ -133,32 +133,27 @@ operations your consumer needs; both remain owned by the same Effect program.
 
 ## Give the live observer the feature's real lifetime
 
-A live heartbeat does not fit in a scoped block that immediately returns after forking it. Closing
-that block would interrupt the observer before the feature could use it. Keep the owner open:
+A single live observer already runs for the producer's lifetime. Observe it directly:
 
 ```ts
-import { Effect, Fiber } from "effect";
+import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
 const heartbeats = Fx.periodic("10 seconds");
 
-const application = Effect.gen(function* () {
-  yield* Effect.forkScoped(Fx.observe(heartbeats, () => Effect.log("connection alive")));
+const application = Fx.observe(heartbeats, () => Effect.log("connection alive"));
 
-  yield* Effect.never;
-});
-
-const fiber = Effect.runFork(Effect.scoped(application));
-
-// Called by the real application host when it shuts down.
-const stop = () => Effect.runPromise(Fiber.interrupt(fiber));
+await Effect.runPromise(application);
 ```
 
-The host retains the root Fiber and calls `stop` during shutdown. Interrupting it closes the Scope,
-interrupts the heartbeat's wait, and prevents future ticks. In a component, route, or Layer, use that
-existing owner's Scope instead of inventing another root runtime. `observeLayer` and `drainLayer`
-attach infrastructure to an application Layer; successful Layer acquisition does not supervise all
-future background failures for you.
+Observation blocks until the producer completes, fails, or is interrupted. Interrupting it cancels
+the heartbeat's wait and prevents future ticks. Inside an Effect program, yield the observation
+directly; fork only when other work needs to proceed concurrently.
+
+For infrastructure composed into an application Layer, use `observeLayer` or `drainLayer` and
+launch the application with `Layer.launch`. The Layer owns the subscription and its Scope.
+Successful Layer acquisition does not supervise future background failures; handle those within
+the source or observer.
 
 ## Cross into a foreign host once
 

@@ -52,6 +52,7 @@ type ComponentResult<Args extends ReadonlyArray<any>, Result> = Args extends rea
  * @category Generator contracts
  */
 export namespace component {
+  // Keep these overloads aligned with @typed/ui/Component so Astro preserves the same pipeline inference.
   /**
    * Overloads preserving generator arguments, yielded errors and services, and
    * the returned renderable's errors and services before optional pipelines.

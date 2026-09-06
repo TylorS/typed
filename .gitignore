@@ -15,6 +15,7 @@ dist/
 /apps/website/public/storybook/
 /apps/website/src/generated/
 *.tsbuildinfo
+.svelte-check/
 
 # IDE / editor
 .idea/

@@ -23,6 +23,9 @@ TOPO_ORDER=(
   # Level 2
   packages/router
   # Level 3
+  packages/react
+  packages/svelte
+  packages/vue
   packages/ui
   # Level 4: integrates Template and UI with Astro
   packages/astro

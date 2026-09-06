@@ -8,8 +8,6 @@
 
 - `effect`
 - `@typed/fx`
-- `html5parser`
-- `happy-dom` (dev)
 
 ## Capabilities
 
@@ -147,3 +145,62 @@ See the [counter example](https://github.com/typed-smol/typed-smol/tree/main/exa
 | `HtmlRenderTemplate`       | Layer providing HTML-string `RenderTemplate` (for SSR).                    |
 | `StaticHtmlRenderTemplate` | Like `HtmlRenderTemplate` with static rendering optimizations.             |
 | `StaticRendering`          | Service reference (boolean) for static rendering mode.                     |
+
+## Web Components
+
+`@typed/template/WebComponent` shares a definition between server output and a native custom element. Templates keep their ordinary Effect services, event handlers, Fx subscriptions, and scopes.
+
+```ts
+import { Fx, RefSubject } from "@typed/fx";
+import { html, WebComponent } from "@typed/template";
+import { DomRenderTemplate, render } from "@typed/template/Render";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { Effect, Layer, Schema } from "effect";
+
+const Counter = WebComponent.make({
+  name: "typed-counter",
+  defaults: () => ({ count: 0 }),
+  attributes: Schema.Struct({ count: Schema.FiniteFromString }),
+  render: (props) => html`<p>Count: ${RefSubject.map(props, ({ count }) => count)}</p>`,
+});
+
+// Browser registration is a scoped layer that provides no services.
+const CounterLive = WebComponent.register(Counter);
+
+const application = render(html`<typed-counter count="5" />`, document.body).pipe(
+  Fx.drainLayer,
+  Layer.provide(Layer.merge(DomRenderTemplate, CounterLive)),
+  Layer.launch,
+);
+
+// Server output is a Renderable for Typed's existing HTML renderers.
+const page = html`<main>${WebComponent.server(Counter, { count: 5 })}</main>`;
+const response = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+
+const snapshot = renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped);
+```
+
+`CurrentShadowRoot` is a `Context.Reference` defaulting to `{ mode: "open" }`. Provide `false` for light DOM or `{ mode: "closed" }` for a closed shadow root. Use `Layer.provide(Layer.succeed(WebComponent.CurrentShadowRoot, setting))` for registration and provide the same reference when rendering server output. Both open and closed declarative roots hydrate existing nodes. Markup inserted with `innerHTML` also works: registration adopts the inert template's original nodes.
+
+Hosts default to `display: contents`; an existing inline display setting is respected. Shadow components retain light children for slots. Pass slot content as the third argument to `server`. Light components own all host children and reject supplied slot content. A synchronous attribute schema declares a finite set of encoded names to observe. Attribute changes decode the complete record and update inputs; invalid values dispatch `typed:error` with the Schema failure Cause and preserve the previous props. Browser code can assign a fresh `element.props` object; nested mutation and property-to-attribute reflection are not automatic. Only fields in the attribute schema are serialized. Use `Schema.encodeKeys` for an attribute alias and `Schema.withDecodingDefaultKey` for a missing attribute default. `defaults` creates fresh state for each element or server run.
+
+Registration captures its layer's application services and document. It supplies the native DOM renderer or borrows an explicitly provided renderer. The registration Scope owns all instances and property updates. Closing it stops rendering and deactivates the class; browsers retain registered names. Disconnect releases each connection's subscriptions and listeners. Reconnect waits for cleanup and starts a fresh view. Render failures emit a bubbling, composed `typed:error` event with an Effect Cause in `detail`; registration failures use `RegistrationError`.
+
+`server` forwards ordered body and slot chunks through native `HtmlRenderEvent` output. Its running Scope owns subscriptions and cancellation. `renderToHtml` preserves streaming, while `renderToHtmlString` collects the output. Importing the module or creating definitions does not access browser globals.
+
+## Root event propagation
+
+Integration roots keep ordinary native bubbling by default. `CurrentRootEvents` configures selected event names through an Effect context:
+
+```ts
+import { CurrentRootEvents } from "@typed/template/RootEvents";
+import { Effect } from "effect";
+
+const boundedApplication = application.pipe(
+  Effect.provideService(CurrentRootEvents, { click: true, keydown: true }),
+);
+```
+
+Web Component definitions accept `stopPropagation` to customize that policy for their root: `{ click: false, input: true }` lets clicks pass and stops input events while inheriting other configured names. `stopPropagation: false` disables the inherited policy entirely; omitting it inherits the context. Each connection installs its own listeners on the shadow root or light DOM host and removes them when that connection closes. Framework adapters use the same options for their integration hosts.
+
+For a custom integration, `yield* rootEvents(root, options)` installs the shared policy in the current Scope. `rootEvents` only calls native `stopPropagation` in the bubbling phase. Descendant target handlers, other listeners on the same root, and default browser actions remain available. Ancestor capture handlers have already run, and nonbubbling events below the root do not reach these listeners. This controls event bubbling; it does not provide complete event isolation.

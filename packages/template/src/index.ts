@@ -12,3 +12,6 @@ export * from "./RenderQueue.js";
 export * from "./RenderTemplate.js";
 export * from "./Template.js";
 export * from "./Wire.js";
+export * as WebComponent from "./WebComponent.js";
+export * from "./RootEvents.js";
+export * as RootEvents from "./RootEvents.js";

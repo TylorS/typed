@@ -1,200 +1,361 @@
 ---
 slug: vue
 title: "Use Vue and Typed together"
-summary: "Give Vue and Typed separate DOM ranges and connect their lifetimes at one stable host."
+summary: "Use @typed/vue for bidirectional rendering, native composables, shared Effect services, and request-local SSR and hydration."
 ---
 
-A trading dashboard already has a Vue price card with plugins and local controls. Move its surrounding layout to Typed while keeping that card mounted. Keep Vue plugins, `provide`/`inject`, and component-local state inside the mounted app. Give Typed a stream of plain input props. Mounting one app for every price tick would reset selection and transitions; updating the shallow ref keeps that state with Vue.
+`@typed/vue` connects Vue components and Typed views without a hand-written mount adapter. Vue retains its local state as Typed updates incoming props; native composables expose the same Effect resources in a Vue application.
 
-`shallowRef` replaces the props object as a unit. This is useful when incoming values are immutable snapshots; if you mutate a nested field in place, that operation does not become reactive merely because Typed emitted the object. Replace the snapshot or choose a Vue-owned reactive model intentionally. The [Vue reactivity reference](https://vuejs.org/api/reactivity-advanced.html#shallowref) describes this distinction.
+## Install
 
-## Vue output inside Typed: update one dashboard card
+Install the integration with matching Typed beta packages:
 
-Mount one Vue app in one detached host. Normalize the props with `liftRenderableToFx`, update that app, and
-return the same `DomRenderEvent` for every value. Typed's component Scope unmounts Vue when the host leaves
-the Typed range.
+```sh
+pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 vue@^3.5.42
+```
 
-```ts
-import * as Effect from "effect/Effect";
-import * as Fx from "@typed/fx/Fx";
-import { RefSubject } from "@typed/fx";
-import { html, type Renderable } from "@typed/template";
-import { liftRenderableToFx } from "@typed/template/Render";
-import { DomRenderEvent } from "@typed/template/RenderEvent";
-import { component } from "@typed/ui/Component";
-import { Button } from "@typed/ui/Button";
-import { createApp, defineComponent, h, nextTick, ref, shallowRef } from "vue";
+Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
 
-type PriceProps = { readonly symbol: string; readonly last: number };
+The component examples use TSX. Enable Vue's JSX transform in your build tool, such as `@vitejs/plugin-vue-jsx` for Vite, and use these TypeScript options:
 
-const livePrice = component(function* <E, R>(values: Renderable<PriceProps, E, R>) {
-  const current = shallowRef<PriceProps>();
-  const Root = defineComponent(() => {
-    // Vue owns the draft; incoming price snapshots never replace it.
+```json
+{
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue"
+  }
+}
+```
+
+Vue's JSX types and transform differ from React's. See [Vue's TSX setup](https://vuejs.org/guide/extras/render-function#jsx-type-inference).
+
+## Vue output inside Typed
+
+The card owns its local alert threshold. `view` requires an options object with a stable unique `id`, shared between server and browser. Repeated components need distinct IDs derived from stable application keys. It accepts a Vue component and plain props, `Effect`, `Stream`, or `Fx`; subsequent values update that mounted component.
+
+```tsx file="PriceCard.tsx"
+import { defineComponent, ref } from "vue";
+
+export const PriceCard = defineComponent({
+  props: { symbol: { type: String, required: true }, last: { type: Number, required: true } },
+  setup(props) {
     const threshold = ref("42");
-    return () => current.value === undefined
-      ? null
-      : h("section", [
-          h("label", ["Alert threshold ", h("input", {
-            type: "number",
-            value: threshold.value,
-            onInput: (event: Event) => {
-              if (event.currentTarget instanceof HTMLInputElement) {
-                threshold.value = event.currentTarget.value;
-              }
-            },
-          })]),
-          h("output", `${current.value.symbol}: ${current.value.last}`),
-        ]);
-  });
-  const host = document.createElement("div");
-  const app = yield* Effect.acquireRelease(
-    Effect.sync(() => {
-      const app = createApp(Root);
-      app.mount(host);
-      return app;
-    }),
-    (app) => Effect.sync(() => app.unmount()),
-  );
 
-  return Fx.concat(
-    liftRenderableToFx<E, R>(values).pipe(
-      Fx.mapEffect((props) =>
-        Effect.promise(async () => {
-          current.value = props;
-          await nextTick();
-          return DomRenderEvent(host);
-        }),
-      ),
-    ),
-    Fx.never,
-  );
+    return () => (
+      <section>
+        <label>
+          Alert threshold
+          <input
+            value={threshold.value}
+            onInput={(event) => { threshold.value = (event.target as HTMLInputElement).value; }}
+          />
+        </label>
+        <output>{props.symbol}: {props.last}</output>
+      </section>
+    );
+  },
 });
+```
 
-export const priceDemo = component(function* () {
-  const prices = yield* RefSubject.make<PriceProps>({ symbol: "DEMO", last: 42 });
+```ts file="page.ts"
+import { view } from "@typed/vue";
+import { RefSubject } from "@typed/fx";
+import { html } from "@typed/template";
+import { component } from "@typed/ui/Component";
+import { PriceCard } from "./PriceCard.js";
+
+export const page = component(function* () {
+  const price = yield* RefSubject.make({ symbol: "DEMO", last: 42 });
   return html`<main>
-    ${livePrice(prices)}
-    ${Button({
-      content: "Next price sample",
-      onclick: RefSubject.update(prices, (price) => ({ ...price, last: price.last + 1 })),
-    })}
+    ${view(PriceCard, price, { id: "price-card" })}
+    <button onclick=${RefSubject.update(price, (value) => ({ ...value, last: value.last + 1 }))}>
+      Next price
+    </button>
   </main>`;
 });
 ```
 
-Edit the Vue-owned alert threshold, then click Typed's “Next price sample.” The input should keep its value while the price changes. The button is a deliberate local source for exploring the boundary; replace that source with your validated market-data feed without changing the Vue mount/update contract. `nextTick` waits for each snapshot to reach the Vue DOM before the host is emitted.
+Pass the page directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects and supplies Vue’s backend from the active Typed renderer. SSR and build-time static rendering take the first props snapshot and create a fresh Vue app. The browser adopts that host, hydrates its contents, and keeps the instance for later props. Replace immutable props objects instead of mutating a nested field in place.
 
-`Fx.never` keeps the single emitted host mounted after a finite source completes. Keep source errors and
-services on the returned `Fx`. This local source has no typed failures; an external price feed can retain its error channel through the generic adapter.
+`view(Component, props, { id: "price-card", configureApp })` configures each Vue app, including plugins and app-level providers. `view(Component, props, { id, onSSRContext })` exposes the request's Vue SSR context, including teleports; the application places those teleport fragments in its document.
+
+```ts file="render-page.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { DomRenderTemplate, render } from "@typed/template/Render";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { page } from "./page.js";
+
+export const htmlChunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+
+export const renderPage = () => Effect.runPromise(
+  renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+);
+
+export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
+  Fx.drainLayer,
+  Layer.provide(DomRenderTemplate.using(host.ownerDocument)),
+);
+
+export const mountPage = (host: HTMLElement) =>
+  Effect.runFork(Layer.launch(pageLayer(host)));
+```
+
+These are Typed’s standard renderer layers; `view` composes the framework’s server output as a native template child and mounts through the template’s ref in the browser. Prefer `htmlChunks` for a streaming response, observed inside the request Scope. Use `renderPage` when a complete string is required, including static generation. Both preserve the same HTML order and hydration markers. Compose `pageLayer(host)` with the application’s other Layers. At the application boundary, `mountPage` launches that Layer and returns the fiber to interrupt at shutdown.
+
+Vue’s native `renderToWebStream` supplies incremental HTML to Effect’s `Stream.fromReadableStream`. `view` forwards those chunks in tree order and closes its host after rendering and `onSSRContext` finish. A pending child delays its following siblings, while earlier HTML can already reach the response. Interrupting the request closes Typed resources and cancels the stream reader; Vue suppresses later output but does not abort arbitrary component promises.
+
+## Effect services and native composables
+
+Save this service as `services.ts`. The example uses local data so the rendering contract is visible; replace `name` with your application Effect.
+
+```ts file="services.ts"
+import { Context, Effect, Layer } from "effect";
+import { html } from "@typed/template";
+
+export class ProfileService extends Context.Service<ProfileService, {
+  readonly name: Effect.Effect<string>;
+}>()("ProfileService") {}
+
+export const ProfileLive = Layer.succeed(ProfileService, { name: Effect.succeed("Ada") });
+export const loadName = Effect.flatMap(ProfileService, (profile) => profile.name);
+export const status = html`<p role="status">Account ready</p>`;
+```
+
+This component starts with a prefetched value and refreshes on demand. `useEffect` returns Vue refs and computed refs; no custom subscription watcher is required.
+
+```tsx file="Profile.tsx"
+import { defineComponent } from "vue";
+import { Option } from "effect";
+import * as AsyncData from "@typed/async-data";
+import { useEffect } from "@typed/vue/Reactive";
+import { loadName } from "./services.js";
+
+export const Profile = defineComponent({
+  props: { initialName: { type: String, required: true } },
+  setup(props) {
+    const profile = useEffect(loadName, {
+      initial: AsyncData.success(props.initialName),
+      immediate: false,
+    });
+
+    return () => (
+      <section aria-busy={profile.pending.value}>
+        <h2>Profile</h2>
+        <p>{Option.getOrElse(profile.latest.value, () => "Loading…")}</p>
+        {profile.failure.value && <p role="alert">Could not load the profile.</p>}
+        <button onClick={() => profile.refresh()}>Refresh</button>
+      </section>
+    );
+  },
+});
+```
+
+| Input                         | Native Vue binding                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| `Effect`, `Stream`, or `Fx`   | `useEffect`, `useStream`, or `useFx` from `@typed/vue/Reactive`                            |
+| Effect service                | `useService(Service)`                                                                      |
+| `RefSubject`                  | `useRefSubject(ref)` exposes a writable `current` computed ref and `set`/`update` commands |
+| Existing `AsyncData` producer | `useAsyncDataSource(source)` from `@typed/vue/Reactive` flattens its state                 |
+| Existing Vue `AsyncData` ref  | `useAsyncData(data)` from `@typed/vue/AsyncData` derives display state                     |
+
+Sources and runtimes can be Vue refs or getters. Changing either interrupts the previous producer, waits for cleanup, and starts the replacement. Resource state includes the underlying `AsyncData`, current and latest values, full failure causes, pending/refreshing status, refresh, and cancellation. `latest` retains the last available value across subsequent failures. Use Typed's `AsyncData` operations for optimistic updates; the projections preserve the underlying optimistic state instead of inventing separate loading flags.
+
+For shared writable state, expose a parent-owned `RefSubject` through a native computed ref:
+
+```tsx
+import { defineComponent, type PropType } from "vue";
+import type * as RefSubject from "@typed/fx/RefSubject";
+import * as AsyncData from "@typed/async-data";
+import { useRefSubject } from "@typed/vue/Reactive";
+
+export const Counter = defineComponent({
+  props: {
+    count: { type: Object as PropType<RefSubject.RefSubject<number>>, required: true },
+    initialCount: { type: Number, required: true },
+  },
+  setup(props) {
+    const value = useRefSubject(() => props.count, {
+      initial: AsyncData.success(props.initialCount),
+    });
+
+    return () => (
+      <button onClick={() => { value.current.value = (value.current.value ?? 0) + 1; }}>
+        {value.current.value}
+      </button>
+    );
+  },
+});
+```
+
+The parent owns the RefSubject Scope. `set` and `update` return typed `Exit` results when callers need to handle write failures explicitly. `useAsyncDataSource` preserves incoming optimistic, refreshing, and failed states; inspect `AsyncData.isOptimistic(state.data.value)` when displaying a pending optimistic edit.
 
 ## Typed output inside Vue
 
-The reverse `TypedSlot` samples `props.value` during `onMounted`. It is designed for a stable live Typed renderable, not changing Vue prop identity. If the Vue parent must replace that value, add an explicit watcher that interrupts and awaits the old fiber before starting the replacement; otherwise a new prop will be ignored by this slot. Document that contract in your application's wrapper.
+Use the application runtime when the view needs services; a service-free view needs no provider. `Typed` reads the runtime from Vue injection, supplies its own template renderer and Scope, and supports reactive replacement of its `value` prop. Its host ID defaults to Vue’s native `useId`; an explicit `id` can override it.
 
-Create the DOM runtime once at application bootstrap. Vue owns the outer `div`; its lifecycle starts one
-scoped Typed render fiber and requests interruption of that fiber as Vue removes the host. Vue does not await asynchronous unmount work; finalizers must tolerate a detached host. Runtime disposal is an
-application shutdown concern, not a component-unmount concern.
+```tsx file="App.tsx"
+import { defineComponent } from "vue";
+import { Typed } from "@typed/vue/Typed";
+import { Profile } from "./Profile.js";
+import { status } from "./services.js";
 
-```ts
-import * as Effect from "effect/Effect";
-import * as Fiber from "effect/Fiber";
-import * as ManagedRuntime from "effect/ManagedRuntime";
-import type * as Scope from "effect/Scope";
-import * as Fx from "@typed/fx/Fx";
-import { html, type Renderable } from "@typed/template";
-import { DomRenderTemplate, render } from "@typed/template/Render";
-import type { RenderTemplate } from "@typed/template/RenderTemplate";
-import { defineComponent, h, onBeforeUnmount, onMounted, ref, type PropType } from "vue";
-
-// Application bootstrap owns runtime.dispose() during application shutdown.
-const runtime = ManagedRuntime.make(DomRenderTemplate.using(document));
-
-const TypedSlot = defineComponent({
-  props: {
-    value: {
-      type: Object as PropType<Renderable<unknown, never, RenderTemplate | Scope.Scope>>,
-      required: true,
-    },
-  },
+export const App = defineComponent({
+  props: { initialName: { type: String, required: true } },
   setup(props) {
-    const host = ref<HTMLDivElement>();
-    let fiber: Fiber.Fiber<void, never> | undefined;
-
-    onMounted(() => {
-      if (host.value !== undefined) {
-        fiber = runtime.runFork(Effect.scoped(Fx.drain(render(props.value, host.value))));
-      }
-    });
-    onBeforeUnmount(() => {
-      if (fiber !== undefined) void runtime.runPromise(Fiber.interrupt(fiber));
-    });
-    return () => h("div", { ref: host });
+    return () => (
+      <main>
+        <Profile initialName={props.initialName} />
+        <Typed value={status} onCause={console.error} />
+      </main>
+    );
   },
 });
-
-const page = h(TypedSlot, { value: html`<h2>Typed profile</h2>` });
 ```
 
-Pass a live Typed renderable once; it updates its own child range without a Vue watch or remount. Configure
-additional services and expected-error handling where the application constructs the value.
+`installRuntime(app, runtime)` supplies a borrowed `ManagedRuntime` to the whole app. During `setup`, `provideRuntime` creates a nested provider, `provideServices(Context.make(Service, implementation))` overrides selected services, and `useRuntime` reads the current runtime ref. `fromContext` adapts an already-built Effect Context without acquiring or owning resources. Typed-owned Vue views receive their ambient Effect services automatically.
 
-## Render a request-specific card on the server
+## Server rendering and hydration
 
-The same boundary exists on the server. Vue's `vue/server-renderer` may contribute trusted framework output to
-a Typed HTML stream as an `HtmlRenderEvent`.
+Create a runtime for each request. `Typed` renders its value during Vue's `onServerPrefetch`; it adopts that HTML when the client hydrates. Reactive composables normally also prefetch one source value on the server and subscribe after mount. An explicit `initial` snapshot is authoritative during SSR, so the server does not execute that source again. The profile above uses `immediate: false` because its value is explicitly prefetched and refresh is user-driven. `prefetch(source)` from `@typed/vue/Reactive` captures one Effect/Stream/Fx emission as `AsyncData` and closes the temporary Scope; use it when transferring the complete resource state rather than a success-only value.
 
-```ts
-import * as Effect from "effect/Effect";
-import * as Fx from "@typed/fx/Fx";
+```ts file="server.ts"
+import { createSSRApp } from "vue";
+import { renderToWebStream } from "vue/server-renderer";
+import { ManagedRuntime } from "effect";
+import { installRuntime } from "@typed/vue/Runtime";
+import { App } from "./App.js";
+import { loadName, ProfileLive } from "./services.js";
+
+export async function renderApp(
+  send: (body: ReadableStream<Uint8Array>, data: { readonly initialName: string }) => Promise<void>,
+) {
+  const runtime = ManagedRuntime.make(ProfileLive);
+
+  try {
+    const initialName = await runtime.runPromise(loadName);
+    const app = createSSRApp(App, { initialName });
+    installRuntime(app, runtime);
+
+    await send(renderToWebStream(app), { initialName });
+  } finally {
+    await runtime.dispose();
+  }
+}
+```
+
+`send` is your response writer: it streams the body, transports `data` through the framework's request-data mechanism, and resolves after consuming or cancelling the stream. The runtime stays alive until then. Vue can send surrounding markup while a Typed child is pending; each Typed host collects its own body during `onServerPrefetch` before Vue emits that host. For static generation or an API requiring a string, use Vue's `renderToString(app)` inside the same request lifetime. Hydrate with the same initial value.
+
+```ts file="browser.ts"
+import { createSSRApp } from "vue";
+import { ManagedRuntime } from "effect";
+import { installRuntime } from "@typed/vue/Runtime";
+import { App } from "./App.js";
+import { ProfileLive } from "./services.js";
+
+export function hydrateApp(target: Element, data: { readonly initialName: string }) {
+  const runtime = ManagedRuntime.make(ProfileLive);
+  const app = createSSRApp(App, data);
+  installRuntime(app, runtime);
+  app.mount(target);
+  return async () => { app.unmount(); await runtime.dispose(); };
+}
+```
+
+Use `createApp` for browser-only mounting. Use a request-specific `ServerRouter` when a view reads navigation, and initialize the browser runtime with the matching route. A server snapshot is request data; runtime instances and live subscriptions are rebuilt by their owner.
+
+## Route handlers and navigation
+
+`routeComponent` turns a Vue component into a Typed matcher handler. It keeps decoded route props reactive and carries the selected handler's services and `CurrentRoute` into the component and its descendants. A Vue application renders this route tree through `Typed`.
+
+```tsx file="Routes.tsx"
+import { defineComponent } from "vue";
 import { html } from "@typed/template";
-import { HtmlRenderEvent } from "@typed/template/RenderEvent";
-import { createSSRApp, defineComponent, h } from "vue";
+import { Typed } from "@typed/vue/Typed";
+import * as Matcher from "@typed/router/Matcher";
+import * as Route from "@typed/router/Route";
+import { routeComponent, useNavigation } from "@typed/vue/Router";
+import { PriceCard } from "./PriceCard.js";
+
+const PriceRoute = defineComponent({
+  props: { symbol: { type: String, required: true } },
+  setup: (props) => () => <PriceCard symbol={props.symbol} last={42} />,
+});
+export const routes = Matcher.match(Route.Parse("/prices/:symbol"),
+  routeComponent(PriceRoute, { id: "price-route" }),
+).match(Route.Wildcard, html`<p>Choose a price.</p>`);
+
+export const Routes = defineComponent({
+  setup() {
+    const navigation = useNavigation();
+
+    return () => (
+      <main>
+        <button onClick={() => navigation.navigate("/prices/DEMO")}>Prices</button>
+        <Typed value={routes} onCause={console.error} />
+      </main>
+    );
+  },
+});
+```
+
+For this mixed route tree, provide the matching router backend and application services. `Typed` supplies its native renderer; a Typed-owned route tree uses the standard renderer layer shown above. `useRoute(Route.Parse("/prices/:symbol"))` observes optional decoded params; `useMatcher(matcher)` observes data returned by a matcher. `useLocation` observes the destination, `useCurrentPath` its path, and `useCurrentRoute` the structural route owner. `provideCurrentRoute(tree)` overrides ancestry in a Vue layout.
+
+`useRoute(route, { currentRoute: { route: Route.Parse("/admin") } })` uses that mount instead of the ambient one; `{ route: Route.Slash }` matches from `/`. The supplied mount is applied once. Its wildcard fallback returns `None` inside that mount, while leaving it reports the native `RouteNotFound` failure. Omitting `currentRoute` keeps the default global fallback, which remains live when leaving and reentering the ambient mount. The option also accepts a Vue ref or getter.
+
+`Navigation` remains the source of truth for location, entries, transitions, and back/forward availability. Command results preserve Effect `Exit` so navigation failures can be handled explicitly.
+
+## Test with the same provider
+
+Use `TestRouter` and replacement services with the same app installation. No alternate component API is needed.
+
+```ts file="Routes.test.ts"
+import { expect, it } from "vitest";
+import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
+import { Effect, Layer, ManagedRuntime } from "effect";
+import { TestRouter } from "@typed/router/RouterTest";
+import { installRuntime } from "@typed/vue/Runtime";
+import { ProfileService } from "./services.js";
+import { Routes } from "./Routes.js";
 
-const Price = defineComponent(() => () => h("output", "TYPED: 42"));
+it("renders with test services", async () => {
+  const runtime = ManagedRuntime.make(Layer.mergeAll(
+    Layer.succeed(ProfileService, { name: Effect.succeed("Test user") }),
+    TestRouter({ url: "https://example.test/prices/DEMO" }),
+  ));
+  try {
+    const app = createSSRApp(Routes);
+    installRuntime(app, runtime);
+    expect(await renderToString(app)).toContain("DEMO: 42");
+  } finally {
+    await runtime.dispose();
+  }
+});
+```
 
-const vueHtml = Fx.fromEffect(
-  Effect.promise(async () => HtmlRenderEvent(await renderToString(createSSRApp(Price)), true)),
+## Configure event bubbling
+
+`stopPropagation` is available in either rendering direction:
+
+```tsx
+import { view } from "@typed/vue";
+import { Typed } from "@typed/vue/Typed";
+import { PriceCard } from "./PriceCard.js";
+import { status } from "./services.js";
+
+export const card = view(PriceCard, { symbol: "DEMO", last: 42 }, {
+  id: "price-events",
+  stopPropagation: { click: true },
+});
+
+export const statusNode = (
+  <Typed value={status} stopPropagation={{ click: true, keydown: false }} />
 );
-
-const page = html`<main>${vueHtml}</main>`;
 ```
 
-For the inverse, make a separate HTML runtime. `renderToHtmlString` produces Typed renderer output; passing
-that string through Vue's `innerHTML` is a trusted, opaque SSR boundary, not a general raw-HTML API.
+Use `CurrentRootEvents` from `@typed/template/RootEvents` in the Effect context, or `provideServices(Context.make(CurrentRootEvents, policy))`, for an inherited policy. The default is normal bubbling. Undefined inherits, an object overrides event names, and `false` disables inherited blocking. `true` calls `stopPropagation` at the root after inner listeners run. Default actions and sibling root listeners remain available; ancestor capture listeners have already run. Listeners are removed when the owning Scope closes.
 
-```ts
-import * as Effect from "effect/Effect";
-import * as ManagedRuntime from "effect/ManagedRuntime";
-import { html } from "@typed/template";
-import { HtmlRenderTemplate, renderToHtmlString } from "@typed/template/Html";
-import { createSSRApp, defineComponent, h } from "vue";
-import { renderToString } from "vue/server-renderer";
+Automatic `div` hosts use `display: contents` to remove their layout boxes while remaining DOM ownership boundaries. Place them where an HTML `div` is valid; the style does not change table or SVG parsing rules. Vue owns each Vue subtree, Typed owns each Typed range, and unmount closes that child's Scope. Providers borrow runtimes; the application or request that created a runtime disposes it. Updating `stopPropagation` or `onCause` preserves the current Typed rendering. Failed Typed work goes to `onCause` when supplied, otherwise through Vue's component error path.
 
-// Server application bootstrap owns htmlRuntime.dispose() after its work ends.
-const htmlRuntime = ManagedRuntime.make(HtmlRenderTemplate);
-const TypedHtmlBoundary = defineComponent({
-  props: { markup: { type: String, required: true } },
-  setup(props) {
-    return () => h("section", { innerHTML: props.markup });
-  },
-});
-
-const renderPage = async () => {
-  const markup = await htmlRuntime.runPromise(
-    Effect.scoped(renderToHtmlString(html`<h2>Typed profile</h2>`)),
-  );
-  return renderToString(createSSRApp(TypedHtmlBoundary, { markup }));
-};
-```
-
-Hydration follows ownership, not markup origin: Vue hydrates Vue-owned hosts. The `innerHTML` descendants
-above are opaque to Vue and do not become an interactive Typed island. To hydrate Typed, reserve a separate
-empty host that Vue does not render below, then start the DOM-rendering slot after Vue hydrates.
-
-## Prove updates and teardown reach Vue
-
-After each input update, await `nextTick` before reading the Vue-owned DOM. Type into a child input, update the Typed shell and price props, and verify the input remains the same node. Then remove the host and assert that Vue's unmount hooks and any plugin subscriptions run once. The [Vue lifecycle reference](https://vuejs.org/api/composition-api-lifecycle.html) distinguishes mounted DOM from component setup and explains when unmount hooks run.
-
-For SSR, create a fresh Vue app and request-specific state per request; an application-owned HTML rendering runtime does not justify sharing one user's Vue store with another request. Test simultaneous requests with different props. If hydration reports a mismatch, compare the initial props and generated markup before changing either renderer's reconciliation behavior. Continue with [HTML output](/integrate/html-output) and [server rendering and hydration](/explore/server-rendering-and-hydration).
+The native template ref initializes the framework root. Its mount callbacks can run before the surrounding Typed tree reaches its destination. Vue readiness and DOM attachment are separate: measure or focus only after the outer owner has placed the host. Raw `RenderEvent` consumers own placement themselves.

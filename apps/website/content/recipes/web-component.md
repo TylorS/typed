@@ -1,133 +1,278 @@
 ---
 slug: web-component
 title: "Use Web Components and Typed together"
-summary: "Render custom elements as ordinary HTML, or host a scoped Typed render inside an element."
+summary: "Define a Typed custom element once, then use the same view and services in browsers, server rendering, and tests."
 ---
 
-Publish a profile element that can appear in a Typed screen, a static page, or another framework's application. The element definition below uses Typed internally; consumers only need an element and a content property. The definition owns the child render and its subscription, while the surrounding page decides where the host belongs.
+Use `@typed/template/WebComponent` to publish a Typed feature as a native custom element. The definition supplies reactive props and a renderable; registration handles connection, disconnection, and hydration. Consumers use attributes, properties, slots, and DOM events.
 
-An attribute is a string contract and can appear in server HTML. A property can hold objects but needs the element definition to be ready; assigning a property before upgrade can shadow a prototype setter. Either wait for `customElements.whenDefined` before setting rich values or implement the element's documented pre-upgrade property handling. Do not assume an arbitrary custom element handles that race.
+## Install
 
-## Custom-element output inside Typed
+The integration is part of `@typed/template`; there is no separate Web Components package. Install the published beta packages:
 
-Custom elements are HTML. Use them directly in `html`, with the same reactive attributes, properties, and
-native events as any other element.
-
-```ts
-import { html } from "@typed/template";
-
-export const profile = html`<typed-profile .content=${"Ada’s profile"}></typed-profile>`;
+```sh
+pnpm add @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta effect@4.0.0-rc.112
 ```
 
-Load the `typed-profile` definition below before this consumer template runs. Typed assigns `.content` while the custom element owns its internal DOM and lifecycle. Here the content is a plain string. To hand the element a live Typed renderable as an object, assign `profile.content` before insertion as shown below; a template property part normally evaluates its reactive input before assigning the resulting value. Use
-attributes for serialized configuration, properties for live values, and ordinary Typed event parts for
-the element's `CustomEvent`s. `DomRenderEvent` is unnecessary unless a foreign API gives you an already
-constructed node instead of markup you can author.
+Use matching Typed beta versions when adding other Typed packages to the application.
 
 ## Typed output inside a custom element
 
-The `TypedProfile` example samples `content` when connected. Assign it before insertion, as shown, and supply a live renderable for updates. It does not implement a setter that replaces the running render. A disconnected element may reconnect during a DOM move; the `#stopping` guard waits for old cleanup before starting again. The browser's [custom-element lifecycle contract](https://html.spec.whatwg.org/multipage/custom-elements.html#custom-element-reactions) explains why moving and disconnecting cannot be treated as application shutdown.
+Save this as `counter.ts`. The definition can be imported on the server because `make` does not read browser globals. The `CounterLabels` service supplies application text; each connection owns its own click state.
 
-The application or element-definition module owns a `ManagedRuntime`; it is not created or disposed for
-each element connection. Each element starts one scoped render and interrupts only that render when removed.
+```ts file="counter.ts"
+import { Context, Effect, Schema } from "effect";
+import { RefSubject } from "@typed/fx";
+import { html } from "@typed/template";
+import * as WebComponent from "@typed/template/WebComponent";
 
-```ts
-import * as Effect from "effect/Effect";
-import * as Fiber from "effect/Fiber";
-import * as ManagedRuntime from "effect/ManagedRuntime";
-import type * as Scope from "effect/Scope";
-import * as Fx from "@typed/fx/Fx";
-import { html, type Renderable } from "@typed/template";
+export class CounterLabels extends Context.Service<CounterLabels, {
+  readonly increment: string;
+}>()("CounterLabels") {}
+
+export const counter = WebComponent.make({
+  name: "typed-counter",
+  defaults: () => ({ title: "Counter" }),
+  attributes: Schema.Struct({
+    title: Schema.String.pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed("Counter")),
+    ),
+  }),
+  render: Effect.fn(function* (props: RefSubject.Computed<{ title: string }>) {
+    const labels = yield* CounterLabels;
+    const clicks = yield* RefSubject.make(0);
+    return html`<section>
+      <h2>${RefSubject.map(props, (value) => value.title)}</h2>
+      <button onclick=${RefSubject.increment(clicks)}>${labels.increment}</button>
+      <output>${clicks}</output>
+      <slot></slot>
+    </section>`;
+  }),
+});
+```
+
+Templates retain the ordinary Typed contract: interpolate values, `Effect`, `Stream`, and `Fx`; use the [AsyncData values and matching](/explore/async-data) for loading and failure states. Read application services with `yield*`, including `Navigation` and `CurrentRoute` when your runtime provides the [router services](/explore/routing-routes-matchers-and-navigation).
+
+Register with a layer and compose it with the application's rendering layer. Registration provides no services; its Scope owns the connected instances. Use the element in an ordinary template.
+
+```ts file="browser.ts"
+import { Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { html } from "@typed/template";
+import * as WebComponent from "@typed/template/WebComponent";
 import { DomRenderTemplate, render } from "@typed/template/Render";
-import type { RenderTemplate } from "@typed/template/RenderTemplate";
+import { counter, CounterLabels } from "./counter.js";
 
-const runtime = ManagedRuntime.make(DomRenderTemplate.using(document));
-export const stopProfileElements = () => runtime.dispose();
+export const CounterLive = WebComponent.register(counter).pipe(
+  Layer.provide(Layer.succeed(CounterLabels, { increment: "Add one" })),
+);
 
-class TypedProfile extends HTMLElement {
-  content: Renderable<unknown, never, RenderTemplate | Scope.Scope> = html`<p>Loading...</p>`;
-  #fiber: Fiber.Fiber<void, never> | undefined;
-  #stopping: Promise<void> | undefined;
-
-  connectedCallback(): void {
-    if (this.#fiber !== undefined) return;
-    if (this.#stopping !== undefined) return;
-    this.#fiber = runtime.runFork(
-      Effect.scoped(Fx.drain(render(this.content, this))),
-    );
-  }
-
-  disconnectedCallback(): void {
-    const fiber = this.#fiber;
-    this.#fiber = undefined;
-    if (fiber === undefined) return;
-    const stopping = runtime.runPromise(Fiber.interrupt(fiber));
-    this.#stopping = stopping;
-    void stopping.then(() => {
-      if (this.#stopping !== stopping) return;
-      this.#stopping = undefined;
-      if (this.isConnected) this.connectedCallback();
-    });
-  }
-}
-
-// Load this definition module once; a name has one constructor per document.
-customElements.define("typed-profile", TypedProfile);
-
-// The registered constructor gives this browser boundary its concrete type.
-const profile = new TypedProfile();
-profile.content = html`<section><h2>Ada’s profile</h2>
-  <output>${Fx.fromIterable(["Loading profile…", "Profile ready"])}</output>
-</section>`;
-document.body.append(profile);
+export const application = render(
+  html`<typed-counter title="Items" />`,
+  document.body,
+).pipe(
+  Fx.drainLayer,
+  Layer.provide(Layer.merge(DomRenderTemplate, CounterLive)),
+  Layer.launch,
+);
 ```
 
-The runtime belongs to the application/definition owner. Call `stopProfileElements` only when that owner shuts down; disconnecting one instance interrupts only that instance's fiber. The server runtime has its own `stopProfileRendering` shutdown function.
-`customElements.define()` registers a constructor; it does not mount an instance. Keep this registration in one definition module. Changing its class during development requires a page reload because the browser cannot replace an existing registration. Custom-element names are
-lowercase and contain a hyphen; use `customElements.whenDefined()` when a consumer must wait for a lazy
-definition.
+The application runs through the usual Effect entrypoint. Closing its Scope releases the registration and every connected instance. Registration captures `CurrentRenderDocument` and `CurrentShadowRoot` from its layer, so provide those references at the boundary when rendering into another document or choosing light/closed shadow DOM.
 
-## Decide what a server-rendered element upgrades
+## Custom-element output inside Typed
 
-The custom-element platform does not prescribe an SSR renderer. Author its host with `html` just as you
-would any other element. Typed serializes the attributes; the browser upgrades the host when its definition
-loads. `HtmlRenderEvent` is only needed when another renderer already produced trusted serialized output.
+After registration, render the element like ordinary HTML. Declared attributes update its input snapshot. Browser code can also assign `element.props` directly; the integration restores an own `props` value assigned before upgrade.
 
 ```ts
 import { html } from "@typed/template";
 
-export const profileHost = html`<typed-profile></typed-profile>`;
+export const page = html`<main>
+  <typed-counter title="Items"><p>Count items in this session.</p></typed-counter>
+</main>`;
 ```
 
-For Typed output, use a separate application-owned HTML runtime. Its result can be placed in the custom element's light DOM. A declarative shadow root requires a different element implementation that adopts that root; the light-DOM `TypedProfile` shown above does not do so.
+## Server rendering, hydration, and test services
+
+`WebComponent.server` returns a Renderable. It produces the host, serialized attributes, and Typed hydration markers, with declarative open shadow DOM by default. Register the same definition in the browser to adopt its existing nodes. The synchronous attribute schema must have a finite set of encoded keys. Only those fields are serialized; use `Schema.encodeKeys` for a DOM attribute alias and a decoding default for a missing attribute. Provide other initial props again before connecting or upgrading the element.
+
+Use Typed's existing HTML renderers. `renderToHtml` emits chunks as the body becomes available and then renders slot content; `renderToHtmlString` collects the same output for a static page or other string consumer.
+
+```ts file="server.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { html } from "@typed/template";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import * as WebComponent from "@typed/template/WebComponent";
+import { counter, CounterLabels } from "./counter.js";
+
+export const page = html`<main>
+  ${WebComponent.server(counter, { title: "Items" }, html`<p>Session count</p>`)}
+</main>`;
+
+const Services = HtmlRenderTemplate.pipe(
+  Layer.provideMerge(Layer.succeed(CounterLabels, { increment: "Add one" })),
+);
+
+export const response = renderToHtml(page).pipe(Fx.provide(Services));
+
+export const snapshot = renderToHtmlString(page).pipe(
+  Effect.provide(Services),
+  Effect.scoped,
+);
+```
+
+The request Scope owns the streamed response. Interruption releases pending work; failures remain in the Fx error channel. The host opening is emitted first, followed by the component body, the shadow template and slot content when shadow mode is enabled, and a final closing host event. `renderToHtml` can write those ordered chunks as they arrive; `renderToHtmlString` waits for the same sequence to finish.
+
+Keep the shadow choice identical at both boundaries:
 
 ```ts
-import * as Effect from "effect/Effect";
-import * as ManagedRuntime from "effect/ManagedRuntime";
-import { html } from "@typed/template";
+import { Effect, Layer } from "effect";
 import { HtmlRenderTemplate, renderToHtmlString } from "@typed/template/Html";
+import * as WebComponent from "@typed/template/WebComponent";
+import { counter } from "./counter.js";
 
-const runtime = ManagedRuntime.make(HtmlRenderTemplate);
-export const stopProfileRendering = () => runtime.dispose();
-const profile = html`<section><h2>Typed profile</h2></section>`;
+const OpenShadow = Layer.succeed(WebComponent.CurrentShadowRoot, { mode: "open" as const });
+const CounterLive = WebComponent.register(counter).pipe(Layer.provide(OpenShadow));
 
-const renderProfile = () =>
-  runtime.runPromise(Effect.scoped(renderToHtmlString(profile)));
+const markup = renderToHtmlString(WebComponent.server(counter, { title: "Items" })).pipe(
+  Effect.provide(Layer.merge(HtmlRenderTemplate, OpenShadow)),
+  Effect.scoped,
+);
 ```
 
-For example, a server can place the result inside `<typed-profile>${markup}</typed-profile>`. The definition above starts a fresh DOM render on connection, so this alone does not adopt server nodes. To preserve them, implement a Typed hydration entry that matches the exact server view and initial state; see [server rendering and hydration](/explore/server-rendering-and-hydration). Custom-element upgrade owns the host and any element-specific hydration. Typed hydrates only a
-compatible Typed-rendered range; never assign both systems the same descendants.
+Provide `CounterLive` alongside the application's `DomRenderTemplate` when starting the browser render. Use `false` in both layers for light DOM, or use the same open/closed mode in both layers; a mismatch is rejected during connection.
 
-## Prove the public element survives upgrade and reconnect
+Use the same Renderable with replacement services in tests:
 
-Test both definition-before-markup and markup-before-definition. Remove and immediately reinsert the element while its render is active, then verify there is only one subscription. Repeat in a browser; a DOM shim cannot establish every focus or custom-element reaction behavior.
+```ts file="counter.test.ts"
+import { expect, it } from "vitest";
+import { Effect } from "effect";
+import { HtmlRenderTemplate, renderToHtmlString } from "@typed/template/Html";
+import * as WebComponent from "@typed/template/WebComponent";
+import { counter, CounterLabels } from "./counter.js";
 
-If the element uses shadow DOM, dispatch public custom events with the intended `bubbles` and `composed` settings and test listening from outside the shadow root. Inspect computed styles inside the shadow tree when styles appear missing: page selectors do not generally style shadow descendants. Expose CSS custom properties or documented parts rather than depending on consumers reaching into implementation nodes. See [MDN's shadow DOM guide](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM).
+it("renders with test services", async () => {
+  const markup = await Effect.runPromise(renderToHtmlString(WebComponent.server(counter)).pipe(
+    Effect.provide(HtmlRenderTemplate),
+    Effect.provideService(CounterLabels, { increment: "Test increment" }),
+    Effect.scoped,
+  ));
 
-## APIs used
+  expect(markup).toContain("Test increment");
+});
+```
 
-- [`DomRenderEvent`](/reference/%40typed%2Ftemplate%2FRenderEvent%23DomRenderEvent) preserves exact DOM nodes.
-- [`HtmlRenderEvent`](/reference/%40typed%2Ftemplate%2FRenderEvent%23HtmlRenderEvent) carries trusted serialized output.
-- [`DomRenderTemplate`](/reference/%40typed%2Ftemplate%2FRender%23DomRenderTemplate) and [`HtmlRenderTemplate`](/reference/%40typed%2Ftemplate%2FHtml%23HtmlRenderTemplate) provide the two output media.
-- [`renderToHtmlString`](/reference/%40typed%2Ftemplate%2FHtml%23renderToHtmlString) renders Typed output for an HTML response.
-- [Effect scopes](https://effect.website/docs/v4/resource-management/scope/) close the render's resources on interruption.
+Provide `CurrentShadowRoot` with `false` for light DOM, or a shadow configuration for open/closed roots. Match that choice on the server and browser. Shadow mode preserves light children for slots; light mode owns all host children. For browser tests, register a unique element name in each test and close its registration Scope after checking updates, disconnection, and retained hydration nodes.
+
+## Effect resources, streams, and AsyncData
+
+A custom element uses Typed's native reactive values directly. This example reads an application service, displays its connection Stream, and switches a profile request when the `profileId` prop changes. The request's failure becomes `AsyncData`, so it can render an error without ending the element's view.
+
+```ts file="profile-element.ts"
+import { Context, Effect, Schema, Stream } from "effect";
+import { Fx, RefSubject } from "@typed/fx";
+import * as AsyncData from "@typed/async-data";
+import { html } from "@typed/template";
+import * as WebComponent from "@typed/template/WebComponent";
+
+export class Profiles extends Context.Service<Profiles, {
+  readonly load: (id: string) => Effect.Effect<string, Error>;
+  readonly connection: Stream.Stream<string>;
+}>()("Profiles") {}
+
+export const profileElement = WebComponent.make({
+  name: "typed-profile",
+  defaults: () => ({ profileId: "42" }),
+  attributes: Schema.Struct({
+    profileId: Schema.String.pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed("42")),
+    ),
+  }).pipe(Schema.encodeKeys({ profileId: "profile-id" })),
+  render: Effect.fn(function* (props: RefSubject.Computed<{ profileId: string }>) {
+    const profiles = yield* Profiles;
+    const request = Fx.switchMap(props, ({ profileId }) => Fx.concat(
+      Fx.succeed(AsyncData.loading()),
+      Fx.fromEffect(Effect.map(Effect.exit(profiles.load(profileId)), AsyncData.fromExit)),
+    ));
+    const content = Fx.map(request, (data) => AsyncData.match(data, {
+      NoData: () => "Choose a profile.",
+      Loading: () => "Loading…",
+      Success: (name) => name,
+      Failure: () => "Profile unavailable.",
+      Optimistic: (name) => `${name} (saving)`,
+    }));
+    return html`<section><small>${profiles.connection}</small><p>${content}</p></section>`;
+  }),
+});
+```
+
+This source intentionally starts with Loading, which is also its first server snapshot. For prefetched HTML, make the initial state part of the element's props and restore the same state before browser upgrade. Use the attribute schema only for values that have a suitable string representation. Rich resource state needs the application's serialized-data transport.
+
+`AsyncData.startLoading` retains an available value while refreshing, and `AsyncData.optimistic(previous, value)` preserves the previous state for rollback. `AsyncData.getSuccess` reads success or optimistic content; `getCause` preserves complete failures. If the UI should retain an older value after a failed refresh, store that value in its model explicitly. The native framework bindings offer `latest`; a plain AsyncData failure has no implicit stale-value field.
+
+## Routes and deterministic test history
+
+Custom elements can host the same Typed matcher and navigation services as the surrounding app. The route handler establishes `CurrentRoute` for its nested view:
+
+```ts file="routed-element.ts"
+import { Effect } from "effect";
+import { RefSubject } from "@typed/fx";
+import { Navigation } from "@typed/navigation/Navigation";
+import { CurrentRoute } from "@typed/router/CurrentRoute";
+import * as Matcher from "@typed/router/Matcher";
+import * as Route from "@typed/router/Route";
+import { html } from "@typed/template";
+import * as WebComponent from "@typed/template/WebComponent";
+
+const users = Matcher.match(Route.Parse("/users/:id"), (params) => html`<section>
+  <h2>User ${RefSubject.map(params, (value) => value.id)}</h2>
+  <small>${Effect.map(CurrentRoute, (owner) => owner.route.path)}</small>
+</section>`).match(Route.Wildcard, html`<p>Choose a user.</p>`);
+
+export const userElement = WebComponent.make({
+  name: "typed-users",
+  defaults: () => ({}),
+  render: () => html`<nav>
+    <button onclick=${Navigation.navigate("/users/42")}>User 42</button>
+  </nav>${users}`,
+});
+```
+
+Provide `BrowserRouter` to the registration layer, or `ServerRouter` with the request URL to server rendering. Registration captures those services; each connected instance borrows that navigation backend. Tests use the same definition with `TestRouter`:
+
+```ts
+import { expect, it } from "vitest";
+import { Effect } from "effect";
+import { TestRouter } from "@typed/router/RouterTest";
+import { HtmlRenderTemplate, renderToHtmlString } from "@typed/template/Html";
+import * as WebComponent from "@typed/template/WebComponent";
+import { userElement } from "./routed-element.js";
+
+it("uses deterministic test navigation", async () => {
+  const markup = await Effect.runPromise(renderToHtmlString(WebComponent.server(userElement)).pipe(
+    Effect.provide(HtmlRenderTemplate),
+    Effect.provide(TestRouter({ url: "https://example.test/users/42" })),
+    Effect.scoped,
+  ));
+  expect(markup).toContain("42");
+});
+```
+
+## Configure event bubbling
+
+Element events bubble normally. An element definition can stop selected events at its render root:
+
+```ts
+import * as WebComponent from "@typed/template/WebComponent";
+import { counter } from "./counter.js";
+
+export const guardedCounter = WebComponent.make({
+  ...counter,
+  name: "typed-guarded-counter",
+  stopPropagation: { click: true, keydown: false },
+});
+```
+
+`CurrentRootEvents` from `@typed/template/RootEvents` supplies an inherited default through Effect provisioning. Undefined inherits, an object overrides named events, and `false` disables the inherited policy. `true` stops bubbling after inner handlers run; it does not prevent default actions or suppress ancestor capture listeners. `rootEvents(root, options)` installs this same behavior on a custom host with scoped cleanup. Shadow DOM's native composed-event rules still apply.
+
+The automatic `display: contents` style removes the host's layout box; the element remains the DOM ownership boundary. Each disconnection interrupts that instance's work, and reconnection waits for cleanup before starting again. Closing the registration Scope stops all its instances and deactivates the registered class; a browser registry cannot unregister it. Child instances never dispose the application runtime. Render failures emit `typed:error`, with the Effect `Cause` in `CustomEvent.detail`.

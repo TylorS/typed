@@ -37,12 +37,36 @@ describe("Fx.mergeOrdered", () => {
       yield* Fiber.interrupt(fiber);
     }).pipe(Effect.scoped, Effect.runPromise));
 
+  it("discards later buffered values when the aggregate is interrupted", () =>
+    Effect.gen(function* () {
+      const values = yield* Ref.make<ReadonlyArray<string>>([]);
+      const first = Fx.succeed("shell").pipe(Fx.continueWith(() => Fx.never));
+      const later = Fx.succeed("tail");
+      const fiber = yield* Fx.observe(Fx.mergeOrdered(first, later), (value) =>
+        Ref.update(values, (current) => [...current, value]),
+      ).pipe(Effect.forkScoped);
+
+      yield* Effect.yieldNow;
+      assert.deepStrictEqual(yield* Ref.get(values), ["shell"]);
+      yield* Fiber.interrupt(fiber);
+      assert.deepStrictEqual(yield* Ref.get(values), ["shell"]);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
+  it("continues after an independently interrupted input", () =>
+    Effect.gen(function* () {
+      const result = yield* Fx.mergeOrdered(Fx.interrupt(123), Fx.succeed("later")).pipe(
+        Fx.collectAll,
+      );
+
+      assert.deepStrictEqual(result, ["later"]);
+    }).pipe(Effect.scoped, Effect.runPromise));
+
   it("fails when an earlier source fails", () =>
     Effect.gen(function* () {
-      const exit = yield* Fx.mergeOrdered(
-        Fx.fail("boom"),
-        Fx.fromIterable([1, 2]),
-      ).pipe(Fx.collectAll, Effect.exit);
+      const exit = yield* Fx.mergeOrdered(Fx.fail("boom"), Fx.fromIterable([1, 2])).pipe(
+        Fx.collectAll,
+        Effect.exit,
+      );
 
       assert(Exit.isFailure(exit));
     }).pipe(Effect.scoped, Effect.runPromise));

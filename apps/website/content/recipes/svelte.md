@@ -1,239 +1,331 @@
 ---
 slug: svelte
 title: "Use Svelte 5 and Typed together"
-summary: "Keep one renderer responsible for each DOM range, its state, and its lifetime."
+summary: "Use @typed/svelte for bidirectional rendering, native stores, Effect services, and matching server and browser snapshots."
 ---
 
-Keep an established Svelte document editor while Typed takes over its navigation and document list. The editor can keep its rune state while Typed controls document selection and surrounding layout. Instantiate the bridge once per editor lifetime. Send document metadata through the `Readable` props store; keep unsaved text inside the editor or an explicit shared document service. A new document identity may deliberately require a new editor; a save-status update should only update props.
+`@typed/svelte` preserves Svelte component state while Typed updates its props, and lets a Svelte application render Typed views. Native stores expose Effect resources without a component-local subscription adapter. Use a Svelte 5 build that compiles `.svelte` files with the matching runtime.
 
-Before adopting this adapter, use a Svelte 5 build that compiles `.svelte` files, and match its installed Svelte runtime to the compiler. Save the named files shown below together. This is an adapter recipe, not an importable `@typed/svelte` API. [Svelte's imperative API](https://svelte.dev/docs/svelte/imperative-component-api) defines mounting, hydration, and teardown.
+## Install
 
-## Svelte output inside Typed: mount the editor once
+Install the integration with matching Typed beta packages:
 
-Mount Svelte once in a detached host, then emit that host for Typed to place. A store is the real Svelte 5
-prop bridge: it updates the mounted component without remounting or resetting its local state.
-
-```svelte
-<!-- Bridge.svelte: private adapter component -->
-<script lang="ts" generics="Props extends Record<string, unknown>">
-  import type { Component } from "svelte"
-  import type { Readable } from "svelte/store"
-
-  type BridgeProps<Props extends Record<string, unknown>> = {
-    readonly component: Component<Props>
-    readonly props: Readable<Props | undefined>
-  }
-
-  let { component: Child, props } = $props<BridgeProps<Props>>()
-  let current = $state<Props | undefined>()
-
-  $effect(() => props.subscribe((next) => { current = next }))
-</script>
-
-{#if current}<Child {...current} />{/if}
+```sh
+pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 svelte@^5.57.0
 ```
 
-```ts file="svelte-in-typed.ts"
-import * as Effect from "effect/Effect";
-import * as Fx from "@typed/fx/Fx";
-import { type Renderable } from "@typed/template";
-import { liftRenderableToFx } from "@typed/template/Render";
-import { DomRenderEvent } from "@typed/template/RenderEvent";
-import { component } from "@typed/ui/Component";
-import { mount, unmount, type Component } from "svelte";
-import { writable, type Readable } from "svelte/store";
+Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
 
-type BridgeProps<Props extends Record<string, unknown>> = {
-  readonly component: Component<Props>;
-  readonly props: Readable<Props | undefined>;
-};
+The package exports precompiled browser and server implementations of `Typed.svelte`. Your application still compiles its own `.svelte` files normally; importing the integration does not require enabling Svelte's experimental async compiler option in the application.
 
-export const svelteInTyped = component(function* <Props extends Record<string, unknown>, E, R>(
-  Bridge: Component<BridgeProps<Props>>,
-  View: Component<Props>,
-  values: Renderable<Props, E, R>,
-) {
-  const host = document.createElement("div");
-  const props = writable<Props | undefined>(undefined);
-  yield* Effect.acquireRelease(
-    Effect.sync(() => mount(Bridge, { target: host, props: { component: View, props } })),
-    (instance) => Effect.promise(() => unmount(instance)),
-  );
+## Check Svelte components
 
-  return Fx.concat(
-    liftRenderableToFx<E, R>(values).pipe(
-      Fx.mapEffect((next) =>
-        Effect.sync(() => {
-          props.set(next);
-          return DomRenderEvent(host);
-        }),
-      ),
-    ),
-    Fx.never,
-  );
-});
+When working on `@typed/svelte` in this repository, `packages/svelte/svelte.config.js` is the shared compiler configuration for the editor, Vite, and the component build. It enables async compilation for the integration's server-rendered component. Keep compiler settings there so all three use the same behavior.
+
+```sh
+pnpm --filter @typed/svelte check:svelte
 ```
 
-The first bridge update enables `<Child>`; subsequent store updates patch its props. The same host is emitted each time, so neither Typed placement nor the prop stream recreates the Svelte instance.
+This checks `.svelte` components, their fixtures, and TypeScript imports, and fails on errors or warnings. `build`, `build:components`, and `test:types` include this check; checking only `.ts` files does not validate Svelte templates. The command recreates its temporary checker output on every run so deleted files cannot leave stale diagnostics.
 
-`liftRenderableToFx` keeps the input's errors and services on the returned Typed component. The `Scope` that
-runs it unmounts Svelte; Typed never touches the host’s Svelte-owned children.
+## Svelte output inside Typed
 
-## Supply an editor that owns its draft
-
-Save the following component as `DocumentEditor.svelte` beside the private `Bridge.svelte`. Import both in your application and call `svelteInTyped(Bridge, DocumentEditor, values)`, where each value has `title` and `saved` props. Keep the draft out of the incoming metadata object so that a save-status update cannot accidentally replace text the user is editing.
+The editor keeps its draft while incoming metadata changes. Save this as `DocumentEditor.svelte`:
 
 ```svelte
 <!-- DocumentEditor.svelte -->
 <script lang="ts">
-  let { title, saved } = $props<{ title: string; saved: boolean }>()
-  let draft = $state("")
+  let { title, saved }: { title: string; saved: boolean } = $props();
+  let draft = $state("");
 </script>
 
 <section>
   <h2>{title}</h2>
   <label>Document text <textarea bind:value={draft}></textarea></label>
-  <p aria-live="polite">{saved ? "Saved" : "Unsaved changes"}</p>
+  <p>{saved ? "Saved" : "Unsaved changes"}</p>
 </section>
 ```
 
-This editor makes the bridge's state contract observable: change `saved` while typing and the draft survives. Changing the selected document may instead require resetting the draft or mounting a new editor. Make that identity transition explicit in the parent; do not smuggle it into a routine props update. The component above illustrates local draft ownership, not a complete save workflow.
+Pass the imported component to `editorPage`. `view` requires a stable unique `id` in its options. Use the same ID on the server and browser, and derive distinct IDs from stable keys for repeated instances. It accepts plain props, `Effect`, `Stream`, or `Fx`; a props update preserves the mounted Svelte instance.
 
-## Typed output inside Svelte: keep the inverse slot stable
+```ts file="editor-page.ts"
+import type { Component } from "svelte";
+import { RefSubject } from "@typed/fx";
+import { view } from "@typed/svelte";
+import { html } from "@typed/template";
+import { component } from "@typed/ui/Component";
 
-The application creates one DOM runtime and disposes it when the application stops—not when a Svelte component
-unmounts. The component starts one scoped render and its `$effect` cleanup interrupts only that render fiber.
-
-```ts file="typed-runtime.ts"
-// Application-owned browser runtime.
-import { ManagedRuntime } from "effect";
-import { DomRenderTemplate } from "@typed/template/Render";
-
-export const runtime = ManagedRuntime.make(DomRenderTemplate.using(document));
-export const stopSvelteApplication = () => runtime.dispose();
+export const editorPage = (Editor: Component<{ title: string; saved: boolean }>) =>
+  component(function* () {
+    const metadata = yield* RefSubject.make({ title: "Draft", saved: false });
+    return html`<main>
+      ${view(Editor, metadata, { id: "document-editor" })}
+      <button onclick=${RefSubject.update(metadata, (value) => ({ ...value, saved: true }))}>
+        Mark saved
+      </button>
+    </main>`;
+  });
 ```
 
-```svelte
-<!-- TypedSlot.svelte -->
-<script lang="ts">
-  import * as Effect from "effect/Effect"
-  import * as Fiber from "effect/Fiber"
-  import type * as Scope from "effect/Scope"
-  import * as Fx from "@typed/fx/Fx"
-  import { type Renderable } from "@typed/template"
-  import { render } from "@typed/template/Render"
-  import type { RenderTemplate } from "@typed/template/RenderTemplate"
-  import { runtime } from "./typed-runtime.js"
+Pass the view directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects and supplies Svelte’s backend from the active Typed renderer. The same entrypoints handle browser rendering, SSR, and build-time static HTML. Browser rendering adopts existing server hosts; start with matching props.
 
-  let { value } = $props<{
-    readonly value: Renderable<unknown, never, RenderTemplate | Scope.Scope>
-  }>()
-  let host = $state<HTMLDivElement>()
-  let pending = Promise.resolve()
+```ts file="render-page.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { DomRenderTemplate, render } from "@typed/template/Render";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { editorPage } from "./editor-page.js";
+import DocumentEditor from "./DocumentEditor.svelte";
 
-  $effect(() => {
-    const element = host
-    const current = value
-    if (element === undefined) return
-    let cancelled = false
-    let fiber: Fiber.Fiber<void, never> | undefined
-    const started = pending.then(() => {
-      if (!cancelled) fiber = runtime.runFork(Effect.scoped(Fx.drain(render(current, element))))
-    })
-    pending = started
-    return () => {
-      cancelled = true
-      pending = started.then(async () => {
-        if (fiber !== undefined) await runtime.runPromise(Fiber.interrupt(fiber))
-      })
-    }
-  })
-</script>
+const page = editorPage(DocumentEditor);
 
-<div bind:this={host}></div>
+export const htmlChunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+
+export const renderPage = () => Effect.runPromise(
+  renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+);
+
+export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
+  Fx.drainLayer,
+  Layer.provide(DomRenderTemplate.using(host.ownerDocument)),
+);
+
+export const mountPage = (host: HTMLElement) =>
+  Effect.runFork(Layer.launch(pageLayer(host)));
 ```
 
-Svelte owns the outer `div`; Typed owns its children. Do not dispose `runtime` here: it can serve other Svelte
-components. A live Typed renderable updates its child range without a Svelte remount. In the editor, this inverse slot can display a Typed-owned synchronization status alongside Svelte-owned text.
+These are Typed’s standard renderer layers; `view` composes the framework’s server output as a native template child and mounts through the template’s ref in the browser. Prefer `htmlChunks` for a streaming response, observed inside the request Scope. Use `renderPage` when a complete string is required, including static generation. Both preserve the same HTML order and hydration markers. Compose `pageLayer(host)` with the application’s other Layers. At the application boundary, `mountPage` launches that Layer and returns the fiber to interrupt at shutdown.
 
-```ts file="save-status.ts"
-import * as Fx from "@typed/fx/Fx";
+Svelte’s public server API returns a complete `body` and `head`. The surrounding Typed template and opening Svelte host stream immediately; the Svelte body follows when its props and asynchronous rendering are ready. `onHead` receives the completed head output. This also applies to static rendering.
+
+## Share services and resource stores
+
+Save this shared service as `profile.ts`. Server, browser, and test runtimes can provide different implementations of the same contract.
+
+```ts file="profile.ts"
+import { Context, Effect, Layer } from "effect";
 import { html } from "@typed/template";
 
-export const saveStatus = html`<output>${Fx.fromIterable(["Saving document…", "Document saved"])}</output>`;
+export class ProfileService extends Context.Service<ProfileService, {
+  readonly name: Effect.Effect<string>;
+}>()("ProfileService") {}
+
+export const ProfileLive = Layer.succeed(ProfileService, { name: Effect.succeed("Ada") });
+export const loadName = Effect.flatMap(ProfileService, (profile) => profile.name);
+export const status = html`<p role="status">Account ready</p>`;
 ```
 
-Save the slot above as `TypedSlot.svelte`. A Svelte screen can now import the actual Typed value and pass it once to that slot:
+`useSource` returns native Svelte stores. Destructure the fields you use so Svelte's `$store` syntax subscribes and updates the template normally.
 
 ```svelte
-<!-- EditorScreen.svelte -->
+<!-- Profile.svelte -->
 <script lang="ts">
-  import TypedSlot from "./TypedSlot.svelte"
-  import { saveStatus } from "./save-status.js"
-  let draft = $state("")
+  import { Option } from "effect";
+  import * as AsyncData from "@typed/async-data";
+  import { useSource } from "@typed/svelte/Reactive";
+  import { loadName } from "./profile.js";
+
+  let { initialName }: { initialName: string } = $props();
+  const profile = useSource(loadName, { initial: AsyncData.success(initialName) });
+  const { latest, pending, failure } = profile;
 </script>
 
-<label>Document text <textarea bind:value={draft}></textarea></label>
-<TypedSlot value={saveStatus} />
+<section aria-busy={$pending}>
+  <h2>Profile</h2>
+  <p>{Option.getOrElse($latest, () => "Loading…")}</p>
+  {#if $failure}<p role="alert">Could not load the profile.</p>{/if}
+  <button onclick={profile.refresh}>Refresh</button>
+</section>
 ```
 
-The imported value has stable identity. Typing updates the Svelte draft without recreating the Typed status subscription. The finite status values are a deterministic stand-in for your application's actual save source; replace that source with the save workflow, keeping the same host and runtime ownership. The application entry calls `stopSvelteApplication` only when the whole browser application ends.
+| Input                              | Native Svelte binding                                               |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| Value, `Effect`, `Stream`, or `Fx` | `useSource(source, { initial })`                                    |
+| Effect service                     | `useService(Service, { initial })`                                  |
+| `RefSubject`                       | `useRefSubject(ref, initial)` returns a writable store and `.state` |
+| Existing `AsyncData` producer      | `useAsyncData(source, { initial })` preserves its state model       |
+| Existing Svelte store              | `fromReadable` from `@typed/svelte/Store` lifts it into Typed       |
 
-## Server rendering and hydration
+Resource fields include `data`, `value`, `latest`, `cause`, `error`, `pending`, `refreshing`, and `optimistic`. Values and failures use `Option`; the underlying `data` remains Typed `AsyncData`. Refresh keeps an available value visible. `latest` remembers the last available value when the current state has none. `refresh()` restarts the source and `cancel()` interrupts it. A readable source or runtime store can replace the producer; cleanup finishes before the replacement starts.
 
-Svelte server output can be a Typed HTML render event. This is renderer-owned, trusted framework output—not a
-general raw-HTML API.
+Use the native writable bridge for shared state:
+
+```svelte
+<!-- SharedCounter.svelte -->
+<script lang="ts">
+  import type * as RefSubject from "@typed/fx/RefSubject";
+  import { useRefSubject } from "@typed/svelte/Reactive";
+
+  let { count, initialCount }: {
+    count: RefSubject.RefSubject<number>;
+    initialCount: number;
+  } = $props();
+  const value = useRefSubject(count, initialCount);
+</script>
+
+<button onclick={() => value.update((current) => current + 1)}>{$value}</button>
+```
+
+The owner creates `count` in its Scope and passes its server snapshot as `initialCount`. Local writes use serialized RefSubject transactions. The writable store accepts failing refs, including hydrated state; `set` and `update` return `Promise<Exit>`, and `.state` exposes read and write failures even when a native binding ignores that result. Runtime replacement and unmount interrupt pending writes. To display an optimistic save, pass an `Fx` or store of `AsyncData` to `useAsyncData`; its `value` includes the optimistic value and its `optimistic` store identifies the pending edit.
+
+## Typed output inside Svelte
+
+`provideRuntime` installs a borrowed runtime for the component's descendants. `Typed.svelte` uses it automatically and supplies its own template renderer and Scope. A view without application services needs no runtime; an explicit `runtime` prop can select one for a single view. Its host ID defaults to Svelte’s native `$props.id()`; an explicit `id` can override it. `onReady` runs after the first output is attached or hydrated. Save this component as `App.svelte` beside `Profile.svelte`:
+
+```svelte
+<!-- App.svelte -->
+<script lang="ts">
+  import { toStore } from "svelte/store";
+  import Typed from "@typed/svelte/Typed.svelte";
+  import { provideRuntime } from "@typed/svelte/Runtime";
+  import type { AppProps } from "./app-props.js";
+  import { status } from "./profile.js";
+  import Profile from "./Profile.svelte";
+
+  let { runtime, initialName }: AppProps = $props();
+  provideRuntime(toStore(() => runtime));
+</script>
+
+<Profile {initialName} />
+<Typed view={status} onError={console.error} />
+```
+
+```ts file="app-props.ts"
+import type { Runtime } from "@typed/svelte/Runtime";
+import type { ProfileService } from "./profile.js";
+
+export interface AppProps {
+  readonly runtime: Runtime<ProfileService>;
+  readonly initialName: string;
+}
+```
+
+Use `provideServices(Context.make(Service, implementation))` during component initialization to override selected services for descendants while preserving the parent's other services. `fromContext` adapts already-built Effect services, and `runtimeContext` creates the context map for Svelte's imperative `mount`, `hydrate`, or server `render`. These helpers borrow resources; the application or request owns runtime disposal. `toReadable` and `toWritable` from `@typed/svelte/Store` are scoped Effects for exposing non-failing Typed sources to an existing Svelte store consumer. Use the AsyncData bindings when the source can fail. `attachment` from `@typed/svelte/Attachment` supports an existing Svelte element as the Typed root when an automatic component host does not fit the layout.
+
+## Prefetch in the request and hydrate the snapshot
+
+Resource stores start after mount. On the server they read `initial` and do not run application Effects. Prefetch request data explicitly, and pass it to both server and client. The helper below receives the imported `App.svelte` component.
+
+```ts file="server.ts"
+import type { Component } from "svelte";
+import { render } from "svelte/server";
+import { ManagedRuntime, Option } from "effect";
+import * as AsyncData from "@typed/async-data";
+import { prefetch } from "@typed/svelte/Reactive";
+import type { AppProps } from "./app-props.js";
+import { loadName, ProfileLive } from "./profile.js";
+
+export async function renderApp(App: Component<AppProps>) {
+  const runtime = ManagedRuntime.make(ProfileLive);
+  try {
+    const initial = await runtime.runPromise(prefetch(loadName));
+    const initialName = Option.getOrThrow(AsyncData.getSuccess(initial));
+    const output = await render(App, { props: { runtime, initialName } });
+    return { html: output.body, head: output.head, data: { initialName } };
+  } finally {
+    await runtime.dispose();
+  }
+}
+```
+
+`prefetch` takes one snapshot and closes that producer's Scope. This example requires success before sending a response; an application that renders failures can transport its full `AsyncData` snapshot using an appropriate codec. `Typed` renders its own HTML as part of Svelte’s normal server render and adopts it during hydration. Return Svelte’s `head` and `body` through your normal document layout; no separate Typed markup snapshot is needed.
+
+```ts file="browser.ts"
+import { hydrate, unmount, type Component } from "svelte";
+import { ManagedRuntime } from "effect";
+import type { AppProps } from "./app-props.js";
+import { ProfileLive } from "./profile.js";
+
+export function hydrateApp(App: Component<AppProps>, target: HTMLElement,
+  data: Pick<AppProps, "initialName">) {
+  const runtime = ManagedRuntime.make(ProfileLive);
+  const app = hydrate(App, { target, props: { runtime, ...data } });
+  return async () => { await unmount(app); await runtime.dispose(); };
+}
+```
+
+For a browser-only application, use Svelte’s `mount` with the same component. For a Typed-owned page, use Typed’s `render`; the integration chooses mounting or hydration from the native host ref.
+
+## Routes, navigation, and test services
+
+Provide `BrowserRouter`, `ServerRouter`, or `TestRouter` in the same runtime as application services. Native route stores use Typed's matcher, including decoded parameters. `CurrentRoute` describes the structural route owner; it is distinct from the current browser location.
+
+```svelte
+<!-- Navigation.svelte -->
+<script lang="ts">
+  import { Option } from "effect";
+  import * as Route from "@typed/router/Route";
+  import { useCurrentPath, useNavigation, useRoute } from "@typed/svelte/Router";
+
+  const navigation = useNavigation();
+  const { latest: path } = useCurrentPath();
+  const { latest: matched } = useRoute(Route.Parse("/profile"));
+  const openProfile = () => navigation.navigate("/profile").catch(console.error);
+</script>
+
+<nav>
+  <button onclick={openProfile}>Profile</button>
+  <span>{Option.getOrElse($path, () => "/")}</span>
+  {#if Option.isSome($matched) && Option.isSome($matched.value)}<span>Profile selected</span>{/if}
+</nav>
+```
+
+For a Typed-owned route tree, return `view` from the actual matcher handler. Decoded params remain reactive, and the selected handler's services and `CurrentRoute` reach Svelte and nested Typed content automatically:
 
 ```ts
-import * as Fx from "@typed/fx/Fx";
-import { HtmlRenderEvent } from "@typed/template/RenderEvent";
-import { type Component } from "svelte";
-import { render } from "svelte/server";
+import type { Component } from "svelte";
+import { view } from "@typed/svelte";
+import { html } from "@typed/template";
+import * as Matcher from "@typed/router/Matcher";
+import * as Route from "@typed/router/Route";
 
-export const svelteHtml = <Props extends Record<string, unknown>>(
-  View: Component<Props>,
-  props: Props,
-) => Fx.sync(() => HtmlRenderEvent(render(View, { props }).body, true));
+export const profileRoutes = (ProfilePage: Component<{ id: string }>) =>
+  Matcher.match(Route.Parse("/profile/:id"), (params) => view(ProfilePage, params, { id: "profile-route" }))
+    .match(Route.Wildcard, html`<p>Choose a profile.</p>`);
 ```
 
-The server example inserts `render(...).body` only. A component using `<svelte:head>` also produces head output; the server page owner must collect and insert that output once. Do not silently drop titles, metadata, or required styles when turning a complete Svelte page into a body fragment. See [Svelte server rendering](https://svelte.dev/docs/svelte/svelte-server).
+Call `provideCurrentRoute(fullRoute)` in a route layout to extend the route ancestry for its descendants, including nested Typed views. `useCurrentRoute` reads that owner; `useNavigation` exposes location, entries, transition, history availability, and navigation commands. For request HTML, supply initial route snapshots just as for other stores.
 
-For the inverse, create a separate server runtime from `HtmlRenderTemplate`; the Svelte component receives its
-completed trusted fragment at the SSR boundary.
+`useRoute(route, { currentRoute: { route: Route.Parse("/admin") } })` uses that mount instead of the ambient one; `{ route: Route.Slash }` matches from `/`. The supplied mount is applied once. Its wildcard fallback returns `None` inside that mount, while leaving it reports the native `RouteNotFound` failure. Omitting `currentRoute` keeps the default global fallback, which remains live when leaving and reentering the ambient mount. The option also accepts a Svelte readable store.
 
-```ts file="typed-html-runtime.ts"
-// Owned and disposed by the server application.
-import * as Effect from "effect/Effect";
-import { ManagedRuntime } from "effect";
-import { type Renderable } from "@typed/template";
-import { renderToHtmlString, HtmlRenderTemplate } from "@typed/template/Html";
-import type { RenderTemplate } from "@typed/template/RenderTemplate";
-import type * as Scope from "effect/Scope";
+```ts
+import { expect, it } from "vitest";
+import { Effect, Layer, ManagedRuntime } from "effect";
+import { Navigation } from "@typed/navigation/Navigation";
+import { TestRouter } from "@typed/router/RouterTest";
+import { ProfileService } from "./profile.js";
 
-const runtime = ManagedRuntime.make(HtmlRenderTemplate);
-
-export const renderTypedHtml = (value: Renderable<unknown, never, RenderTemplate | Scope.Scope>) =>
-  runtime.runPromise(Effect.scoped(renderToHtmlString(value)));
-
-export const stopHtmlApplication = () => runtime.dispose();
+it("renders with test services", async () => {
+  const runtime = ManagedRuntime.make(Layer.merge(
+    Layer.succeed(ProfileService, { name: Effect.succeed("Test user") }),
+    TestRouter({ url: "https://example.test/profile" }),
+  ));
+  try {
+    const entry = await runtime.runPromise(Effect.scoped(Navigation.currentEntry));
+    expect(entry.url.pathname).toBe("/profile");
+    // Pass this runtime to App or a component fixture to test its native stores and navigation.
+  } finally {
+    await runtime.dispose();
+  }
+});
 ```
+
+## Configure event bubbling
+
+`view(Component, props, { id: "editor", stopPropagation: { click: true } })` configures the Svelte-in-Typed root. The inverse component accepts the same policy:
 
 ```svelte
-<!-- TypedHtml.svelte: server boundary for renderer-owned, trusted output -->
+<!-- EventBoundary.svelte -->
 <script lang="ts">
-  let { html } = $props<{ readonly html: string }>()
+  import Typed from "@typed/svelte/Typed.svelte";
+  import { status } from "./profile.js";
 </script>
 
-{@html html}
+<Typed view={status} stopPropagation={{ click: true, keydown: false }} onError={console.error} />
 ```
 
-`{@html}` is appropriate only for the trusted string returned by `renderTypedHtml`, never user data. On the
-client, choose one owner for those descendants: leave this server fragment static, or mount/hydrate Typed in a
-separate Typed-owned host. Do not ask Svelte and Typed to hydrate the same HTML range. The application owner
-disposes each `ManagedRuntime` after its browser or server lifetime ends.
+Provide `CurrentRootEvents` from `@typed/template/RootEvents` through the surrounding Effect Context or `provideServices` to establish a default. Undefined inherits, an object overrides each named event, and `false` disables the inherited policy. A `true` entry stops bubbling at the root; target listeners and default actions still run, and ancestor capture listeners have already run. `rootEvents(root, options)` exposes the same scoped behavior for a custom host. `view` also forwards Svelte `context`, `idPrefix`, CSP, and error-transform options; preserve those identities between server and client.
 
-## Prove the editor keeps its draft and closes its effects
+Automatic `div` hosts use `display: contents` to remove layout boxes while retaining DOM ownership boundaries and separate hydration markers. Place them where an HTML `div` is valid; the style does not change table or SVG parsing rules. Svelte owns its components; Typed owns its renderable ranges. Unmount closes child subscriptions and their Scope, while borrowed runtimes remain with the application or request. Keep the same live renderable for ordinary updates; replacing it deliberately replaces the Typed work. Updating `onReady`, `onError`, or `stopPropagation` preserves that work. `onError` receives the Effect `Cause`; without a callback, the host dispatches `typed:error`. Normal cleanup interruption is silent.
 
-Mount a real editor, type a draft, push a prop update, and verify that both its node and draft survive. Await Svelte's rendering boundary before asserting the DOM: scheduling a store update is not the same as seeing its output. Remove the Typed parent and confirm Svelte effect cleanup and store unsubscription. Decide whether closing the editor should wait for an outro; `unmount` accepts the framework's outro policy, which changes when finalization completes.
-
-When the inverse slot changes `value`, Svelte reruns its effect. It does not await an asynchronous cleanup callback, so `pending` serializes old-fiber interruption before a new render starts, and `cancelled` skips a queued mount that has already been removed. Keep `value` stable for ordinary reactive updates. The complete learning path is [DOM output](/integrate/dom-output), [components](/explore/building-ui-components), then [server rendering and hydration](/explore/server-rendering-and-hydration).
+The native template ref initializes the framework root. Its mount callbacks can run before the surrounding Typed tree reaches its destination. Svelte readiness and DOM attachment are separate: measure or focus only after the outer owner has placed the host. Raw `RenderEvent` consumers own placement themselves.

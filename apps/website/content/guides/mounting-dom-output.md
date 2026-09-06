@@ -14,13 +14,18 @@ Choose a dedicated host and let the outer application own the render's fiber.
 This page turns that entry into a lifecycle boundary suitable for a router, custom element, or
 another application embedding Typed output.
 
+For a native custom element whose connections, attributes, shadow root, and server output should
+share one definition, use the [Web Component integration recipe](/integrate/web-component). For an
+Astro island, use [Typed templates in Astro](/integrate/astro), which lets Astro own page markup and
+hydration scheduling while Typed owns the island's Scope.
+
 ## Make the writable boundary visible in the document
 
 Give the panel an element such as `<div id="article-search"></div>`. The static header and chart
 should be siblings outside it. Fresh nonempty root output is placed with `replaceChildren`, so
 unrelated children inside that same host are not protected from root replacement.
 
-A template's *internal* scalar updates are narrower: typing in a captured input part does not emit
+A template's _internal_ scalar updates are narrower: typing in a captured input part does not emit
 a new root or replace the host. The host boundary matters when root output is first placed or
 actually replaced, not on every state change.
 
