@@ -149,12 +149,13 @@ done
 echo ""
 
 echo -e "${YELLOW}Step 6: Verifying registry beta tags...${NC}"
+# New packages can return 404 while the registry finishes staging their first release.
 for attempt in {1..12}; do
   all_verified=true
   for dir in "${TOPO_ORDER[@]}"; do
     name=$(package_field "$dir" name)
     version=$(package_field "$dir" version)
-    tagged_version=$(npm view "$name" dist-tags.beta --json 2>/dev/null | tr -d '"')
+    tagged_version=$(npm view "$name" dist-tags.beta --json 2>/dev/null | tr -d '"' || true)
     if [[ "$tagged_version" != "$version" ]]; then
       all_verified=false
     fi
@@ -171,7 +172,7 @@ done
 for dir in "${TOPO_ORDER[@]}"; do
   name=$(package_field "$dir" name)
   version=$(package_field "$dir" version)
-  tagged_version=$(npm view "$name" dist-tags.beta --json 2>/dev/null | tr -d '"')
+  tagged_version=$(npm view "$name" dist-tags.beta --json 2>/dev/null | tr -d '"' || true)
   if [[ "$tagged_version" != "$version" ]]; then
     echo -e "${RED}$name has beta=$tagged_version; expected $version${NC}"
     exit 1
