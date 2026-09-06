@@ -1,82 +1,75 @@
-import * as S from "@effect/schema/Schema"
-import { Fx, Route, Router } from "@typed/core"
-import { SchemaStorage } from "@typed/dom/Storage"
-import { Effect, Layer, pipe } from "effect"
-import * as App from "./application"
-import * as Domain from "./domain"
+import { DateTime, Effect, Layer, Context, Schema } from "effect";
+import { Fx } from "@typed/fx";
+import * as Router from "@typed/router";
+import * as App from "./application";
+import * as Domain from "./domain";
 
-/* #region Storage */
+const TODOS_STORAGE_KEY = `@typed/todomvc/todos`;
 
-const TODOS_STORAGE_KEY = `@typed/todomvc/todos`
+const TodoListJson = Schema.fromJsonString(Schema.toCodecJson(Domain.TodoList));
+const decodeTodoList = Schema.decodeEffect(TodoListJson);
+const encodeTodoList = Schema.encodeEffect(TodoListJson);
 
-const storage = SchemaStorage({
-  [TODOS_STORAGE_KEY]: S.parseJson(Domain.TodoList)
-})
-
-const todos = storage.key(TODOS_STORAGE_KEY)
-
-const getTodos = todos.get({ errors: "all", onExcessProperty: "error" }).pipe(
-  Effect.flatten,
-  Effect.catchAll(() => Effect.succeed([]))
-)
-
-// Everytime there is a change to our TodoList, write its value back to storage
-const writeTodos = Fx.tapEffect(App.TodoList, (list) => todos.set(list).pipe(Effect.catchAll(() => Effect.void)))
-
-/* #endregion */
-
-/* #region Routing */
-
-const allRoute = Route.home
-const activeRoute = Route.literal("active")
-const completedRoute = Route.literal("completed")
-
-// Expose conversion to route for the UI
-export const filterStateToPath = (state: Domain.FilterState) => {
-  switch (state) {
-    case Domain.FilterState.All:
-      return allRoute.path
-    case Domain.FilterState.Active:
-      return activeRoute.path
-    case Domain.FilterState.Completed:
-      return completedRoute.path
+class Todos extends Context.Service<
+  Todos,
+  {
+    readonly load: Effect.Effect<Domain.TodoList, unknown>;
+    readonly save: (todos: Domain.TodoList) => Effect.Effect<void, unknown>;
   }
+>()("TodosService") {
+  static readonly get = Todos.pipe(
+    Effect.flatMap((service) => service.load),
+    Effect.catchCause(() => Effect.succeed([])),
+  );
+
+  static readonly set = (todos: Domain.TodoList) =>
+    Effect.flatMap(Todos, (service) => service.save(todos)).pipe(
+      Effect.catchCause((cause) =>
+        Effect.logError("Failed to write todos to key value store", cause),
+      ),
+    );
+
+  static readonly replicateToStorage = App.TodoList.pipe(Fx.observeLayer(Todos.set));
+
+  static readonly local = Layer.succeed(Todos, {
+    load: Effect.try(() => localStorage.getItem(TODOS_STORAGE_KEY)).pipe(
+      Effect.flatMap((value) =>
+        value === null ? Effect.succeed<Domain.TodoList>([]) : decodeTodoList(value),
+      ),
+    ),
+    save: (todos) =>
+      encodeTodoList(todos).pipe(
+        Effect.flatMap((value) => Effect.try(() => localStorage.setItem(TODOS_STORAGE_KEY, value))),
+      ),
+  });
 }
 
-const currentFilterState = pipe(
-  Router.to(allRoute, () => Domain.FilterState.All)
-    .to(activeRoute, () => Domain.FilterState.Active)
-    .to(completedRoute, () => Domain.FilterState.Completed),
-  Router.redirectTo(allRoute),
-  Fx.switchMapCause(() => Fx.succeed(Domain.FilterState.All))
-)
+const FilterState = Router.match(Router.Slash, "all")
+  .match(Router.Parse("active"), "active")
+  .match(Router.Parse("completed"), "completed")
+  .redirectTo("/")
+  .pipe(
+    Fx.catchCause(() => Fx.succeed("all" as const)),
+  );
 
-/* #endregion */
+const Model = Layer.mergeAll(
+  App.TodoList.make(Todos.get),
+  App.FilterState.make(FilterState),
+  App.TodoText.make(""),
+);
 
-/* #region Layers */
+const CreateTodo = Layer.sync(
+  App.CreateTodo,
+  () => (text: string) =>
+    Effect.sync((): Domain.Todo => ({
+      id: Domain.TodoId.make(crypto.randomUUID()),
+      text,
+      completed: false,
+      timestamp: DateTime.makeUnsafe(new Date()),
+    })),
+);
 
-const ModelLive = Layer.mergeAll(
-  // Ininialize our TodoList from storage
-  App.TodoList.make(getTodos),
-  // Update our FilterState everytime the current path changes
-  App.FilterState.make(currentFilterState),
-  // Initialize our TodoText
-  App.TodoText.make(Effect.succeed(""))
-)
-
-const CreateTodoLive = App.CreateTodo.implement((text) =>
-  // Create a new Todo with the provided text
-  Effect.sync((): Domain.Todo => ({
-    id: Domain.TodoId.make(crypto.randomUUID()),
-    text,
-    completed: false,
-    timestamp: new Date()
-  }))
-)
-
-// Create our subscriptiosn to streams
-const SubscriptionsLive = Fx.drainLayer(writeTodos)
-
-export const Live = Layer.mergeAll(CreateTodoLive, SubscriptionsLive).pipe(Layer.provideMerge(ModelLive))
-
-/* #endregion */
+export const Services = Layer.mergeAll(CreateTodo, Todos.replicateToStorage).pipe(
+  Layer.provideMerge(Model),
+  Layer.provideMerge([Todos.local, Router.BrowserRouter()]),
+);

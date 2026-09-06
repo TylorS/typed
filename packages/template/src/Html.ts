@@ -1,390 +1,569 @@
-/**
- * @since 1.0.0
- */
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import { isNone, isOption, none, type Option, some } from "effect/Option";
+import { isNullish, isObject } from "effect/Predicate";
+import { map as mapRecord } from "effect/Record";
+import type { Scope } from "effect/Scope";
+import * as Context from "effect/Context";
+import { Fx, RefSubject } from "@typed/fx";
+import {
+  addTemplateHash,
+  type HtmlChunk,
+  type HtmlPartChunk,
+  type HtmlSparsePartChunk,
+  isSerializableSpreadKey,
+  templateToHtmlChunks,
+} from "./HtmlChunk.js";
+import { renderToString } from "./internal/encoding.js";
+import { TEXT_START, TYPED_NODE_END, TYPED_NODE_START } from "./internal/meta.js";
+import { renderManyToHtml } from "./internal/renderManyToHtml.js";
+import { takeOneIfNotRenderEvent } from "./internal/takeOneIfNotRenderEvent.js";
+import { isMany } from "./many.js";
+import { parse } from "./Parser.js";
+import type { Renderable } from "./Renderable.js";
+import { HtmlRenderEvent, isHtmlRenderEvent, type RenderEvent } from "./RenderEvent.js";
+import { html as renderHtml, RenderTemplate } from "./RenderTemplate.js";
+import { isStream } from "effect/Stream";
+import { fromStream } from "@typed/fx/Fx";
 
-import type { CurrentEnvironment } from "@typed/environment"
-import * as Fx from "@typed/fx/Fx"
-import * as Sink from "@typed/fx/Sink"
-import { FxTypeId } from "@typed/fx/TypeId"
-import { join } from "effect/Array"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
-import type * as Record from "effect/Record"
-import type * as Scope from "effect/Scope"
-import { isDirective } from "./Directive.js"
-import type { ServerEntry } from "./Entry.js"
-import type { HtmlChunk, PartChunk, SparsePartChunk, TextChunk } from "./HtmlChunk.js"
-import { templateToHtmlChunks } from "./HtmlChunk.js"
-import { parse } from "./internal/parser2.js"
-import { partNodeToPart } from "./internal/server.js"
-import { isNullOrUndefined } from "./internal/v2/helpers.js"
-import { TEXT_START, TYPED_HOLE_END, TYPED_HOLE_START } from "./Meta.js"
-import type { Placeholder } from "./Placeholder.js"
-import type { Renderable } from "./Renderable.js"
-import * as RenderContext from "./RenderContext.js"
-import { HtmlRenderEvent, isHtmlRenderEvent } from "./RenderEvent.js"
-import type { RenderEvent } from "./RenderEvent.js"
-import * as RenderQueue from "./RenderQueue.js"
-import { RenderTemplate } from "./RenderTemplate.js"
-
-const toHtml = (r: RenderEvent | null) => r === null ? "" : (r as HtmlRenderEvent).html
-
-/**
- * @since 1.0.0
- */
-export const serverLayer: Layer.Layer<
-  | RenderContext.RenderContext
-  | RenderQueue.RenderQueue
-  | RenderTemplate
-  | CurrentEnvironment
-> = Layer.provideMerge(
-  RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
-  RenderContext.server
-).pipe(Layer.provideMerge(RenderQueue.sync))
+const toHtmlString = (event: RenderEvent | null | undefined): Option<string> => {
+  if (event === null || event === undefined) return none();
+  const s = event.toString();
+  if (s === "") return none();
+  return some(s);
+};
 
 /**
+ * Renders a stream of `RenderEvent`s into a stream of HTML strings.
+ *
+ * This function transforms the output of a template rendering process (which produces `RenderEvent`s)
+ * into a stream of strings suitable for HTML output (e.g., for Server-Side Rendering).
+ *
+ * @remarks
+ * ## Why
+ *
+ * This keeps SSR push-based: each ordered renderer-owned HTML event becomes an
+ * output chunk as it arrives. Unlike DOM rendering, dynamic inputs use the
+ * HTML layer's single-value computed behavior and do not remain live.
+ *
+ * ## Ownership and lifetime
+ *
+ * The returned Fx owns no response by itself. Its running Effect Scope owns
+ * subscriptions and interruption; the caller owns the HTTP response or other
+ * sink consuming the strings. Typed errors and required services are preserved.
+ *
+ * ## Trust boundary
+ *
+ * Ordinary dynamic template data is contextually escaped. Branded
+ * `HtmlRenderEvent` values are trusted renderer output, not a raw-HTML API.
+ *
+ * @example
+ * ```ts
+ * import { Effect } from "effect"
+ * import { html } from "@typed/template"
+ * import { renderToHtml, HtmlRenderTemplate } from "@typed/template/Html"
+ * import { Fx } from "@typed/fx"
+ *
+ * const program = Effect.scoped(Effect.gen(function* () {
+ *   const template = html`<div>Hello, ${"world"}!</div>`
+ *
+ *   // Render to HTML string stream
+ *   const htmlStream = renderToHtml(template).pipe(
+ *     Fx.provide(HtmlRenderTemplate)
+ *   )
+ *
+ *   // Collect all HTML chunks
+ *   const chunks = yield* Fx.collectAll(htmlStream)
+ *   console.log(chunks.join("")) // "<div>Hello, world!</div>"
+ * }))
+ * ```
+ *
+ * @param renderable - The RenderEvents to render.
+ * @returns An `Fx` stream of HTML strings.
  * @since 1.0.0
+ * @category Streaming HTML
  */
-export const staticLayer: Layer.Layer<
-  | RenderContext.RenderContext
-  | RenderQueue.RenderQueue
-  | RenderTemplate
-  | CurrentEnvironment
-> = Layer.provideMerge(
-  RenderTemplate.layer(RenderContext.RenderContext.with(renderHtmlTemplate)),
-  RenderContext.static
-).pipe(Layer.provideMerge(RenderQueue.sync))
-
-/**
- * @since 1.0.0
- */
-export function renderToHtml<E, R>(
-  fx: Fx.Fx<RenderEvent | null, E, R>
-): Fx.Fx<string, E, R> {
-  return Fx.map(fx, toHtml)
+export function renderToHtml<const T extends Renderable.Any>(
+  renderable: T,
+): Fx.Fx<string, Renderable.Error<T>, Renderable.Services<T>> {
+  return Fx.filterMap(
+    liftRenderableToFx<Renderable.Error<T>, Renderable.Services<T>>(renderable, true),
+    toHtmlString,
+  );
 }
 
 /**
+ * Renders a stream of `RenderEvent`s into a single HTML string.
+ *
+ * This is a convenience function that collects all events from `renderToHtml` and joins them
+ * into a single string. It is an Effect that resolves when the stream completes.
+ *
+ * @remarks
+ * ## Why
+ *
+ * This is the finite-response convenience over `renderToHtml`: it preserves
+ * ordered chunks but buffers them when the caller needs one complete body.
+ *
+ * ## Ownership and lifetime
+ *
+ * The returned Effect runs and finalizes the source Fx. The resulting string is
+ * caller-owned; errors and required services remain in the Effect type.
+ *
+ * ## Cost model
+ *
+ * Collection requires memory proportional to the complete rendered response.
+ * Prefer `renderToHtml` when the transport can stream chunks.
+ *
+ * @example
+ * ```ts
+ * import { Effect } from "effect"
+ * import { html } from "@typed/template"
+ * import { renderToHtmlString, HtmlRenderTemplate } from "@typed/template/Html"
+ *
+ * const program = Effect.scoped(Effect.gen(function* () {
+ *   const template = html`<div>
+ *     <h1>Hello</h1>
+ *     <p>World</p>
+ *   </div>`
+ *
+ *   // Render to single HTML string
+ *   const htmlString = yield* renderToHtmlString(template).pipe(
+ *     Effect.provide(HtmlRenderTemplate)
+ *   )
+ *
+ *   console.log(htmlString)
+ *   // "<div><h1>Hello</h1><p>World</p></div>"
+ * }))
+ * ```
+ *
+ * @param renderable - The RenderEvents to render.
+ * @returns An `Effect` that resolves to the full HTML string.
  * @since 1.0.0
+ * @category Buffered HTML
  */
-export function renderToHtmlString<E, R>(
-  fx: Fx.Fx<RenderEvent | null, E, R>
-): Effect.Effect<string, E, R> {
-  return Effect.map(Fx.toReadonlyArray(renderToHtml(fx)), join(""))
+export function renderToHtmlString<const T extends Renderable.Any>(
+  renderable: T,
+): Effect.Effect<string, Renderable.Error<T>, Renderable.Services<T>> {
+  return renderToHtml(renderable).pipe(
+    Fx.collectAll,
+    Effect.map((events) => events.join("")),
+  );
 }
 
 /**
+ * A boolean service that indicates whether the current rendering context is static.
+ *
+ * If `true`, the HTML renderer will optimize for static output, potentially skipping
+ * dynamic placeholder generation or other interactive features not needed for static HTML.
+ *
+ * @remarks
+ * ## Why
+ *
+ * Static and hydratable SSR share one renderer while making marker generation
+ * an explicit service choice.
+ *
+ * ## Ownership and lifetime
+ *
+ * The reference has a default of `false` and owns no resource. A provided value
+ * is scoped by the surrounding Effect context.
+ *
+ * @example
+ * ```ts
+ * import { StaticRendering } from "@typed/template/Html"
+ * import { Effect } from "effect"
+ *
+ * const isStatic = Effect.runSync(StaticRendering)
+ * ```
+ *
  * @since 1.0.0
+ * @category HTML rendering policy
  */
-export function renderHtmlTemplate(ctx: RenderContext.RenderContext) {
-  return <Values extends ReadonlyArray<Renderable<any, any>>>(
-    templateStrings: TemplateStringsArray,
-    values: Values
-  ): Fx.Fx<
-    RenderEvent,
-    Placeholder.Error<Values[number]>,
-    | Scope.Scope
-    | Placeholder.Context<Values[number]>
-  > => {
-    const isStatic = ctx.environment === "static" || ctx.environment === "test:static"
-    const entry = getServerEntry(templateStrings, ctx.templateCache, isStatic)
+export const StaticRendering = Context.Reference<boolean>("@typed/template/Html/StaticRendering", {
+  defaultValue: () => false,
+});
 
-    if (values.length === 0) {
-      return Fx.succeed(
-        HtmlRenderEvent((entry.chunks[0] as TextChunk).value, true)
-      )
-    } else {
-      const lastIndex = entry.chunks.length - 1
-      return Fx.mergeOrdered(
-        entry.chunks.map((chunk, i) =>
-          renderChunk<
-            Placeholder.Error<Values[number]>,
-            Placeholder.Context<Values[number]>
-          >(chunk, values, isStatic, i === lastIndex)
-        )
-      ).pipe(
-        Fx.filter((x) => x.html.length > 0),
-        Fx.dropAfter((x) => x.done)
-      )
-    }
-  }
-}
+type HtmlEntry = ReadonlyArray<HtmlChunk>;
+
+/**
+ * A Layer that provides the `RenderTemplate` service implemented for HTML string generation.
+ *
+ * Using this layer enables templates to be rendered as HTML strings (e.g., for SSR)
+ * rather than DOM nodes. It sets the `RefSubject.CurrentComputedBehavior` to `"one"`, indicating
+ * a single-pass render approach typical for HTML generation.
+ *
+ * @remarks
+ * ## Why
+ *
+ * The Layer supplies the same `RenderTemplate` service consumed by `html`, so
+ * templates are renderer-independent while SSR remains an ordered Fx of chunks.
+ * Parsed templates and compiled chunks are cached by template-literal identity.
+ *
+ * ## Ownership and lifetime
+ *
+ * The provided service and its caches live for the Layer Scope. Each rendered
+ * Fx owns its dynamic subscriptions until completion or interruption. The layer
+ * intentionally selects the first value from live sources for finite SSR.
+ *
+ * ## Trust boundary
+ *
+ * Literal segments are author markup. Dynamic text and attributes are escaped;
+ * event, ref, property, prototype-sensitive, and unsafe spread keys are not
+ * serialized as HTML.
+ *
+ * @example
+ * ```ts
+ * import { Effect } from "effect"
+ * import { html } from "@typed/template"
+ * import { renderToHtmlString, HtmlRenderTemplate } from "@typed/template/Html"
+ *
+ * const program = Effect.scoped(Effect.gen(function* () {
+ *   const template = html`<div>Hello, ${"world"}!</div>`
+ *
+ *   const htmlString = yield* renderToHtmlString(template).pipe(
+ *     Effect.provide(HtmlRenderTemplate)
+ *   )
+ *
+ *   // Use for SSR
+ *   return htmlString
+ * }))
+ * ```
+ *
+ * @since 1.0.0
+ * @category Hydratable HTML rendering
+ */
+export const HtmlRenderTemplate = Layer.effect(
+  RenderTemplate,
+  Effect.gen(function* () {
+    const isStatic = yield* StaticRendering;
+    const entries = new WeakMap<TemplateStringsArray, HtmlEntry>();
+    const getChunks = (templateStrings: TemplateStringsArray) => {
+      let entry = entries.get(templateStrings);
+      if (entry === undefined) {
+        const template = parse(templateStrings);
+        const chunks = templateToHtmlChunks(template);
+        entry = isStatic ? chunks : addTemplateHash(chunks, template);
+        entries.set(templateStrings, entry);
+      }
+      return entry;
+    };
+
+    return <const Values extends ArrayLike<Renderable.Any>>(
+      template: TemplateStringsArray,
+      values: Values,
+    ) =>
+      Fx.mergeOrdered(
+        ...getChunks(template).map((chunk, i, chunks) =>
+          renderChunk<Renderable.Error<Values[number]>, Renderable.Services<Values[number]>>(
+            chunk,
+            values,
+            isStatic,
+            i === chunks.length - 1,
+          ),
+        ),
+      );
+  }),
+).pipe(Layer.provideMerge(Layer.succeed(RefSubject.CurrentComputedBehavior, "one")));
+
+/**
+ * A variant of `HtmlRenderTemplate` that enables static rendering optimizations.
+ *
+ * This layer provides the `RenderTemplate` service for HTML generation but also
+ * sets `StaticRendering` to `true`, enabling optimizations for static content.
+ *
+ * @remarks
+ * ## Why
+ *
+ * Static output omits hydration markers when no client adoption contract is
+ * needed, while retaining the same escaping and ordering rules.
+ *
+ * ## Ownership and lifetime
+ *
+ * Like `HtmlRenderTemplate`, service caches are Layer-scoped and each render is
+ * finalized by the Scope running its Fx.
+ *
+ * @example
+ * ```ts
+ * import { StaticHtmlRenderTemplate } from "@typed/template/Html"
+ * import { html } from "@typed/template"
+ * import { renderToHtmlString } from "@typed/template/Html"
+ * import { Effect } from "effect"
+ *
+ * const output = Effect.runPromise(Effect.scoped(
+ *   renderToHtmlString(html`<p>ready</p>`).pipe(
+ *     Effect.provide(StaticHtmlRenderTemplate)
+ *   )
+ * ))
+ * ```
+ *
+ * @since 1.0.0
+ * @category Static HTML rendering
+ */
+export const StaticHtmlRenderTemplate = HtmlRenderTemplate.pipe(
+  Layer.provideMerge(Layer.succeed(StaticRendering, true)),
+);
 
 function renderChunk<E, R>(
   chunk: HtmlChunk,
-  values: ReadonlyArray<Renderable<any, any>>,
+  values: ArrayLike<Renderable.Any>,
   isStatic: boolean,
-  done: boolean
-): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
+  last: boolean,
+): Fx.Fx<HtmlRenderEvent, E, R | Scope> {
   if (chunk._tag === "text") {
-    return Fx.succeed(HtmlRenderEvent(chunk.value, done))
-  } else if (chunk._tag === "part") {
-    return renderPart<E, R>(chunk, values, isStatic, done)
-  } else {
-    return renderSparsePart<E, R>(chunk, values, done) as Fx.Fx<
-      HtmlRenderEvent,
-      E,
-      R
-    >
+    return Fx.succeed(HtmlRenderEvent(chunk.text, last));
   }
-}
 
-function renderNode<E, R>(
-  renderable: Renderable<any, any>,
-  isStatic: boolean,
-  done: boolean
-): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
-  switch (typeof renderable) {
-    case "string":
-    case "number":
-    case "boolean":
-    case "bigint":
-      return Fx.succeed(
-        HtmlRenderEvent(
-          (isStatic ? "" : TEXT_START) + renderable.toString(),
-          done
-        )
-      )
-    case "undefined":
-    case "object":
-      return renderObject(renderable, isStatic, done)
-    default:
-      return Fx.empty
+  if (chunk._tag === "part") {
+    return renderPart<E, R>(chunk, values, isStatic, last);
   }
-}
 
-function renderObject<E, R>(
-  renderable: object | null | undefined,
-  isStatic: boolean,
-  done: boolean
-): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
-  if (isNullOrUndefined(renderable)) {
-    return isStatic ? Fx.empty : Fx.succeed(HtmlRenderEvent(TEXT_START, done))
-  } else if (Array.isArray(renderable)) {
-    const lastIndex = renderable.length - 1
-    return Fx.mergeOrdered(
-      renderable.map((r, i) => renderNode(r, isStatic, done && i === lastIndex))
-    ) as any
-  } else if (Effect.isEffect(renderable)) {
-    return Fx.fromFxEffect(
-      Effect.map(renderable as Effect.Effect<Renderable, E, R>, (r) => renderNode<E, R>(r, isStatic, done))
-    )
-  } else if (Fx.isFx<RenderEvent, E, R>(renderable)) {
-    return takeOneIfNotRenderEvent(renderable, isStatic, done)
-  } else if (isHtmlRenderEvent(renderable)) {
-    if (done) {
-      return Fx.succeed(renderable)
-    } else {
-      return Fx.succeed(HtmlRenderEvent(renderable.html, done))
-    }
-  } else {
-    return Fx.empty
-  }
+  return renderSparsePart(chunk, values, isStatic, last);
 }
 
 function renderPart<E, R>(
-  chunk: PartChunk,
-  values: ReadonlyArray<Renderable<any, any>>,
+  chunk: HtmlPartChunk,
+  values: ArrayLike<Renderable.Any>,
   isStatic: boolean,
-  done: boolean
-): Fx.Fx<HtmlRenderEvent, E, R | Scope.Scope> {
-  const { node, render } = chunk
-  const renderable: Renderable<any, any> = values[node.index]
+  last: boolean,
+): Fx.Fx<HtmlRenderEvent, E, R | Scope> {
+  const { node, render } = chunk;
+  const renderable = values[node.index];
 
-  // Refs and events are not rendered into HTML
-  if (isDirective<E, R>(renderable)) {
-    return Fx.make<HtmlRenderEvent, E, R>(
-      (sink: Sink.Sink<HtmlRenderEvent, E>) => {
-        const part = partNodeToPart(node, (value) => sink.onSuccess(HtmlRenderEvent(render(value), done)))
+  if (node._tag === "event") return Fx.empty;
 
-        return Effect.catchAllCause(renderable(part), sink.onFailure)
-      }
-    )
-  } else if (node._tag === "node") {
-    if (isStatic) return renderNode<E, R>(renderable, isStatic, done)
-    let first = true
-    return Fx.continueWith(
-      Fx.map(renderNode<E, R>(renderable, isStatic, true), (x) => {
-        if (x.done) {
-          const y = HtmlRenderEvent(
-            (first ? TYPED_HOLE_START(node.index) : "") +
-              x.html +
-              TYPED_HOLE_END(node.index),
-            done
-          )
-          first = false
-          return y
-        } else {
-          if (first) {
-            first = false
-            return HtmlRenderEvent(
-              TYPED_HOLE_START(node.index) + x.html,
-              false
-            )
-          }
-          return x
-        }
-      }),
-      () =>
-        first
-          ? Fx.succeed(
-            HtmlRenderEvent(
-              TYPED_HOLE_START(node.index) + TYPED_HOLE_END(node.index),
-              done
-            )
-          )
-          : Fx.empty
-    )
-  } else if (node._tag === "properties") {
-    if (renderable == null) return Fx.empty
-
-    return Fx.mergeAll(
-      Object.entries(renderable as Record<string, Renderable<any, any>>).map(
-        ([key, renderable]) => {
-          return Fx.filterMap(
-            Fx.take(unwrapRenderable<E, R>(renderable), 1),
-            (value) => {
-              const s = render({ [key]: value })
-
-              return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
-            }
-          )
-        }
-      )
-    )
-  } else {
-    if (renderable === null) {
-      return Fx.succeed(HtmlRenderEvent(render(renderable), done))
-    }
-
-    const html = Fx.filterMap(
-      Fx.take(unwrapRenderable<E, R>(renderable), 1),
-      (value) => {
-        const s = render(value)
-
-        return s ? Option.some(HtmlRenderEvent(s, done)) : Option.none()
-      }
-    )
-
-    return html
+  if (node._tag === "ref") {
+    if (RefSubject.isHydrationRef(renderable))
+      return renderHydrationRef(renderable, isStatic, last, render);
+    return Fx.empty;
   }
+
+  // Node need to handle all possible value types including arrays
+  if (node._tag === "node") {
+    return renderNode(renderable, node.index, isStatic, last, render);
+  }
+
+  // Properties is entirely recursive
+  if (node._tag === "properties") {
+    const setup = (props: unknown) =>
+      setupProperties<E, R>(props as Record<string, Renderable<any, E, R>>, isStatic, last, render);
+    if (isObject(renderable) && !isEffectLike(renderable)) {
+      return setup(renderable);
+    }
+    return Fx.switchMap(
+      liftRenderableToFx<E, R>(renderable, isStatic, undefined, false),
+      (props) => {
+        if (isObject(props)) return setup(props);
+        return Fx.empty;
+      },
+    );
+  }
+
+  // Otherwise we're going to coerce to a string
+  return Fx.filterMap(
+    liftRenderableToFx<E, R>(
+      renderable,
+      isStatic,
+      undefined,
+      false,
+      node._tag === "className-part",
+    ),
+    (value) => {
+      const s = render(value);
+      return s ? some(HtmlRenderEvent(s, last)) : none();
+    },
+  );
+}
+
+function isEffectLike(value: object): boolean {
+  return Effect.isEffect(value) || Fx.isFx(value) || isStream(value) || isOption(value);
+}
+
+function setupProperties<E, R>(
+  renderable: Record<string, Renderable<any, E, R>>,
+  isStatic: boolean,
+  last: boolean,
+  render: (u: Record<string, unknown>) => string,
+) {
+  const entries = Object.entries(renderable);
+  const length = entries.length;
+  const lastIndex = length - 1;
+
+  // Order here doesn't matter ??
+  return Fx.mergeAll(
+    ...entries.map(([key, renderable], i) => {
+      if (key === "ref" && RefSubject.isHydrationRef(renderable)) {
+        return renderHydrationRef(renderable, isStatic, last && i === lastIndex, (attributes) =>
+          render(Object.fromEntries(attributes.map(({ name, value }) => [name, value]))),
+        );
+      }
+      if (!isSerializableSpreadKey(key)) return Fx.empty;
+      return Fx.filterMap(
+        liftRenderableToFx<E, R>(renderable, isStatic, new Set(), false),
+        (value) => {
+          const s = render({ [key]: value });
+          return s ? some(HtmlRenderEvent(s, last && i === lastIndex)) : none();
+        },
+      );
+    }),
+  );
+}
+
+function renderHydrationRef<E, R>(
+  ref: RefSubject.HydrationRef<E, R>,
+  isStatic: boolean,
+  last: boolean,
+  render: (attributes: ReadonlyArray<RefSubject.HydrationAttribute>) => string,
+): Fx.Fx<HtmlRenderEvent, E, R | Scope> {
+  if (isStatic) return Fx.make(() => ref[RefSubject.HydrationRefTypeId].server);
+  return Fx.unwrap(
+    Effect.map(ref[RefSubject.HydrationRefTypeId].toAttributes, (attributes) => {
+      const html = render(attributes);
+      return html === "" ? Fx.empty : Fx.succeed(HtmlRenderEvent(html, last));
+    }),
+  );
+}
+
+function renderNode<E, R>(
+  renderable: Renderable<any, E, R>,
+  index: number,
+  isStatic: boolean,
+  last: boolean,
+  render: HtmlPartChunk["render"],
+) {
+  let node = (
+    isMany(renderable)
+      ? renderManyToHtml(renderable)
+      : liftRenderableToFx<E, R>(renderable, isStatic)
+  ).pipe(
+    Fx.map((value) => (isHtmlRenderEvent(value) ? value : HtmlRenderEvent(render(value), last))),
+  );
+  if (!isStatic) {
+    node = addNodePlaceholders<E, R>(node, index);
+  }
+  return node.pipe(Fx.map((x) => HtmlRenderEvent(x.html, x.last && last)));
+}
+
+function addNodePlaceholders<E, R>(
+  fx: Fx.Fx<HtmlRenderEvent, E, R>,
+  index: number,
+): Fx.Fx<HtmlRenderEvent, E, R> {
+  return fx.pipe(
+    Fx.map((event) => (isHtmlRenderEvent(event) ? HtmlRenderEvent(event.html, false) : event)),
+    Fx.delimit(
+      HtmlRenderEvent(TYPED_NODE_START(index), false),
+      HtmlRenderEvent(TYPED_NODE_END(index), true),
+    ),
+  );
 }
 
 function renderSparsePart<E, R>(
-  chunk: SparsePartChunk,
-  values: ReadonlyArray<Renderable<any, any>>,
-  done: boolean
-): Fx.Fx<RenderEvent, E, R> {
-  const { node, render } = chunk
-
-  return Fx.map(
-    Fx.take(
-      Fx.tuple(
-        node.nodes.map((node) => {
-          if (node._tag === "text") return Fx.succeed(node.value)
-
-          const renderable: Renderable<any, any> = (values as any)[node.index]
-
-          if (isDirective<E, R>(renderable)) {
-            return Fx.make<unknown, E, R>((sink: Sink.Sink<unknown, E>) =>
-              Effect.catchAllCause(
-                renderable(
-                  partNodeToPart(node, (value) => sink.onSuccess(value))
-                ),
-                sink.onFailure
-              )
-            )
-          }
-
-          return unwrapRenderable<E, R>(renderable)
-        })
-      ),
-      1
-    ),
-    (value) => HtmlRenderEvent(render(value), done)
-  )
-}
-
-function takeOneIfNotRenderEvent<A, E, R>(
-  fx: Fx.Fx<A, E, R>,
+  chunk: HtmlSparsePartChunk,
+  values: ArrayLike<Renderable.Any>,
   isStatic: boolean,
-  done: boolean
+  last: boolean,
 ): Fx.Fx<HtmlRenderEvent, E, R> {
-  return Fx.make<HtmlRenderEvent, E, R>((sink) =>
-    Effect.uninterruptible(Sink.withEarlyExit(sink, (sink) =>
-      fx.run(
-        Sink.make(sink.onFailure, (event) => {
-          if (isHtmlRenderEvent(event)) {
-            if (done) {
-              return sink.onSuccess(event)
-            } else {
-              return sink.onSuccess(HtmlRenderEvent(event.html, false))
-            }
-          }
-
-          if (isNullOrUndefined(event)) {
-            return sink.earlyExit
-          }
-
-          return Effect.zipRight(
-            sink.onSuccess(
-              HtmlRenderEvent(
-                (isStatic ? "" : TEXT_START) + String(event),
-                done
-              )
-            ),
-            sink.earlyExit
-          )
-        })
-      )))
-  )
+  const { node, render } = chunk;
+  return Fx.tuple(
+    ...node.nodes.map((node) => {
+      if (node._tag === "text") return Fx.succeed(node.value);
+      const value = liftRenderableToFx<E, R>(
+        values[node.index],
+        isStatic,
+        undefined,
+        false,
+        chunk.node._tag === "sparse-class-name",
+      );
+      return chunk.node._tag === "sparse-class-name"
+        ? Fx.map(value, (value) => renderToString(value, " "))
+        : value;
+    }),
+  ).pipe(
+    Fx.take(1),
+    Fx.map((value) => HtmlRenderEvent(render(value), last)),
+  );
 }
 
-function getServerEntry(
-  templateStrings: TemplateStringsArray,
-  templateCache: RenderContext.RenderContext["templateCache"],
-  isStatic: boolean
-): ServerEntry {
-  const cached = templateCache.get(templateStrings)
-
-  if (cached === undefined || cached._tag === "Browser") {
-    const template = parse(templateStrings)
-    const entry: ServerEntry = {
-      _tag: "Server",
-      template,
-      chunks: templateToHtmlChunks(template, isStatic)
-    }
-
-    templateCache.set(templateStrings, entry)
-
-    return entry
-  } else {
-    return cached
-  }
-}
-
-function unwrapRenderable<E, R>(
-  renderable: Renderable<any, any>
+function liftRenderableToFx<E, R>(
+  renderable: Renderable<unknown, E, R>,
+  isStatic: boolean,
+  propertyAncestors?: ReadonlySet<object>,
+  nodeContext = true,
+  classContext = false,
 ): Fx.Fx<any, E, R> {
   switch (typeof renderable) {
+    case "function":
+      return Fx.isFx(renderable)
+        ? takeOneIfNotRenderEvent(renderable)
+        : !nodeContext
+          ? Fx.succeed(undefined)
+          : isStatic
+            ? Fx.empty
+            : Fx.succeed(HtmlRenderEvent(TEXT_START, true));
     case "undefined":
     case "object": {
-      if (isNullOrUndefined(renderable)) {
-        return Fx.null
+      if (isNullish(renderable)) {
+        // Empty node positions need a hydration marker; attribute serializers need the absent value.
+        return !nodeContext
+          ? Fx.succeed(renderable)
+          : isStatic
+            ? Fx.empty
+            : Fx.succeed(HtmlRenderEvent(TEXT_START, true));
+      } else if (isMany(renderable)) {
+        return renderHtml`${renderable}` as Fx.Fx<any, E, R>;
       } else if (Array.isArray(renderable)) {
-        return Fx.mergeOrdered(
-          renderable.map((r) => takeOneIfNotRenderEvent(unwrapRenderable(r), true, false))
-        ) as any
-      } else if (Effect.EffectTypeId in renderable) {
-        return Fx.fromFxEffect(
-          Effect.map(renderable as any, unwrapRenderable<any, any>)
-        )
-      } else if (FxTypeId in renderable) {
-        return renderable as any
-      } else return Fx.succeed(renderable as any)
+        const ancestors = addPropertyAncestor(renderable, propertyAncestors);
+        if (ancestors === null) return Fx.empty;
+        const children = renderable.map((r) =>
+          liftRenderableToFx<E, R>(r, isStatic, ancestors, nodeContext, classContext),
+        );
+        // A class collection is one attribute value, not a sequence of HTML chunks.
+        return classContext ? Fx.tuple(...children) : Fx.mergeOrdered(...children);
+      } else if (isOption(renderable)) {
+        return isNone(renderable)
+          ? classContext
+            ? Fx.succeed(undefined)
+            : Fx.empty
+          : liftRenderableToFx(
+              renderable.value,
+              isStatic,
+              propertyAncestors,
+              nodeContext,
+              classContext,
+            );
+      } else if (isStream(renderable)) {
+        return takeOneIfNotRenderEvent(fromStream(renderable)) as Fx.Fx<any, E, R>;
+      } else if (Fx.isFx(renderable)) {
+        return takeOneIfNotRenderEvent(renderable);
+      } else if (Effect.isEffect(renderable)) {
+        return Fx.unwrap(
+          Effect.map(renderable, (r) =>
+            liftRenderableToFx<E, R>(r, isStatic, propertyAncestors, nodeContext, classContext),
+          ),
+        );
+      } else if (isHtmlRenderEvent(renderable)) {
+        return Fx.succeed(renderable);
+      } else {
+        const ancestors = addPropertyAncestor(renderable, propertyAncestors);
+        if (ancestors === null) return Fx.empty;
+        return Fx.take(
+          Fx.struct(
+            mapRecord(renderable, (_) =>
+              liftRenderableToFx<E, R>(_, isStatic, ancestors, nodeContext, classContext),
+            ),
+          ),
+          1,
+        );
+      }
     }
     default:
-      return Fx.succeed(renderable)
+      return Fx.succeed(renderable);
   }
+}
+
+function addPropertyAncestor<T extends object>(
+  value: T,
+  ancestors: ReadonlySet<object> | undefined,
+): ReadonlySet<object> | null | undefined {
+  if (ancestors === undefined) return undefined;
+  if (ancestors.has(value)) return null;
+  return new Set(ancestors).add(value);
 }

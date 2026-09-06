@@ -1,0 +1,99 @@
+{
+  "name": "@typed/svelte",
+  "version": "1.0.0-beta.7",
+  "description": "Bidirectional Svelte integration for Typed templates.",
+  "homepage": "https://github.com/TylorS/typed/tree/development/packages/svelte#readme",
+  "bugs": "https://github.com/TylorS/typed/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TylorS/typed.git",
+    "directory": "packages/svelte"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./view": {
+      "types": "./dist/view.d.ts",
+      "import": "./dist/view.js"
+    },
+    "./Source": {
+      "types": "./dist/Source.d.ts",
+      "import": "./dist/Source.js"
+    },
+    "./Store": {
+      "types": "./dist/Store.d.ts",
+      "import": "./dist/Store.js"
+    },
+    "./Attachment": {
+      "types": "./dist/Attachment.d.ts",
+      "import": "./dist/Attachment.js"
+    },
+    "./Typed.svelte": {
+      "types": "./dist/TypedComponent.d.ts",
+      "browser": "./dist/Typed.client.js",
+      "default": "./dist/Typed.server.js"
+    },
+    "./Runtime": {
+      "types": "./dist/Runtime.d.ts",
+      "import": "./dist/Runtime.js"
+    },
+    "./Reactive": {
+      "types": "./dist/Reactive.d.ts",
+      "import": "./dist/Reactive.js"
+    },
+    "./AsyncData": {
+      "types": "./dist/AsyncData.d.ts",
+      "import": "./dist/AsyncData.js"
+    },
+    "./Router": {
+      "types": "./dist/Router.d.ts",
+      "import": "./dist/Router.js"
+    },
+    "./Typed": {
+      "types": "./dist/Typed.d.ts",
+      "import": "./dist/Typed.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc && pnpm run build:components",
+    "test": "pnpm run build && pnpm run test:node && pnpm run test:browser && pnpm run test:types",
+    "test:node": "vitest run --config vitest.config.ts",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:types": "tsc -p tsconfig.type-tests.json && pnpm run check:svelte",
+    "check:svelte": "rm -rf .svelte-check && svelte-check --tsgo --tsconfig tsconfig.tests.json --fail-on-warnings",
+    "build:components": "pnpm run check:svelte && node build.mjs"
+  },
+  "dependencies": {
+    "@typed/async-data": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/navigation": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "@vitest/browser-playwright": "catalog:",
+    "playwright": "^1.62.1",
+    "svelte": "catalog:",
+    "svelte-check": "4.7.6",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "svelte": "^5.57.0"
+  }
+}

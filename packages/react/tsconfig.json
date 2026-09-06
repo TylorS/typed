@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["DOM", "ES2024"],
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.type-test.ts", "**/__tests__/**"],
+  "references": [
+    {
+      "path": "../fx"
+    },
+    {
+      "path": "../template"
+    },
+    {
+      "path": "../async-data"
+    },
+    {
+      "path": "../router"
+    },
+    {
+      "path": "../navigation"
+    }
+  ]
+}

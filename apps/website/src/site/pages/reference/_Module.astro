@@ -1,0 +1,132 @@
+---
+import type { ReferenceModule } from "../../../docs/Model.js";
+import Markdown from "../../components/Markdown.astro";
+import { uiGuidePath } from "../../Guides.js";
+import { siteHref } from "../../../SiteHref.js";
+import {
+  packages,
+  moduleHref,
+  exposures,
+  symbols,
+  symbolHref,
+  categoryId,
+  codeBlock,
+} from "../../Reference.js";
+interface Props {
+  mod: ReferenceModule;
+}
+const { mod } = Astro.props;
+const pkg = packages.get(mod.packageName)!;
+const uiGuide = uiGuidePath(mod.consumerSpecifier);
+---
+
+<header class="page-intro">
+  <p class="eyebrow">
+    {mod.mediaType === "application/json" ? "Configuration" : "Module"} / v{
+      mod.packageVersion
+    }
+  </p>
+  <h1 class="page-title">{mod.consumerSpecifier}</h1>
+  <p class="reference-summary">
+    {mod.uniqueExportCount} unique exports available through this public import path,
+    including their members and aliases.
+  </p>
+  {
+    uiGuide && (
+      <p>
+        <a href={siteHref(uiGuide)}>Learn this UI primitive →</a>
+      </p>
+    )
+  }
+  {
+    mod.consumerSpecifier === "@typed/fx/Fx" && (
+      <p>
+        <a href={siteHref("/explore/fx-operator-atlas")}>
+          Explore every operation with marble diagrams →
+        </a>
+      </p>
+    )
+  }
+  <div class="prose">
+    <Markdown
+      source={codeBlock(
+        mod.mediaType === "application/json"
+          ? JSON.stringify({ extends: mod.consumerSpecifier }, null, 2)
+          : `import * as ${mod.consumerSpecifier
+              .split("/")
+              .at(-1)!
+              .replace(
+                /[^a-zA-Z0-9_$]/gu,
+                "_",
+              )} from ${JSON.stringify(mod.consumerSpecifier)};`,
+        mod.mediaType === "application/json" ? "json" : "ts",
+      )}
+    />
+  </div>
+</header>
+<div class="reference-layout">
+  <nav class="docs-sidebar" aria-label="Module navigation">
+    <div class="sidebar-group">
+      <strong>On this page</strong>
+      {
+        mod.categories.map((category) => (
+          <a href={`#${categoryId(category.name)}`}>
+            {category.name} <span>({category.exposureIds.length})</span>
+          </a>
+        ))
+      }
+    </div>
+    <details class="sidebar-group" open>
+      <summary>Modules in {mod.packageName}</summary>
+      {
+        pkg.moduleSpecifiers.map((specifier) => (
+          <a
+            href={moduleHref(specifier)}
+            aria-current={
+              specifier === mod.consumerSpecifier ? "page" : undefined
+            }
+          >
+            {specifier === mod.packageName
+              ? "Package entry"
+              : specifier.slice(mod.packageName.length + 1)}
+          </a>
+        ))
+      }
+    </details>
+  </nav>
+  <article class="reference-article">
+    {
+      mod.categories.map((category) => (
+        <section class="catalog-section" id={categoryId(category.name)}>
+          <h2>{category.name}</h2>
+          <ul class="export-list">
+            {category.exposureIds.map((id) => {
+              const exposure = exposures.get(id)!;
+              const symbol = symbols.get(id)!;
+              return (
+                <li>
+                  <h3>
+                    <a href={symbolHref(id)}>
+                      <code>
+                        {exposure.recordKind === "resource"
+                          ? "Configuration and usage"
+                          : exposure.qualifiedName}
+                      </code>
+                    </a>
+                  </h3>
+                  <p class="eyebrow">
+                    {exposure.family}
+                    {exposure.isAlias ? " · Re-export" : ""}
+                  </p>
+                  <div class="prose">
+                    <Markdown source={symbol.summary} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+  </article>
+</div>

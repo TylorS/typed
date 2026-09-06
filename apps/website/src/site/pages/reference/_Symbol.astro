@@ -1,0 +1,356 @@
+---
+import type {
+  ExposureRecord,
+  SymbolDocumentation,
+} from "../../../docs/Model.js";
+import Markdown from "../../components/Markdown.astro";
+import {
+  findFxOperatorDiagram,
+  renderFxOperatorDiagramMarkdown,
+} from "../../../docs/FxOperatorAtlas.js";
+import { uiGuidePath } from "../../Guides.js";
+import {
+  aliases,
+  children,
+  declarations,
+  exposures,
+  symbols,
+  codeBlock,
+  exampleMarkdown,
+  publicImport,
+  sourceHref,
+  symbolHref,
+  moduleHref,
+  siteHref,
+} from "../../Reference.js";
+interface Props {
+  exposure: ExposureRecord;
+  symbol: SymbolDocumentation;
+}
+const { exposure, symbol } = Astro.props;
+const fxName =
+  exposure.recordKind === "declaration"
+    ? exposure.consumerSpecifier === "@typed/fx/Fx"
+      ? exposure.qualifiedName
+      : exposure.consumerSpecifier === "@typed/fx" &&
+          exposure.qualifiedName.startsWith("Fx.")
+        ? exposure.qualifiedName.slice(3)
+        : undefined
+    : undefined;
+const diagram = fxName ? findFxOperatorDiagram(fxName) : undefined;
+const uiGuide = uiGuidePath(exposure.consumerSpecifier);
+const declaration =
+  exposure.recordKind === "declaration"
+    ? declarations.get(exposure.declarationKey)
+    : undefined;
+const alternatives = (
+  aliases.get(
+    exposure.recordKind === "declaration"
+      ? exposure.declarationKey
+      : exposure.id,
+  ) ?? []
+).filter((item) => item.id !== exposure.id);
+const members = children.get(exposure.id) ?? [];
+const parent =
+  exposure.recordKind === "declaration" && exposure.parentId
+    ? exposures.get(exposure.parentId)
+    : undefined;
+const sections = Object.entries(symbol.sections).map(
+  ([title, source], index) => ({ title, source, id: `detail-${index + 1}` }),
+);
+const sources = [
+  ...new Map(
+    exposure.sourceSpans.map((span) => [
+      `${span.file}:${span.start.line}`,
+      span,
+    ]),
+  ).values(),
+];
+const relationHref = (kind: string, target: string) =>
+  kind === "symbol"
+    ? symbolHref(target)
+    : siteHref(kind === "guide" ? `/explore/${target}` : `/glossary#${target}`);
+---
+
+<header class="page-intro">
+  <p class="eyebrow">{exposure.family} / {exposure.consumerSpecifier}</p>
+  <h1 class="page-title">
+    {
+      exposure.recordKind === "resource"
+        ? exposure.consumerSpecifier
+        : exposure.qualifiedName
+    }
+  </h1>
+  <div class="reference-summary prose">
+    <Markdown source={symbol.summary} />
+  </div>
+  {
+    uiGuide && (
+      <p>
+        <a href={siteHref(uiGuide)}>Learn this UI primitive →</a>
+      </p>
+    )
+  }
+  <dl class="reference-facts">
+    <div><dt>Package version</dt><dd>{exposure.packageVersion}</dd></div>
+    {
+      symbol.category && (
+        <div>
+          <>
+            <dt>Category</dt>
+            <dd>{symbol.category}</dd>
+          </>
+        </div>
+      )
+    }
+    {
+      symbol.since && (
+        <div>
+          <>
+            <dt>Since</dt>
+            <dd>{symbol.since}</dd>
+          </>
+        </div>
+      )
+    }
+    {
+      declaration?.stability && (
+        <div>
+          <>
+            <dt>Stability</dt>
+            <dd>{declaration.stability}</dd>
+          </>
+        </div>
+      )
+    }
+    {
+      parent && (
+        <div>
+          <>
+            <dt>Member of</dt>
+            <dd>
+              <a href={symbolHref(parent.id)}>{parent.qualifiedName}</a>
+            </dd>
+          </>
+        </div>
+      )
+    }
+  </dl>
+  {
+    declaration?.deprecated && (
+      <aside class="prose">
+        <>
+          <strong>Deprecated</strong>
+          <Markdown source={declaration.deprecated} />
+        </>
+      </aside>
+    )
+  }
+</header>
+<div class="reference-layout">
+  <nav class="docs-sidebar" aria-label="Symbol navigation">
+    <div class="sidebar-group">
+      <strong>On this page</strong>
+      <a href="#import"
+        >{
+          exposure.recordKind === "resource"
+            ? "Use this configuration"
+            : "Import"
+        }</a
+      >
+      <a href="#signatures"
+        >{
+          exposure.recordKind === "resource" ? "Configuration" : "Signatures"
+        }</a
+      >
+      {diagram && <a href="#timeline">Execution timeline</a>}
+      {
+        sections.map((section) => (
+          <a href={`#${section.id}`}>{section.title}</a>
+        ))
+      }
+      {symbol.examples.length > 0 && <a href="#examples">Examples</a>}
+      {members.length > 0 && <a href="#members">Members</a>}
+      {alternatives.length > 0 && <a href="#aliases">Other public imports</a>}
+      <a href="#source">Source</a>
+    </div>
+    <div class="sidebar-group">
+      <strong>Continue browsing</strong>
+      <a href={moduleHref(exposure.consumerSpecifier)}
+        >All exports in this module</a
+      >
+      {parent && <a href={symbolHref(parent.id)}>{parent.qualifiedName}</a>}
+    </div>
+  </nav>
+  <article class="reference-article prose">
+    {
+      diagram && (
+        <section id="timeline">
+          <h2>Follow one execution</h2>
+          <Markdown source={renderFxOperatorDiagramMarkdown(diagram)} />
+          <p>
+            <a href={siteHref("/explore/fx-operator-atlas")}>
+              Compare all Fx timelines →
+            </a>
+          </p>
+        </section>
+      )
+    }
+    <section id="import">
+      <h2>
+        {
+          exposure.recordKind === "resource"
+            ? "Use this configuration"
+            : "Import"
+        }
+      </h2>
+      <Markdown
+        source={codeBlock(
+          publicImport(exposure),
+          exposure.recordKind === "resource" ? "json" : "ts",
+        )}
+      />
+      {
+        exposure.recordKind === "declaration" &&
+          exposure.qualifiedName !== exposure.exportName && (
+            <p>
+              Access <code>{exposure.qualifiedName}</code> through the imported{" "}
+              <code>{exposure.exportName}</code>
+              {parent?.family === "class" && !exposure.static
+                ? " instance"
+                : " export"}
+              . Its declaration below describes the member.
+            </p>
+          )
+      }
+      {
+        exposure.isAlias && (
+          <p>
+            This public exposure is a re-export. Its import path is supported;
+            declaration documentation is shared with the other public exposures
+            below.
+          </p>
+        )
+      }
+    </section>
+    <section id="signatures">
+      <h2>
+        {exposure.recordKind === "resource" ? "Configuration" : "Signatures"}
+      </h2>
+      {
+        exposure.recordKind === "resource" ? (
+          <>
+            <Markdown source={codeBlock(exposure.raw, "json")} />
+            {exposure.extends.length > 0 && (
+              <p>
+                Extends:{" "}
+                {exposure.extends.map((name, index) => (
+                  <>
+                    <Fragment>{index ? ", " : ""}</Fragment>
+                    <code>{name}</code>
+                  </>
+                ))}
+              </p>
+            )}
+          </>
+        ) : (
+          exposure.signatures.map((signature) => (
+            <Markdown source={codeBlock(signature)} />
+          ))
+        )
+      }
+    </section>
+    {
+      sections.map((section) => (
+        <section id={section.id}>
+          <>
+            <h2>{section.title}</h2>
+            <Markdown source={section.source} />
+          </>
+        </section>
+      ))
+    }
+    {
+      symbol.examples.length > 0 && (
+        <section id="examples">
+          <h2>Examples</h2>
+          {symbol.examples.map((example) => (
+            <Markdown
+              source={exampleMarkdown(example.language, example.code)}
+            />
+          ))}
+        </section>
+      )
+    }
+    {
+      members.length > 0 && (
+        <section id="members">
+          <h2>Members</h2>
+          <ul class="export-list">
+            {members.map((member) => (
+              <li>
+                <a href={symbolHref(member.id)}>
+                  <code>{member.qualifiedName}</code>
+                </a>
+                <Markdown source={symbols.get(member.id)!.summary} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+    {
+      alternatives.length > 0 && (
+        <section id="aliases">
+          <h2>Other public imports</h2>
+          <p>
+            These import paths expose the same declaration. Each page retains
+            its own public name and signature.
+          </p>
+          <ul>
+            {alternatives.map((item) => (
+              <li>
+                <a href={symbolHref(item.id)}>
+                  <code>{item.qualifiedName}</code> from{" "}
+                  <code>{item.consumerSpecifier}</code>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+    {
+      symbol.relations.length > 0 && (
+        <section>
+          <h2>Related reading</h2>
+          <ul>
+            {symbol.relations.map((relation) => (
+              <li>
+                <a href={relationHref(relation.kind, relation.target)}>
+                  {relation.target}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+    <section id="source">
+      <h2>Source</h2>
+      <ul>
+        {
+          sources.map((span) => (
+            <li>
+              <a href={sourceHref(span)}>
+                <code>
+                  {span.file}:{span.start.line}
+                </code>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
+</div>

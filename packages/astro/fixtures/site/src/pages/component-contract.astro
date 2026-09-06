@@ -1,0 +1,11 @@
+---
+import { Zero, PipedZero, WithProps } from "../components/ComponentContract";
+---
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Typed Astro component contract</title></head>
+  <body>
+    <div id="zero"><Zero /></div>
+    <div id="piped-zero"><PipedZero client:load /></div>
+    <div id="with-props"><WithProps label="Props" /></div>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import { groupGuides } from "../Guides.js";
+import { siteHref } from "../../SiteHref.js";
+const groups = groupGuides(
+  (await getCollection("guides")).filter(({ id }) => id.startsWith("ui-")),
+);
+---
+
+<div class="ui-lessons">
+  {
+    groups.map(([section, entries]) => (
+      <section class="catalog-section">
+        <h2>{section.replace("UI / ", "")}</h2>
+        <div class="guide-list">
+          {entries.map(({ id, data }) => (
+            <a href={siteHref(`/explore/${id}`)}>
+              <strong>{data.title} ↗</strong>
+              <p>{data.summary}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</div>

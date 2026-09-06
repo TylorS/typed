@@ -1,0 +1,83 @@
+{
+  "name": "@typed/react",
+  "version": "1.0.0-beta.7",
+  "description": "Scoped React components in Typed and Typed templates in React, with SSR and hydration.",
+  "homepage": "https://github.com/TylorS/typed/tree/development/packages/react#readme",
+  "bugs": "https://github.com/TylorS/typed/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TylorS/typed.git",
+    "directory": "packages/react"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "default": "./dist/index.js"
+    },
+    "./Typed": {
+      "types": "./dist/Typed.d.ts",
+      "browser": "./dist/Typed.browser.js",
+      "default": "./dist/Typed.js"
+    },
+    "./Runtime": {
+      "types": "./dist/Runtime.d.ts",
+      "import": "./dist/Runtime.js"
+    },
+    "./Hooks": {
+      "types": "./dist/Hooks.d.ts",
+      "import": "./dist/Hooks.js"
+    },
+    "./AsyncData": {
+      "types": "./dist/AsyncData.d.ts",
+      "import": "./dist/AsyncData.js"
+    },
+    "./Router": {
+      "types": "./dist/Router.d.ts",
+      "import": "./dist/Router.js"
+    },
+    "./view": {
+      "types": "./dist/view.d.ts",
+      "import": "./dist/view.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",
+    "test": "pnpm run test:types && pnpm run test:node && pnpm run test:browser",
+    "test:node": "vitest run --config vitest.config.ts",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:types": "pnpm run build && tsc -p tsconfig.type-tests.json && tsc -p tsconfig.tests.json"
+  },
+  "dependencies": {
+    "@typed/async-data": "workspace:*",
+    "@typed/fx": "workspace:*",
+    "@typed/navigation": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/template": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "playwright": "^1.62.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}

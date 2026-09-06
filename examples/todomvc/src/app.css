@@ -1,0 +1,89 @@
+.todoapp {
+  --todo-background: var(--color-base-100, #fff);
+  --todo-foreground: var(--color-base-content, #172b21);
+  --todo-accent: var(--color-primary, #087b48);
+  --todo-line: var(--line, #d6e5dc);
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  margin: 1.5rem auto;
+  border: 1px solid var(--todo-line);
+  border-radius: 0.6rem;
+  background: var(--todo-background);
+  color: var(--todo-foreground);
+  box-shadow: none;
+  font: 1rem/1.5 system-ui, sans-serif;
+}
+.todoapp .header { padding: 1.25rem; }
+.todoapp .header h1 {
+  position: static;
+  width: auto;
+  margin: 0 0 1rem;
+  color: var(--todo-accent);
+  font-size: 2.5rem;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  text-align: left;
+}
+.todoapp .add-todo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.6rem; }
+.todoapp input.new-todo, .todoapp .edit-form input.edit {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--todo-line);
+  border-radius: 0.3rem;
+  background: var(--todo-background);
+  color: inherit;
+  box-shadow: none;
+  font: inherit;
+}
+.todoapp button, .todoapp .filters a {
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--todo-line);
+  border-radius: 0.3rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.todoapp button:hover, .todoapp .filters a:hover { border-color: var(--todo-accent); }
+.todoapp :focus-visible { outline: 2px solid var(--todo-accent); outline-offset: 3px; }
+.todoapp .main { position: relative; border-top: 1px solid var(--todo-line); }
+.todoapp .toggle-all-label { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.25rem; font-size: 0.8rem; }
+.todoapp input.toggle-all, .todoapp .todo-list input.toggle {
+  position: static;
+  appearance: auto;
+  opacity: 1;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  margin: 0;
+  accent-color: var(--todo-accent);
+}
+.todoapp .todo-list { margin: 0; padding: 0; list-style: none; }
+.todoapp .todo-list li { position: relative; margin: 0; padding: 0.75rem 1.25rem; border-top: 1px solid var(--todo-line); border-bottom: 0; font-size: 1rem; }
+.todoapp .todo-list .view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.65rem; }
+.todoapp .todo-list .view label { display: block; margin: 0; padding: 0; font: inherit; line-height: 1.5; overflow-wrap: anywhere; }
+.todoapp .todo-list li.completed .view label { color: var(--muted, #526d5d); text-decoration: line-through; }
+.todoapp .todo-list .destroy { display: block; position: static; width: auto; height: auto; margin: 0; color: inherit; font-size: 1.2rem; line-height: 1; }
+.todoapp .todo-list .destroy::after { content: none; }
+.todoapp .edit-form { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.5rem; align-items: center; }
+.todoapp .footer { position: static; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; height: auto; padding: 1rem 1.25rem; border-top: 1px solid var(--todo-line); color: var(--todo-foreground); text-align: left; }
+.todoapp .footer::before { content: none; }
+.todoapp .todo-count { float: none; font-size: 0.8rem; }
+.todoapp .filters { position: static; display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.todoapp .filters li { display: block; margin: 0; padding: 0; }
+.todoapp .filters li a { display: inline-block; margin: 0; }
+.todoapp .filters a[aria-current], .todoapp .filters a.selected { border-color: var(--todo-accent); color: var(--todo-accent); }
+.todoapp .clear-completed { position: static; float: none; line-height: inherit; }
+@media (max-width: 480px) {
+  .todoapp .header, .todoapp .todo-list li, .todoapp .footer { padding: 0.8rem; }
+  .todoapp .add-todo, .todoapp .edit-form { grid-template-columns: minmax(0, 1fr); }
+  .todoapp .add-todo-button { justify-self: start; }
+  .todoapp .edit-form button { justify-self: start; }
+}

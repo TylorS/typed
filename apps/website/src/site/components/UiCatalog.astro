@@ -1,0 +1,74 @@
+---
+import { uiAccessibilityFamilies } from "../../docs/UiAccessibility.js";
+import { siteHref } from "../../SiteHref.js";
+---
+
+<section aria-labelledby="component-contracts">
+  <h2 id="component-contracts">Interaction contracts by family</h2>
+  <p>
+    Components provide specific behavior. Labels, content, and composition still
+    belong to the application.
+  </p>
+  {
+    uiAccessibilityFamilies.map((entry) => (
+      <section
+        class="catalog-section"
+        aria-labelledby={`ui-family-${entry.id}`}
+      >
+        <h3 id={`ui-family-${entry.id}`}>{entry.label}</h3>
+        <p>
+          {entry.families.map((family, index) => (
+            <>
+              <Fragment>{index > 0 ? " · " : ""}</Fragment>
+              <a
+                href={siteHref(
+                  `/reference/modules/${encodeURI(`@typed/ui/${family}`)}`,
+                )}
+              >
+                {family}
+              </a>
+            </>
+          ))}
+        </p>
+        <>
+          <h4>Typed supplies</h4>
+          <ul>
+            {entry.typedVerifies.map((claim) => (
+              <li>{claim}</li>
+            ))}
+          </ul>
+        </>
+        <>
+          <h4>The application supplies</h4>
+          <ul>
+            {entry.authorsMustProvide.map((claim) => (
+              <li>{claim}</li>
+            ))}
+          </ul>
+        </>
+        <details>
+          <>
+            <summary>Standards and implementation evidence</summary>
+            <ul>
+              {entry.references.map(({ href, label }) => (
+                <li>
+                  <a href={href}>{label}</a>
+                </li>
+              ))}
+              {entry.evidence.map(({ file, detail }) => (
+                <li>
+                  <a
+                    href={`https://github.com/TylorS/typed/blob/development/${file}`}
+                  >
+                    {file}
+                  </a>{" "}
+                  — {detail}
+                </li>
+              ))}
+            </ul>
+          </>
+        </details>
+      </section>
+    ))
+  }
+</section>

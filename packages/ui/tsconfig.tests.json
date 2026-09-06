@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "rootDir": "."
+  },
+  "include": [
+    "src/**/*.test.ts",
+    "src/**/*.browser.test.ts",
+    "stories/**/__tests__/**/*.test.ts"
+  ],
+  "exclude": []
+}

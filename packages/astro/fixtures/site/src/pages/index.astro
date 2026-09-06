@@ -1,0 +1,18 @@
+---
+import Counter from "../components/Counter";
+import Frame from "../components/Frame";
+import Summary from "../components/Summary";
+---
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Typed Astro renderer fixture</title></head>
+  <body>
+    <div id="summary"><Summary client:load /></div>
+    <div id="summary-static"><Summary /></div>
+    <Counter id="static" initial={0} />
+    <Counter id="load" initial={1} client:load><strong>Default slot</strong><Frame id="nested-static"><b>Nested default</b><em slot="heading">Nested heading</em></Frame><h2 slot="heading">Named slot</h2></Counter>
+    <Counter id="idle" initial={2} client:idle />
+    <Counter id="visible" initial={3} client:visible />
+    <Counter id="media" initial={4} client:media="(min-width: 1px)" />
+    <Counter id="only" initial={5} client:only="@typed/astro"><p slot="fallback">Loading</p></Counter>
+  </body>
+</html>

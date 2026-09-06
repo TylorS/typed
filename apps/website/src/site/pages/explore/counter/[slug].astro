@@ -1,0 +1,48 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import {
+  adjacentLinks,
+  learningGroups,
+  type GuideLink,
+} from "../../../Guides.js";
+import Article from "../../../layouts/Article.astro";
+import Demo from "../../../components/CurriculumDemo.js";
+import "../../../components/CurriculumFiles.css";
+import { orderCounterLessons } from "../../../../tutorial/Routes.js";
+
+export async function getStaticPaths() {
+  const allLessons = await getCollection("learn");
+  const lessons = orderCounterLessons(allLessons);
+  const groups = learningGroups(
+    await getCollection("guides"),
+    allLessons,
+    await getCollection("tutorial"),
+  );
+  return lessons.map((entry) => ({
+    params: { slug: entry.data.id },
+    props: { entry, ...adjacentLinks(`counter/${entry.data.id}`, groups) },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"learn">;
+  previous?: GuideLink;
+  next?: GuideLink;
+}
+const { entry, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Article
+  title={entry.data.title}
+  summary={entry.data.summary}
+  section="BEYOND QUICK START"
+  current={`counter/${entry.data.id}`}
+  headings={headings}
+  source={`content/learn/${entry.id}.md`}
+  previous={previous}
+  next={next}
+>
+  {entry.data.demo && <Demo id={entry.data.demo} client:visible />}
+  <Content />
+</Article>

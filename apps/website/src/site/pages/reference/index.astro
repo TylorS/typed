@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+import { inventory, descriptions, packageHref } from "../../Reference.js";
+---
+
+<Base
+  title="API reference"
+  description="Every public Typed package, import path, declaration, and configuration resource."
+>
+  <main id="main-content" tabindex="-1" class="page-container">
+    <header class="page-intro">
+      <p class="eyebrow">Reference / Public API</p>
+      <h1 class="page-title">Find the contract.</h1>
+      <p class="reference-summary">
+        Browse by the package you install, the module you import, and the symbol
+        you use. Read complete signatures, examples, behavioral details, and
+        source records.
+      </p>
+    </header>
+    <dl class="reference-facts">
+      <div><dt>Packages</dt><dd>{inventory.packages.length}</dd></div>
+      <div><dt>Import paths</dt><dd>{inventory.modules.length}</dd></div>
+      <div>
+        <dt>Unique exports</dt><dd>
+          {inventory.uniqueExportCount.toLocaleString()}
+        </dd>
+      </div>
+    </dl>
+    <section class="catalog-section" aria-labelledby="packages-title">
+      <h2 id="packages-title">Packages</h2>
+      <div class="package-grid">
+        {
+          inventory.packages.map((pkg) => (
+            <article class="package-card">
+              <p class="eyebrow">v{pkg.packageVersion}</p>
+              <h3>
+                <a href={packageHref(pkg.packageName)}>{pkg.packageName}</a>
+              </h3>
+              <p>
+                {descriptions[pkg.packageName] ??
+                  "Published Typed package and its complete public API."}
+              </p>
+              <p>
+                {pkg.moduleSpecifiers.length} import paths ·{" "}
+                {pkg.uniqueExportCount} unique exports
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</Base>

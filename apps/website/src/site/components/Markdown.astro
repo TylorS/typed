@@ -1,0 +1,10 @@
+---
+import { renderMarkdown } from "../Markdown.js";
+
+interface Props {
+  source: string;
+}
+const { code } = await renderMarkdown(Astro.props.source);
+---
+
+<Fragment set:html={code} />

@@ -1,0 +1,139 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  headings: readonly Heading[];
+  sidebar?: boolean;
+}
+const { headings, sidebar = false } = Astro.props;
+// Use Astro's rendered anchors, including its handling of punctuation and duplicates.
+const groups = headings
+  .filter(({ depth }) => depth === 2)
+  .map((heading) => {
+    const start = headings.indexOf(heading) + 1;
+    const end = headings.findIndex(
+      (next, index) => index >= start && next.depth <= 2,
+    );
+    return {
+      ...heading,
+      entries: headings
+        .slice(start, end < 0 ? undefined : end)
+        .filter(({ depth }) => depth === 3),
+    };
+  });
+---
+
+<details
+  class:list={["marble-contents", { "marble-contents--sidebar": sidebar }]}
+  open={sidebar}
+>
+  <summary>Browse marble diagrams</summary>
+  <nav aria-label="Marble diagram contents">
+    {
+      groups.map((group) =>
+        group.entries.length > 0 ? (
+          <details class="marble-contents__group">
+            <summary>
+              {group.text} <span>{group.entries.length}</span>
+            </summary>
+            <ul>
+              <li>
+                <a href={`#${group.slug}`}>
+                  All {group.text.toLowerCase()} diagrams
+                </a>
+              </li>
+              {group.entries.map(({ slug, text }) => (
+                <li>
+                  <a href={`#${slug}`}>
+                    <code>{text}</code>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : (
+          <a class="marble-contents__section" href={`#${group.slug}`}>
+            {group.text}
+          </a>
+        ),
+      )
+    }
+  </nav>
+</details>
+
+<style>
+  .marble-contents {
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--color-base-200);
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.75rem;
+    color: var(--color-base-content);
+  }
+  .marble-contents > summary {
+    color: var(--color-primary);
+  }
+  nav {
+    padding: 0 0.5rem 0.5rem;
+    max-height: 55dvh;
+    overflow-y: auto;
+  }
+  .marble-contents__group {
+    border-top: 1px solid var(--line);
+  }
+  .marble-contents__group summary {
+    font-size: 0.85rem;
+  }
+  summary span {
+    color: var(--muted);
+    font: 0.7rem var(--mono);
+    margin-left: 0.25rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0.5rem 0.5rem;
+  }
+  a {
+    display: block;
+    padding: 0.6rem 0.25rem;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+  a:hover {
+    color: var(--color-primary);
+  }
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+  .marble-contents--sidebar {
+    border: 0;
+    background: transparent;
+  }
+  .marble-contents--sidebar > summary {
+    padding: 0 0 0.75rem;
+    font-size: 0.8rem;
+  }
+  .marble-contents--sidebar nav {
+    padding: 0;
+    max-height: none;
+    overflow: visible;
+  }
+  .marble-contents--sidebar .marble-contents__group summary {
+    padding: 0.65rem 0;
+    font-size: 0.75rem;
+  }
+  @media (min-width: 1151px) {
+    .marble-contents:not(.marble-contents--sidebar) {
+      display: none;
+    }
+  }
+</style>

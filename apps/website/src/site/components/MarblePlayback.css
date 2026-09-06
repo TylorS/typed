@@ -1,0 +1,475 @@
+.fx-marble {
+  --fx-marble-label-width: 7rem;
+  --fx-marble-time: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  margin-block: 1.5rem;
+  background: var(--color-base-100);
+  font: 0.75rem/1.6 var(--mono);
+}
+.fx-marble figcaption {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--color-base-200);
+}
+.fx-marble__eyebrow {
+  color: var(--color-primary);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.fx-marble__caption {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.fx-marble__coverage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+.fx-marble__viewport {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
+  padding: 0.75rem;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) var(--color-base-200);
+}
+.fx-marble__diagram {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  min-width: max(
+    100%,
+    calc(
+      var(--fx-marble-label-width) + var(--fx-marble-steps) *
+        var(--fx-marble-slot-width)
+    )
+  );
+}
+.fx-marble__row,
+.fx-marble__axis,
+.fx-marble__operator-row {
+  display: grid;
+  grid-template-columns: var(--fx-marble-label-width) minmax(0, 1fr);
+  align-items: center;
+  min-height: 3.5rem;
+}
+.fx-marble__label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  box-shadow: -1rem 0 0 var(--color-base-100);
+  padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+  color: var(--muted);
+  background: var(--color-base-100);
+  overflow-wrap: anywhere;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.fx-marble__track,
+.fx-marble__operator-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--fx-marble-steps), minmax(0, 1fr));
+  align-items: center;
+  min-height: 3.5rem;
+  min-width: 0;
+}
+.fx-marble__track::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  border-top: 1px solid var(--line);
+}
+.fx-marble__track::after {
+  content: "›";
+  position: absolute;
+  right: 0;
+  color: var(--muted);
+}
+.fx-marble__event,
+.fx-marble__tick {
+  z-index: 1;
+  grid-column: var(--fx-marble-slot);
+  grid-row: 1;
+  justify-self: center;
+}
+.fx-marble__event,
+.fx-marble__legend-event {
+  display: grid;
+  place-items: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  max-width: calc(100% - 0.65rem);
+  padding: 0.3rem 0.45rem;
+  color: var(--color-primary);
+  background: var(--color-base-100);
+  text-align: center;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  transition:
+    opacity 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.fx-marble__event--value {
+  border: 1px solid currentColor;
+  border-radius: 1.2rem;
+}
+.fx-marble__event--start,
+.fx-marble__event--complete,
+.fx-marble__event--error,
+.fx-marble__event--cancelled {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.fx-marble__event--error {
+  color: var(--color-error);
+}
+.fx-marble__event--cancelled {
+  color: var(--color-warning);
+}
+.fx-marble__row--output .fx-marble__label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.fx-marble__operator {
+  grid-column: 1 / -1;
+  justify-self: center;
+  max-width: calc(100% - 1rem);
+  padding: 0.35rem 0.8rem;
+  color: var(--color-primary);
+  background: var(--color-base-200);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.fx-marble__axis,
+.fx-marble__axis .fx-marble__track {
+  min-height: 1.5rem;
+}
+.fx-marble__axis {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+.fx-marble__axis .fx-marble__track::before,
+.fx-marble__axis .fx-marble__track::after {
+  display: none;
+}
+.fx-marble__tick {
+  padding-bottom: 0.25rem;
+}
+.fx-marble__clock {
+  display: none;
+  position: absolute;
+  inset: 0 0 0 var(--fx-marble-label-width);
+  pointer-events: none;
+}
+.fx-marble[data-enhanced] .fx-marble__clock {
+  display: block;
+}
+.fx-marble__playhead {
+  position: absolute;
+  top: 1.5rem;
+  bottom: 0;
+  left: calc((var(--fx-marble-time) + 0.5) / var(--fx-marble-steps) * 100%);
+  width: 1px;
+  background: var(--color-primary);
+  opacity: 0.55;
+}
+.fx-marble__playhead::before {
+  content: "";
+  position: absolute;
+  top: -0.2rem;
+  left: -0.2rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--color-primary);
+  transform: rotate(45deg);
+}
+.fx-marble[data-enhanced] [data-phase="future"] {
+  color: var(--muted);
+}
+.fx-marble[data-enhanced] .fx-marble__event--value[data-phase="future"] {
+  border-style: dashed;
+}
+.fx-marble[data-enhanced] [data-phase="current"] {
+  background: var(--color-base-200);
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+}
+.fx-marble[data-playing="true"] [data-phase="current"] {
+  animation: fx-marble-arrive 450ms ease-out;
+}
+@keyframes fx-marble-arrive {
+  from {
+    scale: 0.85;
+    box-shadow: 0 0 0 7px transparent;
+  }
+  to {
+    scale: 1;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+  }
+}
+.fx-marble__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--line);
+  background: var(--color-base-200);
+}
+.fx-marble__controls[hidden] {
+  display: none;
+}
+.fx-marble__transport {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.fx-marble__controls button,
+.fx-marble__controls select {
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font: inherit;
+  cursor: pointer;
+}
+.fx-marble__controls button {
+  padding: 0.35rem 0.5rem;
+}
+.fx-marble__controls button:hover:enabled {
+  border-color: var(--color-primary);
+}
+.fx-marble__controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.fx-marble__controls .fx-marble__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 6rem;
+  color: var(--color-primary);
+}
+.fx-marble__controls :is(button, select, input):focus-visible,
+.fx-marble__viewport:focus-visible,
+.fx-marble__legend summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+.fx-marble__speed {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.fx-marble__speed select {
+  padding: 0.25rem 0.5rem;
+}
+.fx-marble__scrubber {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+.fx-marble__scrubber input {
+  min-width: 0;
+  flex: 1;
+  height: 1.5rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+.fx-marble__position {
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 0.7rem;
+}
+.fx-marble .fx-marble__activity {
+  width: 100%;
+  min-height: 2.8em;
+  margin: 0;
+  color: var(--color-base-content);
+  font: 0.7rem/1.5 var(--mono);
+  overflow-wrap: anywhere;
+}
+.fx-marble__legend {
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.fx-marble__marker {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.fx-marble__legend summary {
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+.fx-marble__legend-preview {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  gap: 0.25rem;
+}
+.fx-marble__legend-preview .fx-marble__legend-sample {
+  width: 1.5rem;
+  min-height: 1.5rem;
+}
+.fx-marble__legend-preview .fx-marble__legend-event {
+  min-width: 1.4rem;
+  min-height: 1.4rem;
+  padding: 0;
+}
+.fx-marble__legend-preview .fx-marble__marker {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.fx-marble__legend p {
+  margin: 0.6rem 0;
+  font: 0.7rem/1.6 var(--mono);
+}
+.fx-marble__legend ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  font-size: 0.7rem;
+}
+.fx-marble__legend li {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+}
+.fx-marble__legend strong {
+  color: var(--color-base-content);
+  font-weight: 600;
+}
+.fx-marble__legend-sample {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  min-height: 2.5rem;
+}
+.fx-marble__legend-sample .fx-marble__legend-event {
+  grid-column: 1;
+  grid-row: 1;
+  max-width: 100%;
+}
+.fx-marble__legend-sample [data-legend-phase="current"] {
+  background: var(--color-base-200);
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+}
+.fx-marble__legend-sample [data-legend-phase="future"] {
+  color: var(--muted);
+  border-style: dashed;
+}
+.fx-marble__legend-continuation {
+  justify-items: end;
+}
+.fx-marble__legend-continuation::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0.4rem auto 0;
+  border-top: 1px solid var(--line);
+}
+.fx-marble__legend-cursor::before {
+  content: "";
+  width: 1px;
+  height: 2rem;
+  background: var(--color-primary);
+  opacity: 0.55;
+}
+.fx-marble__legend-cursor::after {
+  content: "";
+  position: absolute;
+  top: 0.2rem;
+  left: calc(50% - 0.2rem);
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--color-primary);
+  transform: rotate(45deg);
+  opacity: 0.55;
+}
+@media (max-width: 600px) {
+  .fx-marble {
+    --fx-marble-label-width: 5.5rem;
+  }
+  .fx-marble figcaption {
+    padding: 0.8rem;
+  }
+  .fx-marble__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.7rem;
+    gap: 0.6rem;
+  }
+  .fx-marble__transport {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) 2.75rem;
+    gap: 0.3rem;
+  }
+  .fx-marble__play {
+    min-width: 0;
+  }
+  .fx-marble__speed {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .fx-marble__scrubber {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+  .fx-marble__scrubber input {
+    width: 100%;
+    min-width: 0;
+  }
+  .fx-marble .fx-marble__activity {
+    grid-column: 1 / -1;
+  }
+  .fx-marble__speed > span {
+    display: none;
+  }
+  .fx-marble__label {
+    padding-right: 0.5rem;
+    font-size: 0.65rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-marble__event {
+    animation: none !important;
+    transition: none;
+  }
+}

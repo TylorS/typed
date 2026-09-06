@@ -1,0 +1,118 @@
+---
+import "../styles.css";
+import "../components/MarblePlayback.css";
+import "../components/Search.css";
+import Theme from "../components/Theme.js";
+import Search from "../components/Search.js";
+import { siteHref } from "../../SiteHref.js";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const {
+  title,
+  description = "Typed is a toolkit built on Effect for reactive applications, accessible interfaces, and libraries that work with the web.",
+} = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/u, "");
+const currentPath =
+  Astro.url.pathname.slice(base.length).replace(/\/$/u, "") || "/";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const nav = [
+  ["/explore", "Explore"],
+  ["/integrate", "Integrate"],
+  ["/reference", "Reference"],
+];
+---
+
+<!doctype html>
+<html lang="en" data-theme="matrix">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#030806" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href={siteHref("/favicon.png")} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <title>
+      {title === "Typed — Cooperative by design" ? title : `${title} — Typed`}
+    </title>
+    <script is:inline>
+      (() => {
+        let saved;
+        try {
+          saved = localStorage.getItem("typed-theme");
+        } catch {}
+        // Set the first paint before modules load. Typed owns subsequent changes.
+        document.documentElement.dataset.theme =
+          saved === "matrix" || saved === "matrix-light"
+            ? saved
+            : matchMedia("(prefers-color-scheme: dark)").matches
+              ? "matrix"
+              : "matrix-light";
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a
+          class="brand brand-animated"
+          href={siteHref("/")}
+          aria-label="Typed home"
+        >
+          <span class="typewriter" aria-hidden="true"></span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          {
+            nav.map(([href, label]) => (
+              <a
+                href={siteHref(href!)}
+                aria-current={
+                  currentPath.startsWith(href!) ? "page" : undefined
+                }
+              >
+                {label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="header-tools">
+          <Search client:idle />
+          <Theme client:load />
+          <a class="github-link" href="https://github.com/TylorS/typed"
+            >GitHub ↗</a
+          >
+        </div>
+      </div>
+    </header>
+    <slot />
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div>
+          <a class="brand" href={siteHref("/")}>typed<span>_</span></a><p>
+            Just a toolkit. Built on Effect. Made for the web.
+          </p>
+        </div>
+        <nav class="footer-links" aria-label="Resources">
+          <a href={siteHref("/explore/quick-start")}>Get started</a>
+          <a href={siteHref("/glossary")}>Glossary</a>
+          <a href="https://effect.website/docs/v4/">Effect documentation ↗</a>
+          <a href="https://github.com/TylorS/typed">Source ↗</a>
+          <a href={siteHref("/llms.txt")}>llms.txt</a>
+        </nav>
+      </div>
+    </footer>
+    <script>
+      import { Effect } from "effect";
+      import { page } from "../Page.js";
+
+      Effect.runFork(page(document));
+    </script>
+  </body>
+</html>

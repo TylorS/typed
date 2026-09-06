@@ -1,68 +1,143 @@
 {
   "name": "@typed/fx",
-  "version": "1.32.0",
-  "description": "",
-  "publishConfig": {
-    "access": "public",
-    "directory": "dist"
-  },
+  "version": "2.0.0-beta.7",
+  "description": "Reactive streams and state for Typed applications.",
+  "homepage": "https://github.com/TylorS/typed/tree/development/packages/fx#readme",
+  "bugs": "https://github.com/TylorS/typed/issues",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tylors/typed.git"
+    "url": "git+https://github.com/TylorS/typed.git",
+    "directory": "packages/fx"
   },
-  "homepage": "https://github.com/tylors/typed",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
-    "./*": {
-      "require": "./dist/*.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./Fx": {
+      "types": "./dist/Fx.d.ts",
+      "import": "./dist/Fx.js"
+    },
+    "./Push": {
+      "types": "./dist/Push.d.ts",
+      "import": "./dist/Push.js"
+    },
+    "./RefSubject": {
+      "types": "./dist/RefSubject.d.ts",
+      "import": "./dist/RefSubject.js"
+    },
+    "./Sink": {
+      "types": "./dist/Sink.d.ts",
+      "import": "./dist/Sink.js"
+    },
+    "./Subject": {
+      "types": "./dist/Subject.d.ts",
+      "import": "./dist/Subject.js"
+    },
+    "./Versioned": {
+      "types": "./dist/Versioned.d.ts",
+      "import": "./dist/Versioned.js"
+    },
+    "./RefArray": {
+      "types": "./dist/RefArray.d.ts",
+      "import": "./dist/RefArray.js"
+    },
+    "./RefBigDecimal": {
+      "types": "./dist/RefBigDecimal.d.ts",
+      "import": "./dist/RefBigDecimal.js"
+    },
+    "./RefBigInt": {
+      "types": "./dist/RefBigInt.d.ts",
+      "import": "./dist/RefBigInt.js"
+    },
+    "./RefBoolean": {
+      "types": "./dist/RefBoolean.d.ts",
+      "import": "./dist/RefBoolean.js"
+    },
+    "./RefCause": {
+      "types": "./dist/RefCause.d.ts",
+      "import": "./dist/RefCause.js"
+    },
+    "./RefChunk": {
+      "types": "./dist/RefChunk.d.ts",
+      "import": "./dist/RefChunk.js"
+    },
+    "./RefDateTime": {
+      "types": "./dist/RefDateTime.d.ts",
+      "import": "./dist/RefDateTime.js"
+    },
+    "./RefDuration": {
+      "types": "./dist/RefDuration.d.ts",
+      "import": "./dist/RefDuration.js"
+    },
+    "./RefGraph": {
+      "types": "./dist/RefGraph.d.ts",
+      "import": "./dist/RefGraph.js"
+    },
+    "./RefHashMap": {
+      "types": "./dist/RefHashMap.d.ts",
+      "import": "./dist/RefHashMap.js"
+    },
+    "./RefHashRing": {
+      "types": "./dist/RefHashRing.d.ts",
+      "import": "./dist/RefHashRing.js"
+    },
+    "./RefHashSet": {
+      "types": "./dist/RefHashSet.d.ts",
+      "import": "./dist/RefHashSet.js"
+    },
+    "./RefIterable": {
+      "types": "./dist/RefIterable.d.ts",
+      "import": "./dist/RefIterable.js"
+    },
+    "./RefOption": {
+      "types": "./dist/RefOption.d.ts",
+      "import": "./dist/RefOption.js"
+    },
+    "./RefRecord": {
+      "types": "./dist/RefRecord.d.ts",
+      "import": "./dist/RefRecord.js"
+    },
+    "./RefResult": {
+      "types": "./dist/RefResult.d.ts",
+      "import": "./dist/RefResult.js"
+    },
+    "./RefString": {
+      "types": "./dist/RefString.d.ts",
+      "import": "./dist/RefString.js"
+    },
+    "./RefStruct": {
+      "types": "./dist/RefStruct.d.ts",
+      "import": "./dist/RefStruct.js"
+    },
+    "./RefTrie": {
+      "types": "./dist/RefTrie.d.ts",
+      "import": "./dist/RefTrie.js"
+    },
+    "./RefTuple": {
+      "types": "./dist/RefTuple.d.ts",
+      "import": "./dist/RefTuple.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "example": "ts-node --project tsconfig.examples.json",
-    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
-    "release": "pnpm run build && changeset publish",
-    "clean": "rimraf build dist docs",
-    "build": "pnpm build-all && pnpm build-pack",
-    "build-cjs": "babel build/esm --config-file ../../.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps",
-    "build-mjs": "babel build/esm --config-file ../../.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
-    "build-post": "build-utils pack-v2",
-    "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
-    "build-all": "tsc -b tsconfig.build.json",
-    "build-watch": "tsc -b tsconfig.json --watch",
-    "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
-    "docs": "docgen",
-    "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
-    "tc": "tsc --noEmit",
-    "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "build": "node -e \"const fs=require('node:fs'); fs.rmSync('dist',{recursive:true,force:true}); fs.rmSync('tsconfig.tsbuildinfo',{force:true})\" && tsc",
+    "test": "vitest run --config vitest.config.ts",
+    "test:types": "pnpm run build && tsc -p tsconfig.type-tests.json && tsc -p tsconfig.tests.json"
   },
-  "keywords": [
-    "Push-based Streams",
-    "Reactivity",
-    "Functional Programming",
-    "Effect",
-    "Typed"
-  ],
-  "author": "Typed contributors",
-  "license": "MIT",
-  "sideEffects": [],
   "dependencies": {
-    "@effect/schema": "^0.74.1",
-    "@effect/typeclass": "0.27.4",
-    "@typed/async-data": "workspace:*",
-    "@typed/context": "workspace:*",
-    "@typed/guard": "workspace:*",
-    "effect": "^3.8.4",
-    "fast-check": "^3.22.0",
-    "fast-deep-equal": "^3.1.3"
-  },
-  "peerDependencies": {
-    "@effect/typeclass": "0.24.27",
-    "effect": "^3.3.1"
+    "effect": "catalog:"
   },
   "devDependencies": {
-    "@most/core": "^1.6.1",
-    "@most/scheduler": "^1.3.0",
-    "@most/types": "^1.1.0",
-    "rxjs": "^7.8.1"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

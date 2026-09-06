@@ -1,65 +1,16 @@
 {
-  "extends": "./tsconfig.base.json",
+  "files": [],
   "references": [
-    {
-      "path": "packages/async-data"
-    },
-    {
-      "path": "packages/compiler"
-    },
-    {
-      "path": "packages/context"
-    },
-    {
-      "path": "packages/core"
-    },
-    {
-      "path": "packages/decoder"
-    },
-    {
-      "path": "packages/dom"
-    },
-    {
-      "path": "packages/environment"
-    },
-    {
-      "path": "packages/fx"
-    },
-    {
-      "path": "packages/guard"
-    },
-    {
-      "path": "packages/id"
-    },
-    {
-      "path": "packages/navigation"
-    },
-    {
-      "path": "packages/path"
-    },
-    {
-      "path": "packages/route"
-    },
-    {
-      "path": "packages/router"
-    },
-    {
-      "path": "packages/server"
-    },
-    {
-      "path": "packages/storybook"
-    },
-    {
-      "path": "packages/template"
-    },
-    {
-      "path": "packages/ui"
-    },
-    {
-      "path": "packages/vite-plugin"
-    },
-    {
-      "path": "packages/wire"
-    }
+    { "path": "packages/async-data" },
+    { "path": "packages/fx" },
+    { "path": "packages/guard" },
+    { "path": "packages/id" },
+    { "path": "packages/navigation" },
+    { "path": "packages/router" },
+    { "path": "packages/template" },
+    { "path": "packages/react" },
+    { "path": "packages/svelte" },
+    { "path": "packages/vue" },
+    { "path": "packages/ui" }
   ]
 }

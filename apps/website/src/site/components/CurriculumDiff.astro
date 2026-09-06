@@ -1,0 +1,191 @@
+---
+import { curriculumFileDiffs } from "../../tutorial/Diff.js";
+import type { CurriculumFile } from "../../tutorial/Files.js";
+
+interface Props {
+  files: ReadonlyArray<CurriculumFile>;
+  previousFiles: ReadonlyArray<CurriculumFile>;
+  previousTitle: string;
+}
+const { files, previousFiles, previousTitle } = Astro.props;
+const diffs = curriculumFileDiffs(previousFiles, files);
+const labels = { add: "Added", remove: "Removed", context: "Unchanged" };
+const marks = { add: "+", remove: "−", context: " " };
+---
+
+{
+  diffs.length > 0 && (
+    <details class="curriculum-diff">
+      <summary>
+        Changes from {previousTitle}
+        <span class="diff-count">
+          {diffs.length} {diffs.length === 1 ? "file" : "files"}
+        </span>
+      </summary>
+      {diffs.map(({ name, lines }) => (
+        <div
+          class="diff-scroll"
+          role="region"
+          aria-label={`${name} changes`}
+          tabindex="0"
+        >
+          <table>
+            <caption>
+              <code>{name}</code>
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Before</th>
+                <th scope="col">After</th>
+                <th scope="col">
+                  <span class="diff-label">Change</span>
+                </th>
+                <th scope="col">Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line) =>
+                line.kind === "skip" ? (
+                  <tr class="diff-skip">
+                    <td colspan="4">{line.text}</td>
+                  </tr>
+                ) : (
+                  <tr data-change={line.kind}>
+                    <td class="diff-number">{line.oldLine ?? ""}</td>
+                    <td class="diff-number">{line.newLine ?? ""}</td>
+                    <td class="diff-mark">
+                      <span aria-hidden="true">{marks[line.kind]}</span>
+                      <span class="diff-label">{labels[line.kind]}</span>
+                    </td>
+                    <td class="diff-code">
+                      <code>
+                        {line.kind === "add" ? (
+                          <ins>{line.text || " "}</ins>
+                        ) : line.kind === "remove" ? (
+                          <del>{line.text || " "}</del>
+                        ) : (
+                          line.text || " "
+                        )}
+                      </code>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </details>
+  )
+}
+
+<style>
+  .curriculum-diff {
+    margin-block: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.45rem;
+    background: var(--color-base-200);
+    font-size: 0.85rem;
+  }
+  summary {
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .diff-count {
+    margin-left: 0.7rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .diff-scroll {
+    overflow-x: auto;
+    margin: 0 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.3rem;
+    background: var(--color-base-100);
+  }
+  .curriculum-diff table {
+    display: table;
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    line-height: 1.65;
+  }
+  caption {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+  }
+  .curriculum-diff :is(th, td) {
+    min-width: 0;
+    padding: 0 0.5rem;
+    border: 0;
+    font-size: 0.72rem;
+  }
+  .curriculum-diff th {
+    padding-block: 0.25rem;
+    color: var(--muted);
+    font-weight: 400;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  .diff-number {
+    width: 3.5rem;
+    color: var(--muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+  .diff-mark {
+    width: 1rem;
+    font-weight: 700;
+    user-select: none;
+  }
+  .diff-code {
+    white-space: pre;
+  }
+  .curriculum-diff code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    overflow-wrap: normal;
+    tab-size: 2;
+  }
+  ins,
+  del {
+    text-decoration: none;
+  }
+  [data-change="add"] {
+    background: color-mix(in srgb, var(--color-success) 11%, transparent);
+  }
+  [data-change="remove"] {
+    background: color-mix(in srgb, var(--color-error) 11%, transparent);
+  }
+  [data-change="add"] .diff-mark {
+    color: var(--color-success);
+  }
+  [data-change="remove"] .diff-mark {
+    color: var(--color-error);
+  }
+  .curriculum-diff .diff-skip td {
+    padding-block: 0.35rem;
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+  }
+  .diff-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

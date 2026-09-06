@@ -1,0 +1,62 @@
+---
+import { getCollection } from "astro:content";
+import { adjacentLinks, learningGroups } from "../../../Guides.js";
+import { orderTutorialSteps } from "../../../../tutorial/Routes.js";
+import Article from "../../../layouts/Article.astro";
+import Demo from "../../../components/CurriculumDemo.js";
+import { siteHref } from "../../../../SiteHref.js";
+const steps = orderTutorialSteps(await getCollection("tutorial"));
+const navigation = adjacentLinks(
+  "tutorial",
+  learningGroups(
+    await getCollection("guides"),
+    await getCollection("learn"),
+    steps,
+  ),
+);
+---
+
+<Article
+  title="Build a Todo app"
+  summary="A complete client application: domain rules, reactive state, keyed views, filters, persistence, and tests."
+  section="TUTORIAL"
+  current="tutorial"
+  {...navigation}
+>
+  <Demo id="todo-10" client:only="@typed/astro"
+    ><p slot="fallback">
+      The completed todo application loads in the browser.
+    </p></Demo
+  >
+  <p>
+    Try adding, editing, and completing a todo. Then build this application in
+    ten steps, with short pieces of code and a working preview as soon as the
+    form exists. Each chapter keeps complete copyable files and a diff of what
+    changed.
+  </p>
+  <p>
+    Begin with the <a href={siteHref("/explore/quick-start")}
+      >Quick Start setup</a
+    >
+    for package versions and a working TypeScript project. Keep the files from each
+    chapter and replace or add the ones shown in the next.
+  </p>
+  <h2>Build it step by step</h2><ol>
+    {
+      steps.map((entry) => (
+        <li>
+          <a href={siteHref(`/explore/tutorial/${entry.data.slug}`)}>
+            {entry.data.title}
+          </a>{" "}
+          — {entry.data.summary}
+        </li>
+      ))
+    }
+  </ol>
+  <p>
+    This tutorial stays client-only. The <a
+      href={siteHref("/explore/counter/server-html")}
+      >counter's server rendering lesson</a
+    > continues into state restoration and hydration.
+  </p>
+</Article>

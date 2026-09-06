@@ -1,0 +1,69 @@
+---
+import { getCollection } from "astro:content";
+import { siteHref } from "../../SiteHref.js";
+import { learningGroups } from "../Guides.js";
+import { recipeNavigationGroups } from "../Recipes.js";
+
+interface Props {
+  current?: string;
+}
+const { current } = Astro.props;
+const integrations = recipeNavigationGroups(await getCollection("recipes"));
+const groups = learningGroups(
+  await getCollection("guides"),
+  await getCollection("learn"),
+  await getCollection("tutorial"),
+);
+---
+
+<nav aria-label="Documentation" data-docs-navigation>
+  {
+    groups.map(({ title, entries }) => (
+      <details
+        class="sidebar-group"
+        open={
+          title === "Start building" ||
+          title === "Learning paths" ||
+          entries.some(({ id }) => id === current)
+        }
+      >
+        <summary>
+          {title} <span>{entries.length}</span>
+        </summary>
+        {entries.map(({ id, href, title }) => (
+          <a
+            href={siteHref(href)}
+            aria-current={current === id ? "page" : undefined}
+          >
+            {title}
+          </a>
+        ))}
+      </details>
+    ))
+  }
+  {
+    current?.startsWith("integrate/") &&
+      integrations.map(({ title, entries }) => (
+        <details
+          class="sidebar-group"
+          open={entries.some(({ id }) => current === id)}
+        >
+          <summary>{title}</summary>
+          {entries.map(({ id, href, title }) => (
+            <a
+              href={siteHref(href)}
+              aria-current={current === id ? "page" : undefined}
+            >
+              {title}
+            </a>
+          ))}
+        </details>
+      ))
+  }
+  <div class="sidebar-group">
+    <h2>Keep close</h2>
+    <a href={siteHref("/reference")}>All packages and APIs</a>
+    <a href={siteHref("/integrate")}>Integrations and browser APIs</a>
+    <a href="https://effect.website/docs/v4/">Effect v4 ↗</a>
+  </div>
+</nav>

@@ -1,0 +1,110 @@
+---
+import Base from "../../layouts/Base.astro";
+import Package from "./_Package.astro";
+import Module from "./_Module.astro";
+import Symbol from "./_Symbol.astro";
+import type { ReferenceRoute } from "../../../docs/Model.js";
+import {
+  inventory,
+  packages,
+  modules,
+  exposures,
+  symbols,
+  descriptions,
+  packageHref,
+  moduleHref,
+  siteHref,
+} from "../../Reference.js";
+
+export function getStaticPaths() {
+  return inventory.routes.map((route) => ({
+    params: {
+      path: decodeURIComponent(route.canonicalPath.slice("/reference/".length)),
+    },
+    props: { route },
+  }));
+}
+interface Props {
+  route: ReferenceRoute;
+}
+const { route } = Astro.props;
+const pkg =
+  route.kind === "package"
+    ? packages.get(route.id.slice("package:".length))
+    : undefined;
+const mod =
+  route.kind === "module"
+    ? modules.get(route.id.slice("module:".length))
+    : undefined;
+const exposure =
+  route.kind === "exposure" ? exposures.get(route.id) : undefined;
+const symbol = exposure ? symbols.get(exposure.id) : undefined;
+const packageName =
+  pkg?.packageName ?? mod?.packageName ?? exposure!.packageName;
+const title =
+  pkg?.packageName ??
+  mod?.consumerSpecifier ??
+  (exposure!.recordKind === "resource"
+    ? exposure!.consumerSpecifier
+    : exposure!.qualifiedName);
+const description = symbol?.summary ?? descriptions[packageName];
+---
+
+<Base title={`${title} · API reference`} description={description}>
+  <main
+    id="main-content"
+    tabindex="-1"
+    class="page-container reference-page"
+    data-symbol-id={exposure?.id}
+  >
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href={siteHref("/reference")}>Reference</a></li>
+        <li>
+          {
+            pkg ? (
+              <span aria-current="page">{packageName}</span>
+            ) : (
+              <a href={packageHref(packageName)}>{packageName}</a>
+            )
+          }
+        </li>
+        {
+          mod && (
+            <li>
+              <span aria-current="page">{mod.consumerSpecifier}</span>
+            </li>
+          )
+        }
+        {
+          exposure && (
+            <>
+              <li>
+                <a href={moduleHref(exposure.consumerSpecifier)}>
+                  {exposure.consumerSpecifier}
+                </a>
+              </li>
+              <li>
+                <span aria-current="page">
+                  {exposure.recordKind === "resource"
+                    ? "Configuration"
+                    : exposure.qualifiedName}
+                </span>
+              </li>
+            </>
+          )
+        }
+      </ol>
+    </nav>
+    {pkg && <Package pkg={pkg} />}
+    {mod && <Module mod={mod} />}
+    {exposure && symbol && <Symbol exposure={exposure} symbol={symbol} />}
+    <footer class="catalog-section">
+      <p>
+        Reference formats: <a href={siteHref(route.markdownPath)}>Markdown</a> · <a
+          href={siteHref(route.jsonPath)}>JSON</a
+        >
+      </p>
+    </footer>
+  </main>
+</Base>

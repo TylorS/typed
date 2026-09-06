@@ -1,17 +1,12 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "build/tsbuildinfo/tsconfig.tsbuildinfo"
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["DOM", "ES2024", "ESNext.Disposable"]
   },
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    },
-    {
-      "path": "./tsconfig.test.json"
-    },
-    {
-      "path": "./tsconfig.examples.json"
-    }
-  ]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.type-test.ts", "src/__tests__/helpers/**"],
+  "references": [{ "path": "../fx" }]
 }

@@ -1,0 +1,21 @@
+.curriculum-file {
+  margin-block: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  background: var(--color-base-200);
+}
+.curriculum-file > summary {
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.curriculum-file[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.prose .curriculum-file > pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 0.45rem 0.45rem;
+}

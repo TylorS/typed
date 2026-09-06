@@ -1,0 +1,44 @@
+{
+  "name": "@fixture/published",
+  "version": "1.2.3",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts"
+      },
+      "import": "./dist/index.js"
+    },
+    "./feature": {
+      "import": {
+        "types": "./dist/feature.d.ts",
+        "default": "./dist/feature.js"
+      }
+    },
+    "./fallback": [
+      null,
+      {
+        "types": "./dist/feature.d.ts",
+        "import": "./dist/feature.js"
+      }
+    ],
+    "./nested-fallback": {
+      "import": [
+        null,
+        {
+          "types": "./dist/feature.d.ts",
+          "default": "./dist/feature.js"
+        }
+      ]
+    },
+    "./features/*": {
+      "types": "./dist/features/*.d.ts",
+      "import": "./dist/features/*.js"
+    },
+    "./features/internal/*": null,
+    "./features/special/*": {
+      "types": "./dist/special/*.d.ts",
+      "import": "./dist/special/*.js"
+    },
+    "./config": "./config.json"
+  }
+}

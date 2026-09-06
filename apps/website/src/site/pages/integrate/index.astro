@@ -1,0 +1,49 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { siteHref } from "../../../SiteHref.js";
+import { groupRecipes } from "../../Recipes.js";
+const families = groupRecipes(await getCollection("recipes"));
+---
+
+<Base
+  title="Integrate Typed"
+  description="Connect Typed with Effect services, existing interfaces, and your chosen framework."
+>
+  <main class="page-container" id="main-content" tabindex="-1">
+    <header class="page-intro">
+      <p class="eyebrow">INTEGRATE / KEEP WHAT WORKS</p><h1 class="page-title">
+        Bring your stack.
+      </h1><p>
+        Use Typed for one island or build the whole interface. Each integration
+        makes the same decisions explicit: who creates the output, who updates
+        it, and who cleans it up.
+      </p>
+    </header>
+    {
+      families.map(({ title, description, entries }) => (
+        <section class="home-section">
+          <div class="section-heading">
+            <>
+              <div>
+                <h2>{title}</h2>
+              </div>
+              <p>{description}</p>
+            </>
+          </div>
+          <div class="path-grid">
+            {entries.map((entry) => (
+              <article class="path-card">
+                <h3>{entry.data.title}</h3>
+                <p>{entry.data.summary}</p>
+                <a href={siteHref(`/integrate/${entry.data.slug}`)}>
+                  Open the integration →
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </main>
+</Base>

@@ -1,66 +1,17 @@
-/**
- * @since 1.0.0
- */
-
-import "./internal/module-augmentation.js"
-
-/**
- * @since 1.0.0
- */
-export * as Directive from "./Directive.js"
-/**
- * @since 1.0.0
- */
-export * as ElementRef from "./ElementRef.js"
-/**
- * @since 1.0.0
- */
-export * as ElementSource from "./ElementSource.js"
-/**
- * @since 1.0.0
- */
-export * as EventHandler from "./EventHandler.js"
-/**
- * @since 1.0.0
- */
-export * from "./Html.js"
-/**
- * @since 1.0.0
- */
-export * from "./Hydrate.js"
-/**
- * @since 1.0.0
- */
-export * from "./Many.js"
-/**
- * @since 1.0.0
- */
-export * from "./Part.js"
-/**
- * @since 1.0.0
- */
-export * from "./Placeholder.js"
-/**
- * @since 1.0.0
- */
-export * from "./Render.js"
-/**
- * @since 1.0.0
- */
-export * from "./Renderable.js"
-/**
- * @since 1.0.0
- */
-export * as RenderContext from "./RenderContext.js"
-/**
- * @since 1.0.0
- */
-export * as RenderQueue from "./RenderQueue.js"
-/**
- * @since 1.0.0
- */
-export * from "./RenderEvent.js"
-/**
- * @since 1.0.0
- */
-export * from "./RenderTemplate.js"
+export * as EventHandler from "./EventHandler.js";
+export * from "./EventSource.js";
+export * from "./Html.js";
+export * from "./HtmlChunk.js";
+export * from "./HydrateContext.js";
+export * from "./many.js";
+export * from "./Parser.js";
+export * from "./Render.js";
+export * from "./Renderable.js";
+export * from "./RenderEvent.js";
+export * from "./RenderQueue.js";
+export * from "./RenderTemplate.js";
+export * from "./Template.js";
+export * from "./Wire.js";
+export * as WebComponent from "./WebComponent.js";
+export * from "./RootEvents.js";
+export * as RootEvents from "./RootEvents.js";

@@ -1,8 +1,0 @@
-{
-  "extends": "@typed/tsconfig/base.json",
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    }
-  ]
-}

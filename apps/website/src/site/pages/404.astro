@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import { siteHref } from "../../SiteHref.js";
+---
+
+<Base title="Page not found"
+  ><main class="page-container" id="main-content" tabindex="-1">
+    <header class="page-intro">
+      <p class="eyebrow">404 / NOTHING AT THIS ADDRESS</p><h1
+        class="page-title"
+      >
+        This page isn't here.
+      </h1><p>
+        The guide may have moved. Browse the learning paths or search the public
+        reference.
+      </p>
+    </header><div class="hero-actions">
+      <a class="btn btn-primary" href={siteHref("/explore")}>Browse guides</a><a
+        class="btn btn-outline"
+        href={siteHref("/reference")}>API reference</a
+      >
+    </div>
+  </main></Base
+>

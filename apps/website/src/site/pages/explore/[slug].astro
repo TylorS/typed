@@ -1,0 +1,39 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import Article from "../../layouts/Article.astro";
+import UiCatalog from "../../components/UiCatalog.astro";
+import UiLessons from "../../components/UiLessons.astro";
+import { adjacentLinks, learningGroups, type GuideLink } from "../../Guides.js";
+
+export async function getStaticPaths() {
+  const guides = await getCollection("guides");
+  const groups = learningGroups(
+    guides,
+    await getCollection("learn"),
+    await getCollection("tutorial"),
+  );
+  return guides.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, ...adjacentLinks(entry.id, groups) },
+  }));
+}
+interface Props {
+  entry: CollectionEntry<"guides">;
+  previous?: GuideLink;
+  next?: GuideLink;
+}
+const { entry, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Article
+  {...entry.data}
+  current={entry.id}
+  headings={headings}
+  source={`content/guides/${entry.id}.md`}
+  previous={previous}
+  next={next}
+  ><Content />{entry.id === "ui" && <UiLessons />}{
+    entry.id === "choosing-ui-components" && <UiCatalog />
+  }</Article
+>

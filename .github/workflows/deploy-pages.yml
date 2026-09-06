@@ -1,0 +1,80 @@
+name: Deploy website to GitHub Pages
+
+on:
+  push:
+    branches:
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static website
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SITE_BASE: /typed/
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Generate API documentation
+        run: pnpm --filter typed-website docs:generate
+
+      - name: Type-check website
+        run: pnpm --filter typed-website typecheck
+
+      - name: Validate documentation and examples
+        run: pnpm --filter typed-website test:docs
+
+      - name: Build static website
+        run: pnpm --filter typed-website build:static
+
+      - name: Install browser for production checks
+        run: pnpm --filter typed-website exec playwright install --with-deps chromium
+
+      - name: Validate GitHub Pages output
+        run: pnpm --filter typed-website test:static
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/website/dist/site
+          include-hidden-files: true
+
+  deploy:
+    name: Deploy GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

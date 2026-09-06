@@ -1,0 +1,83 @@
+---
+import type { ReferencePackage } from "../../../docs/Model.js";
+import {
+  descriptions,
+  inventory,
+  packageHref,
+  moduleHref,
+  modules,
+  categoryId,
+} from "../../Reference.js";
+interface Props {
+  pkg: ReferencePackage;
+}
+const { pkg } = Astro.props;
+---
+
+<header class="page-intro">
+  <p class="eyebrow">Package / v{pkg.packageVersion}</p>
+  <h1 class="page-title">{pkg.packageName}</h1>
+  <p class="reference-summary">{descriptions[pkg.packageName]}</p>
+  <dl class="reference-facts">
+    <div><dt>Import paths</dt><dd>{pkg.moduleSpecifiers.length}</dd></div>
+    <div><dt>Unique exports</dt><dd>{pkg.uniqueExportCount}</dd></div>
+    <div><dt>Public exposures</dt><dd>{pkg.exposureIds.length}</dd></div>
+  </dl>
+</header>
+<div class="reference-layout">
+  <nav class="docs-sidebar" aria-label="Reference packages">
+    <div class="sidebar-group">
+      <strong>Packages</strong>
+      {
+        inventory.packages.map((item) => (
+          <a
+            href={packageHref(item.packageName)}
+            aria-current={
+              item.packageName === pkg.packageName ? "page" : undefined
+            }
+          >
+            {item.packageName}
+          </a>
+        ))
+      }
+    </div>
+    <div class="sidebar-group">
+      <strong>On this page</strong>
+      {
+        pkg.moduleGroups.map((group) => (
+          <a href={`#${categoryId(group.title)}`}>
+            {group.title.replace(`${pkg.packageName}/`, "")}
+          </a>
+        ))
+      }
+    </div>
+  </nav>
+  <article class="reference-article">
+    {
+      pkg.moduleGroups.map((group) => (
+        <section class="catalog-section" id={categoryId(group.title)}>
+          <h2>{group.title}</h2>
+          {group.summary && <p>{group.summary}</p>}
+          <ul class="export-list">
+            {group.modules.map((entry) => {
+              const mod = modules.get(entry.consumerSpecifier)!;
+              return (
+                <li>
+                  <a href={moduleHref(mod.consumerSpecifier)}>
+                    <code>{mod.consumerSpecifier}</code>
+                  </a>
+                  <p>
+                    {mod.mediaType === "application/json"
+                      ? "Configuration resource"
+                      : `${mod.uniqueExportCount} unique exports`}{" "}
+                    · {mod.exposureIds.length} public exposures
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+  </article>
+</div>

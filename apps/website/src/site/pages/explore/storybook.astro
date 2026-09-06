@@ -1,0 +1,119 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { siteHref } from "../../../SiteHref.js";
+import { adjacentLinks, learningGroups } from "../../Guides.js";
+
+const storybook = siteHref("/storybook/index.html?path=/story/inputs--button");
+const navigation = adjacentLinks(
+  "storybook",
+  learningGroups(
+    await getCollection("guides"),
+    await getCollection("learn"),
+    await getCollection("tutorial"),
+  ),
+);
+---
+
+<Base
+  title="UI Storybook"
+  description="Explore the maintained Typed UI stories. Try real components, change their props, and inspect their keyboard and accessibility behavior."
+>
+  <main class="page-container storybook-page" id="main-content" tabindex="-1">
+    <header class="storybook-intro">
+      <div>
+        <p class="eyebrow">EXPLORE / UI IN ACTION</p>
+        <h1 class="page-title">UI Storybook</h1>
+        <p>
+          Try the components, change their props, and explore how they behave.
+        </p>
+      </div>
+      <nav aria-label="Storybook resources">
+        <a href={siteHref("/explore/ui")}>Learn the UI primitives →</a>
+        <a href={storybook} target="_blank" rel="noopener"
+          >Open full Storybook ↗</a
+        >
+      </nav>
+    </header>
+    <a class="skip-storybook" href="#after-storybook"
+      >Skip the interactive Storybook</a
+    >
+    <iframe
+      class="storybook-frame"
+      title="Typed UI component Storybook"
+      src={`${storybook}&shortcuts=false`}
+      allow="fullscreen"></iframe>
+    <p id="after-storybook" tabindex="-1" class="storybook-note">
+      These are the <a
+        href="https://github.com/TylorS/typed/tree/development/packages/ui/stories"
+        >maintained UI stories</a
+      >. Use Controls to change available props and Accessibility to inspect the
+      current story. Learn how to <a href={siteHref("/explore/ui-storybook")}
+        >write and mount your own stories</a
+      >.
+    </p>
+    <nav class="article-footer" aria-label="Continue learning">
+      {
+        navigation.previous && (
+          <a href={siteHref(navigation.previous.href)}>
+            ← {navigation.previous.title}
+          </a>
+        )
+      }
+      {
+        navigation.next && (
+          <a href={siteHref(navigation.next.href)}>{navigation.next.title} →</a>
+        )
+      }
+    </nav>
+  </main>
+</Base>
+
+<style>
+  .storybook-page {
+    max-width: 1600px;
+    padding-top: 2rem;
+  }
+  .storybook-intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .storybook-intro h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    margin: 0.5rem 0;
+  }
+  .storybook-intro p {
+    margin-bottom: 0;
+  }
+  .storybook-intro nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  .storybook-frame {
+    display: block;
+    width: 100%;
+    height: 78dvh;
+    min-height: 32rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-box);
+    background: var(--color-base-200);
+  }
+  .skip-storybook {
+    display: block;
+    width: fit-content;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+  }
+  .storybook-note {
+    max-width: 80ch;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+</style>

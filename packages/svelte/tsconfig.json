@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "lib": ["DOM", "ES2024", "ESNext.Disposable"],
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true
+  },
+  "include": ["src"],
+  "exclude": ["src/__tests__"],
+  "references": [
+    {
+      "path": "../fx"
+    },
+    {
+      "path": "../template"
+    },
+    {
+      "path": "../async-data"
+    },
+    {
+      "path": "../router"
+    },
+    {
+      "path": "../navigation"
+    }
+  ]
+}

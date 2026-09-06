@@ -1,17 +1,8 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@typed/tsconfig/dom",
   "compilerOptions": {
-    "tsBuildInfoFile": "build/tsbuildinfo/tsconfig.tsbuildinfo"
+    "noEmit": true,
+    "types": ["vite/client"]
   },
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    },
-    {
-      "path": "./tsconfig.test.json"
-    },
-    {
-      "path": "./tsconfig.examples.json"
-    }
-  ]
+  "include": ["src"]
 }

@@ -1,17 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "build/tsbuildinfo/tsconfig.tsbuildinfo"
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"]
   },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "**/*.type-test.ts"],
   "references": [
-    {
-      "path": "./tsconfig.build.json"
-    },
-    {
-      "path": "./tsconfig.test.json"
-    },
-    {
-      "path": "./tsconfig.examples.json"
-    }
+    { "path": "../fx" },
+    { "path": "../id" },
+    { "path": "../navigation" },
+    { "path": "../router" },
+    { "path": "../template" }
   ]
 }

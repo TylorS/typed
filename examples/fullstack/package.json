@@ -1,0 +1,32 @@
+{
+  "name": "typed-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Barebones isomorphic SSR and hydration example",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm build:client && pnpm build:server",
+    "build:client": "vite build",
+    "build:server": "vite build --ssr src/server.ts",
+    "dev": "node --watch-path=src --watch-path=vite.config.ts dev.mjs",
+    "start": "node dist/server/server.js",
+    "test:production": "pnpm build && node --test test/production-smoke.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform-node": "catalog:",
+    "@typed/fx": "workspace:*",
+    "@typed/id": "workspace:*",
+    "@typed/router": "workspace:*",
+    "@typed/template": "workspace:*",
+    "@typed/ui": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@typed/tsconfig": "workspace:*",
+    "@types/node": "^26.4.1",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

@@ -1,0 +1,40 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import Article from "../../layouts/Article.astro";
+import { adjacentLinks, type GuideLink } from "../../Guides.js";
+import { groupRecipes, recipeNavigationGroups } from "../../Recipes.js";
+export async function getStaticPaths() {
+  const recipes = await getCollection("recipes");
+  const navigation = recipeNavigationGroups(recipes);
+  return groupRecipes(recipes).flatMap(({ title, entries }) =>
+    entries.map((entry) => ({
+      params: { slug: entry.data.slug },
+      props: {
+        entry,
+        family: title,
+        ...adjacentLinks(`integrate/${entry.data.slug}`, navigation),
+      },
+    })),
+  );
+}
+interface Props {
+  entry: CollectionEntry<"recipes">;
+  family: string;
+  previous?: GuideLink;
+  next?: GuideLink;
+}
+const { entry, family, previous, next } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Article
+  title={entry.data.title}
+  summary={entry.data.summary}
+  section={family}
+  current={`integrate/${entry.data.slug}`}
+  index={{ href: "/integrate", title: "All integrations" }}
+  previous={previous}
+  next={next}
+  headings={headings}
+  source={`content/recipes/${entry.id}.md`}><Content /></Article
+>

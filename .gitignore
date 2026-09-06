@@ -1,15 +1,67 @@
-coverage/
-*.tsbuildinfo
+# Dependencies
 node_modules/
-yarn-error.log
-.ultra.cache.json
-.DS_Store
-tmp/
-build/
+
+# Generated type-target bootstrap (legacy: was .typed/, now node_modules/.typed/)
+.typed/
+
+# Build output
 dist/
-.cache/
-.direnv/
+/apps/website/.generated/
+
+# Website generated documentation artifacts. Authored public assets (styles,
+# robots.txt, and agent skills) remain tracked.
+/apps/website/public/docs/
+/apps/website/public/schemas/
+/apps/website/public/storybook/
+/apps/website/src/generated/
+*.tsbuildinfo
+.svelte-check/
+
+# IDE / editor
 .idea/
-packages/*/docs
-examples/*/tempo-data
-examples/*/data
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and debug
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.yarn-integrity
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Test / coverage
+coverage/
+.nyc_output/
+**/__screenshots__/
+**/.vitest-attachments/
+
+# Misc
+.cache/
+.temp/
+tmp-*/
+
+# Test workspace
+.test-workspace/
+*.local
+
+.trigger-tree/
+graphify-out/
+.superpowers/
+docs/superpowers/
+
+# Astro generated content and type declarations
+.astro/
+
+# Generated from the explicit, source-audited Fx diagram catalog
+apps/website/content/guides/fx-operator-atlas.md
+**/.vitest/attachments/**

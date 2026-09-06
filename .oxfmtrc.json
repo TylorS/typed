@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "overrides": [
+    {
+      "files": [
+        "apps/website/src/tutorial/examples/**/*.ts",
+        "examples/counter/src/**/*.ts",
+        "examples/todomvc/src/**/*.ts",
+        "apps/website/content/**/*.md"
+      ],
+      "options": {
+        "embeddedLanguageFormatting": "off"
+      }
+    }
+  ]
+}

@@ -1,122 +1,138 @@
-import "./styles.css"
+// oxlint-disable require-yield
+import "./styles.css";
 
-import { EventHandler, Fx, html, Link, many, RefSubject } from "@typed/core"
-import { Boolean, Effect } from "effect"
-import * as App from "./application"
-import * as Domain from "./domain"
-import * as Infra from "./infrastructure"
+import { Effect } from "effect";
+import { Fx, RefSubject } from "@typed/fx";
+import { EventHandler, html, many } from "@typed/template";
+import { component } from "@typed/ui/Component";
+import * as App from "./application.js";
+import * as Domain from "./domain.js";
+import { Link } from "@typed/ui/Link";
 
-const onEnterOrEscape = EventHandler.keys(
-  "Enter",
-  "Escape"
-)
+const HasTodos = RefSubject.map(App.TodoList, (list) => list.length > 0).pipe(Fx.skipRepeats);
 
-export const TodoApp = html`<section class="todoapp ${App.FilterState}">
-    <header class="header">
-      <h1>todos</h1>
-      <form class="add-todo" onsubmit=${EventHandler.preventDefault(() => App.createTodo)}>
-        <input
-          class="new-todo"
-          placeholder="What needs to be done?"
-          .value="${App.TodoText}"
-          oninput="${EventHandler.target<HTMLInputElement>()((ev) => RefSubject.set(App.TodoText, ev.target.value))}"
-        />
-      </form>
-    </header>
+const TodoItem = component(function* (todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
+  const editing = yield* RefSubject.make(false);
+  const draft = yield* RefSubject.make("");
+  const text = RefSubject.map(todo, (value) => value.text);
+  const completed = RefSubject.map(todo, (value) => value.completed);
+  const begin = text.pipe(
+    Effect.flatMap((value) => RefSubject.set(draft, value)),
+    Effect.flatMap(() => RefSubject.set(editing, true)),
+  );
+  const cancel = RefSubject.set(editing, false);
+  const save = draft.pipe(
+    Effect.flatMap((value) => App.editTodo(id, value)),
+    Effect.flatMap(() => cancel),
+  );
+  return html`<li
+    class="${Fx.when(completed, { onTrue: "completed", onFalse: "" })} ${Fx.when(editing, { onTrue: "editing", onFalse: "" })}"
+  >
+    <div class="view">
+      <input
+        class="toggle"
+        type="checkbox"
+        aria-label="Complete ${text}"
+        ?checked=${completed}
+        onchange=${App.toggleTodoCompleted(id)}
+      />
+      <label ondblclick=${begin}>${text}</label>
+      <button
+        class="destroy"
+        type="button"
+        aria-label="Delete ${text}"
+        onclick=${App.deleteTodo(id)}
+      ></button>
+    </div>
+    <input
+      class="edit"
+      aria-label="Edit todo"
+      .value=${draft}
+      oninput=${EventHandler.make((event: InputEvent & { target: HTMLInputElement }) =>
+        RefSubject.set(draft, event.target.value),
+      )}
+      onblur=${EventHandler.make(
+        () => Effect.flatMap(editing, (isEditing) => (isEditing ? save : Effect.void)),
+        { capture: true },
+      )}
+      onkeydown=${EventHandler.make((event: KeyboardEvent) => {
+        if (event.key === "Escape") return cancel;
+        if (event.key === "Enter") return save;
+        return undefined;
+      })}
+    />
+  </li>`;
+});
 
-    <section class="main">
-      <input class="toggle-all" type="checkbox" ?checked="${App.AllAreCompleted}" ?indeterminate="${App.SomeAreCompleted}" />
-      <label for="toggle-all" onclick="${App.toggleAllCompleted}">Mark all as complete</label>
+const onInput = EventHandler.make((event: InputEvent & { target: HTMLInputElement }) =>
+  RefSubject.set(App.TodoText, event.target.value),
+);
 
+const onNewTodoKeydown = EventHandler.make((event: KeyboardEvent) =>
+  event.key === "Enter" ? App.createTodo : undefined,
+);
+
+export const TodoApp = html`<section class="todoapp">
+  <header class="header">
+    <h1>todos</h1>
+    <input
+      class="new-todo"
+      aria-label="New todo"
+      autofocus
+      autocomplete="off"
+      .value=${App.TodoText}
+      oninput=${onInput}
+      onkeydown=${onNewTodoKeydown}
+      placeholder="What needs to be done?"
+    />
+  </header>
+  ${Fx.if(HasTodos, {
+    onTrue: html`<section class="main">
+      <input
+        id="toggle-all"
+        class="toggle-all"
+        type="checkbox"
+        ?checked=${App.AllAreCompleted}
+        onchange=${App.toggleAllCompleted}
+      />
+      <label for="toggle-all">Mark all as complete</label>
       <ul class="todo-list">
         ${many(App.Todos, (todo) => todo.id, TodoItem)}
       </ul>
-
-      <footer class="footer">
-        <span class="todo-count">
-          ${App.ActiveCount} item${RefSubject.map(App.ActiveCount, (c) => (c === 1 ? "" : "s"))} left
-        </span>
-
-        <ul class="filters">
-          ${Object.values(Domain.FilterState).map(FilterLink)}
-        </ul>
-
-        ${
-  Fx.if(
-    App.SomeAreCompleted,
-    {
-      onTrue: html`<button class="clear-completed" onclick="${App.clearCompletedTodos}">Clear completed</button>`,
-      onFalse: Fx.null
-    }
-  )
-}
-      </footer>
     </section>
-  </section>`
-
-function TodoItem(todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
-  return Fx.gen(function*() {
-    // Track whether this todo is being edited
-    const isEditing = yield* RefSubject.of(false)
-
-    // Track whether the todo is marked as completed
-    const isCompleted = RefSubject.map(todo, Domain.isCompleted)
-
-    // the current text
-    const text = RefSubject.map(todo, (t) => t.text)
-
-    // Update the todo's text
-    const updateText = (text: string) => RefSubject.update(todo, Domain.updateText(text))
-
-    // Reset the todo's text to the text value before editing it
-    const reset = RefSubject.delete(todo).pipe(Effect.zipLeft(RefSubject.set(isEditing, false)))
-
-    // Submit the todo when the user is done editing
-    const submit = text.pipe(
-      Effect.flatMap((t) => App.editTodo(id, t)),
-      Effect.zipRight(reset)
-    )
-
-    return html`<li class="${Fx.when(isCompleted, { onTrue: "completed", onFalse: "" })} ${
-      Fx.when(isEditing, { onTrue: "editing", onFalse: "" })
-    }">
-      <div class="view">
-        <input
-          type="checkbox"
-          class="toggle"
-          ?checked="${isCompleted}"
-          onclick="${App.toggleTodoCompleted(id)}"
-        />
-
-        <label ondblclick="${RefSubject.update(isEditing, Boolean.not)}">${text}</label>
-
-        <button class="destroy" onclick="${App.deleteTodo(id)}"></button>
-      </div>
-
-      <input
-        class="edit"
-        .value="${text}"
-        oninput="${EventHandler.target<HTMLInputElement>()((ev) => updateText(ev.target.value))}"
-        onfocusout="${submit}"
-        onkeydown="${onEnterOrEscape((ev) => (ev.key === "Enter" ? submit : reset))}"
-      />
-    </li>`
-  })
-}
-
-function FilterLink(filterState: Domain.FilterState) {
-  return html`<li>
-    ${
-    Link(
-      {
-        className: Fx.when(RefSubject.map(App.FilterState, (state) => state === filterState), {
-          onTrue: "selected",
-          onFalse: ""
-        }),
-        to: Infra.filterStateToPath(filterState)
-      },
-      filterState
-    )
-  }
-  </li>`
-}
+    <footer class="footer">
+      <span class="todo-count"><strong>${App.ActiveCount}</strong>
+        ${RefSubject.map(App.ActiveCount, (count) => (count === 1 ? "item" : "items"))} left</span>
+      <ul class="filters">
+        ${Domain.FilterState.literals.map(
+          (filter) =>
+            html`<li>
+              ${Link({
+                href: filter === "all" ? "/" : "/" + filter,
+                content: filter[0]!.toUpperCase() + filter.slice(1),
+                class: Fx.when(
+                  RefSubject.map(App.FilterState, (current) => current === filter),
+                  { onTrue: "selected", onFalse: "" },
+                ),
+              })}
+            </li>`,
+        )}
+      </ul>
+      ${Fx.if(App.SomeAreCompleted, {
+        onTrue: html`<button
+          class="clear-completed"
+          type="button"
+          onclick=${App.clearCompletedTodos}
+        >
+          Clear completed
+        </button>`,
+        onFalse: Fx.null,
+      })}
+    </footer>`,
+    onFalse: Fx.null,
+  })}
+</section>
+<footer class="info">
+  <p>Double-click to edit a todo</p>
+  <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+</footer>`;

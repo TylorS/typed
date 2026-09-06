@@ -1,0 +1,99 @@
+---
+import { basename } from "node:path";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import {
+  adjacentLinks,
+  learningGroups,
+  type GuideLink,
+} from "../../../Guides.js";
+import { orderTutorialSteps } from "../../../../tutorial/Routes.js";
+import Article from "../../../layouts/Article.astro";
+import Demo from "../../../components/CurriculumDemo.js";
+import CurriculumDiff from "../../../components/CurriculumDiff.astro";
+import "../../../components/CurriculumFiles.css";
+import {
+  parseCurriculumFiles,
+  type CurriculumFile,
+} from "../../../../tutorial/Files.js";
+export async function getStaticPaths() {
+  const steps = orderTutorialSteps(await getCollection("tutorial"));
+  const groups = learningGroups(
+    await getCollection("guides"),
+    await getCollection("learn"),
+    steps,
+  );
+  const snapshots = new Map<string, CurriculumFile>();
+  return steps.map((entry, index) => {
+    const previousFiles = [...snapshots.values()];
+    const { files } = parseCurriculumFiles(entry.id, entry.body ?? "");
+    for (const file of files) snapshots.set(file.name, file);
+    return {
+      params: { slug: entry.data.slug },
+      props: {
+        entry,
+        ...adjacentLinks(`tutorial/${entry.data.slug}`, groups),
+        previousStep: steps[index - 1],
+        files,
+        previousFiles,
+      },
+    };
+  });
+}
+interface Props {
+  entry: CollectionEntry<"tutorial">;
+  previous?: GuideLink;
+  previousStep?: CollectionEntry<"tutorial">;
+  next?: GuideLink;
+  files: ReadonlyArray<CurriculumFile>;
+  previousFiles: ReadonlyArray<CurriculumFile>;
+}
+const { entry, previous, previousStep, next, files, previousFiles } =
+  Astro.props;
+const { Content, headings } = await render(entry);
+if (!entry.filePath) throw new Error(`Missing source file for tutorial ${entry.id}`);
+---
+
+<Article
+  title={entry.data.title}
+  summary={entry.data.summary}
+  section={`TUTORIAL / ${entry.data.order.toString().padStart(2, "0")}`}
+  current={`tutorial/${entry.data.slug}`}
+  headings={headings}
+  source={`content/tutorial/${basename(entry.filePath)}`}
+  previous={previous}
+  next={next}
+>
+  {
+    entry.data.demo && (
+      <section
+        class="tutorial-preview"
+        aria-label="Live application at this step"
+      >
+        <Demo id={entry.data.demo} client:only="@typed/astro">
+          <p slot="fallback">The interactive example loads in the browser.</p>
+        </Demo>
+      </section>
+    )
+  }
+  <Content />
+  {
+    previousStep && (
+      <CurriculumDiff
+        files={files}
+        previousFiles={previousFiles}
+        previousTitle={previousStep.data.title}
+      />
+    )
+  }
+</Article>
+
+<style>
+  .tutorial-preview {
+    max-block-size: 26rem;
+    overflow: auto;
+    margin-block: 0 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--color-base-200);
+  }
+</style>

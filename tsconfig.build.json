@@ -1,65 +1,17 @@
 {
-  "extends": "./tsconfig.base.json",
+  "files": [],
   "references": [
-    {
-      "path": "packages/async-data/tsconfig.build.json"
-    },
-    {
-      "path": "packages/compiler/tsconfig.build.json"
-    },
-    {
-      "path": "packages/context/tsconfig.build.json"
-    },
-    {
-      "path": "packages/core/tsconfig.build.json"
-    },
-    {
-      "path": "packages/decoder/tsconfig.build.json"
-    },
-    {
-      "path": "packages/dom/tsconfig.build.json"
-    },
-    {
-      "path": "packages/environment/tsconfig.build.json"
-    },
-    {
-      "path": "packages/fx/tsconfig.build.json"
-    },
-    {
-      "path": "packages/guard/tsconfig.build.json"
-    },
-    {
-      "path": "packages/id/tsconfig.build.json"
-    },
-    {
-      "path": "packages/navigation/tsconfig.build.json"
-    },
-    {
-      "path": "packages/path/tsconfig.build.json"
-    },
-    {
-      "path": "packages/route/tsconfig.build.json"
-    },
-    {
-      "path": "packages/router/tsconfig.build.json"
-    },
-    {
-      "path": "packages/server/tsconfig.build.json"
-    },
-    {
-      "path": "packages/storybook/tsconfig.build.json"
-    },
-    {
-      "path": "packages/template/tsconfig.build.json"
-    },
-    {
-      "path": "packages/ui/tsconfig.build.json"
-    },
-    {
-      "path": "packages/vite-plugin/tsconfig.build.json"
-    },
-    {
-      "path": "packages/wire/tsconfig.build.json"
-    }
+    { "path": "packages/async-data" },
+    { "path": "packages/fx" },
+    { "path": "packages/guard" },
+    { "path": "packages/id" },
+    { "path": "packages/navigation" },
+    { "path": "packages/router" },
+    { "path": "packages/template" },
+    { "path": "packages/react" },
+    { "path": "packages/svelte" },
+    { "path": "packages/vue" },
+    { "path": "packages/ui" },
+    { "path": "packages/astro" }
   ]
 }
