@@ -97,7 +97,6 @@ const makePlayback = Effect.fn(function* (
   const media = view.matchMedia("(prefers-reduced-motion: reduce)");
   const state = yield* RefSubject.make<MarbleState>({
     ...initialMarbleState,
-    enhanced: true,
     reducedMotion: media.matches,
   });
   // Commands control resource lifetime. Frame delivery only updates presentation state.
@@ -300,6 +299,8 @@ const enhanceMarble = Effect.fn(function* (
       })),
     ),
   );
+  // Expose the controls only after the renderer has attached their event handlers.
+  yield* RefSubject.update(model.state, (state) => ({ ...state, enhanced: true }));
 });
 
 /** Returns after setup; the caller's Scope owns every player, subscription and native resource. */

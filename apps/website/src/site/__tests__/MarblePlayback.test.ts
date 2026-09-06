@@ -240,6 +240,15 @@ describe("marble playback", () => {
     vi.spyOn(window, "matchMedia").mockReturnValue(media);
     document.body.innerHTML = renderFxMarble(defaultSource)!;
     const figure = document.querySelector<HTMLElement>("figure")!;
+    const listeners = vi.spyOn(figure, "addEventListener");
+    const readyWithControls: boolean[] = [];
+    const setAttributeNode = figure.setAttributeNodeNS.bind(figure);
+    vi.spyOn(figure, "setAttributeNodeNS").mockImplementation((attribute) => {
+      if (attribute.name === "data-enhanced" && attribute.value === "true") {
+        readyWithControls.push(listeners.mock.calls.some(([type]) => type === "change"));
+      }
+      return setAttributeNode(attribute);
+    });
     const button = figure.querySelector<HTMLButtonElement>(
       '[data-action="play"]',
     )!;
@@ -251,6 +260,7 @@ describe("marble playback", () => {
       await Effect.runPromise(Fiber.interrupt(fiber));
     });
     await vi.waitFor(() => expect(figure.dataset.enhanced).toBe("true"));
+    expect(readyWithControls).toEqual([true]);
     speed.value = "0.25";
     speed.dispatchEvent(new Event("change", { bubbles: true }));
     await settle();
