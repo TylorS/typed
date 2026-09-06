@@ -5,21 +5,19 @@ const MANY_MARKER_PREFIX = "/m_";
 export function getUniqueManyKeys<A, B extends PropertyKey>(
   values: ReadonlyArray<A>,
   getKey: (value: A) => B,
-):
-  | { readonly keys: ReadonlyArray<B>; readonly indices: ReadonlyMap<B, number> }
-  | Cause.IllegalArgumentError {
+): ReadonlyArray<B> | Cause.IllegalArgumentError {
   const keys: Array<B> = [];
-  const indices = new Map<B, number>();
+  const seen = new Set<B>();
   for (let index = 0; index < values.length; index++) {
     const key = getKey(values[index]);
-    if (indices.has(key)) {
+    if (seen.has(key)) {
       const formatted = typeof key === "symbol" ? key.toString() : JSON.stringify(key);
       return new Cause.IllegalArgumentError(`Duplicate keyed() key ${formatted}`);
     }
     keys[index] = key;
-    indices.set(key, index);
+    seen.add(key);
   }
-  return { keys, indices };
+  return keys;
 }
 
 export function encodeManyKey(key: PropertyKey, localSymbolOrdinals: Map<symbol, number>): string {

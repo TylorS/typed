@@ -1,7 +1,7 @@
 import { type Inspectable, NodeInspectSymbol } from "effect/Inspectable";
 import { CouldNotFindRootElement, CouldNotFindTemplateEndError } from "../errors.js";
 import type { HydrateContext } from "../HydrateContext.js";
-import { isComment, isElement, toHtml } from "../Wire.js";
+import { getAllSiblingsBetween, isComment, isElement, toHtml } from "../Wire.js";
 
 const TYPED_TEMPLATE_PREFIX = `t_`;
 const TYPED_TEMPLATE_END_PREFIX = `/t_`;
@@ -11,6 +11,12 @@ const HOLE_PREFIX = `n_`;
 export function getRendered(where: HydrationNode) {
   const nodes = getNodes(where);
   if (nodes.length === 1) return nodes[0];
+  if (nodes.length > 1) {
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    // Use live hole contents after hydration, rather than the parsed SSR snapshot.
+    return [first, ...getAllSiblingsBetween(first, last), last];
+  }
   return nodes;
 }
 

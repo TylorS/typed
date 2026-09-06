@@ -10,7 +10,7 @@ import {
   RenderEventTypeId,
 } from "../RenderEvent.js";
 import { diffable, isComment } from "../Wire.js";
-import { diff } from "./diff.js";
+import { diff, insertOrMoveBefore } from "./diff.js";
 import { renderToString } from "./encoding.js";
 
 export function makeTextContentUpdater(element: Node) {
@@ -276,12 +276,23 @@ function unwrapHtmlRenderEvent(document: Document, x: HtmlRenderEvent): Array<No
 }
 
 export function diffChildren(
-  comment: Comment,
+  comment: Node,
   currentNodes: Array<Node>,
   nextNodes: Array<Node>,
   get: (entry: Node, action: number) => Node,
 ) {
-  return diff(currentNodes, nextNodes, get, comment);
+  const parent = comment.parentNode!;
+  return diff(
+    currentNodes,
+    nextNodes,
+    {
+      first: (node) => get(node, 0),
+      last: (node) => get(node, -0),
+      insert: (node, before) => insertOrMoveBefore(parent, get(node, 1), before),
+      remove: (node) => (get(node, -1) as ChildNode).remove(),
+    },
+    comment,
+  );
 }
 
 const commentCache = new WeakMap<Element, Map<number, Comment>>();

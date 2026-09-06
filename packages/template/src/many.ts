@@ -68,7 +68,12 @@ export function isMany(value: unknown): value is Many<any, any, any> {
  * renderer keeps one entry map for the dynamic range: a new key starts one
  * child, a removed key closes one child Scope, a retained changed value updates
  * that child's `RefSubject`, and a pure reorder does not publish unchanged item
- * data. The same descriptor lets the HTML renderer serialize the first array in
+ * data. Stable keyed entries feed the same diff algorithm as ordinary DOM
+ * children; insert, move, and remove operations act directly on each entry's
+ * live range. There is no second diff over a flattened list of DOM nodes.
+ * Removal detaches the range immediately and closes its child Scope in the
+ * background; the parent Scope owns that cleanup through completion.
+ * The same descriptor lets the HTML renderer serialize the first array in
  * source order and emit compatible hydration markers.
  *
  * ## Ownership and lifetime
@@ -89,7 +94,10 @@ export function isMany(value: unknown): value is Many<any, any, any> {
  * fast paths before an O(n) map fallback. An already-connected node is moved
  * with `ParentNode.moveBefore` when supported, preserving browser-managed state;
  * `insertBefore` is the compatibility fallback. HTML setup is O(n) for the
- * initial array and performs no live DOM reconciliation.
+ * initial array and performs no live DOM reconciliation. A child's later output
+ * reconciles only that child's range, without scanning other keys or nodes.
+ * Nonempty client-rendered items use their own node boundaries; only empty or
+ * pending children require a placeholder comment.
  *
  * @example
  * ```ts

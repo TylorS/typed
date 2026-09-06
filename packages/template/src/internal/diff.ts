@@ -1,18 +1,24 @@
 // @see https://github.com/WebReflection/udomdiff
 
-export const diff = (
-  a: Array<Node>,
-  b: Array<Node>,
-  get: (entry: Node, action: number) => Node,
+export interface DiffOperations<A> {
+  readonly first: (entry: A) => Node;
+  readonly last: (entry: A) => Node;
+  readonly insert: (entry: A, before: Node | null) => void;
+  readonly remove: (entry: A) => void;
+}
+
+export const diff = <A>(
+  a: ReadonlyArray<A>,
+  b: Array<A>,
+  { first, last, insert, remove }: DiffOperations<A>,
   before: Node,
 ) => {
-  const parentNode = before.parentNode!;
   const bLength = b.length;
   let aEnd = a.length;
   let bEnd = bLength;
   let aStart = 0;
   let bStart = 0;
-  let map = null;
+  let map: Map<A, number> | undefined;
   while (aStart < aEnd || bStart < bEnd) {
     // append head, tail, or nodes in between: fast path
     if (aEnd === aStart) {
@@ -21,17 +27,16 @@ export const diff = (
       // the node to `insertBefore`, if the index is more than 0
       // must be retrieved, otherwise it's gonna be the first item.
       const node =
-        bEnd < bLength ? (bStart ? get(b[bStart - 1], -0).nextSibling : get(b[bEnd], 0)) : before;
+        bEnd < bLength ? (bStart ? last(b[bStart - 1]).nextSibling : first(b[bEnd])) : before;
       while (bStart < bEnd) {
-        parentNode!.insertBefore(get(b[bStart++], 1), node);
+        insert(b[bStart++], node);
       }
     } // remove head or tail: fast path
     else if (bEnd === bStart) {
       while (aStart < aEnd) {
         // remove the node only if it's unknown or not live
         if (!map || !map.has(a[aStart])) {
-          // @ts-ignore
-          get(a[aStart], -1).remove();
+          remove(a[aStart]);
         }
         aStart++;
       }
@@ -53,16 +58,17 @@ export const diff = (
       // or asymmetric too
       // [1, 2, 3, 4, 5]
       // [1, 2, 3, 5, 6, 4]
-      const node = get(a[--aEnd], -0).nextSibling;
-      insertOrMoveBefore(parentNode, get(b[bStart++], 1), get(a[aStart++], -0).nextSibling);
-      insertOrMoveBefore(parentNode, get(b[--bEnd], 1), node);
-      // mark the future index as identical (yeah, it's dirty, but cheap 👍)
-      // The main reason to do this, is that when a[aEnd] will be reached,
-      // the loop will likely be on the fast path, as identical to b[bEnd].
-      // In the best case scenario, the next loop will skip the tail,
-      // but in the worst one, this node will be considered as already
-      // processed, bailing out pretty quickly from the map index check
-      a[aEnd] = b[bEnd];
+      const node = last(a[--aEnd]).nextSibling;
+      insert(b[bStart++], last(a[aStart++]).nextSibling);
+      insert(b[--bEnd], node);
+    } else if (!map && a[aStart] === b[bEnd - 1]) {
+      // Rotate the head to the tail without moving the intervening entries.
+      insert(a[aStart++], bEnd < bLength ? first(b[bEnd]) : before);
+      bEnd--;
+    } else if (!map && a[aEnd - 1] === b[bStart]) {
+      // Rotate the tail to the head.
+      insert(a[--aEnd], first(a[aStart]));
+      bStart++;
     } // map based fallback, "slow" path
     else {
       // the map requires an O(bEnd - bStart) operation once
@@ -83,41 +89,14 @@ export const diff = (
       // this node has no meaning in the future list, so it's more than safe
       // to remove it, and check the next live node out instead, meaning
       // that only the live list index should be forwarded
-      if (index < 0) (get(a[aStart++], -1) as ChildNode).remove();
+      if (index < 0) remove(a[aStart++]);
       // it's a future node, hence it needs some handling
       else {
-        // if it's not already processed, look on demand for the next LCS
         if (bStart < index && index < bEnd) {
-          let i = aStart;
-          // counts the amount of nodes that are the same in the future
-          let sequence = 1;
-          while (++i < aEnd && i < bEnd && map.get(a[i]) === index + sequence) {
-            sequence++;
-          }
-          // effort decision here: if the sequence is longer than replaces
-          // needed to reach such sequence, which would brings again this loop
-          // to the fast path, prepend the difference before a sequence,
-          // and move only the future list index forward, so that aStart
-          // and bStart will be aligned again, hence on the fast path.
-          // An example considering aStart and bStart are both 0:
-          // a: [1, 2, 3, 4]
-          // b: [7, 1, 2, 3, 6]
-          // this would place 7 before 1 and, from that time on, 1, 2, and 3
-          // will be processed at zero cost
-          if (sequence > index - bStart) {
-            const node = get(a[aStart], 0);
-            while (bStart < index) {
-              insertOrMoveBefore(parentNode, get(b[bStart++], 1), node);
-            }
-          } // if the effort wasn't good enough, fallback to a replace,
-          // moving both source and target indexes forward, hoping that some
-          // similar node will be found later on, to go back to the fast path
-          else {
-            // TODO: benchmark replaceWith instead
-            parentNode.replaceChild(get(b[bStart++], 1), get(a[aStart++], -1));
-          }
-        } // otherwise move the source forward, 'cause there's nothing to do
-        else {
+          // Advance the target without detaching a retained source entry.
+          // Each iteration consumes an entry: no repeated sequence scans.
+          insert(b[bStart++], first(a[aStart]));
+        } else {
           aStart++;
         }
       }
@@ -126,10 +105,11 @@ export const diff = (
   return b;
 };
 
-function insertOrMoveBefore(parentNode: ParentNode, node: Node, before: Node | null) {
+export function insertOrMoveBefore(parentNode: ParentNode, node: Node, before: Node | null) {
   // If the node is already in the DOM, try to move it to preserve internal states of the node.
   // e.g. the internal states of a custom element.
-  if (node.parentNode !== null) {
+  if (node === before || (node.parentNode === parentNode && node.nextSibling === before)) return;
+  if (node.parentNode !== null && typeof parentNode.moveBefore === "function") {
     tryMoveBefore(parentNode, node, before);
   } else {
     parentNode.insertBefore(node, before);

@@ -280,8 +280,6 @@ export const DomRenderTemplate = Object.assign(
 
               if (hydration) {
                 setup = setupHydrationParts(template.parts, ctx, hydration.where);
-
-                rendered = getRendered(hydration.where);
               } else {
                 const insertionContext = yield* CurrentInsertionContext;
                 const namespace = getInsertionNamespace(insertionContext);
@@ -311,6 +309,9 @@ export const DomRenderTemplate = Object.assign(
                   yield* ctx.refCounter.wait;
                 }
               }
+
+              // Hydrated holes may replace or reorder their children during setup.
+              if (hydration) rendered = getRendered(hydration.where);
 
               // If we have more than one child, we need to wrap them in a PersistentDocumentFragment
               // so they can be diffed within other templates more than once.

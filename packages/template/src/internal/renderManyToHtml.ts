@@ -21,13 +21,13 @@ export function renderManyToHtml<A, E, R>(
     if (Option.isNone(initial) || initial.value.length === 0) return Fx.empty;
     const uniqueKeys = getUniqueManyKeys(initial.value, many.getKey);
     if (Cause.isIllegalArgumentError(uniqueKeys)) return Fx.fail(uniqueKeys);
-    const invalidKeys = validateHydratableManyKeys(uniqueKeys.keys);
+    const invalidKeys = validateHydratableManyKeys(uniqueKeys);
     if (invalidKeys !== undefined) return Fx.fail(invalidKeys);
     const localSymbolOrdinals = new Map<symbol, number>();
     const lastIndex = initial.value.length - 1;
     return Fx.mergeOrdered(
       ...initial.value.map((value, index) => {
-        const key = uniqueKeys.keys[index];
+        const key = uniqueKeys[index];
         return renderValue(
           value,
           key,

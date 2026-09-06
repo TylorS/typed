@@ -1,5 +1,5 @@
 import * as Effect from "effect/Effect";
-import * as Fiber from "effect/Fiber";
+import type * as Fiber from "effect/Fiber";
 import * as Scope from "effect/Scope";
 import type { EventHandler } from "./EventHandler.js";
 import { getElements, type Rendered } from "./Wire.js";
@@ -27,6 +27,8 @@ type Handler<Ev extends Event> = EventHandler<Ev>;
  *
  * `setup` binds one rendered range to an explicit Effect `Scope`. That Scope
  * removes native listeners and interrupts every handler fiber it started.
+ * Cancellation is signaled without awaiting handlers, which may themselves
+ * be publishing the update that removes this mount.
  * Disposing the value returned by `addEventListener` removes only that entry.
  * No document-global registry or parallel propagation model is created, but the
  * callback event is not object-identical to the browser event because of that
@@ -228,10 +230,12 @@ export function makeEventSource(): EventSource {
 
     const fibers = new Set<Fiber.Fiber<any, any>>();
     const run: Run = <E, A>(effect: Effect.Effect<A, E>) => {
-      const fiber = Effect.runFork(effect);
-      fibers.add(fiber);
-      fiber.addObserver(() => fibers.delete(fiber));
-      return fiber;
+      return Effect.runFork(effect, {
+        onFiberStart: (fiber) => {
+          fibers.add(fiber);
+          fiber.addObserver(() => fibers.delete(fiber));
+        },
+      });
     };
 
     const mount: Mount = { elements, run, attachments: new Map() };
@@ -242,14 +246,16 @@ export function makeEventSource(): EventSource {
 
     return Scope.addFinalizer(
       scope,
-      Effect.suspend(() => {
+      Effect.sync(() => {
         mounts.delete(mount);
         for (const attachment of mount.attachments.values()) {
           dispose(attachment);
         }
         mount.attachments.clear();
-        if (fibers.size === 0) return Effect.void;
-        return Fiber.interruptAll(fibers);
+        // A handler can publish the update that closes this mount. Waiting for
+        // its interruption here would make that publication wait for itself.
+        for (const fiber of fibers) fiber.interruptUnsafe();
+        fibers.clear();
       }),
     );
   }
