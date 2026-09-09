@@ -22,7 +22,7 @@ Save this as `counter.ts`. The definition can be imported on the server because 
 
 ```ts file="counter.ts"
 import { Context, Effect, Schema } from "effect";
-import { RefSubject } from "@typed/fx";
+import { Fx, RefSubject } from "@typed/fx";
 import { html } from "@typed/template";
 import * as WebComponent from "@typed/template/WebComponent";
 
@@ -32,17 +32,16 @@ export class CounterLabels extends Context.Service<CounterLabels, {
 
 export const counter = WebComponent.make({
   name: "typed-counter",
-  defaults: () => ({ title: "Counter" }),
-  attributes: Schema.Struct({
+  attributes: {
     title: Schema.String.pipe(
       Schema.withDecodingDefaultKey(Effect.succeed("Counter")),
     ),
-  }),
-  render: Effect.fn(function* (props: RefSubject.Computed<{ title: string }>) {
+  },
+  render: Fx.fn(function* ({ title }: { readonly title: RefSubject.Computed<string> }) {
     const labels = yield* CounterLabels;
     const clicks = yield* RefSubject.make(0);
     return html`<section>
-      <h2>${RefSubject.map(props, (value) => value.title)}</h2>
+      <h2>${title}</h2>
       <button onclick=${RefSubject.increment(clicks)}>${labels.increment}</button>
       <output>${clicks}</output>
       <slot></slot>
@@ -81,7 +80,7 @@ The application runs through the usual Effect entrypoint. Closing its Scope rele
 
 ## Custom-element output inside Typed
 
-After registration, render the element like ordinary HTML. Declared attributes update its input snapshot. Browser code can also assign `element.props` directly; the integration restores an own `props` value assigned before upgrade.
+After registration, render the element like ordinary HTML. Declared attributes update its input snapshot. Each field passed to `render` is a read-only computed value created by `RefSubject.proxy`, so `${props.title}` observes that field directly. Browser code can also assign a complete `element.props` snapshot; the integration restores values assigned before upgrade.
 
 ```ts
 import { html } from "@typed/template";
@@ -91,9 +90,40 @@ export const page = html`<main>
 </main>`;
 ```
 
+## Property inputs and schema defaults
+
+Use the same dot prefix as template property bindings to declare inputs that hold typed values:
+
+```ts
+import { Effect, Schema } from "effect";
+import { RefSubject } from "@typed/fx";
+import { html } from "@typed/template";
+import * as WebComponent from "@typed/template/WebComponent";
+
+export const greeting = WebComponent.make({
+  name: "typed-greeting",
+  attributes: {
+    title: Schema.String.pipe(Schema.withDecodingDefaultKey(Effect.succeed("Hello"))),
+    subtitle: Schema.optionalKey(Schema.String),
+    ".user": Schema.Struct({ name: Schema.String }),
+  },
+  render: ({ title, subtitle, user }) => html`<p>
+    ${title}, ${RefSubject.map(user, (value) => value.name)}! ${subtitle}
+  </p>`,
+});
+
+// Register greeting before rendering this template.
+export const page = html`<typed-greeting .user=${{ name: "Ada" }} />`;
+export const serverPage = WebComponent.server(greeting, { user: { name: "Ada" } });
+```
+
+Attribute decoding defaults apply when an attribute is absent. `Schema.optionalKey` leaves a field absent, and its computed projection yields `undefined`. Removing an optional attribute clears its old value; removing a defaulted attribute restores its schema default. Required inputs must be available before rendering: an incomplete connected element reports `typed:error` and can start when valid inputs arrive. Until a complete input snapshot exists, `element.props` is `undefined`.
+
+Property fields use schema constructor defaults (`Schema.withConstructorDefault`) and accept decoded values through native setters. These defaults are created per instance or server render and retained across browser reconnections. Both `.user` template bindings and direct `element.user` assignments update the corresponding computed field; pre-upgrade assignments are restored. Property names must not conflict with the element's existing API. Public inputs remain parent-owned; create writable local state inside `render`.
+
 ## Server rendering, hydration, and test services
 
-`WebComponent.server` returns a Renderable. It produces the host, serialized attributes, and Typed hydration markers, with declarative open shadow DOM by default. Register the same definition in the browser to adopt its existing nodes. The synchronous attribute schema must have a finite set of encoded keys. Only those fields are serialized; use `Schema.encodeKeys` for a DOM attribute alias and a decoding default for a missing attribute. Provide other initial props again before connecting or upgrading the element.
+`WebComponent.server` returns a Renderable. It produces the host, serialized attributes, and Typed hydration markers, with declarative open shadow DOM by default. Register the same definition in the browser to adopt its existing nodes. The `attributes` record contains synchronous schema fields; `WebComponent` builds the struct internally. Plain keys are observed HTML attribute names, and their schemas must encode strings. A key such as `".user"` declares a DOM property named `user`, accepts typed values, and is omitted from server attributes. Supply property values again before connecting or upgrading the element to match its server inputs.
 
 Use Typed's existing HTML renderers. `renderToHtml` emits chunks as the body becomes available and then renders slot content; `renderToHtmlString` collects the same output for a static page or other string consumer.
 
@@ -182,15 +212,14 @@ export class Profiles extends Context.Service<Profiles, {
 
 export const profileElement = WebComponent.make({
   name: "typed-profile",
-  defaults: () => ({ profileId: "42" }),
-  attributes: Schema.Struct({
-    profileId: Schema.String.pipe(
+  attributes: {
+    "profile-id": Schema.String.pipe(
       Schema.withDecodingDefaultKey(Effect.succeed("42")),
     ),
-  }).pipe(Schema.encodeKeys({ profileId: "profile-id" })),
-  render: Effect.fn(function* (props: RefSubject.Computed<{ profileId: string }>) {
+  },
+  render: (props) => Effect.gen(function* () {
     const profiles = yield* Profiles;
-    const request = Fx.switchMap(props, ({ profileId }) => Fx.concat(
+    const request = Fx.switchMap(props["profile-id"], (profileId) => Fx.concat(
       Fx.succeed(AsyncData.loading()),
       Fx.fromEffect(Effect.map(Effect.exit(profiles.load(profileId)), AsyncData.fromExit)),
     ));
@@ -231,7 +260,6 @@ const users = Matcher.match(Route.Parse("/users/:id"), (params) => html`<section
 
 export const userElement = WebComponent.make({
   name: "typed-users",
-  defaults: () => ({}),
   render: () => html`<nav>
     <button onclick=${Navigation.navigate("/users/42")}>User 42</button>
   </nav>${users}`,

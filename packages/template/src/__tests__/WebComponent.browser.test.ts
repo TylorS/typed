@@ -29,8 +29,8 @@ const openScope = async () => {
 const numberAttribute = Schema.FiniteFromString.pipe(
   Schema.withDecodingDefaultKey(Effect.succeed("0")),
 );
-const register = <P extends object, V>(
-  definition: WebComponent.Definition<P, V>,
+const register = <F extends WebComponent.Fields, V>(
+  definition: WebComponent.Definition<F, V>,
   scope: Scope.Closeable,
   shadow: WebComponent.ShadowRootOptions | false = { mode: "open" },
 ) =>
@@ -40,10 +40,11 @@ const register = <P extends object, V>(
     Effect.provideService(WebComponent.CurrentShadowRoot, shadow),
     Effect.provideService(CurrentRenderPriority, RenderPriority.Sync),
     // Fixtures have no additional application services.
-  ) as Effect.Effect<void, WebComponent.RegistrationError>;
+  );
 
-const createElement = <P extends object>(definition: { name: string; defaults: () => P }) =>
-  document.createElement(definition.name) as WebComponent.Element<P>;
+const createElement = <F extends WebComponent.Fields, V>(
+  definition: WebComponent.Definition<F, V>,
+) => document.createElement(definition.name) as WebComponent.Element<WebComponent.Props<F>>;
 
 afterEach(async () => {
   vi.restoreAllMocks();
@@ -54,6 +55,120 @@ afterEach(async () => {
 });
 
 describe("Typed custom elements", () => {
+  it("uses schema defaults, computed fields, and clears removed optional attributes", async () => {
+    const definition = WebComponent.make({
+      name: name(),
+      attributes: { count: numberAttribute, label: Schema.optionalKey(Schema.String) },
+      render: ({ count, label }) => html`<p>${count}:${label}</p>`,
+    });
+    await Effect.runPromise(register(definition, await openScope()));
+    const element = createElement(definition);
+    document.body.append(element);
+    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("0:"));
+    const paragraph = element.shadowRoot!.querySelector("p");
+    element.setAttribute("label", "hello");
+    element.setAttribute("count", "3");
+    await vi.waitFor(() => expect(paragraph?.textContent).toBe("3:hello"));
+    element.removeAttribute("label");
+    await vi.waitFor(() => expect(paragraph?.textContent).toBe("3:"));
+    expect(element.props).toEqual({ count: 3 });
+    expect(element.shadowRoot!.querySelector("p")).toBe(paragraph);
+  });
+
+  it("accepts dot properties through ordinary templates and preserves them across attribute updates", async () => {
+    const definition = WebComponent.make({
+      name: "typed-property-input",
+      attributes: {
+        count: numberAttribute,
+        ".input": Schema.Struct({ name: Schema.String }),
+      },
+      render: ({ count, input }) =>
+        html`<p>${count}:${RefSubject.map(input, (value) => value.name)}</p>`,
+    });
+    const scope = await openScope();
+    await Effect.runPromise(register(definition, scope));
+    const user = await Effect.runPromise(
+      RefSubject.make({ name: "Ada" }).pipe(Effect.provideService(Scope.Scope, scope)),
+    );
+    const runtime = ManagedRuntime.make(DomRenderTemplate);
+    try {
+      runtime.runFork(
+        render(html`<typed-property-input .input=${user} />`, document.body).pipe(
+          Fx.drain,
+          Effect.scoped,
+        ),
+      );
+      await vi.waitFor(() =>
+        expect(document.querySelector("typed-property-input")?.shadowRoot?.textContent).toBe(
+          "0:Ada",
+        ),
+      );
+      const element = document.querySelector("typed-property-input")!;
+      element.setAttribute("count", "2");
+      await Effect.runPromise(RefSubject.set(user, { name: "Grace" }));
+      await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("2:Grace"));
+      expect(element.hasAttribute("input")).toBe(false);
+    } finally {
+      await runtime.dispose();
+    }
+  });
+
+  it("waits for required attributes, reports missing inputs, and recovers when they arrive", async () => {
+    let renders = 0;
+    const definition = WebComponent.make({
+      name: name(),
+      attributes: { count: Schema.FiniteFromString },
+      render: ({ count }) => {
+        renders++;
+        return html`<p>${count}</p>`;
+      },
+    });
+    await Effect.runPromise(register(definition, await openScope()));
+    const element = createElement(definition);
+    const errors: unknown[] = [];
+    element.addEventListener("typed:error", (event) => errors.push((event as CustomEvent).detail));
+    document.body.append(element);
+    expect(element.props).toBeUndefined();
+    expect(renders).toBe(0);
+    expect(errors).toHaveLength(1);
+    element.setAttribute("count", "4");
+    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("4"));
+    expect(renders).toBe(1);
+    element.removeAttribute("count");
+    expect(errors).toHaveLength(2);
+    expect(element.props).toEqual({ count: 4 });
+  });
+
+  it("restores dot properties assigned before upgrade and applies constructor defaults per instance", async () => {
+    let defaults = 0;
+    const definition = WebComponent.make({
+      name: name(),
+      attributes: {
+        count: numberAttribute,
+        ".user": Schema.Struct({ name: Schema.String }),
+        ".instanceId": Schema.Finite.pipe(
+          Schema.withConstructorDefault(Effect.sync(() => ++defaults)),
+        ),
+      },
+      render: ({ user, instanceId }) =>
+        html`<p>${RefSubject.map(user, (value) => value.name)}:${instanceId}</p>`,
+    });
+    const first = document.createElement(definition.name);
+    const second = document.createElement(definition.name);
+    Reflect.set(first, "user", { name: "Ada" });
+    Reflect.set(second, "user", { name: "Grace" });
+    document.body.append(first, second);
+    await Effect.runPromise(register(definition, await openScope()));
+    await vi.waitFor(() => expect(first.shadowRoot?.textContent).toBe("Ada:1"));
+    await vi.waitFor(() => expect(second.shadowRoot?.textContent).toBe("Grace:2"));
+    first.setAttribute("count", "9");
+    first.remove();
+    document.body.append(first);
+    await vi.waitFor(() => expect(first.shadowRoot?.textContent).toBe("Ada:1"));
+    expect(defaults).toBe(2);
+    expect(Reflect.get(first, "user")).toEqual({ name: "Ada" });
+  });
+
   it("composes registration as a layer and renders custom elements through html", async () => {
     const Labels = Context.Service<{ readonly count: string }>("WebComponentLayerLabels");
     let connected = 0;
@@ -61,8 +176,8 @@ describe("Typed custom elements", () => {
 
     const definition = WebComponent.make({
       name: "typed-layer-counter",
-      defaults: () => ({ count: 0 }),
-      attributes: Schema.Struct({ count: numberAttribute }),
+
+      attributes: { count: numberAttribute },
       render: (props) =>
         Effect.gen(function* () {
           const labels = yield* Labels;
@@ -74,7 +189,7 @@ describe("Typed custom elements", () => {
             }),
           );
 
-          return html`<p>${labels.count}: ${RefSubject.map(props, (value) => value.count)}</p>`;
+          return html`<p>${labels.count}: ${props.count}</p>`;
         }),
     });
 
@@ -109,14 +224,14 @@ describe("Typed custom elements", () => {
   it("renders props and observed attributes without replacing retained nodes", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({ count: 1 }),
-      attributes: Schema.Struct({ count: numberAttribute }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.count)}</p>`,
+
+      attributes: { count: numberAttribute },
+      render: (props) => html`<p>${props.count}</p>`,
     });
     await Effect.runPromise(register(definition, await openScope()));
     const element = createElement(definition);
     document.body.append(element);
-    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("1"));
+    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("0"));
     const paragraph = element.shadowRoot!.querySelector("p");
     element.props = { count: 2 };
     await vi.waitFor(() => expect(paragraph?.textContent).toBe("2"));
@@ -130,21 +245,21 @@ describe("Typed custom elements", () => {
   it("preserves props and reports the schema cause for an invalid attribute", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({ count: 1 }),
-      attributes: Schema.Struct({ count: numberAttribute }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.count)}</p>`,
+
+      attributes: { count: numberAttribute },
+      render: (props) => html`<p>${props.count}</p>`,
     });
     await Effect.runPromise(register(definition, await openScope()));
     const element = createElement(definition);
     const errors: unknown[] = [];
     element.addEventListener("typed:error", (event) => errors.push((event as CustomEvent).detail));
     document.body.append(element);
-    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("1"));
+    await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("0"));
 
     element.setAttribute("count", "not-a-number");
 
     await vi.waitFor(() => expect(errors).toHaveLength(1));
-    expect(element.props).toEqual({ count: 1 });
+    expect(element.props).toEqual({ count: 0 });
     const cause = errors[0];
     if (!Cause.isCause(cause)) throw new Error("Expected an Effect cause");
 
@@ -155,29 +270,27 @@ describe("Typed custom elements", () => {
     await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("4"));
   });
 
-  it("updates the mapped prop when an attribute uses a custom alias", async () => {
+  it("uses literal attribute names as computed field keys", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({ count: 1 }),
-      attributes: Schema.Struct({ count: numberAttribute }).pipe(
-        Schema.encodeKeys({ count: "data-count" }),
-      ),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.count)}</p>`,
+
+      attributes: { "data-count": numberAttribute },
+      render: (props) => html`<p>${props["data-count"]}</p>`,
     });
     await Effect.runPromise(register(definition, await openScope()));
     const element = createElement(definition);
     element.setAttribute("data-count", "3");
     document.body.append(element);
     await vi.waitFor(() => expect(element.shadowRoot?.textContent).toBe("3"));
-    expect(element.props).toEqual({ count: 3 });
+    expect(element.props).toEqual({ "data-count": 3 });
   });
 
   it("retains a props property assigned before upgrade", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({ count: 0 }),
-      attributes: Schema.Struct({ count: numberAttribute }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.count)}</p>`,
+
+      attributes: { count: numberAttribute },
+      render: (props) => html`<p>${props.count}</p>`,
     });
     const element = document.createElement(definition.name) as WebComponent.Element<{
       count: number;
@@ -195,11 +308,9 @@ describe("Typed custom elements", () => {
     it(`hydrates server nodes and input state for ${shadow === false ? "light" : shadow.mode} DOM`, async () => {
       const definition = WebComponent.make({
         name: name(),
-        defaults: () => ({ value: "server" }),
-        attributes: Schema.Struct({ value: Schema.String }),
-        render: (props) =>
-          html`<label>${RefSubject.map(props, (value) => value.value)}<input /></label
-            ><slot></slot>`,
+
+        attributes: { value: Schema.String },
+        render: (props) => html`<label>${props.value}<input /></label><slot></slot>`,
       });
       const markup = await Effect.runPromise(
         renderToHtmlString(WebComponent.server(definition, { value: "SSR" })).pipe(
@@ -252,7 +363,7 @@ describe("Typed custom elements", () => {
   it("adopts inert DSD nodes and preserves light children for slots", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () =>
         html`<p>inside</p>
           <slot></slot>`,
@@ -283,7 +394,7 @@ describe("Typed custom elements", () => {
     let clicks = 0;
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () =>
         Effect.gen(function* () {
           connections++;
@@ -332,7 +443,7 @@ describe("Typed custom elements", () => {
     let closing = 0;
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () =>
         Effect.gen(function* () {
           started++;
@@ -368,7 +479,7 @@ describe("Typed custom elements", () => {
     let clicks = 0;
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () =>
         Effect.gen(function* () {
           const { label } = yield* Service;
@@ -425,7 +536,7 @@ describe("Typed custom elements", () => {
       let parentChanges = 0;
       const definition = WebComponent.make({
         name: name(),
-        defaults: () => ({}),
+
         stopPropagation: { change: false },
         render: () =>
           html`<button
@@ -468,7 +579,7 @@ describe("Typed custom elements", () => {
     let selected: unknown;
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () =>
         Effect.map(RenderTemplate, (renderer) => {
           selected = renderer;
@@ -491,7 +602,7 @@ describe("Typed custom elements", () => {
   it("reports failed registration and render errors", async () => {
     const definition = WebComponent.make({
       name: name(),
-      defaults: () => ({}),
+
       render: () => Effect.fail("render failed"),
     });
     const scope = await openScope();

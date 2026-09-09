@@ -159,9 +159,10 @@ import { Effect, Layer, Schema } from "effect";
 
 const Counter = WebComponent.make({
   name: "typed-counter",
-  defaults: () => ({ count: 0 }),
-  attributes: Schema.Struct({ count: Schema.FiniteFromString }),
-  render: (props) => html`<p>Count: ${RefSubject.map(props, ({ count }) => count)}</p>`,
+  attributes: {
+    count: Schema.FiniteFromString.pipe(Schema.withDecodingDefaultTypeKey(Effect.succeed(0))),
+  },
+  render: ({ count }) => html`<p>Count: ${count}</p>`,
 });
 
 // Browser registration is a scoped layer that provides no services.
@@ -182,7 +183,7 @@ const snapshot = renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate
 
 `CurrentShadowRoot` is a `Context.Reference` defaulting to `{ mode: "open" }`. Provide `false` for light DOM or `{ mode: "closed" }` for a closed shadow root. Use `Layer.provide(Layer.succeed(WebComponent.CurrentShadowRoot, setting))` for registration and provide the same reference when rendering server output. Both open and closed declarative roots hydrate existing nodes. Markup inserted with `innerHTML` also works: registration adopts the inert template's original nodes.
 
-Hosts default to `display: contents`; an existing inline display setting is respected. Shadow components retain light children for slots. Pass slot content as the third argument to `server`. Light components own all host children and reject supplied slot content. A synchronous attribute schema declares a finite set of encoded names to observe. Attribute changes decode the complete record and update inputs; invalid values dispatch `typed:error` with the Schema failure Cause and preserve the previous props. Browser code can assign a fresh `element.props` object; nested mutation and property-to-attribute reflection are not automatic. Only fields in the attribute schema are serialized. Use `Schema.encodeKeys` for an attribute alias and `Schema.withDecodingDefaultKey` for a missing attribute default. `defaults` creates fresh state for each element or server run.
+Hosts default to `display: contents`; an existing inline display setting is respected. Shadow components retain light children for slots. Pass slot content as the third argument to `server`. Light components own all host children and reject supplied slot content. The `attributes` record supplies synchronous schema fields without a `Schema.Struct` wrapper. Plain keys declare string-encoded attributes; dot-prefixed keys such as `".user"` declare typed DOM properties and expose `props.user` to `render`. Every render field is a read-only computed value from `RefSubject.proxy`. Attribute changes decode the complete record and update inputs; invalid values dispatch `typed:error` with the Schema failure Cause and preserve the previous props. Browser code can assign a fresh `element.props` object; nested mutation and property-to-attribute reflection are not automatic. Only plain attribute fields are serialized; supply property inputs again before browser connection or upgrade. Use decoding defaults for missing attributes and constructor defaults for missing properties. Optional fields remain absent, and removing an optional attribute clears its previous value. Required inputs delay rendering until valid values arrive; `element.props` is undefined until the first complete snapshot. The server requires inputs without schema defaults. Property defaults are created per instance or server run, and pre-upgrade property assignments are restored.
 
 Registration captures its layer's application services and document. It supplies the native DOM renderer or borrows an explicitly provided renderer. The registration Scope owns all instances and property updates. Closing it stops rendering and deactivates the class; browsers retain registered names. Disconnect releases each connection's subscriptions and listeners. Reconnect waits for cleanup and starts a fresh view. Render failures emit a bubbling, composed `typed:error` event with an Effect Cause in `detail`; registration failures use `RegistrationError`.
 

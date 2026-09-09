@@ -35,22 +35,79 @@ export const CurrentShadowRoot = Context.Reference<ShadowRootOptions | false>(
   { defaultValue: () => ({ mode: "open" }) },
 );
 
+/** Schema fields for attributes and dot-prefixed DOM properties.
+ * Attribute schemas encode strings; property schemas accept decoded values.
+ * @since 1.0.0
+ * @category Web Components
+ */
+export type Fields = Readonly<Record<string, Schema.ConstraintCodec<unknown, unknown>>>;
+
+type NamedFields<F extends Fields> = {
+  readonly [K in keyof F as K extends `.${infer Name}` ? Name : K]: F[K];
+};
+
+/** Decoded inputs, with the dot removed from property names.
+ * @since 1.0.0
+ * @category Web Components
+ */
+export type Props<F extends Fields> = Schema.Struct.Type<NamedFields<F>>;
+
+/** Each field is a read-only computed value, including optional fields.
+ * @since 1.0.0
+ * @category Web Components
+ */
+export type RenderProps<F extends Fields> = {
+  readonly [K in keyof Props<F>]-?: RefSubject.Computed<Props<F>[K]>;
+};
+
+type OptionalInputKeys<F extends Fields> = {
+  [K in keyof F]: K extends `.${string}`
+    ? F[K]["~type.optionality"] extends "optional"
+      ? K
+      : F[K]["~type.constructor.default"] extends "with-default"
+        ? K
+        : never
+    : F[K]["~encoded.optionality"] extends "optional"
+      ? K
+      : never;
+}[keyof F];
+type InputFields<F extends Fields> = {
+  readonly [K in keyof F as K extends `.${infer Name}` ? Name : K]: F[K]["Type"];
+};
+type OptionalInputNames<F extends Fields> =
+  OptionalInputKeys<F> extends infer K extends PropertyKey
+    ? K extends `.${infer Name}`
+      ? Name
+      : K
+    : never;
+
+/** Typed initial values; only schema-optional or defaulted inputs may be omitted.
+ * @since 1.0.0
+ * @category Web Components
+ */
+export type Input<F extends Fields> = Omit<InputFields<F>, OptionalInputNames<F>> &
+  Partial<Pick<InputFields<F>, Extract<keyof InputFields<F>, OptionalInputNames<F>>>>;
+
+type ValidFields<F extends Fields> = {
+  readonly [K in keyof F]: K extends `.${string}`
+    ? F[K]
+    : F[K] extends Schema.ConstraintCodec<unknown, string | null | undefined>
+      ? F[K]
+      : never;
+};
+
 /** An inert definition shared by browser registration and server rendering.
- * defaults runs once per element or server render. Inputs are parent-owned;
+ * Schemas supply optionality and defaults. Inputs are parent-owned;
  * local writable state can be created in an Effect returned by render.
  * @since 1.0.0
  * @category Web Components
  */
-export interface Definition<Props extends object, View extends Renderable.Any> {
+export interface Definition<F extends Fields, View extends Renderable.Any> {
   readonly name: string;
-  readonly defaults: () => Props;
   readonly stopPropagation?: RootEventOptions;
-  /** A synchronous Schema whose finite encoded keys become observedAttributes. */
-  readonly attributes?: Schema.Codec<
-    Partial<Props>,
-    Readonly<Record<string, string | null | undefined>>
-  >;
-  readonly render: (props: RefSubject.Computed<Props>) => View;
+  /** Synchronous schema fields. Use `.name` for a DOM property instead of an attribute. */
+  readonly attributes?: F;
+  readonly render: (props: RenderProps<F>) => View;
 }
 
 /** A registered element accepts typed input through its props property.
@@ -59,7 +116,9 @@ export interface Definition<Props extends object, View extends Renderable.Any> {
  * @category Web Components
  */
 export interface Element<Props extends object> extends HTMLElement {
-  props: Props;
+  /** Undefined until the element has a valid complete input snapshot. */
+  get props(): Props | undefined;
+  set props(value: Props);
 }
 
 /** A browser registry could not accept a definition.
@@ -79,23 +138,11 @@ export class RegistrationError extends Error {
  * @since 1.0.0
  * @category Web Components
  */
-export function make<Props extends object, const View extends Renderable.Any>(
-  definition: Definition<Props, View>,
-): Definition<Props, View> {
-  if (
-    !/^[a-z][a-z0-9._]*-[a-z0-9._-]*$/.test(definition.name) ||
-    reservedNames.has(definition.name)
-  ) {
-    throw new TypeError(`Invalid custom element name: ${definition.name}`);
-  }
-
-  const names = new Set<string>();
-  for (const name of attributeNames(definition)) {
-    if (!/^[a-z_][a-z0-9_.:-]*$/.test(name) || /^on/i.test(name) || names.has(name)) {
-      throw new TypeError(`Invalid or duplicate custom element attribute: ${name}`);
-    }
-    names.add(name);
-  }
+export function make<const F extends Fields = {}, const View extends Renderable.Any = never>(
+  definition: Definition<F, View> & { readonly attributes?: F & ValidFields<F> },
+): Definition<F, View> {
+  validateName(definition.name);
+  fieldDefinitions(definition);
 
   return definition;
 }
@@ -111,8 +158,8 @@ export function make<Props extends object, const View extends Renderable.Any>(
  * @since 1.0.0
  * @category Web Components
  */
-export function register<Props extends object, View extends Renderable.Any>(
-  definition: Definition<Props, View>,
+export function register<F extends Fields, View extends Renderable.Any>(
+  definition: Definition<F, View>,
 ): Layer.Layer<
   never,
   RegistrationError,
@@ -131,7 +178,7 @@ export function register<Props extends object, View extends Renderable.Any>(
         : yield* Layer.buildWithScope(DomRenderTemplate.using(document), yield* Scope.Scope);
       const run = yield* FiberSet.makeRuntime<Services>().pipe(Effect.provideContext(renderer));
 
-      const attributes = definition.attributes;
+      type Props = Schema.Struct.Type<NamedFields<F>>;
       let active = true;
 
       yield* Effect.addFinalizer(() =>
@@ -142,10 +189,12 @@ export function register<Props extends object, View extends Renderable.Any>(
 
       return yield* Effect.try({
         try: () => {
-          make(definition);
-
-          const observedAttributes = attributeNames(definition);
-          const decode = attributes === undefined ? undefined : Schema.decodeExit(attributes);
+          validateName(definition.name);
+          const fields = fieldDefinitions(definition);
+          const attributes = Schema.Struct(fields.attributes);
+          const properties = Schema.Struct(fields.properties);
+          const observedAttributes = Object.keys(fields.attributes);
+          const decode = Schema.decodeUnknownExit(attributes);
 
           const window = document.defaultView;
           if (window === null)
@@ -158,30 +207,38 @@ export function register<Props extends object, View extends Renderable.Any>(
           class TypedElement extends Base implements Element<Props> {
             static readonly observedAttributes = observedAttributes;
 
-            private _props = definition.defaults();
-            private initialProps = this._props;
-            private upgradeProps: Props | undefined;
-            private input: RefSubject.RefSubject<Props> | undefined;
-            private root: HTMLElement | ShadowRoot | undefined;
-            private connections: Subject.Subject<boolean> | undefined;
-            private readonly connected = Fx.genScoped(
+            #_props: Props | undefined;
+            #initialProps: Props | undefined;
+            #propertyValues: Record<string, unknown> = {};
+            #upgradeProps: Props | undefined;
+            #input: RefSubject.RefSubject<Props> | undefined;
+            #root: HTMLElement | ShadowRoot | undefined;
+            #connections: Subject.Subject<boolean> | undefined;
+            readonly #connected = Fx.genScoped(
               function* (this: TypedElement) {
-                const root = this.root ?? (this.root = getRoot(this, shadow));
+                const root = this.#root ?? (this.#root = getRoot(this, shadow));
                 yield* rootEvents(root, definition.stopPropagation);
 
-                const input = yield* RefSubject.make(this.initialProps);
+                const initial = this.#initialProps;
+                if (initial === undefined) return Fx.empty;
+                const input = yield* RefSubject.make(initial);
                 yield* input;
 
                 yield* Effect.addFinalizer(() =>
                   Effect.sync(() => {
-                    if (this.input === input) this.input = undefined;
+                    if (this.#input === input) this.#input = undefined;
                   }),
                 );
 
-                return render(definition.render(input), root as HTMLElement).pipe(
+                return render(
+                  definition.render(RefSubject.proxy(input) as RenderProps<F>),
+                  root as HTMLElement,
+                ).pipe(
                   Fx.tap(() => {
-                    this.input = input;
-                    return RefSubject.set(input, this._props);
+                    this.#input = input;
+                    return this.#_props === undefined
+                      ? Effect.void
+                      : RefSubject.set(input, this.#_props);
                   }),
                   Fx.continueWith(() => Fx.never),
                 );
@@ -211,20 +268,37 @@ export function register<Props extends object, View extends Renderable.Any>(
               if (Object.hasOwn(this, "props")) {
                 const value = this.props;
                 Reflect.deleteProperty(this, "props");
-                this._props = value;
-                this.upgradeProps = value;
+                this.#_props = value;
+                this.#upgradeProps = value;
+              }
+              for (const name of Object.keys(fields.properties)) {
+                if (Object.hasOwn(this, name)) {
+                  this.#propertyValues[name] = Reflect.get(this, name);
+                  Reflect.deleteProperty(this, name);
+                }
               }
             }
 
-            get props(): Props {
-              return this._props;
+            get props(): Props | undefined {
+              return this.#_props;
             }
 
             set props(value: Props) {
-              this.upgradeProps = undefined;
-              this._props = value;
+              this.#updateProps(value);
+              if (active && this.isConnected && this.#connections === undefined)
+                this.connectedCallback();
+            }
 
-              const input = this.input;
+            #updateProps(value: Props) {
+              this.#upgradeProps = undefined;
+              this.#_props = value;
+              this.#propertyValues = Object.fromEntries(
+                Object.keys(fields.properties).flatMap((name) =>
+                  Object.hasOwn(value, name) ? [[name, Reflect.get(value, name)]] : [],
+                ),
+              );
+
+              const input = this.#input;
               if (input !== undefined && active && this.isConnected) {
                 run(RefSubject.set(input, value));
               }
@@ -233,8 +307,11 @@ export function register<Props extends object, View extends Renderable.Any>(
             attributeChangedCallback(_name: string, oldValue: string | null, value: string | null) {
               if (oldValue === value) return;
 
-              if (decode === undefined) return;
+              if (this.#readAttributes() && this.isConnected && this.#connections === undefined)
+                this.connectedCallback();
+            }
 
+            #readAttributes(): boolean {
               const encoded = Object.fromEntries(
                 observedAttributes.flatMap((attribute): [string, string][] => {
                   const value = this.getAttribute(attribute);
@@ -244,41 +321,73 @@ export function register<Props extends object, View extends Renderable.Any>(
               const decoded = decode(encoded);
 
               if (Exit.isFailure(decoded)) {
-                if (active && this.isConnected) {
-                  this.dispatchEvent(
-                    new CustomEvent("typed:error", {
-                      detail: decoded.cause,
-                      bubbles: true,
-                      composed: true,
-                    }),
-                  );
-                }
-                return;
+                this.#report(decoded.cause);
+                return false;
               }
 
-              const upgradeProps = this.upgradeProps;
-              this.props = { ...this._props, ...decoded.value };
-              this.upgradeProps = upgradeProps;
+              const propertyValues = Effect.runSyncExit(
+                properties.makeEffect(this.#propertyValues),
+              );
+              if (Exit.isFailure(propertyValues)) {
+                this.#report(propertyValues.cause);
+                return false;
+              }
+              const upgradeProps = this.#upgradeProps;
+              this.#updateProps({ ...decoded.value, ...propertyValues.value } as Props);
+              this.#upgradeProps = upgradeProps;
+              return true;
+            }
+
+            #report(cause: Cause.Cause<unknown>) {
+              if (active && this.isConnected) {
+                this.dispatchEvent(
+                  new CustomEvent("typed:error", {
+                    detail: cause,
+                    bubbles: true,
+                    composed: true,
+                  }),
+                );
+              }
+            }
+
+            setProperty(name: string, value: unknown) {
+              const next = { ...this.#propertyValues, [name]: value };
+              const decoded = Schema.decodeUnknownExit(Schema.toType(fields.properties[name]))(
+                value,
+              );
+              if (Exit.isFailure(decoded)) {
+                this.#report(decoded.cause);
+                return;
+              }
+              this.#propertyValues = next;
+              if (this.#_props !== undefined)
+                this.props = { ...this.#_props, [name]: decoded.value };
+              else if (this.#readAttributes() && this.isConnected) this.connectedCallback();
+            }
+
+            getProperty(name: string) {
+              return this.#propertyValues[name];
             }
 
             connectedCallback() {
               if (!active) return;
 
-              if (this.upgradeProps !== undefined) this.props = this.upgradeProps;
-              this.initialProps = this._props;
+              if (this.#upgradeProps !== undefined) this.#updateProps(this.#upgradeProps);
+              if (this.#_props === undefined && !this.#readAttributes()) return;
+              this.#initialProps = this.#_props;
               if (this.style.display === "") this.style.display = "contents";
-              if (this.connections === undefined) {
+              if (this.#connections === undefined) {
                 const connections = Subject.unsafeMake<boolean>(1);
-                this.connections = connections;
+                this.#connections = connections;
 
                 run(
                   Fx.if(connections, {
-                    onTrue: this.connected,
+                    onTrue: this.#connected,
                     onFalse: Fx.empty,
                   }).pipe(
                     Fx.ensuring(
                       Effect.sync(() => {
-                        if (this.connections === connections) this.connections = undefined;
+                        if (this.#connections === connections) this.#connections = undefined;
                       }),
                     ),
                     Fx.drain,
@@ -287,20 +396,20 @@ export function register<Props extends object, View extends Renderable.Any>(
                 );
               }
 
-              run(this.connections.onSuccess(true));
+              run(this.#connections.onSuccess(true));
             }
 
             disconnectedCallback() {
-              this.input = undefined;
-              const connections = this.connections;
+              this.#input = undefined;
+              const connections = this.#connections;
               if (connections === undefined) return;
 
               run(
                 connections.onSuccess(false).pipe(
                   Effect.andThen(() => {
-                    if (this.isConnected || this.connections !== connections) return Effect.void;
+                    if (this.isConnected || this.#connections !== connections) return Effect.void;
 
-                    this.connections = undefined;
+                    this.#connections = undefined;
                     return connections.interrupt;
                   }),
                 ),
@@ -308,6 +417,22 @@ export function register<Props extends object, View extends Renderable.Any>(
             }
           }
 
+          for (const name of Object.keys(fields.properties)) {
+            if (name in TypedElement.prototype) {
+              throw new TypeError(
+                `Custom element property conflicts with the element API: ${name}`,
+              );
+            }
+            Object.defineProperty(TypedElement.prototype, name, {
+              configurable: true,
+              get(this: TypedElement) {
+                return this.getProperty(name);
+              },
+              set(this: TypedElement, value: unknown) {
+                this.setProperty(name, value);
+              },
+            });
+          }
           registry.define(definition.name, TypedElement);
         },
         catch: (cause) => new RegistrationError(cause),
@@ -326,20 +451,23 @@ export function register<Props extends object, View extends Renderable.Any>(
  * @category Web Components
  */
 export function server<
-  Props extends object,
+  F extends Fields,
   View extends Renderable.Any,
   Children extends Renderable.Any = undefined,
 >(
-  definition: Definition<Props, View>,
-  initial: Partial<Props> = {},
-  children?: Children,
+  definition: Definition<F, View>,
+  ...args: {} extends Input<F>
+    ? [initial?: Input<F>, children?: Children]
+    : [initial: Input<F>, children?: Children]
 ): Fx.Fx<
   HtmlRenderEvent,
   Renderable.Error<View> | Renderable.Error<Children>,
   Renderable.Services<View> | Renderable.Services<Children> | Scope.Scope
 > {
   return Fx.gen(function* () {
-    make(definition);
+    validateName(definition.name);
+    const fields = fieldDefinitions(definition);
+    const [initial = {}, children] = args;
 
     const shadow = yield* CurrentShadowRoot;
 
@@ -347,16 +475,36 @@ export function server<
       return yield* Effect.die(new TypeError("Light DOM components own their host children"));
     }
 
-    const props = { ...definition.defaults(), ...initial };
+    const missing = Object.fromEntries(
+      Object.entries(fields.attributes).filter(([name]) => !Object.hasOwn(initial, name)),
+    );
+    const defaults = Schema.decodeSync(Schema.Struct(missing))({});
+    const propertyInput = Object.fromEntries(
+      Object.keys(fields.properties).flatMap((name) =>
+        Object.hasOwn(initial, name) ? [[name, Reflect.get(initial, name)]] : [],
+      ),
+    );
+    const props = {
+      ...defaults,
+      ...initial,
+      ...Schema.Struct(fields.properties).make(propertyInput),
+    } as Props<F>;
     const input = yield* RefSubject.make(props);
 
     let hasStyle = false;
     let attributes = "";
 
-    if (definition.attributes !== undefined) {
-      const encoded = Schema.encodeSync(definition.attributes)(props);
+    {
+      const attributeProps = Object.fromEntries(
+        Object.keys(fields.attributes).flatMap((name) =>
+          Object.hasOwn(props, name) ? [[name, Reflect.get(props, name)]] : [],
+        ),
+      );
+      const encoded = Schema.encodeUnknownSync(Schema.Struct(fields.attributes))(attributeProps);
       for (const [name, value] of Object.entries(encoded)) {
         if (value === null || value === undefined) continue;
+        if (typeof value !== "string")
+          throw new TypeError(`Attribute ${name} must encode a string`);
 
         hasStyle ||= name === "style";
         attributes += ` ${name}="${escapeHtml(value)}"`;
@@ -380,7 +528,7 @@ export function server<
       opening += `<template ${shadowAttributes}>`;
     }
 
-    const view = renderToHtml(definition.render(input));
+    const view = renderToHtml(definition.render(RefSubject.proxy(input) as RenderProps<F>));
     const content =
       shadow === false
         ? view
@@ -427,23 +575,35 @@ function getRoot(host: HTMLElement, shadow: ShadowRootOptions | false): HTMLElem
   return root;
 }
 
-function attributeNames<Props extends object, View extends Renderable.Any>(
-  definition: Definition<Props, View>,
-): ReadonlyArray<string> {
-  const attributes = definition.attributes;
-  if (attributes === undefined) return [];
-
-  const encoded = Schema.toEncoded(attributes).ast;
-  if (encoded._tag !== "Objects" || encoded.indexSignatures.length > 0) {
-    throw new TypeError("Web Component attributes require a finite set of encoded keys");
+function validateName(name: string) {
+  if (!/^[a-z][a-z0-9._]*-[a-z0-9._-]*$/.test(name) || reservedNames.has(name)) {
+    throw new TypeError(`Invalid custom element name: ${name}`);
   }
+}
 
-  return encoded.propertySignatures.map((property) => {
-    if (typeof property.name !== "string") {
-      throw new TypeError("Web Component attribute names must be strings");
+function fieldDefinitions<F extends Fields, View extends Renderable.Any>(
+  definition: Definition<F, View>,
+) {
+  const attributes: Record<string, Schema.ConstraintCodec<unknown, unknown>> = Object.create(null);
+  const properties: Record<string, Schema.ConstraintCodec<unknown, unknown>> = Object.create(null);
+  const names = new Set<string>();
+  for (const key of Reflect.ownKeys(definition.attributes ?? {})) {
+    if (typeof key !== "string") throw new TypeError("Web Component field names must be strings");
+    const property = key.startsWith(".");
+    const name = property ? key.slice(1) : key;
+    if (
+      !(property ? /^[a-zA-Z_$][a-zA-Z0-9_$]*$/ : /^[a-z_][a-z0-9_.:-]*$/).test(name) ||
+      /^on/i.test(name) ||
+      names.has(name) ||
+      name === "props" ||
+      name in Object.prototype
+    ) {
+      throw new TypeError(`Invalid or duplicate custom element field: ${key}`);
     }
-    return property.name;
-  });
+    names.add(name);
+    (property ? properties : attributes)[name] = definition.attributes![key];
+  }
+  return { attributes, properties };
 }
 
 const reservedNames = new Set([

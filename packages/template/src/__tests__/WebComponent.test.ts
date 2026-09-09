@@ -6,6 +6,58 @@ import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "../Html.js
 import * as WebComponent from "../WebComponent.js";
 
 describe("WebComponent server rendering", () => {
+  it("derives defaults and optional fields from attribute schemas and renders computed fields", async () => {
+    const definition = WebComponent.make({
+      name: "typed-schema-props",
+      attributes: {
+        count: Schema.FiniteFromString.pipe(Schema.withDecodingDefaultTypeKey(Effect.succeed(7))),
+        label: Schema.optionalKey(Schema.String),
+      },
+      render: ({ count, label }) => html`<p>${count}:${label}</p>`,
+    });
+    const markup = await Effect.runPromise(
+      renderToHtmlString(WebComponent.server(definition)).pipe(
+        Effect.provide(HtmlRenderTemplate),
+        Effect.scoped,
+      ),
+    );
+    expect(markup).toContain('count="7"');
+    expect(markup).not.toContain('label="');
+    expect(markup).toContain(">7<!--");
+  });
+
+  it("serializes only attributes while rendering typed property values", async () => {
+    let defaults = 0;
+    const definition = WebComponent.make({
+      name: "typed-rich-properties",
+      attributes: {
+        count: Schema.FiniteFromString.pipe(
+          Schema.withDecodingDefaultTypeKey(
+            Effect.sync(() => {
+              defaults++;
+              return 0;
+            }),
+          ),
+        ),
+        ".user": Schema.Struct({ name: Schema.String }),
+      },
+      render: ({ count, user }) =>
+        html`<p>${count}:${RefSubject.map(user, (value) => value.name)}</p>`,
+    });
+    const markup = await Effect.runPromise(
+      renderToHtmlString(
+        WebComponent.server(definition, {
+          count: 8,
+          user: { name: "Ada" },
+        }),
+      ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+    );
+    expect(markup).toContain('count="8"');
+    expect(markup).toContain("Ada");
+    expect(markup).not.toContain("user=");
+    expect(defaults).toBe(0);
+  });
+
   it("streams early content before pending content and preserves slot order", async () => {
     const gate = Deferred.makeUnsafe<void>();
     const chunks: string[] = [];
@@ -13,7 +65,7 @@ describe("WebComponent server rendering", () => {
 
     const definition = WebComponent.make({
       name: "typed-streaming-example",
-      defaults: () => ({}),
+
       render: () =>
         html`<p>early</p>
           ${Effect.gen(function* () {
@@ -65,7 +117,7 @@ describe("WebComponent server rendering", () => {
 
       const definition = WebComponent.make({
         name: "typed-pending-stream",
-        defaults: () => ({}),
+
         render: () =>
           Effect.gen(function* () {
             yield* Effect.addFinalizer(() =>
@@ -120,9 +172,8 @@ describe("WebComponent server rendering", () => {
     expect(typeof globalThis.HTMLElement).toBe("undefined");
     const definition = WebComponent.make({
       name: "typed-server-example",
-      defaults: () => ({ label: "default" }),
-      attributes: Schema.Struct({ label: Schema.String }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.label)}</p>`,
+      attributes: { label: Schema.String },
+      render: (props) => html`<p>${props.label}</p>`,
     });
     const result = await Effect.runPromise(
       renderToHtmlString(
@@ -139,8 +190,8 @@ describe("WebComponent server rendering", () => {
   it("composes trusted component markup in an outer server template", async () => {
     const definition = WebComponent.make({
       name: "typed-composed-server",
-      defaults: () => ({ label: "" }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.label)}</p>`,
+      attributes: { ".label": Schema.String },
+      render: (props) => html`<p>${props.label}</p>`,
     });
     const result = await Effect.runPromise(
       renderToHtmlString(
@@ -164,7 +215,7 @@ describe("WebComponent server rendering", () => {
       });
       const definition = WebComponent.make({
         name: "typed-borrowed-renderer",
-        defaults: () => ({}),
+
         render: () => content,
       });
       const markup = yield* renderToHtmlString(WebComponent.server(definition, {}, content)).pipe(
@@ -178,8 +229,10 @@ describe("WebComponent server rendering", () => {
     let counter = 0;
     const definition = WebComponent.make({
       name: "typed-request-state",
-      defaults: () => ({ value: ++counter }),
-      render: (props) => html`<p>${RefSubject.map(props, (value) => value.value)}</p>`,
+      attributes: {
+        ".value": Schema.Finite.pipe(Schema.withConstructorDefault(Effect.sync(() => ++counter))),
+      },
+      render: (props) => html`<p>${props.value}</p>`,
     });
     const first = await Effect.runPromise(
       renderToHtmlString(WebComponent.server(definition)).pipe(
@@ -199,41 +252,32 @@ describe("WebComponent server rendering", () => {
 
   it("validates host and serialized attribute names before producing HTML", () => {
     for (const name of ["div", "script><img", "font-face", "Typed-Example"]) {
-      expect(() => WebComponent.make({ name, defaults: () => ({}), render: () => "" })).toThrow(
-        TypeError,
-      );
+      expect(() => WebComponent.make({ name, render: () => "" })).toThrow(TypeError);
     }
     for (const name of ["onclick", 'x" onclick="bad']) {
       expect(() =>
         WebComponent.make({
           name: "typed-invalid-attribute",
-          defaults: () => ({ value: "" }),
           render: () => "",
-          attributes: Schema.Struct({ value: Schema.String }).pipe(
-            Schema.encodeKeys({ value: name }),
-          ),
+          attributes: { [name]: Schema.String },
         }),
       ).toThrow(TypeError);
     }
   });
 
-  it("requires finite encoded attribute names", () => {
+  it("rejects symbol keys and duplicate normalized field names", () => {
     expect(() =>
       WebComponent.make({
-        name: "typed-unbounded-attributes",
-        defaults: (): Record<string, string> => ({}),
-        attributes: Schema.Record(Schema.String, Schema.String),
+        name: "typed-symbol-attribute",
+        attributes: { [Symbol("label")]: Schema.String },
         render: () => "",
       }),
-    ).toThrow("Web Component attributes require a finite set of encoded keys");
+    ).toThrow(TypeError);
 
     expect(() =>
       WebComponent.make({
         name: "typed-duplicate-attributes",
-        defaults: () => ({ first: "", second: "" }),
-        attributes: Schema.Struct({ first: Schema.String, second: Schema.String }).pipe(
-          Schema.encodeKeys({ first: "label", second: "label" }),
-        ),
+        attributes: { label: Schema.String, ".label": Schema.String },
         render: () => "",
       }),
     ).toThrow();
