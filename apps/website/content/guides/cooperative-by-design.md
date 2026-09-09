@@ -64,9 +64,7 @@ That is the basic shape of cooperation in Typed:
 
 Effect gives work a contract:
 
-```ts
-Effect.Effect<A, E, R>
-```
+`Effect.Effect<A, E, R>`
 
 It can produce `A`, fail with `E`, and requires `R`.
 
@@ -74,7 +72,7 @@ Typed does not create an escape hatch from that model when work reaches the brow
 
 Consider saving a search:
 
-```ts
+```ts file="saved-search.ts"
 import { Context, Data, Effect } from "effect"
 import { Fx } from "@typed/fx"
 import { EventHandler, html } from "@typed/template"
@@ -104,7 +102,7 @@ const saveSearch = EventHandler.make(
   { preventDefault: true },
 )
 
-const form = html`
+export const form = html`
   <form onsubmit=${saveSearch}>
     <input name="query" type="search" />
     <button type="submit">Save search</button>
@@ -119,6 +117,9 @@ The event handler became part of a template.
 Its contract survived both boundaries:
 
 ```ts
+import { Fx } from "@typed/fx"
+import { form } from "./saved-search.js"
+
 type Errors = Fx.Error<typeof form>
 // SaveRejected
 
@@ -175,14 +176,19 @@ directly:
 import { Effect } from "effect"
 import { Fx } from "@typed/fx"
 
-const results = queries.pipe(
+type Issue = { readonly id: string; readonly title: string }
+
+const searchResults = <E, R>(
+  queries: Fx.Fx<string>,
+  search: (query: string) => Effect.Effect<ReadonlyArray<Issue>, E, R>,
+) => queries.pipe(
   Fx.map((query) => query.trim()),
   Fx.skipRepeats,
   Fx.debounce("250 millis"),
   Fx.switchMapEffect((query) =>
     query === ""
-      ? Effect.succeed([])
-      : Effect.flatMap(IssueSearch, (search) => search.search(query)),
+      ? Effect.succeed<ReadonlyArray<Issue>>([])
+      : search(query),
   ),
 )
 ```
@@ -227,11 +233,11 @@ State describes what is true now.
 A search query has a current value and future changes.
 [`RefSubject`](/explore/refsubject-renderer-independent-state) supports both:
 
-```ts
+```ts file="search-model.ts"
 import { Effect } from "effect"
 import { RefSubject } from "@typed/fx"
 
-const makeSearchModel = Effect.gen(function* () {
+export const makeSearchModel = Effect.gen(function* () {
   const query = yield* RefSubject.make("")
   const normalized = RefSubject.map(query, (query) => query.trim())
   const canSearch = RefSubject.map(normalized, (query) => query.length >= 2)
@@ -254,17 +260,31 @@ There is no synchronization code to forget.
 A command can read a snapshot:
 
 ```ts
-const query = yield* model.normalized
+import { Effect } from "effect"
+import { makeSearchModel } from "./search-model.js"
+
+const readQuery = Effect.gen(function* () {
+  const model = yield* makeSearchModel
+  return yield* model.normalized
+})
 ```
 
 A template can observe the same relationship:
 
 ```ts
-html`
-  <button ?disabled=${RefSubject.map(model.canSearch, (ready) => !ready)}>
-    Search
-  </button>
-`
+import { Effect } from "effect"
+import { RefSubject } from "@typed/fx"
+import { html } from "@typed/template"
+import { makeSearchModel } from "./search-model.js"
+
+const searchButton = Effect.gen(function* () {
+  const model = yield* makeSearchModel
+  return html`
+    <button ?disabled=${RefSubject.map(model.canSearch, (ready) => !ready)}>
+      Search
+    </button>
+  `
+})
 ```
 
 **Derived state stays derived.**
@@ -332,11 +352,20 @@ require rebuilding an unrelated editor beside it.
 Identity can be preserved too:
 
 ```ts
-many(
-  issues,
-  (issue) => issue.id,
-  (issue) => IssueRow(issue),
-)
+import { Effect } from "effect"
+import { RefSubject } from "@typed/fx"
+import { html, many } from "@typed/template"
+
+const issueList = Effect.gen(function* () {
+  const issues = yield* RefSubject.make([
+    { id: "42", title: "Preserve editor focus" },
+  ])
+  return many(
+    issues,
+    (issue) => issue.id,
+    (issue) => html`<li>${RefSubject.map(issue, (value) => value.title)}</li>`,
+  )
+})
 ```
 
 The key identifies the issue, not its current array position.
@@ -363,7 +392,11 @@ The platform itself is another participant.
 Use a button when something is a button:
 
 ```ts
-html`
+import { Effect } from "effect"
+import { EventHandler, html } from "@typed/template"
+
+const save = EventHandler.make(() => Effect.log("Save requested"))
+const saveButton = html`
   <button onclick=${save}>
     Save
   </button>
