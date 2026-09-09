@@ -18,7 +18,7 @@
     "typecheck": "astro sync && tsc --noEmit && astro check",
     "dev": "pnpm docs:generate && pnpm build:storybook && astro sync --force && astro dev",
     "preview": "astro preview",
-    "test:static": "node --test test/production-smoke.test.mjs test/static-links.test.mjs test/reference-layout.test.mjs test/marble-playback.test.mjs test/storybook-embed.test.mjs test/search-experience.test.mjs test/curriculum-navigation.test.mjs && node --test test/page-layouts.test.mjs",
+    "test:static": "node --test test/production-smoke.test.mjs test/static-links.test.mjs test/reference-layout.test.mjs test/marble-playback.test.mjs test/storybook-embed.test.mjs test/search-experience.test.mjs test/curriculum-navigation.test.mjs test/deploy-pages-workflow.test.mjs && node --test test/page-layouts.test.mjs",
     "format:astro": "prettier --plugin prettier-plugin-astro --write \"src/site/**/*.astro\"",
     "build:storybook": "pnpm --filter @typed/ui exec storybook build --output-dir ../../apps/website/public/storybook --disable-telemetry"
   },

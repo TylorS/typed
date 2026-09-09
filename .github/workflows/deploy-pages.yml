@@ -52,7 +52,11 @@ jobs:
         run: pnpm --filter typed-website build:static
 
       - name: Install browser for production checks
-        run: pnpm --filter typed-website exec playwright install --with-deps chromium
+        run: |
+          # Chromium is installed by Playwright. The preinstalled Google Chrome source
+          # can briefly publish an index whose checksum does not match its Release file.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          pnpm --filter typed-website exec playwright install --with-deps chromium
 
       - name: Validate GitHub Pages output
         run: pnpm --filter typed-website test:static
