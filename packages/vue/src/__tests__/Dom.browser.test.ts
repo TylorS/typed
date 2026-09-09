@@ -399,7 +399,7 @@ describe("Typed in Vue", () => {
     );
 
     const app = createApp({
-      render: () => h(Typed, { value, onCause: (cause) => errors.push(cause) }),
+      render: () => h(Typed, { value, onError: (cause) => errors.push(cause) }),
     });
 
     try {

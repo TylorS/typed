@@ -7,7 +7,7 @@ import * as Subject from "@typed/fx/Subject";
 import { TestRouter } from "@typed/router/RouterTest";
 import { Cause, Context, Effect, Exit, Layer, ManagedRuntime, Stream } from "effect";
 import { hydrate, mount, unmount } from "svelte";
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import type { Runtime } from "../Runtime.js";
 import type { RefSubjectStore } from "../Reactive.js";
 import type { Source } from "../Source.js";
@@ -37,6 +37,80 @@ afterEach(() => {
 });
 
 describe("Svelte ecosystem lifecycle", () => {
+  it("synchronously represents an unresolved ref and starts its initializer only after mount", async () => {
+    const element = target();
+    const gate = Promise.withResolvers<number>();
+    let started = 0;
+    const runtime = ManagedRuntime.make(
+      Layer.effect(
+        Counter,
+        RefSubject.make(
+          Effect.promise(() => {
+            started++;
+            return gate.promise;
+          }),
+        ),
+      ),
+    );
+    const ref = await runtime.runPromise(Counter);
+    const snapshots: Array<unknown> = [];
+    const instance = mount(CapabilitiesRef, {
+      target: element,
+      props: {
+        runtime,
+        ref,
+        capture: (store: RefSubjectStore<number, never>) => {
+          store.subscribe((value) => snapshots.push(value))();
+          expect(get(store.state.data)._tag).toBe("NoData");
+          expect(started).toBe(0);
+        },
+      },
+    });
+    try {
+      await expect.poll(() => started).toBe(1);
+      expect(snapshots).toEqual([undefined]);
+      gate.resolve(8);
+      await expect.poll(() => text(element, "[data-ref]")).toBe("8");
+      expect(text(element, "[data-ref-state]")).toBe("Success");
+    } finally {
+      gate.resolve(8);
+      await unmount(instance);
+      await runtime.dispose();
+    }
+  });
+
+  it("hydrates a ref snapshot in place before resolving a lazy client value", async () => {
+    const element = target();
+    element.innerHTML = (await commands.renderSvelteFixture("ref", "4")).html;
+    const serverNode = element.querySelector("[data-ref]");
+    const gate = Promise.withResolvers<number>();
+    const runtime = ManagedRuntime.make(
+      Layer.effect(Counter, RefSubject.make(Effect.promise(() => gate.promise))),
+    );
+    const ref = await runtime.runPromise(Counter);
+    const warnings = vi.spyOn(console, "warn");
+    const instance = hydrate(CapabilitiesRef, {
+      target: element,
+      props: {
+        runtime,
+        ref,
+        options: { initial: 4 },
+      },
+    });
+    try {
+      expect(serverNode?.textContent).toBe("4");
+      gate.resolve(5);
+      await expect.poll(() => text(element, "[data-ref]")).toBe("5");
+      expect(element.querySelector("[data-ref]")).toBe(serverNode);
+      expect(warnings.mock.calls.flat().join("\n")).not.toContain("hydration");
+    } finally {
+      gate.resolve(5);
+      await unmount(instance);
+      await runtime.dispose();
+      warnings.mockRestore();
+    }
+  });
+
   it("waits for transitive source cleanup when a queued runtime is cancelled", async () => {
     const element = target();
     const gate = Promise.withResolvers<void>();

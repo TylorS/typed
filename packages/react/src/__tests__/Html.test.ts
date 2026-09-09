@@ -37,7 +37,7 @@ describe("React server rendering", () => {
       );
     }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
 
-    expect(output).toContain('<div style="display:contents" id="split-host">');
+    expect(output).toMatch(/<div(?=[^>]*style="display:contents")(?=[^>]* id="split-host")[^>]*>/);
     expect(output).toContain("<strong>&lt;/div&gt;&lt;div&gt;</strong>");
     expect(output).toContain("</div>");
     expect(output).toContain("</main>");

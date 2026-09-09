@@ -51,13 +51,10 @@ export const mountComponent = Effect.fn(function* <Props extends Record<string, 
       context,
       intro: options.intro,
       transformError: options.transformError,
+      recover: options.recover,
     };
 
-    yield* Effect.sync(() => {
-      instance = hydrate
-        ? hydrateComponent(Bridge<Props>, { ...common, recover: options.recover })
-        : mount(Bridge<Props>, common);
-    });
+    instance = hydrate ? hydrateComponent(Bridge<Props>, common) : mount(Bridge<Props>, common);
 
     // Publication follows native Typed ref timing; Svelte schedules its own commit.
     yield* Deferred.succeed(ready, undefined);

@@ -23,7 +23,7 @@ const props: Effect.Effect<{ label: string }, "failed", Required> = Effect.map(
   Required,
   (service) => ({ label: service.label }),
 );
-const component = view(Component, props, { id: "vue-contracts-1" });
+const component = view(Component, props);
 expectTypeOf(component).toEqualTypeOf<
   Fx.Fx<RenderEvent, "failed" | VueError, Required | Scope.Scope | RenderTemplate>
 >();
@@ -57,5 +57,8 @@ h(Typed, { value: html`<p>Hello</p>` });
 // @ts-expect-error An explicitly bound empty runtime cannot satisfy Required.
 h(Typed, { value: html`<p>${Effect.map(Required, (service) => service.label)}</p>` });
 
-// @ts-expect-error Foreign app roots require an explicit stable, page-unique ID.
-view(Component, { label: "missing id" });
+view(Component, { label: "automatic id" });
+// @ts-expect-error Omitted options preserve required props.
+view(Component, {});
+// @ts-expect-error Omitted options preserve prop types.
+view(Component, { label: 42 });

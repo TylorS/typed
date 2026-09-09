@@ -13,7 +13,7 @@ import { sourceFx } from "./source.js";
 export const renderVue = Fx.fn(function* <P extends object, E, R>(
   component: Component,
   source: PropsSource<P, E, R>,
-  viewOptions: ViewOptions,
+  viewOptions: ViewOptions & { readonly id: string },
 ) {
   const services = yield* Effect.context<never>();
   const first = yield* Fx.first(sourceFx(source));

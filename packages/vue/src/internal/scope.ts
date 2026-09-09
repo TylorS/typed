@@ -35,7 +35,7 @@ export function useScopedRunner<R, ER = never>(
 
   return <A, E>(
     effect: Effect.Effect<A, E, R | Scope.Scope>,
-    onCause?: (cause: Cause.Cause<E | ER>) => void,
+    onError?: (cause: Cause.Cause<E | ER>) => void,
   ) => {
     const scope = currentScope();
     if (!scope) return Promise.resolve(Exit.interrupt());
@@ -46,7 +46,7 @@ export function useScopedRunner<R, ER = never>(
         { onFiberStart: Fiber.runIn(scope) },
       )
       .then((exit) => {
-        if (scope === currentScope() && Exit.isFailure(exit)) onCause?.(exit.cause);
+        if (scope === currentScope() && Exit.isFailure(exit)) onError?.(exit.cause);
 
         return exit;
       });

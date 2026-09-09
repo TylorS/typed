@@ -135,7 +135,7 @@ export function useRoute<Rt extends Route.Any, ER = never>(
  * Adapt a Vue component to a Typed route handler. Render the full matcher with Typed's
  * renderer (or the inverse Typed component), keeping route resources alive through SSR.
  */
-export function routeComponent<C extends Component>(component: C, options: ViewOptions) {
+export function routeComponent<C extends Component>(component: C, options: ViewOptions = {}) {
   return (params: RefSubject.RefSubject<RouteComponentProps<C>>) =>
     view(
       component,

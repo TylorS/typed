@@ -33,7 +33,7 @@ export function useLocation<ER = never>(
 /** Adapts a React component to a Typed matcher handler, preserving reactive params and route-local services. */
 export function routeComponent<P extends object>(
   component: ComponentType<P>,
-  options: ViewOptions,
+  options: ViewOptions = {},
 ) {
   return (params: RefSubject.RefSubject<P>) => view(component, params, options);
 }

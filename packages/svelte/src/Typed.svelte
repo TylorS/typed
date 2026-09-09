@@ -9,7 +9,7 @@
   import { rootEvents } from "@typed/template/RootEvents";
   import { Cause, Exit, Layer } from "effect";
 
-  let { runtime, view, id, onError, onReady, stopPropagation }: TypedProps<V, ER> = $props();
+  let { runtime, value, id, onError, onReady, stopPropagation }: TypedProps<V, ER> = $props();
   const componentId = $props.id();
 
   const inherited = useRuntime<Exclude<Exclude<Renderable.Services<V>, RenderTemplate>, Scope>, ER>();
@@ -23,7 +23,7 @@
 
   const render = $derived.by(() => {
     const selected = selectedRuntime;
-    const current = view;
+    const current = value;
 
     return (root: HTMLElement) => attachment(selected, current, {
       stopPropagation: false,
@@ -53,7 +53,7 @@
   // The host separates Typed's output from the surrounding Svelte component.
   // Keep the server snapshot fixed; subsequent updates belong to Typed.
   // svelte-ignore state_referenced_locally
-  const initialHtml = await renderSnapshot(selectedRuntime, view);
+  const initialHtml = await renderSnapshot(selectedRuntime, value);
 </script>
 
 <div id={id ?? componentId} style="display: contents" {@attach render} {@attach events}>

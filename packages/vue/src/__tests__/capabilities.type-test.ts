@@ -65,7 +65,6 @@ expectTypeOf(routeHandler(routeParams)).toEqualTypeOf<
 >();
 const matchedPage = match(Parse("/users/:id"), routeHandler);
 expectTypeOf<Fx.Fx.Success<typeof matchedPage>>().toEqualTypeOf<RenderEvent>();
-// @ts-expect-error Every separately rendered Vue route root needs a stable hydration id.
 routeComponent(Page);
 
 declare const selectedRoot: import("@typed/router/CurrentRoute").CurrentRouteTree;

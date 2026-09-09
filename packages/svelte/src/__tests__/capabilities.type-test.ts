@@ -44,10 +44,22 @@ type _Snapshot = Assert<
 >;
 type _SnapshotServices = Assert<Equal<Effect.Services<typeof snapshot>, Greeting>>;
 declare const failingRef: RefSubject.RefSubject<number, "read failed", Greeting>;
-const writableRef = useRefSubject(failingRef, 0, { runtime });
+const writableRef = useRefSubject(failingRef, { runtime });
 type _WritableErrors = Assert<
   Equal<typeof writableRef, RefSubjectStore<number, "read failed" | "runtime failed">>
 >;
+const initializedRef = useRefSubject(failingRef, { initial: 0, runtime });
+type _InitializedRef = Assert<
+  Equal<typeof initializedRef, RefSubjectStore<number, "read failed" | "runtime failed", never>>
+>;
+initializedRef satisfies import("svelte/store").Writable<number>;
+writableRef satisfies Readable<number | undefined>;
+// @ts-expect-error absence in a pending read is not a valid RefSubject write
+writableRef.set(undefined);
+// @ts-expect-error explicit runtimes retain service requirements
+useRefSubject(failingRef, { runtime: empty });
+// @ts-expect-error initial snapshots are named options, not a positional value
+useRefSubject(failingRef, 0);
 
 import { useRoute, type RouteOptions } from "../Router.js";
 import * as Route from "@typed/router/Route";

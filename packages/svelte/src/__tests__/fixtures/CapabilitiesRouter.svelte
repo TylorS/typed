@@ -35,4 +35,4 @@
 <button data-next onclick={() => nav.navigate("/app/users/2")}>next</button>
 <button data-away onclick={() => nav.navigate("/elsewhere")}>away</button>
 <button data-back onclick={() => nav.back()}>back</button>
-<Typed {view} />
+<Typed value={view} />

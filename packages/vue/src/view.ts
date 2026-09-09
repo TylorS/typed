@@ -9,6 +9,7 @@ import * as Deferred from "effect/Deferred";
 import * as Exit from "effect/Exit";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
+import { rootIdentity } from "@typed/template/RootIdentity";
 import { HydrateContext } from "@typed/template/HydrateContext";
 import type * as Stream from "effect/Stream";
 import type { App, Component, FunctionalComponent } from "vue";
@@ -30,8 +31,8 @@ export type ComponentProps<C> = C extends abstract new (...args: any[]) => { $pr
 
 /** Configuration is applied to a new app before mount, hydration, or server rendering. */
 export interface ViewOptions {
-  /** Stable, page-unique host ID. Use the same value on the server and client. */
-  readonly id: string;
+  /** Optional host identity override. Generated per render and restored during hydration by default. */
+  readonly id?: string;
 
   readonly configureApp?: (app: App) => void;
 
@@ -58,9 +59,10 @@ export class VueError extends Error {
 export function view<C extends Component, E = never, R = never>(
   component: C,
   props: PropsSource<ComponentProps<NoInfer<C>>, E, R>,
-  options: ViewOptions,
+  options: ViewOptions = {},
 ): Fx.Fx<RenderEvent, E | VueError, R | Scope.Scope | RenderTemplate> {
   return Fx.gen(function* () {
+    const identity = yield* rootIdentity(options.id);
     const scope = yield* Scope.fork(yield* Scope.Scope);
     const ready = yield* Deferred.make<void, E | VueError>();
     let published = false;
@@ -72,13 +74,14 @@ export function view<C extends Component, E = never, R = never>(
     };
 
     const content = Fx.gen(function* () {
+      const settings = { ...options, id: yield* identity.id };
       if (target === undefined) {
         const backend = yield* Effect.tryPromise({
           try: () => import("./internal/html.js"),
           catch: (cause) => new VueError("server", cause),
         });
 
-        return backend.renderVue(component, props, options);
+        return backend.renderVue(component, props, settings);
       }
 
       const hydration = Option.getOrUndefined(yield* Effect.serviceOption(HydrateContext));
@@ -98,7 +101,7 @@ export function view<C extends Component, E = never, R = never>(
         catch: (cause) => new VueError("mount", cause),
       }).pipe(
         Effect.flatMap((backend) =>
-          Layer.launch(backend.mountComponent(element, component, props, options, ready, hydrate)),
+          Layer.launch(backend.mountComponent(element, component, props, settings, ready, hydrate)),
         ),
         Effect.onExit((exit) =>
           Exit.isFailure(exit) ? Deferred.failCause(ready, exit.cause) : Effect.void,
@@ -108,7 +111,14 @@ export function view<C extends Component, E = never, R = never>(
       return Fx.fromEffect(mount).pipe(Fx.prepend(DomRenderEvent([])));
     });
 
-    return html`<div id=${options.id} style="display:contents" ref=${ref}>${content}</div>`.pipe(
+    return html`<div
+      ...${{ ref: identity.ref }}
+      id=${identity.id}
+      style="display:contents"
+      ref=${ref}
+    >
+      ${content}
+    </div>`.pipe(
       Fx.provideService(Scope.Scope, scope),
       Fx.concatMap((event): Fx.Fx<RenderEvent, E | VueError> =>
         isDomRenderEvent(event)

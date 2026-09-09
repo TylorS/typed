@@ -19,7 +19,7 @@ Keep Typed packages on the same beta release family and use the supported Effect
 
 ## React output inside Typed
 
-Pass a React component, its props, and a stable unique `id` to `view`. Reuse the same ID on the server and browser; repeated instances need distinct IDs derived from their stable application keys. Props can also be an `Effect`, `Stream`, or `Fx`; later values update the existing React root and preserve its component state.
+Pass a React component and its props to `view`. Each rendered island gets a unique host ID that hydration restores from server markup. Use the optional `id` override when application code needs a specific host ID; explicit IDs must be unique on the page and match between server and browser. Props can also be an `Effect`, `Stream`, or `Fx`; later values update the existing React root and preserve its component state.
 
 ```tsx file="Account.tsx"
 import { useState } from "react";
@@ -38,7 +38,7 @@ import { view } from "@typed/react";
 import { html } from "@typed/template";
 import { Account } from "./Account.js";
 
-export const page = html`<main>${view(Account, { name: "Ada" }, { id: "account-panel" })}</main>`;
+export const page = html`<main>${view(Account, { name: "Ada" })}</main>`;
 ```
 
 An existing JSX value or other `ReactNode` can use the two-argument overload:
@@ -47,7 +47,7 @@ An existing JSX value or other `ReactNode` can use the two-argument overload:
 import { view } from "@typed/react";
 import { html } from "@typed/template";
 
-export const banner = html`<header>${view(<strong>Account ready</strong>, { id: "account-banner" })}</header>`;
+export const banner = html`<header>${view(<strong>Account ready</strong>)}</header>`;
 ```
 
 Use the component-and-props form when an Effect, Stream, or Fx should update its props.
@@ -265,7 +265,7 @@ function UserPage({ id }: { readonly id: string }) {
   </section>;
 }
 
-export const routes = Matcher.match(Route.Parse("/users/:id"), routeComponent(UserPage, { id: "user-route" }))
+export const routes = Matcher.match(Route.Parse("/users/:id"), routeComponent(UserPage))
   .match(Route.Wildcard, html`<p>Choose a user.</p>`);
 ```
 
@@ -306,7 +306,7 @@ import { CurrentRootEvents } from "@typed/template/RootEvents";
 import { Account } from "./Account.js";
 import { status } from "./Status.js";
 
-export const account = view(Account, { name: "Ada" }, { id: "account-events", stopPropagation: { click: true } });
+export const account = view(Account, { name: "Ada" }, { stopPropagation: { click: true } });
 const events = Context.make(CurrentRootEvents, { click: true });
 export const StatusBoundary = () => <Provider context={events}>
   <Typed value={status} stopPropagation={{ click: false, keydown: true }} onError={console.error} />

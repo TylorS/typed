@@ -31,7 +31,7 @@ Vue's JSX types and transform differ from React's. See [Vue's TSX setup](https:/
 
 ## Vue output inside Typed
 
-The card owns its local alert threshold. `view` requires an options object with a stable unique `id`, shared between server and browser. Repeated components need distinct IDs derived from stable application keys. It accepts a Vue component and plain props, `Effect`, `Stream`, or `Fx`; subsequent values update that mounted component.
+The card owns its local alert threshold. `view` generates a unique host ID for each rendered island and restores it from server markup during hydration. An optional `id` override can provide an application-specific ID; explicit IDs must be unique on the page and match between server and browser. It accepts a Vue component and plain props, `Effect`, `Stream`, or `Fx`; subsequent values update that mounted component.
 
 ```tsx file="PriceCard.tsx"
 import { defineComponent, ref } from "vue";
@@ -67,7 +67,7 @@ import { PriceCard } from "./PriceCard.js";
 export const page = component(function* () {
   const price = yield* RefSubject.make({ symbol: "DEMO", last: 42 });
   return html`<main>
-    ${view(PriceCard, price, { id: "price-card" })}
+    ${view(PriceCard, price)}
     <button onclick=${RefSubject.update(price, (value) => ({ ...value, last: value.last + 1 }))}>
       Next price
     </button>
@@ -77,7 +77,7 @@ export const page = component(function* () {
 
 Pass the page directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects and supplies Vue’s backend from the active Typed renderer. SSR and build-time static rendering take the first props snapshot and create a fresh Vue app. The browser adopts that host, hydrates its contents, and keeps the instance for later props. Replace immutable props objects instead of mutating a nested field in place.
 
-`view(Component, props, { id: "price-card", configureApp })` configures each Vue app, including plugins and app-level providers. `view(Component, props, { id, onSSRContext })` exposes the request's Vue SSR context, including teleports; the application places those teleport fragments in its document.
+`view(Component, props, { configureApp })` configures each Vue app, including plugins and app-level providers. `view(Component, props, { onSSRContext })` exposes the request's Vue SSR context, including teleports; the application places those teleport fragments in its document.
 
 ```ts file="render-page.ts"
 import { Effect, Layer } from "effect";
@@ -206,7 +206,7 @@ export const App = defineComponent({
     return () => (
       <main>
         <Profile initialName={props.initialName} />
-        <Typed value={status} onCause={console.error} />
+        <Typed value={status} onError={console.error} />
       </main>
     );
   },
@@ -282,7 +282,7 @@ const PriceRoute = defineComponent({
   setup: (props) => () => <PriceCard symbol={props.symbol} last={42} />,
 });
 export const routes = Matcher.match(Route.Parse("/prices/:symbol"),
-  routeComponent(PriceRoute, { id: "price-route" }),
+  routeComponent(PriceRoute),
 ).match(Route.Wildcard, html`<p>Choose a price.</p>`);
 
 export const Routes = defineComponent({
@@ -292,7 +292,7 @@ export const Routes = defineComponent({
     return () => (
       <main>
         <button onClick={() => navigation.navigate("/prices/DEMO")}>Prices</button>
-        <Typed value={routes} onCause={console.error} />
+        <Typed value={routes} onError={console.error} />
       </main>
     );
   },
@@ -345,7 +345,6 @@ import { PriceCard } from "./PriceCard.js";
 import { status } from "./services.js";
 
 export const card = view(PriceCard, { symbol: "DEMO", last: 42 }, {
-  id: "price-events",
   stopPropagation: { click: true },
 });
 
@@ -356,6 +355,6 @@ export const statusNode = (
 
 Use `CurrentRootEvents` from `@typed/template/RootEvents` in the Effect context, or `provideServices(Context.make(CurrentRootEvents, policy))`, for an inherited policy. The default is normal bubbling. Undefined inherits, an object overrides event names, and `false` disables inherited blocking. `true` calls `stopPropagation` at the root after inner listeners run. Default actions and sibling root listeners remain available; ancestor capture listeners have already run. Listeners are removed when the owning Scope closes.
 
-Automatic `div` hosts use `display: contents` to remove their layout boxes while remaining DOM ownership boundaries. Place them where an HTML `div` is valid; the style does not change table or SVG parsing rules. Vue owns each Vue subtree, Typed owns each Typed range, and unmount closes that child's Scope. Providers borrow runtimes; the application or request that created a runtime disposes it. Updating `stopPropagation` or `onCause` preserves the current Typed rendering. Failed Typed work goes to `onCause` when supplied, otherwise through Vue's component error path.
+Automatic `div` hosts use `display: contents` to remove their layout boxes while remaining DOM ownership boundaries. Place them where an HTML `div` is valid; the style does not change table or SVG parsing rules. Vue owns each Vue subtree, Typed owns each Typed range, and unmount closes that child's Scope. Providers borrow runtimes; the application or request that created a runtime disposes it. Updating `stopPropagation` or `onError` preserves the current Typed rendering. Failed Typed work goes to `onError` when supplied, otherwise through Vue's component error path.
 
 The native template ref initializes the framework root. Its mount callbacks can run before the surrounding Typed tree reaches its destination. Vue readiness and DOM attachment are separate: measure or focus only after the outer owner has placed the host. Raw `RenderEvent` consumers own placement themselves.

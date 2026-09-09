@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect";
+import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template/RenderTemplate";
 import { render } from "svelte/server";
 import { view } from "../../view.js";
@@ -7,8 +8,27 @@ import Typed from "@typed/svelte/Typed.svelte";
 import Stateful from "./Stateful.svelte";
 import RoundTrip from "./RoundTrip.svelte";
 import { siblings } from "./trees.js";
+import CapabilitiesRef from "./CapabilitiesRef.svelte";
 
 export async function renderFixture(scenario: string, label: string) {
+  if (scenario === "auto-identity") {
+    const shared = view(Stateful, { label });
+    return {
+      html: await renderToHtmlString(siblings(shared, shared)).pipe(
+        Effect.provide(HtmlRenderTemplate),
+        Effect.scoped,
+        Effect.runPromise,
+      ),
+    };
+  }
+  if (scenario === "ref") {
+    return Effect.gen(function* () {
+      const ref = yield* RefSubject.make(Number(label));
+      return {
+        html: render(CapabilitiesRef, { props: { ref, options: { initial: Number(label) } } }).body,
+      };
+    }).pipe(Effect.scoped, Effect.runPromise);
+  }
   if (scenario === "capabilities") {
     const { renderCapabilities } = await import("./capabilities-server.js");
     return renderCapabilities(label);
@@ -26,7 +46,7 @@ export async function renderFixture(scenario: string, label: string) {
   }
   if (scenario === "inverse") {
     const typedView = html`<button data-typed-counter>${label}</button>`;
-    const output = await render(Typed, { props: { id: "inverse", view: typedView } });
+    const output = await render(Typed, { props: { id: "inverse", value: typedView } });
     return { html: output.body, head: output.head };
   }
   const island = view(Stateful, { label }, { id: "counter" });

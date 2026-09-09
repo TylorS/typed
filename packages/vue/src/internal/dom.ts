@@ -13,7 +13,7 @@ export function mountComponent<P extends object, E, R>(
   target: HTMLElement,
   component: Component,
   source: PropsSource<P, E, R>,
-  options: ViewOptions,
+  options: ViewOptions & { readonly id: string },
   ready: Deferred.Deferred<void, E | VueError>,
   hydrate: boolean,
 ) {

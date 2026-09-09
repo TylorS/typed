@@ -1,6 +1,6 @@
 <script>
   import Typed from "@typed/svelte/Typed.svelte";
-  let { view, runtime } = $props();
+  let { value, runtime } = $props();
 </script>
 
-<main data-native-page><Typed {view} {runtime} /></main>
+<main data-native-page><Typed {value} {runtime} /></main>

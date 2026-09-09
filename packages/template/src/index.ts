@@ -15,3 +15,4 @@ export * from "./Wire.js";
 export * as WebComponent from "./WebComponent.js";
 export * from "./RootEvents.js";
 export * as RootEvents from "./RootEvents.js";
+export * from "./RootIdentity.js";

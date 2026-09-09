@@ -8,6 +8,11 @@ import Stateful from "./fixtures/Stateful.svelte";
 import NativePage from "./fixtures/NativePage.svelte";
 
 describe("native rendering APIs", () => {
+  it("embeds the canonical value prop through native Svelte SSR", async () => {
+    const output = await render(Typed, { props: { value: html`<strong>canonical</strong>` } });
+    expect(output.body).toContain("canonical");
+  });
+
   it("renders a Svelte view using only Typed's ordinary HTML API", async () => {
     const result = await Effect.runPromise(
       renderToHtmlString(
@@ -32,8 +37,8 @@ describe("native rendering APIs", () => {
     ).pipe(
       Effect.andThen((label) => Effect.promise(async () => html`<p data-native>${label}</p>`)),
     );
-    const first = await render(NativePage, { props: { view: value } });
-    const second = await render(NativePage, { props: { view: value } });
+    const first = await render(NativePage, { props: { value } });
+    const second = await render(NativePage, { props: { value } });
     expect(first.body).toContain("data-native-page");
     expect(first.body).toContain("&lt;script&gt;");
     expect(first.body).not.toContain('<script>alert("escaped")</script>');
@@ -48,12 +53,12 @@ describe("native rendering APIs", () => {
     const runtime = ManagedRuntime.make(Layer.succeed(Greeting, "provided"));
     try {
       const output = await render(Typed, {
-        props: { runtime, view: Effect.map(Greeting, (value) => html`<strong>${value}</strong>`) },
+        props: { runtime, value: Effect.map(Greeting, (value) => html`<strong>${value}</strong>`) },
       });
       expect(output.body).toContain("provided");
       expect(await runtime.runPromise(Greeting)).toBe("provided");
       await expect(
-        Promise.resolve(render(Typed, { props: { view: Effect.fail("SSR failed") } })),
+        Promise.resolve(render(Typed, { props: { value: Effect.fail("SSR failed") } })),
       ).rejects.toBeDefined();
     } finally {
       await runtime.dispose();

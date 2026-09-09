@@ -10,7 +10,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Scope from "effect/Scope";
 import { onMount } from "svelte";
-import { derived, get, writable, type Readable, type Writable } from "svelte/store";
+import { derived, get, writable, type Readable } from "svelte/store";
 import { asyncState, type AsyncState } from "./AsyncData.js";
 import { asReadable, useRuntime, type Runtime, type RuntimeSource } from "./Runtime.js";
 import { toFx, type Source } from "./Source.js";
@@ -193,27 +193,47 @@ export function useService<I, A, ER = never>(
 }
 
 /** A native writable whose transactional writes settle with typed Exit results. */
-export interface RefSubjectStore<A, E> extends Writable<A> {
+export interface RefSubjectStore<A, E, Initial = undefined> extends Readable<A | Initial> {
   readonly state: AsyncState<A, E>;
   readonly set: (value: A) => Promise<Exit.Exit<A, E>>;
   readonly update: (f: (value: A) => A) => Promise<Exit.Exit<A, E>>;
+}
+
+export interface RefSubjectOptions<A, E, R, ER = never> extends Omit<
+  SourceOptions<A, E, R, ER>,
+  "initial"
+> {
+  /** Overrides the first server/client snapshot, including for an uninitialized ref. */
+  readonly initial?: A;
 }
 
 /**
  * Observes any RefSubject, including hydrated refs with typed failures. Writes
  * use its serialized transactions; failures also reach `state` when a native
  * binding ignores the returned Exit. Unmount/runtime replacement cancels writes.
+ * The first subscription receives the optional initial value or `undefined`.
+ * Lazy initializers only start after mount; `initial` can seed matching SSR and
+ * hydration values without executing application effects during rendering.
  */
 export function useRefSubject<A, E = never, R = never, ER = never>(
   ref: RefSubject.RefSubject<A, E, R>,
-  initial: A,
-  options: Omit<SourceOptions<A, E, R, ER>, "initial"> = {},
+  options: RefSubjectOptions<A, E, R, ER> & { readonly initial: A },
+): RefSubjectStore<A, E | ER, never>;
+export function useRefSubject<A, E = never, R = never, ER = never>(
+  ref: RefSubject.RefSubject<A, E, R>,
+  options?: RefSubjectOptions<A, E, R, ER>,
+): RefSubjectStore<A, E | ER>;
+export function useRefSubject<A, E = never, R = never, ER = never>(
+  ref: RefSubject.RefSubject<A, E, R>,
+  options: RefSubjectOptions<A, E, R, ER> = {},
 ): RefSubjectStore<A, E | ER> {
   const runtime = options.runtime
     ? asReadable(options.runtime)
     : useRuntime<Exclude<R, Scope.Scope>, ER>();
-  const observed = useSource(ref, { runtime, initial: AsyncData.success(initial) });
-  const values = writable(initial);
+  const initial: AsyncData.AsyncData<A, E> =
+    "initial" in options ? AsyncData.success(options.initial as A) : AsyncData.NoData;
+  const observed = useSource(ref, { runtime, initial });
+  const values = writable(Option.getOrUndefined(AsyncData.getSuccess(initial)));
   const result = writable<AsyncData.AsyncData<A, E | ER> | undefined>(undefined);
 
   let writes = Scope.makeUnsafe("parallel");

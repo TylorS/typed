@@ -7,13 +7,15 @@ import {
 import * as Context from "effect/Context";
 import * as Cause from "effect/Cause";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Option from "effect/Option";
 import { describe, expect, it } from "vitest";
 import { createSSRApp, defineComponent, h, inject, Teleport } from "vue";
 import { renderToString } from "vue/server-renderer";
 import { useEffect } from "../Reactive.js";
 import { provideServices } from "../Runtime.js";
-import { Typed } from "../Typed.js";
+import { Typed, createTypedComponent } from "../Typed.js";
 import { view } from "../view.js";
 
 const Greeting = defineComponent({
@@ -143,7 +145,7 @@ describe("automatic Vue rendering", () => {
         render: () =>
           h(Typed, {
             value: Effect.fail("native server failure"),
-            onCause: (cause: Cause.Cause<unknown>) => {
+            onError: (cause: Cause.Cause<unknown>) => {
               failures.push(cause);
             },
           }),
@@ -151,5 +153,44 @@ describe("automatic Vue rendering", () => {
     );
     expect(failures).toHaveLength(1);
     expect(Cause.squash(failures[0])).toBe("native server failure");
+  });
+
+  it("reports composable server failures through onError", async () => {
+    const failures: Cause.Cause<string>[] = [];
+    await renderToString(
+      createSSRApp(
+        defineComponent({
+          setup() {
+            useEffect(Effect.fail("request failed"), {
+              onError: (cause) => failures.push(cause),
+            });
+            return () => h("div");
+          },
+        }),
+      ),
+    );
+    expect(failures.map(Cause.squash)).toEqual(["request failed"]);
+  });
+
+  it("reports borrowed runtime failures through the Typed onError callback", async () => {
+    const runtimeFailure = { _tag: "RuntimeFailure" as const };
+    const runtime = ManagedRuntime.make(Layer.effectDiscard(Effect.fail(runtimeFailure)));
+    const Bound = createTypedComponent(runtime);
+    const value = Effect.succeed("content");
+    const failures: Cause.Cause<typeof runtimeFailure>[] = [];
+    try {
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(Bound<typeof value>, {
+              value,
+              onError: (cause) => failures.push(cause),
+            }),
+        }),
+      );
+      expect(failures.map(Cause.squash)).toEqual([runtimeFailure]);
+    } finally {
+      await runtime.dispose();
+    }
   });
 });

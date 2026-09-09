@@ -2,11 +2,11 @@
   import { provideRuntime } from "../../Runtime.js";
   import { useRefSubject } from "../../Reactive.js";
   import * as Option from "effect/Option";
-  let { runtime, ref, capture = () => {} } = $props();
+  let { runtime, ref, options, capture = () => {} } = $props();
   // svelte-ignore state_referenced_locally
   provideRuntime(runtime);
   // svelte-ignore state_referenced_locally
-  const value = useRefSubject(ref, -1);
+  const value = useRefSubject(ref, options);
   const { data, error } = value.state;
   // svelte-ignore state_referenced_locally
   capture(value);

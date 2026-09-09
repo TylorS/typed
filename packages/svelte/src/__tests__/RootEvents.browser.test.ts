@@ -94,7 +94,7 @@ describe("Svelte root event propagation", () => {
       target: root,
       props: {
         runtime,
-        view,
+        value: view,
         id: "svelte-rootevents-inverse",
         stopPropagation: { click: false },
         onReady: () => {

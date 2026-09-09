@@ -41,7 +41,7 @@ export interface ReactiveOptions<A, E, R, ER = never> {
   readonly initial?: Data.AsyncData<A, E | ER>;
   /** Skip automatic execution (including SSR); refresh explicitly when ready. */
   readonly immediate?: boolean;
-  readonly onCause?: (cause: Cause.Cause<E | ER>) => void;
+  readonly onError?: (cause: Cause.Cause<E | ER>) => void;
 }
 
 export interface AsyncState<A, E> extends AsyncDataView<A, E> {
@@ -190,7 +190,7 @@ function useSource<A, E, R, ER = never>(
           Effect.sync(() => {
             if (Cause.hasInterruptsOnly(cause)) return;
             data.value = Data.failure(cause);
-            options.onCause?.(cause);
+            options.onError?.(cause);
           }),
         ),
       );
@@ -242,7 +242,7 @@ function useSource<A, E, R, ER = never>(
         if (Option.isSome(exit.value)) data.value = Data.success(exit.value.value);
       } else {
         data.value = Data.failure(exit.cause);
-        options.onCause?.(exit.cause);
+        options.onError?.(exit.cause);
       }
     });
 
@@ -311,9 +311,9 @@ export function useRefSubject<A, E, R, ER = never>(
   const state = useFx(subject, { ...options, runtime });
   const run = useScopedRunner(runtime, [() => toValue(subject)]);
 
-  const set = (value: A) => run(RefSubject.set(toValue(subject), value), options.onCause);
+  const set = (value: A) => run(RefSubject.set(toValue(subject), value), options.onError);
   const update = (f: (value: A) => A) =>
-    run(RefSubject.update(toValue(subject), f), options.onCause);
+    run(RefSubject.update(toValue(subject), f), options.onError);
 
   const current = computed({
     get: () => Option.getOrUndefined(state.value.value),

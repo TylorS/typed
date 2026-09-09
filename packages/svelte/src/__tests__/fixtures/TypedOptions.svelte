@@ -1,7 +1,7 @@
 <script>
   import Typed from "@typed/svelte/Typed.svelte";
 
-  let { id, runtime, view, settings } = $props();
+  let { id, runtime, value, settings } = $props();
 </script>
 
-<Typed {id} {runtime} {view} onReady={$settings.onReady} onError={$settings.onError} stopPropagation={$settings.stopPropagation} />
+<Typed {id} {runtime} value={value} onReady={$settings.onReady} onError={$settings.onError} stopPropagation={$settings.stopPropagation} />

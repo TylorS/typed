@@ -49,7 +49,7 @@ describe("Typed in Svelte", () => {
       bubbled++;
     };
     document.body.addEventListener("click", click);
-    const instance = mount(TypedOptions, { target, props: { runtime, view: source, settings } });
+    const instance = mount(TypedOptions, { target, props: { runtime, value: source, settings } });
     try {
       await expect.poll(() => oldReady.mock.calls.length).toBe(1);
       const button = target.querySelector("button")!;
@@ -100,7 +100,7 @@ describe("Typed in Svelte", () => {
     );
     const instance = mount(TypedOptions, {
       target,
-      props: { id: "typed-options", runtime, view: source, settings },
+      props: { id: "typed-options", runtime, value: source, settings },
     });
     try {
       await expect.poll(() => target.querySelector("#typed-options")).not.toBeNull();
@@ -140,7 +140,7 @@ describe("Typed in Svelte", () => {
           target,
           props: {
             id: "inverse",
-            view: typedView,
+            value: typedView,
             onReady: () => {
               ready = true;
             },
@@ -184,7 +184,7 @@ describe("Typed in Svelte", () => {
           }),
       ),
     );
-    const instance = mount(Typed, { target, props: { runtime, view: source } });
+    const instance = mount(Typed, { target, props: { runtime, value: source } });
     try {
       await expect.poll(() => target.textContent).toBe("finite");
       await tick();

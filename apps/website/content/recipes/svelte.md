@@ -46,7 +46,7 @@ The editor keeps its draft while incoming metadata changes. Save this as `Docume
 </section>
 ```
 
-Pass the imported component to `editorPage`. `view` requires a stable unique `id` in its options. Use the same ID on the server and browser, and derive distinct IDs from stable keys for repeated instances. It accepts plain props, `Effect`, `Stream`, or `Fx`; a props update preserves the mounted Svelte instance.
+Pass the imported component to `editorPage`. `view` generates a unique host ID for each rendered island and restores it from server markup during hydration. An optional `id` override can provide an application-specific ID; explicit IDs must be unique on the page and match between server and browser. It accepts plain props, `Effect`, `Stream`, or `Fx`; a props update preserves the mounted Svelte instance.
 
 ```ts file="editor-page.ts"
 import type { Component } from "svelte";
@@ -59,7 +59,7 @@ export const editorPage = (Editor: Component<{ title: string; saved: boolean }>)
   component(function* () {
     const metadata = yield* RefSubject.make({ title: "Draft", saved: false });
     return html`<main>
-      ${view(Editor, metadata, { id: "document-editor" })}
+      ${view(Editor, metadata)}
       <button onclick=${RefSubject.update(metadata, (value) => ({ ...value, saved: true }))}>
         Mark saved
       </button>
@@ -138,13 +138,13 @@ export const status = html`<p role="status">Account ready</p>`;
 </section>
 ```
 
-| Input                              | Native Svelte binding                                               |
-| ---------------------------------- | ------------------------------------------------------------------- |
-| Value, `Effect`, `Stream`, or `Fx` | `useSource(source, { initial })`                                    |
-| Effect service                     | `useService(Service, { initial })`                                  |
-| `RefSubject`                       | `useRefSubject(ref, initial)` returns a writable store and `.state` |
-| Existing `AsyncData` producer      | `useAsyncData(source, { initial })` preserves its state model       |
-| Existing Svelte store              | `fromReadable` from `@typed/svelte/Store` lifts it into Typed       |
+| Input                              | Native Svelte binding                                                |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| Value, `Effect`, `Stream`, or `Fx` | `useSource(source, { initial })`                                     |
+| Effect service                     | `useService(Service, { initial })`                                   |
+| `RefSubject`                       | `useRefSubject(ref, options?)` returns a writable store and `.state` |
+| Existing `AsyncData` producer      | `useAsyncData(source, { initial })` preserves its state model        |
+| Existing Svelte store              | `fromReadable` from `@typed/svelte/Store` lifts it into Typed        |
 
 Resource fields include `data`, `value`, `latest`, `cause`, `error`, `pending`, `refreshing`, and `optimistic`. Values and failures use `Option`; the underlying `data` remains Typed `AsyncData`. Refresh keeps an available value visible. `latest` remembers the last available value when the current state has none. `refresh()` restarts the source and `cancel()` interrupts it. A readable source or runtime store can replace the producer; cleanup finishes before the replacement starts.
 
@@ -156,17 +156,16 @@ Use the native writable bridge for shared state:
   import type * as RefSubject from "@typed/fx/RefSubject";
   import { useRefSubject } from "@typed/svelte/Reactive";
 
-  let { count, initialCount }: {
+  let { count }: {
     count: RefSubject.RefSubject<number>;
-    initialCount: number;
   } = $props();
-  const value = useRefSubject(count, initialCount);
+  const value = useRefSubject(count);
 </script>
 
 <button onclick={() => value.update((current) => current + 1)}>{$value}</button>
 ```
 
-The owner creates `count` in its Scope and passes its server snapshot as `initialCount`. Local writes use serialized RefSubject transactions. The writable store accepts failing refs, including hydrated state; `set` and `update` return `Promise<Exit>`, and `.state` exposes read and write failures even when a native binding ignores that result. Runtime replacement and unmount interrupt pending writes. To display an optimistic save, pass an `Fx` or store of `AsyncData` to `useAsyncData`; its `value` includes the optimistic value and its `optimistic` store identifies the pending edit.
+The owner creates `count` in its Scope. The store starts with `undefined` and `NoData`, then observes the ref through `useSource` after mount. Values and failures arrive through that subscription, with failures available in `.state`. If hydration needs an explicit transported snapshot, pass `{ initial: snapshot }` on the server and client, which also narrows the store's value from `A | undefined` to `A`. Local writes use serialized RefSubject transactions. The writable store accepts failing refs, including hydrated state; `set` and `update` return `Promise<Exit>`, and `.state` exposes read and write failures even when a native binding ignores that result. Runtime replacement and unmount interrupt pending writes. To display an optimistic save, pass an `Fx` or store of `AsyncData` to `useAsyncData`; its `value` includes the optimistic value and its `optimistic` store identifies the pending edit.
 
 ## Typed output inside Svelte
 
@@ -187,7 +186,7 @@ The owner creates `count` in its Scope and passes its server snapshot as `initia
 </script>
 
 <Profile {initialName} />
-<Typed view={status} onError={console.error} />
+<Typed value={status} onError={console.error} />
 ```
 
 ```ts file="app-props.ts"
@@ -280,7 +279,7 @@ import * as Matcher from "@typed/router/Matcher";
 import * as Route from "@typed/router/Route";
 
 export const profileRoutes = (ProfilePage: Component<{ id: string }>) =>
-  Matcher.match(Route.Parse("/profile/:id"), (params) => view(ProfilePage, params, { id: "profile-route" }))
+  Matcher.match(Route.Parse("/profile/:id"), (params) => view(ProfilePage, params))
     .match(Route.Wildcard, html`<p>Choose a profile.</p>`);
 ```
 
@@ -312,7 +311,7 @@ it("renders with test services", async () => {
 
 ## Configure event bubbling
 
-`view(Component, props, { id: "editor", stopPropagation: { click: true } })` configures the Svelte-in-Typed root. The inverse component accepts the same policy:
+`view(Component, props, { stopPropagation: { click: true } })` configures the Svelte-in-Typed root. The inverse component accepts the same policy:
 
 ```svelte
 <!-- EventBoundary.svelte -->
@@ -321,7 +320,7 @@ it("renders with test services", async () => {
   import { status } from "./profile.js";
 </script>
 
-<Typed view={status} stopPropagation={{ click: true, keydown: false }} onError={console.error} />
+<Typed value={status} stopPropagation={{ click: true, keydown: false }} onError={console.error} />
 ```
 
 Provide `CurrentRootEvents` from `@typed/template/RootEvents` through the surrounding Effect Context or `provideServices` to establish a default. Undefined inherits, an object overrides each named event, and `false` disables the inherited policy. A `true` entry stops bubbling at the root; target listeners and default actions still run, and ancestor capture listeners have already run. `rootEvents(root, options)` exposes the same scoped behavior for a custom host. `view` also forwards Svelte `context`, `idPrefix`, CSP, and error-transform options; preserve those identities between server and client.

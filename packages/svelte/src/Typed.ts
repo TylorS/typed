@@ -12,7 +12,7 @@ export interface TypedProps<V extends Renderable.Any, ER = never> extends Attach
     Exclude<Exclude<Renderable.Services<V>, RenderTemplate>, Scope.Scope>,
     ER
   >;
-  readonly view: V;
+  readonly value: V;
 
   /** Optional host id; defaults to Svelte $props.id(), stable during SSR and hydration. */
   readonly id?: string;

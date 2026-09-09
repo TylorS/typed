@@ -20,7 +20,7 @@ const props = Effect.gen(function* () {
 const withError = Effect.andThen(props, (value) =>
   value.count > 0 ? Effect.succeed(value) : Effect.fail("bad" as const),
 );
-const inferred = view(Component, withError, { id: "react-inference-1" });
+const inferred = view(Component, withError);
 const expected: Fx.Fx<RenderEvent, "bad" | ReactRenderError, Service | Scope | RenderTemplate> =
   inferred;
 void expected;
@@ -28,7 +28,7 @@ view(Component, { label: "works", count: 1 }, { id: "react-inference-2" });
 view(Component, Stream.succeed({ label: "works", count: 1 }), { id: "react-inference-3" });
 view(Component, Fx.succeed({ label: "works", count: 1 }), { id: "react-inference-4" });
 // @ts-expect-error required React prop count is missing
-view(Component, { label: "missing" }, { id: "react-inference-5" });
+view(Component, { label: "missing" });
 // @ts-expect-error prop type remains a number
 view(Component, { label: "wrong", count: "one" }, { id: "react-inference-6" });
 // @ts-expect-error producer output must satisfy component props
@@ -46,8 +46,8 @@ const nodeView: Fx.Fx<RenderEvent, ReactRenderError, Scope | RenderTemplate> = v
 view([createElement("b", { key: "b" }, "array"), null], { id: "array" });
 view(null, { id: "empty" });
 void nodeView;
-// @ts-expect-error every independent view requires stable identity
-view("missing id", {});
+view("automatic");
+view("automatic with options", {});
 
 // Native entry points retain the existing renderer and lifetime requirements.
 const nativeHtml = renderToHtmlString(inferred);

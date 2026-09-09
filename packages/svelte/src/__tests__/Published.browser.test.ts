@@ -31,7 +31,7 @@ describe("published Svelte entry points", () => {
     document.body.append(target);
     const instance = mount(Typed, {
       target,
-      props: { id: "published", view: html`<p>published</p>` },
+      props: { id: "published", value: html`<p>published</p>` },
     });
     try {
       await expect.poll(() => target.textContent).toBe("published");

@@ -25,22 +25,22 @@ function Counter({ label }: { label: string }) {
 const application = Fx.gen(function* () {
   const props = yield* RefSubject.make({ label: "Clicks" });
 
-  return render(html`<main>${view(Counter, props, { id: "counter" })}</main>`, document.body);
+  return render(html`<main>${view(Counter, props)}</main>`, document.body);
 }).pipe(Fx.drainLayer, Layer.provide(DomRenderTemplate));
 
 const program = Layer.launch(application);
 ```
 
-`view(Component, props, { id, ...options })` accepts a complete props object, `Effect`, `Stream`, or `Fx`. Use `Fx.struct` to combine reactive fields. Complete props retain their callback functions and nested React nodes. Producer errors and Effect service requirements remain in the returned Fx type. React exceptions become `ReactRenderError`.
+`view(Component, props, options?)` accepts a complete props object, `Effect`, `Stream`, or `Fx`. Use `Fx.struct` to combine reactive fields. Complete props retain their callback functions and nested React nodes. Producer errors and Effect service requirements remain in the returned Fx type. React exceptions become `ReactRenderError`.
 
-The direct-node overload `view(node, { id })` also accepts any `ReactNode`, including text, arrays, fragments, null, and browser portals. A view creates one React root. Updates enter React state through a transition, preserving component state and DOM identity. A finite props source leaves the mounted tree alive until its render Scope closes. Scope closure interrupts subscriptions and calls React's `unmount`.
+The direct-node overload `view(node, options?)` also accepts any `ReactNode`, including text, arrays, fragments, null, and browser portals. A view creates one React root. Updates enter React state through a transition, preserving component state and DOM identity. A finite props source leaves the mounted tree alive until its render Scope closes. Scope closure interrupts subscriptions and calls React's `unmount`.
 
 ## Server rendering and hydration
 
 ```ts
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
 
-const app = html`<main>${view(Counter, { label: "Clicks" }, { id: "counter" })}</main>`;
+const app = html`<main>${view(Counter, { label: "Clicks" })}</main>`;
 const chunks = renderToHtml(app).pipe(Fx.provide(HtmlRenderTemplate));
 
 // Collect a complete string when needed, including static generation.
@@ -49,7 +49,7 @@ const markup = await Effect.runPromise(
 );
 ```
 
-Serve `markup`, then run the same `app` with `render(app, element)` inside a live Effect Scope. The existing Typed DOM or HTML renderer layer selects the React backend automatically. `view` adds no framework renderer layer or rendering entry point. Every view requires an `id` that is unique among independent roots and identical on the server and client. It becomes the native host id and the default React `identifierPrefix`; an explicit prefix override must also match. Typed's native template/ref pathway owns host construction and hydration matching. `onRecoverableError` forwards React's hydration diagnostics.
+Serve `markup`, then run the same `app` with `render(app, element)` inside a live Effect Scope. The existing Typed DOM or HTML renderer layer selects the React backend automatically. `view` adds no framework renderer layer or rendering entry point. Host identity is generated separately for every rendered island and restored from server markup during hydration. `options.id` remains an explicit override and must be unique on the page and identical on the server and client. The host ID also supplies the default React `identifierPrefix`; an explicit prefix override must match between environments. Typed's native template/ref pathway owns host construction and hydration matching. `onRecoverableError` forwards React's hydration diagnostics.
 
 The server interpreter forwards React's readable stream through Effect Stream. Shell HTML and Suspense updates arrive incrementally; the native closing host event is marked final only after React finishes. Prefer Typed's `renderToHtml` when the response can consume chunks. Observe that Fx inside the request Scope; interruption aborts React and releases the stream reader. `renderToHtmlString` collects the same stream when a complete string is needed. Streaming responses include React's scripts for applying deferred Suspense content, which must run as part of normal HTML loading before hydration. DOM output publishes the native host while React commits asynchronously. Subsequent props updates wait for the first root commit and never call `root.render` on an incomplete hydration root.
 

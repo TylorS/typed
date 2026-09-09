@@ -61,6 +61,10 @@
       "types": "./dist/RootEvents.d.ts",
       "import": "./dist/RootEvents.js"
     },
+    "./RootIdentity": {
+      "types": "./dist/RootIdentity.d.ts",
+      "import": "./dist/RootIdentity.js"
+    },
     "./RenderQueue": {
       "types": "./dist/RenderQueue.d.ts",
       "import": "./dist/RenderQueue.js"

@@ -7,4 +7,4 @@
   const child = html`<button data-round-trip>${label}</button>`;
 </script>
 
-<section><Typed view={child} {onReady} /></section>
+<section><Typed value={child} {onReady} /></section>

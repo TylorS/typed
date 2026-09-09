@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Scope from "effect/Scope";
 import * as Option from "effect/Option";
+import { rootIdentity } from "@typed/template/RootIdentity";
 import { HydrateContext } from "@typed/template/HydrateContext";
 import type * as Stream from "effect/Stream";
 import * as Fx from "@typed/fx/Fx";
@@ -18,8 +19,8 @@ export type PropsSource<P, E = never, R = never> =
   | Stream.Stream<P, E, R>;
 
 export interface ViewOptions {
-  /** Unique island identity, identical between SSR and hydration. Also the default React identifierPrefix. */
-  readonly id: string;
+  /** Optional host identity override. Generated per render and restored during hydration by default. */
+  readonly id?: string;
 
   /** Stops selected events at the automatic host; undefined inherits CurrentRootEvents. */
   readonly stopPropagation?: RootEventOptions;
@@ -43,29 +44,32 @@ export class ReactRenderError extends Error {
 /** Render an existing React node through the same scoped DOM/HTML interpreter. */
 export function view(
   node: ReactNode,
-  options: ViewOptions,
+  options?: ViewOptions,
 ): Fx.Fx<RenderEvent, ReactRenderError, Scope.Scope | RenderTemplate>;
 
 /** Render a React component with reactive props. Updates preserve its root and component state. */
 export function view<P extends object, E = never, R = never>(
   component: ComponentType<P>,
   props: PropsSource<NoInfer<P>, E, R>,
-  options: ViewOptions,
+  options?: ViewOptions,
 ): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate>;
 
 export function view<P extends object, E = never, R = never>(
-  ...args:
-    | [node: ReactNode, options: ViewOptions]
-    | [component: ComponentType<P>, props: PropsSource<P, E, R>, options: ViewOptions]
+  first: ReactNode | ComponentType<P>,
+  second?: ViewOptions | PropsSource<P, E, R>,
+  third?: ViewOptions,
 ): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate> {
-  const nodes: Fx.Fx<ReactNode, E, R> =
-    args.length === 2
-      ? Fx.succeed(args[0])
-      : Fx.map(sourceFx(args[1]), (value) => createElement(args[0], value));
-  const settings = args.length === 2 ? args[1] : args[2];
+  const component = typeof first === "function";
+  const nodes: Fx.Fx<ReactNode, E, R> = component
+    ? Fx.map(sourceFx(second as PropsSource<P, E, R>), (value) =>
+        createElement(first as ComponentType<P>, value),
+      )
+    : Fx.succeed(first as ReactNode);
+  const settings = (component ? third : (second as ViewOptions | undefined)) ?? {};
 
   return Fx.gen(function* () {
     const scope = yield* Effect.scope;
+    const identity = yield* rootIdentity(settings.id);
     let target: HTMLElement | undefined;
     let hydrate = false;
 
@@ -77,7 +81,7 @@ export function view<P extends object, E = never, R = never>(
       if (target === undefined) {
         const renderer = yield* Effect.promise(() => import("./internal/Html.js"));
 
-        return renderer.render(nodes, settings);
+        return renderer.render(nodes, { ...settings, id: yield* identity.id });
       }
 
       const hydration = Option.getOrUndefined(yield* Effect.serviceOption(HydrateContext));
@@ -94,7 +98,14 @@ export function view<P extends object, E = never, R = never>(
       return Fx.succeed(DomRenderEvent([]));
     });
 
-    return html`<div id=${settings.id} style="display:contents" ref=${ref}>${content}</div>`.pipe(
+    return html`<div
+      ...${{ ref: identity.ref }}
+      id=${identity.id}
+      style="display:contents"
+      ref=${ref}
+    >
+      ${content}
+    </div>`.pipe(
       Fx.provideService(Scope.Scope, scope),
       Fx.concatMap((event): Fx.Fx<RenderEvent, E | ReactRenderError, R> => {
         if (!isDomRenderEvent(event)) return Fx.succeed(event);
@@ -107,7 +118,7 @@ export function view<P extends object, E = never, R = never>(
           const renderer = yield* Effect.promise(() => import("./internal/Dom.js"));
 
           return renderer
-            .render(element, event, nodes, settings, hydrate)
+            .render(element, event, nodes, { ...settings, id: yield* identity.id }, hydrate)
             .pipe(Fx.provideService(Scope.Scope, scope));
         });
       }),

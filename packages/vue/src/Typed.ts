@@ -20,23 +20,33 @@ import {
   shallowRef,
   useId,
   watch,
-  type DefineSetupFnComponent,
 } from "vue";
 import { useRuntime, type VueRuntime } from "./Runtime.js";
 
 /** Props for a Typed view hosted inside a Vue component. */
-export interface TypedProps<R> {
-  readonly value: Renderable<Renderable.Primitive, unknown, R | Scope.Scope | RenderTemplate>;
+export interface TypedProps<V extends Renderable.Any, ER = never> {
+  readonly value: V;
   /** Overrides reporting to Vue's component error boundary. Receives the full Effect cause. */
-  readonly onCause?: (cause: Cause.Cause<unknown>) => void;
+  readonly onError?: (cause: Cause.Cause<NoInfer<Renderable.Error<V>> | ER>) => void;
   readonly stopPropagation?: RootEventOptions;
   /** Defaults to Vue useId, which is stable across server rendering and hydration. */
   readonly id?: string;
 }
 
-type TypedValueProps<V extends Renderable.Any> = Omit<TypedProps<never>, "value"> & {
-  readonly value: V;
+type RuntimeTypedProps<R> = Omit<TypedProps<never>, "value" | "onError"> & {
+  readonly value: Renderable<Renderable.Primitive, unknown, R | Scope.Scope | RenderTemplate>;
+  readonly onError?: (cause: Cause.Cause<unknown>) => void;
 };
+
+/** Vue constructor preserving each value's errors and the borrowed runtime's services. */
+export interface TypedComponent<R = never, ER = never> {
+  new <const V extends Renderable<Renderable.Primitive, unknown, R | Scope.Scope | RenderTemplate>>(
+    props: TypedProps<V, ER>,
+  ): { $props: TypedProps<V, ER> };
+  // Vue's h() extracts the final constructor signature. Keep its unspecialized
+  // props finite; JSX and explicit instantiation retain the generic signature.
+  new (props: RuntimeTypedProps<R>): { $props: RuntimeTypedProps<R> };
+}
 
 type TypedServices<V extends Renderable.Any> = Exclude<
   Exclude<Renderable.Services<V>, RenderTemplate>,
@@ -50,12 +60,12 @@ type TypedRuntime<V extends Renderable.Any, ER> = VueRuntime<TypedServices<V>, E
  */
 export function createTypedComponent<R = never, ER = never>(
   runtime?: VueRuntime<R, ER>,
-): DefineSetupFnComponent<TypedProps<R>>;
+): TypedComponent<R, ER>;
 export function createTypedComponent<const V extends Renderable.Any, ER = never>(
   runtime?: TypedRuntime<V, ER>,
 ) {
   return defineComponent(
-    (props: TypedValueProps<V>) => {
+    (props: TypedProps<V, ER>) => {
       const currentRuntime = runtime ? shallowRef(runtime) : useRuntime<TypedServices<V>, ER>();
       const generatedId = `typed-vue-${useId()}`;
       const host = shallowRef<HTMLElement>();
@@ -67,7 +77,7 @@ export function createTypedComponent<const V extends Renderable.Any, ER = never>
       const report = (cause: Cause.Cause<Renderable.Error<V> | ER>) => {
         if (disposed) return;
 
-        if (props.onCause) props.onCause(cause);
+        if (props.onError) props.onError(cause);
         else failure.value = cause;
       };
 
@@ -82,7 +92,7 @@ export function createTypedComponent<const V extends Renderable.Any, ER = never>
         );
 
         if (Exit.isSuccess(exit)) serverHTML.value = exit.value;
-        else if (props.onCause) props.onCause(exit.cause);
+        else if (props.onError) props.onError(exit.cause);
         else throw Cause.squash(exit.cause);
       });
 
@@ -166,10 +176,10 @@ export function createTypedComponent<const V extends Renderable.Any, ER = never>
     {
       name: "TypedView",
       inheritAttrs: false,
-      props: ["value", "onCause", "stopPropagation", "id"],
+      props: ["value", "onError", "stopPropagation", "id"],
     },
   );
 }
 
 /** Typed view using the inherited runtime when present. */
-export const Typed = createTypedComponent<any, unknown>();
+export const Typed = createTypedComponent<any>();

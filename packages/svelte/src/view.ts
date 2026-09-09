@@ -12,6 +12,7 @@ import {
   isDomRenderEvent,
   type RenderEvent,
 } from "@typed/template/RenderEvent";
+import { rootIdentity } from "@typed/template/RootIdentity";
 import { HydrateContext } from "@typed/template/HydrateContext";
 import { html, type RenderTemplate } from "@typed/template/RenderTemplate";
 import type { Component } from "svelte";
@@ -24,13 +25,10 @@ export type { ViewOptions } from "./ViewOptions.js";
 export function view<Props extends Record<string, any>, E = never, R = never>(
   component: Component<Props>,
   props: Source<NoInfer<Props>, E, R>,
-  options: ViewOptions,
+  options: ViewOptions = {},
 ): Fx.Fx<RenderEvent, E, R | Scope.Scope | RenderTemplate> {
   return Fx.gen(function* () {
-    if (typeof options?.id !== "string" || options.id.trim() === "") {
-      throw new TypeError("Svelte view requires a nonempty id, unique within the rendered page");
-    }
-
+    const identity = yield* rootIdentity(options.id);
     const source = toFx(props);
     const scope = yield* Scope.fork(yield* Effect.scope);
     const ready = yield* Deferred.make<void, E>();
@@ -42,9 +40,10 @@ export function view<Props extends Record<string, any>, E = never, R = never>(
     };
 
     const content = Fx.gen(function* () {
+      const settings = { ...options, id: yield* identity.id };
       if (target === undefined) {
         const { render } = yield* Effect.promise(() => import("./internal/Html.js"));
-        return Fx.fromEffect(render(component, source, options)).pipe(
+        return Fx.fromEffect(render(component, source, settings)).pipe(
           Fx.map((html) => HtmlRenderEvent(html, true)),
         );
       }
@@ -60,14 +59,21 @@ export function view<Props extends Record<string, any>, E = never, R = never>(
       const element = target;
       const mount = Effect.promise(() => import("./internal/Dom.js")).pipe(
         Effect.flatMap(({ mountComponent }) =>
-          Layer.launch(mountComponent(element, component, source, options, ready, hydrate)),
+          Layer.launch(mountComponent(element, component, source, settings, ready, hydrate)),
         ),
         Effect.onExit((exit) => Deferred.done(ready, exit)),
       );
       return Fx.fromEffect(mount).pipe(Fx.prepend(DomRenderEvent([])));
     });
 
-    return html`<div id=${options.id} style="display: contents" ref=${ref}>${content}</div>`.pipe(
+    return html`<div
+      ...${{ ref: identity.ref }}
+      id=${identity.id}
+      style="display: contents"
+      ref=${ref}
+    >
+      ${content}
+    </div>`.pipe(
       Fx.provideService(Scope.Scope, scope),
       Fx.concatMap((event): Fx.Fx<RenderEvent, E, R> =>
         isDomRenderEvent(event)

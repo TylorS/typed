@@ -37,7 +37,8 @@ describe("Svelte view HTML renderer", () => {
       );
     }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
 
-    expect(output).toContain('<div style="display: contents" id="split-host">');
+    expect(output).toMatch(/<div\b[^>]*\sid="split-host"[^>]*>/);
+    expect(output).toContain('style="display: contents"');
     expect(output).toContain("&lt;/div>&lt;div>");
     expect(output).toContain("</div>");
     expect(output).toContain("</main>");

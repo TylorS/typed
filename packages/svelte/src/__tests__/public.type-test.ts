@@ -72,10 +72,11 @@ const mountedView = render(rendered, target);
 type _DomServices = Assert<
   Equal<Fx.Services<typeof mountedView>, PropsService | Scope.Scope | RenderTemplate>
 >;
+mount(Typed, { target, props: { value: typedView } });
+// @ts-expect-error the inverse component uses value as its canonical prop
 mount(Typed, { target, props: { view: typedView } });
 
-// @ts-expect-error each framework island requires a deterministic id
-view(component, { label: "missing-id" });
+view(component, { label: "automatic-id" });
 
 const nativeAttachment: import("svelte/attachments").Attachment<HTMLElement> = attachment(
   runtime,

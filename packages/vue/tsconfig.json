@@ -8,7 +8,12 @@
     "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   },
   "include": ["src"],
-  "exclude": ["**/*.test.ts", "**/*.type-test.ts", "src/__tests__/helpers/**"],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.type-test.ts",
+    "**/*.type-test.tsx",
+    "src/__tests__/helpers/**"
+  ],
   "references": [
     {
       "path": "../fx"

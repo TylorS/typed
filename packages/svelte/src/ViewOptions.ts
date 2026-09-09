@@ -2,8 +2,8 @@ import type { RootEventOptions } from "@typed/template/RootEvents";
 
 /** Svelte mount, hydration and SSR options for one island. */
 export interface ViewOptions {
-  /** Stable, nonempty host id, unique among islands in the rendered page. Use the same id on server and client. */
-  readonly id: string;
+  /** Optional host identity override. Generated per render and restored during hydration by default. */
+  readonly id?: string;
   /** Per-event bubbling policy at the automatic host. Inherits CurrentRootEvents when omitted. */
   readonly stopPropagation?: RootEventOptions;
   readonly context?: Map<any, any>;
