@@ -91,14 +91,13 @@ class SavedSearches extends Context.Service<
 >()("SavedSearches") {}
 
 const saveSearch = EventHandler.make(
-  (event: SubmitEvent & { currentTarget: HTMLFormElement }) =>
-    Effect.gen(function* () {
-      const searches = yield* SavedSearches
-      const query = String(
-        new FormData(event.currentTarget).get("query") ?? "",
-      )
-      yield* searches.save(query)
-    }),
+  Effect.fn(function* (event: SubmitEvent & { currentTarget: HTMLFormElement }) {
+    const searches = yield* SavedSearches
+    const query = String(
+      new FormData(event.currentTarget).get("query") ?? "",
+    )
+    yield* searches.save(query)
+  }),
   { preventDefault: true },
 )
 
