@@ -2,16 +2,19 @@
 import Base from "./Base.astro";
 import Sidebar from "../components/Sidebar.astro";
 import MarbleContents from "../components/MarbleContents.astro";
+import ContributeDocs from "../components/ContributeDocs.astro";
 import { siteHref } from "../../SiteHref.js";
 
 interface Props {
   title: string;
   summary: string;
   section: string;
+  kind?: "concept" | "guide" | "deep-dive" | "reference";
   current?: string;
   index?: { href: string; title: string };
   headings?: readonly { depth: number; slug: string; text: string }[];
   source?: string;
+  contributionSources?: readonly { path: string; label?: string }[];
   previous?: { href: string; title: string };
   next?: { href: string; title: string };
 }
@@ -19,10 +22,12 @@ const {
   title,
   summary,
   section,
+  kind,
   current,
   index = { href: "/explore", title: "All guides" },
   headings = [],
   source,
+  contributionSources = source ? [{ path: source }] : [],
   previous,
   next,
 } = Astro.props;
@@ -36,7 +41,15 @@ const {
         <summary>Browse documentation</summary><Sidebar current={current} />
       </details>
       <header class="page-intro">
-        <p class="eyebrow">{section}</p><h1 class="page-title">{title}</h1><p>
+        <p class="eyebrow">
+          {section}{
+            kind === "reference"
+              ? " / Reference"
+              : kind === "deep-dive"
+                ? " / Deep dive"
+                : ""
+          }
+        </p><h1 class="page-title">{title}</h1><p>
           {summary}
         </p>
       </header>
@@ -46,6 +59,11 @@ const {
         )
       }
       <article class="prose"><slot /></article>
+      {
+        contributionSources.length > 0 && (
+          <ContributeDocs sources={contributionSources} />
+        )
+      }
       <nav class="article-footer" aria-label="Continue learning">
         {
           previous ? (
@@ -78,7 +96,7 @@ const {
             class="source-link"
             href={`https://github.com/TylorS/typed/blob/development/apps/website/${source}`}
           >
-            Read the Markdown ↗
+            {source.endsWith(".md") ? "Read the Markdown" : "View source"} ↗
           </a>
         )
       }

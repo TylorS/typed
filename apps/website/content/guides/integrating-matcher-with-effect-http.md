@@ -63,6 +63,11 @@ The adapter supplies UUIDv7 state for request-local navigation. A production ser
 IdsTest or TestRouter. The test server supplies an HTTP client configured for its own address, so
 the request can use a relative path and the program can finalize everything when it completes.
 
+The request above is the runnable checkpoint: assert the status and decoded issue ID, then change the URL to malformed input and inspect the response. Your route parser is shared; each request still owns its state.
+
+<details>
+<summary>Complete listening-server entry point</summary>
+
 ## Separate route registration from listening
 
 `HttpRouter.use(ssrForHttp(pages))` is a Layer describing registrations. It does not bind a port.
@@ -101,6 +106,7 @@ response APIs; a browser form still needs a real client request and server-side 
 authorization. The HTML adapter does not generate a client bundle or turn page handlers into an RPC
 protocol.
 
+</details>
 ## Carry dependencies across the boundary without sharing request state
 
 A page can require an Issues service whose server implementation uses a database. The browser can

@@ -1,8 +1,7 @@
 import type * as Effect from "effect/Effect";
 import { pipeArguments } from "effect/Pipeable";
-import { component as uiComponent } from "@typed/ui/Component";
+import { component as templateComponent, html, type Renderable } from "@typed/template";
 import * as Fx from "@typed/fx/Fx";
-import { html, type Renderable } from "@typed/template";
 import type { RenderEvent } from "@typed/template/RenderEvent";
 import type { Scope } from "effect/Scope";
 import type { RenderTemplate } from "@typed/template/RenderTemplate";
@@ -52,7 +51,7 @@ type ComponentResult<Args extends ReadonlyArray<any>, Result> = Args extends rea
  * @category Generator contracts
  */
 export namespace component {
-  // Keep these overloads aligned with @typed/ui/Component so Astro preserves the same pipeline inference.
+  // Keep these overloads aligned with @typed/template so Astro preserves the same pipeline inference.
   /**
    * Overloads preserving generator arguments, yielded errors and services, and
    * the returned renderable's errors and services before optional pipelines.
@@ -339,7 +338,7 @@ export namespace component {
 
 /**
  * Defines a Typed Astro island with the generator and pipeline semantics of
- * @typed/ui/Component. Zero-argument generators produce lazy, callable Fx values
+ * @typed/template. Zero-argument generators produce lazy, callable Fx values
  * accepted by Astro markup; calling one returns its Fx without running it.
  * Parameterized generators produce functions. Each generator may return any
  * Renderable, normalized to RenderEvents under Astro's hydration boundary.
@@ -371,9 +370,9 @@ export const component: component.Gen = (
   const normalized = function* (...args: ReadonlyArray<any>) {
     return html`${yield* body(...args)}`;
   };
-  // Fx.fn selects by generator arity, so the parameterized wrapper must retain it.
+  // component selects by generator arity, so the parameterized wrapper must retain it.
   Object.defineProperty(normalized, "length", { value: body.length });
-  const result = (uiComponent as (...args: ReadonlyArray<any>) => any)(normalized, ...pipes);
+  const result = (templateComponent as (...args: ReadonlyArray<any>) => any)(normalized, ...pipes);
   if ((typeof result !== "object" || result === null) && typeof result !== "function") {
     throw new TypeError("An Astro component pipeline must produce a Renderable object or function");
   }

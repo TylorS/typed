@@ -4,6 +4,8 @@ title: "Use React and Typed together"
 summary: "Render in either direction with @typed/react, share Effect services through a provider, and preserve server HTML during hydration."
 ---
 
+See [streaming SSR across framework boundaries](/explore/streaming-framework-integrations) for which component bodies stream and which are buffered.
+
 `@typed/react` connects React components to Typed views and Effect services. Use ordinary components, hooks, and props. The integration creates the rendering hosts and owns their subscriptions.
 
 `view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.

@@ -1,117 +1,86 @@
 ---
-title: "IDs with explicit time and entropy"
-summary: "Generate branded identifiers, retain identity across renders, and replace generation deterministically in tests."
+title: "@typed/id: generate and validate identifiers"
+summary: "Create branded IDs through Effect, validate them at boundaries, and make generation deterministic in tests."
 section: "State"
 kind: "guide"
 order: 2.5
 ---
 
-An ID belongs to the entity being created. Generate it in the command that creates a record, store
-it with the record, and reuse it for later updates and rendering. Generating an ID in a template
-projection gives an existing record a new identity whenever that projection runs.
+<span id="match-the-format-to-the-identity-contract"></span>
 
-`@typed/id` supplies branded schemas and Effect-based generators. The generator's type keeps its
-time, entropy, and sequence dependencies visible, so tests can replace them without patching globals.
+`@typed/id` provides schemas for identifier formats and Effect-based generators. Generate an ID in
+the command that creates an entity, store it with that entity, and reuse it for rendering and later
+updates. Do not generate identity from a template projection.
 
-## Choose one generator or the application facade
-
-For one format, import its focused module. UUIDv4 needs an entropy service; the default uses the
-runtime's Web Crypto implementation.
-
-```ts
-import { Effect } from "effect"
-import { RandomValues } from "@typed/id/RandomValues"
-import { uuid4 } from "@typed/id/Uuid4"
-
-const createDraft = Effect.map(uuid4, (id) => ({ id, title: "Untitled" })).pipe(
-  Effect.provide(RandomValues.Default),
-)
-
-await Effect.runPromise(createDraft)
+```sh
+pnpm add @typed/id effect
 ```
 
-Use `Ids` when several parts of the application need a common generator service. Its default Layer
-provides system time and entropy and initializes sequence state when a generator needs it.
+## Create an entity with the shared `Ids` facade
+
+<span id="choose-one-generator-or-the-application-facade"></span>
+
+`Ids` is the application facade. Its requirements bubble through a command until the runtime
+provides them, so creation stays explicit and testable.
 
 ```ts
 import { Effect } from "effect"
 import { Ids } from "@typed/id/Ids"
 
-const createInvoice = (description: string) =>
-  Ids.uuid7.pipe(Effect.map((id) => ({ id, description, paid: false })))
+type Issue = { readonly id: string; readonly title: string }
 
-const program = createInvoice("Documentation work").pipe(Effect.provide(Ids.Default))
-await Effect.runPromise(program)
+const createIssue = Effect.fn(function* (title: string) {
+  const id = yield* Ids.uuid7
+  return { id, title } satisfies Issue
+})
+
+const program = createIssue("Document @typed/id").pipe(Effect.provide(Ids.Default))
+const issue = await Effect.runPromise(program)
 ```
 
-Provide the Layer around the application or feature that shares the generator sequence. Rebuilding
-it for every call discards that shared sequence state. UUIDv7 can also be used directly with
-`uuid7.pipe(Effect.provide(Uuid7State.Default))` from `@typed/id/Uuid7`.
+Provide `Ids.Default` once around the application or feature that shares IDs. Its UUIDv7 facade
+shares one lazy `Uuid7State` for that Layer, preserving local sequence state. This is local
+monotonicity, not a distributed ordering or authorization guarantee.
 
-## Carry identity through optimistic creation and acknowledgment
+## Choose a focused generator when the facade is unnecessary
 
-A newly created row often exists locally before the server responds. Give it a stable client key
-when the create command starts. If the server assigns a different persistent ID, store that ID as a
-separate field on the same entity instead of replacing the rendering key. Otherwise an acknowledgment
-looks like deleting one row and mounting another, which can reset focused inputs and local state.
-
-```ts
-import { Effect, Option } from "effect"
-import { Ids } from "@typed/id/Ids"
-
-const draft = Effect.map(Ids.uuid7, (clientKey) => ({
-  clientKey,
-  serverId: Option.none<string>(),
-  title: "Untitled issue",
-}))
-
-const acknowledge = <A extends { readonly clientKey: unknown; readonly title: string }>(
-  local: A,
-  serverId: string,
-) => ({ ...local, serverId: Option.some(serverId) })
-```
-
-The client key says “this local entity.” The server ID says “this stored record.” A retry identifier
-may be a third contract: whether reusing it deduplicates a request is decided by the server API,
-not by the random ID generator. Use the same entity key through
-[optimistic edits](/explore/async-data-optimistic-edits) and hydration.
-
-## Match the format to the identity contract
-
-| Format | Useful property |
-| --- | --- |
-| UUIDv4 | Random UUID without a timestamp ordering contract. |
-| UUIDv5 | Deterministic name within an explicit namespace. |
-| UUIDv7 | Timestamp-based UUID with sequence state shared by its owner. |
-| ULID / KSUID | Time-bearing string IDs in their respective formats. |
-| NanoId | Compact random string. |
-| CUID | Generator with caller/environment and sequence state. |
-
-UUIDv7's local sequence is not a global ordering service across workers or servers. Formats and
-brands also do not provide authorization: an accepted identifier still needs the application's
-normal lookup and access checks.
-
-For deterministic names, select the namespace deliberately. The same name and namespace derive the
-same UUIDv5; different namespaces describe different identity domains.
+Use a focused module when one boundary needs one format and no application-wide generator service.
 
 ```ts
 import { Effect } from "effect"
-import { Ids } from "@typed/id/Ids"
+import { uuid7, Uuid7State } from "@typed/id/Uuid7"
 
-const projectId = Ids.uuid5.url("https://example.com/projects/typed").pipe(
-  Effect.provide(Ids.Default),
-)
-
-await Effect.runPromise(projectId)
+const id = await Effect.runPromise(uuid7.pipe(Effect.provide(Uuid7State.Default)))
 ```
 
-Some generators expose `Cause.IllegalArgumentError` for invalid time or namespace inputs. Providing
-a Layer satisfies service requirements; it does not erase that error channel.
+`uuid7` requires `Uuid7State`; the facade is preferable when several commands must share its state.
+The [API reference](/reference/modules/%40typed%2Fid) lists UUIDv4, UUIDv5, UUIDv7, ULID, KSUID,
+NanoId, CUID, their schemas, and their focused dependencies.
 
-## Decode external IDs through their schema
+## <span id="reference-match-the-format-to-the-identity-contract">Choose a format by its dependency</span>
 
-A branded ID type helps prevent accidentally mixing formats in TypeScript. Use its schema when an
-ID arrives from JSON, a URL, or storage; a type assertion would skip validation.
+| Need | Focused module | Dependency or contract |
+| --- | --- | --- |
+| Random UUID | `Uuid4` | `RandomValues` |
+| Deterministic name | `Uuid5` | explicit namespace and name |
+| Time-bearing UUID | `Uuid7` | shared `Uuid7State` |
+| Time-bearing string | `Ulid` or `Ksuid` | time and entropy |
+| Compact random string | `NanoId` | entropy |
+
+Use `Ids` when the feature shares these dependencies; use a focused generator at a narrow boundary.
+
+## <span id="carry-identity-through-optimistic-creation-and-acknowledgment">Carry identity through acknowledgement</span>
+
+Keep a client-generated entity key when a server later returns a persistent ID. Replacing the
+rendering key makes acknowledgement look like deleting and remounting a row, which can discard
+focus or local draft state. Store the server ID beside the client key instead.
+
+## Decode external IDs through a schema
+
+<span id="decode-external-ids-through-their-schema"></span>
+
+Brands prevent accidental format mixing in TypeScript. A schema also validates an ID arriving from
+JSON, a URL, or storage.
 
 ```ts
 import { Schema } from "effect"
@@ -126,43 +95,42 @@ const invoice = decodeInvoice({
 })
 ```
 
-These brands identify formats, not domain entities. If an invoice ID and a customer ID both use
-UUIDv7, add your own domain distinction where mixing them would be a bug.
+A UUID format is not a domain type or permission check. Add a domain distinction when two entities
+must not mix, then perform normal authorization after decoding.
 
-## Make tests repeatable without changing production imports
+## Make generation deterministic in tests
 
-Import `IdsTest` from `@typed/id/IdsTest`. Each Layer construction owns a deterministic sequence
-and fixed generator time. The test helper is deliberately separate from production `Ids` imports.
+<span id="make-tests-repeatable-without-changing-production-imports"></span>
+
+`IdsTest` is deliberately separate from production imports. Each test Layer supplies fixed time,
+seeded entropy, and fresh UUIDv7 sequence state.
 
 ```ts
 import { Effect } from "effect"
+import { expect } from "@effect/vitest"
 import { Ids } from "@typed/id/Ids"
 import { IdsTest } from "@typed/id/IdsTest"
 
-const pair = Effect.gen(function* () {
+const pair = Effect.fn(function* () {
   return [yield* Ids.uuid7, yield* Ids.uuid7] as const
 })
 
-const first = await Effect.runPromise(pair.pipe(Effect.provide(IdsTest({ currentTime: 0 }))))
-const repeated = await Effect.runPromise(pair.pipe(Effect.provide(IdsTest({ currentTime: 0 }))))
+const first = await Effect.runPromise(pair().pipe(Effect.provide(IdsTest({ currentTime: 0 }))))
+const repeated = await Effect.runPromise(pair().pipe(Effect.provide(IdsTest({ currentTime: 0 }))))
 
-console.log(first[0] !== first[1], first[0] === repeated[0]) // true, true
+expect(first[0]).not.toBe(first[1])
+expect(first[0]).toBe(repeated[0])
 ```
 
-`currentTime` sets the generator's fixed date; the Layer also provides TestClock, but advancing
-TestClock does not advance that fixed `DateTimes` service. Provide a custom DateTimes implementation
+The first assertion proves sequence state advances within one Layer; the second proves an identical
+fresh Layer reproduces the sequence. Keep client IDs stable through
+[optimistic edits](/explore/async-data-optimistic-edits) and hydration rather than replacing a row
+key when a server acknowledgement arrives. `currentTime` fixes `DateTimes`; advancing the TestClock
+provided by `IdsTest` does not advance that fixed time service. Provide a custom `DateTimes` Layer
 when a test needs generator time to change.
-
-For server rendering, serialize IDs with the entity and restore those same IDs during hydration.
-A deterministic test Layer does not replace that production identity transfer. See
-[keyed collections](/explore/keyed-template-collections), [state hydration](/explore/refsubject-template-hydration),
-and the [ID reference](/reference/modules/%40typed%2Fid) for the related APIs.
-
 
 ## Diagnose identity changes
 
-When identity appears to change unexpectedly, trace the creation site first. Count generator
-executions, inspect whether a route or component is remounted, and check whether sorting code
-rebuilds entities with fresh keys. Compare separate test runs only when both the starting generator
-state and sequence of generator calls are identical. A deterministic Layer makes that sequence
-repeatable; it cannot make different programs consume the same IDs.
+Trace the creation command, not the renderer. Count generator executions and check for remounts or
+recreated entities. Deterministic layers make equal generator-call sequences comparable; they do not
+make two different programs consume the same IDs.

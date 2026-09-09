@@ -12,7 +12,7 @@ Create an item and reload this page. It should return. We will load the initial 
 ## Decode storage in src/infrastructure.ts
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L7-L12
+// @source examples/todo-8/src/infrastructure.ts#L9-L14
 // @expect const TODOS_STORAGE_KEY
 // @expect const TodoListJson
 // @expect const decodeTodoList
@@ -24,7 +24,7 @@ Storage holds a string. This codec checks the Todo fields and converts timestamp
 The `Todos` service exposes load and save. Its local implementation handles the browser boundary:
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L35-L45
+// @source examples/todo-8/src/infrastructure.ts#L37-L47
 // @expect static readonly local
 // @expect localStorage.getItem
 // @expect localStorage.setItem
@@ -35,7 +35,7 @@ No saved string means an empty list. Browser operations and codec work stay insi
 ## Choose the load-failure policy
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L21-L24
+// @source examples/todo-8/src/infrastructure.ts#L23-L26
 // @expect static readonly get
 // @expect Effect.catchCause
 ```
@@ -45,14 +45,14 @@ This small example falls back to an empty list for invalid data or unavailable s
 ## Initialize before observing
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L56-L61
+// @source examples/todo-8/src/infrastructure.ts#L58-L63
 // @expect App.TodoList.make(Todos.get)
 ```
 
 The subject starts from the decoded load result, rather than publishing an empty default while loading. Its observer then persists the current value and subsequent changes:
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L33-L33
+// @source examples/todo-8/src/infrastructure.ts#L35-L35
 // @expect static readonly replicateToStorage
 // @expect Fx.observeLayer(Todos.set)
 ```

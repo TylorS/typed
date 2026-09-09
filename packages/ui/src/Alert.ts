@@ -53,7 +53,7 @@ type AlertInternalProps = ReturnType<typeof internalProps>;
  * import { html } from "@typed/template";
  * import { Alert } from "@typed/ui/Alert";
  * import { Button } from "@typed/ui/Button";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  *
  * export const AlertPreview = component(function* () {
  *   const message = yield* RefSubject.make("");

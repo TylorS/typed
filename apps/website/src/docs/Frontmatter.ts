@@ -146,7 +146,7 @@ const GuideFrontmatterSchema = Schema.Struct({
   title: Schema.String,
   summary: Schema.String,
   section: Schema.String,
-  kind: Schema.Literals(["concept", "guide", "deep-dive"]),
+  kind: Schema.Literals(["concept", "guide", "deep-dive", "reference"]),
   order: Schema.Number,
 });
 

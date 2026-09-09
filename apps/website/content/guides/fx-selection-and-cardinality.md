@@ -6,6 +6,8 @@ kind: "guide"
 order: 1.6
 ---
 
+<span id="parse-useful-records-before-counting-them"></span>
+
 An import screen receives raw status lines. It should omit malformed records, show the next two
 useful messages after a banner, and include the final “complete” record before stopping. These are
 three decisions: admission, a counted window, and a terminal boundary. Treating them as one filter
@@ -15,7 +17,7 @@ makes it easy to stop at the wrong moment.
 to how long the producer remains subscribed. A source can be active while every value is rejected;
 “nothing visible” does not mean “nothing running.”
 
-## Parse useful records before counting them
+## Count and stop a useful feed
 
 ```ts
 import { Option } from "effect";

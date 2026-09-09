@@ -19,7 +19,7 @@ The root keeps native focus. Cells have globally unique IDs, a row identity, and
 column index. Row/column metadata describes the keyboard matrix; CSS alone does not establish it.
 
 ```ts
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 import * as Grid from "@typed/ui/Grid";
 
 export const BuildMatrix = component(function* () {

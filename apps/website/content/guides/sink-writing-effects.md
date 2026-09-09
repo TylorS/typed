@@ -10,7 +10,7 @@ An invoice workflow must publish an audit event after saving. The workflow shoul
 shape, while the application chooses structured logging, a transport, or a test recorder. That
 outgoing capability is a `Sink`.
 
-Start with [Consuming Fx](/explore/consuming-fx): `observe` is enough for a local callback. A Sink is
+After [Consuming Fx](/explore/consuming-fx), `observe` is enough for a local callback. A Sink is
 useful when independently assembled code needs to receive the consumer itself. It exposes delivery
 without adding subscriptions or current state to the producer's contract.
 

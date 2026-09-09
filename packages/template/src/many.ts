@@ -3,6 +3,7 @@ import type { Scope } from "effect/Scope";
 import { Fx, RefSubject } from "@typed/fx";
 import type { RenderEvent } from "./RenderEvent.js";
 import type { RenderTemplate } from "./RenderTemplate.js";
+import { encodeManyKey, validateHydratableManyKeys } from "./internal/manyKey.js";
 
 /**
  * Identifies a keyed collection descriptor without starting its source.
@@ -157,14 +158,16 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
 }
 
 /**
- * Produces the legacy closing marker for an already encoded keyed-list hole.
+ * Produces the closing hydration marker for a keyed-list item.
  *
  * @remarks
  * ## Why
  *
- * The helper remains published for renderer and hydration compatibility. New
- * SSR output uses the versioned, escaped marker encoding implemented by `many`;
- * application code should not parse or synthesize hydration markers itself.
+ * Pass the same raw key supplied to `many`. SSR uses this constructor to emit
+ * item boundaries; hydration matches its encoded key to retain server nodes.
+ * Encoding keeps comments well-formed and distinguishes string, number, and
+ * globally registered symbol keys. Local symbols cannot survive hydration
+ * and throw an IllegalArgumentError.
  *
  * ## Ownership and lifetime
  *
@@ -180,4 +183,8 @@ export function many<A, E, R, B extends PropertyKey, R2, E2>(
  * @since 1.0.0
  * @category Keyed hydration markers
  */
-export const MANY_HOLE = (key: PropertyKey): string => `<!--/m_${key.toString()}-->`;
+export const MANY_HOLE = (key: PropertyKey): string => {
+  const invalid = validateHydratableManyKeys([key]);
+  if (invalid !== undefined) throw invalid;
+  return `<!--/m_${encodeManyKey(key, new Map())}-->`;
+};

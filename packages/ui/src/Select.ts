@@ -319,7 +319,7 @@ type TriggerProps<Options extends TriggerOptions> = ReturnType<
  * ```ts
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Select from "@typed/ui/Select";
  *
  * export const DensityPicker = component(function* () {

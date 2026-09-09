@@ -12,90 +12,311 @@ const groups = groupGuides(await getCollection("guides"));
 >
   <main class="page-container" id="main-content" tabindex="-1">
     <header class="page-intro">
-      <p class="eyebrow">EXPLORE / FROM FIRST VIEW TO YOUR OWN LIBRARY</p><h1
-        class="page-title"
-      >
-        Learn one idea.<br />Put it to work.
-      </h1><p>
-        Start with a working application, then follow the parts you need. Each
-        guide connects a practical problem to the public APIs that solve it.
+      <p class="eyebrow">EXPLORE / LEARN BY DOING</p>
+      <h1 class="page-title">Choose a task.<br />Build it with Typed.</h1>
+      <p>
+        Each path has a finish. Start with the result you need; keep API
+        reference and implementation details close for later.
       </p>
     </header>
-    <article class="path-card mb-6">
-      <p class="eyebrow">THE IDEAS THAT CONNECT THE TOOLKIT</p>
-      <h2>Cooperative by design</h2>
-      <p>
-        Effectful work, state that models a real interface, and rendering that
-        includes everyone. Understand how Effect, Fx, Template, and UI work
-        together—and where your application's choices belong.
-      </p>
-      <a href={siteHref("/explore/cooperative-by-design")}
-        >Read the leading article →</a
-      >
-    </article>
     <div class="path-grid">
       <article class="path-card">
-        <p class="eyebrow">START HERE</p><h3>Quick Start</h3><p>
-          Install Typed, render a counter, and click its buttons. Two files give
-          you a working application.
-        </p><a href={siteHref("/explore/quick-start")}
-          >Render your first view →</a
+        <p class="eyebrow">YOUR FIRST APPLICATION</p><h2>
+          Click a counter, then build TodoMVC
+        </h2>
+        <p>
+          Start with basic TypeScript. Mount a view, derive state, then add
+          keyed editing, URL filters and persistence to a client-side app.
+        </p>
+        <a href={siteHref("/explore/quick-start")}>Run the counter →</a>
+        <a href={siteHref("/explore/tutorial")}
+          >Already set up? Build TodoMVC →</a
         >
       </article>
       <article class="path-card">
-        <p class="eyebrow">BUILD SOMETHING COMPLETE</p><h3>
-          The TodoMVC tutorial
-        </h3><p>
-          Make one engineering decision at a time: model a task, give commands a
-          home, preserve editing state, and persist only valid data. Run the
-          exact source you are reading.
-        </p><a href={siteHref("/explore/tutorial")}>Build the application →</a>
+        <p class="eyebrow">EFFECT USERS / NO DOM REQUIRED</p><h2>
+          Run push-based work
+        </h2>
+        <p>
+          Bring your knowledge of Effect. Adapt a source, observe values,
+          compose work and recover from competing requests.
+        </p>
+        <a href={siteHref("/explore/fx-push-reactivity")}>Start with Fx →</a>
+      </article>
+      <article class="path-card">
+        <p class="eyebrow">STATE AND REQUESTS</p><h2>
+          Give a feature one model
+        </h2>
+        <p>
+          Own writable state, derive live views and handle a refresh without
+          losing useful data. Start after you can run an Effect.
+        </p>
+        <a href={siteHref("/explore/refsubject-renderer-independent-state")}
+          >Own and derive state →</a
+        >
+      </article>
+      <article class="path-card">
+        <p class="eyebrow">NATIVE INTERACTION</p><h2>
+          Build a form, picker or dialog
+        </h2>
+        <p>
+          Choose the interaction you need. Use a working example, then look up
+          the component's specific keyboard and state contracts.
+        </p>
+        <a href={siteHref("/explore/ui")}>Choose an interface task →</a>
+      </article>
+      <article class="path-card">
+        <p class="eyebrow">LIBRARY AUTHORS</p><h2>Extend a capability</h2>
+        <p>
+          Use Effect services and scopes to expose producers, consumers and
+          shared resources while preserving your caller's dependencies.
+        </p>
+        <a href={siteHref("/explore/library-developers")}
+          >Build a reusable capability →</a
+        >
+      </article>
+      <article class="path-card">
+        <p class="eyebrow">OPTIONAL / SERVER HANDOFF</p><h2>
+          Render and adopt HTML
+        </h2>
+        <p>
+          After the counter, serve a finite HTML response, restore state and
+          retain the server's DOM when the browser starts.
+        </p>
+        <a href={siteHref("/explore/counter/server-html")}
+          >Take the counter to the server →</a
+        >
       </article>
     </div>
-    <div class="path-grid mt-6">
-      <article class="path-card">
-        <p class="eyebrow">BEHAVIOR BEFORE APPEARANCE</p>
-        <h3>Learn the UI primitives</h3>
-        <p>
-          Build forms, menus, dialogs, and collections. Understand keyboard
-          interaction, focus, state, and the browser contracts behind every
-          component.
-        </p>
-        <a href={siteHref("/explore/ui")}>Build an interface people can use →</a
+    <section class="lookup" aria-labelledby="lookup-title">
+      <header class="explore-section-heading">
+        <p class="eyebrow">KEEP BUILDING</p>
+        <h2 id="lookup-title">Find a specific answer</h2>
+      </header>
+      <nav class="lookup-links" aria-label="Reference and practical guides">
+        {
+          [
+            [
+              "API reference",
+              "Signatures, examples and public contracts.",
+              "/reference",
+            ],
+            [
+              "Fx operator atlas",
+              "Compare values, timing and cancellation.",
+              "/explore/fx-operator-atlas",
+            ],
+            [
+              "UI Storybook",
+              "Try controls and keyboard interactions.",
+              "/explore/storybook",
+            ],
+            [
+              "Integration recipes",
+              "Connect Typed to your existing stack.",
+              "/integrate",
+            ],
+            [
+              "@typed/id",
+              "Generate stable IDs and test them deterministically.",
+              "/explore/id",
+            ],
+          ].map(([title, description, href]) => (
+            <a href={siteHref(href!)}>
+              <strong>{title}</strong>
+              <span class="lookup-description">{description}</span>
+              <span class="lookup-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          ))
+        }
+      </nav>
+      <aside class="background-reading" aria-label="Background reading">
+        <span>Background reading</span>
+        <a href={siteHref("/explore/cooperative-by-design")}
+          >Cooperative by design</a
         >
-        <a href={siteHref("/explore/storybook")}
-          >Try the components in Storybook →</a
-        >
-      </article>
-      <article class="path-card">
-        <p class="eyebrow">WATCH THE WORK</p>
-        <h3>The Fx marble atlas</h3>
-        <p>
-          Trace values, failures, completion, and cancellation through every Fx
-          constructor and combinator. Compare the consequences before choosing
-          an operator.
-        </p>
-        <a href={siteHref("/explore/fx-operator-atlas")}
-          >Follow the timeline →</a
-        >
-      </article>
-    </div>
-    {
-      [...groups].map(([section, entries]) => (
-        <section class="catalog-section">
-          <>
-            <h2>{section}</h2>
-            <div class="guide-list">
-              {entries.map((entry) => (
-                <a href={siteHref(`/explore/${entry.id}`)}>
-                  <strong>{entry.data.title} ↗</strong>
-                  <p>{entry.data.summary}</p>
-                </a>
-              ))}
-            </div>
-          </>
-        </section>
-      ))
-    }
+        <a href="https://effect.website/docs/v4/">Effect fundamentals ↗</a>
+      </aside>
+    </section>
+    <section class="topic-browser" aria-labelledby="topics-title">
+      <header class="explore-section-heading">
+        <h2 id="topics-title">Browse all topics</h2>
+        <p>Guides, deep dives and reference, grouped by topic.</p>
+      </header>
+      <div class="topic-groups">
+        {
+          [...groups].map(([section, entries]) => (
+            <details class="topic-group">
+              <summary>
+                <span class="topic-toggle" aria-hidden="true">
+                  +
+                </span>
+                <span>{section}</span>
+                <span class="topic-count">
+                  {entries.length}{" "}
+                  {entries.length === 1 ? "article" : "articles"}
+                </span>
+              </summary>
+              <div class="guide-list">
+                {entries.map((entry) => (
+                  <a href={siteHref(`/explore/${entry.id}`)}>
+                    <strong>{entry.data.title} ↗</strong>
+                    <p>{entry.data.summary}</p>
+                  </a>
+                ))}
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </section>
   </main>
 </Base>
+
+<style>
+  .path-card > a {
+    display: block;
+  }
+  .path-card > a + a {
+    margin-block-start: 0.5rem;
+  }
+  .lookup,
+  .topic-browser {
+    margin-block-start: 4rem;
+  }
+  .explore-section-heading {
+    margin-block-end: 1.5rem;
+  }
+  .explore-section-heading h2 {
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+  }
+  .explore-section-heading .eyebrow {
+    margin-block-end: 0.75rem;
+  }
+  .explore-section-heading > p:not(.eyebrow) {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-block-start: 0.75rem;
+  }
+  .lookup-links {
+    border-block-start: 1px solid var(--line);
+  }
+  .lookup-links > a {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 0.5rem;
+    border-block-end: 1px solid var(--line);
+    border-radius: 0.25rem;
+  }
+  .lookup-links strong {
+    font-size: 1rem;
+    font-weight: 550;
+  }
+  .lookup-description {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .lookup-arrow {
+    color: var(--color-primary);
+  }
+  .lookup-links > a:hover,
+  .lookup-links > a:focus-visible {
+    background: var(--color-base-200);
+  }
+  .lookup-links > a:hover strong {
+    color: var(--color-primary);
+  }
+  .background-reading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 1.5rem;
+    margin-block-start: 1.5rem;
+    font-size: 0.85rem;
+  }
+  .background-reading > span {
+    color: var(--muted);
+  }
+  .background-reading a {
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+  }
+  .background-reading a:hover {
+    color: var(--color-primary);
+  }
+  .topic-groups {
+    border-block-start: 1px solid var(--line);
+  }
+  .topic-group {
+    border-block-end: 1px solid var(--line);
+  }
+  .topic-group summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 0.5rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 550;
+  }
+  .topic-group summary::-webkit-details-marker {
+    display: none;
+  }
+  .topic-toggle {
+    color: var(--color-primary);
+    font: 1.25rem var(--mono);
+    transition: transform 120ms ease;
+  }
+  .topic-group[open] .topic-toggle {
+    transform: rotate(45deg);
+  }
+  .topic-count {
+    margin-inline-start: auto;
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+  }
+  .topic-group .guide-list {
+    padding-inline: 2rem 0.5rem;
+  }
+  .topic-group .guide-list a:last-child {
+    border-block-end: 0;
+  }
+  @media (max-width: 600px) {
+    .lookup,
+    .topic-browser {
+      margin-block-start: 3rem;
+    }
+    .lookup-links > a {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.4rem 1rem;
+    }
+    .lookup-description {
+      grid-column: 1;
+    }
+    .lookup-arrow {
+      grid-column: 2;
+      grid-row: 1 / 3;
+    }
+    .background-reading {
+      flex-direction: column;
+    }
+    .topic-group .guide-list {
+      padding-inline-start: 0.5rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .topic-toggle {
+      transition: none;
+    }
+  }
+</style>

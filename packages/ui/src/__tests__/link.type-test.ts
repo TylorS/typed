@@ -16,14 +16,14 @@ type HostService = { readonly HostService: unique symbol };
 declare const onclick: EventHandler.EventHandler<Event, ClickError, ClickService>;
 declare const classes: Fx.Fx<string, never, ClickService>;
 
-const link = Link({ href: "/", content: "Home", onclick });
+const link = Link({ href: "/", content: "Home", props: { onclick } });
 
 type _LinkErrors = Assert<Equal<Fx.Error<typeof link>, ClickError | NavigationError>>;
 type _LinkServices = Assert<
   Equal<Fx.Services<typeof link>, ClickService | Navigation | Scope.Scope | RenderTemplate>
 >;
 
-const dynamicClass = Link({ href: "/", content: "Home", class: classes });
+const dynamicClass = Link({ href: "/", content: "Home", props: { class: classes } });
 
 type _DynamicClassServices = Assert<
   Equal<Fx.Services<typeof dynamicClass>, ClickService | Navigation | Scope.Scope | RenderTemplate>
@@ -50,7 +50,7 @@ type _InferredHandlerServices = Assert<Equal<EventHandler.Services<typeof inferr
 const inferredClick = Link({
   href: "/",
   content: "Home",
-  onclick: inferredHandler,
+  props: { onclick: inferredHandler },
 });
 
 type _InferredClickServices = Assert<

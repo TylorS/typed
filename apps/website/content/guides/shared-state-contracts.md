@@ -14,7 +14,8 @@ a Layer supplies one implementation in the lifetime where those consumers run.
 Start with [renderer-independent state](/explore/refsubject-renderer-independent-state). The choice
 here is not whether state is “global.” It is which capability crosses a construction boundary and
 which owner provides it. Two independently provided implementations of the same service can
-legitimately represent two workspaces or two tests.
+legitimately represent two workspaces or two tests. The capability table is canonical; Sink,
+Subject, and RefSubject mechanics remain in their focused guides.
 
 ## Choose the public capability before its facade
 

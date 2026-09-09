@@ -148,7 +148,7 @@ type MeterInternalProps<Options extends MeterOptions> = ReturnType<
  * ```ts
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Meter from "@typed/ui/Meter";
  *
  * export const StorageUsage = component(function* () {

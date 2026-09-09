@@ -37,8 +37,7 @@ The request retains its typed errors and `HttpClient` requirement. A failed stat
 In `ProfileCard.ts`, the component acquires data through that request. It does not choose a transport implementation.
 
 ```ts file="ProfileCard.ts"
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import { loadProfile } from "./Profile.js";
 
 export const ProfileCard = component(function* (id: string) {

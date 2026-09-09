@@ -8,7 +8,7 @@ const guides = defineCollection({
     title: z.string(),
     summary: z.string(),
     section: z.string(),
-    kind: z.enum(["concept", "guide", "deep-dive"]),
+    kind: z.enum(["concept", "guide", "deep-dive", "reference"]),
     order: z.number(),
   }),
 });

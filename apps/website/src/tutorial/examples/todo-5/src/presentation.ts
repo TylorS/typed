@@ -1,7 +1,6 @@
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
-import { EventHandler, html, many } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, EventHandler, html, many } from "@typed/template";
 import * as App from "./application.js";
 import * as Domain from "./domain.js";
 

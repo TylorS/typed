@@ -33,11 +33,11 @@ The same small contracts connect an application to its infrastructure—and a li
 A `RefSubject` is current state and a stream of changes. Derive the total, interpolate both values, and give the button an Effect. The renderer connects the updates and owns their subscriptions.
 
 ```ts
-import { Fx, RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { RefSubject } from "@typed/fx";
+import { component, html } from "@typed/template";
 import { Button } from "@typed/ui/Button";
 
-export const Quantity = Fx.gen(function* () {
+export const Quantity = component(function* () {
   const quantity = yield* RefSubject.make(1);
   const total = RefSubject.map(quantity, n => n * 24);
 

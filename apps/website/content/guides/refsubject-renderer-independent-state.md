@@ -6,6 +6,8 @@ kind: "concept"
 order: 2
 ---
 
+<span id="grow-the-model-at-its-invariants"></span>
+
 A review queue needs to remember which issues are selected. A row checkbox changes selection; the
 bulk-action toolbar reads its count; a keyboard command selects another issue; a test needs to
 verify that selecting the same issue twice does not duplicate it. These are different consumers of
@@ -166,7 +168,7 @@ A correct current value with no update can indicate overly broad equality; two d
 values in two consumers can indicate two separately constructed models; a stopped source can indicate
 a closed owner. Those are model/lifetime problems with different fixes.
 
-## Grow the model at its invariants
+## One invariant, then one next step
 
 If selection must clear when the workspace changes, commit workspace and selection together in one
 parent ref. If selected rows can disappear from a refreshed catalog, choose whether to prune selection

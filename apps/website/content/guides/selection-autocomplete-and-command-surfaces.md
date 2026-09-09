@@ -1,6 +1,6 @@
 ---
 title: "Selection, autocomplete, and command surfaces"
-summary: "Build a project switcher from a compact known-value choice to searchable input, then attach commands to the project actually selected."
+summary: "Build a project picker with distinct query, active option, accepted record, and command commit."
 section: "UI"
 kind: "guide"
 order: 4.5
@@ -25,8 +25,7 @@ explicit: a trigger opens the listbox, and an option commits a value.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Select from "@typed/ui/Select";
 
 export const CompactProjectSwitcher = component(function* () {
@@ -85,8 +84,7 @@ suggestion.
 ```ts
 import * as Effect from "effect/Effect";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, html } from "@typed/template";
 import * as Combobox from "@typed/ui/Combobox";
 import * as Menu from "@typed/ui/Menu";
 

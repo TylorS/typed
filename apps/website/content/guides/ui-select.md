@@ -1,8 +1,8 @@
 ---
 title: "Select: a popover-backed list of choices"
-summary: "Assemble trigger, content, and options while making keyboard collection and native form differences explicit."
+summary: "Compare custom Select focus and commit behavior with native Form.Select."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 235
 ---
 
@@ -14,8 +14,7 @@ order: 235
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Select from "@typed/ui/Select";
 
 export const DensityPicker = component(function* () {

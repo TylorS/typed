@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Inside keyed DOM reconciliation",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TylorS/typed",
+      "revision": "d32cde4d62750f1aac616c6e8da9b5a2a11383ae"
+    },
+    "viewBox": [
+      1090,
+      490
+    ],
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Client code"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "input",
+      "label": "many.values",
+      "sublabel": "Sink delivers each array",
+      "type": "frontend",
+      "pos": [
+        40,
+        65
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 168
+        }
+      ]
+    },
+    {
+      "id": "reconcile",
+      "label": "reconcile",
+      "sublabel": "validate keys; build next ranges",
+      "type": "frontend",
+      "pos": [
+        410,
+        65
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 105
+        }
+      ]
+    },
+    {
+      "id": "diff",
+      "label": "diff(order, next, \u2026)",
+      "sublabel": "insert, move and remove ranges",
+      "type": "frontend",
+      "pos": [
+        780,
+        65
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 149
+        }
+      ]
+    },
+    {
+      "id": "create",
+      "label": "makeEntry",
+      "sublabel": "new RefSubject + child Scope",
+      "type": "frontend",
+      "pos": [
+        40,
+        350
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 174
+        }
+      ]
+    },
+    {
+      "id": "update",
+      "label": "RefSubject.set",
+      "sublabel": "changed retained value",
+      "type": "frontend",
+      "pos": [
+        410,
+        350
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 141
+        }
+      ]
+    },
+    {
+      "id": "dispose",
+      "label": "range.dispose",
+      "sublabel": "Scope.close, forked in parent",
+      "type": "frontend",
+      "pos": [
+        780,
+        350
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/template/src/internal/renderManyToDom.ts",
+          "line": 157
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "input-reconcile",
+      "from": "input",
+      "to": "reconcile",
+      "label": "next array"
+    },
+    {
+      "id": "reconcile-diff",
+      "from": "reconcile",
+      "to": "diff",
+      "label": "ordered ranges"
+    },
+    {
+      "id": "reconcile-create",
+      "from": "reconcile",
+      "to": "create",
+      "label": "new key"
+    },
+    {
+      "id": "reconcile-update",
+      "from": "reconcile",
+      "to": "update",
+      "label": "changed value",
+      "labelDy": 105
+    },
+    {
+      "id": "diff-dispose",
+      "from": "diff",
+      "to": "dispose",
+      "label": "removed range",
+      "labelDy": 105
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "A reorder retains the child",
+      "items": [
+        "The entry keeps its RefSubject, Scope and live DOM range.",
+        "One keyed-range diff performs collection placement."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Removal and replacement differ",
+      "items": [
+        "Removal detaches immediately; the parent owns async cleanup.",
+        "A child replacing its own output may use diffChildren."
+      ]
+    }
+  ]
+}

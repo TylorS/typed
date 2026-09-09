@@ -20,8 +20,7 @@ The popup is rendered next to the menubar so its keyboard events do not bubble t
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Menubar from "@typed/ui/Menubar";
 import * as Menu from "@typed/ui/Menu";
 

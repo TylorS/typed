@@ -1,7 +1,5 @@
 import * as Cause from "effect/Cause";
 
-const MANY_MARKER_PREFIX = "/m_";
-
 export function getUniqueManyKeys<A, B extends PropertyKey>(
   values: ReadonlyArray<A>,
   getKey: (value: A) => B,
@@ -49,10 +47,6 @@ export function validateHydratableManyKeys(
       );
     }
   }
-}
-
-export function manyMarkerFromEncodedKey(encodedKey: string): string {
-  return `<!--${MANY_MARKER_PREFIX}${encodedKey}-->`;
 }
 
 function getLocalSymbolOrdinal(key: symbol, localSymbolOrdinals: Map<symbol, number>): number {

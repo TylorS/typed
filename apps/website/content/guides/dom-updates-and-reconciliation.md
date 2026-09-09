@@ -78,10 +78,11 @@ unchanged prefix still requires those comparisons. A more general change builds 
 remaining next range and moves or replaces nodes as needed. These are bounded-range optimizations,
 not an unconditional constant-time algorithm.
 
-`many` works before that diff: retained keys preserve child scopes and subjects, changed values
-publish through their subjects, new keys acquire children, and removed keys finalize children.
-A pure reorder of unchanged values does not rerun each item's setup or republish its data. The
-renderer still flattens retained concrete output and reconciles its order.
+`many` reconciles keyed ranges directly. Retained keys preserve child scopes and subjects; changed
+values publish through their subjects, and new keys acquire children. One range diff inserts, moves
+and removes those entries—there is no second flattened-node pass. Removed ranges detach immediately;
+the parent Scope owns their asynchronous finalization. A pure reorder of unchanged values does not
+rerun each item's setup or republish its data. A child replacing its own output is a separate local diff.
 
 ## Separate native identity from native state preservation
 

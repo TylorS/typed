@@ -20,8 +20,7 @@ The parent item's `hasChildren`, the child's `parentId`, and the group's `parent
 while registration metadata lets keyboard traversal exclude those same descendants.
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Tree from "@typed/ui/Tree";
 
 export const ProjectFiles = component(function* () {

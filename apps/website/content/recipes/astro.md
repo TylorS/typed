@@ -4,6 +4,8 @@ title: Typed templates in Astro
 summary: Let Astro own pages and Markdown while Typed renders and hydrates reactive islands with explicit lifetimes.
 ---
 
+See [streaming SSR across framework boundaries](/explore/streaming-framework-integrations) for which component bodies stream and which are buffered.
+
 A product page needs an order quantity control while its descriptions and product details remain static HTML. The server supplies the initial quantity; the island owns only its interactive subtotal and button. Keep checkout authorization and final pricing on the server. Choose `client:load` when the button is visible at page entry; use `client:visible` for a below-the-fold example where deferring JavaScript is part of the page design.
 
 Astro owns the page and its Markdown. Typed owns the order island, its reactive state, and its local event handlers. The following implementation starts with server HTML and activates one island in the browser.
@@ -31,7 +33,7 @@ export default defineConfig({
 
 ## Build the quantity and subtotal together
 
-`component` marks a generator-backed component so Astro recognizes it without calling unrelated framework components. Like `@typed/ui/Component`, the generator acquires state with `yield*` and returns any renderable. A parameterized generator produces a component function; a zero-argument generator produces a lazy component value.
+`component` marks a generator-backed Template component so Astro recognizes it without calling unrelated framework components. The generator acquires state with `yield*` and returns any renderable. A parameterized generator produces a component function; a zero-argument generator produces a lazy component value.
 
 ```ts
 import { component } from "@typed/astro/Component";

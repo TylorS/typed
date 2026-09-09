@@ -30,6 +30,12 @@ test(
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(`${origin}${base}/`);
     assert.match(await page.title(), /Typed/);
+    const idPackage = page.locator(".package-card").filter({ hasText: "@typed/id" });
+    assert.equal(await idPackage.count(), 1);
+    assert.equal(
+      await idPackage.getByRole("link", { name: "Generate your first ID" }).getAttribute("href"),
+      `${base}/explore/id/`,
+    );
     const logo = page.locator(".brand-animated .typewriter");
     assert.match(
       await logo.evaluate((node) => getComputedStyle(node, "::after").animationName),
@@ -108,6 +114,7 @@ test(
       "explore/tutorial/model-the-domain/",
       "explore/application-developers/",
       "explore/library-developers/",
+      "explore/id/",
       "integrate/astro/",
       "reference/modules/@typed/fx/Fx/",
       "reference/packages/@typed/astro/",

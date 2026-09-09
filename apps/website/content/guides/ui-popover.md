@@ -1,8 +1,8 @@
 ---
 title: "Popover: supporting content in the top layer"
-summary: "Build a manual popover with explicit dismissal and honest focus expectations."
+summary: "Reference manual popover visibility, dismissal, and focus expectations."
 section: "UI / Overlays"
-kind: "deep-dive"
+kind: "reference"
 order: 282
 ---
 
@@ -15,8 +15,7 @@ Read [overlay selection](/explore/overlays-disclosure-and-transient-ui) and [com
 Pass a stable, page-unique ID for each legend. The visible close action works on touch as well as keyboard. A named region describes the content without claiming modal behavior.
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Button from "@typed/ui/Button";
 import * as Popover from "@typed/ui/Popover";
 

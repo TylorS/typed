@@ -1,8 +1,8 @@
 ---
 title: "Slider: continuous native range input"
-summary: "Connect input-time numeric updates to an accessible range control and an explicit domain value."
+summary: "Reference range input timing and the distinction between user changes and programmatic bounds."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 236
 ---
 
@@ -14,8 +14,7 @@ A slider is useful when position conveys a value and rough adjustment is more us
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Slider from "@typed/ui/Slider";
 
 export const ZoomControl = component(function* () {

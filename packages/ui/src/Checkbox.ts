@@ -170,7 +170,7 @@ type InputInternalProps<Options extends InputOptions> = ReturnType<
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
  * import * as Checkbox from "@typed/ui/Checkbox";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  *
  * export const UpdatePreference = component(function* () {
  *   const state = yield* Checkbox.makeState({ checked: false });

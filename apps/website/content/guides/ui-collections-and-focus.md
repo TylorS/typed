@@ -1,6 +1,6 @@
 ---
 title: "UI collections, focus, and keyboard behavior"
-summary: "Build a changing editor toolbar and trace the relationship between command identity, DOM registration, browser focus, and application state."
+summary: "Build a changing toolbar and prove identity, registration, focus, and removal behavior."
 section: "UI"
 kind: "deep-dive"
 order: 4.2
@@ -25,8 +25,7 @@ must be able to navigate the toolbar without changing the canvas tool on every a
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Toolbar from "@typed/ui/Toolbar";
 
 export const DrawingTools = component(function* () {
@@ -100,8 +99,7 @@ operation.
 ```ts
 import * as Effect from "effect/Effect";
 import { RefSubject } from "@typed/fx";
-import { html, many } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, html, many } from "@typed/template";
 import * as Composite from "@typed/ui/Composite";
 import * as Toolbar from "@typed/ui/Toolbar";
 

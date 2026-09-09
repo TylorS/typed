@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import Article from "../../layouts/Article.astro";
+import ArchitectureDiagram from "../../components/ArchitectureDiagram.astro";
 import UiCatalog from "../../components/UiCatalog.astro";
 import UiLessons from "../../components/UiLessons.astro";
 import { adjacentLinks, learningGroups, type GuideLink } from "../../Guides.js";
@@ -33,7 +34,11 @@ const { Content, headings } = await render(entry);
   source={`content/guides/${entry.id}.md`}
   previous={previous}
   next={next}
-  ><Content />{entry.id === "ui" && <UiLessons />}{
+  >{
+    entry.id === "dom-updates-and-reconciliation" && (
+      <ArchitectureDiagram diagram="keyed-dom" />
+    )
+  }<Content />{entry.id === "ui" && <UiLessons />}{
     entry.id === "choosing-ui-components" && <UiCatalog />
   }</Article
 >

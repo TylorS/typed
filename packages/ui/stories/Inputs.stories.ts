@@ -1,10 +1,9 @@
 import * as Schema from "effect/Schema";
 import { Fx, RefSubject } from "@typed/fx";
 import { BrowserRouter } from "@typed/router/Router";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import * as ButtonComponent from "../src/Button.js";
 import * as CheckboxComponent from "../src/Checkbox.js";
-import { component } from "../src/Component.js";
 import * as FormComponent from "../src/Form.js";
 import { Link as LinkComponent } from "../src/Link.js";
 import * as MeterComponent from "../src/Meter.js";
@@ -49,7 +48,7 @@ export const Button = story(
   },
 );
 
-const checkbox = Fx.gen(function* () {
+const checkbox = component(function* () {
   const state = yield* CheckboxComponent.makeState({ checked: true });
   return html`<label>Subscribe to updates ${CheckboxComponent.Input({ state })}</label>`;
 });
@@ -117,7 +116,7 @@ export const Link = story(
   Fx.provide(LinkComponent({ href: "/components", content: "Browse components" }), BrowserRouter()),
 );
 
-const meter = Fx.gen(function* () {
+const meter = component(function* () {
   const state = yield* MeterComponent.makeState({ value: 40 });
   return html`<div class="story-field">
     <label for="storage">Storage</label>
@@ -134,7 +133,7 @@ const meter = Fx.gen(function* () {
 
 export const Meter = story(meter);
 
-const radioGroup = Fx.gen(function* () {
+const radioGroup = component(function* () {
   const state = yield* RadioGroupComponent.makeState({ value: "small" });
   const collection = yield* RadioGroupComponent.makeCollection();
 
@@ -151,7 +150,7 @@ const radioGroup = Fx.gen(function* () {
 
 export const RadioGroup = story(radioGroup);
 
-const slider = Fx.gen(function* () {
+const slider = component(function* () {
   const state = yield* SliderComponent.makeState({ value: 60 });
   return html`<div class="story-field">
     <label for="volume">Volume</label>
@@ -161,7 +160,7 @@ const slider = Fx.gen(function* () {
 
 export const Slider = story(slider);
 
-const spinButton = Fx.gen(function* () {
+const spinButton = component(function* () {
   const state = yield* SpinButtonComponent.makeState({ value: 2 });
   return html`<div class="story-field">
     <label for="quantity">Quantity</label>
@@ -171,7 +170,7 @@ const spinButton = Fx.gen(function* () {
 
 export const SpinButton = story(spinButton);
 
-const switchControl = Fx.gen(function* () {
+const switchControl = component(function* () {
   const state = yield* SwitchComponent.makeState({ checked: true });
   return SwitchComponent.Switch({ state, content: "Notifications" });
 });

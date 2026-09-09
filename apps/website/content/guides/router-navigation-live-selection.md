@@ -11,7 +11,7 @@ layout. The URL changes, a new record loads, and shared navigation should remain
 that samples its route parameters only once can keep showing issue 42 indefinitely. Rebuilding the
 whole application on every URL change fixes that symptom by destroying too much state.
 
-Matcher separates selected-handler lifetime from live parameter values. It is a route table and an
+[Matcher](/reference/modules/%40typed%2Frouter%2FMatcher) separates selected-handler lifetime from live parameter values. It is a route table and an
 Fx: when run, it observes Navigation, chooses a candidate, and emits that candidate's output. The
 handler receives decoded parameters as a RefSubject so a retained handler can follow later values.
 Start with the [Route input contract](/explore/route-typed-url-inputs); this guide runs that contract.
@@ -106,6 +106,11 @@ The first program emits successful page data only. A real loader may need first-
 retry, and stale-result UI. Give that resource an [AsyncData state](/explore/async-data-requests-and-cache)
 inside the appropriate owner. Navigation committing a URL does not prove the page's data is ready.
 
+The first program proves that the retained handler follows a second issue ID. Change it to sample `params` once and verify the second assertion fails. Use the sections below only when your route table needs those additional policies.
+
+<details>
+<summary>Reference: candidate selection and fallback guards</summary>
+
 ## Understand why one candidate wins
 
 Path lookup chooses a structural shape before candidate guards run. Matching is case-insensitive
@@ -143,6 +148,11 @@ signed in.” Guard's errors and services participate in selection types; the
 selection; changing an unrelated session value does not automatically trigger route reselection.
 Observe session inside selected work or coordinate navigation when expiry must change the page.
 Server operations still enforce their own authorization.
+
+</details>
+
+<details>
+<summary>Reference: retained services, layouts and recovery</summary>
 
 ## Keep services and layouts at the boundary that should retain them
 
@@ -242,3 +252,5 @@ history policy and unsaved-work coordination, or [Effect HTTP](/explore/integrat
 to run renderable Matcher output per request. When debugging, trace URL shape, decoded params,
 selected candidate, live parameter observation, then resource state in that order; each boundary
 has a distinct failure and lifetime contract.
+
+</details>

@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "TodoMVC: assemble the pieces",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/TylorS/typed",
+      "revision": "d32cde4d62750f1aac616c6e8da9b5a2a11383ae"
+    },
+    "viewBox": [
+      1070,
+      480
+    ],
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Client code"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "entry",
+      "label": "main.ts",
+      "sublabel": "render + Layer.launch",
+      "type": "frontend",
+      "pos": [
+        40,
+        55
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/main.ts",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "adapters",
+      "label": "infrastructure.ts",
+      "sublabel": "Services + browser adapters",
+      "type": "frontend",
+      "pos": [
+        405,
+        55
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/infrastructure.ts",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "browser",
+      "label": "Browser APIs",
+      "sublabel": "storage, history, ID + time",
+      "type": "external",
+      "pos": [
+        770,
+        55
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/infrastructure.ts",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "view",
+      "label": "presentation.ts",
+      "sublabel": "TodoApp + keyed TodoItem",
+      "type": "frontend",
+      "pos": [
+        40,
+        335
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/presentation.ts",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "label": "application.ts",
+      "sublabel": "state, commands, projections",
+      "type": "frontend",
+      "pos": [
+        405,
+        335
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/application.ts",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "domain",
+      "label": "domain.ts",
+      "sublabel": "schemas + pure transitions",
+      "type": "frontend",
+      "pos": [
+        770,
+        335
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "sources": [
+        {
+          "path": "apps/website/src/tutorial/examples/todo-9/src/domain.ts",
+          "line": 1
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "entry-adapters",
+      "from": "entry",
+      "to": "adapters",
+      "label": "provides Services"
+    },
+    {
+      "id": "entry-view",
+      "from": "entry",
+      "to": "view",
+      "label": "runs TodoApp",
+      "labelDy": 100
+    },
+    {
+      "id": "adapters-browser",
+      "from": "adapters",
+      "to": "browser",
+      "label": "adapts"
+    },
+    {
+      "id": "adapters-model",
+      "from": "adapters",
+      "to": "model",
+      "label": "implements services",
+      "labelDy": 100
+    },
+    {
+      "id": "view-model",
+      "from": "view",
+      "to": "model",
+      "label": "uses commands + views"
+    },
+    {
+      "id": "model-domain",
+      "from": "model",
+      "to": "domain",
+      "label": "applies rules"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The view borrows the model",
+      "items": [
+        "Native events run application commands.",
+        "Live projections update the retained view."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The entry chooses the runtime",
+      "items": [
+        "Layers supply state and browser adapters.",
+        "The launch owns rendering and persistence work."
+      ]
+    }
+  ]
+}

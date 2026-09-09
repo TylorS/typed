@@ -4,6 +4,8 @@ title: "Use Vue and Typed together"
 summary: "Use @typed/vue for bidirectional rendering, native composables, shared Effect services, and request-local SSR and hydration."
 ---
 
+See [streaming SSR across framework boundaries](/explore/streaming-framework-integrations) for which component bodies stream and which are buffered.
+
 `@typed/vue` connects Vue components and Typed views without a hand-written mount adapter. Vue retains its local state as Typed updates incoming props; native composables expose the same Effect resources in a Vue application.
 
 `view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
@@ -62,8 +64,7 @@ export const PriceCard = defineComponent({
 ```ts file="page.ts"
 import { view } from "@typed/vue";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import { PriceCard } from "./PriceCard.js";
 
 export const page = component(function* () {

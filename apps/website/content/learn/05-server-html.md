@@ -5,7 +5,7 @@ summary: "Keep the Counter, change the renderer, and run a development server th
 order: 5
 ---
 
-Keep `Counter.ts` from [the derived state lesson](/explore/counter/component-lifetime). Now the server will send its first HTML, and the browser will make that existing view interactive.
+Start from the [Quick Start project setup](/explore/quick-start#install). The complete files below include the derived counter, so you can enter this optional path directly. Now the server will send its first HTML, and the browser will make that existing view interactive.
 
 ### Put the Counter in a document
 
@@ -63,6 +63,15 @@ For `/`, the Node request handler loads the server entry and sends its HTML:
 `/` receives HTML; `/src/client.ts` receives JavaScript transformed by Vite. This uses Vite's [middleware SSR API](https://vite.dev/guide/ssr.html#setting-up-the-dev-server). Copy the complete files before starting the server.
 
 ### Complete files
+
+<details class="curriculum-file">
+<summary>src/Counter.ts</summary>
+
+```ts file="src/Counter.ts"
+// @source examples/learn-5/src/Counter.ts
+```
+
+</details>
 
 <details class="curriculum-file">
 <summary>src/server.ts</summary>

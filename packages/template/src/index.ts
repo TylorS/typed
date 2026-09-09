@@ -1,4 +1,5 @@
 export * as EventHandler from "./EventHandler.js";
+export * from "./Component.js";
 export * from "./EventSource.js";
 export * from "./Html.js";
 export * from "./HtmlChunk.js";

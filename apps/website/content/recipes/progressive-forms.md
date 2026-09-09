@@ -15,10 +15,10 @@ reads the input's validity and updates that state. There is no submit handler be
 already has the behavior we want.
 
 ```ts file="Newsletter.ts"
-import { Fx, RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
+import { RefSubject } from "@typed/fx";
+import { component, EventHandler, html } from "@typed/template";
 
-export const Newsletter = Fx.gen(function* () {
+export const Newsletter = component(function* () {
   const hint = yield* RefSubject.make("");
   const updateHint = EventHandler.make(
     (event: InputEvent & { target: HTMLInputElement }) => {
@@ -42,7 +42,7 @@ export const Newsletter = Fx.gen(function* () {
 });
 ```
 
-`Fx.gen` creates hint state for each render run. The same `html` template supplies server markup
+`component` creates hint state for each render run. The same `html` template supplies server markup
 and browser bindings. No `.value` binding writes over an address entered before the client starts.
 Keep this form's IDs unique on its page; repeated forms need distinct label and hint IDs.
 

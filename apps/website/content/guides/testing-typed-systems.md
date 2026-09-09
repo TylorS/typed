@@ -2,20 +2,23 @@
 title: "Testing Typed systems"
 summary: "Turn state, request ordering, DOM identity, and cleanup promises into tests that can actually disprove them."
 section: "Applications"
-kind: "guide"
+kind: "reference"
 order: 9
 ---
 
-An account picker can display the right HTML and still be wrong. Selecting the same account twice
-might double its count; an obsolete search might overwrite newer results; sorting might lose focus;
-closing the panel might leave a listener active. These failures belong to different boundaries, so
-they need different observations.
+Choose the observation that could disprove your feature's contract. These are independent test techniques; use the one needed by the lesson you are working on.
 
-This guide builds a test strategy around those promises. Follow the
-[application path](/explore/application-developers) for feature development or the
-[library path](/explore/library-developers) for the public contracts behind a reusable picker.
-Use the repository’s `@effect/vitest` harness for Effect tests: `it.effect` supplies a test Scope,
-so scoped state and services can be acquired without a manual `Effect.runPromise` wrapper.
+| Claim | Technique |
+| --- | --- |
+| State obeys an invariant | [Test the model without a view](#establish-the-state-invariant-without-a-view) |
+| Newer intent owns the result | [Control completion order](#control-the-order-that-asynchronous-work-completes) |
+| Closing the owner releases work | [Observe acquisition and cancellation](#make-cancellation-observable-at-the-input-boundary) |
+| Reordering retains a row | [Compare DOM objects](#test-retained-rows-as-objects-not-strings) |
+| Navigation selects the right output | [Supply memory history](#replace-history-with-a-provider-when-testing-route-selection) |
+| A client adopts server output | [Separate serialization and adoption](#test-server-output-and-browser-adoption-as-two-stages) |
+| Wrappers preserve E/R | [Compile exact type assertions](#make-the-type-level-promises-executable-too) |
+
+The examples use `@effect/vitest`: `it.effect` supplies a test Scope. For small runnable checkpoints, see the early [TodoMVC model test](/explore/tutorial/model-the-domain#check-identity-now) and [request test](/explore/async-data-requests-and-cache#checkpoint-4-prove-behavior).
 
 ## Establish the state invariant without a view
 

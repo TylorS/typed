@@ -135,7 +135,7 @@ describe("Fx operator curriculum", () => {
     }
   });
 
-  it("renders every higher-order policy before the secondary Effect callback variants", async () => {
+  it("renders the policy comparison and leaves exhaustive convenience variants to the atlas", async () => {
     const source = fs.readFileSync(
       path.join(websiteRoot, "content/guides/fx-higher-order-and-concurrency.md"),
       "utf8",
@@ -153,55 +153,15 @@ describe("Fx operator curriculum", () => {
       "race",
       "raceAll",
     ];
-    const effectOperators = [
-      "flatMapEffect",
-      "flatMapConcurrentlyEffect",
-      "concatMapEffect",
-      "switchMapEffect",
-      "exhaustMapEffect",
-      "exhaustLatestMapEffect",
-    ];
     expect(extractFxMarbleOperators(source)).toEqual(
-      expect.arrayContaining([...operators, ...effectOperators]),
+      expect.arrayContaining(operators),
     );
-    expect(rendered.match(/class="fx-marble"/gu)?.length).toBeGreaterThanOrEqual(
-      operators.length + effectOperators.length,
-    );
-    const diagrams = [...source.matchAll(/```fx-marble\n([\s\S]*?)\n```/gu)].map(
-      (match) => match[1]!,
-    );
-    const coveredBy = (block: string) =>
-      block
-        .match(/^covers: (.*)$/mu)?.[1]
-        ?.split(",")
-        .map((value) => value.trim()) ?? [];
-    for (const name of effectOperators) {
-      const diagram = diagrams.find((block) => coveredBy(block).includes(name));
-      expect(diagram, `${name} has its own one-result timeline`).toBeDefined();
-      const innerLanes = [...diagram!.matchAll(/^inner [^:]+: (.*)$/gmu)];
-      expect(innerLanes.length).toBeGreaterThan(0);
-      for (const [, events] of innerLanes) {
-        const successes = events!
-          .split(/\s+/u)
-          .filter((token) => ![".", "^", "|", "x"].includes(token) && !token.startsWith("!"));
-        expect(
-          successes.length,
-          `${name} Effect emits at most one successful value`,
-        ).toBeLessThanOrEqual(1);
-      }
-    }
-    const lastBase = Math.max(
-      ...operators.map((name) => diagrams.findIndex((block) => coveredBy(block).includes(name))),
-    );
-    const firstEffect = Math.min(
-      ...effectOperators.map((name) =>
-        diagrams.findIndex((block) => coveredBy(block).includes(name)),
-      ),
-    );
-    expect(firstEffect).toBeGreaterThan(lastBase);
+    expect(rendered.match(/class="fx-marble"/gu)?.length).toBeGreaterThanOrEqual(operators.length);
+    expect(source).toContain("can produce at most one success");
+    expect(source).toContain("convenience variants");
   });
 
-  it("visibly covers every public stateful transform with a marble diagram", async () => {
+  it("visibly covers the stateful value-history transforms", async () => {
     const source = fs.readFileSync(
       path.join(websiteRoot, "content/guides/fx-stateful-transforms.md"),
       "utf8",
@@ -216,15 +176,11 @@ describe("Fx operator curriculum", () => {
     );
     const operators = [
       "filterMapLoop",
-      "filterMapLoopCause",
-      "filterMapLoopCauseEffect",
       "filterMapLoopEffect",
       "changesWithEffect",
       "grouped",
       "groupedWithin",
       "loop",
-      "loopCause",
-      "loopCauseEffect",
       "loopEffect",
       "pairwise",
       "scan",
@@ -236,5 +192,26 @@ describe("Fx operator curriculum", () => {
     for (const operator of operators) {
       expect(visibleOperators).toContain(operator);
     }
+  });
+
+  it("keeps exhaustive Effect and Cause timelines in the generated operator atlas", () => {
+    const atlas = fs.readFileSync(
+      path.join(websiteRoot, "content/guides/fx-operator-atlas.md"),
+      "utf8",
+    );
+    expect(extractFxMarbleOperators(atlas)).toEqual(
+      expect.arrayContaining([
+        "flatMapEffect",
+        "flatMapConcurrentlyEffect",
+        "concatMapEffect",
+        "switchMapEffect",
+        "exhaustMapEffect",
+        "exhaustLatestMapEffect",
+        "loopCause",
+        "loopCauseEffect",
+        "filterMapLoopCause",
+        "filterMapLoopCauseEffect",
+      ]),
+    );
   });
 });

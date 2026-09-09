@@ -116,6 +116,15 @@ const matched = await Effect.runPromise(command("search effects"))
 Put specific cases before broad catch-alls. Test overlapping inputs as well as successful and absent
 inputs: branch ordering is application behavior.
 
+## Test all three outcomes
+
+When a candidate unexpectedly disappears, test three inputs separately: accepted output, ordinary
+`None`, and failed `Exit`. Then test the containing dispatcher's ordering. Logging only a boolean
+“matched” loses the distinction this contract was designed to preserve.
+
+<details>
+<summary>Library extension: accept structural GuardInput values</summary>
+
 ## Let library values participate without inheriting a class
 
 A `GuardInput` is either a guard function or an object with an `asGuard` method. Use the focused
@@ -140,9 +149,4 @@ boundary, or use the [Guard reference](/reference/modules/%40typed%2Fguard) for 
 recovery, and service combinators. Effect's [services guide](https://www.effect.website/docs/v4/requirements-management/services/)
 explains how those requirements are supplied.
 
-
-## Test all three outcomes
-
-When a candidate unexpectedly disappears, test three inputs separately: accepted output, ordinary
-`None`, and failed `Exit`. Then test the containing dispatcher's ordering. Logging only a boolean
-“matched” loses the distinction this contract was designed to preserve.
+</details>

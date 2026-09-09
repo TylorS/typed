@@ -6,6 +6,8 @@ kind: "guide"
 order: 5
 ---
 
+<span id="use-hydration-refs-for-state-that-crosses-the-response-boundary"></span>
+
 Most field behavior belongs in attributes, properties, and events. An element reference becomes
 necessary when a browser API needs the element object itself—for example, observing a results panel's
 size or creating a foreign editor on its host. `ref` attaches that setup to the concrete template
@@ -45,7 +47,7 @@ lifetime that must end when the view ends:
 ```ts
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 // Adapt only the browser subscription; rendering stays in the template.
 const widths = (element: HTMLElement) => Fx.callback<number>((emit) => {
@@ -56,7 +58,7 @@ const widths = (element: HTMLElement) => Fx.callback<number>((emit) => {
   return Effect.sync(() => observer.disconnect());
 });
 
-export const results = Fx.gen(function* () {
+export const results = component(function* () {
   const width = yield* RefSubject.make<number | null>(null);
   const measurePanel = (element: HTMLElement) => widths(element).pipe(
     Fx.tap((value) => RefSubject.set(width, value)),
@@ -93,7 +95,7 @@ the host element remains. This is useful for enabling and disabling a feature wi
 than the panel. [Spread props and data records](/explore/template-spreads-data) explains that per-key
 ownership.
 
-## Use hydration refs for state that crosses the response boundary
+## Hydrated state is a separate handoff
 
 An ordinary callback cannot run on a server without its browser element and produces no HTML
 representation. `RefSubject.hydrate` deliberately adds another capability: its result is both state
@@ -102,8 +104,7 @@ and a callable `HydrationRef` that can serialize state on a designated host.
 ```ts
 import { Schema } from "effect";
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const SearchState = component(function* () {
   const query = yield* RefSubject.hydrate(Schema.String, "scope");
@@ -115,26 +116,9 @@ The HTML target writes the encoded state at this ref host. During adoption the D
 it before ordinary reactive parts begin and removes the consumed unnamed envelope. The state remains
 a RefSubject; the ref identifies its server-to-browser handoff point.
 
-When several refs share an element, combine them with `hydrateAll`:
-
-```ts
-import { Schema } from "effect";
-import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
-
-export const SearchPreferences = component(function* () {
-  const page = yield* RefSubject.hydrate(Schema.FiniteFromString, 1, { name: "page" });
-  const query = yield* RefSubject.hydrate(Schema.String, "scope");
-  return html`<section ref=${RefSubject.hydrateAll(page, query)}>
-    <output>Page ${page}; query ${query}</output>
-  </section>`;
-});
-```
-
-Named members use their `data-*` attributes; unnamed members share a versioned envelope. Duplicate
-named attributes are a configuration error. Codec failures and required services remain typed.
-Static HTML rendering omits hydration metadata entirely.
+When several refs share an element, `RefSubject.hydrateAll` combines them. Named members use their
+`data-*` attributes and unnamed members share a versioned envelope. The complete state/codec and
+adoption contract belongs to [Hydrated template state](/explore/refsubject-template-hydration).
 
 ## Test the resource and the handoff you actually depend on
 
@@ -142,5 +126,4 @@ For the observer, count acquisition/finalization across fresh render, keyed remo
 removal. Assert the callback receives the expected native object. For hydrated state, assert both
 the decoded value and adopted node identity; valid state and compatible DOM are separate checks.
 
-Continue with [Hydrating Typed HTML](/explore/hydrating-typed-html) for adoption diagnosis and
-[Hydrated template state](/explore/refsubject-template-hydration) for schema/envelope behavior.
+Continue with [Hydrating Typed HTML](/explore/hydrating-typed-html) for adoption diagnosis.

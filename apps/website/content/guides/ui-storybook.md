@@ -1,6 +1,6 @@
 ---
 title: "Storybook: mount a story with an owned render scope"
-summary: "Supply application services, await visible output, and dispose every mounted story."
+summary: "Advanced Storybook integration reference for owned mount scopes and disposal."
 section: "UI / Foundations"
 kind: "deep-dive"
 order: 296
@@ -18,8 +18,7 @@ The function below is suitable for an explorer or browser fixture that wants to 
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import { mount } from "@typed/ui/Storybook";
 
 const CounterStory = component(function* () {

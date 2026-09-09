@@ -42,10 +42,14 @@ describe("curriculum Astro islands", () => {
     )!;
 
     expect(output.textContent).toBe("7");
+    expect(host.textContent).toContain("Twice the count: 14");
     await client(host)(Demo, { id: "counter-hydrated" });
     expect(host.querySelector("output")).toBe(output);
     increase.click();
-    await vi.waitFor(() => expect(output.textContent).toBe("8"));
+    await vi.waitFor(() => {
+      expect(output.textContent).toBe("8");
+      expect(host.textContent).toContain("Twice the count: 16");
+    });
   });
 
   const input = (host: Element, selector: string, value: string) => {

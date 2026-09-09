@@ -1,8 +1,8 @@
 ---
 title: "Combobox: editable queries and committed suggestions"
-summary: "Keep input focus stable while navigating filtered suggestions and distinguish text from a validated choice."
+summary: "Compare query text, active suggestion, and accepted record; use the project picker for the worked flow."
 section: "UI / Collections"
-kind: "deep-dive"
+kind: "reference"
 order: 240
 ---
 
@@ -21,8 +21,7 @@ visibility changes. The native label targets the input ID derived from the state
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Combobox from "@typed/ui/Combobox";
 
 export const CityField = component(function* () {

@@ -18,9 +18,10 @@ const groups = learningGroups(
 
 <nav aria-label="Documentation" data-docs-navigation>
   {
-    groups.map(({ title, entries }) => (
+    groups.map(({ title, entries, sequence }) => (
       <details
         class="sidebar-group"
+        data-learning-sequence={sequence ? "true" : "false"}
         open={
           title === "Start building" ||
           title === "Learning paths" ||

@@ -3,8 +3,7 @@ import "./styles.css";
 
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
-import { EventHandler, html, many } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, EventHandler, html, many } from "@typed/template";
 import * as App from "./application.js";
 import * as Domain from "./domain.js";
 import { Link } from "@typed/ui/Link";
@@ -110,10 +109,12 @@ export const TodoApp = html`<section class="todoapp">
               ${Link({
                 href: filter === "all" ? "/" : "/" + filter,
                 content: filter[0]!.toUpperCase() + filter.slice(1),
-                class: Fx.when(
-                  RefSubject.map(App.FilterState, (current) => current === filter),
-                  { onTrue: "selected", onFalse: "" },
-                ),
+                props: {
+                  class: Fx.when(
+                    RefSubject.map(App.FilterState, (current) => current === filter),
+                    { onTrue: "selected", onFalse: "" },
+                  ),
+                },
               })}
             </li>`,
         )}

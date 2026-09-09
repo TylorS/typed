@@ -1,20 +1,16 @@
 ---
 title: "Render your first template"
-summary: "Write a static template, add one live value, and mount it in the browser."
+summary: "Extend Quick Start with one live search field and verify its editing loop."
 section: "Template authoring"
 kind: "guide"
 order: 1
 ---
 
-Build one interactive field before learning the rest of the renderer. The field will store a search
-query, show it in an output, and release its event listener when the containing application stops.
-You need a TypeScript browser entry and an existing `<div id="app"></div>` in the document.
+<span id="app"></span>
 
-Install the public packages in your application:
-
-```sh
-pnpm add effect@^4 @typed/fx @typed/template
-```
+Start from the [Quick Start Vite project](/explore/quick-start), which already installs the packages,
+provides `#app`, and starts one browser owner. This is its first extension: add a field that records
+an edit and displays it.
 
 ## Describe the view before running it
 
@@ -36,7 +32,7 @@ keeps the static markup and dynamic positions available for the renderer that ev
 
 ## Give that program a browser owner
 
-The following entry is complete. It repeats the small template so it can be copied independently:
+Keep the Quick Start entry. This complete reference shows the owner the extension expects:
 
 ```ts
 import { Effect, Fiber } from "effect";
@@ -77,15 +73,15 @@ another application's widgets, and unrelated nodes belong beside that host.
 
 ## Connect one user action to one value
 
-Use `Fx.gen` to create state when the view runs, then return the template. Replace the
-view with this version, leaving the mounting code unchanged:
+Use `component` to create state when the view runs, then replace the static `SearchPage` with this
+version while leaving the mounting code unchanged:
 
 ```ts
-import { Fx, RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { RefSubject } from "@typed/fx";
+import { component, html } from "@typed/template";
 import * as EventHandler from "@typed/template/EventHandler";
 
-export const SearchPage = Fx.gen(function* () {
+export const SearchPage = component(function* () {
   const query = yield* RefSubject.make("");
   const readInput = EventHandler.make((event: Event) =>
     RefSubject.set(query, (event.currentTarget as HTMLInputElement).value),
@@ -121,6 +117,5 @@ If nothing appears, check the host and the rendering fiber's failure before debu
 If typing changes the input but not the output, check whether the render is still alive. If each
 edit produces duplicate work, check whether the entry started two render programs for the same host.
 
-Continue with [Authoring Typed templates](/explore/authoring-typed-templates) to extract a reusable
-field and move its state to the page. [Mounting DOM output](/explore/mounting-dom-output) develops the
-same lifetime boundary for a panel embedded in an existing application.
+Continue with [Authoring Typed templates](/explore/authoring-typed-templates) to extract the finished
+field. [Mounting DOM output](/explore/mounting-dom-output) is optional reference for an embedded host.

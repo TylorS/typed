@@ -286,3 +286,4 @@ it("releases a switched-out stateful component without disabling its replacement
     await Effect.runPromise(Scope.close(parent, Exit.void));
   }
 });
+

@@ -11,7 +11,7 @@ const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const guidePath = path.join(websiteRoot, "content/guides/subject-event-publications.md");
 
 describe("Subject Fx guide", () => {
-  it("teaches the public event-publication boundary and its ownership policies", () => {
+  it("teaches the public event-publication boundary and points advanced sharing to its lookup home", () => {
     const guide = parseGuideDocumentation(
       "subject-event-publications.md",
       fs.readFileSync(guidePath, "utf8"),
@@ -25,17 +25,10 @@ describe("Subject Fx guide", () => {
     });
     for (const term of [
       "Subject.make",
-      "Subject.unsafeMake",
       "onSuccess",
       "onFailure",
-      "Fx.observe",
       "subscriberCount",
-      "interrupt",
       "Subject.Service",
-      "Subject.multicast",
-      "Subject.hold",
-      "Subject.replay",
-      "Subject.share",
       "RefSubject",
     ]) {
       expect(guide.body).toContain(term);
@@ -44,14 +37,10 @@ describe("Subject Fx guide", () => {
       "Subject.make",
       "Fx.collectAllFork",
       "Fx.take",
-      "Fx.observe",
       "Cause.fail",
       "Sink.make",
-      "Subject.multicast",
-      "Subject.hold",
-      "Subject.replay",
-      "Subject.share",
     ]);
+    expect(guide.body).toContain("operator atlas");
     expect(guide.body).toContain("```fx-marble");
     expect(guide.body).toContain("/explore/fx-services-and-lifetime");
   });

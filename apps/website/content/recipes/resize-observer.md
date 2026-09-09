@@ -47,8 +47,7 @@ In `ChartHost.ts`, `ref` connects the observer to the `<div>` that Typed renders
 
 ```ts file="ChartHost.ts"
 import { Fx, RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import { sizes, type Size } from "./sizes.js";
 
 export const MeasuredChartHost = component(function* () {

@@ -68,7 +68,7 @@ type GroupInternalProps<Options extends GroupOptions> = ReturnType<typeof intern
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
  * import { Button } from "@typed/ui/Button";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Group from "@typed/ui/Group";
  *
  * export const PreviewActions = component(function* () {

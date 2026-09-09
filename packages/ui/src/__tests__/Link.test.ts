@@ -34,7 +34,7 @@ describe("typed/ui/Link", () => {
       assert(anchor.textContent === "Go to about");
     }).pipe(Effect.scoped, Effect.runPromise));
 
-  it("supports modern props and host overrides through Dom.renderHost", () =>
+  it("uses props for native host options and host overrides through Dom.renderHost", () =>
     Effect.gen(function* () {
       const [window, layer] = createHappyDomLayer();
       const [root] = yield* render(
@@ -42,8 +42,7 @@ describe("typed/ui/Link", () => {
           {
             href: "/hosted",
             content: "Hosted link",
-            class: "legacy",
-            props: { class: "modern" },
+            props: { class: "modern", rel: "noopener" },
           },
           (props, content) =>
             html`<a ...${props} data-hosted="true">${content}</a>` as Fx.Fx<
@@ -57,6 +56,7 @@ describe("typed/ui/Link", () => {
       const anchor = root as HTMLAnchorElement;
 
       assert.strictEqual(anchor.className, "modern");
+      assert.strictEqual(anchor.rel, "noopener");
       assert.strictEqual(anchor.dataset.hosted, "true");
       assert.strictEqual(anchor.textContent, "Hosted link");
     }).pipe(Effect.scoped, Effect.runPromise));
@@ -91,7 +91,7 @@ describe("typed/ui/Link", () => {
         Link({
           href: "/with-handler",
           content: "Go",
-          onclick: Effect.sync(() => clicks++),
+          props: { onclick: Effect.sync(() => clicks++) },
         }),
         window.document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -114,7 +114,7 @@ describe("typed/ui/Link", () => {
         Link({
           href: "/cancelled",
           content: "Stay",
-          onclick: EventHandler.make(() => undefined, { preventDefault: true }),
+          props: { onclick: EventHandler.make(() => undefined, { preventDefault: true }) },
         }),
         window.document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -158,13 +158,15 @@ describe("typed/ui/Link", () => {
       const [root] = yield* render(
         Link({
           href: "/once",
-          target: "_blank",
           content: "Once",
-          onclick: EventHandler.once(
-            EventHandler.make(() => {
-              clicks++;
-            }),
-          ),
+          props: {
+            target: "_blank",
+            onclick: EventHandler.once(
+              EventHandler.make(() => {
+                clicks++;
+              }),
+            ),
+          },
         }),
         window.document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -223,10 +225,10 @@ describe("typed/ui/Link", () => {
         ["control", { href: "/native-control" }, { ctrlKey: true }],
         ["shift", { href: "/native-shift" }, { shiftKey: true }],
         ["middle button", { href: "/native-middle" }, { button: 1 }],
-        ["target blank external", { href: "https://example.com", target: "_blank" }, {}],
-        ["target blank same-origin", { href: "/other", target: "_blank" }, {}],
-        ["external self", { href: "https://example.com", target: "_self" }, {}],
-        ["download", { href: "/report.csv", download: "report.csv" }, {}],
+        ["target blank external", { href: "https://example.com", props: { target: "_blank" } }, {}],
+        ["target blank same-origin", { href: "/other", props: { target: "_blank" } }, {}],
+        ["external self", { href: "https://example.com", props: { target: "_self" } }, {}],
+        ["download", { href: "/report.csv", props: { download: "report.csv" } }, {}],
       ] as const;
 
       for (const [label, options, eventInit] of cases) {

@@ -27,7 +27,7 @@ That order protects the user's input: if creation fails, execution never reaches
 
 The action does not know about `SubmitEvent` or `HTMLInputElement`. In the next chapter, a native form will translate browser input into these state reads and writes.
 
-**Trace three inputs:** spaces leave the list and draft alone; `  Learn Typed  ` adds `Learn Typed` and clears the draft; an unavailable factory leaves the original text for a retry. The final chapter tests all three cases against this action.
+**Trace three inputs:** spaces leave the list and draft alone; `  Learn Typed  ` adds `Learn Typed` and clears the draft; an unavailable factory leaves the original text for a retry. Add the test file below and run `npm exec vitest -- run src/application.test.ts`. It supplies a predictable factory and tests all three cases against this action.
 
 ## Complete files
 
@@ -38,6 +38,15 @@ Keep the files from the previous step and replace or add these. Each full file i
 
 ```ts file="src/application.ts"
 // @source examples/todo-3/src/application.ts
+```
+
+</details>
+
+<details class="curriculum-file">
+<summary>src/application.test.ts</summary>
+
+```ts file="src/application.test.ts"
+// @source examples/todo-3/src/application.test.ts
 ```
 
 </details>

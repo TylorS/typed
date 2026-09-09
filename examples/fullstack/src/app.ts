@@ -1,6 +1,6 @@
-import { Fx, RefSubject } from "@typed/fx";
+import { RefSubject } from "@typed/fx";
 import * as Router from "@typed/router";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import { Effect, Schema } from "effect";
 import clientUrl from "./client.js?url";
 
@@ -8,7 +8,7 @@ const clientScriptUrl = import.meta.env.DEV ? clientUrl : "/client.js";
 
 export const appRoutes = Router.match(
   Router.Slash,
-  Fx.gen(function* () {
+  component(function* () {
     const count = yield* RefSubject.hydrate(
       Schema.Number,
       Effect.sync(() => (typeof document === "undefined" ? 42 : 0)),

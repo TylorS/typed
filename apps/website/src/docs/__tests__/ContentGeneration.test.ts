@@ -74,7 +74,7 @@ describe("Markdown content generation", () => {
       expect(guide.body.trim(), guide.slug).not.toBe("");
       expect(guide.section?.trim(), guide.slug).toBeTruthy();
       expect(Number.isFinite(guide.order), guide.slug).toBe(true);
-      expect(["concept", "guide", "deep-dive"], guide.slug).toContain(guide.kind);
+      expect(["concept", "guide", "deep-dive", "reference"], guide.slug).toContain(guide.kind);
     }
     const groups = groupGuides(guides.map((guide) => ({
       id: guide.slug,

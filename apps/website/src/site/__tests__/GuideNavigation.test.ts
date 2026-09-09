@@ -4,11 +4,9 @@ import { describe, expect, it } from "vitest";
 import {
   adjacentLinks,
   learningGroups,
-  type NavigationGroup,
 } from "../Guides.js";
 import { recipeNavigationGroups } from "../Recipes.js";
 import {
-  orderCounterLessons,
   orderTutorialSteps,
 } from "../../tutorial/Routes.js";
 
@@ -42,88 +40,76 @@ const lessons = collection("learn");
 const tutorial = collection("tutorial");
 const groups = learningGroups(guides, lessons, tutorial);
 
-function assertNeighbors(groups: ReadonlyArray<NavigationGroup>) {
-  const entries = groups.flatMap(({ entries }) => entries);
-  expect(new Set(entries.map(({ id }) => id)).size).toBe(entries.length);
-  entries.forEach((entry, index) => {
-    const navigation = adjacentLinks(entry.id, groups);
-    expect(navigation.previous, entry.id).toEqual(entries[index - 1]);
-    expect(navigation.next, entry.id).toEqual(entries[index + 1]);
+describe("bounded learning paths and optional reference", () => {
+  it("makes the ID package guide directly discoverable without adding a required lesson", () => {
+    const featured = groups.find(({ title }) => title === "Choose a task or look up an API");
+    expect(featured?.entries.find(({ id }) => id === "id")?.href).toBe("/explore/id");
+    expect(adjacentLinks("id", groups)).toEqual({});
   });
-}
 
-describe("one visible curriculum for sidebar and previous/next links", () => {
-  it("keeps every guide exactly once and traverses the visible order in both directions", () => {
+  it("keeps every destination exactly once and every sequence reciprocal", () => {
     const ids = groups.flatMap(({ entries }) => entries.map(({ id }) => id));
-    for (const guide of guides)
-      expect(ids.filter((id) => id === guide.id)).toHaveLength(1);
-    assertNeighbors(groups);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const guide of guides) expect(ids).toContain(guide.id);
+    for (const group of groups) {
+      group.entries.forEach((entry, index) => {
+        expect(adjacentLinks(entry.id, groups), entry.id).toEqual(
+          group.sequence
+            ? { previous: group.entries[index - 1], next: group.entries[index + 1] }
+            : {},
+        );
+      });
+    }
   });
 
-  it("starts with cooperation and Quick Start, then exposes the counter continuation", () => {
-    expect(groups[0]!.entries.map(({ id }) => id)).toEqual([
-      "cooperative-by-design",
-      "quick-start",
-    ]);
-    expect(adjacentLinks("quick-start", groups).next?.href).toBe(
-      "/explore/counter/component-lifetime",
+  it("reaches TodoMVC without requiring SSR, an atlas or renderer internals", () => {
+    const visited = [];
+    let id: string | undefined = "quick-start";
+    while (id) {
+      expect(visited).not.toContain(id);
+      visited.push(id);
+      id = (adjacentLinks(id, groups).next as { id?: string } | undefined)?.id;
+    }
+    expect(visited).toContain("counter/component-lifetime");
+    expect(visited).toContain("tutorial");
+    expect(visited.filter((id) => id.startsWith("tutorial/"))).toEqual(
+      orderTutorialSteps(tutorial).map(({ data }) => `tutorial/${data.slug}`),
     );
-    expect(groups[1]!.entries.map(({ href }) => href)).toEqual(
-      orderCounterLessons(lessons).map(
-        ({ data }) => `/explore/counter/${data.id}`,
-      ),
-    );
-    expect(adjacentLinks("counter/hydrate-state", groups).next?.href).toBe(
-      "/explore/tutorial",
-    );
+    expect(visited).not.toContain("counter/server-html");
+    expect(visited).not.toContain("fx-operator-atlas");
+    expect(visited).not.toContain("render-event-substrate");
   });
 
-  it("shows every Todo chapter in snapshot order with an intro and onward continuation", () => {
-    const todo = groups.find(({ title }) => title === "Build TodoMVC")!;
-    expect(todo.entries.map(({ id }) => id)).toEqual([
-      "tutorial",
-      ...orderTutorialSteps(tutorial).map(
-        ({ data }) => `tutorial/${data.slug}`,
-      ),
-    ]);
-    expect(adjacentLinks(todo.entries[1]!.id, groups).previous?.href).toBe(
-      "/explore/tutorial",
+  it("ends each optional path and leaves lookup pages without a compulsory next step", () => {
+    expect(adjacentLinks("counter/server-html", groups).previous).toBeUndefined();
+    expect(adjacentLinks("counter/server-html", groups).next?.href).toBe(
+      "/explore/counter/hydrate-state",
     );
-    expect(adjacentLinks(todo.entries.at(-1)!.id, groups).next?.href).toBe(
-      "/explore/ui",
-    );
+    expect(adjacentLinks("counter/hydrate-state", groups).next).toBeUndefined();
+    for (const id of ["fx-operator-atlas", "storybook", "ui", "cooperative-by-design", "counter/client-only"])
+      expect(adjacentLinks(id, groups)).toEqual({});
   });
 
-  it("uses the same group order for integrations including family boundaries", () => {
+  it("runs Fx without a renderer and teaches independent composition before job admission", () => {
+    const fx = groups.find(({ entries }) => entries.some(({ id }) => id === "fx-push-reactivity"))!;
+    expect(fx.entries.every(({ id }) => !id.includes("template") && !id.includes("counter"))).toBe(true);
+    const ids = fx.entries.map(({ id }) => id);
+    expect(ids.indexOf("consuming-fx")).toBeLessThan(ids.indexOf("transforming-fx"));
+    expect(ids.indexOf("composing-fx")).toBeLessThan(ids.indexOf("fx-higher-order-and-concurrency"));
+    expect(adjacentLinks(fx.entries.at(-1)!.id, groups).next).toBeUndefined();
+  });
+
+  it("treats integration recipes as independent choices", () => {
     const integrations = recipeNavigationGroups(collection("recipes"));
-    assertNeighbors(integrations);
-    expect(adjacentLinks("integrate/dom-output", integrations).next?.href).toBe(
-      "/integrate/react",
-    );
-    expect(
-      adjacentLinks("integrate/web-component", integrations).next?.href,
-    ).toBe("/integrate/fetch-schema");
+    for (const { entries } of integrations)
+      for (const { id } of entries) expect(adjacentLinks(id, integrations)).toEqual({});
   });
 
-  it("ignores collection enumeration order while propagating edited lesson labels", () => {
-    expect(
-      learningGroups(
-        guides.toReversed(),
-        lessons.toReversed(),
-        tutorial.toReversed(),
-      ),
-    ).toEqual(groups);
-    const renamed = guides.map((guide) =>
-      guide.id === "cooperative-by-design"
-        ? {
-            ...guide,
-            data: { ...guide.data, title: "Updated cooperation title" },
-          }
-        : guide,
-    );
-    const reordered = learningGroups(renamed, lessons, tutorial);
-    expect(adjacentLinks("quick-start", reordered).previous?.title).toBe(
-      "Updated cooperation title",
-    );
+  it("ignores collection enumeration order and uses current source titles", () => {
+    expect(learningGroups(guides.toReversed(), lessons.toReversed(), tutorial.toReversed())).toEqual(groups);
+    const renamed = guides.map((guide) => guide.id === "building-fx"
+      ? { ...guide, data: { ...guide.data, title: "Adapt a source" } } : guide);
+    expect(adjacentLinks("fx-push-reactivity", learningGroups(renamed, lessons, tutorial)).next?.title).toBe("Adapt a source");
+    expect(adjacentLinks("missing", groups)).toEqual({});
   });
 });

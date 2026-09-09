@@ -13,8 +13,7 @@ Prerequisites: [Tooltip](/explore/ui-tooltip) for descriptive popups and [Popove
 ## Offer an author preview with a permanent destination
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Hovercard from "@typed/ui/Hovercard";
 
 const AuthorPreview = component(function* (id: string) {

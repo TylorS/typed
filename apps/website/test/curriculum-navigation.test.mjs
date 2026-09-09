@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { preview } from "astro";
 import { chromium } from "playwright";
 
-test("article continuation follows the actual sidebar curriculum", async (t) => {
+test("article continuation stays inside deliberate learning paths", async (t) => {
   const server = process.env.SITE_ORIGIN
     ? undefined
     : await preview({
@@ -44,31 +44,30 @@ test("article continuation follows the actual sidebar curriculum", async (t) => 
       200,
       `${route} must resolve to a current lesson`,
     );
-    const navigation = await page.evaluate((integration) => {
+    const navigation = await page.evaluate(() => {
       const sidebar = document.querySelector(
         ".docs-sidebar [data-docs-navigation]",
       );
       if (!sidebar) throw new Error("Documentation sidebar is missing");
-      const links = [...sidebar.querySelectorAll("a")]
-        .filter((link) => link.parentElement instanceof HTMLDetailsElement)
-        .filter(
-          (link) =>
-            !integration || new URL(link.href).pathname.includes("/integrate/"),
-        );
-      const current = links.findIndex(
-        (link) => link.getAttribute("aria-current") === "page",
-      );
+      const active = sidebar.querySelector('a[aria-current="page"]');
+      if (!(active instanceof HTMLAnchorElement)) throw new Error("Current chapter is missing");
+      const group = active?.parentElement;
+      const links = group?.dataset.learningSequence === "true"
+        ? [...group.querySelectorAll("a")]
+        : [];
+      const current = links.indexOf(active);
       const footer = document.querySelector(".article-footer");
       if (!footer) throw new Error("Article continuation is missing");
       return {
+        active: !!active,
         current,
         previous: links[current - 1]?.href,
         next: links[current + 1]?.href,
         footer: [...footer.querySelectorAll("a")].map((link) => link.href),
       };
-    }, route.startsWith("/integrate/"));
+    });
     assert.ok(
-      navigation.current >= 0,
+      navigation.active,
       `${route} has no current chapter in the sidebar`,
     );
     if (navigation.previous)
@@ -79,6 +78,8 @@ test("article continuation follows the actual sidebar curriculum", async (t) => 
       );
     if (navigation.next)
       assert.equal(navigation.footer.at(-1), navigation.next, `${route} next`);
+    else
+      assert.equal(navigation.footer.length, 1, `${route} must not leave its path`);
   }
   await page.goto(`${origin}${base}/explore/storybook/`, {
     waitUntil: "domcontentloaded",
@@ -91,6 +92,6 @@ test("article continuation follows the actual sidebar curriculum", async (t) => 
           (link) => new URL(link.href).pathname,
         ),
       ),
-    [`${base}/explore/ui/`, `${base}/explore/fx-operator-atlas/`],
+    [`${base}/explore/`],
   );
 });

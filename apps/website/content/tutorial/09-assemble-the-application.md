@@ -7,12 +7,12 @@ demo: "todo-9"
 architecture: ["domain", "application", "presentation", "infrastructure", "main"]
 ---
 
-The modules describe an application. `src/main.ts` chooses its services, host, renderer, and running lifetime.
+You have been running `src/main.ts` since the shell chapter. Now follow how it connects the completed modules: services, host, renderer and running lifetime. The diagram above shows the application boundaries.
 
 ## Import the outer pieces
 
 ```ts
-// @source examples/todo-9/src/main.ts#L1-L5
+// @source examples/todo-9/src/main.ts#L3-L7
 // @expect import { Services }
 // @expect import { TodoApp }
 ```
@@ -22,16 +22,16 @@ Presentation depends on application contracts, while infrastructure implements t
 ## Start the application
 
 ```ts
-// @source examples/todo-9/src/main.ts#L7-L12
+// @source examples/todo-9/src/main.ts#L9-L14
 // @expect await render(TodoApp, document.body).pipe
-// @expect Layer.provide([Services, DomRenderTemplate])
+// @expect Services.pipe(Layer.provide([Ids.Default, DateTimes.Default]))
 ```
 
 Read the pipeline in order:
 
 1. `render` describes mounting `TodoApp` into the chosen host.
 2. `Fx.drainLayer` gives the running render stream a Layer lifetime.
-3. `Layer.provide` supplies application services and the DOM renderer.
+3. `Layer.provide` supplies application services and the DOM renderer. The entry chooses `Ids.Default` and `DateTimes.Default`; the factory receives those services without fixing a runtime itself.
 4. `Layer.launch` keeps the application running, and `Effect.runPromise` starts it from the JavaScript entrypoint.
 
 Keep mounting here. Importing `TodoApp` in a test should not start a second application.
@@ -39,7 +39,7 @@ Keep mounting here. Importing `TodoApp` in a test should not start a second appl
 ## Compare the embedded entry
 
 ```ts
-// @source examples/todo-9/src/preview.ts#L1-L7
+// @source examples/todo-9/src/preview.ts#L1-L14
 // @expect ServerRouter
 // @expect makeServices
 ```
@@ -48,7 +48,7 @@ The preview imports the same component and service implementation. It selects a 
 
 **Try the complete flow:** create two todos, save an edit, complete that item, select Completed, clear it, return to All, then reload. The other item should remain. Missing-service types point to assembly; duplicate event handling can indicate that the same host was mounted twice without closing the first lifetime.
 
-The complete files below are a checkpoint if you joined midway. Next, turn the identity and state guarantees into tests of these actual modules.
+The complete files below are a checkpoint if you joined midway. Next, combine the tests you ran earlier with rendered identity and teardown checks.
 
 ## Complete files
 

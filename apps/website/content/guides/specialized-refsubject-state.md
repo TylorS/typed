@@ -2,7 +2,7 @@
 title: "Choose specialized state from the questions it answers"
 summary: "Model a review queue's ordered rows, keyed lookup, optional focus, field edits, and settled outcomes with the appropriate RefSubject operations."
 section: "State"
-kind: "guide"
+kind: "reference"
 order: 2.2
 ---
 
@@ -15,7 +15,8 @@ retain the same Effect current read, Fx observation, serialized writes, errors, 
 Choose the representation from the model's questions, then choose the helper whose return type
 expresses whether it writes, computes a value, or represents absence.
 
-Read [RefSubject's model](/explore/refsubject-renderer-independent-state) first. The specialization
+Read [RefSubject's model](/explore/refsubject-renderer-independent-state) first. This is a
+representation lookup, not the State path's next required lesson. The specialization
 is a vocabulary over that model, not a new state architecture.
 
 ## Keep an array when order is meaningful

@@ -111,3 +111,4 @@ type _ScalarPipelineRequiresParentScope = Assert<
 type _ParameterizedPipelineRequiresParentScope = Assert<
   Equal<Fx.Services<typeof pipedGreeting>, Scope.Scope>
 >;
+

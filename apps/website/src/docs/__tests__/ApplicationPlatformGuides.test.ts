@@ -40,7 +40,7 @@ describe("application and platform guides", () => {
     for (const guide of lessons) {
       expect(guide.title.trim(), guide.slug).not.toBe("");
       expect(guide.summary.trim(), guide.slug).not.toBe("");
-      expect(["concept", "guide", "deep-dive"], guide.slug).toContain(guide.kind);
+      expect(["concept", "guide", "deep-dive", "reference"], guide.slug).toContain(guide.kind);
       expect(extractTypeScriptFences(guide.body).length, guide.slug).toBeGreaterThan(0);
     }
     for (const file of routingFiles.slice(1)) {

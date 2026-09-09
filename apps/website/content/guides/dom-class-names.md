@@ -19,8 +19,7 @@ need different bookkeeping.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const SelectableArticle = component(function* () {
   const selected = yield* RefSubject.make(false);

@@ -1,8 +1,8 @@
 ---
 title: "NativePopover: observe open state on a real element"
-summary: "Own markup and reverse toggle synchronization while reusing the native observer."
+summary: "Reference an application-owned popover bridge, connection wait, and reverse toggle synchronization."
 section: "UI / Overlays"
-kind: "deep-dive"
+kind: "reference"
 order: 283
 ---
 
@@ -16,8 +16,7 @@ Pass a stable, page-unique ID for the target relationship. This application uses
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { EventHandler, html, component } from "@typed/template";
 import * as Dom from "@typed/ui/Dom";
 import * as NativePopover from "@typed/ui/NativePopover";
 

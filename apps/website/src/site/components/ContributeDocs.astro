@@ -1,0 +1,47 @@
+---
+interface Props {
+  sources: readonly { path: string; label?: string }[];
+}
+const { sources } = Astro.props;
+---
+
+<aside class="docs-contribution" aria-label="Contribute to the documentation">
+  <p>See something incorrect or missing from the docs?</p>
+  <ul>
+    {
+      sources.map(({ path, label }) => (
+        <li>
+          <a
+            href={`https://github.com/TylorS/typed/edit/development/apps/website/${path.split("/").map(encodeURIComponent).join("/")}`}
+          >
+            {label ?? "Contribute an edit on GitHub"}{" "}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</aside>
+
+<style>
+  .docs-contribution {
+    margin-block-start: 2.5rem;
+    padding-block-start: 1.25rem;
+    border-block-start: 1px solid var(--line);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .docs-contribution ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    list-style: none;
+    padding: 0;
+    margin-block-start: 0.25rem;
+  }
+  .docs-contribution a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+</style>

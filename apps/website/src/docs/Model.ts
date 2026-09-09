@@ -217,7 +217,7 @@ export const GuideDocumentationSchema = Schema.Struct({
   title: Schema.String,
   summary: Schema.String,
   section: Schema.optionalKey(Schema.String),
-  kind: Schema.optionalKey(Schema.Literals(["concept", "guide", "deep-dive"])),
+  kind: Schema.optionalKey(Schema.Literals(["concept", "guide", "deep-dive", "reference"])),
   order: Schema.optionalKey(Schema.Number),
   headings: Schema.Array(Schema.String),
   body: Schema.String,

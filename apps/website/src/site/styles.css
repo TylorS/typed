@@ -412,6 +412,7 @@ kbd {
   padding: 2rem;
   background: var(--color-base-200);
 }
+.path-card h2,
 .path-card h3 {
   font-size: 1.35rem;
   letter-spacing: -0.03em;

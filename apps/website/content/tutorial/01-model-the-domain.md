@@ -41,7 +41,18 @@ Keep committed text here. An unfinished edit belongs to the row, because cancell
 
 Toggling changes one completion flag. Deleting removes one ID. Neither function needs a DOM, a state container, or a browser event, so both are easy to test with ordinary values.
 
-**Check your understanding:** make two todos with identical text and different IDs. Toggle one. Which item should change, and which object should remain the same? We will turn this into a test in the final chapter.
+## Check identity now
+
+Make two todos with identical text and different IDs. Toggle one. Which object should remain the same?
+
+Add the test file below, install Vitest with `npm install --save-dev vitest`, and run `npm exec vitest -- run src/domain.test.ts`. It tests this `domain.ts`, including unchanged input and retained identity.
+
+<details>
+<summary>Expected result</summary>
+
+Only the requested ID changes. The other object is retained, and the original array still describes two incomplete todos. Change the lookup to compare text and watch this test catch the mistake.
+
+</details>
 
 The full file also includes the count and filter helpers we will introduce when their controls appear. Next, give the application a place to hold the current list.
 
@@ -54,6 +65,15 @@ Keep the files from the previous step and replace or add these. Each full file i
 
 ```ts file="src/domain.ts"
 // @source examples/todo-1/src/domain.ts
+```
+
+</details>
+
+<details class="curriculum-file">
+<summary>src/domain.test.ts</summary>
+
+```ts file="src/domain.test.ts"
+// @source examples/todo-1/src/domain.test.ts
 ```
 
 </details>

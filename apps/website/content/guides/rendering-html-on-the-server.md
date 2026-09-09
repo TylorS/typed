@@ -1,6 +1,6 @@
 ---
 title: "Rendering HTML on the server"
-summary: "Serialize a template to HTML chunks or one string without coupling it to HTTP transport."
+summary: "Choose Typed HTML serialization without duplicating HTTP transport and hydration policy."
 section: "Template rendering"
 kind: "guide"
 order: 2

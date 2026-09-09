@@ -24,5 +24,6 @@ export const TodoApp = html`<section class="todoapp">
       />
       <button type="submit" class="add-todo-button">Add todo</button>
     </form>
+    <p role="status">Accepted todos: ${RefSubject.map(App.TodoList, (todos) => todos.length)}</p>
   </header>
 </section>`;

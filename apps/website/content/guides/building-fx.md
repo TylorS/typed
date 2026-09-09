@@ -150,40 +150,8 @@ Rapid callbacks can therefore overlap even if each observer does asynchronous wo
 explicit queue can serialize publications when the feature needs it; `callback` does not invent a
 queue or backpressure mechanism.
 
-A resourceful adapter has one further requirement: its connection must remain alive throughout
-listener delivery, not only during registration:
-
-```ts
-import { Context, Effect } from "effect";
-import { Fx } from "@typed/fx";
-
-interface Connection {
-  readonly listen: (f: (value: string) => void) => () => void;
-  readonly close: Effect.Effect<void>;
-}
-
-interface Connections {
-  readonly open: Effect.Effect<Connection>;
-}
-
-const Connections = Context.Service<Connections>("docs/Connections");
-
-const messages: Fx.Fx<string, never, Connections> = Fx.genScoped(function* () {
-  const connections = yield* Connections;
-  const connection = yield* Effect.acquireRelease(connections.open, (open) => open.close);
-
-  return Fx.callback<string>((emit) => {
-    const stop = connection.listen((message) => emit.succeed(message));
-    return Effect.sync(stop);
-  });
-});
-```
-
-`genScoped` encloses acquisition and the selected callback source. On exit, callback cleanup removes
-the listener and the connection finalizer closes the handle. On acquisition failure, there is no
-listener to install. On interruption while silent, both registered cleanups still run.
-
-Test those three paths before relying on the adapter: first value with `take(1)`, acquisition
-failure, and interruption before any value. A successful value assertion alone cannot reveal a
-listener leak. Continue with [dynamic producers](/explore/fx-dynamic-producers) when configuration
-selects the source, or [consumers](/explore/consuming-fx) to give a live source its owning execution.
+A callback owns only its listener. When it also needs an acquired connection, keep that resource
+alive through selected observation with [`Fx.genScoped`](/explore/fx-dynamic-producers#keep-acquisition-alive-through-the-selected-producer).
+That lifetime is the dynamic-producer decision, rather than a second constructor pattern here.
+Continue with [dynamic producers](/explore/fx-dynamic-producers) when configuration selects the
+source, or [consumers](/explore/consuming-fx) to give a live source its owning execution.

@@ -1,6 +1,5 @@
-import { component } from "@typed/ui/Component";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const Counter = component(function* () {
   // Allocate per mounted view so separate counters keep independent state.

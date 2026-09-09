@@ -1,8 +1,8 @@
 ---
 title: "Disclosure: reveal content without leaving the page"
-summary: "Compose native details and summary with hydrated state and predictable structure."
+summary: "Reference named disclosure parts and native details synchronization."
 section: "UI / Overlays"
-kind: "deep-dive"
+kind: "reference"
 order: 284
 ---
 
@@ -14,8 +14,7 @@ Prerequisites: [component construction](/explore/ui-component) and [RefSubject s
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Button from "@typed/ui/Button";
 import * as Disclosure from "@typed/ui/Disclosure";
 

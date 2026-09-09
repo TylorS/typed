@@ -4,6 +4,8 @@ title: "Use Svelte 5 and Typed together"
 summary: "Use @typed/svelte for bidirectional rendering, native stores, Effect services, and matching server and browser snapshots."
 ---
 
+See [streaming SSR across framework boundaries](/explore/streaming-framework-integrations) for which component bodies stream and which are buffered.
+
 `@typed/svelte` preserves Svelte component state while Typed updates its props, and lets a Svelte application render Typed views. Native stores expose Effect resources without a component-local subscription adapter. Use a Svelte 5 build that compiles `.svelte` files with the matching runtime.
 
 `view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
@@ -54,8 +56,7 @@ Pass the imported component to `editorPage`. `view` generates a unique host ID f
 import type { Component } from "svelte";
 import { RefSubject } from "@typed/fx";
 import { view } from "@typed/svelte";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 
 export const editorPage = (Editor: Component<{ title: string; saved: boolean }>) =>
   component(function* () {

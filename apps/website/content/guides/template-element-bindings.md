@@ -2,7 +2,7 @@
 title: "Attributes, properties, and boolean state"
 summary: "Choose the exact browser field a scalar interpolation owns, including sparse attributes and boolean presence."
 section: "Template bindings"
-kind: "deep-dive"
+kind: "reference"
 order: 1
 ---
 
@@ -11,8 +11,8 @@ normal: the attribute describes markup, while the property is the live edit buff
 button adds another distinction—its boolean attribute is true by being present, even if its text
 is `"false"`.
 
-After [authoring a template](/explore/authoring-typed-templates), learn these three browser contracts
-before choosing a binding. The syntax tells Typed which exact field should receive future values.
+After [authoring a template](/explore/authoring-typed-templates), use this compact lookup when a
+binding must choose an exact browser field.
 
 ## Use attributes for serialized metadata
 
@@ -47,8 +47,7 @@ does not treat nullish values as an instruction to remove an attribute.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import * as EventHandler from "@typed/template/EventHandler";
 
 export const QueryField = component(function* () {
@@ -56,10 +55,7 @@ export const QueryField = component(function* () {
   const readQuery = EventHandler.make((event: Event) =>
     RefSubject.set(query, (event.currentTarget as HTMLInputElement).value),
   );
-  return html`<label>
-    Search saved articles
-    <input type="search" value="scope" .value=${query} oninput=${readQuery} />
-  </label>`;
+  return html`<input value="scope" .value=${query} oninput=${readQuery} />`;
 });
 ```
 
@@ -83,8 +79,7 @@ property when it starts.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const SaveControl = component(function* () {
   const readOnly = yield* RefSubject.make(false);
@@ -117,5 +112,4 @@ one scalar binding does not require that replacement.
 These parts retain their exact targets after setup. A later write is direct relative to the
 surrounding tree; serialization and browser work can still depend on the value. Record-shaped
 bindings have additional local work, described in [Spread props and data records](/explore/template-spreads-data).
-For the full event-to-mutation debugging path, continue with
-[DOM scalar parts and attributes](/explore/dom-parts-and-attributes).
+For diagnostics, see [DOM scalar parts and attributes](/explore/dom-parts-and-attributes).

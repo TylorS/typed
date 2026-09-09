@@ -6,12 +6,14 @@ kind: "guide"
 order: 1.4
 ---
 
+<span id="select-a-branch-or-a-winning-source-directly"></span>
+
 A document editor starts several kinds of work: load previews, upload attachments, save revisions,
 and submit a final command. A new input arriving while old work is active must have an intentional
 meaning. Running everything, canceling old work, and dropping repeated commands are different user
 promises, even when all three call the same server.
 
-[Composing Fx](/explore/composing-fx) combined independent producers. Here an outer value creates an
+[Composing Fx](/explore/composing-fx) combines independent producers. Here an outer value creates an
 inner Fx. The inner may emit progress and a final result, fail, or remain live. A flattening operator
 owns the relationship between those runs.
 
@@ -227,7 +229,7 @@ give these outcomes: `concatMap` finishes all three at 60; `switchMap` locally f
 30; `exhaustMap` finishes only `a` at 20; `exhaustLatestMap` finishes `a` then `c` at 40. The choice
 changes what the user ultimately saved, not just throughput.
 
-## Select a branch or a winning source directly
+## Reference: branch selection and racing
 
 Sometimes the competitors are already known. `if` switches between branches whenever its boolean
 input changes:
@@ -297,83 +299,10 @@ const explicit = revisions.pipe(
 const convenient = revisions.pipe(Fx.concatMapEffect(save));
 ```
 
-`explicit` and `convenient` preserve the same revision order. The following timelines deliberately
-have only one success token per admitted Effect; a multi-value inner-Fx timeline would misrepresent
-this cardinality.
-
-```fx-marble
-title: flatMapEffect emits at most one success for each admitted Effect
-covers: flatMapEffect
-input: a b . . . |
-operator: flatMapEffect(save)
-inner a: ^ . . saved-a |
-inner b: . ^ saved-b |
-output: . . saved-b saved-a . |
-```
-
-Unbounded admission permits `saved-b` to finish before `saved-a`.
-
-```fx-marble
-title: flatMapConcurrentlyEffect emits at most one success for each admitted Effect
-covers: flatMapConcurrentlyEffect
-input: a b c . . . . |
-operator: flatMapConcurrentlyEffect(save)
-inner a: ^ . saved-a |
-inner b: . ^ . saved-b |
-inner c: . . . ^ . saved-c |
-output: . . saved-a saved-b . saved-c . |
-```
-
-With two permits, `c` starts only after an active job releases one.
-
-```fx-marble
-title: concatMapEffect emits at most one success for each admitted Effect
-covers: concatMapEffect
-input: a b c . . . . . |
-operator: concatMapEffect(save)
-inner a: ^ . saved-a |
-inner b: . . . ^ saved-b |
-inner c: . . . . . ^ saved-c |
-output: . . saved-a . saved-b . saved-c . |
-```
-
-Sequential admission emits one saved result before the next job starts.
-
-```fx-marble
-title: switchMapEffect emits at most one success for each admitted Effect
-covers: switchMapEffect
-input: a b . . |
-operator: switchMapEffect(save)
-inner a: ^ x
-inner b: . ^ . saved-b |
-output: . . . saved-b |
-```
-
-Switching interrupts `a`; only `b` produces a successful result.
-
-```fx-marble
-title: exhaustMapEffect emits at most one success for each admitted Effect
-covers: exhaustMapEffect
-input: a b . . c . . |
-operator: exhaustMapEffect(save)
-inner a: ^ . saved-a |
-inner c: . . . . ^ saved-c |
-output: . . saved-a . . saved-c . |
-```
-
-The busy `b` input has no inner lane and no result.
-
-```fx-marble
-title: exhaustLatestMapEffect emits at most one success for each admitted Effect
-covers: exhaustLatestMapEffect
-input: a b c . . . |
-operator: exhaustLatestMapEffect(save)
-inner a: ^ . . saved-a |
-inner c: . . . . ^ saved-c |
-output: . . . saved-a . saved-c |
-```
-
-Only the latest waiting input `c` runs after active `a` finishes.
+`explicit` and `convenient` preserve the same revision order. Every `*Effect` variant has the
+policy named by its base operator and produces at most one successful result per admitted input.
+Use the generated [operator atlas](/explore/fx-operator-atlas) when selecting a specific convenience
+variant; the comparison above is the learner-facing policy decision.
 
 All policies combine outer and inner error/service channels and require a Scope owning admitted and
 waiting work. Put request recovery inside the mapper when later input should survive that failure;

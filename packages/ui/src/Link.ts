@@ -34,16 +34,15 @@ import type { HostResult } from "./Dom/Types.js";
  * @since 1.0.0
  * @category Component options
  */
-export type LinkOptions = Dom.HostOptions<HTMLAnchorElement> &
-  Dom.ElementOptions<HTMLAnchorElement> & {
-    readonly href: Renderable<string, any, any>;
-    readonly content: Renderable<
-      string | number | boolean | null | undefined | void | RenderEvent,
-      any,
-      any
-    >;
-    readonly replace?: boolean;
-  };
+export type LinkOptions = Dom.HostOptions<HTMLAnchorElement> & {
+  readonly href: Renderable<string, any, any>;
+  readonly content: Renderable<
+    string | number | boolean | null | undefined | void | RenderEvent,
+    any,
+    any
+  >;
+  readonly replace?: boolean;
+};
 
 type LinkError<Options extends object> = Renderable.ErrorFromObject<Options> | NavigationError;
 
@@ -91,26 +90,6 @@ function makeLinkClickHandler(
   );
 }
 
-function legacyProps(options: LinkOptions): Record<string, unknown> {
-  const modern = options.props as Record<string, unknown> | undefined;
-  const props: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(options)) {
-    if (
-      key === "content" ||
-      key === "href" ||
-      key === "props" ||
-      key === "ref" ||
-      key === "replace" ||
-      key[0] === "@" ||
-      (key[0] === "o" && key[1] === "n") ||
-      (modern !== undefined && Object.hasOwn(modern, key))
-    )
-      continue;
-    props[key] = value;
-  }
-  return props;
-}
-
 type LinkClickHandler = ReturnType<typeof makeLinkClickHandler>;
 type LinkInternalProps<Options extends LinkOptions> = {
   readonly href: Options["href"];
@@ -120,7 +99,6 @@ type LinkInternalProps<Options extends LinkOptions> = {
 function internalProps<const Options extends LinkOptions>(options: Options) {
   return (): LinkInternalProps<Options> =>
     ({
-      ...legacyProps(options),
       href: sanitizeLinkHref(options.href),
       onclick: makeLinkClickHandler(options.replace ?? false),
     }) as LinkInternalProps<Options>;

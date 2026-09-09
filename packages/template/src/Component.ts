@@ -1,7 +1,8 @@
 import * as Effect from "effect/Effect";
 import * as Scope from "effect/Scope";
 import { Fx } from "@typed/fx";
-import { liftRenderableToFx, type Renderable } from "@typed/template";
+import { liftRenderableToFx } from "./Render.js";
+import type { Renderable } from "./Renderable.js";
 
 type ComponentFx<Yield extends Effect.Effect<any, any, any>, Result extends Renderable.Any> = [
   Fx.Fx<
@@ -54,8 +55,7 @@ export namespace component {
    *
    * @example
    * ```ts
-   * import { component } from "@typed/ui/Component"
-   * import { html } from "@typed/template"
+   * import { component, html } from "@typed/template"
    *
    * const define: component.Gen = component
    * const Greeting = define(function* (name: string) {
@@ -316,8 +316,7 @@ export namespace component {
  *
  * @example
  * ```ts
- * import { component } from "@typed/ui/Component"
- * import { html } from "@typed/template"
+ * import { component, html } from "@typed/template"
  * import { Effect } from "effect"
  *
  * const Greeting = component(function* (name: string) {

@@ -87,7 +87,7 @@ export const tutorialStepBySlug = new Map(tutorialSteps.map((step) => [step.slug
 export const curriculumSearchEntries = [
   {
     id: "curriculum:quick-start",
-    title: "Quick Start",
+    title: "Quick Start: install Typed and run a counter",
     kind: "guide" as const,
     text: quickStartSections
       .filter(({ id }) => isQuickStartSection(id))

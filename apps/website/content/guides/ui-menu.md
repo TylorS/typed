@@ -1,8 +1,8 @@
 ---
 title: "Menu: commands, checked items, and nested popups"
-summary: "Compose native popover command menus without confusing active focus with application state."
+summary: "Reference command menus, disabled traversal, submenu ownership, and explicit focus state."
 section: "UI / Collections"
-kind: "deep-dive"
+kind: "reference"
 order: 242
 ---
 
@@ -21,8 +21,7 @@ command and lets the user keep changing a view preference without reopening the 
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Menu from "@typed/ui/Menu";
 
 export const DocumentActions = component(function* () {

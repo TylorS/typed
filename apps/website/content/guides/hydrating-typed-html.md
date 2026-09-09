@@ -3,7 +3,7 @@ title: "Hydrating Typed HTML"
 summary: "Adopt compatible Typed SSR output below one DOM host, or construct fresh output when the adoption contract does not match."
 section: "Template rendering"
 kind: "guide"
-order: 3
+order: 92
 ---
 
 A server-rendered search input may already contain a visitor's edit before JavaScript starts.

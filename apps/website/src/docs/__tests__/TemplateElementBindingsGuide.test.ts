@@ -16,7 +16,7 @@ describe("Template element bindings guide", () => {
 
     expect(guide).toMatchObject({
       section: "Template bindings",
-      kind: "deep-dive",
+      kind: "reference",
     });
     const examples = extractTypeScriptFences(guide.body).join("\n");
     for (const syntax of ["title=${description}", ".value=${query}", "oninput=${readQuery}", "?disabled=${readOnly}"]) {

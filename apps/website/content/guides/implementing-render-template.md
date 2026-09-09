@@ -17,19 +17,9 @@ new template target.
 
 ## Choose the smallest library boundary
 
-| Library responsibility | Appropriate boundary |
-| --- | --- |
-| Static reusable markup | direct `html` template function |
-| Setup returning a template Fx | `Fx.gen` |
-| Isolated view scope or setup returning other renderable forms | `component` |
-| Foreign nodes and their resource lifetime | scoped producer of `DomRenderEvent` |
-| One element's observer/resource | scoped ref callback |
-| Policy around template interpretation | delegated `RenderTemplate` service |
-| Interpretation for a new target | `RenderTemplate` plus public AST/output contracts |
-
-Do not implement a renderer merely to embed a chart. Its output already exists and can enter a
-normal template range. A RenderTemplate implementation is responsible for interpreting the authored
-literal and its dynamic values, not just placing an existing node.
+Use `RenderTemplate` only for policy around interpreting authored literals or for a genuinely new
+target. A chart or other existing output belongs in `DomRenderEvent`; a resource on one element
+belongs in a ref. [RenderEvent output](/explore/render-event-substrate) is the concise boundary chooser.
 
 ## Decorate the shipped target without recursive resolution
 
@@ -77,6 +67,9 @@ observation for the tested output and verify interruption still finalizes the pr
 rewrite the application's templates to accommodate the observer.
 
 ## Define a new target's semantics before implementing its parser loop
+
+The decorator above is complete. The following is a separate task: implement a new target only when
+the public parser/AST/output contracts are required.
 
 The service returns an Fx of RenderEvents while preserving the interpolation values' errors,
 requirements, and running Scope. A fresh target must decide how every supported part behaves:

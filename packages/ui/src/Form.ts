@@ -2914,7 +2914,7 @@ export interface SchemaBoundForm<Fields extends FormFields> {
  * import { Schema } from "effect";
  * import { html } from "@typed/template";
  * import { RefSubject } from "@typed/fx";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Form from "@typed/ui/Form";
  *
  * const Order = Form.make(Schema.Struct({

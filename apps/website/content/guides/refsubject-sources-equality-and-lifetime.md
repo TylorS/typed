@@ -251,20 +251,8 @@ Test source startup with a counter or acquisition finalizer, and synchronize obs
 was active. `subscriberCount` measures ref observers, so zero subscribers is compatible with a live
 source still running in the ref's private Scope.
 
-## Define equality from every consumer's needs
+## <span id="define-equality-from-every-consumers-needs">Equality checklist</span>
 
-An equivalence that compares only record IDs suppresses edits to a record's title. That may look
-like an optimization in a list count, but a title view sharing the same ref also misses the update.
-Use domain equality for the owner, then derive narrow values such as a count at the consumer edge.
-
-Never mutate a retained object or array in place and then rely on `set` to discover the mutation.
-The old and new references can be the same already-mutated object, leaving equality no previous
-snapshot to compare. Return a new value from `update`; preserve references for unchanged children
-when that reflects the model. `readonly` in TypeScript communicates intent but does not freeze the
-runtime object.
-
-A custom equality that ignores metadata also weakens the relationship between `version` and the
-exact current value. The temperature example intentionally allows `sampledAt` to change without a
-version change. A cache keyed solely by version must therefore avoid depending on `sampledAt`, or
-choose a stricter equivalence. Equality affects more than render counts: it defines invalidation
-for every observer of the state.
+Choose equality for every consumer of the owner, return new values from `update`, and derive narrow
+views at the edge. The earlier temperature example is the canonical equality contract: an equivalent
+write can replace the current value without publishing or advancing `version`.

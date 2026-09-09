@@ -1,8 +1,8 @@
 ---
 title: "Form: schema-bound controls and submission state"
-summary: "Understand decoded values, field codecs, form context, validation, metadata, and the native submit boundary."
+summary: "Canonical reference for decoded values, errors, reset, submit, and native form limitations."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 238
 ---
 
@@ -16,7 +16,7 @@ A form crosses three representations: browser text and checked properties, decod
 import { Schema } from "effect";
 import { html } from "@typed/template";
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 import * as Form from "@typed/ui/Form";
 
 const Order = Form.make(Schema.Struct({

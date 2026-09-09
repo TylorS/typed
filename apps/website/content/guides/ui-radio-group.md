@@ -1,8 +1,8 @@
 ---
 title: "RadioGroup: one choice and one native group"
-summary: "Combine native radio inputs, named form values, and optional collection-based focus movement."
+summary: "Reference native radio name/value identity and collection-backed keyboard movement."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 234
 ---
 
@@ -11,8 +11,7 @@ Radio buttons answer one question with one choice. Their group name, selected va
 ## Build the group from real inputs
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as RadioGroup from "@typed/ui/RadioGroup";
 
 export const DeliveryChoice = component(function* () {

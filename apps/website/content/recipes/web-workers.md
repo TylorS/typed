@@ -69,8 +69,7 @@ Create the RPC client inside the component's scope. The template accepts the req
 ```ts file="SummaryView.ts"
 import * as BrowserWorker from "@effect/platform-browser/BrowserWorker";
 import * as Fx from "@typed/fx/Fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import { Layer } from "effect";
 import { RpcClient } from "effect/unstable/rpc";
 import { SummaryRpc } from "./summary.js";

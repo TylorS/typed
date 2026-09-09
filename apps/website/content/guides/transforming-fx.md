@@ -6,12 +6,14 @@ kind: "guide"
 order: 1.2
 ---
 
+<span id="normalize-before-comparing-repeated-input"></span>
+
 A catalog feed contains records the page cannot display directly: inactive products, raw cents, and
 prices that need a currency service. The source already decides when records arrive. This lesson
 turns each record into useful page data without changing who owns the source.
 
-Start with [Building Fx](/explore/building-fx). We first make decisions from one input alone, then
-introduce a service, and finally add just enough history and time for repeated user input.
+Start with [Building Fx](/explore/building-fx). We make decisions from one input alone, then introduce
+a service. Repeated input and clocks have their own [time lesson](/explore/fx-time-and-rate).
 
 ## Admit a product and build its display value
 
@@ -205,32 +207,7 @@ second lookup may finish first. No queue is added here. Choose an explicit
 [higher-order policy](/explore/fx-higher-order-and-concurrency) when the requirement is “finish every
 conversion in order” or “discard obsolete work.”
 
-## Normalize before comparing repeated input
-
-A search field demonstrates why operator order is product behavior:
-
-```ts
-import { Effect } from "effect";
-import { Fx } from "@typed/fx";
-
-const queries = Fx.fromIterable([" t", "ty", "typed", "typed "]).pipe(
-  Fx.map((query) => query.trim()),
-  Fx.filter((query) => query.length >= 2),
-  Fx.skipRepeats,
-  Fx.debounce("10 millis"),
-);
-
-const result = await Effect.runPromise(Effect.scoped(Fx.collectAll(queries)));
-// ["typed"]
-```
-
-Trim first so `"typed"` and `"typed "` become the same query. Reject short queries before they reach
-the request boundary. `skipRepeats` remembers the last emitted value for this run; debounce then
-waits for quiet. Reversing normalization and comparison can launch a duplicate request for a
-whitespace-only edit. Reversing `tap` and the filter similarly changes whether a metric counts raw
-keystrokes or accepted queries.
-
-A second observation gets fresh comparison state and a fresh timer. This pipeline has not created
-shared writable state. Continue with [stateful transforms](/explore/fx-stateful-transforms) for
-accumulators and transitions, [time and rate](/explore/fx-time-and-rate) for clock tests, or
-[Composing Fx](/explore/composing-fx) to combine the normalized query with a category filter.
+Operator order is product behavior: normalize before an equality check, and place an observation
+before or after admission according to what it should count. Continue with
+[stateful transforms](/explore/fx-stateful-transforms) for local history, [time and rate](/explore/fx-time-and-rate)
+for debounced search, or [Composing Fx](/explore/composing-fx) to combine independent inputs.

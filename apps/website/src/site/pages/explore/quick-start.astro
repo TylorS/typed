@@ -35,6 +35,10 @@ const headings = sections.map(({ entry }) => ({
   section="QUICK START"
   current="quick-start"
   headings={headings}
+  contributionSources={sections.map(({ entry }) => ({
+    path: `content/learn/${entry.id}.md`,
+    label: `Edit “${entry.data.title}”`,
+  }))}
   {...navigation}
 >
   <Demo id="counter-reactive" client:load />
@@ -46,35 +50,28 @@ const headings = sections.map(({ entry }) => ({
       </section>
     ))
   }
-  <h2>Keep going</h2>
-  <ul>
-    <li id="component-lifetime">
-      <a href={siteHref(counterLessonPath("component-lifetime"))}
-        >Derive a value from the count</a
-      >, then learn about <a href={siteHref("/explore/building-ui-components")}
-        >components</a
-      > and <a href={siteHref("/explore/shared-state-contracts")}
-        >shared state</a
+  <h2>Make one value follow another</h2>
+  <p id="component-lifetime">
+    Next, <a href={siteHref(counterLessonPath("component-lifetime"))}
+      >derive a value from the count</a
+    >. Then build the <a href={siteHref("/explore/tutorial")}>Todo app</a> to practice
+    forms, keyed lists and persistence.
+  </p>
+  <details>
+    <summary>Optional: inspect mounting or add server rendering</summary>
+    <p id="client-only">
+      To inspect mounting, <a href={siteHref(counterLessonPath("client-only"))}
+        >start with a plain template</a
       >.
-    </li>
-    <li id="server-html">
+    </p>
+    <p id="server-html">
       <a href={siteHref(counterLessonPath("server-html"))}
-        >Render this counter on the server</a
-      > and <a
+        >Render the counter on the server</a
+      >, then <a
         id="hydrate-state"
         href={siteHref(counterLessonPath("hydrate-state"))}
         >restore its state in the browser</a
-      >.
-    </li>
-    <li>
-      <a href={siteHref("/explore/tutorial")}>Build a Todo app</a> with forms, lists,
-      and persistence.
-    </li>
-  </ul>
-  <p id="client-only">
-    For a closer look at the render pipeline, <a
-      href={siteHref(counterLessonPath("client-only"))}
-      >start with a plain template</a
-    >.
-  </p>
+      >. This is a separate path; TodoMVC stays client-side.
+    </p>
+  </details>
 </Article>

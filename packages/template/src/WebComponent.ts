@@ -214,6 +214,7 @@ export function register<F extends Fields, View extends Renderable.Any>(
             #input: RefSubject.RefSubject<Props> | undefined;
             #root: HTMLElement | ShadowRoot | undefined;
             #connections: Subject.Subject<boolean> | undefined;
+            #disconnecting = false;
             readonly #connected = Fx.genScoped(
               function* (this: TypedElement) {
                 const root = this.#root ?? (this.#root = getRoot(this, shadow));
@@ -376,40 +377,48 @@ export function register<F extends Fields, View extends Renderable.Any>(
               if (this.#_props === undefined && !this.#readAttributes()) return;
               this.#initialProps = this.#_props;
               if (this.style.display === "") this.style.display = "contents";
-              if (this.#connections === undefined) {
-                const connections = Subject.unsafeMake<boolean>(1);
-                this.#connections = connections;
+              if (this.#connections !== undefined) return;
+              const connections = Subject.unsafeMake<boolean>(1);
+              this.#connections = connections;
 
-                run(
-                  Fx.if(connections, {
-                    onTrue: this.#connected,
-                    onFalse: Fx.empty,
-                  }).pipe(
-                    Fx.ensuring(
-                      Effect.sync(() => {
-                        if (this.#connections === connections) this.#connections = undefined;
-                      }),
-                    ),
-                    Fx.drain,
-                    Effect.scoped,
+              run(
+                Fx.if(connections, {
+                  onTrue: this.#connected,
+                  onFalse: Fx.empty,
+                }).pipe(
+                  Fx.ensuring(
+                    Effect.sync(() => {
+                      if (this.#connections === connections) this.#connections = undefined;
+                    }),
                   ),
-                );
-              }
+                  Fx.drain,
+                  Effect.scoped,
+                ),
+              );
 
-              run(this.#connections.onSuccess(true));
+              run(connections.onSuccess(true));
             }
 
             disconnectedCallback() {
               this.#input = undefined;
               const connections = this.#connections;
-              if (connections === undefined) return;
+              if (connections === undefined || this.#disconnecting) return;
+              this.#disconnecting = true;
 
               run(
                 connections.onSuccess(false).pipe(
                   Effect.andThen(() => {
-                    if (this.isConnected || this.#connections !== connections) return Effect.void;
+                    if (this.#connections !== connections) {
+                      this.#disconnecting = false;
+                      return Effect.void;
+                    }
+                    if (this.isConnected) {
+                      this.#disconnecting = false;
+                      return connections.onSuccess(true);
+                    }
 
                     this.#connections = undefined;
+                    this.#disconnecting = false;
                     return connections.interrupt;
                   }),
                 ),

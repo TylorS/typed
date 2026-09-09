@@ -11,7 +11,9 @@ initial value shapes as `RefSubject.make`, but adds an Effect Schema codec and a
 protocol. On the server it encodes the ref's current value into HTML; during Typed DOM hydration it
 decodes that value before the ref's ordinary initializer continues.
 
-Use it only for state that crosses this server-to-browser boundary. Use `RefSubject.make` for state
+Use it only for state that crosses this server-to-browser boundary. This is an SSR-branch guide;
+use [renderer-independent state](/explore/refsubject-renderer-independent-state) for the State path.
+Use `RefSubject.make` for state
 that begins and stays in one runtime. Hydration is not a general persistence mechanism: the browser
 must be adopting compatible Typed HTML from the same template.
 
@@ -23,7 +25,7 @@ ref remains ordinary writable state after hydration.
 
 ```ts
 import { Schema } from "effect"
-import { component } from "@typed/ui/Component"
+import { component } from "@typed/template"
 import { RefSubject } from "@typed/fx"
 import { html } from "@typed/template"
 
@@ -50,7 +52,7 @@ stay synchronized with later successful state updates.
 
 ```ts
 import { Schema } from "effect"
-import { component } from "@typed/ui/Component"
+import { component } from "@typed/template"
 import { RefSubject } from "@typed/fx"
 import { html } from "@typed/template"
 

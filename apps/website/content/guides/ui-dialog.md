@@ -17,8 +17,7 @@ Supply the real archive Effect and a stable, page-unique instance ID. Its servic
 ```ts
 import { Data, Effect } from "effect";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Button from "@typed/ui/Button";
 import * as Dialog from "@typed/ui/Dialog";
 

@@ -6,6 +6,8 @@ kind: "concept"
 order: 1
 ---
 
+<span id="follow-the-search-feature-through-the-curriculum"></span>
+
 A search screen receives keystrokes, waits for a usable query, starts a request, and displays a
 result. The difficult questions are about work: what starts it, what happens to an old request,
 and what stops the input listener when the screen closes? `Fx` makes those decisions composable.
@@ -129,27 +131,14 @@ Observing an ordinary Fx twice runs registration twice. Assigning a source to a 
 share it. [Subject sharing](/explore/subject-event-publications) is the explicit choice when two
 consumers should use one active connection.
 
-## Follow the search feature through the curriculum
+## Continue with one decision at a time
 
-| Feature decision | Lesson |
-| --- | --- |
-| Adapt a request, clock, iterable, or browser callback | [Building Fx](/explore/building-fx) |
-| Read configuration before selecting a scoped feed | [Dynamic producers](/explore/fx-dynamic-producers) |
-| Normalize the query and reject unusable input | [Transforming Fx](/explore/transforming-fx) |
-| Detect changes or accumulate progress | [Stateful transforms](/explore/fx-stateful-transforms) |
-| Replace stale requests or serialize writes | [Higher-order work](/explore/fx-higher-order-and-concurrency) |
-| Combine query, filter, and submit signals | [Composing Fx](/explore/composing-fx) |
-| End at a count, sentinel, or logout signal | [Selection and cardinality](/explore/fx-selection-and-cardinality) |
-| Wait for typing to settle and test the clock | [Time and rate](/explore/fx-time-and-rate) |
-| Recover a request while keeping later input alive | [Errors and recovery](/explore/fx-errors-and-recovery) |
-| Close feature resources or share application services | [Services and lifetime](/explore/fx-services-and-lifetime) |
-| React to updates or await one result | [Consuming Fx](/explore/consuming-fx) |
+Build a source in [Building Fx](/explore/building-fx), then learn to
+[consume it](/explore/consuming-fx), [transform values](/explore/transforming-fx), and
+[combine independent producers](/explore/composing-fx). When a value starts work of its own,
+[higher-order work](/explore/fx-higher-order-and-concurrency) makes the admission policy explicit;
+[time](/explore/fx-time-and-rate) and [recovery](/explore/fx-errors-and-recovery) add the two common
+boundaries. The [API reference](/reference/modules/%40typed%2Ffx) is the complete operator lookup.
 
-The [API reference](/reference/modules/%40typed%2Ffx) provides complete signatures. The lessons
-explain which contract your feature needs before you choose its overload.
-
-Open **Read this diagram** beneath a timeline to match its visual markers to their meanings.
-Value pills show emissions, raised chevrons start runs, vertical bars mark returns, exclamation
-marks report causes, and crosses mark interruption. Empty stretches contain no event. Read
-vertically to find the input that caused an output or cancellation. Columns are logical moments unless the caption gives a duration. Inner lanes
-represent separate runs; their lifetime matters as much as their values.
+Each timeline has **Read this diagram** help. It defines value pills, starts, completion, causes,
+interruption, and logical time so the lesson can stay focused on its decision.

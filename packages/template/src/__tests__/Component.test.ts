@@ -5,7 +5,7 @@ import { Window } from "happy-dom";
 import { assert, describe, it } from "vitest";
 import { component } from "../Component.js";
 
-describe("typed/ui/Component", () => {
+describe("typed/template/Component", () => {
   it("creates an Fx directly from a zero-arity generator", () => {
     const Greeting = component(function* () {
       const name = yield* Effect.succeed("Typed");
@@ -93,3 +93,4 @@ describe("typed/ui/Component", () => {
 function makeWindow() {
   return new Window() as unknown as globalThis.Window & typeof globalThis;
 }
+

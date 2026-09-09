@@ -43,23 +43,11 @@ the Effect with the actual command operation and retain its error/service requir
 
 ## Understand the accepted surface before designing a public prop bag
 
-| Record key | Meaning |
-| --- | --- |
-| `title`, `id`, `aria-label` | ordinary attribute set/removal |
-| `?disabled` | boolean attribute presence |
-| `.value`, `.checked`, `.indeterminate`, `.selected`, `.selectedIndex` | allowed live property assignments |
-| `class` or `className` | contributed class tokens |
-| `.data` | contributed `data-*` keys |
-| `onclick` or `@click` | native event handler |
-| `ref` | setup on the exact element |
-| `.props` or `.properties` | nested capability record |
+A spread accepts the same explicit attribute, boolean, supported property, class, `.data`, event,
+ref, and nested capability forms used above. It deliberately does not make arbitrary property
+assignment or untrusted records safe. Name an integration property directly, and use the
+[template reference](/reference/modules/%40typed%2Ftemplate%2FRender) for the exhaustive accepted-key rules.
 
-Arbitrary property assignment is deliberately not a spread feature. Name a property directly in
-the template when an integration needs it. Invalid attribute names and prototype-sensitive keys
-(`constructor`, `prototype`, `__proto__`) are ignored. Event-shaped `on*` keys are not emitted as
-HTML attributes. Cyclic nested records stop at the cycle boundary.
-
-This allowlist is renderer behavior, not a reason to accept arbitrary untrusted records in a library.
 Expose a narrow typed contract for the capabilities a component actually supports.
 
 ## Use `.data` for a slice of metadata

@@ -6,6 +6,8 @@ kind: "guide"
 order: 4
 ---
 
+<span id="keep-repeated-work-and-failure-explicit"></span>
+
 Saving a search begins as a native form submission and ends as application work. The browser owns
 submit dispatch, cancellation, propagation, and the form's fields. The application owns validation,
 the save operation, its errors, and feedback. An event part connects those responsibilities without
@@ -20,8 +22,7 @@ A clear button already knows which state it should change:
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const ClearSearch = component(function* () {
   const query = yield* RefSubject.make("scope");
@@ -97,12 +98,10 @@ cannot be canceled; these follow the browser's
 An unrelated click does not use up another element's once handler. Choose `once` for a one-time
 capability, not as a replacement for a save-in-progress policy.
 
-## Keep repeated work and failure explicit
+## Keep form work and failure explicit
 
-Two submissions can start two Effects. An event registration is not automatically a debounce,
-latest-only request, or lock. If concurrent saves are invalid, put that policy in the operation's
-state/concurrency logic and reflect pending state in the button. Disabling the button communicates
-state but does not replace the service's invariants.
+Two submissions can start two Effects. Put a save-in-progress policy in the operation state and
+reflect it in the form; event registration does not choose concurrency for the application.
 
 Expected failure remains in the template's `E` channel. Recover where the page can present a useful
 result, or transform a reusable handler with `EventHandler.catchCause`:
@@ -127,7 +126,5 @@ cancelable `SubmitEvent`, and assert cancellation and the received query. Close 
 and dispatch again; the service should not run. Also test that a pending handler is interrupted when
 its owner closes.
 
-The scope owns both registrations and started handler fibers. Removing one handler must leave
-another owner's native listener alone. Renderer authors who need to implement that boundary should
-continue with [EventSource delegation](/explore/event-source-delegation); application templates
-should keep using event parts.
+Renderer authors who need delegated mounts can continue with
+[EventSource delegation](/explore/event-source-delegation); application templates should keep using event parts.

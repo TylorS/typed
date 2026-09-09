@@ -20,6 +20,18 @@ const families = groupRecipes(await getCollection("recipes"));
         it, and who cleans it up.
       </p>
     </header>
+    <article class="path-card">
+      <p class="eyebrow">STREAMING SSR</p>
+      <h2>Third-party components can keep streaming.</h2>
+      <p>
+        React and Vue forward their server-rendered chunks directly through
+        Typed. See what streams, what buffers, and how the integration direction
+        changes the result.
+      </p>
+      <a href={siteHref("/explore/streaming-framework-integrations")}
+        >Compare streaming support →</a
+      >
+    </article>
     {
       families.map(({ title, description, entries }) => (
         <section class="home-section">

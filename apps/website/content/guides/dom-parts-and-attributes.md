@@ -2,7 +2,7 @@
 title: "DOM scalar parts and attributes"
 summary: "See which exact DOM location each scalar template interpolation owns and what one push changes."
 section: "Template rendering"
-kind: "deep-dive"
+kind: "reference"
 order: 6
 ---
 
@@ -19,8 +19,7 @@ uses them to locate a real update failure.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import * as EventHandler from "@typed/template/EventHandler";
 
 export const Search = component(function* () {

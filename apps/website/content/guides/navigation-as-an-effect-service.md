@@ -73,6 +73,11 @@ For commands such as “open next unreviewed issue” or “navigate after succe
 Navigation.navigate from the Effect workflow. Build parameterized hrefs with the
 [Route encoding contract](/explore/route-typed-url-inputs).
 
+Run the history journey above: opening an issue adds a stop, changing the filter replaces that stop, and Back returns to the queue. Choose the optional task below only when your feature needs it.
+
+<details>
+<summary>Reference: entry metadata and pending intent</summary>
+
 ## Put shareable input in the URL and visit metadata in entry state
 
 Navigation.navigate returns the committed Destination with its URL, stable entry key, unique commit
@@ -129,6 +134,11 @@ A successful navigate command says the destination committed. It does not say ev
 image, or DOM update completed. Matcher owns selection; the resource owns data readiness; an element
 reference owns availability for focus/scroll work. Keep those completion conditions separate.
 
+</details>
+
+<details>
+<summary>Recipe: confirm navigation away from a dirty editor</summary>
+
 ## Let an editor block a transition within its own Scope
 
 An editor should block while its draft is dirty and stop blocking when the editor disappears.
@@ -141,7 +151,7 @@ import { Option } from "effect"
 import { Fx, RefSubject } from "@typed/fx"
 import { useBlockNavigation } from "@typed/navigation/Blocking"
 import { html } from "@typed/template"
-import { component } from "@typed/ui/Component"
+import { component } from "@typed/template"
 
 const DraftEditor = component(function* () {
   const dirty = yield* RefSubject.make(false)
@@ -210,6 +220,11 @@ page while blocked and that pending state clears afterward. A test timeout catch
 never settles. Those tests exercise the navigation protocol; separate browser tests should verify
 Link interception, native modified clicks, and the confirmation UI's focus behavior.
 
+</details>
+
+<details>
+<summary>Reference: navigation hooks and runtime providers</summary>
+
 ## Register pre-commit policy and post-commit observation
 
 Before handlers can continue, fail with CancelNavigation, or redirect with RedirectError. After
@@ -256,3 +271,5 @@ compose it. Create the provider around the feature/application or server request
 Nested route structure belongs to [CurrentRoute and Matcher](/explore/router-navigation-live-selection).
 Use the [Navigation reference](/reference/modules/%40typed%2Fnavigation%2FNavigation) and
 [Blocking reference](/reference/modules/%40typed%2Fnavigation%2FBlocking) for exact command and event types.
+
+</details>

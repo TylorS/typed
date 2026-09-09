@@ -3,7 +3,7 @@ title: "Preserve multi-node DOM output"
 summary: "Hand existing DOM output across a renderer boundary, including a stable multi-node range when one is genuinely needed."
 section: "Template internals"
 kind: "deep-dive"
-order: 3
+order: 94
 ---
 
 A foreign summary renderer may produce a heading and paragraph without a wrapping element. A native
@@ -110,7 +110,5 @@ and reordering. Check their order and that adjacent foreign siblings remain unch
 range, assert producer finalizers separately from DOM removal. For a mounted Wire, ensure the test
 itself does not consume the range while inspecting it.
 
-Typed prefers the platform's state-preserving move operation for eligible connected nodes and falls
-back to insertion. Retaining objects does not guarantee every browser-managed state survives that
-fallback. Use [local reconciliation](/explore/dom-updates-and-reconciliation) for the move/cost
-contract and the [Wire reference](/reference/modules/%40typed%2Ftemplate%2FWire) for exact conversions.
+Use [local reconciliation](/explore/dom-updates-and-reconciliation) for the source-backed range and
+move contract, and the [Wire reference](/reference/modules/%40typed%2Ftemplate%2FWire) for conversions.

@@ -31,44 +31,11 @@ Typed brings those ideas together across Effect, [Fx](/explore/fx-push-reactivit
 [state](/explore/refsubject-renderer-independent-state),
 [templates](/explore/authoring-typed-templates), and [UI](/explore/ui).
 
-## Participate without taking over
-
-A result summary can be an ordinary function:
-
-```ts
-import { html, type Renderable } from "@typed/template"
-
-const ResultSummary = <
-  const Count extends Renderable.Any<number>
->(
-  count: Count,
-) =>
-  html`<p role="status">${count} issues found.</p>`
-```
-
-`count` can be a number or a live source of numbers. `ResultSummary` does not need to
-turn either one into some framework-owned state first.
-
-A static value stays static.
-
-A changing value keeps changing.
-
-The summary contributes presentation without taking ownership of where its value came
-from or how it changes.
-
-That is the basic shape of cooperation in Typed:
-
-**Composition preserves capabilities instead of flattening them.**
+<span id="participate-without-taking-over"></span>
 
 ## Keep contracts intact
 
-Effect gives work a contract:
-
-`Effect.Effect<A, E, R>`
-
-It can produce `A`, fail with `E`, and requires `R`.
-
-Typed does not create an escape hatch from that model when work reaches the browser.
+`Effect.Effect<A, E, R>` describes a result, possible failure and required services. Typed preserves that contract when work reaches the browser.
 
 Consider saving a search:
 
@@ -109,11 +76,7 @@ export const form = html`
 `
 ```
 
-The Effect became an [event handler](/explore/native-events-with-effect).
-
-The event handler became part of a template.
-
-Its contract survived both boundaries:
+The [event handler](/explore/native-events-with-effect) carries the Effect into a template. Its failure and service requirements survive both boundaries:
 
 ```ts
 import { Fx } from "@typed/fx"
@@ -136,373 +99,34 @@ passive listeners, and native events retain their platform meanings. `EventHandl
 connects browser dispatch to Effect work instead of inventing a synthetic event universe
 around it.
 
-## Let producers keep the clock
+## Let work and state answer different questions
 
-Not every value exists because the application asked for it.
+<span id="let-producers-keep-the-clock"></span>
 
-A person decides when to type. A socket decides when another message arrives. A worker
-decides when computation finishes.
+**Fx is where Effect and push-based semantics meet.** A socket, input or worker decides when its values arrive. Fx composes that work while retaining its errors and service requirements. For an existing pull-based source, keep its Stream and adapt it with `Fx.fromStream` at the push boundary.
 
-```
-time ─────────────────────────────────────────────▶
+A newer search can interrupt an obsolete read; a save may instead need ordering or exclusion. That policy belongs to the feature. [Build an issue search](/explore/async-data-requests-and-cache) to observe replacement and recovery in a running example.
 
-query
-────── "t" ─── "ty" ─ "typ" ─────────── "typed" ─▶
-```
+<span id="let-state-keep-its-source-of-truth"></span>
 
-The application does not pull those values into existence.
+[RefSubject](/explore/refsubject-renderer-independent-state) provides a current value and future changes. Derive a normalized query and a result count from their sources instead of adding writable copies. A command reads a snapshot; a view observes a relationship. Draft text, submitted queries and committed results remain distinct when they have different lifetimes.
 
-**The producer owns the clock.**
+<span id="let-existing-information-survive-new-work"></span>
 
-[`Fx<A, E, R>`](/explore/fx-push-reactivity) cooperates with that direction of causality.
-It describes what to do as values arrive, while keeping the same error and service
-vocabulary as Effect.
-
-For search, typing can settle before work begins:
-
-```
-query
-──── "t" ─ "ty" ─ "typ" ───────────── "typed" ───▶
-
-debounce(250ms)
-────────────────── "typ" ───────────── "typed" ───▶
-```
-
-And when newer intent makes older work irrelevant, that relationship can be expressed
-directly:
-
-```ts
-import { Effect } from "effect"
-import { Fx } from "@typed/fx"
-
-type Issue = { readonly id: string; readonly title: string }
-
-const searchResults = <E, R>(
-  queries: Fx.Fx<string>,
-  search: (query: string) => Effect.Effect<ReadonlyArray<Issue>, E, R>,
-) => queries.pipe(
-  Fx.map((query) => query.trim()),
-  Fx.skipRepeats,
-  Fx.debounce("250 millis"),
-  Fx.switchMapEffect((query) =>
-    query === ""
-      ? Effect.succeed<ReadonlyArray<Issue>>([])
-      : search(query),
-  ),
-)
-```
-
-```
-query
-────── "typ" ───────────────── "typed" ─────────▶
-
-work
-────── [ search("typ") ───────── ×
-                                 [ search("typed") ────●
-
-results
-─────────────────────────────────────────────────●───▶
-
-× interrupted
-● emitted
-```
-
-The old result is not merely ignored after wasting the work.
-
-The old **work itself becomes obsolete**.
-
-`switchMapEffect` lets the producer's newer event cooperate with Effect's interruption
-and lifetime model. Writes can choose ordering instead. Repeated submissions can choose
-exclusion. Independent work can overlap.
-
-The temporal policy belongs to the behavior being modeled rather than to a hidden
-scheduler.
-
-And the search is still Effectful throughout: its failures and required services remain
-part of the resulting Fx.
-
-**Time changed. The contract did not disappear.**
-
-## Let state keep its source of truth
-
-Events describe things happening.
-
-State describes what is true now.
-
-A search query has a current value and future changes.
-[`RefSubject`](/explore/refsubject-renderer-independent-state) supports both:
-
-```ts file="search-model.ts"
-import { Effect } from "effect"
-import { RefSubject } from "@typed/fx"
-
-export const makeSearchModel = Effect.gen(function* () {
-  const query = yield* RefSubject.make("")
-  const normalized = RefSubject.map(query, (query) => query.trim())
-  const canSearch = RefSubject.map(normalized, (query) => query.length >= 2)
-
-  return { query, normalized, canSearch }
-})
-```
-
-There is one writable fact:
-
-```
-query ─────────▶ normalized ─────────▶ canSearch
-```
-
-`normalized` and `canSearch` cooperate with `query` by describing relationships to it.
-They do not compete with it by becoming additional writable stores.
-
-There is no synchronization code to forget.
-
-A command can read a snapshot:
-
-```ts
-import { Effect } from "effect"
-import { makeSearchModel } from "./search-model.js"
-
-const readQuery = Effect.gen(function* () {
-  const model = yield* makeSearchModel
-  return yield* model.normalized
-})
-```
-
-A template can observe the same relationship:
-
-```ts
-import { Effect } from "effect"
-import { RefSubject } from "@typed/fx"
-import { html } from "@typed/template"
-import { makeSearchModel } from "./search-model.js"
-
-const searchButton = Effect.gen(function* () {
-  const model = yield* makeSearchModel
-  return html`
-    <button ?disabled=${RefSubject.map(model.canSearch, (ready) => !ready)}>
-      Search
-    </button>
-  `
-})
-```
-
-**Derived state stays derived.**
-
-The same principle helps keep other distinctions honest. The text someone is editing can
-differ from the query last submitted. Focus can differ from selection. An optimistic
-title can differ from the server's last accepted title.
-
-Cooperation does not mean collapsing related concepts together. Sometimes it means
-allowing each fact to keep its own meaning.
-
-## Let existing information survive new work
-
-Starting another request does not mean useful information suddenly stopped existing.
-
-[`AsyncData`](/explore/async-data) makes that distinction explicit:
-
-```ts
-import * as AsyncData from "@typed/async-data"
-
-const previous = AsyncData.success([
-  { id: "42", title: "Preserve editor focus" },
-])
-
-const refreshing = AsyncData.startLoading(previous)
-const editing = AsyncData.optimistic(previous, [
-  { id: "42", title: "Preserve focus when results move" },
-])
-```
-
-`refreshing` still contains the previous result.
-
-`editing` contains the provisional value and what it replaced.
-
-Fx answers questions about the work:
-
-> Which request is active? Which work should be interrupted?
-
-AsyncData answers questions about knowledge:
-
-> What do we know while that work is happening?
-
-Neither abstraction has to impersonate the other.
-
-More importantly, the network does not get to erase the person's context merely because
-another request started. A refresh can keep useful content visible. A failed save can
-preserve the draft. An [optimistic update](/explore/async-data-optimistic-edits) can
-remain distinguishable from server-confirmed state.
-
-The application's internal boundaries cooperate with the person's ongoing work.
+[AsyncData](/explore/async-data) describes what is known while work happens. Refreshing successful data can retain it as progress; a provisional edit remains distinguishable from the server's accepted value. The request policy and the visible state cooperate without becoming the same abstraction.
 
 ## Share the document
 
-The browser is already a shared platform.
+Template bindings own particular properties, class tokens, listeners and ranges. A status update need not replace the editor beside it. [Keyed rows](/explore/keyed-template-collections) retain the identity of an item while its live value changes.
 
-A page can contain Typed output, a chart, a custom element, an editor from another
-library, and an application's own design system.
+When a foreign editor owns its host's descendants, Typed can own the host's placement. The editor's worker or observer still needs an explicit finalizer in the Scope that acquired it. [Integration recipes](/integrate) show those agreements at real host boundaries.
 
-Typed does not need to own all of them.
+<span id="keep-the-browser-good-at-being-a-browser"></span>
 
-Template bindings target particular pieces of output: text, attributes, properties,
-class tokens, listeners, or structural ranges. Updating one dynamic status does not
-require rebuilding an unrelated editor beside it.
+Use native buttons, links, labels and form behavior. [UI primitives](/explore/ui) add interactions while leaving CSS and themes with the application. Focus, active choice and committed selection are different facts; moving through a menu should not accidentally commit a choice.
 
-Identity can be preserved too:
+<span id="keep-the-users-work-intact"></span>
+<span id="keep-those-promises-observable"></span>
+<span id="a-toolkit-not-a-takeover"></span>
 
-```ts
-import { Effect } from "effect"
-import { RefSubject } from "@typed/fx"
-import { html, many } from "@typed/template"
-
-const issueList = Effect.gen(function* () {
-  const issues = yield* RefSubject.make([
-    { id: "42", title: "Preserve editor focus" },
-  ])
-  return many(
-    issues,
-    (issue) => issue.id,
-    (issue) => html`<li>${RefSubject.map(issue, (value) => value.title)}</li>`,
-  )
-})
-```
-
-The key identifies the issue, not its current array position.
-
-If an editor owns the contents of its host, let it.
-
-If Typed owns where that host belongs, let Typed do that.
-
-If the editor starts a worker or observer, its cleanup belongs to the
-[Scope](/glossary#scope) that owns that integration.
-
-The same idea applies to rendering environments. A portable template can cooperate with
-[DOM rendering](/explore/mounting-dom-output),
-[server HTML](/explore/rendering-html-on-the-server), or
-[hydration](/explore/hydrating-typed-html) because the rendering implementation is
-supplied by the environment rather than baked into every reusable view.
-
-**Cooperation is a concrete agreement about who may change what, and for how long.**
-
-## Keep the browser good at being a browser
-
-The platform itself is another participant.
-
-Use a button when something is a button:
-
-```ts
-import { Effect } from "effect"
-import { EventHandler, html } from "@typed/template"
-
-const save = EventHandler.make(() => Effect.log("Save requested"))
-const saveButton = html`
-  <button onclick=${save}>
-    Save
-  </button>
-`
-```
-
-Use an anchor for navigation.
-
-Use a label for an input.
-
-Native focus, keyboard behavior, accessible names, form semantics, and event behavior
-are useful capabilities. [Typed UI](/explore/ui) builds richer interactions without
-requiring those capabilities to be discarded first.
-
-That matters when interactions become more complex.
-
-Focus is not necessarily selection.
-
-Navigating through choices is not necessarily activation.
-
-Updating a result count should not require stealing focus from the search field.
-
-A control that looks correct but strands keyboard users is not cooperating with the
-platform or with the person using it.
-
-Typed leaves CSS, themes, and visual language to the application. Its UI primitives
-participate in those systems rather than requiring another styling universe around them.
-
-## Keep the user's work intact
-
-All of these boundaries eventually meet one participant that matters more than the
-abstractions themselves: the person using the application.
-
-A slow request should not destroy their draft.
-
-A refresh should not casually blank useful information.
-
-A keyed reorder should not unnecessarily replace the input they are editing.
-
-A background update should not move focus without a reason.
-
-A screen reader should expose the same task the visual interface provides.
-
-The engineering choices throughout Typed—explicit state, preserved identity, scoped
-lifetimes, native semantics, interruptible work—are not ends by themselves.
-
-They make it possible for different parts of an application to change **without trampling
-over one another or over the person's unfinished work**.
-
-That is cooperation at the level people actually experience.
-
-## Keep those promises observable
-
-Because the boundaries stay explicit, their promises can be
-[tested](/explore/testing-typed-systems) directly:
-
-- submit two queries out of order and verify that newer intent owns the result;
-- update source state and verify that Computed state follows it;
-- prove that refreshing retains useful content;
-- fail a save and verify that the draft survives;
-- close a Scope and verify that its listener or editor is released;
-- reorder keyed issues and verify that an existing row survives;
-- complete the task with a keyboard and verify focus, names, and relationships.
-
-These are not tests of framework machinery for its own sake.
-
-They are tests of the agreements the application makes with the other systems—and
-people—it participates with.
-
-## A toolkit, not a takeover
-
-Typed's pieces share a foundation, but you do not have to adopt all of them.
-
-Use Fx with [another renderer](/integrate).
-
-Use RefSubject behind an existing UI.
-
-Introduce a Typed template into one part of a larger page.
-
-Build a component library from the primitives, or compose them into an entire
-application.
-
-**“Just a toolkit” is a statement about where control belongs, not a limit on what can
-be built.**
-
-Typed can compose deeply precisely because it does not need to own everything it
-touches.
-
-Effects keep their contracts.
-
-Producers keep their clocks.
-
-State keeps its source of truth.
-
-Resources keep their owners.
-
-Renderers keep clear boundaries.
-
-The browser keeps its semantics.
-
-Other libraries keep their responsibilities.
-
-And the person using the application keeps their work.
-
-**That is what cooperative by design means.**
-
-Continue with the [application developer's path](/explore/application-developers) to
-build a feature around these ideas, or start with the [Quick Start](/explore/quick-start)
-and follow a template into the browser. If you are building reusable infrastructure,
-continue with the [library developer's path](/explore/library-developers).
+These contracts matter when they protect someone's unfinished work. Test an obsolete completion, a keyed reorder and an interrupted owner—not only the final screenshot. You can adopt the capability you need in one part of a page. [Run the counter](/explore/quick-start) to start building, or [choose a library boundary](/explore/library-developers) to extend the toolkit.

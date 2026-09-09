@@ -1,0 +1,62 @@
+---
+import { siteHref } from "../../SiteHref.js";
+
+interface Props {
+  diagram: "todomvc" | "keyed-dom";
+}
+const { diagram } = Astro.props;
+const diagrams = {
+  todomvc: {
+    title: "How the TodoMVC modules fit together",
+    description:
+      "Main provides browser services and runs TodoApp. Presentation uses application commands and live views; application applies domain rules. Infrastructure implements services using browser APIs. All five modules run in the browser.",
+  },
+  "keyed-dom": {
+    title: "How a keyed row survives an update",
+    description:
+      "Each array reaches reconciliation. New keys acquire an entry; retained changed values update their RefSubject. One keyed range diff places the rows. Removed ranges detach immediately, with asynchronous disposal owned by the parent Scope.",
+  },
+};
+const { title, description } = diagrams[diagram];
+---
+
+<figure class="architecture-diagram">
+  <a
+    href={siteHref(`/diagrams/${diagram}.html`)}
+    aria-label={`Explore diagram: ${title}`}
+  >
+    <img
+      src={siteHref(`/diagrams/${diagram}.svg`)}
+      alt={description}
+      loading="lazy"
+    />
+  </a>
+  <figcaption>
+    <strong>{title}.</strong>
+    {description}
+    <a href={siteHref(`/diagrams/${diagram}.html`)}
+      >Explore the diagram and source references →</a
+    >
+  </figcaption>
+</figure>
+
+<style>
+  .architecture-diagram {
+    margin: 2rem 0;
+  }
+  .architecture-diagram img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+  }
+  .architecture-diagram figcaption {
+    margin-block-start: 0.75rem;
+    font-size: 0.9rem;
+  }
+  .architecture-diagram figcaption a {
+    display: block;
+    margin-block-start: 0.5rem;
+  }
+</style>

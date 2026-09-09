@@ -1,5 +1,4 @@
-import { html } from "@typed/template";
-import { component } from "../../src/Component.js";
+import { component, html } from "@typed/template";
 import { story } from "../story.js";
 
 interface GreetingProps {

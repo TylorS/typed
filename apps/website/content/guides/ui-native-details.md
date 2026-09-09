@@ -1,8 +1,8 @@
 ---
 title: "NativeDetails: connect details.open to application state"
-summary: "Use a one-way ref with an explicit browser-to-state toggle path."
+summary: "Reference the one-way details bridge and the explicit browser-to-state toggle path."
 section: "UI / Overlays"
-kind: "deep-dive"
+kind: "reference"
 order: 285
 ---
 
@@ -14,8 +14,7 @@ Read [Dom refs](/explore/ui-dom#refs) before introducing the lower-level bridge.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { EventHandler, html, component } from "@typed/template";
 import * as Dom from "@typed/ui/Dom";
 import * as NativeDetails from "@typed/ui/NativeDetails";
 

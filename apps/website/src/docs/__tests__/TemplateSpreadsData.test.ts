@@ -9,9 +9,10 @@ import { extractTypeScriptFences, validateAuthoredExampleQuality } from "../Reci
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const guideFile = "template-spreads-data.md";
 const guidePath = path.join(websiteRoot, "content/guides", guideFile);
+const templateSource = path.join(websiteRoot, "../../packages/template/src");
 
 describe("Template spread and data guide", () => {
-  it("documents the public spread surfaces and keeps every example compilable", () => {
+  it("documents capability replacement and keeps every example compilable", () => {
     const source = fs.readFileSync(guidePath, "utf8");
     const guide = parseGuideDocumentation(guideFile, source);
 
@@ -20,7 +21,7 @@ describe("Template spread and data guide", () => {
       section: "Template bindings",
       kind: "guide",
     });
-    for (const term of [".checked", ".indeterminate", ".selected", ".selectedIndex", ".data", "className", "@click", "onclick", "ref", ".properties", "constructor", "__proto__"]) {
+    for (const term of ["?disabled", ".data", "onclick", "ref", "replacement", "serialization"]) {
       expect(source).toContain(term);
     }
     expect(guide.body).toContain("/explore/template-element-bindings");
@@ -58,5 +59,20 @@ describe("Template spread and data guide", () => {
     } finally {
       fs.rmSync(staging, { recursive: true, force: true });
     }
+  });
+
+  it("keeps the exhaustive spread security and serialization contract with the renderer", () => {
+    const domRenderer = fs.readFileSync(path.join(templateSource, "Render.ts"), "utf8");
+    const htmlRenderer = fs.readFileSync(path.join(templateSource, "HtmlChunk.ts"), "utf8");
+
+    for (const property of ["checked", "indeterminate", "selected", "selectedIndex", "value"]) {
+      expect(domRenderer).toContain(`"${property}"`);
+    }
+    for (const key of ["__proto__", "prototype", "constructor"]) {
+      expect(domRenderer).toContain(`"${key}"`);
+      expect(htmlRenderer).toContain(`"${key}"`);
+    }
+    expect(htmlRenderer).toContain("isSerializableSpreadKey");
+    expect(htmlRenderer).toContain("DOM properties, event handlers, refs, `on*` attributes");
   });
 });

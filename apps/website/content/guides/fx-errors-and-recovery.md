@@ -6,13 +6,15 @@ kind: "guide"
 order: 1.8
 ---
 
+<span id="translate-a-failure-without-claiming-recovery"></span>
+
 A search request can be unavailable while the search field remains usable. The page may show cached
 data, offer a retry, and still accept the next query. A catch around the wrong boundary can instead
 replace the entire query subscription and leave future input disconnected.
 
 Read [higher-order work](/explore/fx-higher-order-and-concurrency) first. This lesson follows one
-request failure through retry, fallback, and presentation, then examines the lower-level Cause
-operations used by a host or supervisor.
+request failure through retry, fallback, and presentation. Cause-oriented host operations are
+compact reference material after that decision.
 
 ## Name the failure a caller can act on
 
@@ -140,7 +142,7 @@ fallback may complete without reconnecting to future queries. Recovery placement
 policy are separate choices: first decide what must stay alive, then what competing work may run.
 Use [AsyncData](/explore/async-data) when loading and refreshing belong in the displayed value model.
 
-## Translate a failure without claiming recovery
+## Reference: translate or materialize a failure
 
 When the caller owns the fallback decision, change only the expected error representation:
 

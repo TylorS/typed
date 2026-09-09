@@ -10,7 +10,9 @@ An import screen receives progress events and eventually completes. Its live pro
 summary report, and “first selection” step need different answers from their producers. Choosing a
 runner is deciding both what the caller retains and when enough work has happened.
 
-[Building Fx](/explore/building-fx) established the source contract. Every runner below returns an
+[Building Fx](/explore/building-fx) established the source contract. Read this before the library
+branch's [Sink](/explore/sink-writing-effects) and [Subject](/explore/subject-event-publications).
+Every runner below returns an
 Effect until the final host boundary. Constructing that Effect is still lazy; executing it starts
 the subscription and makes its failures and service requirements part of the owner.
 

@@ -34,7 +34,7 @@ The empty list deserves a deliberate rule in `src/domain.ts`:
 ## Render the count in src/presentation.ts
 
 ```ts
-// @source examples/todo-6/src/presentation.ts#L110-L112
+// @source examples/todo-6/src/presentation.ts#L109-L111
 // @expect ${App.ActiveCount}
 // @expect count === 1 ? "item" : "items"
 ```
@@ -44,7 +44,7 @@ The number and its singular or plural label are both live values. The count mean
 ## Show a control only when it can act
 
 ```ts
-// @source examples/todo-6/src/presentation.ts#L113-L122
+// @source examples/todo-6/src/presentation.ts#L112-L121
 // @expect ${Fx.if(App.SomeAreCompleted
 // @expect onclick=${App.clearCompletedTodos}
 // @expect onFalse: Fx.null

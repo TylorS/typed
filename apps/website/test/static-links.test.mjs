@@ -145,3 +145,27 @@ test("every source-derived reference and search target has a static HTML page", 
   }
   assert.deepEqual(missing, []);
 });
+
+test("every learning article offers a GitHub edit link to an existing source file", async () => {
+  const files = (await Promise.all([
+    filesIn(path.join(siteRoot, "explore")),
+    filesIn(path.join(siteRoot, "integrate")),
+  ])).flat().filter((file) => file.endsWith("index.html"));
+  let articles = 0;
+  for (const file of files) {
+    const html = await fs.readFile(file, "utf8");
+    if (!html.includes('class="prose"') && !file.endsWith("/explore/storybook/index.html")) continue;
+    articles++;
+    const relative = path.relative(siteRoot, file);
+    assert.ok(html.includes('aria-label="Contribute to the documentation"'), relative);
+    const edits = [...html.matchAll(/href="https:\/\/github\.com\/TylorS\/typed\/edit\/development\/apps\/website\/([^"#?]+)"/gu)]
+      .map((match) => decodeURIComponent(match[1]));
+    assert.ok(edits.length > 0, `${relative}: missing edit destination`);
+    for (const source of edits) {
+      assert.equal((await fs.stat(path.join(websiteRoot, source))).isFile(), true, `${relative}: ${source}`);
+    }
+    const markdown = html.match(/href="https:\/\/github\.com\/TylorS\/typed\/blob\/development\/apps\/website\/([^"#?]+\.md)"/u)?.[1];
+    if (markdown) assert.ok(edits.includes(decodeURIComponent(markdown)), `${relative}: edit must target the displayed Markdown`);
+  }
+  assert.ok(articles > 100, "checks the complete learning article collection");
+});

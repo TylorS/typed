@@ -1,6 +1,6 @@
 ---
 title: "Forms as a browser contract"
-summary: "Build a trial-request editor by connecting native controls, decoded schema values, accessible errors, and an explicit submission preview."
+summary: "Build one trial-request path with native controls, decoded values, errors, reset, and submit."
 section: "UI / Forms"
 kind: "guide"
 order: 239
@@ -33,8 +33,7 @@ input and casting its event value to the application's expected type.
 ```ts
 import { Schema } from "effect";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Form from "@typed/ui/Form";
 
 const TrialRequest = Form.make(Schema.Struct({

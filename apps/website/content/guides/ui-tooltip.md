@@ -16,8 +16,7 @@ The default anchor is a span. This example puts its provided props on the actual
 
 ```ts
 import { Effect } from "effect";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Tooltip from "@typed/ui/Tooltip";
 
 const RefreshWithHelp = component(function* <R>(id: string, refresh: Effect.Effect<void, never, R>) {

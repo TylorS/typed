@@ -3,7 +3,7 @@ title: "Namespace-aware platform markup"
 summary: "Author SVG and MathML directly; Typed builds the native namespace transitions and attributes the platform expects."
 section: "Template bindings"
 kind: "deep-dive"
-order: 6
+order: 90
 ---
 
 A saved-article page may show an HTML toolbar and an SVG diagram containing its own links and labels.

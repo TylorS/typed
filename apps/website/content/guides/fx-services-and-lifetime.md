@@ -11,9 +11,9 @@ an audit destination. When the workspace closes, both pending work and the conne
 The service requirements and the resource lifetime answer different questions: what must be supplied,
 and how long the acquired resource remains usable.
 
-Begin with [Building Fx](/explore/building-fx) and [Consuming Fx](/explore/consuming-fx). This lesson
-follows one monitor from acquisition through delivery and shutdown, then considers what changes
-when two consumers need the same feed.
+Begin with [dynamic producers](/explore/fx-dynamic-producers) and [Consuming Fx](/explore/consuming-fx).
+This lesson owns the service-versus-resource decision: a provided service answers what is available;
+an acquired resource answers what this subscription must release.
 
 ## Give the monitor an explicit acquisition and shutdown path
 

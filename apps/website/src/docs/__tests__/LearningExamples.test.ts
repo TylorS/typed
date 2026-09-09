@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { Effect, Fiber, type Scope } from "effect";
 import { Fx, type RefSubject } from "@typed/fx";
 import {
+  component,
   DomRenderTemplate,
   html,
   render,
@@ -54,7 +55,7 @@ it("keeps the published order editor and summary in sync through native buttons"
     await import(join(directory, "application-developers/View.ts"));
   const host = document.createElement("div");
   document.body.append(host);
-  const order = Fx.gen(function* () {
+  const order = component(function* () {
     const item = yield* makeLineItem();
     return html`${QuantityEditor(item)}${OrderSummary(item)}`;
   });

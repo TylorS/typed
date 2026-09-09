@@ -1,10 +1,9 @@
 import type { StoryObj } from "@storybook/html-vite";
 import { expect, within } from "storybook/test";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import * as CarouselComponent from "../src/Carousel.js";
 import * as ComboboxComponent from "../src/Combobox.js";
-import { component } from "../src/Component.js";
 import * as DialogComponent from "../src/Dialog.js";
 import * as DisclosureComponent from "../src/Disclosure.js";
 import * as GridComponent from "../src/Grid.js";

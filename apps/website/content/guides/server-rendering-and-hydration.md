@@ -1,6 +1,6 @@
 ---
 title: "Server rendering and hydration"
-summary: "Send buffered or streamed Typed HTML from Effect HTTP, then adopt that same inner template in the browser."
+summary: "Extend a shared counter through an explicit server-to-browser handoff."
 section: "Template rendering"
 kind: "guide"
 order: 4
@@ -19,11 +19,10 @@ This article joins [HTML serialization](/explore/rendering-html-on-the-server) w
 
 Start with a saved-result counter whose state is visible before and after client startup:
 
-```ts
+```ts file="SavedCount.ts"
 import { Schema } from "effect";
 import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 
 export const SavedCount = component(function* () {
   const count = yield* RefSubject.hydrate(Schema.Finite, 12);
@@ -43,21 +42,12 @@ inside that request; a module-level RefSubject would combine otherwise independe
 
 ## Put the shared view inside a server-owned shell
 
-The following self-contained server example repeats `SavedCount`; production entries should import
-one shared implementation so its authored template cannot drift:
+Production entries import the shared `SavedCount` implementation rather than duplicating it:
 
-```ts
-import { Effect, Schema } from "effect";
-import { RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
+```ts file="server.ts"
+import { Effect } from "effect";
 import { html, HtmlRenderTemplate, renderToHtmlString } from "@typed/template";
-
-const SavedCount = component(function* () {
-  const count = yield* RefSubject.hydrate(Schema.Finite, 12);
-  return html`<button type="button" ref=${count} onclick=${RefSubject.increment(count)}>
-    Saved articles: ${count}
-  </button>`;
-});
+import { SavedCount } from "./SavedCount.js";
 
 const documentPage = html`<!doctype html><html lang="en">
   <head><title>Saved articles</title></head>
@@ -83,18 +73,11 @@ could look identical.
 
 ## Start a separate browser run at the inner boundary
 
-```ts
-import { Effect, Fiber, Schema } from "effect";
-import { Fx, RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
+```ts file="client.ts"
+import { Effect, Fiber } from "effect";
+import { Fx } from "@typed/fx";
 import { DomRenderTemplate, html, render } from "@typed/template";
-
-const SavedCount = component(function* () {
-  const count = yield* RefSubject.hydrate(Schema.Finite, 12);
-  return html`<button type="button" ref=${count} onclick=${RefSubject.increment(count)}>
-    Saved articles: ${count}
-  </button>`;
-});
+import { SavedCount } from "./SavedCount.js";
 
 const host = document.getElementById("app");
 if (host === null) throw new Error("Missing #app host");
@@ -142,3 +125,6 @@ assert retained keyed item identity after a reorder.
 If one check fails, follow its owner: response data/encoding, host and marker compatibility, or the
 browser's subscriptions and events. A single label such as "SSR works" is too broad to locate the
 failure or establish that this handoff is correct.
+
+
+For mixed-framework output, see [which integrations preserve streaming SSR](/explore/streaming-framework-integrations).

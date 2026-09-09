@@ -144,7 +144,7 @@ type SwitchInternalProps<Options extends SwitchOptions> = ReturnType<
  * ```ts
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Switch from "@typed/ui/Switch";
  *
  * export const PreviewSetting = component(function* () {

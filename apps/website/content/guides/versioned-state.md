@@ -15,7 +15,8 @@ three related, but independently typed, channels:
 - the `Fx` itself: updates that observers receive over time;
 - the Effect itself: the current value when a consumer reads it.
 
-Use it when a cache, transport, external store, or library must expose all three capabilities
+Use it when a cache, transport, external store, or library must expose all three capabilities.
+It is an advanced adapter branch after application state composition, not a prerequisite for it.
 without choosing how the producer writes. `RefSubject` is the higher-level choice for ordinary
 writable application state; it implements the same read-and-observe shape while also defining
 state transitions.

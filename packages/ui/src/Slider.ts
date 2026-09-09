@@ -137,7 +137,7 @@ type SliderInternalProps<Options extends SliderOptions> = ReturnType<
  * ```ts
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as Slider from "@typed/ui/Slider";
  *
  * export const ZoomControl = component(function* () {

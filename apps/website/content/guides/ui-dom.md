@@ -1,6 +1,6 @@
 ---
 title: "Dom: types, events, props, refs, and host rendering"
-summary: "Preserve a component contract while extending its real DOM host."
+summary: "Deep reference for DOM types, events, props, refs, render, and host composition."
 section: "UI / Foundations"
 kind: "deep-dive"
 order: 295
@@ -69,8 +69,7 @@ const save = html`<button type="button" data-locked="false" onclick=${inspectAnd
 
 ```ts
 import { Effect } from "effect";
-import { EventHandler, html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { EventHandler, html, component } from "@typed/template";
 import * as Dom from "@typed/ui/Dom";
 import * as Disclosure from "@typed/ui/Disclosure";
 import * as NativeDetails from "@typed/ui/NativeDetails";

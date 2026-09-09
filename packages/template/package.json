@@ -1,6 +1,6 @@
 {
   "name": "@typed/template",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "Typed HTML templates, rendering, and hydration for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/template#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -20,6 +20,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./Component": {
+      "types": "./dist/Component.d.ts",
+      "import": "./dist/Component.js"
     },
     "./EventHandler": {
       "types": "./dist/EventHandler.d.ts",

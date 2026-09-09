@@ -1,21 +1,22 @@
 ---
 title: "Component: generators that return renderable values"
-summary: "Understand zero-argument values, parameterized components, pipeline arguments, and E/R inference."
+summary: "Canonical reference for component arity, channel inference, and child Scope ownership."
 section: "UI / Foundations"
 kind: "deep-dive"
 order: 290
 ---
 
-A component combines Effectful setup with renderable output. Use `component` when you need to acquire local state or services before returning a template, another component, text, a collection of renderables, or another supported Template input. It lifts the returned renderable into Fx; the generator does not need to return an Fx explicitly.
+A component combines Effectful setup with renderable output. Use `component` when you need to acquire local state or services before returning a template, another component, text, a collection of renderables, or another supported Template input. The generator returns that Renderable; `component` turns it into the render program, so the generator does not return an Fx explicitly.
 
-Read [your first template](/explore/render-your-first-template) and [Fx services and lifetime](/explore/fx-services-and-lifetime) first. The exported API is `component` from `@typed/ui/Component`. “Any renderable” describes the accepted result (`Renderable.Any`); it is not an `anyRenderable` helper to import.
+Read [your first template](/explore/render-your-first-template) and [Fx services and lifetime](/explore/fx-services-and-lifetime) first. The exported API is `component` from `@typed/template`. “Any renderable” describes the accepted result (`Renderable.Any`); it is not an `anyRenderable` helper to import.
+
+Use `@typed/template` for component construction; it does not require the UI package.
 
 ## A component value and a component function
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 
 const SessionNotice = html`<p>Your changes are saved locally until you publish.</p>`;
 
@@ -45,8 +46,7 @@ The implementation distinguishes those forms using JavaScript `body.length`. Avo
 
 ```ts
 import { Effect } from "effect";
-import { html, liftRenderableToFx, type Renderable } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, html, liftRenderableToFx, type Renderable } from "@typed/template";
 
 const LoadedNotice = component(function* <E, R>(
   load: Effect.Effect<string, E, R>,
@@ -82,8 +82,7 @@ Pipeline callbacks receive the preceding output followed by the component argume
 ```ts
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { component, html } from "@typed/template";
 
 const NamedPanel = component(
   function* (name: string, load: Effect.Effect<string>) {
@@ -101,4 +100,4 @@ For a zero-argument generator, each pipeline receives only the output. Pipeline 
 
 An “expression is not callable” error usually means a zero-argument component is being called. A missing service is not solved by casting R to `never`; provide it where its lifetime is owned. Repeated initial state means the component is being re-executed or remounted rather than receiving updates through one existing RefSubject. A ref that never runs may simply mean no DOM renderer observed the output.
 
-Continue with [building UI components](/explore/building-ui-components) for a complete asynchronous save policy, [Dom](/explore/ui-dom) for host authoring, and [Storybook](/explore/ui-storybook) for scoped mounting. API: [Component.component](/reference/modules/%40typed%2Fui%2FComponent).
+Continue with [building UI components](/explore/building-ui-components) for a complete asynchronous save policy, [Dom](/explore/ui-dom) for host authoring, and [Storybook](/explore/ui-storybook) for scoped mounting. API: [Template component](/reference/modules/%40typed%2Ftemplate).

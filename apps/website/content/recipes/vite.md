@@ -19,7 +19,7 @@ import * as Fx from "@typed/fx/Fx";
 import { RefSubject } from "@typed/fx";
 import { html } from "@typed/template";
 import { DomRenderTemplate, render } from "@typed/template/Render";
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 import { Button } from "@typed/ui/Button";
 
 const Counter = component(function* () {

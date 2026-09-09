@@ -1,6 +1,6 @@
 ---
 title: "Carousel: slide identity, controls, and rotation policy"
-summary: "Build a manual slide sequence and understand the state required before adding automatic motion."
+summary: "Build a manual slide sequence; rotation and pause require a separately scoped product policy."
 section: "UI / Collections"
 kind: "deep-dive"
 order: 250
@@ -18,8 +18,7 @@ shows exactly what the paused flag supplies and what a scoped scheduler would st
 Previous and Next are sufficient. Each slide stays mounted; selection changes its `hidden` state.
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Carousel from "@typed/ui/Carousel";
 
 export const ProjectWalkthrough = component(function* () {

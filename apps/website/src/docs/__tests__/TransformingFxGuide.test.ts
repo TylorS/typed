@@ -9,6 +9,8 @@ import { expectExampleCalls, runGuideExample } from "./FxGuideTestSupport.js";
 
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const guidePath = path.join(websiteRoot, "content/guides/transforming-fx.md");
+const timeGuidePath = path.join(websiteRoot, "content/guides/fx-time-and-rate.md");
+const statefulGuidePath = path.join(websiteRoot, "content/guides/fx-stateful-transforms.md");
 
 describe("Transforming Fx guide", () => {
   const source = fs.readFileSync(guidePath, "utf8");
@@ -26,16 +28,16 @@ describe("Transforming Fx guide", () => {
     expect(source).toContain("Data.TaggedError");
     expect(source).toContain("Context.Service");
     expect(source).toContain("Fx.provideService");
-    expect(source).toContain("Fx.skipRepeats");
-    expect(source).toContain("Fx.debounce");
+    expect(source).toContain("/explore/fx-time-and-rate");
     expect(source).not.toContain("declare ");
     expectExampleCalls(source, [
       "Fx.filterMap",
       "Fx.map",
       "Fx.mapEffect",
       "Fx.provideService",
-      "Fx.debounce",
     ]);
+    expect(fs.readFileSync(statefulGuidePath, "utf8")).toContain("Fx.skipRepeats");
+    expect(fs.readFileSync(timeGuidePath, "utf8")).toContain("Fx.debounce");
   });
 
   it("keeps every example independently compilable", () => {

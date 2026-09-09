@@ -3,7 +3,7 @@
  *
  * @remarks
  * Namespace exports group related component families while direct exports expose
- * the component constructor, HTTP SSR adapters, and navigation link. The DOM is
+ * HTTP SSR adapters and navigation links. The DOM is
  * the integration boundary: hosts receive real nodes, events, attributes, refs,
  * and web-standard behavior. Running Effect Scopes own subscriptions and cleanup.
  *
@@ -16,7 +16,6 @@ export * as Checkbox from "./Checkbox.js";
 export * as Carousel from "./Carousel.js";
 export * as Collection from "./Collection.js";
 export * as Combobox from "./Combobox.js";
-export * from "./Component.js";
 export * as Composite from "./Composite.js";
 export * as Dialog from "./Dialog.js";
 export * as Disclosure from "./Disclosure.js";

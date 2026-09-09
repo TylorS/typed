@@ -1,8 +1,8 @@
 ---
 title: "Listbox: visible choices with selection following focus"
-summary: "Build a persistent single-choice list and understand when navigation commits the value."
+summary: "Reference persistent single-choice lists and the decision to commit on focus."
 section: "UI / Collections"
-kind: "deep-dive"
+kind: "reference"
 order: 241
 ---
 
@@ -21,8 +21,7 @@ prefixed to keep multiple listboxes unique while the saved values remain ordinar
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Listbox from "@typed/ui/Listbox";
 
 export const PreviewTheme = component(function* () {

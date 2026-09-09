@@ -110,6 +110,26 @@ The brand distinguishes this identifier in TypeScript; its schema decides runtim
 reusable fragments preserves the combined decoded shape. Duplicate decoded names are rejected at
 construction: two different fragments cannot both silently claim `id`.
 
+## Test the URL as an external input
+
+Test both directions. Generate a URL from decoded parameters, let Matcher select and decode it,
+and assert the handler's input. Include spaces, non-ASCII text, reserved characters, missing
+optional values, invalid numbers, repeated declared query keys, and duplicate decoded names.
+Testing only that a link string “looks right” misses its relationship to the decoder.
+
+When a deep link fails, inspect pathname and search separately, then the Route's normalized path and
+codecs. If they are correct, investigate [Matcher candidate selection](/explore/router-navigation-live-selection).
+If clicking a correct link changes history unexpectedly, investigate
+[Navigation's push/replace policy](/explore/navigation-as-an-effect-service). The Route contract
+should not acquire a browser listener just to diagnose either problem.
+
+Continue with [Matcher](/explore/router-navigation-live-selection) to turn this input contract into
+live page work, or the [Route reference](/reference/modules/%40typed%2Frouter%2FRoute) for the precise
+constructors and type projections.
+
+<details>
+<summary>Reference: route grammar, schema projections and library extensions</summary>
+
 ## Read path and query grammar without guessing
 
 `Parse` is useful when a complete pattern is clearer than constructors. `Slash`, `Wildcard`,
@@ -164,19 +184,4 @@ public [Route AST](/reference/modules/%40typed%2Frouter%2FAST); ordinary applica
 the same model more clearly with Parse and Join. Type-level Path, Parser, and Uri modules underpin
 literal inference and are useful when building such tooling, not prerequisites for a queue page.
 
-## Test the URL as an external input
-
-Test both directions. Generate a URL from decoded parameters, let Matcher select and decode it,
-and assert the handler's input. Include spaces, non-ASCII text, reserved characters, missing
-optional values, invalid numbers, repeated declared query keys, and duplicate decoded names.
-Testing only that a link string “looks right” misses its relationship to the decoder.
-
-When a deep link fails, inspect pathname and search separately, then the Route's normalized path and
-codecs. If they are correct, investigate [Matcher candidate selection](/explore/router-navigation-live-selection).
-If clicking a correct link changes history unexpectedly, investigate
-[Navigation's push/replace policy](/explore/navigation-as-an-effect-service). The Route contract
-should not acquire a browser listener just to diagnose either problem.
-
-Continue with [Matcher](/explore/router-navigation-live-selection) to turn this input contract into
-live page work, or the [Route reference](/reference/modules/%40typed%2Frouter%2FRoute) for the precise
-constructors and type projections.
+</details>

@@ -93,50 +93,18 @@ owner and resource identity.
 CurrentRoute is a structural mount tree, not a replacement for currentEntry or a current parameter
 record. Nested routing shares Navigation; it does not need another browser-history instance.
 
-## Grow URL state from the user's expected behavior
+## Check the journey
 
-The queue will eventually need filters. Put query, sort, page, and workspace in the URL when users
-should share or reload them. Keep incomplete draft text local unless URL restoration is a deliberate
-requirement. Derive defaults once, encode values correctly, and validate domain constraints before
-application operations use them.
+Open issue 42, follow the link to 43, then use Back. The selected output should follow the URL. Call `stop` and verify that later navigation does not update this mount.
 
-History policy is a separate choice. Opening a new issue usually pushes; updating a transient filter
-may replace. Link's push default and navigate's `auto` default are different, so an interaction that
-relies on Back behavior should choose explicitly. The Navigation lesson tests a queue/detail/tab/Back
-journey and then adds an editor blocker.
+<span id="grow-url-state-from-the-users-expected-behavior"></span>
 
-A committed destination is not a fully loaded page. A request can still be pending, refresh an old
-value, or fail after selection. Put that lifecycle in
-[AsyncData](/explore/async-data-requests-and-cache) and coordinate latest-parameter requests with Fx.
-A focus operation that needs an element should wait for that element's lifecycle, not assume that
-navigation completion means DOM readiness.
+The small app is complete. For shareable filters, continue with [typed URL inputs](/explore/route-typed-url-inputs). That lesson owns encoding and validation; [Navigation](/explore/navigation-as-an-effect-service) owns push versus replace.
 
-## Recover at the boundary that knows what failed
+<span id="recover-at-the-boundary-that-knows-what-failed"></span>
 
-The example redirects only RouteNotFound to an explicit not-found page. An invalid numeric ID is
-a decoding problem; an unavailable issue service is a resource problem; an unsaved-work cancellation
-is a navigation decision. Redirecting all of them to “not found” would discard their meaning.
+Keep route-not-found recovery separate from a failed page request. [Matcher recovery](/explore/router-navigation-live-selection#recover-the-failure-that-actually-happened) describes those boundaries.
 
-A Route schema keeps decoding errors and requirements visible. Matcher preserves route-selection
-and handler failures; its recovery combinators let a feature decide what to display. Navigation
-has its own transition errors and cancellation/redirect protocol. This separation is useful when
-tracing a bug: inspect the actual URL, decoded inputs, selected candidate, and resource state before
-changing the rendering code.
+<span id="change-the-runtime-provider-keep-the-application-contract"></span>
 
-## Change the runtime provider, keep the application contract
-
-BrowserRouter integrates with browser history. TestRouter supplies deterministic memory history for
-a finite test journey. ServerRouter supplies a server location without evaluating browser globals.
-The [HTTP adapter](/explore/integrating-matcher-with-effect-http) takes renderable Matcher output and
-creates request-local routing services for GET HTML responses.
-
-Sharing a Route/Matcher declaration is different from sharing one mutable history across requests.
-Provide request services per request, application services at their real feature boundary, and the
-renderer at the mounting/serialization edge. The Route, Matcher, and Navigation types retain
-requirements until those boundaries satisfy them.
-
-Follow the lessons in the order needed by your feature: define the URL contract, connect live page
-work, choose history policy, then serve or test the same contract in another runtime. The reference
-pages for [Route](/reference/modules/%40typed%2Frouter%2FRoute),
-[Matcher](/reference/modules/%40typed%2Frouter%2FMatcher), and
-[Navigation](/reference/modules/%40typed%2Fnavigation%2FNavigation) list their full public surfaces.
+Use BrowserRouter for the browser, TestRouter for memory history, and ServerRouter for a request location. The [HTTP recipe](/explore/integrating-matcher-with-effect-http) shows request-local provision; sharing route declarations does not mean sharing mutable request state.

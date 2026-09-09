@@ -7,7 +7,13 @@ demo: "todo-4"
 architecture: ["domain", "application", "presentation"]
 ---
 
-Type a title in the preview and submit it. The input clears; rows arrive in the next chapter. This step connects the form to the create action we already wrote.
+Type a title in the preview and submit it. The input clears and the accepted count increases; individual rows arrive in the next chapter. This step connects the form to the create action we already wrote.
+
+## Run this shell locally
+
+Install `@typed/id` with `npm install @typed/id`. Keep the Quick Start `index.html`, which loads `/src/main.ts`. Replace the files listed below, including the new `src/main.ts`, then run `npm run dev`. This launcher stays in place as you add rows, routing and persistence; chapter nine explains its composition.
+
+The factory uses `@typed/id` for identity and time, with defaults provided by the launcher. The [ID guide](/explore/id) explains those services and how to replace them in tests.
 
 ## Read input events in src/presentation.ts
 
@@ -45,7 +51,7 @@ The form runs `App.createTodo` and prevents a page navigation. Clicking Add todo
 
 The surrounding `TodoApp` is simply `html` followed by a template literal. It binds existing state and actions, so no generator or `component()` wrapper is needed. Open the complete presentation file below to see the surrounding section and header.
 
-**Try it:** submit spaces, then a title with spaces around it. Blank input stays available for correction; accepted input clears. If Enter reloads the page, check `preventDefault`. If the visible text stays after a successful submission, check `.value`.
+**Try it:** submit spaces, then a title with spaces around it. Blank input stays available for correction and leaves the accepted count unchanged; accepted input clears and increments the count. If Enter reloads the page, check `preventDefault`. If the visible text stays after a successful submission, check `.value`.
 
 ## Complete files
 
@@ -83,6 +89,15 @@ Keep the files from the previous step and replace or add these. Each full file i
 
 ```ts file="src/preview.ts"
 // @source examples/todo-4/src/preview.ts
+```
+
+</details>
+
+<details class="curriculum-file">
+<summary>src/main.ts</summary>
+
+```ts file="src/main.ts"
+// @source examples/todo-4/src/main.ts
 ```
 
 </details>

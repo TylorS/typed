@@ -299,9 +299,25 @@ describe("TS-03 SSR spread and data key policy", () => {
 });
 
 describe("TS-04 many hydration markers", () => {
-  it("preserves MANY_HOLE's legacy public output", () => {
-    expect(MANY_HOLE("legacy-key")).toBe("<!--/m_legacy-key-->");
-  });
+  it("uses MANY_HOLE for the same raw keys passed to many", () =>
+    Effect.gen(function* () {
+      const keys = ["item-1", 1, "1", Symbol.for("item-1"), "--><img id=key-injection>"];
+      const output = yield* getInteractiveHtml(
+        html`<ul>
+          ${many(
+            Fx.succeed(keys),
+            (key) => key,
+            () => html`<li>item</li>`,
+          )}
+        </ul>`,
+      );
+      for (const key of keys) {
+        expect(output).toContain(MANY_HOLE(key));
+        expect(MANY_HOLE(key)).toMatch(/^<!--\/m_v1_[sng]\.[A-Za-z0-9_-]*-->$/);
+      }
+      expect(MANY_HOLE(1)).not.toBe(MANY_HOLE("1"));
+      expect(() => MANY_HOLE(Symbol("local"))).toThrow("Local symbol keys cannot be hydrated");
+    }).pipe(Effect.scoped, Effect.runPromise));
 
   it("encodes attacker-controlled keys into a versioned comment-safe token", () =>
     Effect.gen(function* () {

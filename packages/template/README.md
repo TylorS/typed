@@ -55,18 +55,20 @@ The primary application layer is `@typed/template`, with `@typed/template/Html`,
 
 Renderer-author and diagnostic machinery is a separate supported beta layer: `EventSource`, `HtmlChunk`, `HydrateContext`, `Parser`, `Renderable`, `RenderEvent`, `RenderQueue`, `RenderTemplate`, `RootIdentity`, `Template`, and `Wire`. These modules expose lower-level ownership and transport contracts and are not necessary for ordinary application templates.
 
-The beta.4 wildcard export remains available unchanged for compatibility, including currently resolvable `internal/*` and other unlisted compiled modules. Those compatibility paths are not a stability promise. Physical `src` and `dist` paths are never supported imports. Published packages contain compiled output, declarations, the manifest, and this README; source files and tests are intentionally excluded. Narrowing the wildcard requires an explicit breaking-API decision.
-
-The release contract pack-installs this artifact and builds a browser consumer from it. The package does not currently declare `sideEffects: false` or promise parser/cache tree-shaking; either claim requires a separate measured release decision.
+Only the entry points declared in `package.json` are exported; `internal/*`, physical `src`, and physical `dist` paths are not public imports. Published packages contain compiled output, declarations, the manifest, this README, and third-party notices. The manifest declares `sideEffects: false`.
 
 ## Example
+
+`component` owns a child Scope for each run and accepts any Renderable from its generator.
+Use it for views that acquire state or services; keep `Fx.gen` and `Fx.fn` for reactive programs
+that are not component definitions. Import it from `@typed/template`.
 
 ```ts
 import { Effect, Layer } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
-import { DomRenderTemplate, html, render } from "@typed/template";
+import { component, DomRenderTemplate, html, render } from "@typed/template";
 
-const Counter = Fx.gen(function* () {
+const Counter = component(function* () {
   const count = yield* RefSubject.make(0);
 
   return html`<p>Count: ${count}</p>

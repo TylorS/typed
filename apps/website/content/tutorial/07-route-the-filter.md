@@ -9,6 +9,12 @@ architecture: ["domain", "application", "presentation", "infrastructure"]
 
 Complete one item, then choose Active and Completed. The rows change; the items-left count still describes the full list. Filtering must never delete hidden items.
 
+Add the router to your project before copying this chapter's files:
+
+```sh
+npm install @typed/router
+```
+
 ## Derive visible rows in src/application.ts
 
 ```ts
@@ -24,7 +30,7 @@ Complete one item, then choose Active and Completed. The rows change; the items-
 In `src/infrastructure.ts`, match the three locations:
 
 ```ts
-// @source examples/todo-7/src/infrastructure.ts#L7-L13
+// @source examples/todo-7/src/infrastructure.ts#L9-L15
 // @expect const FilterState = Router.match
 // @expect .redirectTo("/")
 ```
@@ -34,7 +40,7 @@ The root selects All, `/active` selects Active, and `/completed` selects Complet
 Provide that live result as the application's state:
 
 ```ts
-// @source examples/todo-7/src/infrastructure.ts#L15-L19
+// @source examples/todo-7/src/infrastructure.ts#L17-L21
 // @expect App.FilterState.make(FilterState)
 ```
 
@@ -43,7 +49,7 @@ Provide that live result as the application's state:
 Each filter uses `Link` in `src/presentation.ts`:
 
 ```ts
-// @source examples/todo-7/src/presentation.ts#L118-L125
+// @source examples/todo-7/src/presentation.ts#L117-L124
 // @expect ${Link({
 // @expect href: filter === "all"
 // @expect App.FilterState,
@@ -54,12 +60,12 @@ The selected class is derived from the same filter state. A separate selected-ta
 The embedded app uses the private router in `src/preview.ts`:
 
 ```ts
-// @source examples/todo-7/src/preview.ts#L1-L7
+// @source examples/todo-7/src/preview.ts#L1-L14
 // @expect ServerRouter
 // @expect makeServices
 ```
 
-This keeps its links inside the preview. The standalone entry supplies a browser router, using the same application and presentation.
+This keeps links inside the embedded preview: they do not change the documentation page's browser history. In the app launched by `src/main.ts` from chapter four, `Services` supplies a browser router. Run `npm run dev` and open that app to check Back and Forward.
 
 **Try it:** mark an item complete while viewing Active. It should disappear there and remain available under Completed. In your standalone app, also check Back and Forward. Hidden rows end their rendered lifetime, so save or cancel an edit before changing filters.
 

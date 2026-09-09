@@ -1,7 +1,7 @@
 import { html } from "@typed/template";
 import { Window } from "happy-dom";
 import { assert, describe, it, vi } from "vitest";
-import { component } from "../../src/Component.js";
+import { component } from "@typed/template";
 import { story } from "../story.js";
 
 interface GreetingProps {

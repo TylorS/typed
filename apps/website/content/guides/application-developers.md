@@ -84,8 +84,7 @@ Keep the starter's `<div id="app"></div>` and module entry. Replace `main.ts` wi
 ```ts file="main.ts"
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
-import { DomRenderTemplate, html, render } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { DomRenderTemplate, html, render, component } from "@typed/template";
 import { makeLineItem } from "./LineItem.js";
 import { OrderSummary, QuantityEditor } from "./View.js";
 
@@ -154,35 +153,10 @@ instances without a Document. A browser test has a different job: activate the a
 check their disabled state and visible result. [Testing Typed systems](/explore/testing-typed-systems)
 shows how to test interaction, retained DOM identity, request ordering, and cleanup.
 
-## Choose where the next piece of state belongs
+<span id="choose-where-the-next-piece-of-state-belongs"></span>
 
-Ask what should keep working when a view disappears. Temporary help text can belong to its control.
-An order draft shared by several panels belongs above those panels. A draft that must survive page
-navigation needs an owner outside the selected page; moving it into a second page component would
-only create a fresh draft there.
-
-Pass a model directly while that is convenient. Use [shared state contracts](/explore/shared-state-contracts)
-when distant features need an injected service or different implementations in tests. For server
-requests, acquire user-specific state per request. For browser reloads, add persistence explicitly:
-a longer-lived in-memory model does not survive closing the tab. [TodoMVC](/explore/tutorial) builds
-the complete path from commands and keyed views to URL filters, storage, and boundary tests.
+The editor now shares one model between two views. If the draft must survive removing either view, keep its owner above them; [shared state contracts](/explore/shared-state-contracts) covers injected models.
 
 ## Continue with the feature in front of you
 
-The working editor now has one state owner, read-only projections, commands, and views. Add the next
-boundary when the product needs it:
-
-| Your next requirement | Build it here | Check before moving on |
-| --- | --- | --- |
-| Edit several fields and explain invalid input | [Forms as a browser contract](/explore/forms-as-a-browser-contract) | Submit with Enter, correct an error, and inspect the decoded values. |
-| Save without sending overlapping requests | [Build a save control](/explore/building-ui-components) | A second activation cannot duplicate an active save; rejection permits retry. |
-| Search remote data and refresh results | [Build an issue search](/explore/async-data-requests-and-cache) | An obsolete request cannot overwrite current results; failure is visibly different from an empty result. |
-| Give a page a URL and support Back | [Routes, Matchers, and Navigation](/explore/routing-routes-matchers-and-navigation) | Links encode valid inputs and changing the URL updates the selected page. |
-| Sort editable rows without losing their identity | [Keyed collections](/explore/keyed-template-collections) | The same item keeps its existing input node after a reorder. |
-| Add Typed to an existing application | [Integration recipes](/integrate) | The host owns mounting and disposal; repeated mounts leave no old listeners or work running. |
-
-Use the [state lessons](/explore/refsubject-renderer-independent-state) to go deeper into the model
-you just built, then the [template lessons](/explore/render-your-first-template) to expand its view.
-The [Effect documentation](https://effect.website/docs/v4/) explains the runtime, failures, and services
-underneath these pieces. The [API reference](/reference) follows the imports when you need an exact
-contract. Typed is a toolkit: use the pieces that help the application you are building.
+[Build TodoMVC](/explore/tutorial) to add keyed editing, URL filters and persistence. For a specific control instead, use the [UI task chooser](/explore/ui). The editor above is complete; its API reference and tests remain useful without reading another tour.

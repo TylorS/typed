@@ -143,41 +143,10 @@ This test demonstrates Filtered's omission, not just a successful selection. A p
 would instead observe Option and assert None. Current-read tests should also cover absence and
 projection errors. A passing DOM assertion after one selection cannot establish these contracts.
 
-## Accumulate only when the intended history is clear
+## <span id="accumulate-only-when-the-intended-history-is-clear">Optional accumulation reference</span>
 
-A count of currently selected issues is a map. It is not a scan: removing an issue should reduce
-the count according to the current array. `scan` and `scanEffect` are for an accumulated query over
-a source's history, and their current-read behavior needs special care.
-
-```ts
-import { Effect } from "effect"
-import { RefSubject } from "@typed/fx"
-
-const example = Effect.scoped(Effect.gen(function* () {
-  const delta = yield* RefSubject.make(1)
-  const total = RefSubject.scan(delta, 0, (sum, value) => sum + value)
-  const firstRead = yield* total // 1
-  const secondRead = yield* total // 1: the source version has not changed
-  return { firstRead, secondRead }
-}))
-```
-
-Current reads cache by source version within each Effect Context, so both reads return `1`.
-The next read after a source version changes folds its current value into that Context's private
-accumulator. Changes between reads are not an event history that sampling can recover.
-The Fx channel instead emits the seed and folds observed values; observers in the same Context
-share that active session. It remains separate from the current-read accumulator. `scanEffect`
-leaves the read accumulator unchanged when its fold fails. Separate scan views and Contexts have
-separate read accumulators.
-
-Also, a RefSubject publishes distinct state commits. Writing the same delta `1` repeatedly may be
-suppressed by equality, so a scan over that ref is not a reliable count of commands. Use an event
-source for occurrences that all matter. If multiple readers must share exactly one accumulated
-history, run that fold under one owner and retain its result, or expose a named writable transition
-for the domain total.
-
-These distinctions explain most derived-state surprises: stale output after absence, duplicated
-remote work, and sampled totals that differ from observed history. Choose the question first, then select
-Computed, Filtered, Option, or an owned event accumulator to match it. See
-[AsyncData resources](/explore/async-data-requests-and-cache) for shared remote state and
-[Subject events](/explore/subject-event-publications) for repeated occurrences.
+`scan` and `scanEffect` fold source history; they are not a count of current selection and not a
+reliable count of commands when equality suppresses repeated state commits. Use an event source when
+every occurrence matters, or retain one owned accumulator when readers must share its history. See
+[Subject events](/explore/subject-event-publications) for occurrences and the API reference for the
+full `scan`/`scanEffect` contract.

@@ -25,10 +25,10 @@ const demonstratedContracts: Record<string, ReadonlyArray<string>> = {
   "template-spreads-data": ["...${saveCapabilities}", ".data=${"],
   "dom-class-names": ["class=", "RefSubject.map"],
   "native-events-with-effect": ["EventHandler.make", "FormData", "preventDefault", "catchCause"],
-  "template-references-and-element-access": ["Fx.callback", "RefSubject.set", "RefSubject.hydrate", "hydrateAll"],
+  "template-references-and-element-access": ["Fx.callback", "RefSubject.set", "RefSubject.hydrate"],
   "template-namespaces-and-platform-markup": ["foreignObject", "xlink:href", "<math>"],
   "template-text-only-contexts": ["<textarea", "JSON.stringify", "<style>"],
-  "mounting-dom-output": ["host.ownerDocument", "Fx.drain", "Fiber.interrupt"],
+  "mounting-dom-output": ["host.ownerDocument", "Fx.drain", "Effect.scoped"],
   "rendering-html-on-the-server": ["StaticHtmlRenderTemplate", "HtmlRenderTemplate", "renderToHtmlString", "Fx.toStream"],
   "hydrating-typed-html": ["render(host)", "DomRenderTemplate", "Effect.scoped"],
   "server-rendering-and-hydration": ["RefSubject.hydrate", "HtmlRenderTemplate", "DomRenderTemplate"],
@@ -49,6 +49,10 @@ const readGuide = (slug: string) => parseGuideDocumentation(
 const linkedGuides = (body: string) => Array.from(
   body.matchAll(/\]\(\/explore\/([^#)]+)(?:#[^)]*)?\)/g), (match) => match[1],
 );
+const explorePathExists = (slug: string) =>
+  fs.existsSync(path.join(guideDirectory, `${slug}.md`)) ||
+  fs.existsSync(path.join(websiteRoot, "src/site/pages/explore", `${slug}.astro`)) ||
+  fs.existsSync(path.join(websiteRoot, "src/site/pages/explore", slug, "index.astro"));
 
 describe("public Template curriculum", () => {
   it("demonstrates public contracts with self-contained examples in integrated Template groups", () => {
@@ -73,7 +77,7 @@ describe("public Template curriculum", () => {
       const links = linkedGuides(guide.body);
       expect(links.length, `${slug} has related learning`).toBeGreaterThan(0);
       for (const link of links) {
-        expect(fs.existsSync(path.join(guideDirectory, `${link}.md`)), `${slug} links to ${link}`).toBe(true);
+        expect(explorePathExists(link), `${slug} links to ${link}`).toBe(true);
       }
     }
     const reachable = new Set<string>();

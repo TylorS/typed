@@ -2,6 +2,7 @@ import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
 import { Fx, RefSubject } from "@typed/fx";
 import { expect, it, vi } from "vitest";
+import { userEvent } from "vitest/browser";
 import {
   DomRenderTemplate,
   HtmlRenderTemplate,
@@ -64,20 +65,25 @@ it.each([false, true])(
         );
       yield* assertRows(128, 128);
       for (let cycle = 0; cycle < 4; cycle++) {
-        host.querySelector<HTMLInputElement>("input")!.click();
+        // Browser-dispatched input observes the mounted control after a conditional replacement.
+        yield* Effect.promise(() => userEvent.click(host.querySelector<HTMLInputElement>("input")!));
+        expect((yield* list).filter((item) => !item.completed)).toHaveLength(127);
         yield* assertRows(128, 127);
         yield* RefSubject.set(filter, "completed");
         yield* assertRows(1, 127);
         expect(host.querySelector<HTMLInputElement>("input")!.checked).toBe(true);
-        host.querySelector<HTMLInputElement>("input")!.click();
+        yield* Effect.promise(() => userEvent.click(host.querySelector<HTMLInputElement>("input")!));
+        expect((yield* list).filter((item) => !item.completed)).toHaveLength(128);
         yield* assertRows(0, 128);
         yield* RefSubject.set(filter, "active");
         yield* assertRows(128, 128);
-        host.querySelector<HTMLInputElement>("input")!.click();
+        yield* Effect.promise(() => userEvent.click(host.querySelector<HTMLInputElement>("input")!));
+        expect((yield* list).filter((item) => !item.completed)).toHaveLength(127);
         yield* assertRows(127, 127);
         yield* RefSubject.set(filter, "completed");
         yield* assertRows(1, 127);
-        host.querySelector<HTMLInputElement>("input")!.click();
+        yield* Effect.promise(() => userEvent.click(host.querySelector<HTMLInputElement>("input")!));
+        expect((yield* list).filter((item) => !item.completed)).toHaveLength(128);
         yield* assertRows(0, 128);
         yield* RefSubject.set(filter, "all");
         yield* assertRows(128, 128);

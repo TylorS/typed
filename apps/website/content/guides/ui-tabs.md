@@ -15,8 +15,7 @@ If the choice is a bookmarkable destination rather than a local panel, use routi
 ## Build manually activated panels
 
 ```ts
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Tabs from "@typed/ui/Tabs";
 
 export const ProjectInspector = component(function* () {
@@ -88,6 +87,32 @@ a removed element but does not invent that policy or implement a Delete-to-close
 Browser checks should assert the active button, its tabindex, both ARIA relationships, and the
 visible panel after arrow and commit steps. In manual mode specifically assert that an arrow changes
 focus while leaving visibility unchanged. Check that a hidden panel cannot receive tab navigation,
-and that nested controls in the selected panel keep their own behavior. Continue with
-[the Tab module](/explore/ui-tab) for the alias and an instance-safe wrapper, or consult
-[Tabs API](/reference/modules/%40typed%2Fui%2FTabs).
+and that nested controls in the selected panel keep their own behavior.
+
+## Reuse a tab set safely
+
+Each repeated inspector needs its own state, collection, and stable ID namespace. The caller supplies the prefix; each execution makes a new state and registry.
+
+```ts
+import { component } from "@typed/template";
+import * as Tabs from "@typed/ui/Tabs";
+
+export const Details = component(function* (id: string) {
+  const summaryId = `${id}-summary`;
+  const historyId = `${id}-history`;
+  const state = yield* Tabs.makeState({ selectedId: summaryId, activationMode: "manual" });
+  const collection = yield* Tabs.makeCollection();
+  return [
+    Tabs.List({ state, collection, label: "Project details", content: [
+      Tabs.Tab({ state, collection, id: summaryId, panelId: `${summaryId}-panel`, content: "Summary" }),
+      Tabs.Tab({ state, collection, id: historyId, panelId: `${historyId}-panel`, content: "History" }),
+    ] }),
+    Tabs.Panel({ state, id: `${summaryId}-panel`, tabId: summaryId, content: "Draft" }),
+    Tabs.Panel({ state, id: `${historyId}-panel`, tabId: historyId, content: "Created today" }),
+  ];
+});
+
+export const CompareDetails = [Details("left-project"), Details("right-project")];
+```
+
+Never generate different random IDs during server and client rendering. Visible labels may match, but every `aria-controls` relationship must resolve within its own instance. The singular [Tab](/explore/ui-tab) entry point is an alias for this module. Consult the [Tabs API](/reference/modules/%40typed%2Fui%2FTabs) for exact exports.

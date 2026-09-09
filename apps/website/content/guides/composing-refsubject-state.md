@@ -6,6 +6,8 @@ kind: "guide"
 order: 2.1
 ---
 
+<span id="choose-whether-a-missing-selection-is-observable"></span>
+
 The [selection model](/explore/refsubject-renderer-independent-state) becomes more interesting when
 an application adds a workspace selector. Changing workspace must clear selected issues. A toolbar
 still needs only the selection count, while a bulk action needs the workspace and IDs together.
@@ -84,7 +86,7 @@ Independent writers remain independent. Do not treat `struct` as a global transa
 a set of separately changing refs. The parent-object model above is clearer when a transition must
 preserve a cross-field invariant.
 
-## Choose whether a missing selection is observable
+## Link absence to its derived-state home
 
 A focused row may not exist. Keeping Option in state preserves both focus and loss of focus. A
 Filtered view is useful for commands or consumers interested only in present IDs.

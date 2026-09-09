@@ -1,8 +1,8 @@
 ---
 title: "SpinButton: numeric entry at the change boundary"
-summary: "Use native number entry while keeping empty drafts, finite state, bounds, and commit timing explicit."
+summary: "Reference numeric input timing, bounds, and invalid draft limitations."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 237
 ---
 
@@ -14,8 +14,7 @@ The module exposes `State`, `InitialState`, `StateSchema`, `makeState`, `setValu
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as SpinButton from "@typed/ui/SpinButton";
 
 export const CopyCount = component(function* () {

@@ -71,6 +71,15 @@ Conversely, disposing `registration` removes that registration from all active m
 not close those mounts, remove their DOM, or dispose other handlers. A renderer part with a shorter
 lifetime than its host should retain and dispose its registration explicitly.
 
+The two lifetimes are independent:
+
+```text
+registration ── addEventListener ── dispose
+      │                 │
+mount A ─────── setup(root A, scope A) ── scope A closes
+mount B ─────── setup(root B, scope B) ── scope B closes
+```
+
 This split also permits late registration:
 
 ```ts

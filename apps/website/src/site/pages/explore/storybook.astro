@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import ContributeDocs from "../../components/ContributeDocs.astro";
 import { siteHref } from "../../../SiteHref.js";
 import { adjacentLinks, learningGroups } from "../../Guides.js";
 
@@ -52,12 +53,17 @@ const navigation = adjacentLinks(
         >write and mount your own stories</a
       >.
     </p>
+    <ContributeDocs
+      sources={[{ path: "src/site/pages/explore/storybook.astro" }]}
+    />
     <nav class="article-footer" aria-label="Continue learning">
       {
-        navigation.previous && (
+        navigation.previous ? (
           <a href={siteHref(navigation.previous.href)}>
             ← {navigation.previous.title}
           </a>
+        ) : (
+          <a href={siteHref("/explore")}>← All guides</a>
         )
       }
       {

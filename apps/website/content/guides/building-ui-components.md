@@ -1,6 +1,6 @@
 ---
 title: "Build a save control with a complete interaction policy"
-summary: "Start with a normal template, add local state when needed, and test the same save behavior the button runs."
+summary: "Build a save control with an explicit pending, failure, retry, and focused test policy."
 section: "UI"
 kind: "guide"
 order: 4
@@ -41,7 +41,7 @@ import { Data, Effect } from "effect";
 import { RefSubject } from "@typed/fx";
 import { html } from "@typed/template";
 import { Button } from "@typed/ui/Button";
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 
 export class SaveRejected extends Data.TaggedError("SaveRejected")<{
   readonly message: string;

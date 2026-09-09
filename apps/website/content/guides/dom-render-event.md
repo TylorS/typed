@@ -44,7 +44,7 @@ teardown. This smaller example uses an Effect-owned schedule to redraw a canvas:
 
 ```ts
 import { Effect } from "effect";
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 import { Fx } from "@typed/fx";
 import { DomRenderEvent } from "@typed/template/RenderEvent";
 
@@ -92,9 +92,8 @@ that replaces the host's `innerHTML` would violate that division. A chart requir
 also needs explicit mount coordination; creating its node during component setup does not prove it
 is connected or laid out yet.
 
-For callback-based producers, `Fx.callback` can model the actual subscribe/unsubscribe API and
-return a cleanup Effect. Avoid inventing another lifetime based solely on observing DOM removal:
-a moved or detached object is not necessarily a stopped resource.
+For callback-based producers, `Fx.callback` models the actual subscribe/unsubscribe API. A moved or
+detached object is not necessarily a stopped resource.
 
 ## Be careful when inspecting mounted ranges
 

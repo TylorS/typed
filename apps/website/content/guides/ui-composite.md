@@ -17,8 +17,7 @@ The controls use native buttons and a roving tabindex. Keyboard movement updates
 ```ts
 import { Effect } from "effect";
 import { RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { EventHandler, html, component } from "@typed/template";
 import * as Collection from "@typed/ui/Collection";
 import * as Composite from "@typed/ui/Composite";
 

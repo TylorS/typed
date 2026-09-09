@@ -280,7 +280,7 @@ type RootInternalProps<Options extends RootOptions> = ReturnType<
  * @example
  * ```ts
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as RadioGroup from "@typed/ui/RadioGroup";
  *
  * export const DeliveryChoice = component(function* () {

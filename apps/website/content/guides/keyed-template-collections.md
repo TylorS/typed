@@ -10,10 +10,12 @@ Sorting saved articles should move their rows, not turn each array position into
 An input being edited, a row observer, and a foreign widget all belong to the logical article. `many`
 expresses that identity so the renderer can keep the same child work while its position changes.
 
-This builds on [renderable values](/explore/renderable-normalization). A fixed array of templates
+This follows [Native events with Effect](/explore/native-events-with-effect). A fixed array of templates
 is sufficient for fixed output; use `many` when records can be added, removed, updated, or reordered.
 
 ## Give the record an identity independent of its position
+
+For newly created records, [generate an ID with `@typed/id`](/explore/id) in the creation command and retain it with the record. The renderer consumes that key; it does not generate one on each update.
 
 Use an ID that stays with the record. A title can change and an array index can refer to a different
 record after sorting, so neither is a reliable key for editable rows.
@@ -23,8 +25,7 @@ row's browser-owned note input should stay with its article.
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html, many } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, many, component } from "@typed/template";
 
 interface Article {
   readonly id: string;
@@ -84,9 +85,7 @@ Only the subscribed title part needs to change. Removing `scope` closes that chi
 removes its represented output. An observer acquired by that row is finalized even while the
 remaining list continues to run.
 
-A list emission is consequently not constant-time work. It validates and visits old and new keys,
-checks equality, and reconciles the local concrete range. The behavioral benefit is narrower:
-retained children keep their identity and lifetime. See
+The behavioral benefit is narrow: retained children keep their identity and lifetime. See
 [Direct updates, local reconciliation](/explore/dom-updates-and-reconciliation) for the cost model.
 
 ## Make identity testable
@@ -96,11 +95,9 @@ Assert the same input is now in the moved row and its text remains with the corr
 Then test a title update and a removal separately. Count a row resource's acquisitions and finalizers
 if its lifetime matters; final text order alone cannot reveal unnecessary recreation.
 
-Node identity and browser-managed state are related but distinct. The diff prefers `moveBefore`
-for already-parented nodes and falls back to `insertBefore`. Both retain the object; the successful
-platform move preserves additional states subject to its connection/document constraints. Consult
-the [platform move contract](https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore)
-and test the fallback on supported browsers rather than promising every native state survives.
+Node identity and browser-managed state are related but distinct. Test the fallback behavior your
+supported browsers require; [the reconciliation deep dive](/explore/dom-updates-and-reconciliation)
+has the platform-specific move contract.
 
 ## Carry the same identity through a server response
 

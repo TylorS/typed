@@ -49,7 +49,7 @@ describe("typed/ui/Link in Chromium", () => {
         Link({
           href: "/browser-navigation",
           content: "Navigate",
-          onclick: Effect.sync(() => clicks++),
+          props: { onclick: Effect.sync(() => clicks++) },
         }),
         document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -74,11 +74,13 @@ describe("typed/ui/Link in Chromium", () => {
         Link({
           href: "/vetoed-navigation",
           content: "Stay here",
-          onclick: EventHandler.make(
-            Effect.fn(function* (event: MouseEvent) {
-              yield* Effect.sync(() => event.preventDefault());
-            }),
-          ),
+          props: {
+            onclick: EventHandler.make(
+              Effect.fn(function* (event: MouseEvent) {
+                yield* Effect.sync(() => event.preventDefault());
+              }),
+            ),
+          },
         }),
         document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -104,12 +106,14 @@ describe("typed/ui/Link in Chromium", () => {
         Link({
           href: "/async-vetoed-navigation",
           content: "Stay here asynchronously",
-          onclick: EventHandler.make(
-            Effect.fn(function* (event: MouseEvent) {
-              yield* Effect.sleep(10);
-              event.preventDefault();
-            }),
-          ),
+          props: {
+            onclick: EventHandler.make(
+              Effect.fn(function* (event: MouseEvent) {
+                yield* Effect.sleep(10);
+                event.preventDefault();
+              }),
+            ),
+          },
         }),
         document.body,
       ).pipe(Fx.take(1), Fx.collectAll);
@@ -135,8 +139,8 @@ describe("typed/ui/Link in Chromium", () => {
         ["control", { href: location.href }, { ctrlKey: true }],
         ["shift", { href: location.href }, { shiftKey: true }],
         ["middle", { href: location.href }, { button: 1 }],
-        ["target", { href: location.href, target: "_blank" }, {}],
-        ["download", { href: location.href, download: "page.html" }, {}],
+        ["target", { href: location.href, props: { target: "_blank" } }, {}],
+        ["download", { href: location.href, props: { download: "page.html" } }, {}],
         ["external", { href: "https://example.com/" }, {}],
       ] as const;
 

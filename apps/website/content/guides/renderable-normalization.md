@@ -2,7 +2,7 @@
 title: "What a template can render"
 summary: "See how ordinary values, Effect values, streams, arrays, and renderer output become one template part without losing errors or requirements."
 section: "Template authoring"
-kind: "concept"
+kind: "reference"
 order: 3
 ---
 
@@ -11,9 +11,9 @@ loaded through a service, a group of links, and perhaps an empty state. They do 
 converted into one special component-object format. Typed accepts ordinary values and Effect
 producers, then interprets them according to the position where they are rendered.
 
-Start with [Authoring Typed templates](/explore/authoring-typed-templates). This article answers the
-next design question: what should a component return, or pass into an interpolation, when its data
-isn't simply a string?
+This is optional lookup after [keyed collections](/explore/keyed-template-collections). For an
+ordinary screen, interpolate a scalar, template, or state source directly; use this page when a
+producer or output position needs a deliberate contract.
 
 ## Distinguish a value from the producer of that value
 

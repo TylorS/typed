@@ -1,8 +1,8 @@
 ---
 title: "NativeDialog: synchronize an existing dialog"
-summary: "Connect open state to show, showModal, and close without adopting compound parts."
+summary: "Reference the low-level dialog state bridge and the explicit reverse close-event path."
 section: "UI / Overlays"
-kind: "deep-dive"
+kind: "reference"
 order: 281
 ---
 
@@ -16,8 +16,7 @@ Pass a stable, page-unique ID. This example wires the reverse direction explicit
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { EventHandler, html, component } from "@typed/template";
 import * as Dom from "@typed/ui/Dom";
 import * as NativeDialog from "@typed/ui/NativeDialog";
 

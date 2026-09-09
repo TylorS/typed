@@ -137,7 +137,7 @@ type SpinButtonInternalProps<Options extends SpinButtonOptions> = ReturnType<
  * ```ts
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import * as SpinButton from "@typed/ui/SpinButton";
  *
  * export const CopyCount = component(function* () {

@@ -1,6 +1,6 @@
 ---
 title: "Mounting DOM output"
-summary: "Render a live RenderEvent Fx into one real browser root with an explicit lifetime."
+summary: "Embed a live view at one owned browser root with a single explicit lifetime."
 section: "Template rendering"
 kind: "guide"
 order: 1
@@ -36,8 +36,7 @@ A reusable mounting function should describe the work, not secretly start it:
 ```ts
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
-import { component } from "@typed/ui/Component";
-import { DomRenderTemplate, html, render } from "@typed/template";
+import { component, DomRenderTemplate, html, render } from "@typed/template";
 import * as EventHandler from "@typed/template/EventHandler";
 
 const SearchPanel = component(function* () {
@@ -69,29 +68,9 @@ host document's window or constructors, derive those explicitly in that integrat
 
 ## Start and stop at the platform boundary
 
-Here is the same ownership pattern with a static view so the entry is independently runnable:
-
-```ts
-import { Effect, Fiber } from "effect";
-import { Fx } from "@typed/fx";
-import { DomRenderTemplate, html, render } from "@typed/template";
-
-const host = document.getElementById("article-search");
-if (host === null) throw new Error("Missing article-search host");
-
-const application = html`<aside>Search your saved articles here.</aside>`.pipe(
-  render(host),
-  Fx.drain,
-  Effect.provide(DomRenderTemplate.using(host.ownerDocument)),
-  Effect.scoped,
-);
-const fiber = Effect.runFork(application);
-export const stop = () => Effect.runPromise(Fiber.interrupt(fiber));
-```
-
-The owner keeps `fiber`, observes failures according to its application policy, and calls `stop`
-during route or panel teardown. Do not start `runFork` inside the view or ref: that hides work from
-the owner that is supposed to stop it.
+The owner runs `mountSearch(host)`, keeps its fiber, observes failures according to application
+policy, and interrupts it during route or panel teardown. Do not start `runFork` inside the view or
+ref: that hides work from the owner that is supposed to stop it.
 
 [Scope closure](https://github.com/Effect-TS/effect/blob/main/packages/effect/src/Scope.ts) releases
 subscriptions, listeners, queued callbacks, and acquired finalizers. It is
@@ -112,9 +91,8 @@ cleanup because its old nodes disappeared from the document.
 
 ## Adoption uses the same host contract
 
-If the host already contains compatible Typed server output, `render` creates the hydration context
-and can adopt its existing nodes. Render the same inner view the server put inside that host, not
-the full response document. Clearing the host before starting removes the evidence adoption needs.
+If the host already contains compatible Typed server output, render the same inner view the server
+put inside it; [Hydrating Typed HTML](/explore/hydrating-typed-html) owns compatibility diagnosis.
 
 Test three boundaries independently: a foreign sibling remains untouched, scalar edits retain the
 panel's input object, and events stop running after interruption. For SSR add the stronger assertion

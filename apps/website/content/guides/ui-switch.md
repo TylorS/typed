@@ -1,8 +1,8 @@
 ---
 title: "Switch: a stable name for an on/off setting"
-summary: "Model a binary setting with native button activation and explicit persistence and form participation."
+summary: "Reference a stable setting name, binary switch state, and its non-form-control semantics."
 section: "UI / Forms"
-kind: "guide"
+kind: "reference"
 order: 233
 ---
 
@@ -14,8 +14,7 @@ The module's `State` contains `checked: boolean`. `makeState` defaults it to fal
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Switch from "@typed/ui/Switch";
 
 export const PreviewSetting = component(function* () {

@@ -9,9 +9,10 @@ import { expectExampleCalls, runGuideExample } from "./FxGuideTestSupport.js";
 
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const guidePath = path.join(websiteRoot, "content/guides/composing-fx.md");
+const higherOrderGuidePath = path.join(websiteRoot, "content/guides/fx-higher-order-and-concurrency.md");
 
 describe("Composing Fx guide", () => {
-  it("makes higher-order scheduling and lifetime policies explicit", () => {
+  it("teaches independent-source composition and hands job admission to its canonical lesson", () => {
     const guide = parseGuideDocumentation("composing-fx.md", fs.readFileSync(guidePath, "utf8"));
 
     expect(guide).toMatchObject({
@@ -24,23 +25,22 @@ describe("Composing Fx guide", () => {
       "merge",
       "concat",
       "zipLatest",
-      "flatMapConcurrently",
-      "concatMap",
-      "switchMap",
-      "exhaustMap",
-      "exhaustLatestMap",
     ]) {
       expect(guide.body).toContain(operator);
     }
-    expect(guide.body).toContain("Data.TaggedError");
-    expect(guide.body).toContain("Context.Service");
-    expect(guide.body).toContain("Effect.scoped");
+    expect(guide.body).toContain("/explore/fx-higher-order-and-concurrency");
     expectExampleCalls(guide.body, [
       "Fx.merge",
       "Fx.concat",
       "Fx.zipLatest",
-      "Fx.switchMapEffect",
-      "Fx.provideService",
+    ]);
+    const higherOrder = fs.readFileSync(higherOrderGuidePath, "utf8");
+    expectExampleCalls(higherOrder, [
+      "Fx.flatMapConcurrently",
+      "Fx.concatMap",
+      "Fx.switchMap",
+      "Fx.exhaustMap",
+      "Fx.exhaustLatestMap",
     ]);
   });
 

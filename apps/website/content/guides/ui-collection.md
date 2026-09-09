@@ -8,7 +8,7 @@ order: 292
 
 A command group needs more than an array of labels: keyboard movement must know which items are mounted, their current document order, and which are disabled. `Collection` stores that runtime inventory. It intentionally separates mounted element handles from serializable selection or active-ID state.
 
-Read [component lifetime](/explore/ui-component) and then [Composite](/explore/ui-composite), which consumes collections. `Collection.makeState<Value, Element>()` creates a plain scoped RefSubject of items, not a hydrated state object. Serializing DOM handles would be the wrong boundary.
+Start with [component lifetime](/explore/ui-component). After registering items here, [Composite](/explore/ui-composite) adds movement and focus. `Collection.makeState<Value, Element>()` creates a plain scoped RefSubject of items, not a hydrated state object. Serializing DOM handles would be the wrong boundary.
 
 ## Register report actions at their element lifetime
 
@@ -17,8 +17,7 @@ This inventory reports how many commands are currently mounted. It does not clai
 ```ts
 import { Effect } from "effect";
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Collection from "@typed/ui/Collection";
 
 const ReportCommands = <E, R, E2, R2>(

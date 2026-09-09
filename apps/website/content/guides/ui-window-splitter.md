@@ -20,8 +20,7 @@ than hiding navigation completely. The accessible value text makes that unit exp
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as WindowSplitter from "@typed/ui/WindowSplitter";
 
 export const ResizableInspector = component(function* (id: string) {

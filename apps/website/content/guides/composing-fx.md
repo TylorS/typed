@@ -6,6 +6,8 @@ kind: "guide"
 order: 1.5
 ---
 
+<span id="start-the-current-request-and-replace-obsolete-ones"></span>
+
 Imagine a search screen. Local edits and server notifications feed its activity log. The current
 query and category define its search input. A submit button should use that input without submitting
 again whenever the category changes. Each relationship calls for different composition.
@@ -197,47 +199,9 @@ Here `second` is already available but waits for the first lane to finish. A fir
 finishes prevents later buffered values from appearing. Choose ordered buffering because the feature
 requires it, not merely to make a test's output easier to compare.
 
-## Start the current request and replace obsolete ones
+## Hand a ready input to the admission policy
 
-Once query and category form a useful input, another producer can do the request. A search result
-becomes obsolete when the input changes, so select a switching policy:
-
-```ts
-import { Context, Data, Effect } from "effect";
-import { Fx } from "@typed/fx";
-
-class SearchFailed extends Data.TaggedError("SearchFailed")<{
-  readonly query: string;
-}> {}
-
-interface SearchClient {
-  readonly search: (query: string) => Effect.Effect<ReadonlyArray<string>, SearchFailed>;
-}
-
-const SearchClient = Context.Service<SearchClient>("docs/SearchClient");
-
-const queries = Fx.mergeAll(Fx.at("effect", "0 millis"), Fx.at("effect v4", "5 millis"));
-const results = queries.pipe(
-  Fx.switchMapEffect((query) => Effect.flatMap(SearchClient, ({ search }) => search(query))),
-);
-
-const program = results.pipe(
-  Fx.provideService(SearchClient, {
-    search: (query) => Effect.as(Effect.sleep("20 millis"), [`result: ${query}`]),
-  }),
-  Fx.collectAll,
-  Effect.scoped,
-);
-
-const values = await Effect.runPromise(program);
-// [["result: effect v4"]]
-```
-
-The first request sleeps for 20 milliseconds; the revised query arrives after 5 and interrupts it.
-Only the revised result is delivered. Errors and the `SearchClient` requirement remain visible until
-recovered or provided. `Effect.scoped` gives admitted work its owner.
-
-This last step differs from combining independent facts: each input starts work of its own. Continue
-with [higher-order policies](/explore/fx-higher-order-and-concurrency) for `flatMapConcurrently`,
-`concatMap`, `switchMap`, `exhaustMap`, and `exhaustLatestMap`. In particular, a write that must finish
-is a different promise from an obsolete search read.
+Once query and category form a useful input, a request is a separate job-admission decision. Continue
+with [higher-order policies](/explore/fx-higher-order-and-concurrency) for overlap, ordering,
+replacement, and busy-input behavior. A write that must finish is a different promise from an
+obsolete search read.

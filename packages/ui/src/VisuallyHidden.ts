@@ -49,7 +49,7 @@ type VisuallyHiddenInternalProps = ReturnType<typeof internalProps>;
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
  * import { Button } from "@typed/ui/Button";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  * import { VisuallyHidden } from "@typed/ui/VisuallyHidden";
  *
  * export const ResetCounter = component(function* () {

@@ -2,7 +2,7 @@
 title: "Using HtmlRenderEvent"
 summary: "Carry ordered, trusted renderer-owned HTML chunks through Typed SSR while keeping completion and the trust boundary explicit."
 section: "Template internals"
-kind: "guide"
+kind: "reference"
 order: 2.5
 ---
 

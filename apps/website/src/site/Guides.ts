@@ -1,7 +1,6 @@
 import type { CollectionEntry } from "astro:content";
 import {
   counterLessonPath,
-  orderCounterLessons,
   orderTutorialSteps,
 } from "../tutorial/Routes.js";
 
@@ -63,9 +62,11 @@ export interface NavigationEntry extends GuideLink {
 export interface NavigationGroup {
   readonly title: string;
   readonly entries: ReadonlyArray<NavigationEntry>;
+  /** Only a deliberate learning sequence supplies Previous/Next links. */
+  readonly sequence?: boolean;
 }
 
-/** The sidebar and article continuation share this exact curriculum. */
+/** Short learning paths and optional lookup share destinations, not a single course. */
 export function learningGroups(
   guides: ReadonlyArray<CollectionEntry<"guides">>,
   lessons: ReadonlyArray<CollectionEntry<"learn">>,
@@ -76,34 +77,19 @@ export function learningGroups(
     if (!entry) throw new Error(`Missing guide: ${id}`);
     return { id, href: `/explore/${id}`, title: entry.data.title };
   };
-  const starters = [
-    guide("cooperative-by-design"),
-    { id: "quick-start", href: "/explore/quick-start", title: "Quick Start" },
-  ];
-  const toolkit = [
-    guide("ui"),
-    { id: "storybook", href: "/explore/storybook", title: "UI Storybook" },
-    guide("fx-operator-atlas"),
-  ];
-  const featured = new Set([...starters, ...toolkit].map(({ id }) => id));
-  return [
-    { title: "Start building", entries: starters },
+  const counter = (id: string): NavigationEntry => {
+    const entry = lessons.find((entry) => entry.data.id === id);
+    if (!entry) throw new Error(`Missing counter lesson: ${id}`);
+    return { id: `counter/${id}`, href: counterLessonPath(id), title: entry.data.title };
+  };
+  const paths: NavigationGroup[] = [
     {
-      title: "Beyond Quick Start",
-      entries: orderCounterLessons(lessons).map(({ data }) => ({
-        id: `counter/${data.id}`,
-        href: counterLessonPath(data.id),
-        title: data.title,
-      })),
-    },
-    {
-      title: "Build TodoMVC",
+      title: "Start building",
+      sequence: true,
       entries: [
-        {
-          id: "tutorial",
-          href: "/explore/tutorial",
-          title: "Build a Todo app",
-        },
+        { id: "quick-start", href: "/explore/quick-start", title: "Quick Start" },
+        counter("component-lifetime"),
+        { id: "tutorial", href: "/explore/tutorial", title: "Build a Todo app" },
         ...orderTutorialSteps(tutorial).map(({ data }) => ({
           id: `tutorial/${data.slug}`,
           href: `/explore/tutorial/${data.slug}`,
@@ -111,25 +97,74 @@ export function learningGroups(
         })),
       ],
     },
-    { title: "Explore the toolkit", entries: toolkit },
+    {
+      title: "Run push-based work",
+      sequence: true,
+      entries: [
+        "fx-push-reactivity", "building-fx", "consuming-fx", "transforming-fx",
+        "composing-fx", "fx-higher-order-and-concurrency", "fx-time-and-rate",
+        "fx-errors-and-recovery",
+      ].map(guide),
+    },
+    {
+      title: "Own and derive state",
+      sequence: true,
+      entries: [
+        "refsubject-renderer-independent-state", "composing-refsubject-state",
+        "derived-conditional-and-accumulated-state", "async-data",
+        "async-data-requests-and-cache",
+      ].map(guide),
+    },
+    {
+      title: "Author a native view",
+      sequence: true,
+      entries: [
+        "render-your-first-template", "authoring-typed-templates",
+        "native-events-with-effect", "keyed-template-collections",
+      ].map(guide),
+    },
+    {
+      title: "Extend a library",
+      sequence: true,
+      entries: [
+        "library-developers", "sink-writing-effects", "subject-event-publications",
+        "fx-dynamic-producers", "fx-services-and-lifetime",
+      ].map(guide),
+    },
+    {
+      title: "Optional: server rendering",
+      sequence: true,
+      entries: [counter("server-html"), counter("hydrate-state")],
+    },
+    {
+      title: "Choose a task or look up an API",
+      entries: [
+        guide("application-developers"), guide("ui"), guide("id"),
+        { id: "storybook", href: "/explore/storybook", title: "UI Storybook" },
+        guide("fx-operator-atlas"), guide("cooperative-by-design"),
+        counter("client-only"),
+      ],
+    },
+  ];
+  const featured = new Set(paths.flatMap(({ entries }) => entries.map(({ id }) => id)));
+  return [
+    ...paths,
     ...groupGuides(guides)
       .map(([title, entries]) => ({
-        title,
-        entries: entries
-          .filter(({ id }) => !featured.has(id))
-          .map(({ id }) => guide(id)),
+        title: `Browse: ${title}`,
+        entries: entries.filter(({ id }) => !featured.has(id)).map(({ id }) => guide(id)),
       }))
       .filter(({ entries }) => entries.length > 0),
   ];
 }
 
-/** Crossing a section boundary follows the next visible section, without loops. */
+/** Reference pages have no implied next lesson; learning paths end at their boundary. */
 export function adjacentLinks(
   id: string,
   groups: ReadonlyArray<NavigationGroup>,
 ): { previous?: GuideLink; next?: GuideLink } {
-  const entries = groups.flatMap(({ entries }) => entries);
-  const index = entries.findIndex((entry) => entry.id === id);
-  if (index === -1) return {};
-  return { previous: entries[index - 1], next: entries[index + 1] };
+  const group = groups.find(({ entries }) => entries.some((entry) => entry.id === id));
+  if (!group?.sequence) return {};
+  const index = group.entries.findIndex((entry) => entry.id === id);
+  return { previous: group.entries[index - 1], next: group.entries[index + 1] };
 }

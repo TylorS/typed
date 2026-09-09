@@ -9,6 +9,7 @@ import {
 import { orderTutorialSteps } from "../../../../tutorial/Routes.js";
 import Article from "../../../layouts/Article.astro";
 import Demo from "../../../components/CurriculumDemo.js";
+import ArchitectureDiagram from "../../../components/ArchitectureDiagram.astro";
 import CurriculumDiff from "../../../components/CurriculumDiff.astro";
 import "../../../components/CurriculumFiles.css";
 import {
@@ -50,7 +51,8 @@ interface Props {
 const { entry, previous, previousStep, next, files, previousFiles } =
   Astro.props;
 const { Content, headings } = await render(entry);
-if (!entry.filePath) throw new Error(`Missing source file for tutorial ${entry.id}`);
+if (!entry.filePath)
+  throw new Error(`Missing source file for tutorial ${entry.id}`);
 ---
 
 <Article
@@ -73,6 +75,11 @@ if (!entry.filePath) throw new Error(`Missing source file for tutorial ${entry.i
           <p slot="fallback">The interactive example loads in the browser.</p>
         </Demo>
       </section>
+    )
+  }
+  {
+    entry.data.slug === "assemble-the-application" && (
+      <ArchitectureDiagram diagram="todomvc" />
     )
   }
   <Content />

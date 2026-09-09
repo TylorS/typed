@@ -14,7 +14,7 @@ Create two items, edit one, then press Escape. The label should keep its origina
 In `src/presentation.ts`, the list delegates each item to `TodoItem`:
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L98-L102
+// @source examples/todo-5/src/presentation.ts#L97-L101
 // @expect ${many(App.TodoList, (todo) => todo.id, TodoItem)}
 ```
 
@@ -23,7 +23,7 @@ In `src/presentation.ts`, the list delegates each item to `TodoItem`:
 ## Allocate state inside the row
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L8-L13
+// @source examples/todo-5/src/presentation.ts#L7-L12
 // @expect const TodoItem = component
 // @expect const editing =
 // @expect const draft =
@@ -34,7 +34,7 @@ Here `component()` earns its place: each mounted row needs its own editing flag 
 ## Begin, cancel, and save
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L14-L23
+// @source examples/todo-5/src/presentation.ts#L13-L22
 // @expect const begin =
 // @expect const cancel =
 // @expect const save =
@@ -47,7 +47,7 @@ The application action trims saved text and deletes a Todo when that text is bla
 ## Bind the editor to the draft
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L29-L40
+// @source examples/todo-5/src/presentation.ts#L28-L39
 // @expect .value=${draft}
 // @expect event.key === "Escape"
 // @expect <button type="submit">Save</button>

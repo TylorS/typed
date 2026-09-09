@@ -3,7 +3,7 @@ title: "Schedule DOM rendering"
 summary: "Change when local DOM work runs without changing what a template owns or how a dynamic part is updated."
 section: "Template rendering"
 kind: "deep-dive"
-order: 7
+order: 93
 ---
 
 A search producer can publish several result counts during one browser turn. Applying every
@@ -32,11 +32,11 @@ run. Here both outputs observe the same state, but only the first uses synchrono
 
 ```ts
 import { Fx, RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
+import { component, html } from "@typed/template";
 import { CurrentRenderPriority } from "@typed/template/Render";
 import { RenderPriority } from "@typed/template/RenderQueue";
 
-export const Counter = Fx.gen(function* () {
+export const Counter = component(function* () {
   const count = yield* RefSubject.make(0);
 
   // Apply updates to this output immediately.

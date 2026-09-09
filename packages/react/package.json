@@ -1,6 +1,6 @@
 {
   "name": "@typed/react",
-  "version": "1.0.0-beta.9",
+  "version": "1.0.0-beta.10",
   "description": "Scoped React components in Typed and Typed templates in React, with SSR and hydration.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/react#readme",
   "bugs": "https://github.com/TylorS/typed/issues",

@@ -6,6 +6,8 @@ kind: "guide"
 order: 1.3
 ---
 
+<span id="adapt-repeated-failure-reports-only-at-a-cause-boundary"></span>
+
 A shipment import page needs a running balance, numbered progress messages, meaningful status
 transitions, and small batches for persistence. One input alone cannot answer those questions.
 Each needs a different piece of history—and retaining the entire import would be unnecessary.
@@ -219,55 +221,13 @@ buffer is one batch. That does not bound a downstream backlog of slow writes: us
 [work policy](/explore/fx-higher-order-and-concurrency) and distinguish buffered records from queued
 persistence jobs. The timer requires a scoped owner.
 
-## Adapt repeated failure reports only at a cause boundary
+## Reference: stateful Cause transforms
 
 Most imports use ordinary value state above and [typed recovery](/explore/fx-errors-and-recovery).
-A lower-level consumer may instead need to transform delivered Causes with private state. The
-following diagrams show terminal-source examples; a Subject can deliver Causes repeatedly without
-permanently closing itself.
-
-```fx-marble
-title: loopCause rewrites a terminal cause after passing earlier values through
-covers: loopCause
-input source: loaded . cached . !offline
-operator: loopCause(0, prefix)
-output source: loaded . cached . !n0:offline
-```
-
-`loopCause` passes successes through and transforms a Cause together with its next private state.
-
-```fx-marble
-title: loopCauseEffect forwards its transformed terminal cause when its Effect resolves
-covers: loopCauseEffect
-input source: loaded . cached . !offline .
-operator: loopCauseEffect(0, oneTurnPrefix)
-output source: loaded . cached . . !n0:offline
-```
-
-`loopCauseEffect` waits for its Effectful transformation before forwarding the Cause.
-
-```fx-marble
-title: filterMapLoopCause can suppress a terminal cause
-covers: filterMapLoopCause
-input source: loaded . cached . !offline
-operator: filterMapLoopCause(0, suppress)
-output source: loaded . cached . |
-```
-
-`filterMapLoopCause` can choose `None`, suppressing that Cause; in this terminal example the run then
-completes normally. That is an error policy, not a harmless formatting change.
-
-```fx-marble
-title: filterMapLoopCauseEffect completes only after its one-turn suppression decision
-covers: filterMapLoopCauseEffect
-input source: loaded . cached . !offline .
-operator: filterMapLoopCauseEffect(0, oneTurnSuppress)
-output source: loaded . cached . . |
-```
-
-The Effect variant delays that decision and does not serialize concurrent Cause delivery. Use these
-operations only when a boundary truly needs stateful failure handling; ordinary progress state should
-not encode failures as artificial counter updates.
+`loopCause`, `loopCauseEffect`, `filterMapLoopCause`, and `filterMapLoopCauseEffect` are for a host
+boundary that intentionally transforms a delivered Cause with private state. They are error policy,
+not progress formatting; their exhaustive timelines live in the generated
+[operator atlas](/explore/fx-operator-atlas).
 
 The page now has four deliberate histories: a seeded balance, a private position, one previous
 status, and one bounded batch. Check those independently when behavior diverges. A missing first

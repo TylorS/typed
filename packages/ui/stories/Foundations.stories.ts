@@ -1,5 +1,5 @@
-import { Fx, RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
+import { RefSubject } from "@typed/fx";
+import { component, EventHandler, html } from "@typed/template";
 import * as AlertComponent from "../src/Alert.js";
 import * as CollectionComponent from "../src/Collection.js";
 import * as CompositeComponent from "../src/Composite.js";
@@ -16,7 +16,7 @@ export default { title: "Foundations" };
 
 export const Alert = story(AlertComponent.Alert({ content: "Your profile has been saved.", props: { class: "story-success" } }));
 
-const collection = Fx.gen(function* () {
+const collection = component(function* () {
     const state = yield* CollectionComponent.makeState([
       { id: "alpha", value: "Alpha" },
       { id: "beta", value: "Beta" },
@@ -35,7 +35,7 @@ const collection = Fx.gen(function* () {
 
 export const Collection = story(collection);
 
-const composite = Fx.gen(function* () {
+const composite = component(function* () {
     const state = yield* CompositeComponent.makeState({ activeId: "first" });
     const items = yield* CollectionComponent.makeState([
       { id: "first", value: "First" },

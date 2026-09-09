@@ -31,7 +31,14 @@ Creation needs an ID and a timestamp. `CreateTodo` lets the application ask for 
 
 The return type says creation is an Effect. Merely requesting the function does not run it. The next chapter will call it after checking the draft.
 
-**Check your understanding:** if two independent applications provide different `TodoList` layers, do they share one global array? No: each provided state instance owns its own value. See [shared state contracts](/explore/shared-state-contracts) for the Layer mechanics.
+**Predict:** if two independent applications provide different `TodoList` layers, do they share one global array?
+
+<details>
+<summary>Check your prediction</summary>
+
+No. Each provided state instance owns its own value. [Shared state contracts](/explore/shared-state-contracts) explains how to deliberately share one provider instead.
+
+</details>
 
 ## Complete files
 

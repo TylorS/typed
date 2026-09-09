@@ -1,8 +1,8 @@
 ---
 title: "Toolbar: one keyboard surface for related commands"
-summary: "Compose a roving command group while keeping command state and focus state independent."
+summary: "Reference toolbar focus and pressed state; follow collections and focus for the worked scenario."
 section: "UI / Collections"
-kind: "deep-dive"
+kind: "reference"
 order: 246
 ---
 
@@ -19,8 +19,7 @@ preferences, so the example stores them separately and exposes each with `aria-p
 
 ```ts
 import { RefSubject } from "@typed/fx";
-import { html } from "@typed/template";
-import { component } from "@typed/ui/Component";
+import { html, component } from "@typed/template";
 import * as Toolbar from "@typed/ui/Toolbar";
 
 export const Formatting = component(function* () {

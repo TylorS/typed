@@ -87,7 +87,7 @@ type ButtonInternalProps<Options extends ButtonOptions> = ReturnType<typeof inte
  * import { RefSubject } from "@typed/fx";
  * import { html } from "@typed/template";
  * import { Button } from "@typed/ui/Button";
- * import { component } from "@typed/ui/Component";
+ * import { component } from "@typed/template";
  *
  * export const PreviewCounter = component(function* () {
  *   const previews = yield* RefSubject.make(0);

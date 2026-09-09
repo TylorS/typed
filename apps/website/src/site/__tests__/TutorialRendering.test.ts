@@ -19,7 +19,7 @@ describe("TodoMVC lesson rendering", () => {
         expect(document.querySelector("pre")?.textContent, name).toBeTruthy();
         expect(document.body.textContent, name).not.toContain("@source");
         expect(document.body.textContent, name).not.toContain("@expect");
-        const snapshots = [...document.querySelectorAll("details")];
+        const snapshots = [...document.querySelectorAll("details.curriculum-file")];
         expect(snapshots.length, name).toBe(files.length);
         for (const file of files) {
           const snapshot = snapshots.find(

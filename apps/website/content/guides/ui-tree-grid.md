@@ -18,7 +18,7 @@ The example repeats parent metadata on child cells because the keyboard collecti
 not rows. Row options provide the accessible hierarchy; cell options provide navigation metadata.
 
 ```ts
-import { component } from "@typed/ui/Component";
+import { component } from "@typed/template";
 import * as TreeGrid from "@typed/ui/TreeGrid";
 
 export const StorageBrowser = component(function* () {

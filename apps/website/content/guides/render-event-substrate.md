@@ -1,6 +1,6 @@
 ---
 title: "RenderEvent: any UI can participate"
-summary: "Choose the output boundary that matches the renderer you already have."
+summary: "Choose DomRenderEvent or HtmlRenderEvent for output a foreign renderer already owns."
 section: "Template internals"
 kind: "concept"
 order: 1

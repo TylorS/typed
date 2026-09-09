@@ -9,6 +9,7 @@ import { expectExampleCalls, runGuideExample } from "./FxGuideTestSupport.js";
 
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const guidePath = path.join(websiteRoot, "content/guides/building-fx.md");
+const dynamicGuidePath = path.join(websiteRoot, "content/guides/fx-dynamic-producers.md");
 
 describe("Building Fx values guide", () => {
   it("teaches the public construction surface and its ownership boundaries", () => {
@@ -26,9 +27,8 @@ describe("Building Fx values guide", () => {
     expect(guide.body).toContain("Fx.fromStream");
     expect(guide.body).toContain("Fx.fromSchedule");
     expect(guide.body).toContain("Fx.callback");
-    expect(guide.body).toContain("Fx.genScoped");
     expect(guide.body).toContain("HttpClientError.HttpClientError");
-    expect(guide.body).toContain("Context.Service");
+    expect(guide.body).toContain("/explore/fx-dynamic-producers#keep-acquisition-alive-through-the-selected-producer");
     expectExampleCalls(guide.body, [
       "Fx.fromEffect",
       "Fx.fromIterable",
@@ -36,11 +36,13 @@ describe("Building Fx values guide", () => {
       "Fx.fromStream",
       "Fx.fromSchedule",
       "Fx.callback",
-      "Fx.genScoped",
-      "Effect.acquireRelease",
       "HttpClient.get",
       "Effect.provide",
     ]);
+    const dynamic = fs.readFileSync(dynamicGuidePath, "utf8");
+    expect(dynamic).toContain("Fx.genScoped");
+    expect(dynamic).toContain("Context.Service");
+    expectExampleCalls(dynamic, ["Fx.genScoped", "Effect.acquireRelease"]);
   });
 
   it("keeps every TypeScript example independently compilable", () => {

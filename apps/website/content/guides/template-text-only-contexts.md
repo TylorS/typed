@@ -3,7 +3,7 @@ title: "Interpolate into text-only elements"
 summary: "Keep textarea, title, script, and style content in the context the browser gives it, with explicit limits around escaping, closing tags, and trust."
 section: "Template bindings"
 kind: "deep-dive"
-order: 7
+order: 91
 ---
 
 An article editor may need a textarea for notes, a document title, and a JSON data script in its

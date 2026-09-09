@@ -11,6 +11,7 @@ import {
   html,
   HtmlRenderTemplate,
   many,
+  MANY_HOLE,
   render,
   renderToHtmlString,
 } from "../index.js";
@@ -526,6 +527,8 @@ describe("Hydration", () => {
       </ul>`;
       const body = window.document.body;
       body.innerHTML = yield* renderToHtmlString(view).pipe(Effect.provide(HtmlRenderTemplate));
+      assert(body.innerHTML.includes(MANY_HOLE("a")));
+      assert(body.innerHTML.includes(MANY_HOLE("b")));
       const originalA = body.querySelector<HTMLElement>("[data-key=a]");
       const originalB = body.querySelector<HTMLElement>("[data-key=b]");
       assert(originalA && originalB);
