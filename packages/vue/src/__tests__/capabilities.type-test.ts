@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 /** @effect-diagnostics missingEffectContext:skip-file */
 import * as Data from "@typed/async-data";
 import * as Fx from "@typed/fx/Fx";
@@ -61,7 +62,7 @@ const routeHandler = routeComponent(Page, { id: "typed-page" });
 declare const routeParams: RefSubject.RefSubject<{ readonly id: string }>;
 routeHandler(routeParams);
 expectTypeOf(routeHandler(routeParams)).toEqualTypeOf<
-  Fx.Fx<RenderEvent, VueError, Scope.Scope | RenderTemplate>
+  Fx.Fx<RenderEvent, VueError, Scope.Scope | RenderTemplate | RandomValues | RandomValues>
 >();
 const matchedPage = match(Parse("/users/:id"), routeHandler);
 expectTypeOf<Fx.Fx.Success<typeof matchedPage>>().toEqualTypeOf<RenderEvent>();

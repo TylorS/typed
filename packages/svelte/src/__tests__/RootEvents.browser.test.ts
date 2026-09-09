@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it } from "vitest";
 import { Effect, Layer, ManagedRuntime } from "effect";
 import { Fx } from "@typed/fx";
@@ -51,7 +52,7 @@ describe("Svelte root event propagation", () => {
         expect(keys).toBe(1);
         expect(event.defaultPrevented).toBe(false);
       }).pipe(
-        Effect.provide(DomRenderTemplate.using(document)),
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
         Effect.provideService(CurrentRootEvents, { keydown: true }),
         Effect.scoped,
         Effect.runPromise,

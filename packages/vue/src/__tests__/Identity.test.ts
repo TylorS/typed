@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { html } from "@typed/template/RenderTemplate";
 import { HtmlRenderTemplate, renderToHtmlString } from "@typed/template/Html";
 import * as Effect from "effect/Effect";
@@ -19,7 +21,7 @@ const childIds = (output: string) =>
 
 const toHTML = (value: ReturnType<typeof view<typeof Identified>>) =>
   renderToHtmlString(value).pipe(
-    Effect.provide(HtmlRenderTemplate),
+    Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
     Effect.scoped,
     Effect.runPromise,
   );
@@ -28,7 +30,7 @@ describe("Vue automatic root identity", () => {
   it("allocates unique host IDs and Vue useId prefixes for each reuse of a view", async () => {
     const shared = view(Identified, {});
     const output = await renderToHtmlString(html`<main>${shared}${shared}</main>`).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );

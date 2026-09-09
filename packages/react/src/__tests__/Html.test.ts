@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { createElement, Fragment, lazy, Suspense, useId } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Cause, Context, Effect, Exit, Fiber, Stream } from "effect";
@@ -35,7 +37,11 @@ describe("React server rendering", () => {
           ),
         ),
       );
-    }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
 
     expect(output).toMatch(/<div(?=[^>]*style="display:contents")(?=[^>]* id="split-host")[^>]*>/);
     expect(output).toContain("<strong>&lt;/div&gt;&lt;div&gt;</strong>");
@@ -190,7 +196,7 @@ describe("React server rendering", () => {
     const fiber = Effect.runFork(
       Fx.observe(view(Component, {}, { id: "streaming" }), (event) => {
         if (isHtmlRenderEvent(event)) events.push(event);
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {
@@ -241,7 +247,7 @@ describe("React server rendering", () => {
     const fiber = Effect.runFork(
       Fx.observe(view(Component, props, { id: "abort-stream" }), (event) => {
         if (isHtmlRenderEvent(event)) events.push(event);
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {

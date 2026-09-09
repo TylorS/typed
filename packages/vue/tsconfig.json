@@ -15,6 +15,7 @@
     "src/__tests__/helpers/**"
   ],
   "references": [
+    { "path": "../id" },
     {
       "path": "../fx"
     },

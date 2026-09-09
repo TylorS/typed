@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { html } from "@typed/template/RenderTemplate";
 import {
   HtmlRenderTemplate,
@@ -35,7 +36,7 @@ describe("automatic Vue rendering", () => {
       )}
     </main>`;
     const output = await renderToHtmlString(page).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.provideService(Request, "request value"),
       Effect.runPromise,
@@ -48,9 +49,9 @@ describe("automatic Vue rendering", () => {
     const output = await renderToHtmlString(
       view(Greeting, { label: "static" }, { id: "auto-static" }),
     ).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
-      Effect.provide(StaticHtmlRenderTemplate),
+      Effect.provide(Layer.merge(StaticHtmlRenderTemplate, RandomValues.Default)),
       Effect.runPromise,
     );
     expect(output).toContain("<strong>static</strong>");
@@ -79,7 +80,11 @@ describe("automatic Vue rendering", () => {
           },
         },
       ),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
     expect(output).toContain("<span>configured</span>");
     expect(teleported).toContain("<aside>configured</aside>");
   });

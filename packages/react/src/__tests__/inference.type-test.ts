@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { createElement } from "react";
 import { Context, Effect, Layer, ManagedRuntime, Stream } from "effect";
 import type { Scope } from "effect/Scope";
@@ -21,8 +22,11 @@ const withError = Effect.andThen(props, (value) =>
   value.count > 0 ? Effect.succeed(value) : Effect.fail("bad" as const),
 );
 const inferred = view(Component, withError);
-const expected: Fx.Fx<RenderEvent, "bad" | ReactRenderError, Service | Scope | RenderTemplate> =
-  inferred;
+const expected: Fx.Fx<
+  RenderEvent,
+  "bad" | ReactRenderError,
+  Service | Scope | RenderTemplate | RandomValues
+> = inferred;
 void expected;
 view(Component, { label: "works", count: 1 }, { id: "react-inference-2" });
 view(Component, Stream.succeed({ label: "works", count: 1 }), { id: "react-inference-3" });
@@ -40,9 +44,12 @@ Typed({
   onError: () => {},
 });
 
-const nodeView: Fx.Fx<RenderEvent, ReactRenderError, Scope | RenderTemplate> = view("hello", {
-  id: "node",
-});
+const nodeView: Fx.Fx<RenderEvent, ReactRenderError, Scope | RenderTemplate | RandomValues> = view(
+  "hello",
+  {
+    id: "node",
+  },
+);
 view([createElement("b", { key: "b" }, "array"), null], { id: "array" });
 view(null, { id: "empty" });
 void nodeView;
@@ -51,8 +58,11 @@ view("automatic with options", {});
 
 // Native entry points retain the existing renderer and lifetime requirements.
 const nativeHtml = renderToHtmlString(inferred);
-const serviceFreeHtml: Effect.Effect<string, ReactRenderError, Scope | RenderTemplate> =
-  renderToHtmlString(view("plain", { id: "plain" }));
+const serviceFreeHtml: Effect.Effect<
+  string,
+  ReactRenderError,
+  Scope | RenderTemplate | RandomValues
+> = renderToHtmlString(view("plain", { id: "plain" }));
 const nativeDom = render(inferred, document.body);
 Typed({ value: html`<p>no renderer configuration</p>` });
 void [nativeHtml, serviceFreeHtml, nativeDom];
@@ -60,10 +70,10 @@ void [nativeHtml, serviceFreeHtml, nativeDom];
 type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const htmlRequirements: Equal<
   Effect.Services<typeof nativeHtml>,
-  Service | Scope | RenderTemplate
+  Service | Scope | RenderTemplate | RandomValues
 > = true;
 const domRequirements: Equal<
   Fx.Services<typeof nativeDom>,
-  Service | Scope | RenderTemplate
+  Service | Scope | RenderTemplate | RandomValues
 > = true;
 void [htmlRequirements, domRequirements];

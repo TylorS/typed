@@ -1,6 +1,6 @@
 {
   "name": "@typed/router",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "Typed routing, matchers, and route execution for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/router#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -84,7 +84,7 @@
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
-    "playwright": "^1.62.1",
+    "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

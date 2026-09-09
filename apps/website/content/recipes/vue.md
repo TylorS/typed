@@ -6,12 +6,14 @@ summary: "Use @typed/vue for bidirectional rendering, native composables, shared
 
 `@typed/vue` connects Vue components and Typed views without a hand-written mount adapter. Vue retains its local state as Typed updates incoming props; native composables expose the same Effect resources in a Vue application.
 
+`view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
+
 ## Install
 
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 vue@^3.5.42
+pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 vue@^3.5.42
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
@@ -80,21 +82,22 @@ Pass the page directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlSt
 `view(Component, props, { configureApp })` configures each Vue app, including plugins and app-level providers. `view(Component, props, { onSSRContext })` exposes the request's Vue SSR context, including teleports; the application places those teleport fragments in its document.
 
 ```ts file="render-page.ts"
+import { RandomValues } from "@typed/id/RandomValues";
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
 import { DomRenderTemplate, render } from "@typed/template/Render";
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
 import { page } from "./page.js";
 
-export const htmlChunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+export const htmlChunks = renderToHtml(page).pipe(Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)));
 
 export const renderPage = () => Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+  renderToHtmlString(page).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
 );
 
 export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
   Fx.drainLayer,
-  Layer.provide(DomRenderTemplate.using(host.ownerDocument)),
+  Layer.provide(Layer.merge(DomRenderTemplate.using(host.ownerDocument), RandomValues.Default)),
 );
 
 export const mountPage = (host: HTMLElement) =>
@@ -299,7 +302,7 @@ export const Routes = defineComponent({
 });
 ```
 
-For this mixed route tree, provide the matching router backend and application services. `Typed` supplies its native renderer; a Typed-owned route tree uses the standard renderer layer shown above. `useRoute(Route.Parse("/prices/:symbol"))` observes optional decoded params; `useMatcher(matcher)` observes data returned by a matcher. `useLocation` observes the destination, `useCurrentPath` its path, and `useCurrentRoute` the structural route owner. `provideCurrentRoute(tree)` overrides ancestry in a Vue layout.
+For this mixed route tree, provide `RandomValues`, the matching router backend, and application services. `Typed` supplies its native renderer; a Typed-owned route tree uses the standard renderer layer shown above. `useRoute(Route.Parse("/prices/:symbol"))` observes optional decoded params; `useMatcher(matcher)` observes data returned by a matcher. `useLocation` observes the destination, `useCurrentPath` its path, and `useCurrentRoute` the structural route owner. `provideCurrentRoute(tree)` overrides ancestry in a Vue layout.
 
 `useRoute(route, { currentRoute: { route: Route.Parse("/admin") } })` uses that mount instead of the ambient one; `{ route: Route.Slash }` matches from `/`. The supplied mount is applied once. Its wildcard fallback returns `None` inside that mount, while leaving it reports the native `RouteNotFound` failure. Omitting `currentRoute` keeps the default global fallback, which remains live when leaving and reentering the ambient mount. The option also accepts a Vue ref or getter.
 

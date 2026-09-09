@@ -2,9 +2,12 @@
 
 Use React 19 components in Typed templates and Typed templates in React. Both directions support server rendering, real hydration, reactive updates, and scoped cleanup. Hosts are created automatically with `display: contents`; applications do not need wrapper markup.
 
+`view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
+
 ## React in Typed
 
 ```tsx
+import { RandomValues } from "@typed/id/RandomValues";
 import { useState } from "react";
 import { Effect, Layer } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
@@ -26,7 +29,7 @@ const application = Fx.gen(function* () {
   const props = yield* RefSubject.make({ label: "Clicks" });
 
   return render(html`<main>${view(Counter, props)}</main>`, document.body);
-}).pipe(Fx.drainLayer, Layer.provide(DomRenderTemplate));
+}).pipe(Fx.drainLayer, Layer.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)));
 
 const program = Layer.launch(application);
 ```
@@ -38,14 +41,21 @@ The direct-node overload `view(node, options?)` also accepts any `ReactNode`, in
 ## Server rendering and hydration
 
 ```ts
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
 
 const app = html`<main>${view(Counter, { label: "Clicks" })}</main>`;
-const chunks = renderToHtml(app).pipe(Fx.provide(HtmlRenderTemplate));
+const chunks = renderToHtml(app).pipe(
+  Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+);
 
 // Collect a complete string when needed, including static generation.
 const markup = await Effect.runPromise(
-  renderToHtmlString(app).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+  renderToHtmlString(app).pipe(
+    Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+    Effect.scoped,
+  ),
 );
 ```
 

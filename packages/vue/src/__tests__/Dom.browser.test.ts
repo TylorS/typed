@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template/RenderTemplate";
@@ -53,7 +54,7 @@ describe("Vue in Typed", () => {
     await Effect.gen(function* () {
       const props = Fx.mergeAll(Fx.succeed({ label: "first" }), Fx.succeed({ label: "second" }));
       yield* render(view(Component, props, { id: "concurrent-props" }), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.drain,
       );
@@ -82,7 +83,7 @@ describe("Vue in Typed", () => {
         }),
       ).pipe(Fx.ensuring(Effect.sync(() => released++)));
       yield* render(view(Component, source, { id: "later-failure" }), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.collectAll,
       );
@@ -104,7 +105,7 @@ describe("Vue in Typed", () => {
       ${view(Field, {}, { id: "first-field" })}${view(Field, {}, { id: "second-field" })}
     </main>`;
     document.body.innerHTML = await renderToHtmlString(page).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.scoped,
       Effect.runPromise,
@@ -114,7 +115,7 @@ describe("Vue in Typed", () => {
     expect(new Set(ids).size).toBe(2);
     await Effect.gen(function* () {
       yield* render(page, document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.collectAll,
       );
@@ -142,7 +143,11 @@ describe("Vue in Typed", () => {
       const running = yield* render(
         view(Component, source, { id: "vue-dom-1" }),
         document.body,
-      ).pipe(Fx.provide(DomRenderTemplate), Fx.drain, Effect.forkScoped);
+      ).pipe(
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Fx.drain,
+        Effect.forkScoped,
+      );
       yield* Deferred.await(started);
       yield* Fiber.interrupt(running);
       expect(released).toBe(1);
@@ -158,7 +163,7 @@ describe("Vue in Typed", () => {
     await Effect.gen(function* () {
       const props = yield* RefSubject.make({ label: "first" });
       yield* render(view(Component, props, { id: "vue-dom-2" }), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.collectAll,
       );
@@ -177,7 +182,7 @@ describe("Vue in Typed", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const output = await render(view(Component, Fx.empty, { id: "vue-dom-3" }), root).pipe(
-      Fx.provide(DomRenderTemplate),
+      Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
       Fx.take(1),
       Fx.collectAll,
 
@@ -206,7 +211,11 @@ describe("Vue in Typed", () => {
         yield* render(
           view(Component, {}, { id: "vue-dom-4", stopPropagation: { click: true, input: false } }),
           document.body,
-        ).pipe(Fx.provide(DomRenderTemplate), Fx.take(1), Fx.collectAll);
+        ).pipe(
+          Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+          Fx.take(1),
+          Fx.collectAll,
+        );
         host = document.querySelector("#vue-dom-4");
         const button = document.querySelector("button")!;
         const click = new MouseEvent("click", { bubbles: true, cancelable: true });
@@ -240,7 +249,11 @@ describe("Vue in Typed", () => {
       yield* render(
         html`<main>${view(Component, props, { id: "vue-dom-5" })}</main>`,
         document.body,
-      ).pipe(Fx.provide(DomRenderTemplate), Fx.drain, Effect.forkScoped);
+      ).pipe(
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Fx.drain,
+        Effect.forkScoped,
+      );
       yield* Effect.promise(() =>
         vi.waitFor(() => expect(document.querySelector("button")).not.toBeNull()),
       );
@@ -274,7 +287,11 @@ describe("Vue in Typed", () => {
           configureApp: (app) => app.provide("value", "configured"),
         }),
         document.body,
-      ).pipe(Fx.provide(DomRenderTemplate), Fx.drain, Effect.forkScoped);
+      ).pipe(
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Fx.drain,
+        Effect.forkScoped,
+      );
       yield* Effect.promise(() =>
         vi.waitFor(() => expect(document.querySelector("button")).not.toBeNull()),
       );
@@ -297,7 +314,7 @@ describe("Vue in Typed", () => {
       ${view(Component, { label: "one" }, { id: "vue-dom-7" })}${view(Component, { label: "two" }, { id: "vue-dom-8" })}
     </main>`;
     document.body.innerHTML = await renderToHtmlString(page).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.scoped,
       Effect.runPromise,
@@ -307,7 +324,7 @@ describe("Vue in Typed", () => {
     const buttons = Array.from(document.querySelectorAll("button"));
     await Effect.gen(function* () {
       yield* render(page, document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.drain,
         Effect.forkScoped,
       );
@@ -344,7 +361,12 @@ describe("Vue in Typed", () => {
         },
       ),
       document.body,
-    ).pipe(Fx.provide(DomRenderTemplate), Fx.drain, Effect.scoped, Effect.runPromiseExit);
+    ).pipe(
+      Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+      Fx.drain,
+      Effect.scoped,
+      Effect.runPromiseExit,
+    );
     expect(Exit.isFailure(exit)).toBe(true);
     if (Exit.isFailure(exit)) expect(String(exit.cause)).toContain("Vue mount failed");
     expect(configured).toHaveBeenCalledWith(error, expect.anything(), expect.any(String));
@@ -377,8 +399,11 @@ describe("Vue in Typed", () => {
         { id: "vue-dom-10" },
       ),
       document.body,
-    ).pipe(Fx.provide(DomRenderTemplate), Fx.drain, Effect.scoped, (effect) =>
-      Effect.runPromiseExit(effect, { signal: controller.signal }),
+    ).pipe(
+      Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+      Fx.drain,
+      Effect.scoped,
+      (effect) => Effect.runPromiseExit(effect, { signal: controller.signal }),
     );
     await vi.waitFor(() => expect(started).toBe(true));
     controller.abort();

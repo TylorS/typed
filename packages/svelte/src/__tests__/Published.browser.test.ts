@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it } from "vitest";
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
@@ -20,7 +22,11 @@ describe("published Svelte entry points", () => {
         yield* RefSubject.set(props, { label: "compiled" });
         yield* Effect.promise(() => expect.poll(() => node?.textContent).toBe("compiled:0"));
         expect(target.querySelector("button")).toBe(node);
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       target.remove();
     }

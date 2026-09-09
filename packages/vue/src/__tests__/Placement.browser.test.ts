@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { defineComponent, h, onMounted, shallowRef } from "vue";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -37,7 +39,7 @@ describe("Vue mount placement", () => {
       );
       const page = html`<main>${island}${Effect.never}</main>`;
       const running = yield* render(page, document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.drain,
         Effect.scoped,
         Effect.forkScoped,
@@ -78,12 +80,16 @@ describe("Vue mount placement", () => {
         const page = mode === "direct" ? island : html`<section>${island}</section>`;
         if (mode === "hydrated")
           target.innerHTML = yield* renderToHtmlString(page).pipe(
-            Effect.provide(HtmlRenderTemplate),
+            Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
             Effect.scoped,
             Effect.scoped,
           );
         const original = target.querySelector("input");
-        yield* render(page, target).pipe(Fx.provide(DomRenderTemplate), Fx.take(1), Fx.drain);
+        yield* render(page, target).pipe(
+          Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+          Fx.take(1),
+          Fx.drain,
+        );
         expect(observations).toHaveLength(1);
         // Native refs run before a new host is inserted; hydrated hosts are already placed.
         expect(observations[0]!.placed).toBe(mode === "hydrated");
@@ -118,7 +124,11 @@ describe("Vue mount placement", () => {
           (_, name) => view(Field, { name }, { id: `vue-keyed-${name}` }),
         )}
       </section>`;
-      yield* render(page, document.body).pipe(Fx.provide(DomRenderTemplate), Fx.take(1), Fx.drain);
+      yield* render(page, document.body).pipe(
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Fx.take(1),
+        Fx.drain,
+      );
       yield* RefSubject.set(items, ["a", "b"]);
       yield* Effect.promise(() => vi.waitFor(() => expect(mounted).toEqual(["a", "b"])));
       const inputs = Array.from(document.querySelectorAll("input"));

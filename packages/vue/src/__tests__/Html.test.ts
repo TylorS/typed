@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import { html, RenderTemplate } from "@typed/template/RenderTemplate";
 import { HtmlRenderEvent, isHtmlRenderEvent, type RenderEvent } from "@typed/template/RenderEvent";
@@ -40,7 +41,11 @@ describe("Vue server rendering", () => {
           ),
         ),
       );
-    }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
 
     expect(output).toMatch(/<div\b[^>]*style="display:contents"[^>]* id="split-host"[^>]*>/);
     expect(output).toContain("<strong>&lt;/div&gt;&lt;div&gt;</strong>");
@@ -53,7 +58,7 @@ describe("Vue server rendering", () => {
     const nested = html`<em>${Effect.map(Request, (request) => request)}</em>`;
     const Component = defineComponent({ setup: () => () => h(Typed, { value: nested }) });
     const output = await renderToHtmlString(view(Component, {}, { id: "vue-html-1" })).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.provideService(Request, "request-local"),
       Effect.runPromise,
@@ -67,7 +72,11 @@ describe("Vue server rendering", () => {
       view(Greeting, Fx.fromIterable([{ name: "<first>" }, { name: "second" }]), {
         id: "vue-html-2",
       }),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
     expect(output).toContain("<strong>&lt;first&gt;</strong>");
     expect(output).not.toContain("second");
   });
@@ -77,7 +86,12 @@ describe("Vue server rendering", () => {
       html`<main>
         ${view(Greeting, { name: "one" }, { id: "vue-html-3" })}${view(Greeting, { name: "two" }, { id: "vue-html-4" })}
       </main>`,
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.scoped, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.scoped,
+      Effect.runPromise,
+    );
     expect(output.match(/<div\b[^>]*\bid="vue-html-3"[^>]*>/g)).toHaveLength(1);
     expect(output.match(/<div\b[^>]*\bid="vue-html-4"[^>]*>/g)).toHaveLength(1);
     expect(output).toContain("<strong>one</strong>");
@@ -111,7 +125,11 @@ describe("Vue server rendering", () => {
               },
             },
           ),
-        ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise),
+        ).pipe(
+          Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+          Effect.scoped,
+          Effect.runPromise,
+        ),
       ),
     );
     expect(apps[0]).not.toBe(apps[1]);
@@ -147,7 +165,7 @@ describe("Vue server rendering", () => {
     });
     expect(
       await renderToHtmlString(view(Prefetch, {}, { id: "vue-html-6" })).pipe(
-        Effect.provide(HtmlRenderTemplate),
+        Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
         Effect.scoped,
         Effect.runPromise,
       ),
@@ -159,7 +177,7 @@ describe("Vue server rendering", () => {
       },
     });
     const error = await renderToHtmlString(view(Broken, {}, { id: "vue-html-7" })).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.flip,
       Effect.runPromise,
@@ -172,7 +190,12 @@ describe("Vue server rendering", () => {
     expect(
       await renderToHtmlString(
         view(Greeting, Effect.fail("props failed"), { id: "vue-html-8" }),
-      ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.flip, Effect.runPromise),
+      ).pipe(
+        Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+        Effect.scoped,
+        Effect.flip,
+        Effect.runPromise,
+      ),
     ).toBe("props failed");
     let finalized = false;
     const controller = new AbortController();
@@ -188,8 +211,10 @@ describe("Vue server rendering", () => {
         ),
         { id: "vue-html-9" },
       ),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, (effect) =>
-      Effect.runPromiseExit(effect, { signal: controller.signal }),
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      (effect) => Effect.runPromiseExit(effect, { signal: controller.signal }),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     controller.abort();

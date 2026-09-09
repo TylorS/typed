@@ -217,7 +217,7 @@ export const profileElement = WebComponent.make({
       Schema.withDecodingDefaultKey(Effect.succeed("42")),
     ),
   },
-  render: (props) => Effect.gen(function* () {
+  render: Effect.fn(function* (props: { readonly "profile-id": RefSubject.Computed<string> }) {
     const profiles = yield* Profiles;
     const request = Fx.switchMap(props["profile-id"], (profileId) => Fx.concat(
       Fx.succeed(AsyncData.loading()),

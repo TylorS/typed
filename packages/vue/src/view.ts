@@ -1,3 +1,4 @@
+import type { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import type { RootEventOptions } from "@typed/template/RootEvents";
 import { html, type RenderTemplate } from "@typed/template/RenderTemplate";
@@ -60,7 +61,7 @@ export function view<C extends Component, E = never, R = never>(
   component: C,
   props: PropsSource<ComponentProps<NoInfer<C>>, E, R>,
   options: ViewOptions = {},
-): Fx.Fx<RenderEvent, E | VueError, R | Scope.Scope | RenderTemplate> {
+): Fx.Fx<RenderEvent, E | VueError, R | Scope.Scope | RenderTemplate | RandomValues> {
   return Fx.gen(function* () {
     const identity = yield* rootIdentity(options.id);
     const scope = yield* Scope.fork(yield* Scope.Scope);

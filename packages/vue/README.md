@@ -3,14 +3,17 @@
 Vue components inside Typed, and Typed views inside Vue. Rendering owns subscriptions and cleanup through Effect scopes. Hosts are created automatically and use `display: contents`.
 
 ```sh
-pnpm add @typed/vue @typed/template @typed/fx effect vue
+pnpm add @typed/vue @typed/template @typed/fx @typed/id effect vue
 ```
+
+`view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
 
 ## Vue inside Typed
 
 Vue components can use TSX or single-file templates. The TSX examples use Vue's JSX transform, such as `@vitejs/plugin-vue-jsx` in Vite, with `"jsx": "preserve"` and `"jsxImportSource": "vue"` in TypeScript. See [Vue's TSX setup](https://vuejs.org/guide/extras/render-function#jsx-type-inference).
 
 ```tsx
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template/RenderTemplate";
@@ -36,14 +39,14 @@ const application = Fx.gen(function* () {
   const props = yield* RefSubject.make({ label: "Count" });
 
   return render(html`<main>${view(Counter, props, { id: "counter" })}</main>`, document.body);
-}).pipe(Fx.drainLayer, Layer.provide(DomRenderTemplate));
+}).pipe(Fx.drainLayer, Layer.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)));
 
 const program = Layer.launch(application);
 ```
 
 `view` selects Vue's backend from the native template output. Use Typed's ordinary `DomRenderTemplate` provider and keep the Effect scope open for the lifetime of the page. For an iframe or alternate document, use `DomRenderTemplate.using(target.ownerDocument)`. No Vue-specific renderer or layer is needed.
 
-`view(component, props, options)` accepts a props object, `Effect`, `Stream`, or `Fx`. These are whole props snapshots; callbacks and other objects inside props are preserved. Component props remain checked by TypeScript. Host identity is generated automatically and restored from server markup during hydration; `options.id` remains an explicit override. Vue uses the host identity as the default `app.config.idPrefix`, keeping generated component IDs distinct across islands. The DOM interpreter creates one Vue app and updates a `shallowRef`, preserving the component instance and local state. Completing a props producer leaves its UI mounted until the rendering scope closes. Closing the scope unmounts Vue and stops subscriptions.
+`view(component, props, options?)` accepts a props object, `Effect`, `Stream`, or `Fx`. These are whole props snapshots; callbacks and other objects inside props are preserved. Component props remain checked by TypeScript. Host identity is generated automatically and restored from server markup during hydration; `options.id` remains an explicit override. Vue uses the host identity as the default `app.config.idPrefix`, keeping generated component IDs distinct across islands. The DOM interpreter creates one Vue app and updates a `shallowRef`, preserving the component instance and local state. Completing a props producer leaves its UI mounted until the rendering scope closes. Closing the scope unmounts Vue and stops subscriptions.
 
 `options.configureApp(app)` runs on each new app before mount, hydration, or server rendering. Install plugins and `app.provide` values there. The app also receives the enclosing Typed Effect context automatically, so Vue's Typed runtime and service composables work without a second runtime. Vue failures enter the `VueError` channel; props failures retain their own type. A configured Vue error handler also receives errors.
 
@@ -52,10 +55,14 @@ The ordinary native ref supplies Vue's host. Vue initializes before its first DO
 ## Server rendering and hydration
 
 ```ts
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { HtmlRenderTemplate, renderToHtml } from "@typed/template/Html";
 import * as Effect from "effect/Effect";
 
-const chunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+const chunks = renderToHtml(page).pipe(
+  Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+);
 
 await Fx.observe(chunks, (chunk) => Effect.promise(() => writeChunk(chunk))).pipe(
   Effect.scoped,

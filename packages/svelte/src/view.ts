@@ -1,3 +1,4 @@
+import type { RandomValues } from "@typed/id/RandomValues";
 import * as Cause from "effect/Cause";
 import * as Deferred from "effect/Deferred";
 import * as Effect from "effect/Effect";
@@ -26,7 +27,7 @@ export function view<Props extends Record<string, any>, E = never, R = never>(
   component: Component<Props>,
   props: Source<NoInfer<Props>, E, R>,
   options: ViewOptions = {},
-): Fx.Fx<RenderEvent, E, R | Scope.Scope | RenderTemplate> {
+): Fx.Fx<RenderEvent, E, R | Scope.Scope | RenderTemplate | RandomValues> {
   return Fx.gen(function* () {
     const identity = yield* rootIdentity(options.id);
     const source = toFx(props);

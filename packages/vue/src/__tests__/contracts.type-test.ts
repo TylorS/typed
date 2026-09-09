@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import { html } from "@typed/template/RenderTemplate";
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
@@ -25,23 +26,37 @@ const props: Effect.Effect<{ label: string }, "failed", Required> = Effect.map(
 );
 const component = view(Component, props);
 expectTypeOf(component).toEqualTypeOf<
-  Fx.Fx<RenderEvent, "failed" | VueError, Required | Scope.Scope | RenderTemplate>
+  Fx.Fx<
+    RenderEvent,
+    "failed" | VueError,
+    Required | Scope.Scope | RenderTemplate | RandomValues | RandomValues
+  >
 >();
 expectTypeOf(renderToHtmlString(component)).toEqualTypeOf<
-  Effect.Effect<string, "failed" | VueError, Required | Scope.Scope | RenderTemplate>
+  Effect.Effect<
+    string,
+    "failed" | VueError,
+    Required | Scope.Scope | RenderTemplate | RandomValues | RandomValues
+  >
 >();
 expectTypeOf(renderToHtml(component)).toEqualTypeOf<
-  Fx.Fx<string, "failed" | VueError, Required | Scope.Scope | RenderTemplate>
+  Fx.Fx<
+    string,
+    "failed" | VueError,
+    Required | Scope.Scope | RenderTemplate | RandomValues | RandomValues
+  >
 >();
 const nativeDom = render(component, document.body);
 expectTypeOf<Fx.Fx.Services<typeof nativeDom>>().toEqualTypeOf<
-  Required | Scope.Scope | RenderTemplate
+  Required | Scope.Scope | RenderTemplate | RandomValues | RandomValues
 >();
 const serviceFree = renderToHtmlString(view(Component, { label: "direct" }, { id: "direct" }));
 expectTypeOf(serviceFree).toEqualTypeOf<
-  Effect.Effect<string, VueError, Scope.Scope | RenderTemplate>
+  Effect.Effect<string, VueError, Scope.Scope | RenderTemplate | RandomValues | RandomValues>
 >();
-Effect.runPromise(serviceFree.pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped));
+Effect.runPromise(
+  serviceFree.pipe(Effect.provide([HtmlRenderTemplate, RandomValues.Default]), Effect.scoped),
+);
 // @ts-expect-error Required props cannot be omitted.
 view(Component, {}, { id: "vue-contracts-2" });
 // @ts-expect-error Prop type cannot be widened by the props argument.

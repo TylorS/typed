@@ -1,3 +1,4 @@
+import type { RandomValues } from "@typed/id/RandomValues";
 import * as Effect from "effect/Effect";
 import * as Scope from "effect/Scope";
 import * as Option from "effect/Option";
@@ -45,20 +46,20 @@ export class ReactRenderError extends Error {
 export function view(
   node: ReactNode,
   options?: ViewOptions,
-): Fx.Fx<RenderEvent, ReactRenderError, Scope.Scope | RenderTemplate>;
+): Fx.Fx<RenderEvent, ReactRenderError, Scope.Scope | RenderTemplate | RandomValues>;
 
 /** Render a React component with reactive props. Updates preserve its root and component state. */
 export function view<P extends object, E = never, R = never>(
   component: ComponentType<P>,
   props: PropsSource<NoInfer<P>, E, R>,
   options?: ViewOptions,
-): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate>;
+): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate | RandomValues>;
 
 export function view<P extends object, E = never, R = never>(
   first: ReactNode | ComponentType<P>,
   second?: ViewOptions | PropsSource<P, E, R>,
   third?: ViewOptions,
-): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate> {
+): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate | RandomValues> {
   const component = typeof first === "function";
   const nodes: Fx.Fx<ReactNode, E, R> = component
     ? Fx.map(sourceFx(second as PropsSource<P, E, R>), (value) =>

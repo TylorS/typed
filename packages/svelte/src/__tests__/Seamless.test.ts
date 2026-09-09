@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it } from "vitest";
 import { Context, Effect, Layer, ManagedRuntime } from "effect";
 import { html, HtmlRenderTemplate, renderToHtmlString } from "@typed/template";
@@ -17,7 +18,7 @@ describe("native rendering APIs", () => {
     const result = await Effect.runPromise(
       renderToHtmlString(
         html`<main>${view(Stateful, Effect.succeed({ label: "native" }), { id: "native" })}</main>`,
-      ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      ).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
     expect(result).toContain("native:0");
   });

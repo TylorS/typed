@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it } from "vitest";
 import { Effect } from "effect";
 import { HtmlRenderTemplate, StaticHtmlRenderTemplate, renderToHtmlString } from "@typed/template";
@@ -12,7 +14,7 @@ describe("Svelte automatic host identity", () => {
       const shared = view(Stateful, { label: "shared" });
       const page = siblings(shared, shared);
       const output = await renderToHtmlString(page).pipe(
-        Effect.provide(renderer),
+        Effect.provide(Layer.merge(renderer, RandomValues.Default)),
         Effect.scoped,
         Effect.runPromise,
       );
@@ -39,7 +41,11 @@ describe("Svelte automatic host identity", () => {
           idPrefix: "component-prefix",
         },
       ),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
     expect(output).toMatch(/<div\b[^>]*\sid="explicit-host"/);
     expect(output).toMatch(/<button\b[^>]*\sid="component-prefix[^"]*"/);
   });

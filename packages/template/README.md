@@ -8,6 +8,7 @@
 
 - `effect`
 - `@typed/fx`
+- `@typed/id`
 
 ## Capabilities
 
@@ -52,7 +53,7 @@ Dynamic `textarea` and `title` values are escaped. Dynamic `script`, `style`, an
 
 The primary application layer is `@typed/template`, with `@typed/template/Html`, `@typed/template/Render`, `@typed/template/EventHandler`, and `@typed/template/many` as focused supported imports. Prefer the package root unless a focused subpath makes ownership clearer.
 
-Renderer-author and diagnostic machinery is a separate supported beta layer: `EventSource`, `HtmlChunk`, `HydrateContext`, `Parser`, `Renderable`, `RenderEvent`, `RenderQueue`, `RenderTemplate`, `Template`, and `Wire`. These modules expose lower-level ownership and transport contracts and are not necessary for ordinary application templates.
+Renderer-author and diagnostic machinery is a separate supported beta layer: `EventSource`, `HtmlChunk`, `HydrateContext`, `Parser`, `Renderable`, `RenderEvent`, `RenderQueue`, `RenderTemplate`, `RootIdentity`, `Template`, and `Wire`. These modules expose lower-level ownership and transport contracts and are not necessary for ordinary application templates.
 
 The beta.4 wildcard export remains available unchanged for compatibility, including currently resolvable `internal/*` and other unlisted compiled modules. Those compatibility paths are not a stability promise. Physical `src` and `dist` paths are never supported imports. Published packages contain compiled output, declarations, the manifest, and this README; source files and tests are intentionally excluded. Narrowing the wildcard requires an explicit breaking-API decision.
 
@@ -188,6 +189,12 @@ Hosts default to `display: contents`; an existing inline display setting is resp
 Registration captures its layer's application services and document. It supplies the native DOM renderer or borrows an explicitly provided renderer. The registration Scope owns all instances and property updates. Closing it stops rendering and deactivates the class; browsers retain registered names. Disconnect releases each connection's subscriptions and listeners. Reconnect waits for cleanup and starts a fresh view. Render failures emit a bubbling, composed `typed:error` event with an Effect Cause in `detail`; registration failures use `RegistrationError`.
 
 `server` forwards ordered body and slot chunks through native `HtmlRenderEvent` output. Its running Scope owns subscriptions and cancellation. `renderToHtml` preserves streaming, while `renderToHtmlString` collects the output. Importing the module or creating definitions does not access browser globals.
+
+## Integration root identity
+
+`rootIdentity(id?)` from `@typed/template/RootIdentity` is an `Effect.fn` that requires `Scope` and `RandomValues`. It creates a UUID through `@typed/id` when no explicit ID is supplied. Each execution owns a separate identity; native hydration restores the server's identity through `RefSubject.hydrate`.
+
+The result contains a hydration `ref` and an `id` Effect. Place the ref on the host through `...${{ ref: identity.ref }}` and use `identity.id` for its ID and the framework's ID prefix. React, Vue, and Svelte adapters already do this. Their `view` effects retain the `RandomValues` requirement; provide its implementation alongside the renderer at the application boundary. Ordinary templates and Web Component definitions do not acquire this requirement.
 
 ## Root event propagation
 

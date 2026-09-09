@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template/RenderTemplate";
@@ -36,7 +38,7 @@ describe("minimal Vue browser integration", () => {
     await Effect.gen(function* () {
       const props = yield* RefSubject.make({ label: "first" });
       yield* render(view(Counter, props, { id: "native-dom" }), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.collectAll,
       );
@@ -53,12 +55,15 @@ describe("minimal Vue browser integration", () => {
       ${view(Counter, { label: "hydrate" }, { id: "native-hydrate" })}
     </main>`;
     document.body.innerHTML = await Effect.runPromise(
-      renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      renderToHtmlString(page).pipe(
+        Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+        Effect.scoped,
+      ),
     );
     const button = document.querySelector("button")!;
     await Effect.gen(function* () {
       yield* render(page, document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.collectAll,
       );
@@ -72,7 +77,7 @@ describe("minimal Vue browser integration", () => {
   it("can render again into a previously hydrated host after teardown", async () => {
     const page = view(Counter, { label: "again" }, { id: "remount" });
     document.body.innerHTML = await renderToHtmlString(page).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );
@@ -80,7 +85,7 @@ describe("minimal Vue browser integration", () => {
     for (let index = 0; index < 2; index++) {
       await Effect.gen(function* () {
         yield* render(page, document.body).pipe(
-          Fx.provide(DomRenderTemplate),
+          Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
           Fx.take(1),
           Fx.drain,
         );
@@ -113,7 +118,7 @@ describe("minimal Vue browser integration", () => {
     const server = Effect.runFork(
       Fx.observe(renderToHtml(page), (chunk) => {
         chunks.push(chunk);
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {
@@ -133,7 +138,11 @@ describe("minimal Vue browser integration", () => {
     const id = buttons[0]!.id;
 
     await Effect.gen(function* () {
-      yield* render(page, document.body).pipe(Fx.provide(DomRenderTemplate), Fx.take(1), Fx.drain);
+      yield* render(page, document.body).pipe(
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Fx.take(1),
+        Fx.drain,
+      );
 
       expect(hostIds.map((id) => document.getElementById(id))).toEqual(hosts);
       expect(Array.from(document.querySelectorAll("button"))).toEqual(buttons);

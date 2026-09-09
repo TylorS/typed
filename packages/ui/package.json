@@ -1,6 +1,6 @@
 {
   "name": "@typed/ui",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "Web integration for Typed routing, templates, and Effect HTTP.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/ui#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -59,7 +59,7 @@
     "@vitest/coverage-v8": "catalog:",
     "daisyui": "^5.7.28",
     "happy-dom": "catalog:",
-    "playwright": "^1.62.1",
+    "playwright": "^1.63.0",
     "storybook": "10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",

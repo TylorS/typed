@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it, vi } from "vitest";
 import { Cause, Deferred, Effect, Exit, Fiber } from "effect";
 import { Fx } from "@typed/fx";
@@ -35,7 +37,11 @@ describe("Svelte view HTML renderer", () => {
           ),
         ),
       );
-    }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
 
     expect(output).toMatch(/<div\b[^>]*\sid="split-host"[^>]*>/);
     expect(output).toContain('style="display: contents"');
@@ -62,7 +68,7 @@ describe("Svelte view HTML renderer", () => {
               chunks.push(chunk);
             }),
           ),
-          Effect.provide(renderer),
+          Effect.provide(Layer.merge(renderer, RandomValues.Default)),
           Effect.scoped,
         ),
       );
@@ -101,7 +107,11 @@ describe("Svelte view HTML renderer", () => {
 
     const markup = await renderToHtmlString(
       view(Stateful, props, { id: "counter", onHead: (head) => heads.push(head) }),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
 
     expect(markup).toMatch(/<div\b[^>]*\bid="counter"[^>]*>/);
     expect(markup).toContain('style="display: contents"');
@@ -124,7 +134,7 @@ describe("Svelte SSR contracts", () => {
     const markup = await Effect.runPromise(
       Effect.scoped(
         renderToHtmlString(view(Stateful, source, { id: "counter" })).pipe(
-          Effect.provide(HtmlRenderTemplate),
+          Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
         ),
       ),
     );
@@ -137,14 +147,14 @@ describe("Svelte SSR contracts", () => {
     const result = await Effect.runPromiseExit(
       Effect.scoped(
         renderToHtmlString(view(Stateful, Fx.fail("failed"), { id: "counter" })).pipe(
-          Effect.provide(HtmlRenderTemplate),
+          Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
         ),
       ),
     );
     expect(Exit.isFailure(result)).toBe(true);
     if (Exit.isFailure(result)) expect(Cause.hasFails(result.cause)).toBe(true);
     const empty = await renderToHtmlString(view(Stateful, Fx.empty, { id: "counter" })).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );
@@ -159,7 +169,11 @@ describe("Svelte SSR contracts", () => {
     try {
       const output = await renderToHtmlString(
         view(Stateful, { label: "static" }, { id: "static" }),
-      ).pipe(Effect.provide(StaticHtmlRenderTemplate), Effect.scoped, Effect.runPromise);
+      ).pipe(
+        Effect.provide(Layer.merge(StaticHtmlRenderTemplate, RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
 
       expect(output).toContain("static:0");
       expect(output).toMatch(/<div\b[^>]*\bid="static"[^>]*>/);

@@ -2,9 +2,12 @@
 
 Svelte 5 components inside Typed templates, and Typed renderables inside Svelte. Both directions create their own `display: contents` hosts, preserve SSR node identity during hydration, and release subscriptions with their rendering scope. The caller keeps ownership of its runtime.
 
+`view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
+
 ## Svelte in Typed
 
 ```ts
+import { RandomValues } from "@typed/id/RandomValues";
 import { Fx, RefSubject } from "@typed/fx";
 import { html } from "@typed/template/RenderTemplate";
 import { DomRenderTemplate, render } from "@typed/template/Render";
@@ -17,7 +20,7 @@ const application = Fx.gen(function* () {
   const content = html`<main>${view(Counter, props)}</main>`;
 
   return render(content, document.body);
-}).pipe(Fx.drainLayer, Layer.provide(DomRenderTemplate));
+}).pipe(Fx.drainLayer, Layer.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)));
 
 const program = Layer.launch(application);
 ```
@@ -31,17 +34,24 @@ Typed supplies the host through a native element ref. Svelte mounts at that ref 
 ## Server rendering and hydration
 
 ```ts
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { view } from "@typed/svelte";
 import { Fx } from "@typed/fx";
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
 import { Effect } from "effect";
 
 const page = view(Counter, { label: "Count" });
-const chunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+const chunks = renderToHtml(page).pipe(
+  Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+);
 
 // Collect a complete string when needed, including static generation.
 const body = await Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+  renderToHtmlString(page).pipe(
+    Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+    Effect.scoped,
+  ),
 );
 ```
 
@@ -49,7 +59,7 @@ Prefer `renderToHtml` when the response can consume chunks. The application obse
 
 The surrounding Typed template and Svelte host stream before the component is ready. Svelte's public server renderer returns a complete `body` and `head`, so the component body arrives together after its first props value and asynchronous rendering finish. Application service requirements and source errors stay in the Effect type. `onHead` is optional and receives application `<svelte:head>` output; omit it when the component has no head content.
 
-On the client, pass the same Typed template and its server root to `render`. Hydration is automatic. Typed creates an ordinary `div` host through its native template path. The host template has no child parts. The HTML backend includes Svelte's serialized body inside that host, and Svelte owns those children during hydration. Client and server need matching initial props and component structure. Host identity is generated automatically and restored from server markup during hydration; `options.id` remains an explicit override. Explicit ids must be nonempty and unique across the page; the host id also defaults Svelte's server `idPrefix`.
+On the client, pass the same Typed template and its server root to `render`. Hydration is automatic. Typed creates an ordinary `div` host and a child range through its native template path. The HTML backend renders Svelte's serialized body into that range; the DOM backend hands its children to Svelte for mounting or hydration. Client and server need matching initial props and component structure. Host identity is generated automatically and restored from server markup during hydration; `options.id` remains an explicit override. Explicit ids must be nonempty and unique across the page; the host id also defaults Svelte's server `idPrefix`.
 
 `@typed/svelte` and `@typed/svelte/Typed.svelte` import in Node without `document` or a `.svelte` loader. The package publishes separate compiled client and server components selected through native package conditions. Application Svelte components use their normal Svelte compilation.
 

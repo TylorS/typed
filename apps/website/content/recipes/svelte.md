@@ -6,12 +6,14 @@ summary: "Use @typed/svelte for bidirectional rendering, native stores, Effect s
 
 `@typed/svelte` preserves Svelte component state while Typed updates its props, and lets a Svelte application render Typed views. Native stores expose Effect resources without a component-local subscription adapter. Use a Svelte 5 build that compiles `.svelte` files with the matching runtime.
 
+`view` requires `RandomValues` from `@typed/id/RandomValues` for automatic IDs. This service stays in the returned `Fx` requirements. Provide `RandomValues.Default` (or your own implementation) alongside the renderer at the application boundary; the integration does not choose an entropy source.
+
 ## Install
 
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 svelte@^5.57.0
+pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 svelte@^5.57.0
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
@@ -70,6 +72,7 @@ export const editorPage = (Editor: Component<{ title: string; saved: boolean }>)
 Pass the view directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects and supplies Svelte’s backend from the active Typed renderer. The same entrypoints handle browser rendering, SSR, and build-time static HTML. Browser rendering adopts existing server hosts; start with matching props.
 
 ```ts file="render-page.ts"
+import { RandomValues } from "@typed/id/RandomValues";
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
 import { DomRenderTemplate, render } from "@typed/template/Render";
@@ -79,15 +82,15 @@ import DocumentEditor from "./DocumentEditor.svelte";
 
 const page = editorPage(DocumentEditor);
 
-export const htmlChunks = renderToHtml(page).pipe(Fx.provide(HtmlRenderTemplate));
+export const htmlChunks = renderToHtml(page).pipe(Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)));
 
 export const renderPage = () => Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+  renderToHtmlString(page).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
 );
 
 export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
   Fx.drainLayer,
-  Layer.provide(DomRenderTemplate.using(host.ownerDocument)),
+  Layer.provide(Layer.merge(DomRenderTemplate.using(host.ownerDocument), RandomValues.Default)),
 );
 
 export const mountPage = (host: HTMLElement) =>

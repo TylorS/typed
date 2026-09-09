@@ -1,6 +1,6 @@
 {
   "name": "@typed/template",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "Typed HTML templates, rendering, and hydration for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/template#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -102,12 +102,13 @@
   },
   "dependencies": {
     "@typed/fx": "workspace:*",
+    "@typed/id": "workspace:*",
     "effect": "catalog:"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
     "happy-dom": "catalog:",
-    "playwright": "^1.62.1",
+    "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

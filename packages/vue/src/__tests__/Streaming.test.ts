@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
 import { isHtmlRenderEvent, type HtmlRenderEvent } from "@typed/template/RenderEvent";
@@ -68,7 +70,7 @@ describe("Vue streaming HTML", () => {
     const fiber = Effect.runFork(
       Fx.observe(view(Component, {}, { id: "streaming", onSSRContext: contexts }), (event) => {
         if (isHtmlRenderEvent(event)) events.push(event);
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {
@@ -124,7 +126,7 @@ describe("Vue streaming HTML", () => {
         (chunk) => {
           chunks.push(chunk);
         },
-      ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      ).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {
@@ -170,7 +172,12 @@ describe("Vue streaming HTML", () => {
           onSSRContext: contexts,
         },
       ),
-    ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.flip, Effect.runPromise);
+    ).pipe(
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+      Effect.scoped,
+      Effect.flip,
+      Effect.runPromise,
+    );
 
     expect(error).toBeInstanceOf(VueError);
     expect(error.cause).toBe(cause);
@@ -186,7 +193,7 @@ describe("Vue streaming HTML", () => {
     const fiber = Effect.runFork(
       Fx.observe(view(Component, {}, { id: "context-stream", onSSRContext: contexts }), (event) => {
         if (isHtmlRenderEvent(event)) events.push(event);
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     try {
@@ -219,7 +226,12 @@ describe("Vue streaming HTML", () => {
             },
           },
         ),
-      ).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped, Effect.flip, Effect.runPromise);
+      ).pipe(
+        Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
+        Effect.scoped,
+        Effect.flip,
+        Effect.runPromise,
+      );
 
       expect(error).toBeInstanceOf(VueError);
       expect(error.cause).toBe(cause);
@@ -232,7 +244,7 @@ describe("Vue streaming HTML", () => {
       ${view(Component, Fx.empty, { id: "empty-stream" })}<i>following</i>
     </main>`;
     const output = await renderToHtmlString(page).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );

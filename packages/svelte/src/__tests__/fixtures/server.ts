@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Effect from "effect/Effect";
 import * as RefSubject from "@typed/fx/RefSubject";
 import { html } from "@typed/template/RenderTemplate";
@@ -15,7 +17,7 @@ export async function renderFixture(scenario: string, label: string) {
     const shared = view(Stateful, { label });
     return {
       html: await renderToHtmlString(siblings(shared, shared)).pipe(
-        Effect.provide(HtmlRenderTemplate),
+        Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
         Effect.scoped,
         Effect.runPromise,
       ),
@@ -38,7 +40,7 @@ export async function renderFixture(scenario: string, label: string) {
       html: await Effect.runPromise(
         Effect.scoped(
           renderToHtmlString(view(RoundTrip, { label }, { id: "round-trip" })).pipe(
-            Effect.provide(HtmlRenderTemplate),
+            Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
           ),
         ),
       ),
@@ -57,7 +59,7 @@ export async function renderFixture(scenario: string, label: string) {
           scenario === "siblings"
             ? siblings(island, view(Stateful, { label: "sibling" }, { id: "sibling" }))
             : island,
-        ).pipe(Effect.provide(HtmlRenderTemplate)),
+        ).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default))),
       ),
     ),
   };

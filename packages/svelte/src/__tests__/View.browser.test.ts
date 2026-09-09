@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { commands } from "vitest/browser";
 import { Cause, Deferred, Effect, Exit, Fiber } from "effect";
@@ -33,7 +35,11 @@ describe("Svelte view DOM renderer", () => {
       yield* Fx.collectAll(Fx.take(render(app, root), 1));
       expect(observed).toHaveLength(1);
       expect(root.querySelector("[data-placement]")?.isConnected).toBe(true);
-    }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
   });
 
   it("publishes a closed empty host without mounting when the props source is empty", async () => {
@@ -44,7 +50,7 @@ describe("Svelte view DOM renderer", () => {
     await render(view(Throws, Fx.empty, { id: "empty" }), root).pipe(
       Fx.take(1),
       Fx.drain,
-      Effect.provide(DomRenderTemplate.using(document)),
+      Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );
@@ -87,7 +93,11 @@ describe("Svelte view DOM renderer", () => {
       expect(root.querySelector("[data-stateful]")).toBe(button);
       expect(mounts).toBe(1);
       expect(destroys).toBe(0);
-    }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
 
     await expect.poll(() => destroys).toBe(1);
     expect(root.querySelector("[data-stateful]")).toBeNull();
@@ -122,7 +132,11 @@ describe("Svelte view DOM renderer", () => {
       button.click();
       yield* Effect.promise(() => tick());
       expect(button.textContent).toBe("second:1");
-    }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+    }).pipe(
+      Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+      Effect.scoped,
+      Effect.runPromise,
+    );
     expect(mounts).toBe(1);
     expect(destroys).toBe(1);
     expect(root.querySelector("[data-stateful]")).toBeNull();
@@ -160,7 +174,11 @@ describe("Svelte view DOM renderer", () => {
         yield* waitForText(root, "client:1");
 
         expect(root.querySelector("[data-stateful]")).toBe(serverButton);
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
 
       expect(warn.mock.calls.flat().join("\n")).not.toContain("hydration");
       expect(error.mock.calls.flat().join("\n")).not.toContain("hydration");
@@ -182,7 +200,7 @@ describe("Svelte hydration boundaries and failures", () => {
       Fx.observe(() => {
         outputs++;
       }),
-      Effect.provide(DomRenderTemplate.using(document)),
+      Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
       Effect.scoped,
       Effect.exit,
       Effect.runPromise,
@@ -221,7 +239,11 @@ describe("Svelte hydration boundaries and failures", () => {
         yield* waitForText(root, "updated:1betweensibling:2");
         expect(Array.from(root.querySelectorAll("[data-stateful]"))).toEqual(buttons);
         expect(root.querySelector("[data-between]")).toBe(between);
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       root.remove();
     }
@@ -254,7 +276,11 @@ describe("Svelte hydration boundaries and failures", () => {
         if (Exit.isFailure(result)) expect(Cause.hasFails(result.cause)).toBe(true);
         yield* Effect.promise(() => expect.poll(() => destroyed).toBe(1));
         expect(root.querySelector("[data-stateful]")).toBeNull();
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       root.remove();
     }
@@ -286,7 +312,11 @@ describe("Svelte hydration boundaries and failures", () => {
         yield* Fiber.interrupt(fiber);
         expect(released).toBe(1);
         expect(root.querySelector("[data-stateful]")).toBeNull();
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       root.remove();
     }
@@ -323,7 +353,11 @@ describe("Svelte hydration boundaries and failures", () => {
         yield* Fiber.interrupt(fiber);
         expect(mounted).toBe(1);
         expect(root.querySelector("[data-stateful]")).toBeNull();
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
       expect(released).toBe(1);
     } finally {
       root.remove();
@@ -356,7 +390,11 @@ describe("Svelte published scope ownership", () => {
         yield* waitForText(root, "after:0");
         expect(root.querySelector("[data-stateful]")).toBe(node);
         expect(destroyed).toBe(0);
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
       expect(destroyed).toBe(1);
       expect(root.querySelector("[data-stateful]")).toBeNull();
     } finally {
@@ -396,7 +434,11 @@ describe("nested renderer ownership", () => {
         yield* RefSubject.set(label, "client");
         yield* Effect.promise(() => expect.poll(() => serverButton?.textContent).toBe("client"));
         expect(root.querySelector("[data-round-trip]")).toBe(serverButton);
-      }).pipe(Effect.provide(DomRenderTemplate), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       root.remove();
     }

@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { createElement, Fragment, lazy, Suspense, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot, hydrateRoot } from "react-dom/client";
@@ -228,7 +229,7 @@ describe("React in Typed", () => {
     const server = Effect.runFork(
       Fx.observe(value, (event) => {
         chunks.push(event.toString());
-      }).pipe(Effect.provide(HtmlRenderTemplate), Effect.scoped),
+      }).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
     );
 
     await vi.waitFor(() => expect(chunks.join("")).toContain("waiting"));
@@ -384,7 +385,7 @@ describe("React in Typed", () => {
     ).pipe(Effect.andThen(Effect.never));
     const fiber = Effect.runFork(
       Fx.drain(view(() => createElement("b"), source, { id: "react-dom-10" })).pipe(
-        Effect.provide(DomRenderTemplate),
+        Effect.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Scope.provide(scope),
       ),
     );
@@ -417,7 +418,7 @@ describe("React in Typed", () => {
           Effect.scoped(
             Fx.observe(view(Component, props, { id: "raw-initial-failure" }), () => {
               outputs++;
-            }).pipe(Effect.provide(DomRenderTemplate)),
+            }).pipe(Effect.provide(Layer.merge(DomRenderTemplate, RandomValues.Default))),
           ),
         ),
       );
@@ -453,7 +454,10 @@ describe("React in Typed", () => {
     const fiber = Effect.runFork(
       Fx.observe(view(Component, {}, { id: "late-state-failure" }), (event) => {
         if (isDomRenderEvent(event)) document.body.append(event.valueOf() as HTMLElement);
-      }).pipe(Effect.provide(DomRenderTemplate), Scope.provide(scope)),
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
+        Scope.provide(scope),
+      ),
     );
     fiber.addObserver((exit) => {
       exits.push(exit);

@@ -9,6 +9,7 @@
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/*.type-test.ts", "**/__tests__/**"],
   "references": [
+    { "path": "../id" },
     {
       "path": "../fx"
     },

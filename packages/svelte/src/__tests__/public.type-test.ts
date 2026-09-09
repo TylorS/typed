@@ -1,3 +1,4 @@
+import { RandomValues } from "@typed/id/RandomValues";
 /** @effect-diagnostics missingEffectError:skip-file */
 /** @effect-diagnostics missingEffectContext:skip-file */
 
@@ -31,7 +32,7 @@ declare const props: Effect.Effect<Props, PropsError, PropsService>;
 const rendered = view(component, props, { id: "counter" });
 type _ViewError = Assert<Equal<Fx.Error<typeof rendered>, PropsError>>;
 type _ViewServices = Assert<
-  Equal<Fx.Services<typeof rendered>, PropsService | Scope.Scope | RenderTemplate>
+  Equal<Fx.Services<typeof rendered>, PropsService | Scope.Scope | RenderTemplate | RandomValues>
 >;
 
 view(component, { label: "ok" }, { id: "counter" });
@@ -51,7 +52,11 @@ attachment(runtime, typedView);
 
 declare const runtimeWithoutRenderer: ManagedRuntime.ManagedRuntime<never, never>;
 attachment(runtimeWithoutRenderer, typedView);
-declare const serviceView: Fx<RenderEvent, PropsError, PropsService | RenderTemplate | Scope.Scope>;
+declare const serviceView: Fx<
+  RenderEvent,
+  PropsError,
+  PropsService | RenderTemplate | Scope.Scope | RandomValues
+>;
 // @ts-expect-error application services remain required
 attachment(runtimeWithoutRenderer, serviceView);
 // @ts-expect-error required props cannot be omitted
@@ -60,17 +65,20 @@ declare const stream: Stream.Stream<Props, PropsError, PropsService>;
 const streamed = view(component, stream, { id: "counter" });
 type _StreamError = Assert<Equal<Fx.Error<typeof streamed>, PropsError>>;
 type _StreamServices = Assert<
-  Equal<Fx.Services<typeof streamed>, PropsService | Scope.Scope | RenderTemplate>
+  Equal<Fx.Services<typeof streamed>, PropsService | Scope.Scope | RenderTemplate | RandomValues>
 >;
 const serialized = renderToHtmlString(rendered);
 type _HtmlError = Assert<Equal<Effect.Error<typeof serialized>, PropsError>>;
 type _HtmlServices = Assert<
-  Equal<Effect.Services<typeof serialized>, PropsService | RenderTemplate | Scope.Scope>
+  Equal<
+    Effect.Services<typeof serialized>,
+    PropsService | RenderTemplate | Scope.Scope | RandomValues
+  >
 >;
 declare const target: HTMLElement;
 const mountedView = render(rendered, target);
 type _DomServices = Assert<
-  Equal<Fx.Services<typeof mountedView>, PropsService | Scope.Scope | RenderTemplate>
+  Equal<Fx.Services<typeof mountedView>, PropsService | Scope.Scope | RenderTemplate | RandomValues>
 >;
 mount(Typed, { target, props: { value: typedView } });
 // @ts-expect-error the inverse component uses value as its canonical prop

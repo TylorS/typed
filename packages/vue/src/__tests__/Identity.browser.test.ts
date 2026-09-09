@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import * as Fx from "@typed/fx/Fx";
 import { html } from "@typed/template/RenderTemplate";
 import { DomRenderTemplate, render } from "@typed/template/Render";
@@ -27,7 +29,7 @@ describe("Vue root identity in the browser", () => {
   it("mounts reused client-only views without options with distinct host and component IDs", async () => {
     await Effect.gen(function* () {
       yield* render(page(false), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.drain,
       );
@@ -46,7 +48,7 @@ describe("Vue root identity in the browser", () => {
 
   it("restores generated and explicit identities and exact server nodes for fresh client views", async () => {
     document.body.innerHTML = await renderToHtmlString(page(true)).pipe(
-      Effect.provide(HtmlRenderTemplate),
+      Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)),
       Effect.scoped,
       Effect.runPromise,
     );
@@ -58,7 +60,7 @@ describe("Vue root identity in the browser", () => {
     expect(ids[2]).toBe("explicit-vue");
     await Effect.gen(function* () {
       yield* render(page(true), document.body).pipe(
-        Fx.provide(DomRenderTemplate),
+        Fx.provide(Layer.merge(DomRenderTemplate, RandomValues.Default)),
         Fx.take(1),
         Fx.drain,
       );

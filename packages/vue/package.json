@@ -1,6 +1,6 @@
 {
   "name": "@typed/vue",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "Vue components and Typed views with scoped reactivity, SSR, and hydration.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/vue#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -58,6 +58,7 @@
   "dependencies": {
     "@typed/async-data": "workspace:*",
     "@typed/fx": "workspace:*",
+    "@typed/id": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
@@ -65,7 +66,7 @@
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
-    "playwright": "^1.62.1",
+    "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",

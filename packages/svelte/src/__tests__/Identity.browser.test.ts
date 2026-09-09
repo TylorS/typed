@@ -1,3 +1,5 @@
+import * as Layer from "effect/Layer";
+import { RandomValues } from "@typed/id/RandomValues";
 import { describe, expect, it, vi } from "vitest";
 import { commands } from "vitest/browser";
 import { Effect } from "effect";
@@ -35,7 +37,11 @@ describe("Svelte host identity in the browser", () => {
             .poll(() => explicitTarget.querySelector("#explicit-host [data-stateful]"))
             .not.toBeNull(),
         );
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       target.remove();
     }
@@ -83,7 +89,11 @@ describe("Svelte host identity in the browser", () => {
         expect(mounted).toBe(2);
         expect(warnings.mock.calls.flat().join("\n")).not.toContain("hydration");
         expect(errors.mock.calls.flat().join("\n")).not.toContain("hydration");
-      }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
+      }).pipe(
+        Effect.provide(Layer.merge(DomRenderTemplate.using(document), RandomValues.Default)),
+        Effect.scoped,
+        Effect.runPromise,
+      );
     } finally {
       warnings.mockRestore();
       errors.mockRestore();

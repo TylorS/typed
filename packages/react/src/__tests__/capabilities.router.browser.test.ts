@@ -1,6 +1,7 @@
+import { RandomValues } from "@typed/id/RandomValues";
 import { act, createElement, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { Cause, ManagedRuntime, Option } from "effect";
+import { Cause, Layer, ManagedRuntime, Option } from "effect";
 import * as Router from "@typed/router";
 import { TestRouter } from "@typed/router/RouterTest";
 import { Navigation } from "@typed/navigation/Navigation";
@@ -51,7 +52,9 @@ describe("React routing with Typed", () => {
       Router.Parse("/users/:id"),
       routeComponent(Profile, { id: "profile" }),
     );
-    const runtime = ManagedRuntime.make(TestRouter({ url: "https://example.com/users/alice" }));
+    const runtime = ManagedRuntime.make(
+      Layer.merge(TestRouter({ url: "https://example.com/users/alice" }), RandomValues.Default),
+    );
     const errors: unknown[] = [];
     host = document.createElement("div");
     document.body.append(host);
