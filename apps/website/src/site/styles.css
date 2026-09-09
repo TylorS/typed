@@ -379,6 +379,9 @@ kbd {
   margin: auto;
   padding: 5rem 2rem 1rem;
 }
+.integration-section {
+  padding-top: 5rem;
+}
 .section-heading {
   display: flex;
   align-items: end;
