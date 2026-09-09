@@ -14,6 +14,11 @@ continues from `42` without flashing `0`.
 pnpm dev
 pnpm build
 pnpm start
+pnpm test:production
 ```
 
 `dev` and `start` accept `--port <number>`; the default is `3000`.
+
+The production check builds both bundles, starts the HTTP server, and verifies static
+assets, hydration from `42` without replacing the server node, and counter interactions
+in Chromium. Install the test browser with `pnpm exec playwright install chromium`.

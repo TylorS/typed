@@ -1,6 +1,6 @@
 {
   "name": "@typed/id",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Branded ID generators and facades for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/id#readme",
   "bugs": "https://github.com/TylorS/typed/issues",

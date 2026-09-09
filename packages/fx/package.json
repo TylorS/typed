@@ -1,6 +1,6 @@
 {
   "name": "@typed/fx",
-  "version": "2.0.0-beta.8",
+  "version": "2.0.0-beta.9",
   "description": "Reactive streams and state for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/fx#readme",
   "bugs": "https://github.com/TylorS/typed/issues",

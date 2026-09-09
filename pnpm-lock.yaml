@@ -373,6 +373,9 @@ importers:
       '@types/node':
         specifier: ^26.5.0
         version: 26.5.0
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -545,6 +548,9 @@ importers:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.112
+      react-is:
+        specifier: 19.2.8
+        version: 19.2.8
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
@@ -552,6 +558,9 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.2.7(@types/react@19.2.18)
+      '@types/react-is':
+        specifier: 19.2.0
+        version: 19.2.0
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.0(playwright@1.63.0)(vite@8.2.2(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.0)
@@ -2391,6 +2400,9 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
+  '@types/react-is@19.2.0':
+    resolution: {integrity: sha512-NP2xtcjZfORsOa4g2JwdseyEnF+wUCx25fTdG/J/HIY6yKga6+NozRBg2xR2gyh7kKYyd6DXndbq0YbQuTJ7Ew==}
+
   '@types/react@19.2.18':
     resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
@@ -3842,6 +3854,9 @@ packages:
 
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
+
+  react-is@19.2.8:
+    resolution: {integrity: sha512-s5un28nYxKJw5gvUHyW5PCC28CvBqLu9r3cWgzHT4Vo/5fqqkFcdRYsGcKf50WMPpjjFZS5d76fn3YCo2njKwQ==}
 
   react@19.2.8:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
@@ -5820,6 +5835,10 @@ snapshots:
     dependencies:
       '@types/react': 19.2.18
 
+  '@types/react-is@19.2.0':
+    dependencies:
+      '@types/react': 19.2.18
+
   '@types/react@19.2.18':
     dependencies:
       csstype: 3.2.3
@@ -7687,6 +7706,8 @@ snapshots:
       scheduler: 0.27.0
 
   react-is@17.0.2: {}
+
+  react-is@19.2.8: {}
 
   react@19.2.8: {}
 

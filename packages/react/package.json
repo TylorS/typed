@@ -1,6 +1,6 @@
 {
   "name": "@typed/react",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Scoped React components in Typed and Typed templates in React, with SSR and hydration.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/react#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -64,11 +64,13 @@
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "react-is": "19.2.8"
   },
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/react-is": "19.2.0",
     "@vitest/browser-playwright": "catalog:",
     "playwright": "^1.63.0",
     "react": "catalog:",

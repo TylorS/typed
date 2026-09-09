@@ -10,6 +10,7 @@ import type { RootEventOptions } from "@typed/template/RootEvents";
 import { html, type RenderTemplate } from "@typed/template/RenderTemplate";
 import { isDomRenderEvent, DomRenderEvent, type RenderEvent } from "@typed/template/RenderEvent";
 import { createElement, type ComponentType, type ReactNode } from "react";
+import { isValidElementType } from "react-is";
 import { sourceFx } from "./internal/source.js";
 
 /** A props object, or a producer of complete props objects. Use Fx.struct for reactive fields. */
@@ -60,7 +61,7 @@ export function view<P extends object, E = never, R = never>(
   second?: ViewOptions | PropsSource<P, E, R>,
   third?: ViewOptions,
 ): Fx.Fx<RenderEvent, E | ReactRenderError, R | Scope.Scope | RenderTemplate | RandomValues> {
-  const component = typeof first === "function";
+  const component = typeof first !== "string" && isValidElementType(first);
   const nodes: Fx.Fx<ReactNode, E, R> = component
     ? Fx.map(sourceFx(second as PropsSource<P, E, R>), (value) =>
         createElement(first as ComponentType<P>, value),

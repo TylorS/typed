@@ -1,6 +1,6 @@
 {
   "name": "@typed/async-data",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Async data states for Typed applications.",
   "license": "MIT",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/async-data#readme",

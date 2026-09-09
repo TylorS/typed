@@ -1,6 +1,6 @@
 {
   "name": "@typed/template",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Typed HTML templates, rendering, and hydration for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/template#readme",
   "bugs": "https://github.com/TylorS/typed/issues",

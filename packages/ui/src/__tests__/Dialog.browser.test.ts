@@ -124,13 +124,16 @@ describe("typed/ui/Dialog in browsers", () => {
       const trigger = document.querySelector("button")!;
       const dialog = document.querySelector("dialog")!;
       trigger.click();
-      yield* Effect.sleep(0);
-      assert.strictEqual(dialog.open, true);
+      yield* Effect.promise(() => vi.waitFor(() => assert.strictEqual(dialog.open, true)));
       assert.strictEqual((yield* state).open, true);
 
+      const context = yield* Effect.context();
       dialog.close();
-      yield* Effect.sleep(0);
-      assert.strictEqual((yield* state).open, false);
+      yield* Effect.promise(() =>
+        vi.waitFor(async () =>
+          assert.strictEqual((await Effect.runPromiseWith(context)(state)).open, false),
+        ),
+      );
     }).pipe(Effect.provide(DomRenderTemplate.using(document)), Effect.scoped, Effect.runPromise);
   });
 
