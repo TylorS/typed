@@ -9,37 +9,92 @@ const packages = [
     "fx",
     "Reactive programs",
     "Values over time, derived state, concurrency, and scoped subscriptions.",
+    "/explore/fx-push-reactivity",
+    "Start with reactive values",
   ],
   [
     "template",
     "HTML with a lifetime",
     "Typed template literals, local DOM updates, server rendering, and hydration.",
+    "/explore/render-your-first-template",
+    "Render your first template",
   ],
   [
     "ui",
     "Accessible building blocks",
     "Compose controls, forms, collections, and overlays around native browser behavior.",
+    "/explore/choosing-ui-components",
+    "Choose your components",
   ],
   [
     "router",
     "URLs as typed inputs",
     "Parse paths and queries, select views, and connect routing to your application.",
+    "/explore/routing-routes-matchers-and-navigation",
+    "Connect routes and views",
   ],
   [
     "guard",
     "Decisions with typed inputs",
     "Validate inputs, compose matching rules, and preserve errors and dependencies.",
+    "/explore/guard",
+    "Compose typed guards",
   ],
   [
     "async-data",
     "Honest request state",
     "Represent loading, refreshing, success, failure, and optimistic data explicitly.",
+    "/explore/async-data",
+    "Model request state",
   ],
   [
     "id",
     "Identity with explicit dependencies",
     "Generate and validate branded IDs. Provide time and entropy through Effect services, with repeatable sequences for tests.",
     "/explore/id",
+    "Generate your first ID",
+  ],
+  [
+    "navigation",
+    "Navigation with a lifetime",
+    "Read and change browser location through an Effect service, with scoped history and event handling.",
+    "/explore/navigation-as-an-effect-service",
+    "Use the navigation service",
+  ],
+  [
+    "react",
+    "Typed inside React, React inside Typed",
+    "Share reactive state and compose React views with Typed rendering and hydration.",
+    "/integrate/react",
+    "Integrate with React",
+  ],
+  [
+    "vue",
+    "Vue and Typed together",
+    "Connect Vue components to Typed state, rendering, and scoped cleanup.",
+    "/integrate/vue",
+    "Integrate with Vue",
+  ],
+  [
+    "svelte",
+    "Svelte and Typed together",
+    "Bring Svelte components into Typed views or mount Typed inside a Svelte application.",
+    "/integrate/svelte",
+    "Integrate with Svelte",
+  ],
+  [
+    "astro",
+    "Typed islands in Astro",
+    "Render Typed on the server and hydrate interactive islands in an Astro site.",
+    "/integrate/astro",
+    "Integrate with Astro",
+  ],
+  [
+    "tsconfig",
+    "Shared TypeScript presets",
+    "Configure platform-neutral, browser, test, and worker projects with reusable compiler presets.",
+    "/reference/packages/@typed/tsconfig",
+    "Browse TypeScript presets",
   ],
 ];
 const source = `import { RefSubject } from "@typed/fx";
@@ -176,7 +231,7 @@ export const Quantity = component(function* () {
       </div>
       <div class="package-grid">
         {
-          packages.map(([name, title, description, guide]) => (
+          packages.map(([name, title, description, guide, label]) => (
             <article class="package-card">
               <>
                 <h3>
@@ -190,9 +245,9 @@ export const Quantity = component(function* () {
                 </h3>
                 <h4 class="mt-3 text-sm font-semibold">{title}</h4>
                 <p>{description}</p>
-                {guide && (
-                  <a href={siteHref(guide)}>Generate your first ID →</a>
-                )}
+                <a class="package-guide" href={siteHref(guide)}>
+                  {label} <span aria-hidden="true">→</span>
+                </a>
               </>
             </article>
           ))
