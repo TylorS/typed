@@ -5,11 +5,12 @@ import { test } from "node:test";
 
 const workflow = path.resolve(import.meta.dirname, "../../../.github/workflows/deploy-pages.yml");
 
-test("Pages installs Playwright Chromium without the runner's Google Chrome repository", async () => {
+test("Pages validates the generated artifact without a browser-install step", async () => {
   const source = await fs.readFile(workflow, "utf8");
-  const cleanup = source.indexOf("sudo rm -f /etc/apt/sources.list.d/google-chrome.list");
-  const install = source.indexOf("playwright install --with-deps chromium");
+  const validation = source.indexOf("pnpm --filter typed-website test:static:integrity");
+  const upload = source.indexOf("actions/upload-pages-artifact@v5");
 
-  assert.ok(cleanup >= 0, "the workflow must remove the Google Chrome apt source");
-  assert.ok(cleanup < install, "the source must be removed before Playwright installs dependencies");
+  assert.ok(validation >= 0, "the deployment validates the built artifact");
+  assert.ok(upload > validation, "the artifact is uploaded only after its integrity checks pass");
+  assert.equal(source.includes("playwright install --with-deps chromium"), false);
 });
