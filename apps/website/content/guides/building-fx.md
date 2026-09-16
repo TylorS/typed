@@ -249,7 +249,7 @@ callback, the returned Effect can await every delivery:
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
-const pair = Fx.make<number>((sink) => Effect.gen(function* () {
+const pair = Fx.make<number>(Effect.fn(function* (sink) {
   yield* sink.onSuccess(1);
   yield* sink.onSuccess(2);
 }));

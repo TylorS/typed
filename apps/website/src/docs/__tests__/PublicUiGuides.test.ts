@@ -13,9 +13,11 @@ import { uiGuidePath } from "../../site/Guides.js";
 
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
-const loadUiGuides = () => fs.readdirSync(path.join(websiteRoot, "content/guides"))
+const loadGuides = () => fs.readdirSync(path.join(websiteRoot, "content/guides"))
   .filter((file) => file.endsWith(".md"))
-  .map((file) => parseGuideDocumentation(file, fs.readFileSync(path.join(websiteRoot, "content/guides", file), "utf8")))
+  .map((file) => parseGuideDocumentation(file, fs.readFileSync(path.join(websiteRoot, "content/guides", file), "utf8")));
+
+const loadUiGuides = () => loadGuides()
   .filter(({ section, slug }) => slug === "ui" || slug.startsWith("ui-") || section === "UI" || section?.startsWith("UI / "));
 
 describe("public UI guides", () => {
@@ -26,12 +28,12 @@ describe("public UI guides", () => {
       if (!ui) throw new Error("Missing public @typed/ui package");
       return yield* resolvePublicModules(ui);
     }).pipe(Effect.provide(NodeFileSystem.layer), Effect.runPromise);
-    const guides = new Map(loadUiGuides().map((guide) => [guide.slug, guide]));
+    const guides = new Map(loadGuides().map((guide) => [guide.slug, guide]));
 
     expect(modules.some(({ consumerSpecifier }) => consumerSpecifier === "@typed/ui")).toBe(true);
     for (const { consumerSpecifier } of modules) {
       const href = uiGuidePath(consumerSpecifier);
-      expect(href, consumerSpecifier).toMatch(/^\/explore\/ui(?:-|$)/u);
+      expect(href, consumerSpecifier).toMatch(/^\/explore\/(?:ui(?:-|$)|integrating-matcher-with-effect-http$)/u);
       const guide = guides.get(href!.slice("/explore/".length));
       expect(guide, `${consumerSpecifier} needs ${href}`).toBeDefined();
       expect(guide!.title.trim(), consumerSpecifier).not.toBe("");

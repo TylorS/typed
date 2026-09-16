@@ -45,6 +45,7 @@ export function uiGuidePath(specifier: string): string | undefined {
     return "/explore/ui";
   if (!specifier.startsWith("@typed/ui/")) return undefined;
   const module = specifier.slice("@typed/ui/".length);
+  if (module === "HttpRouter") return "/explore/integrating-matcher-with-effect-http";
   if (module === "Dom" || module.startsWith("Dom/")) return "/explore/ui-dom";
   const slug = module.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
   return `/explore/ui-${slug}`;
