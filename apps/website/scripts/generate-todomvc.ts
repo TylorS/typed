@@ -35,8 +35,56 @@ const omit = (source: string, start: string, end: string) => {
   if (from < 0 || to < 0) throw new Error(`TodoMVC source changed: ${start}`);
   return source.slice(0, from) + source.slice(to + end.length);
 };
+const removeUnusedImports = (source: string) => {
+  const file = ts.createSourceFile("example.ts", source, ts.ScriptTarget.Latest, true);
+  const imports = file.statements.filter(ts.isImportDeclaration);
+  const body = [...imports].reverse().reduce(
+    (text, statement) => text.slice(0, statement.getStart(file)) + text.slice(statement.getEnd()),
+    source,
+  );
+  const blank = (text: string) => text.replace(/[^\r\n]/g, "");
+  let output = source;
+
+  for (const statement of [...imports].reverse()) {
+    const clause = statement.importClause;
+    const bindings = clause?.namedBindings;
+    if (!clause) continue;
+    if (bindings && !ts.isNamedImports(bindings)) {
+      const isUsed = new RegExp(`\\b${bindings.name.text}\\b`, "u").test(body);
+      if (isUsed) continue;
+
+      const start = statement.getStart(file);
+      const end = statement.getEnd();
+      output = output.slice(0, start) + blank(output.slice(start, end)) + output.slice(end);
+      continue;
+    }
+    if (!bindings || !ts.isNamedImports(bindings)) {
+      if (!clause.name || new RegExp(`\\b${clause.name.text}\\b`, "u").test(body)) continue;
+
+      const start = statement.getStart(file);
+      const end = statement.getEnd();
+      output = output.slice(0, start) + blank(output.slice(start, end)) + output.slice(end);
+      continue;
+    }
+    const names = bindings.elements.filter((element) =>
+      new RegExp(`\\b${element.name.text}\\b`, "u").test(body),
+    );
+    if (names.length === bindings.elements.length) continue;
+
+    const start = statement.getStart(file);
+    const end = statement.getEnd();
+    const original = output.slice(start, end);
+    const replacement = names.length === 0
+      ? blank(original)
+      : `import { ${names.map((element) => element.getText(file)).join(", ")} } from ${statement.moduleSpecifier.getText(file)};`;
+    output = output.slice(0, start) + replacement + output.slice(end);
+  }
+
+  return output;
+};
 const write = (step: number, name: string, source: string) => {
   const file = resolve(output, `todo-${step}/src`, name);
+  source = removeUnusedImports(source);
   if (check) {
     if (!existsSync(file) || readFileSync(file, "utf8") !== source)
       throw new Error(`Regenerate TodoMVC lessons: ${relative(root, file)}`);

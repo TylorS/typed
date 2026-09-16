@@ -1,10 +1,10 @@
 // oxlint-disable require-yield
-import { Effect } from "effect";
-import { Fx, RefSubject } from "@typed/fx";
-import { component, EventHandler, html, many } from "@typed/template";
+
+import { RefSubject } from "@typed/fx";
+import { EventHandler, html } from "@typed/template";
 import * as App from "./application.js";
-import * as Domain from "./domain.js";
-import { Link } from "@typed/ui/Link";
+
+
 
 const onInput = EventHandler.make((event: InputEvent & { target: HTMLInputElement }) =>
   RefSubject.set(App.TodoText, event.target.value),

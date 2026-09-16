@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect";
-import * as Option from "effect/Option";
+
 import * as Context from "effect/Context";
-import { RefArray, RefSubject } from "@typed/fx";
+import { RefSubject } from "@typed/fx";
 import * as Domain from "./domain.js";
 
 export class CreateTodo extends Context.Service<

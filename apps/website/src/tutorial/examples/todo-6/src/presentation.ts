@@ -4,7 +4,7 @@ import { Fx, RefSubject } from "@typed/fx";
 import { component, EventHandler, html, many } from "@typed/template";
 import * as App from "./application.js";
 import * as Domain from "./domain.js";
-import { Link } from "@typed/ui/Link";
+
 
 const HasTodos = RefSubject.map(App.TodoList, (list) => list.length > 0).pipe(Fx.skipRepeats);
 
