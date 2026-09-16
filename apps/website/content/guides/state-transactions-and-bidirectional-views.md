@@ -51,8 +51,10 @@ transaction-local `get`, `set`, and `delete` operations under one serialized bou
 [`RefSubject.runUpdates`](/reference/modules/%40typed%2Ffx%2FRefSubject) for its contract.
 
 Do not re-enter the same ref through top-level writes inside that callback. Each local write remains
-real if the callback fails or is interrupted: serialization does not provide rollback. Keep remote
-work outside this boundary.
+real if the callback fails or is interrupted: serialization does not provide rollback. A long-running
+callback holds the write boundary and delays its publications until it exits. If a request and its
+exit handling belong together, publish loading before entering the boundary, as in the
+[asynchronous search](/explore/async-data-requests-and-cache#replace-work-when-intent-changes).
 
 <span id="expose-another-writable-representation-only-when-conversion-is-valid"></span>
 

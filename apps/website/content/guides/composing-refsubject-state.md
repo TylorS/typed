@@ -16,6 +16,13 @@ If workspace and IDs are written independently, a consumer can observe the new w
 old selection. Combining refs later cannot remove that intermediate state. Use `struct` or `tuple`
 for values whose updates really are independent.
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Change related fields as one valid transition | [One parent model](#commit-related-values-as-one-model) | One serialized update preserves the shared invariant. |
+| Read several independently owned values together | [Combine capabilities](#combine-independent-capabilities-for-a-consumer) | A combined view does not make separate writes atomic. |
+| Expose queries without arbitrary writes | [Commands and derived views](#expose-commands-and-derived-views) | Keep mutation authority with the owner. |
+
 ## Commit related values as one model
 
 ```ts

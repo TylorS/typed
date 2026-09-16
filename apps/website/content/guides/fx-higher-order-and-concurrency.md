@@ -1,6 +1,6 @@
 ---
 title: "Flatten Fx with an explicit policy"
-summary: "Choose whether inner Fx overlap, wait, replace one another, or are ignored."
+summary: "Declare how inner work runs over time: overlap, wait, replace, or ignore new arrivals."
 section: "Fx"
 kind: "guide"
 order: 1.4
@@ -15,12 +15,24 @@ promises, even when all three call the same server.
 
 [Composing Fx](/explore/composing-fx) combines independent producers. Here an outer value creates an
 inner Fx. The inner may emit progress and a final result, fail, or remain live. A flattening operator
-owns the relationship between those runs.
+owns the relationship between those runs. Effect supplies the ability to fork and interrupt fibers;
+the higher-order combinator composes those operations into a declarative policy. For example,
+`switchMap` says that new input replaces the old inner execution, including its interruption and
+cleanup. You choose the relationship instead of maintaining a current-fiber variable yourself.
 
 For arrivals at 0, 5, and 10 milliseconds and 20-millisecond jobs, immediate-finalization assumptions
 give these outcomes: `concatMap` finishes all three at 60; `switchMap` locally finishes only `c` at
 30; `exhaustMap` finishes only `a` at 20; `exhaustLatestMap` finishes `a` then `c` at 40. The choice
 changes what the user ultimately saved, not just throughput.
+
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Allow independent jobs to overlap | [`flatMapConcurrently`](#let-independent-lookups-overlap) | Bound concurrent inner runs. |
+| Process every job in order | [`concatMap`](#preserve-every-revision-in-order) | Wait for each inner run to complete. |
+| Replace obsolete work | [`switchMap`](#replace-an-obsolete-preview) | Interrupt the prior inner run when new input arrives. |
+| Ignore arrivals while busy | [`exhaustMap`](#ignore-repeated-submit-clicks-while-the-command-is-active) | Finish the active run and drop intervening inputs. |
+| Finish active work, then use the newest input | [`exhaustLatestMap`](#finish-the-current-save-then-save-only-the-newest-snapshot) | Retain only the latest pending input. |
 
 ## Let independent lookups overlap
 

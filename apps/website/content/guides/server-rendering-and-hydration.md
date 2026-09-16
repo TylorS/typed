@@ -16,6 +16,16 @@ This article joins [HTML serialization](/explore/rendering-html-on-the-server) w
 [DOM mounting](/explore/mounting-dom-output). Use those guides for the individual APIs and
 [Hydrating Typed HTML](/explore/hydrating-typed-html) for detailed mismatch diagnosis.
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Produce HTML without browser behavior | [HTML serialization](/explore/rendering-html-on-the-server) | Choose static or hydration-capable output deliberately. |
+| Carry initial state into the browser | [Shared view](#make-the-handoff-explicit-in-the-shared-view) | Serialize state across separate server and browser runs. |
+| Place the view in a server document | [Server shell](#put-the-shared-view-inside-a-server-owned-shell) | Keep the document shell outside the browser mount boundary. |
+| Attach behavior to existing HTML | [Browser handoff](#start-a-separate-browser-run-at-the-inner-boundary) | Hydrate the intended inner boundary. |
+| Diagnose a mismatch | [Hydration contracts](/explore/hydrating-typed-html) | Check template shape, restored state, and boundary selection. |
+| Serve a Matcher as HTTP routes | [Effect HTTP integration](/explore/integrating-matcher-with-effect-http) | Own rendering and navigation per request. |
+
 ## Make the handoff explicit in the shared view
 
 The shared counter starts at 12. Its state is visible before and after client startup:

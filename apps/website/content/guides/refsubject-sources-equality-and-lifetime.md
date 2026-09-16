@@ -24,6 +24,16 @@ private child Scope; the input determines what starts next:
 | Effect | First read or observation | Waits for the shared initializer |
 | Fx or Stream | Construction forks one source run | Waits for its first success or expected failure |
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Start with an existing value | [Value input](#a-regular-value-is-current-immediately) | The initial value is available immediately. |
+| Load only when first read or observed | [Effect input](#an-effect-is-the-lazy-initial-value) | Construction does not run the initializer. |
+| Track an ongoing producer | [Fx and Stream inputs](#fx-and-stream-begin-when-the-ref-is-constructed) | Source work begins during ref construction. |
+| Reset current state | [Delete behavior](#delete-resets-the-current-slot-not-every-source) | Resetting the slot does not restart every kind of source. |
+| Avoid equivalent publications | [Equality](#current-state-has-one-value-replay-and-equality-controls-publications) | Equality controls which state changes observers receive. |
+| Find why a value is stale or silent | [Contract checks](#diagnose-a-stale-or-silent-value-by-checking-the-contract) | Check startup, ownership, equality, and observation. |
+
 ## A regular value is current immediately
 
 `RefSubject.make(value)` installs that value as the first committed state when its construction

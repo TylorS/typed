@@ -28,7 +28,9 @@ The test mounts `TodoApp` with controlled services. Fork the renderer in the tes
 The event helpers reproduce the events our handlers consume:
 
 ```ts
-// @source examples/todo-10/src/presentation.test.ts#L34-L42
+// @source examples/todo-10/src/presentation.test.ts#L31-L39
+// @expect const type = (input: HTMLInputElement, value: string) => {
+// @expect input.value = value;
 // @expect input.dispatchEvent(new Event("input"
 // @expect new KeyboardEvent("keydown"
 ```
@@ -36,7 +38,8 @@ The event helpers reproduce the events our handlers consume:
 Changing `.value` alone would not notify the application. After the first submission, retain its row. Prepend another todo and check that the retained row merely moved:
 
 ```ts
-// @source examples/todo-10/src/presentation.test.ts#L60-L72
+// @source examples/todo-10/src/presentation.test.ts#L53-L66
+// @expect const draft = host.querySelector<HTMLInputElement>
 // @expect const original = host.querySelector
 // @expect toBe(original)
 ```
@@ -44,7 +47,8 @@ Changing `.value` alone would not notify the application. After the first submis
 Now edit that row and press Escape:
 
 ```ts
-// @source examples/todo-10/src/presentation.test.ts#L72-L80
+// @source examples/todo-10/src/presentation.test.ts#L68-L77
+// @expect const edit = original.querySelector<HTMLInputElement>
 // @expect type(edit, "Uncommitted text")
 // @expect key: "Escape"
 // @expect toBe("Same title")

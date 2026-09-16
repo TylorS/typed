@@ -94,6 +94,46 @@ const program = Effect.scoped(Effect.gen(function* () {
 await Effect.runPromise(program)
 ```
 
+## Provide a named publication boundary
+
+`Subject.Service<Self, A, E>()(id)` exposes both sides of one event channel: the class is an
+Fx for observation and a Sink for publication. Its `make(replay)` constructs the Subject
+in a Layer; it does not wrap an existing source.
+
+```ts
+import { Effect, Fiber } from "effect"
+import { Fx, Subject } from "@typed/fx"
+
+class Saved extends Subject.Service<Saved, string>()("docs/Saved") {}
+
+const SavedLive = Saved.make(0)
+const receive = Fx.collectAllFork(Fx.take(Saved, 2))
+
+const program = Effect.gen(function* () {
+  const received = yield* receive
+
+  yield* Effect.sleep(0)
+  yield* Saved.onSuccess("invoice-42")
+  yield* Saved.onSuccess("invoice-43")
+
+  return yield* Fiber.join(received)
+}).pipe(Effect.provide(SavedLive), Effect.scoped)
+
+const result = await Effect.runPromise(program)
+// ["invoice-42", "invoice-43"]
+```
+
+Provide the Layer around publishers and subscribers together so they resolve the same Subject.
+`Saved.onFailure(cause)` publishes a failure through the same channel. `Saved.subscriberCount`
+and `Saved.interrupt` delegate to that instance; `Saved.service` retrieves the underlying
+Subject when an integration needs it. Interrupting the shared Subject affects its subscribers,
+so that operation belongs with its owner.
+
+A fresh `Saved.make(0)` gives a test its own event channel. A replay capacity of one changes late
+subscription behavior; it is not a substitute for establishing readiness in a zero-replay test.
+The Layer exposes invalid replay configuration as an acquisition error, separate from the `E`
+failures published later. Keep its Scope open for the whole publication journey.
+
 ## <span id="name-events-shared-by-independently-assembled-features">Publishing events versus sharing a source</span>
 
 `Subject.Service` supplies a publication capability through a Layer when independently assembled

@@ -139,6 +139,52 @@ recovery. Continue with [RefSubject](/explore/refsubject-renderer-independent-st
 application itself should own writable state, or the
 [Versioned reference](/reference/modules/%40typed%2Ffx%2FVersioned) for all channel transformations.
 
+## Provide the adapter as a service
+
+`Versioned.Service` names all three read channels without exposing the owner's writes. Its generic
+order is `Self, VersionError, Update, UpdateError, Current, CurrentError`; each channel can fail
+independently, and updates need not have the same type as current snapshots.
+
+```ts file="SettingsService.ts"
+import { Effect } from "effect"
+import { Fx } from "@typed/fx"
+import * as Versioned from "@typed/fx/Versioned"
+
+type Settings = { readonly density: "compact" | "comfortable" }
+
+class SettingsView extends Versioned.Service<
+  SettingsView, never, Settings, never, Settings
+>()("docs/SettingsView") {}
+
+const snapshot: Settings = { density: "compact" }
+const SettingsTest = SettingsView.make(
+  Effect.succeed(7),
+  Fx.succeed(snapshot),
+  Effect.succeed(snapshot),
+)
+
+const inspect = Effect.gen(function* () {
+  const current = yield* SettingsView
+  const version = yield* SettingsView.version
+  const updates = yield* Fx.collectAll(SettingsView)
+
+  return { current, version, updates }
+})
+
+const result = await Effect.runPromise(inspect.pipe(Effect.provide(SettingsTest)))
+// { current: { density: "compact" }, version: 7, updates: [{ density: "compact" }] }
+```
+
+`SettingsView.make(version, updates, current)` builds a Layer and captures the three channels'
+requirements. For the store adapter above, pass `store.state.version`, `store.state`, and
+`store.state`. The test uses a finite update source so collection completes; a live store still
+requires bounded observation or an explicitly owned subscription.
+
+`yield* SettingsView` reads the current channel. `yield* SettingsView.service` retrieves the
+underlying Versioned instance. The facade's `interrupt` stops shared current-read work, matching
+the ordinary Versioned contract. Providing the service neither synchronizes the channels nor
+makes independently supplied update sources shared. Keep external store cleanup with its owner.
+
 ## Compose or share the adapter when needed
 
 `Versioned.struct` and `tuple` combine independently owned channels; they do not establish an atomic
@@ -148,6 +194,5 @@ producer that defines them.
 
 `Versioned.provide` supplies a Layer to all three channels. `hold`, `multicast`, and `replay` add a
 shared update subscription whose acquiring Scope owns its lifetime; they do not take ownership of
-the external store. For dependency injection, use `Versioned.Service` as described in the
-[Versioned reference](/reference/modules/%40typed%2Ffx%2FVersioned), following the provider boundaries
-in [sharing a reactive capability](/explore/shared-state-contracts).
+the external store. For provider boundaries across these
+capabilities, see [sharing a reactive capability](/explore/shared-state-contracts).

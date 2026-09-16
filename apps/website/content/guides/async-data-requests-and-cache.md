@@ -28,11 +28,10 @@ then succeeds on Refresh. Submit another workspace before the 700 ms delay ends 
 ## Keep submitted identity and its result together
 
 The form owns its unsubmitted draft. Editing either field does not change the model until submit.
-`Model.ts` stores the submitted workspace, query, revision, and result in one ref:
+`Model.ts` stores the submitted workspace, query, and result in one ref:
 
 ```ts excerpt="Model.ts"
 export interface SearchState extends SearchInput {
-  readonly revision: number
   readonly data: AsyncData.AsyncData<ReadonlyArray<Issue>, SearchError>
 }
 ```
@@ -49,52 +48,63 @@ const begin = (current: SearchState, input: SearchInput): SearchState => {
   return {
     workspaceId: input.workspaceId,
     query,
-    revision: current.revision + 1,
     data: query === "" ? AsyncData.NoData
-      : sameResource ? AsyncData.startLoading(current.data) : AsyncData.loading(),
+      : AsyncData.startLoading(sameResource ? current.data : AsyncData.NoData),
   }
 }
 ```
 
-The revision changes even on Refresh, so identical input can start another request. A Failure has
-no stale value: retrying it retains the Failure with pending progress until the request settles.
+A Failure has no stale value: retrying it retains the Failure with pending progress until the
+request settles. Submit and Refresh are commands, so repeated input can start another request
+without adding a revision to the state.
 
 ## Replace work when intent changes
 
-The model obtains `IssueSearch` once. Its observer follows submitted intent, excluding result-only
-updates so a response cannot trigger another request:
+The model publishes commands into a Subject rather than observing its own result state.
+`switchMapEffect` interrupts and awaits the old request before starting the next command. An empty
+query also reaches that boundary, so clearing the search replaces active work.
 
 ```ts excerpt="Model.ts"
-  const selection = state.pipe(
-    Fx.map(({ workspaceId, query, revision }) => ({ workspaceId, query, revision })),
-
-    // Publishing a result changes data, not intent; it must not trigger another request.
-    Fx.skipRepeatsWith((previous, next) => previous.revision === next.revision),
-  )
+  const commands = yield* Subject.make<SearchInput | undefined>(1)
 ```
 
-`switchMapEffect` interrupts the preceding request when new intent arrives. Empty queries must reach
-that operator too: they replace active work even though they start no new request.
+A submitted input selects a resource; `undefined` means refresh the current selection. One replay
+slot retains a command submitted before the scoped observer starts. Result updates never publish
+commands, so there is no feedback loop or revision filter.
 
 ```ts excerpt="Model.ts"
-  const runRequest = Effect.fn("Search.runRequest")(function* (input: SearchInput & { readonly revision: number }) {
-    if (input.query === "") return
+  const runRequest = Effect.fn("Search.runRequest")(function* (input: SearchInput | undefined) {
+    const next = yield* RefSubject.update(state, (current) => begin(current, input ?? current))
 
-    const result = AsyncData.fromExit(yield* Effect.exit(search.run(input)))
+    if (next.query === "") return
 
-    // A command can commit newer intent before this observer handles it.
-    yield* RefSubject.update(state, (current) => current.revision === input.revision
-      ? { ...current, data: result } : current)
+    yield* RefSubject.runUpdates(state, (ref) => search.run(next).pipe(
+      Effect.onExit((exit) => ref.set({
+        ...next,
+        data: Exit.hasInterrupts(exit)
+          ? AsyncData.stopLoading(next.data)
+          : AsyncData.fromExit(exit),
+      })),
+      Effect.exit,
+    ))
   })
 
-  // Replace the old request on new intent; end the observer when its owner closes.
-  yield* Effect.forkScoped(selection.pipe(Fx.switchMapEffect(runRequest), Fx.drain))
+  yield* Effect.forkScoped(commands.pipe(Fx.switchMapEffect(runRequest), Fx.drain))
 ```
 
-The revision check covers the handoff: an old request might complete after a command commits new
-intent but before the observer handles that change. It may publish only while its revision remains
-current. Converting its Exit to AsyncData also keeps a request failure from ending the observer;
-the next submission can run normally.
+The loading transition publishes before entering `runUpdates`, so observers can display it while
+the request is pending. RefSubject buffers transaction publications until the callback exits.
+
+The request and its exit handler now run inside one `runUpdates` boundary. `onExit` uses the
+transaction-local `ref.set` directly: `fromExit` stores success or failure, and `stopLoading`
+clears refresh/retry progress on interruption. No re-entrant top-level write or separate cleanup
+handler is needed. `stopLoading` preserves a bare Loading state, which has no previous result;
+the next command replaces it, or the feature owner is closing.
+
+`Effect.exit` captures the handled request outcome so a failed search does not end command
+observation. The switching observer waits for the old request's finalization before starting the
+replacement. Commands never write state themselves, and the request's work and final state remain
+serialized by RefSubject; no revision counter or stale-response comparison is needed.
 
 The included development service delays each result by 700 ms and fails the first `retry` request
 per workspace/query pair. The production `IssueSearchLive` Layer uses the same contract, rejects
@@ -218,13 +228,12 @@ export const IssueSearchDevelopment = Layer.effect(IssueSearch, Effect.sync(() =
 ```
 
 ```ts file="Model.ts"
-import { Effect } from "effect"
+import { Effect, Exit } from "effect"
 import * as AsyncData from "@typed/async-data"
-import { Fx, RefSubject } from "@typed/fx"
+import { Fx, RefSubject, Subject } from "@typed/fx"
 import { IssueSearch, type Issue, type SearchError, type SearchInput } from "./Api.js"
 
 export interface SearchState extends SearchInput {
-  readonly revision: number
   readonly data: AsyncData.AsyncData<ReadonlyArray<Issue>, SearchError>
 }
 
@@ -235,9 +244,8 @@ const begin = (current: SearchState, input: SearchInput): SearchState => {
   return {
     workspaceId: input.workspaceId,
     query,
-    revision: current.revision + 1,
     data: query === "" ? AsyncData.NoData
-      : sameResource ? AsyncData.startLoading(current.data) : AsyncData.loading(),
+      : AsyncData.startLoading(sameResource ? current.data : AsyncData.NoData),
   }
 }
 
@@ -245,33 +253,33 @@ export const makeSearchModel = Effect.fn("makeSearchModel")(function* () {
   const search = yield* IssueSearch
 
   const state = yield* RefSubject.make<SearchState>({
-    workspaceId: "typed", query: "", revision: 0, data: AsyncData.NoData,
+    workspaceId: "typed", query: "", data: AsyncData.NoData,
   })
 
-  const selection = state.pipe(
-    Fx.map(({ workspaceId, query, revision }) => ({ workspaceId, query, revision })),
+  const commands = yield* Subject.make<SearchInput | undefined>(1)
 
-    // Publishing a result changes data, not intent; it must not trigger another request.
-    Fx.skipRepeatsWith((previous, next) => previous.revision === next.revision),
-  )
+  const runRequest = Effect.fn("Search.runRequest")(function* (input: SearchInput | undefined) {
+    const next = yield* RefSubject.update(state, (current) => begin(current, input ?? current))
 
-  const runRequest = Effect.fn("Search.runRequest")(function* (input: SearchInput & { readonly revision: number }) {
-    if (input.query === "") return
+    if (next.query === "") return
 
-    const result = AsyncData.fromExit(yield* Effect.exit(search.run(input)))
-
-    // A command can commit newer intent before this observer handles it.
-    yield* RefSubject.update(state, (current) => current.revision === input.revision
-      ? { ...current, data: result } : current)
+    yield* RefSubject.runUpdates(state, (ref) => search.run(next).pipe(
+      Effect.onExit((exit) => ref.set({
+        ...next,
+        data: Exit.hasInterrupts(exit)
+          ? AsyncData.stopLoading(next.data)
+          : AsyncData.fromExit(exit),
+      })),
+      Effect.exit,
+    ))
   })
 
-  // Replace the old request on new intent; end the observer when its owner closes.
-  yield* Effect.forkScoped(selection.pipe(Fx.switchMapEffect(runRequest), Fx.drain))
+  yield* Effect.forkScoped(commands.pipe(Fx.switchMapEffect(runRequest), Fx.drain))
 
   return {
     state: state as RefSubject.Computed<SearchState>,
-    submit: (input: SearchInput) => RefSubject.update(state, (current) => begin(current, input)),
-    refresh: RefSubject.update(state, (current) => begin(current, current)),
+    submit: (input: SearchInput) => commands.onSuccess(input),
+    refresh: commands.onSuccess(undefined),
   }
 })
 
@@ -351,7 +359,8 @@ export const stop = () => Effect.runPromise(Fiber.interrupt(fiber))
 import { Deferred, Effect, Ref } from "effect"
 import { expect, it } from "vitest"
 import { Fx } from "@typed/fx"
-import { IssueSearch, type Issue } from "./Api.js"
+import { IssueSearch, SearchUnavailable, type Issue } from "./Api.js"
+import * as AsyncData from "@typed/async-data"
 import { makeSearchModel } from "./Model.js"
 
 it("replaces the old workspace request and publishes only the current result", () =>
@@ -395,6 +404,65 @@ it("replaces the old workspace request and publishes only the current result", (
     expect(current.data).toEqual({ _tag: "Success", value: [{ id: "42", title: "Second workspace" }], progress: undefined })
   }).pipe(Effect.scoped, Effect.runPromise),
 )
+
+it("retries failures, publishes refresh progress, and clears an active request", () =>
+  Effect.gen(function* () {
+    const retryStarted = yield* Deferred.make<void>()
+    const refreshStarted = yield* Deferred.make<void>()
+    const response = yield* Deferred.make<ReadonlyArray<Issue>>()
+    const attempts = yield* Ref.make(0)
+    const interrupted = yield* Ref.make(false)
+    const pending = yield* Ref.make<ReadonlyArray<string>>([])
+
+    const run = Effect.gen(function* () {
+      const attempt = yield* Ref.updateAndGet(attempts, (count) => count + 1)
+
+      if (attempt === 1) return yield* Effect.fail(new SearchUnavailable())
+
+      if (attempt === 2) {
+        yield* Deferred.succeed(retryStarted, undefined)
+
+        return yield* Deferred.await(response)
+      }
+
+      return yield* Deferred.succeed(refreshStarted, undefined).pipe(
+        Effect.andThen(Effect.never),
+        Effect.onInterrupt(() => Ref.set(interrupted, true)),
+      )
+    })
+    const model = yield* makeSearchModel().pipe(Effect.provideService(IssueSearch, { run: () => run }))
+
+    yield* Effect.forkScoped(Fx.observe(model.state, ({ data }) =>
+      AsyncData.isPending(data) ? Ref.update(pending, (tags) => [...tags, data._tag]) : Effect.void,
+    ))
+    yield* Effect.sleep(0)
+
+    yield* model.submit({ workspaceId: "typed", query: "docs" })
+    yield* Fx.first(model.state.pipe(Fx.filter(({ data }) => data._tag === "Failure")))
+
+    yield* model.refresh
+    yield* Deferred.await(retryStarted)
+
+    expect(yield* Ref.get(pending)).toContain("Failure")
+
+    yield* Deferred.succeed(response, [{ id: "42", title: "Recovered" }])
+    yield* Fx.first(model.state.pipe(Fx.filter(({ data }) => data._tag === "Success")))
+
+    yield* model.refresh
+    yield* Deferred.await(refreshStarted)
+
+    expect(yield* Ref.get(pending)).toContain("Success")
+    const refreshing = (yield* model.state).data
+    expect(AsyncData.isSuccess(refreshing) && refreshing.value[0]?.title).toBe("Recovered")
+
+    yield* model.submit({ workspaceId: "typed", query: "" })
+    yield* Fx.first(model.state.pipe(Fx.filter(({ data }) => data._tag === "NoData")))
+
+    expect(yield* Ref.get(interrupted)).toBe(true)
+    expect(yield* Ref.get(attempts)).toBe(3)
+  }).pipe(Effect.scoped, Effect.runPromise),
+)
+
 ```
 
 </details>

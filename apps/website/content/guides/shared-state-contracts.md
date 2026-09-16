@@ -23,6 +23,8 @@ legitimately represent two workspaces or two tests. Choose the smallest capabili
 | Observe values | [`Fx.Service`](/explore/fx-services-and-lifetime) | Read a transport's incoming events |
 | Submit values | [`Sink.Service`](/explore/sink-writing-effects) | Send audit records to an owner |
 | Publish and observe events | [`Subject.Service`](/explore/subject-event-publications) | Shared notification bus without current state |
+| Submit one type and observe another | [`Push.Service`](#pair-different-input-and-output-contracts-with-pushservice) | Command input paired with a reply stream |
+| Read an external snapshot, updates, and version | [`Versioned.Service`](/explore/versioned-state#provide-the-adapter-as-a-service) | External store adapter |
 | Read, observe, and replace state | [`RefSubject.Service`](/explore/refsubject-renderer-independent-state) | Internal feature model trusted by its consumers |
 | Read state and invoke constrained commands | Custom Context service | Selection with a uniqueness invariant |
 
@@ -114,6 +116,93 @@ prove a lazy initializer will succeed when the state is first read.
 A test can provide a new QueueSettings Layer with a different initial value. It does not need to
 patch a global or render the settings control. Use one provision around the whole test journey so
 commands and reads observe the same state.
+
+### Read the value or retrieve the ref deliberately
+
+For a RefSubject service, `yield* QueueSettings` reads the current state; it does not return the
+ref. `yield* QueueSettings.service` retrieves the underlying ref. `Fx.observe(QueueSettings, ... )`
+observes changes, and `RefSubject.update(QueueSettings, ...)` performs serialized updates.
+These operations retain the QueueSettings requirement until its Layer is provided.
+
+An Effect passed to `make` remains lazy even after Layer acquisition. This example makes that
+boundary visible without a network request:
+
+```ts
+import { Effect, Ref } from "effect"
+import { RefSubject } from "@typed/fx"
+
+class Count extends RefSubject.Service<Count, number>()("docs/LazyCount") {}
+
+const program = Effect.gen(function* () {
+  const loads = yield* Ref.make(0)
+  const initial = Effect.gen(function* () {
+    yield* Ref.update(loads, (count) => count + 1)
+
+    return 10
+  })
+  const CountLive = Count.make(initial)
+
+  return yield* Effect.gen(function* () {
+    const before = yield* Ref.get(loads)
+    const first = yield* Count
+
+    yield* RefSubject.update(Count, (count) => count + 1)
+
+    return { before, first, current: yield* Count, loads: yield* Ref.get(loads) }
+  }).pipe(Effect.provide(CountLive))
+}).pipe(Effect.scoped)
+
+const result = await Effect.runPromise(program)
+// { before: 0, first: 10, current: 11, loads: 1 }
+```
+
+`make` also accepts an Fx source and equality/lifetime options, following
+[RefSubject source policies](/explore/refsubject-sources-equality-and-lifetime). Use
+`Count.layer(effectThatBuildsARef)` for an existing construction procedure, including its own
+acquisition failures. Expose a ref as `RefSubject.Computed<A>` when consumers only need reads;
+an identity `map` adds no useful computation.
+
+## Pair different input and output contracts with Push.Service
+
+A Subject publishes and observes the same event type. A Push pairs a Sink input with an Fx
+output, which can have different types and errors. It does not connect those sides automatically:
+the supplied implementation must define what an input does and where outputs originate.
+
+```ts
+import { Effect, Fiber } from "effect"
+import { Fx, Push, Sink, Subject } from "@typed/fx"
+
+class Lengths extends Push.Service<Lengths, string, never, number>()("docs/Lengths") {}
+
+const program = Effect.gen(function* () {
+  const replies = yield* Subject.make<number>(0)
+  const input = Sink.make<string>(
+    (cause) => replies.onFailure(cause),
+    (text) => replies.onSuccess(text.length),
+  )
+  const LengthsLive = Lengths.make(input, replies)
+
+  return yield* Effect.gen(function* () {
+    const received = yield* Fx.collectAllFork(Fx.take(Lengths, 2))
+
+    yield* Effect.sleep(0)
+    yield* Lengths.onSuccess("hello")
+    yield* Lengths.onSuccess("typed")
+
+    return yield* Fiber.join(received)
+  }).pipe(Effect.provide(LengthsLive))
+}).pipe(Effect.scoped)
+
+const result = await Effect.runPromise(program)
+// [5, 5]
+```
+
+The generic order is `Self, Input, InputError, Output, OutputError`. `Lengths.make(sink, fx)`
+builds the Layer and captures both implementations' requirements. `onSuccess` and `onFailure`
+use the input side; Fx combinators observe the output side. `Lengths.service` retrieves the
+paired value. A test can supply another Sink/Fx pair without changing either consumer.
+The example's enclosing Scope owns the reply Subject; the service facade adds no queue,
+request correlation, replay policy, or automatic sharing.
 
 Keep the smallest contract that lets the consumer do its work. Do not add Context merely to avoid
 passing one local ref to a directly constructed child. Services are useful for independent

@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import ts from "typescript-compiler";
 import {
   expandCurriculumSources,
   parseCurriculumFiles,
@@ -89,6 +90,24 @@ describe("curriculum Markdown files", () => {
       for (const { name: file } of files) {
         expect([...markdown.matchAll(/<summary>(.*?)<\/summary>/g)].some(([, label]) => label!.includes(file)), name).toBe(true);
       }
+    }
+  });
+
+  it("keeps the testing lesson excerpts within complete statement boundaries", () => {
+    const markdown = readFileSync("content/tutorial/10-test-the-boundaries.md", "utf8");
+    const excerpts = [...markdown.matchAll(/```ts\n(\/\/ @source [^\n]+#L[\s\S]*?)\n```/gu)];
+    expect(excerpts).toHaveLength(4);
+
+    for (const [, reference] of excerpts) {
+      const excerpt = resolveCurriculumSource(reference!);
+
+      // These are steps inside the test, so await/yield belong to the surrounding generator.
+      const result = ts.transpileModule(`async function* testStep() {\n${excerpt}\n}`, {
+        compilerOptions: { target: ts.ScriptTarget.ESNext },
+        reportDiagnostics: true,
+      });
+
+      expect(result.diagnostics, reference).toEqual([]);
     }
   });
 

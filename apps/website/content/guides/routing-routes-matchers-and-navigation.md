@@ -18,12 +18,12 @@ server requests, commands, and UI without forcing all of them into one component
 ## Run the smallest linked application
 
 Place this browser entry in a page containing a dedicated `<div id="review-app"></div>`. It uses
-plain templates because no component-local state needs setup. The app's running Effect owns both
+plain templates because no component-local state needs setup. The application's Layer owns both
 the renderer and the browser router; the exported stop function is for the host that owns this mount.
 
 ```ts
 import * as Router from "@typed/router"
-import { Effect, Fiber } from "effect"
+import { Effect, Fiber, Layer } from "effect"
 import { Fx } from "@typed/fx"
 import { DomRenderTemplate, html, render } from "@typed/template"
 import { Link } from "@typed/ui/Link"
@@ -49,13 +49,11 @@ if (host === null) throw new Error("Missing review-app host")
 
 const application = pages.redirectTo("/not-found").pipe(
   render(host),
-  Fx.drain,
-  Effect.provide(DomRenderTemplate.using(host.ownerDocument)),
-  Effect.provide(Router.BrowserRouter(window)),
-  Effect.scoped,
+  Fx.drainLayer,
+  Layer.provide([DomRenderTemplate.using(host.ownerDocument), Router.BrowserRouter(window)]),
 )
 
-const fiber = Effect.runFork(application)
+const fiber = Effect.runFork(Layer.launch(application))
 export const stop = () => Effect.runPromise(Fiber.interrupt(fiber))
 ```
 
@@ -69,8 +67,12 @@ Navigation. The layout wraps selected content and can remain compatible across i
 The template observes the parameter ref, so moving from issue 42 to 43 changes the heading without
 a second imperative URL listener.
 
-The stop function interrupts the running Effect; its Scope closes the live render and provided
-browser-history resources. Merely retaining `pages` does not run the application. A host that mounts
+`Fx.drainLayer` runs rendering in the application Layer's Scope. `Layer.provide` supplies its
+rendering and routing dependencies within one Layer graph, and `Layer.launch` keeps that lifetime
+open. Prefer this composition for application setup: one owning Scope coordinates acquisition and
+shutdown, and the graph can share dependency builds. Separate `Fx.provide` boundaries create
+separate scopes and builds rather than one connected setup. The stop function
+interrupts the launch Fiber, closing the live render and provided browser-history resources. Merely retaining `pages` does not run the application. A host that mounts
 this feature temporarily must call its disposal operation when that owner ends.
 
 ## Trace a click through the contracts

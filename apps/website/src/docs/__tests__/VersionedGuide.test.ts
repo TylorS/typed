@@ -22,7 +22,7 @@ describe("Versioned guide", () => {
       kind: "guide",
     });
     const documents = extractTypeScriptFenceDocuments(guide.body);
-    expect(documents.map(({ fileName }) => fileName)).toEqual(["Settings.ts", "Settings.test.ts"]);
+    expect(documents.map(({ fileName }) => fileName)).toEqual(["Settings.ts", "Settings.test.ts", "SettingsService.ts"]);
     expect(documents[0].code).toContain("Versioned.make");
     expect(documents[0].code).toContain("Fx.callback");
     expect(documents[0].code).toContain("listeners.delete(publish)");

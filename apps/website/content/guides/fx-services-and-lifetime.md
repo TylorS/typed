@@ -12,6 +12,38 @@ to provide producer and observer services, and how stopping the observer release
 
 Begin with [dynamic producers](/explore/fx-dynamic-producers) and [Consuming Fx](/explore/consuming-fx).
 
+## Expose a source with Fx.Service
+
+`Fx.Service<Self, A, E>()(id)` names an observable capability. `Self` is the dependency
+consumers require; `A` and `E` are the source's value and failure types. The class itself is
+an Fx, so consumers compose it before an implementation is provided.
+
+```ts
+import { Effect } from "effect"
+import { Fx } from "@typed/fx"
+
+class Quotes extends Fx.Service<Quotes, number>()("docs/Quotes") {}
+
+const QuotesLive = Quotes.make(Fx.fromIterable([100, 102]))
+const prices = Fx.collectAll(Fx.map(Quotes, (cents) => cents / 100))
+
+const result = await Effect.runPromise(prices.pipe(Effect.provide(QuotesLive)))
+// [1, 1.02]
+
+const QuotesTest = Quotes.make(Fx.succeed(250))
+const testResult = await Effect.runPromise(prices.pipe(Effect.provide(QuotesTest)))
+// [2.5]
+```
+
+`Quotes.make(source)` returns a Layer. It also accepts an Effect that constructs the source;
+that construction runs during Layer acquisition. Dependencies needed by the implementation
+are captured there, while a downstream observer still supplies its own dependencies.
+Use `Quotes.service` when you need the underlying Context key or actual source instance.
+
+Providing one source value does not share its execution: two observations can still run it twice.
+Choose an explicit sharing operator when they must share one connection. The named facade adds
+neither replay nor state, and declaring the class starts no work.
+
 ## Give the monitor an explicit acquisition and shutdown path
 
 A quote source needs `MarketFeed`; its consumer needs `PriceAudit`. Keep those requirements
@@ -105,6 +137,12 @@ part of the resulting type contract. Supplying a Layer is acquisition, not merel
 `provideContext` and `provideService` reuse existing instances; the caller keeps ownership of them.
 They do not acquire or finalize those instances. `provideServiceEffect` runs a construction Effect
 before the source starts; if it requires Scope, that requirement remains for the caller.
+
+For application-wide setup, compose the running work with `Fx.drainLayer` and supply its
+dependencies through `Layer.provide`. A single Layer graph gives the setup one owning Scope and
+allows shared dependency builds. Repeated `Fx.provide` boundaries each build and own their own
+Layers; use them when independent subscription lifetimes are intended. The
+[linked routing application](/explore/routing-routes-matchers-and-navigation) shows the Layer form.
 
 ## Trace a second observer before choosing sharing
 

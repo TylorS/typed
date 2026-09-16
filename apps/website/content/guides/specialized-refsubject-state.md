@@ -1,6 +1,6 @@
 ---
-title: "Choose specialized state from the questions it answers"
-summary: "Choose RefSubject helpers for ordered values, keyed lookup, optional focus, field updates, and stored results."
+title: "RefSubject specializations: complete directory"
+summary: "Find every public RefSubject specialization by the value it manages, with API links and focused examples."
 section: "State"
 kind: "reference"
 order: 2.2
@@ -10,13 +10,38 @@ Specialized RefSubject modules name the transitions and queries for a particular
 They retain the same current read, Fx observation, serialized writes, errors, and Scope ownership.
 Use this lookup after [RefSubject's model](/explore/refsubject-renderer-independent-state).
 
-| Need | Representation | Example result kinds |
+## All RefSubject specializations
+
+Each module below is a public `@typed/fx/Ref*` import. Follow its name for the full API;
+the use-case links jump to worked examples on this page.
+
+| Family | Module | Use when the model holds |
 | --- | --- | --- |
-| Preserve order | `RefArray` | `append`: write Effect; `mapValues`: Computed; `head`: Filtered |
-| Find a value by identity | `RefHashMap` | `set`: write Effect; `has`: Computed; `get`: Filtered |
-| Store presence and absence | `RefOption` | `setNone`: write Effect; `getOrElse`: Computed; `getValue`: Filtered |
-| Update named fields together | `RefStruct` | `merge`: write Effect; `get`: Computed |
-| Keep a domain failure as data | `RefResult` | A current read returns the stored Result |
+| Scalar | [`RefBoolean`](/reference/modules/%40typed%2Ffx%2FRefBoolean) | Boolean flags and toggles. |
+| Scalar | [`RefString`](/reference/modules/%40typed%2Ffx%2FRefString) | Text values and string queries. |
+| Scalar | [`RefBigInt`](/reference/modules/%40typed%2Ffx%2FRefBigInt) | Arbitrary-precision integers. |
+| Scalar | [`RefBigDecimal`](/reference/modules/%40typed%2Ffx%2FRefBigDecimal) | Decimal values with explicit precision semantics. |
+| Time | [`RefDuration`](/reference/modules/%40typed%2Ffx%2FRefDuration) | Elapsed time and duration arithmetic. |
+| Time | [`RefDateTime`](/reference/modules/%40typed%2Ffx%2FRefDateTime) | Date/time values and calendar operations. |
+| Sequence | [`RefArray`](/reference/modules/%40typed%2Ffx%2FRefArray) | [Ordered arrays](#keep-an-array-when-order-is-meaningful) with indexed queries. |
+| Sequence | [`RefChunk`](/reference/modules/%40typed%2Ffx%2FRefChunk) | Effect Chunk values and chunk operations. |
+| Sequence | [`RefIterable`](/reference/modules/%40typed%2Ffx%2FRefIterable) | Iterable values; consider whether repeated traversal is safe. |
+| Sequence | [`RefTuple`](/reference/modules/%40typed%2Ffx%2FRefTuple) | Fixed-position values with a type for each slot. |
+| Keyed collection | [`RefHashMap`](/reference/modules/%40typed%2Ffx%2FRefHashMap) | [Key/value lookup](#use-a-keyed-collection-when-identity-is-the-frequent-query) using Effect HashMap. |
+| Keyed collection | [`RefHashSet`](/reference/modules/%40typed%2Ffx%2FRefHashSet) | Unique membership using Effect HashSet. |
+| Keyed collection | [`RefRecord`](/reference/modules/%40typed%2Ffx%2FRefRecord) | String-keyed records with a common value type. |
+| Keyed collection | [`RefStruct`](/reference/modules/%40typed%2Ffx%2FRefStruct) | [Named fields](#update-fields-through-their-parent-invariant) with individual field types. |
+| Optional/result | [`RefOption`](/reference/modules/%40typed%2Ffx%2FRefOption) | [Explicit presence and absence](#keep-optional-focus-explicit). |
+| Optional/result | [`RefResult`](/reference/modules/%40typed%2Ffx%2FRefResult) | [Success or domain failure stored as data](#distinguish-a-stored-failure-from-a-failed-read). |
+| Optional/result | [`RefCause`](/reference/modules/%40typed%2Ffx%2FRefCause) | A complete Effect Cause stored as data. |
+| Specialized structure | [`RefTrie`](/reference/modules/%40typed%2Ffx%2FRefTrie) | String-keyed trie values and prefix queries. |
+| Specialized structure | [`RefGraph`](/reference/modules/%40typed%2Ffx%2FRefGraph) | Nodes and edges in an Effect Graph. |
+| Specialized structure | [`RefHashRing`](/reference/modules/%40typed%2Ffx%2FRefHashRing) | Hash-ring membership and key distribution. |
+
+For values without a dedicated specialization, use [`RefSubject`](/reference/modules/%40typed%2Ffx%2FRefSubject)
+and its generic updates and projections. Ordinary `number` state uses RefSubject; there is no
+separate `RefNumber` module.
+
 
 A write Effect changes state when executed. A Computed reads or observes a derived value. A
 Filtered represents a query that can be absent. Choose the return kind as carefully as the
@@ -145,16 +170,6 @@ A validation Result can contain a domain failure while the ref holding it reads 
 ReadError means accessing the state failed. `RefCause` is useful when the complete Cause is itself
 the model. Use [AsyncData](/explore/async-data) instead of Result when first load, refresh, retry,
 and optimistic work must be represented as well.
-
-Other modules address particular value semantics:
-
-| Representation | Module family | Boundary to inspect |
-| --- | --- | --- |
-| Flags/text | [`RefBoolean`](/reference/modules/%40typed%2Ffx%2FRefBoolean), [`RefString`](/reference/modules/%40typed%2Ffx%2FRefString) | Toggle/replace writes versus negation/trim queries |
-| Numeric values | [`RefBigInt`](/reference/modules/%40typed%2Ffx%2FRefBigInt), [`RefBigDecimal`](/reference/modules/%40typed%2Ffx%2FRefBigDecimal) | Exact representation and operation return types |
-| Time values | [`RefDuration`](/reference/modules/%40typed%2Ffx%2FRefDuration), [`RefDateTime`](/reference/modules/%40typed%2Ffx%2FRefDateTime) | Duration units versus timestamp/calendar interpretation |
-| Indexed structures | [`RefTrie`](/reference/modules/%40typed%2Ffx%2FRefTrie), [`RefGraph`](/reference/modules/%40typed%2Ffx%2FRefGraph), [`RefHashRing`](/reference/modules/%40typed%2Ffx%2FRefHashRing) | Missing lookup, structural constraints, distribution semantics |
-| Generic iterable values | [`RefIterable`](/reference/modules/%40typed%2Ffx%2FRefIterable) | Whether repeated traversal is appropriate for the source |
 
 For example, store a Duration when the model describes elapsed time and derive milliseconds only
 at a timer boundary. Choose Graph because relationships are genuinely graph-shaped, not because a

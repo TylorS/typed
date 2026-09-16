@@ -6,8 +6,9 @@ kind: "guide"
 order: 1.7
 ---
 
-Time changes a producer's product contract. A postponed search, a periodic poll, and a silent
-connection each need a different rule. Start with [Transforming Fx](/explore/transforming-fx), then
+Timing operators declare when work or delivery should happen. A postponed search, a periodic poll,
+and a silent connection each need a different rule; compose that rule with the producer instead of
+managing timer handles alongside it. Start with [Transforming Fx](/explore/transforming-fx), then
 apply a clock only where the feature can name its outcome.
 
 ## Separate postponed delivery from omitted input

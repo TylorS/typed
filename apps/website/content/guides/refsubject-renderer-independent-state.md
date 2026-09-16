@@ -27,6 +27,16 @@ Start with the invariant: selection contains each ID at most once. Then decide w
 which queries consumers need, and how long selection should survive. Choosing those contracts first
 makes the template smaller and the behavior easier to test.
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Own writable state with named commands | [Build the model](#give-selection-named-commands) | Keep valid transitions with the state owner. |
+| Read now or observe changes | [Reads and observations](#read-a-value-or-observe-a-relationship) | A snapshot and an ongoing subscription have different lifetimes. |
+| Choose a value, lazy Effect, or live source | [Inputs and startup](/explore/refsubject-sources-equality-and-lifetime) | The input determines when initialization and source work begin. |
+| Derive a read-only or optional value | [Computed and Filtered](/explore/derived-conditional-and-accumulated-state) | Derive from owned state without copying it into another ref. |
+| Find any `Ref*` specialization | [Complete RefSubject directory](/explore/specialized-refsubject-state#all-refsubject-specializations) | Browse collections, scalar values, time, results, and specialized structures. |
+| Share state across independently built consumers | [Service contracts](/explore/shared-state-contracts) | Choose write authority and a common provider lifetime. |
+
 ## Give selection named commands
 
 ```ts file="Selection.ts"
@@ -174,3 +184,7 @@ For live publication behavior, see the bounded observation test in
 When changing workspace must clear selection, [compose those values in one parent model](/explore/composing-refsubject-state).
 When a selected row may be absent, [derive an optional view](/explore/derived-conditional-and-accumulated-state)
 that can also tell a consumer to clear its output.
+
+For independently constructed consumers, [RefSubject.Service](/explore/shared-state-contracts#use-a-refsubject-facade-when-full-writes-are-the-contract)
+names the whole mutable capability and supplies it through a Layer. That guide shows current reads,
+updates, lazy initialization, and the narrower Computed contract for read-only consumers.

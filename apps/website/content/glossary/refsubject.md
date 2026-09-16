@@ -11,6 +11,10 @@ A RefSubject combines a readable current value, update operations, and pushed ch
 an order quantity without a renderer: yield it in an Effect to read now, update it through RefSubject
 operations, or observe its changes.
 
+`RefSubject.make(effect)` is lazy: constructing the ref does not execute the Effect. Its first
+read or observation initializes the value. Fx and Stream inputs have different startup behavior;
+see [inputs and lifetime](/explore/refsubject-sources-equality-and-lifetime).
+
 Passing the RefSubject into a template keeps that value live. Passing an already-read number takes
 a snapshot. Derive a total from the quantity instead of creating a second writable fact. Start with
 [renderer-independent state](/explore/refsubject-renderer-independent-state).

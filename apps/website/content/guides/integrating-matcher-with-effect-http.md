@@ -14,6 +14,8 @@ Start with [typed URL inputs](/explore/route-typed-url-inputs) and
 [live Matcher selection](/explore/router-navigation-live-selection) if you have not built a Matcher.
 The same route contracts apply here, with a lifetime of one HTTP request.
 
+<span id="register-a-report-page"></span>
+
 ## Verify a deep link with a real request
 
 This complete program starts an ephemeral Node test server, requests an issue page, reads its body,
@@ -65,6 +67,9 @@ relative path. The server and request resources close when the program completes
 ## Separate route registration from listening
 
 `HttpRouter.use(ssrForHttp(pages))` is a Layer describing registrations. It does not bind a port.
+Both `ssrForHttp` and `streamingSsrForHttp` accept `helper(router, matcher)` or
+`helper(matcher)(router)`; the latter fits `HttpRouter.use`.
+
 A Node entry point must supply the server and launch the resulting Layer. Here is a minimal complete
 static server; replace the page table with the application's renderable Matcher.
 
@@ -100,6 +105,8 @@ HTTP server; the adapter only registers the Matcher's GET routes.
 
 </details>
 
+<span id="keep-per-request-context-per-request"></span>
+
 ## Provide shared services and keep request state local
 
 Registration captures the services provided to the Matcher. Each request combines those services
@@ -110,6 +117,8 @@ state in a process-wide service.
 
 The [Matcher ownership rules](/explore/router-navigation-live-selection) still apply: rejected
 candidates release their resources, and selected work ends with the request.
+
+<span id="choose-buffering-or-streaming"></span>
 
 ## Choose streaming from the response requirements
 
@@ -142,6 +151,8 @@ replacing the entire response with a fresh status page. Recover expected resourc
 the page when that is the desired interaction, and log unexpected failures with enough request
 context to diagnose them.
 
+<span id="distinguish-route-errors-from-domain-errors"></span>
+
 ## Put each error at its meaningful boundary
 
 Cases with the same registered path are tried in compiled candidate order. Decode or guard rejection
@@ -153,6 +164,8 @@ candidate becomes not-found.
 404, or 500 responses. It leaves other application errors in the typed request channel. If the
 product needs an explanatory error page, recover that domain failure explicitly rather than
 assuming the generic HTTP handler renders one.
+
+<span id="verify-the-request-boundary"></span>
 
 ## Verify the HTTP boundary
 

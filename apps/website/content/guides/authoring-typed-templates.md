@@ -13,6 +13,16 @@ The [first template](/explore/render-your-first-template) owns its query inside 
 Extract the field so a parent page can share that query with other output. The page will own state;
 the field will own its markup and input handler.
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Extract reusable markup | [Template functions and components](#make-the-state-boundary-match-the-reusable-component) | Use a component when setup needs an Effect lifetime. |
+| Bind an attribute, property, or boolean | [Element bindings](/explore/template-element-bindings) | Target the browser field the value actually owns. |
+| Render changing collections | [Keyed collections](/explore/keyed-template-collections) | Stable keys retain each item’s DOM and owned work. |
+| Pass a record of element bindings | [Spreads and data](/explore/template-spreads-data) | Each spread entry selects its own binding kind. |
+| Access a mounted element | [References](/explore/template-references-and-element-access) | Element work belongs to the mounted lifetime. |
+| Choose DOM, HTML, or hydration | [Rendering and hydration](/explore/server-rendering-and-hydration) | Rendering and browser attachment have distinct owners. |
+
 ## Make the state boundary match the reusable component
 
 ```ts

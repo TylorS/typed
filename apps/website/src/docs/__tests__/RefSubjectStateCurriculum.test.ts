@@ -48,6 +48,22 @@ const guides = [
 ] as const;
 
 describe("RefSubject state curriculum", () => {
+  it("lists every public RefSubject specialization exactly once in the directory", () => {
+    const manifest = JSON.parse(fs.readFileSync(path.join(websiteRoot, "../../packages/fx/package.json"), "utf8"));
+    const modules = Object.keys(manifest.exports)
+      .filter((name) => name.startsWith("./Ref") && name !== "./RefSubject")
+      .map((name) => name.slice(2))
+      .sort();
+    const source = fs.readFileSync(path.join(websiteRoot, "content/guides/specialized-refsubject-state.md"), "utf8");
+    const directory = source.split("## All RefSubject specializations")[1]!.split("For values without")[0]!;
+    const listed = [...directory.matchAll(/\[`(Ref\w+)`\]\(\/reference\/modules\/%40typed%2Ffx%2F(Ref\w+)\)/gu)];
+
+    expect(listed.map((match) => match[1]).sort()).toEqual(modules);
+    for (const match of listed) {
+      expect(match[2]).toBe(match[1]);
+    }
+  });
+
   it("keeps each state lesson at its public destination with a concrete example", () => {
     for (const expected of guides) {
       const guide = parseGuideDocumentation(

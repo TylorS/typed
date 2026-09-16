@@ -16,10 +16,10 @@ binding must choose an exact browser field.
 
 | Binding | Inspect | Clearing behavior |
 | --- | --- | --- |
-| `title=${value}` | `getAttribute("title")` | nullish removes the attribute |
-| `title="Search: ${value}"` | the complete joined attribute | nullish segment becomes empty text |
-| `.value=${value}` | `input.value` | assigns the supplied value directly |
-| `?disabled=${value}` | `hasAttribute("disabled")` | falsy removes presence |
+| [`title=${value}`](#use-attributes-for-serialized-metadata) | `getAttribute("title")` | nullish removes the attribute |
+| [`title="Search: ${value}"`](#use-attributes-for-serialized-metadata) | the complete joined attribute | nullish segment becomes empty text |
+| [`.value=${value}`](#use-properties-for-current-browser-state) | `input.value` | assigns the supplied value directly |
+| [`?disabled=${value}`](#use-boolean-parts-when-presence-means-true) | `hasAttribute("disabled")` | falsy removes presence |
 
 ## Use attributes for serialized metadata
 

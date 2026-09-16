@@ -16,6 +16,15 @@ again whenever the category changes. Each relationship calls for different compo
 independent producers belong together and which of them may trigger output. Starting a request for
 that output is a later decision about competing work.
 
+
+| Need | Use | Primary contract |
+| --- | --- | --- |
+| Receive every event from several sources | [`mergeAll`](#merge-events-when-each-occurrence-matters) | Forward arrivals without pairing them. |
+| Run one phase after another | [`concat`](#show-cached-output-before-starting-the-live-phase) | Start the next source after the previous completes. |
+| Combine the latest values | [`struct`](#combine-current-query-and-category) | Wait for every input, then update the combined value. |
+| Let one source trigger a snapshot of another | [`withLatestFrom`](#make-the-click-the-trigger-and-form-data-the-context) | Context updates alone do not trigger output. |
+| Pair values by their position | [`zip`](#when-order-is-the-requirement) | Match corresponding emissions rather than latest values. |
+
 ## Merge events when each occurrence matters
 
 Local and server activity are peers. Both should appear when they arrive:

@@ -94,6 +94,40 @@ Layer supplying its implementation. The application provides that Layer once at 
 test can provide a recorder with the same event contract. A caller cannot accidentally subscribe to
 past events or read current state because the output capability exposes neither operation.
 
+### Replace the destination without changing the workflow
+
+`Sink.Service<Self, A, E>()(id)` uses `A` for accepted values and `E` for accepted failure
+Causes. The implementation callbacks still cannot fail with a typed error. `make(onFailure,
+onSuccess)` captures their service dependencies when the Layer is built; delivery happens later.
+
+```ts
+import { Effect, Ref } from "effect"
+import { Fx, Sink } from "@typed/fx"
+
+class Audit extends Sink.Service<Audit, string>()("docs/RecordedAudit") {}
+
+const publish = Fx.fromIterable(["saved", "published"]).run(Audit)
+const program = Effect.gen(function* () {
+  const records = yield* Ref.make<ReadonlyArray<string>>([])
+  const AuditTest = Audit.make(
+    (cause) => Effect.die(cause),
+    (event) => Ref.update(records, (all) => [...all, event]),
+  )
+
+  yield* publish.pipe(Effect.provide(AuditTest))
+
+  return yield* Ref.get(records)
+})
+
+const result = await Effect.runPromise(program)
+// ["saved", "published"]
+```
+
+This test destination treats an unexpected Cause as a defect instead of silently ignoring it.
+For direct delivery, use `Audit.onSuccess(value)` or `Audit.onFailure(cause)`; both require
+Audit until provided. `Audit.service` is the Context key for retrieving or supplying an existing
+Sink. Neither the class declaration nor Layer construction sends an event.
+
 ## Test what was delivered, not merely that the source drained
 
 A test destination should record successful payloads and failure Causes separately. Assert the invoice

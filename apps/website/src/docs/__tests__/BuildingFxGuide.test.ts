@@ -75,6 +75,18 @@ describe("Building Fx values guide", () => {
     const result = await runGuideExample(websiteRoot, source, "const ids =", "result");
     expect(result).toEqual(["ada", "grace", "barbara"]);
   });
+  it("gives each suspended subscription a fresh iterator", async () => {
+    const source = fs.readFileSync(guidePath, "utf8");
+    expect(await runGuideExample(websiteRoot, source, "const fresh =", "[first, second]"))
+      .toEqual([[1, 2], [1, 2]]);
+  });
+
+  it("awaits both deliveries from the custom producer", async () => {
+    const source = fs.readFileSync(guidePath, "utf8");
+    expect(await runGuideExample(websiteRoot, source, "const pair =", "Effect.runPromise(program)"))
+      .toEqual([1, 2]);
+  });
+
   it("executes the lifted parsing Effect and preserves its failure", async () => {
     const source = fs.readFileSync(guidePath, "utf8");
     expect(await runGuideExample(websiteRoot, source, "const decode =", "Effect.runPromise(program)"))
