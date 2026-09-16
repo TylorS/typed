@@ -55,11 +55,14 @@
   },
   "dependencies": {
     "@typed/fx": "workspace:*",
-    "@typed/id": "workspace:*",
-    "effect": "catalog:"
+    "@typed/id": "workspace:*"
   },
   "devDependencies": {
+    "effect": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

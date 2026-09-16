@@ -133,11 +133,12 @@
     "test": "vitest run --config vitest.config.ts",
     "test:types": "pnpm run build && tsc -p tsconfig.type-tests.json && tsc -p tsconfig.tests.json"
   },
-  "dependencies": {
-    "effect": "catalog:"
-  },
   "devDependencies": {
+    "effect": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

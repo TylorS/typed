@@ -39,6 +39,37 @@ is_published() {
   npm view "$1@$2" version --json >/dev/null 2>&1
 }
 
+verify_effect_peers() {
+  node - "${TOPO_ORDER[@]}" <<'NODE'
+const fs = require("node:fs")
+
+const failures = []
+
+for (const directory of process.argv.slice(2)) {
+  const pkg = JSON.parse(fs.readFileSync(`${directory}/package.json`, "utf8"))
+
+  if (pkg.name === "@typed/tsconfig") continue
+
+  if (pkg.dependencies?.effect !== undefined) {
+    failures.push(`${pkg.name} must not publish effect as a dependency`)
+  }
+
+  if (pkg.peerDependencies?.effect !== "*") {
+    failures.push(`${pkg.name} must publish effect as an unconstrained peer dependency`)
+  }
+
+  if (pkg.devDependencies?.effect !== "catalog:") {
+    failures.push(`${pkg.name} must use the workspace Effect catalog for development`)
+  }
+}
+
+if (failures.length > 0) {
+  console.error(failures.join("\n"))
+  process.exit(1)
+}
+NODE
+}
+
 echo -e "${CYAN}=== Typed beta publish ===${NC}"
 echo ""
 
@@ -51,7 +82,12 @@ NPM_USER=$(npm whoami 2>&1) || {
 echo -e "  Logged in as: ${GREEN}${NPM_USER}${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 2: Preparing one retry-safe beta version...${NC}"
+echo -e "${YELLOW}Step 2: Verifying Effect peer dependency configuration...${NC}"
+verify_effect_peers
+echo -e "${GREEN}  Published packages use Effect as an unconstrained peer dependency.${NC}"
+echo ""
+
+echo -e "${YELLOW}Step 3: Preparing one retry-safe beta version...${NC}"
 published_count=0
 unpublished_count=0
 beta_number=""
@@ -93,12 +129,12 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}Step 3: Building all packages...${NC}"
+echo -e "${YELLOW}Step 4: Building all packages...${NC}"
 pnpm build
 echo -e "${GREEN}  Build complete.${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 4: Verifying publish tarballs...${NC}"
+echo -e "${YELLOW}Step 5: Verifying publish tarballs...${NC}"
 for dir in "${TOPO_ORDER[@]}"; do
   name=$(package_field "$dir" name)
   version=$(package_field "$dir" version)
@@ -112,7 +148,7 @@ for dir in "${TOPO_ORDER[@]}"; do
 done
 echo ""
 
-echo -e "${YELLOW}Step 5: Publishing (tag=beta)...${NC}"
+echo -e "${YELLOW}Step 6: Publishing (tag=beta)...${NC}"
 PUBLISHED=()
 SKIPPED=()
 STAGED=()
@@ -148,7 +184,7 @@ for dir in "${TOPO_ORDER[@]}"; do
 done
 echo ""
 
-echo -e "${YELLOW}Step 6: Verifying registry beta tags...${NC}"
+echo -e "${YELLOW}Step 7: Verifying registry beta tags...${NC}"
 # New packages can return 404 while the registry finishes staging their first release.
 for attempt in {1..12}; do
   all_verified=true

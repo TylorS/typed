@@ -41,11 +41,12 @@
     "test": "vitest run --config vitest.config.ts",
     "test:types": "tsc -p tsconfig.types.json --noEmit && tsc -p tsconfig.tests.json"
   },
-  "dependencies": {
-    "effect": "catalog:"
-  },
   "devDependencies": {
+    "effect": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

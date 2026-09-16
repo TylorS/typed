@@ -79,13 +79,16 @@
     "@typed/fx": "workspace:*",
     "@typed/guard": "workspace:*",
     "@typed/id": "workspace:*",
-    "@typed/navigation": "workspace:*",
-    "effect": "catalog:"
+    "@typed/navigation": "workspace:*"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
+    "effect": "catalog:",
     "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

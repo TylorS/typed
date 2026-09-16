@@ -80,13 +80,13 @@
     "@typed/id": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
-    "@typed/template": "workspace:*",
-    "effect": "catalog:"
+    "@typed/template": "workspace:*"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "catalog:",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vitest/browser-playwright": "catalog:",
+    "effect": "catalog:",
     "playwright": "^1.63.0",
     "svelte": "catalog:",
     "svelte-check": "4.7.6",
@@ -95,6 +95,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "effect": "*",
     "svelte": "^5.57.0"
   }
 }

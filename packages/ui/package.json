@@ -46,8 +46,7 @@
     "@typed/id": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
-    "@typed/template": "workspace:*",
-    "effect": "catalog:"
+    "@typed/template": "workspace:*"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",
@@ -58,11 +57,15 @@
     "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "daisyui": "^5.7.38",
+    "effect": "catalog:",
     "happy-dom": "catalog:",
     "playwright": "^1.63.0",
     "storybook": "10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

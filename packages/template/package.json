@@ -106,15 +106,18 @@
   },
   "dependencies": {
     "@typed/fx": "workspace:*",
-    "@typed/id": "workspace:*",
-    "effect": "catalog:"
+    "@typed/id": "workspace:*"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
+    "effect": "catalog:",
     "happy-dom": "catalog:",
     "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

@@ -51,13 +51,13 @@
   },
   "dependencies": {
     "@typed/fx": "workspace:*",
-    "@typed/template": "workspace:*",
-    "effect": "catalog:"
+    "@typed/template": "workspace:*"
   },
   "devDependencies": {
     "@typed/ui": "workspace:*",
     "@vitest/browser-playwright": "catalog:",
     "astro": "^7.3.2",
+    "effect": "catalog:",
     "happy-dom": "catalog:",
     "playwright": "^1.63.0",
     "typescript": "catalog:",
@@ -65,6 +65,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "effect": "*",
     "astro": "^7.3.1"
   }
 }

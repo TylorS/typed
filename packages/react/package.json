@@ -64,7 +64,6 @@
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
     "@typed/template": "workspace:*",
-    "effect": "catalog:",
     "react-is": "19.3.0"
   },
   "devDependencies": {
@@ -72,6 +71,7 @@
     "@types/react-dom": "catalog:",
     "@types/react-is": "19.3.0",
     "@vitest/browser-playwright": "catalog:",
+    "effect": "catalog:",
     "playwright": "^1.63.0",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -80,6 +80,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "effect": "*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   }

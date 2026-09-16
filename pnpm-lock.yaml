@@ -482,9 +482,6 @@ importers:
       '@typed/template':
         specifier: workspace:*
         version: link:../template
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@typed/ui':
         specifier: workspace:*
@@ -495,6 +492,9 @@ importers:
       astro:
         specifier: ^7.3.2
         version: 7.3.2(@astrojs/markdown-remark@7.3.0(supports-color@7.2.0))(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@26.5.0)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       happy-dom:
         specifier: 'catalog:'
         version: 20.14.5
@@ -512,11 +512,10 @@ importers:
         version: 5.0.1(@types/node@26.5.0)(@vitest/browser-playwright@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(happy-dom@20.14.5)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/async-data:
-    dependencies:
+    devDependencies:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.115
-    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -525,11 +524,10 @@ importers:
         version: 5.0.1(@types/node@26.5.0)(@vitest/browser-playwright@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(happy-dom@20.14.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/fx:
-    dependencies:
+    devDependencies:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.115
-    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -538,11 +536,10 @@ importers:
         version: 5.0.1(@types/node@26.5.0)(@vitest/browser-playwright@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(happy-dom@20.14.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/guard:
-    dependencies:
+    devDependencies:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.115
-    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -551,11 +548,10 @@ importers:
         version: 5.0.1(@types/node@26.5.0)(@vitest/browser-playwright@5.0.1)(@vitest/coverage-v8@5.0.1)(@vitest/ui@5.0.1)(happy-dom@20.14.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/id:
-    dependencies:
+    devDependencies:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.115
-    devDependencies:
       fast-check:
         specifier: 4.10.1
         version: 4.10.1
@@ -574,10 +570,10 @@ importers:
       '@typed/id':
         specifier: workspace:*
         version: link:../id
+    devDependencies:
       effect:
         specifier: 'catalog:'
         version: 4.0.0-rc.115
-    devDependencies:
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -605,9 +601,6 @@ importers:
       '@typed/template':
         specifier: workspace:*
         version: link:../template
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
       react-is:
         specifier: 19.3.0
         version: 19.3.0
@@ -624,6 +617,9 @@ importers:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.1(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       playwright:
         specifier: ^1.63.0
         version: 1.63.0
@@ -657,13 +653,13 @@ importers:
       '@typed/navigation':
         specifier: workspace:*
         version: link:../navigation
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.1(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       playwright:
         specifier: ^1.63.0
         version: 1.63.0
@@ -694,9 +690,6 @@ importers:
       '@typed/template':
         specifier: workspace:*
         version: link:../template
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: 'catalog:'
@@ -707,6 +700,9 @@ importers:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.1(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       playwright:
         specifier: ^1.63.0
         version: 1.63.0
@@ -734,13 +730,13 @@ importers:
       '@typed/id':
         specifier: workspace:*
         version: link:../id
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.1(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       happy-dom:
         specifier: 'catalog:'
         version: 20.14.5
@@ -780,9 +776,6 @@ importers:
       '@typed/template':
         specifier: workspace:*
         version: link:../template
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@effect/platform-node':
         specifier: 'catalog:'
@@ -808,6 +801,9 @@ importers:
       daisyui:
         specifier: ^5.7.38
         version: 5.7.38
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       happy-dom:
         specifier: 'catalog:'
         version: 20.14.5
@@ -847,13 +843,13 @@ importers:
       '@typed/template':
         specifier: workspace:*
         version: link:../template
-      effect:
-        specifier: 'catalog:'
-        version: 4.0.0-rc.115
     devDependencies:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
         version: 5.0.1(playwright@1.63.0)(vite@8.3.0(@types/node@26.5.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@5.0.1)
+      effect:
+        specifier: 'catalog:'
+        version: 4.0.0-rc.115
       playwright:
         specifier: ^1.63.0
         version: 1.63.0

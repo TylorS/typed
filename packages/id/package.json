@@ -81,12 +81,13 @@
     "test": "vitest run",
     "test:types": "tsc -p tsconfig.type-tests.json && tsc -p tsconfig.tests.json"
   },
-  "dependencies": {
-    "effect": "catalog:"
-  },
   "devDependencies": {
+    "effect": "catalog:",
     "fast-check": "4.10.1",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "*"
   }
 }

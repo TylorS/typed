@@ -61,11 +61,11 @@
     "@typed/id": "workspace:*",
     "@typed/navigation": "workspace:*",
     "@typed/router": "workspace:*",
-    "@typed/template": "workspace:*",
-    "effect": "catalog:"
+    "@typed/template": "workspace:*"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "catalog:",
+    "effect": "catalog:",
     "playwright": "^1.63.0",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -73,6 +73,7 @@
     "vue": "catalog:"
   },
   "peerDependencies": {
+    "effect": "*",
     "vue": "^3.5.42"
   }
 }
