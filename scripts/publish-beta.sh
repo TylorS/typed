@@ -165,7 +165,7 @@ for dir in "${TOPO_ORDER[@]}"; do
   fi
 
   publish_log=$(mktemp)
-  if (cd "$dir" && pnpm publish --tag beta --access public --no-git-checks 2>"$publish_log"); then
+  if (cd "$dir" && pnpm publish --tag beta --access public --no-git-checks 2>&1 | tee "$publish_log"); then
     rm -f "$publish_log"
     echo -e "${GREEN}OK${NC}"
     PUBLISHED+=("$name@$version")
@@ -175,7 +175,6 @@ for dir in "${TOPO_ORDER[@]}"; do
     STAGED+=("$name@$version")
   else
     echo -e "${RED}FAILED${NC}"
-    sed 's/^/    /' "$publish_log"
     rm -f "$publish_log"
     echo ""
     echo -e "${YELLOW}Re-run this script after resolving the error; it will resume the same beta safely.${NC}"
