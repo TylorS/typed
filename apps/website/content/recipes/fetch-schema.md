@@ -1,6 +1,6 @@
 ---
 slug: fetch-schema
-title: Fetch and validate API data before rendering
+title: Fetch and validate API data without blocking the view
 summary: Use Effect's HTTP client and Schema to give Typed views validated data with cancellable requests.
 ---
 
@@ -25,6 +25,7 @@ export const loadProfile = Effect.fn("loadProfile")(function* (id: string) {
     // Receiving an HTTP response does not imply a successful status.
     Effect.flatMap(HttpClientResponse.filterStatusOk),
   );
+
   // Decode the JSON body into the application's profile model.
   return yield* HttpClientResponse.schemaBodyJson(Profile)(response);
 });
@@ -32,24 +33,27 @@ export const loadProfile = Effect.fn("loadProfile")(function* (id: string) {
 
 The request retains its typed errors and `HttpClient` requirement. A failed status is an HTTP client error; a structurally invalid body is a Schema error. If the screen treats a 404 specially, inspect the client's response error and status rather than parsing an error message.
 
-## Render the decoded value
+## Render immediately with lazy request state
 
-In `ProfileCard.ts`, the component acquires data through that request. It does not choose a transport implementation.
+In `ProfileCard.ts`, put the request Effect into `RefSubject.make`. Constructing the ref does not execute or await the request, so the component can return its template immediately.
 
 ```ts file="ProfileCard.ts"
+import { Fx, RefSubject } from "@typed/fx";
 import { html, component } from "@typed/template";
 import { loadProfile } from "./Profile.js";
 
 export const ProfileCard = component(function* (id: string) {
-  const profile = yield* loadProfile(id);
+  const profile = yield* RefSubject.make(loadProfile(id));
+  const { displayName, id: profileId } = RefSubject.proxy(profile);
+
   return html`<article>
-    <h2>${profile.displayName}</h2>
-    <p>Account ${profile.id}</p>
+    <h2>${Fx.prepend(displayName, "Loading profile…")}</h2>
+    <p>Account ${Fx.prepend(profileId, "…")}</p>
   </article>`;
 });
 ```
 
-The article appears after the request and decoding succeed. Put loading and failure UI in the owning screen; [AsyncData](/explore/async-data) models pending, failed, successful, and refreshing data. Removing this component interrupts its request along with the rest of its running scope.
+`Fx.prepend` gives each binding initial loading text, so the DOM renderer can mount the article while the request is pending. Observing its fields starts the lazy initializer; both fields share that one request and update when decoding succeeds. `yield* profile` would instead wait for the result, so do not read it before returning the template when the view should remain non-blocking. Put loading and failure UI in the owning screen; [AsyncData](/explore/async-data) models pending, failed, successful, and refreshing data. Removing this component interrupts its request along with the rest of its running scope.
 
 ## Provide the browser transport at the application boundary
 
@@ -69,7 +73,7 @@ The same request can receive a test client or a server client's configuration th
 
 ## Choose who may share the result
 
-One subscription performs one request. Two independent instances may request the same profile twice: an Fx subscription is not a request cache. Put deliberately shared request state in an application service or cache. Include the profile ID, account or tenant, and relevant query parameters in its identity; invalidate user-specific state when the account changes.
+The first read or observation starts one request per ref, and later readers share its retained result. Two independent component instances create separate refs and may request the same profile twice; this does not create an application-wide request cache. Put deliberately shared request state in an application service or cache. Include the profile ID, account or tenant, and relevant query parameters in its identity; invalidate user-specific state when the account changes.
 
 A changing selected ID needs a replacement policy. Use [switching Fx operators](/explore/fx-higher-order-and-concurrency) to interrupt the old request when a new selection arrives. Keeping old data during refresh is a separate product choice; label its freshness so one profile is not mistaken for another.
 

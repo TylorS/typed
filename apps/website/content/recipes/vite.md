@@ -6,7 +6,7 @@ summary: Give a plain Vite entry point one DOM runtime, an explicit mount, and p
 
 Use this when a Vite application needs a Typed screen without a framework shell. Vite owns bundling and development module updates. Typed owns the children of one application host; the entry module owns the runtime that supplies DOM rendering services.
 
-Start with [building UI components](/explore/building-ui-components). Give this entry one application host and keep its runtime alive for as long as that application is mounted.
+Start with [building UI components](/explore/ui-component). Give this entry one application host and keep its runtime alive for as long as that application is mounted.
 
 ## Start from an empty host
 
@@ -24,6 +24,7 @@ import { Button } from "@typed/ui/Button";
 
 const Counter = component(function* () {
   const count = yield* RefSubject.make(0);
+
   return html`<section>
     <h1>Vite workspace</h1>
     <output>${count}</output>
@@ -33,6 +34,7 @@ const Counter = component(function* () {
 
 const host = document.getElementById("app");
 if (host === null) throw new Error("Missing #app mount element");
+
 const runtime = ManagedRuntime.make(DomRenderTemplate.using(document));
 runtime.runFork(Effect.scoped(Fx.drain(render(Counter, host))));
 

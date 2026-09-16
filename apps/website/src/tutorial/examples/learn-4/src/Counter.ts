@@ -4,6 +4,7 @@ import { component, html } from "@typed/template";
 export const Counter = component(function* () {
   // Allocate per mounted view so separate counters keep independent state.
   const count = yield* RefSubject.make(0);
+
   // A read view avoids keeping a second mutable value in sync.
   const doubled = RefSubject.map(count, (value) => value * 2);
 

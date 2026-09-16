@@ -8,26 +8,27 @@ allowBuilds:
   msgpackr-extract: false
 
 catalog:
-  effect: 4.0.0-rc.112
-  "@effect/platform-browser": 4.0.0-rc.112
-  "@effect/platform-node": 4.0.0-rc.112
-  "@effect/tsgo": 0.43.0
+  effect: 4.0.0-rc.115
+  "@effect/platform-browser": 4.0.0-rc.115
+  "@effect/platform-node": 4.0.0-rc.115
+  "@effect/tsgo": 0.45.0
+  # @effect/tsgo 0.45.0 supports Oxlint through 1.82.0.
   oxlint: 1.82.0
-  oxfmt: 0.67.0
+  oxfmt: 0.68.0
   oxlint-tsgolint: 7.0.2001
   typescript: 7.0.2
-  vite: 8.2.2
-  vitest: 5.0.0
-  "@vitest/browser-playwright": 5.0.0
-  happy-dom: 20.14.0
+  vite: 8.3.0
+  vitest: 5.0.1
+  "@vitest/browser-playwright": 5.0.1
+  happy-dom: 20.14.5
   svelte: 5.57.0
-  react: 19.2.8
-  react-dom: 19.2.8
-  "@types/react": 19.2.18
-  "@types/react-dom": 19.2.7
+  react: 19.3.0
+  react-dom: 19.3.0
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
   vue: 3.5.42
   "@sveltejs/vite-plugin-svelte": 7.3.0
-  "@vitest/coverage-v8": 5.0.0
+  "@vitest/coverage-v8": 5.0.1
   "@modelcontextprotocol/sdk": 1.30.0
   tsx: 4.23.13
 
@@ -41,14 +42,16 @@ minimumReleaseAgeExclude:
   - "@effect/tsgo-win32-x64@0.40.0"
   - "@effect/tsgo@0.40.0"
   - "@types/react-dom@19.2.7"
-  - "@vitest/browser-playwright@5.0.0"
-  - "@vitest/browser@5.0.0"
-  - "@vitest/coverage-v8@5.0.0"
-  - "@vitest/mocker@5.0.0"
-  - "@vitest/pretty-format@5.0.0"
-  - "@vitest/spy@5.0.0"
-  - "@vitest/ui@5.0.0"
-  - "@vitest/utils@5.0.0"
+  - "@vitest/browser-playwright@5.0.0 || 5.0.1"
+  - "@vitest/browser@5.0.0 || 5.0.1"
+  - "@vitest/coverage-v8@5.0.0 || 5.0.1"
+  - "@vitest/mocker@5.0.0 || 5.0.1"
+  - "@vitest/pretty-format@5.0.0 || 5.0.1"
+  - "@vitest/spy@5.0.0 || 5.0.1"
+  - "@vitest/ui@5.0.0 || 5.0.1"
+  - "@vitest/utils@5.0.0 || 5.0.1"
   - daisyui@5.7.28
   - postcss@8.5.28
-  - vitest@5.0.0
+  - vitest@5.0.0 || 5.0.1
+  - "@types/node@26.6.1"
+  - fast-check@4.10.1

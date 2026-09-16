@@ -8,9 +8,9 @@ order: 0.2
 
 Start here after you can run an Effect and observe an Fx. Your library should expose the capability a caller needs, together with its failures, services and lifetime. Start with an existing producer or consumer; implementing a renderer is an optional boundary.
 
-## Extract the selection before extracting the panel
+## Accept the narrow capability you need
 
-For an account picker, selection is current state, refresh is an event, and search results arrive over time. Expose derived labels and counts as read-only capabilities. The caller can supply writable state without giving the library permission to replace it:
+A label needs to read the selected name, not change it. Accept a read-only capability so the caller can supply writable state without giving the library permission to replace it:
 
 ```ts
 import { RefSubject } from "@typed/fx";
@@ -36,14 +36,14 @@ Next, [write a consumer with Sink](/explore/sink-writing-effects). That path the
 | Requirement | Focused extension |
 | --- | --- |
 | Share one current model | [Shared state contracts](/explore/shared-state-contracts) |
-| Render caller-owned state | [Build a component](/explore/building-ui-components) |
+| Render caller-owned state | [Build a component](/explore/ui-component) |
 | Retain an editable item across reorders | [Keyed collections](/explore/keyed-template-collections) |
 | Place an existing chart or editor | [DOM output adapter](/explore/dom-render-event) |
 | Accept already serialized HTML | [HTML output contract](/explore/html-render-event) |
-| Interpret template syntax itself | [RenderTemplate implementation](/explore/implementing-render-template) |
+| Interpret template syntax itself | [Template compilation](/explore/template-compilation-pipeline#check-a-new-targets-contract) |
 
 These are alternatives, not prerequisites for finishing a library.
 
 ## Test the promises at the public boundary
 
-Close the library's owner and verify that its acquisitions stop while caller-owned state survives. For replacement, make an old operation complete after newer intent. If you add a view, test retained row identity separately from its text. [Testing techniques](/explore/testing-typed-systems) supplies fixtures for each boundary.
+Test the behavior your public contract promises, including cleanup for resources the library acquires. [Testing techniques](/explore/testing-typed-systems) shows how to observe those boundaries.

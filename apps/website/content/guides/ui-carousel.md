@@ -6,11 +6,9 @@ kind: "deep-dive"
 order: 250
 ---
 
-A project walkthrough has three steps: Create, Review, and Share. A person advances at their own
-pace with Next, and can return with Previous. We will build that manual sequence first, without
-adding automatic motion that the experience does not need. It makes slide identity, control focus,
-and hidden content lifetime easy to see. If the product later requests rotation, the same example
-shows exactly what the paused flag supplies and what a scoped scheduler would still need to do.
+A carousel selects one slide while keeping Previous and Next available. This three-slide example
+shows how selection changes visibility without moving focus away from the controls. It is manual;
+optional rotation uses the same state but requires a separate timer.
 
 ## Start with a manual walkthrough
 
@@ -24,6 +22,7 @@ import * as Carousel from "@typed/ui/Carousel";
 export const ProjectWalkthrough = component(function* () {
   const state = yield* Carousel.makeState({ activeId: "walkthrough-create", paused: true });
   const collection = yield* Carousel.makeCollection();
+
   return Carousel.Root({ state, label: "Project walkthrough", content: [
     html`<div>
       ${Carousel.Previous({ state, collection, content: "Previous step" })}
@@ -65,12 +64,9 @@ Mouse entry temporarily pauses and records whether rotation had been running; mo
 only that pointer-paused state. Focus entry clears the pending pointer resume. These transitions
 are already supplied, but they only affect motion if the application's scheduler honors the flag.
 
-The [APG carousel pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/) explains the need to let
-people stop rotation and read content without unexpected replacement. For an automatic variant,
-put a clearly labeled rotation control before rotating content in the tab sequence, derive its
-label from paused state, and test focus and hover interactions together. Account for reduced-motion
-preferences and distinguish automatic updates from user-requested transitions in announcement policy.
-The primitive does not supply an automatic live region or a motion preference service.
+For automatic rotation, put a labeled `RotationControl` before the slides and derive its label from
+`paused`. The [APG carousel pattern](https://www.w3.org/WAI/ARIA/apg/patterns/carousel/) covers stop/start
+controls and announcements. The primitive supplies neither a live region nor reduced-motion policy.
 
 ## Visibility is not lifetime
 
@@ -85,7 +81,7 @@ removed. Selecting a nonexistent ID hides every slide; the state constructor doe
 membership. A keyed dynamic list preserves retained DOM identity, but still needs this application
 reconciliation policy.
 
-Test exactly one visible slide, both wrap directions, focus remaining on Previous/Next, and active
-slide removal. For automatic rotation, also test focus pause, pointer resume, explicit stop/start,
-and scope disposal. A static state assertion alone cannot prove that the actual timer stopped.
+Verify that exactly one slide is visible and focus stays on Previous/Next when navigation wraps.
+An automatic variant also needs to verify that focus pause and pointer resume actually stop and
+restart its timer.
 Public parts: [Carousel](/reference/modules/%40typed%2Fui%2FCarousel).

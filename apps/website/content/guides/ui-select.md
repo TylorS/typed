@@ -23,6 +23,7 @@ export const DensityPicker = component(function* () {
   const label = RefSubject.map(state, ({ value }) =>
     value === "compact" ? "Density: compact" : "Density: comfortable",
   );
+
   return html`<div class="density-picker">
     ${Select.Trigger({ state, content: label })}
     ${Select.Content({
@@ -56,6 +57,8 @@ Compare the [APG listbox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/listb
 
 The selected state is not automatically a successful native form field. Include its value in the request model or choose [Form.Select](/explore/ui-form) for native form binding. `Option.disabled` suppresses selection and participates in collection navigation; styling alone must not implement disabled behavior.
 
-Use `[aria-selected="true"]` for committed choice, `:focus-visible` for active navigation, and `:popover-open` for popup styling. Native top-layer placement does not choose your desired dimensions or alignment, so style and test the popup position explicitly. Preserve option roles, tabindex, registration refs, and the popover host when using overrides. Check selection via keyboard, Escape focus return, long-list scrolling, and the null-value opening case in your target browser.
+Style committed choice with `[aria-selected="true"]`, keyboard focus with `:focus-visible`, and
+the open popup with `:popover-open`. Keep the popover host and collection registration intact.
+Check Escape focus return and opening with a null or unmatched value as well as a selected option.
 
 See the [Select API](/reference/modules/%40typed%2Fui%2FSelect), [RadioGroup](/explore/ui-radio-group), and [MDN native select reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/select) to compare implementation costs.

@@ -6,13 +6,11 @@ kind: "reference"
 order: 240
 ---
 
-A shipping form asks for a city. The person types “Bo”, arrows to Boston, then accepts it. During
-that interaction, “Bo” is useful text but not yet a known city, and an active Boston suggestion is
-not the same fact as a committed address. This guide builds the suggestion interaction first, then
-shows where a real shipping form must validate the result. The
-[project-switching walkthrough](/explore/selection-autocomplete-and-command-surfaces) develops an
-explicit commit boundary; [collection focus](/explore/ui-collections-and-focus) explains the mounted
-registry that makes suggestion navigation possible.
+A combobox separates query text from the active suggestion. Typing “Bo” and arrowing to Boston
+does not yet accept Boston; Enter copies its value into the input and closes suggestions. The
+example below demonstrates those transitions. It has no separate committed-record field: validate
+the text at submission when a known city ID is required. For a distinct commit boundary, see
+[selection and command surfaces](/explore/selection-autocomplete-and-command-surfaces).
 
 ## Build an editable city field
 
@@ -27,14 +25,17 @@ import * as Combobox from "@typed/ui/Combobox";
 export const CityField = component(function* () {
   const state = yield* Combobox.makeState({ id: "shipping-city" });
   const collection = yield* Combobox.makeCollection();
+
   const cities = [
     { id: "city-amsterdam", name: "Amsterdam" },
     { id: "city-boston", name: "Boston" },
     { id: "city-chicago", name: "Chicago" },
   ];
+
   const matches = RefSubject.map(state, ({ value }) => cities.filter(
     (city) => city.name.toLowerCase().includes(value.toLowerCase()),
   ));
+
   return html`<div>
     <label for="shipping-city-input">Shipping city</label>
     ${Combobox.Input({ state, collection, placeholder: "Type a city" })}
@@ -80,18 +81,18 @@ CSS opacity is not equivalent filtering. If remote results replace the collectio
 active identity and reconcile results with the latest query before exposing them. A loading message
 is not an option and should not register as one.
 
-## Query work belongs outside keyboard movement
+<span id="query-work-belongs-outside-keyboard-movement"></span>
 
-A large remote search needs cancellation, loading, empty, and error states. Keep requests driven by
-the query stream rather than arrow movement; otherwise browsing suggestions restarts the request.
-Use [Fx concurrency](/explore/fx-higher-order-and-concurrency) to choose replacement behavior.
+## Extending the suggestion interaction
+
+For remote suggestions, drive requests from query changes, not arrow movement. Choose cancellation
+and replacement behavior with [Fx concurrency](/explore/fx-higher-order-and-concurrency).
 The popup uses the [native Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API);
 its manual mode is not a modal focus trap and does not give arbitrary outside-click dismissal policy.
 Do not put buttons, checkboxes, or another editor inside option content: those require a different
 interaction contract, not just a richer visual.
 
-When debugging, first inspect input ID, popup ID, `aria-controls`, and the active option's actual
-DOM presence. Then check `value`, `activeId`, and `open` independently. A browser test should type a
-query, navigate, assert input focus, accept an item, and verify both popup closure and text. Add an
-empty-results case and a result-replacement case; state-only tests cannot prove focus or native
-popover synchronization. Public contracts: [Combobox](/reference/modules/%40typed%2Fui%2FCombobox).
+To check the interaction, type, navigate, and accept a suggestion. Focus should remain on the input,
+`aria-activedescendant` should name a visible option, and acceptance should update text and close
+the popup. Inspect `value`, `activeId`, and `open` separately when those observations disagree.
+Public contracts: [Combobox](/reference/modules/%40typed%2Fui%2FCombobox).

@@ -11,23 +11,21 @@ A submission should reject blank text, create one item, and clear the input only
 ## Write the create action
 
 ```ts
-// @source examples/todo-3/src/application.ts#L13-L20
+// @source examples/todo-3/src/application.ts#L19-L31
 // @expect export const createTodo
-// @expect yield* RefArray.prepend
-// @expect yield* RefSubject.set(TodoText, "")
 ```
 
-Read it from top to bottom. `yield* TodoText` gets the current draft. Whitespace returns before calling the factory. The factory receives trimmed text, and its complete result enters the list before the draft is cleared.
+Read it from top to bottom. `Effect.flatMap(TodoText, …)` gets the current draft. Whitespace returns before calling the factory. The factory receives the original nonblank text, and its complete result enters the list before the draft is cleared.
 
 That order protects the user's input: if creation fails, execution never reaches the clear. Generating the ID before insertion also gives the future row a stable key from its first render.
 
 ## Run the same action for every submission
 
-`createTodo` is an Effect value. Defining it does not read the draft. Each run reads current state, so a form can run this same action repeatedly without capturing yesterday's text.
+`createTodo` is an Effect value. Defining it does not read the draft. Each run reads current state, so an event handler can run this same action repeatedly without capturing yesterday's text.
 
-The action does not know about `SubmitEvent` or `HTMLInputElement`. In the next chapter, a native form will translate browser input into these state reads and writes.
+The action does not know about `KeyboardEvent` or `HTMLInputElement`. In the next chapter, a native input will translate browser input into these state reads and writes.
 
-**Trace three inputs:** spaces leave the list and draft alone; `  Learn Typed  ` adds `Learn Typed` and clears the draft; an unavailable factory leaves the original text for a retry. Add the test file below and run `npm exec vitest -- run src/application.test.ts`. It supplies a predictable factory and tests all three cases against this action.
+**Trace three inputs:** spaces leave the list and draft alone; `  Learn Typed  ` adds `  Learn Typed  ` and clears the draft; an unavailable factory leaves the original text for a retry. Add the test file below and run `npm exec vitest -- run src/application.test.ts`. It supplies a predictable factory and tests all three cases against this action.
 
 ## Complete files
 

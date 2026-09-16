@@ -1,6 +1,6 @@
 ---
 title: "Alert: urgent messages without moving focus"
-summary: "Reference assertive live-region timing and the recovery action an alert should point to."
+summary: "Announce an urgent text change from an already mounted live region."
 section: "UI / Foundations"
 kind: "reference"
 order: 211
@@ -21,6 +21,7 @@ import { component } from "@typed/template";
 
 export const UploadStatus = component(function* () {
   const message = yield* RefSubject.make("");
+
   return html`${Alert({ content: message })}${Button({
     content: "Simulate upload failure",
     onclick: RefSubject.set(message, "Upload failed. Try again."),

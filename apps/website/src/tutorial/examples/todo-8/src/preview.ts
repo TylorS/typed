@@ -1,14 +1,9 @@
-import { Layer } from "effect";
-import { Ids } from "@typed/id/Ids";
-import { DateTimes } from "@typed/id/DateTimes";
 import { Fx } from "@typed/fx";
-import { TodoApp } from "./presentation.js";
 import { ServerRouter } from "@typed/router";
+import { TodoApp } from "./presentation.js";
 import { makeServices } from "./infrastructure.js";
 
-// A private history lets the embedded app navigate without leaving this lesson.
+// Only the runtime router changes when this example is embedded in the website.
 export const Preview = TodoApp.pipe(
-  Fx.provide(makeServices(ServerRouter({ url: "https://tutorial.local/" })).pipe(
-    Layer.provide([Ids.Default, DateTimes.Default]),
-  )),
+  Fx.provide(makeServices(ServerRouter({ url: "https://tutorial.local/" }))),
 );

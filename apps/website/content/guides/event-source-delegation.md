@@ -23,6 +23,7 @@ import * as EventHandler from "@typed/template/EventHandler";
 import { makeEventSource } from "@typed/template/EventSource";
 
 const events = makeEventSource();
+
 const root = document.createElement("section");
 const button = document.createElement("button");
 const icon = document.createElement("span");
@@ -88,6 +89,7 @@ import * as EventHandler from "@typed/template/EventHandler";
 import { makeEventSource } from "@typed/template/EventSource";
 
 const events = makeEventSource();
+
 const root = document.createElement("section");
 const command = document.createElement("button");
 root.append(command);
@@ -101,9 +103,8 @@ export const installLate = Effect.flatMap(Scope.Scope, (scope) =>
 );
 ```
 
-The new registration attaches to active mounts. Removing a feature can dispose that returned value
-while leaving the surrounding panel active. Avoid representing this as a single global "events
-mounted" boolean; registration and mount lifetimes genuinely differ.
+The new registration attaches to active mounts. Dispose the returned registration to remove its
+handler while leaving the mount and other registrations active.
 
 ## Preserve listener options and matching-aware once behavior
 
@@ -116,6 +117,7 @@ export const firstSave = EventHandler.make(
   () => Effect.log("First matching save"),
   { once: true, capture: true, signal: controller.signal },
 );
+
 export const observeWheel = EventHandler.make(
   (event: WheelEvent) => Effect.log(event.deltaY),
   { passive: true },

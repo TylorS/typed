@@ -20,6 +20,7 @@ import * as Switch from "@typed/ui/Switch";
 export const PreviewSetting = component(function* () {
   const state = yield* Switch.makeState({ checked: true });
   const status = RefSubject.map(state, ({ checked }) => checked ? "On" : "Off");
+
   return html`<section>
     ${Switch.Switch({
       state,
@@ -38,12 +39,16 @@ The visible On/Off text supplements the control while the accessible state comes
 
 The internal click Effect toggles the subject. The native button supplies Enter and Space activation and receives `type="button"`, so the switch does not submit its enclosing form. The [APG switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/) defines on/off semantics and a stable accessible label; Typed supplies the role and checked state while the consumer supplies that name.
 
-A toggle does not save anything by itself. Decide whether the state is a local preference, a draft setting, or an optimistic server update. For asynchronous persistence, expose pending/failure feedback and define whether to restore the old value after rejection. Avoid attaching a second `toggle` in a consumer click handler: user handlers are composed with the internal action, so two inversions can leave the setting unchanged.
+A toggle updates local state; it does not save a remote setting. For persistence, see [optimistic edits](/explore/async-data-optimistic-edits). Avoid attaching a second `toggle` in a consumer click handler: user handlers are composed with the internal action, so two inversions can leave the setting unchanged.
 
 A button-backed switch is not a successful named checkbox control in native form data. For a conventional form boolean use the schema-bound `Form.Checkbox`, or explicitly include this subject's boolean in the submitted application model. An `aria-checked` attribute alone is not serialized as a form field.
 
 ## Design the track and thumb around the real button
 
-Style `props.class`, `[aria-checked="true"]`, and `:disabled` rather than maintaining a second CSS-only state. A decorative thumb should not be independently focusable. Preserve a visible focus ring around the entire target and a non-color distinction between on and off. Native disabled state can be supplied through `props.disabled`; it affects the actual button rather than merely describing it.
+Style `[aria-checked="true"]` and `:disabled` on the real button, preserving a visible focus ring
+and a non-color distinction between on and off. A decorative thumb should not be independently
+focusable. Use `props.disabled` for native disabled behavior.
 
-When activation appears ineffective, compare the subject and rendered `aria-checked`, then inspect duplicate toggles or a canceled event. When keyboard operation fails after customization, check that the custom host remained a button and retained its props/ref. The [Switch API](/reference/modules/%40typed%2Fui%2FSwitch) documents state transitions; [Form](/explore/ui-form) explains submission ownership.
+If activation leaves the value unchanged, check for a second toggle handler. Custom hosts must
+remain buttons to keep native keyboard activation. See the
+[Switch API](/reference/modules/%40typed%2Fui%2FSwitch) and [Form](/explore/ui-form).

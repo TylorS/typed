@@ -16,7 +16,7 @@ const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const loadUiGuides = () => fs.readdirSync(path.join(websiteRoot, "content/guides"))
   .filter((file) => file.endsWith(".md"))
   .map((file) => parseGuideDocumentation(file, fs.readFileSync(path.join(websiteRoot, "content/guides", file), "utf8")))
-  .filter(({ section, slug }) => slug === "ui" || section === "UI" || section?.startsWith("UI / "));
+  .filter(({ section, slug }) => slug === "ui" || slug.startsWith("ui-") || section === "UI" || section?.startsWith("UI / "));
 
 describe("public UI guides", () => {
   it("provides a dedicated learning destination for every live public UI module", async () => {

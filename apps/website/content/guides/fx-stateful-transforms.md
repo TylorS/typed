@@ -1,5 +1,5 @@
 ---
-title: "Derive transitions and bounded batches"
+title: "Carry local state through Fx"
 summary: "Carry only the local history a transform needs, then expose transitions, changes, and groups explicitly."
 section: "Fx"
 kind: "guide"
@@ -8,15 +8,14 @@ order: 1.3
 
 <span id="adapt-repeated-failure-reports-only-at-a-cause-boundary"></span>
 
-A shipment import page needs a running balance, numbered progress messages, meaningful status
-transitions, and small batches for persistence. One input alone cannot answer those questions.
-Each needs a different piece of history—and retaining the entire import would be unnecessary.
+A stateful transform retains history for one subscription: an accumulated value, a counter, the
+previous value, or a bounded batch. A second subscription starts fresh. These operators do not
+create shared writable application state.
 
-After [Transforming Fx](/explore/transforming-fx), choose the smallest state that answers the page's
-question. Every accumulator below belongs to one subscription. A second run starts fresh; none of
-these operators creates shared writable application state.
+After [Transforming Fx](/explore/transforming-fx), choose the smallest history needed for each
+output. The independent examples below show what is retained and when it is emitted.
 
-## Display the initial balance and each adjustment
+## Emit the accumulated value, including its seed
 
 ```ts
 import { Effect } from "effect";
@@ -27,6 +26,7 @@ const balances = Fx.fromIterable([12, -4, 7]).pipe(
 );
 
 const values = await Effect.runPromise(Fx.collectAll(balances));
+
 // [100, 112, 108, 115]
 ```
 
@@ -39,23 +39,8 @@ output: 100 112 . 108 . 115 |
 ```
 
 [`scan`](/reference/symbols/QHR5cGVkL2Z4L0Z4I3NjYW4) first emits its seed `100`. The adjustment
-`12` produces `112`, `-4` produces `108`, and `7` produces `115`. This seed matters: the page can
-show a balance before any input exists. A test that asserts only `115` misses the displayed history.
-
-If computing the next balance needs an Effect, `scanEffect` exposes the same accumulated value
-after its reducer completes:
-
-```fx-marble
-title: scanEffect emits each accumulated value when its reducer Effect resolves
-covers: scanEffect
-input: . 12 . -4 . 7 . |
-operator: scanEffect(100, oneTurnAdd)
-output: 100 . 112 . 108 . 115 |
-```
-
-The output moves one logical turn after each input because the illustrated reducer takes one turn.
-The initial seed still appears first. Effectful reducers add their errors and required services;
-failed computation is not a new balance.
+`12` produces `112`, `-4` produces `108`, and `7` produces `115`. The seed provides an initial
+value before any input exists; collecting only the final `115` would discard that history.
 
 ## Produce a label while keeping the counter private
 
@@ -70,6 +55,7 @@ const labels = Fx.fromIterable(["received", "packed", "shipped"]).pipe(
 );
 
 const values = await Effect.runPromise(Fx.collectAll(labels));
+
 // ["1. received", "2. packed", "3. shipped"]
 ```
 
@@ -85,19 +71,6 @@ output labels: 1.received . 2.packed . 3.shipped |
 `loop` returns `[output, nextState]`. For `received`, state `1` produces `1.received` and stores `2`;
 for `packed`, it produces `2.packed` and stores `3`. Unlike scan, it emits nothing before the first
 input. The accumulator lane is explanatory private state, not another subscribed producer.
-
-```fx-marble
-title: loopEffect emits after each one-turn state transition resolves
-covers: loopEffect
-input events: received . packed . shipped . |
-input accumulator: 1 . 2 . 3 . .
-operator: loopEffect(position, oneTurnLabel)
-output labels: . 1.received . 2.packed . 3.shipped |
-```
-
-`loopEffect` separates the same two values after an Effect resolves. Do not assume every stateful
-Effect operator serializes concurrent deliveries: the producer can overlap callback Effects. Use a
-serialized input boundary when every transition must see the previous completed state.
 
 ## Advance state even when a message is omitted
 
@@ -115,21 +88,19 @@ output: 0:a . . . 2:c . . |
 `b` advances the position without producing a label, so `c` is labeled `2:c`, not `1:c`. Dropping `b`
 before an ordinary loop would be a different count.
 
-```fx-marble
-title: filterMapLoopEffect makes each zero-or-one decision after its Effect resolves
-covers: filterMapLoopEffect
-input: a . b . c . d . |
-operator: filterMapLoopEffect(0, oneTurnEveryOther)
-output: . 0:a . . . 2:c . . |
-```
+`scanEffect`, `loopEffect`, and `filterMapLoopEffect` compute their transitions with Effects.
+Their outputs arrive after the transition resolves, and their errors and service requirements
+become part of the Fx. They do not serialize concurrent input automatically: use a serialized
+[work policy](/explore/fx-higher-order-and-concurrency) when every transition must see the previous
+completed state. `scanEffect` still emits its seed first.
 
-The Effect variant makes this zero-or-one decision after asynchronous work. It also does not serialize
-concurrent input automatically. If multiple independent parts of the page must read and update one
-current count, move that responsibility to RefSubject rather than observing the same loop twice.
+For several consumers that must read and update one current value, use
+[RefSubject](/explore/refsubject-renderer-independent-state) rather than subscribing to the same
+loop twice.
 
 ## Highlight transitions rather than repeated reports
 
-The import can report `received` several times without changing its status:
+Repeated reports do not necessarily represent a change:
 
 ```ts
 import { Effect } from "effect";
@@ -141,6 +112,7 @@ const transitions = Fx.fromIterable(["received", "received", "packed", "packed",
 );
 
 const values = await Effect.runPromise(Fx.collectAll(transitions));
+
 // [["received", "packed"], ["packed", "shipped"]]
 ```
 
@@ -154,7 +126,7 @@ output: received . packed . shipped |
 
 `skipRepeats` compares with the last emitted value. It drops adjacent equivalents, not every value
 seen previously: `received → packed → received` still emits all three. For records, use
-`skipRepeatsWith` with the fields whose changes matter to the page. Ignoring revision data can hide
+`skipRepeatsWith` with the fields whose changes matter to the consumer. Ignoring revision data can hide
 real updates; comparing fresh object identity can expose meaningless repeats.
 
 ```fx-marble
@@ -179,10 +151,10 @@ output: . . [received,packed] . [packed,shipped] |
 
 `pairwise` waits for two accepted values, then emits `[previous, current]`. Filtering repeated status
 before pairing yields `received → packed` and `packed → shipped`. Pairing raw reports first would
-create transitions containing duplicate statuses. This is why normalization and equivalence belong
-before the transition the page highlights.
+create transitions containing duplicate statuses. Put deduplication before pairing when only
+actual changes should produce a transition.
 
-## Flush records without retaining the full import
+## Retain one bounded batch
 
 ```ts
 import { Effect } from "effect";
@@ -191,6 +163,7 @@ import { Fx } from "@typed/fx";
 const writes = Fx.fromIterable(["a", "b", "c", "d", "e"]).pipe(Fx.grouped(2));
 
 const batches = await Effect.runPromise(Fx.collectAll(writes));
+
 // [["a", "b"], ["c", "d"], ["e"]]
 ```
 
@@ -221,16 +194,6 @@ buffer is one batch. That does not bound a downstream backlog of slow writes: us
 [work policy](/explore/fx-higher-order-and-concurrency) and distinguish buffered records from queued
 persistence jobs. The timer requires a scoped owner.
 
-## Reference: stateful Cause transforms
-
-Most imports use ordinary value state above and [typed recovery](/explore/fx-errors-and-recovery).
-`loopCause`, `loopCauseEffect`, `filterMapLoopCause`, and `filterMapLoopCauseEffect` are for a host
-boundary that intentionally transforms a delivered Cause with private state. They are error policy,
-not progress formatting; their exhaustive timelines live in the generated
-[operator atlas](/explore/fx-operator-atlas).
-
-The page now has four deliberate histories: a seeded balance, a private position, one previous
-status, and one bounded batch. Check those independently when behavior diverges. A missing first
-transition may simply mean pairwise has only one value; a missing final batch may mean the source
-never completed. [Time and rate](/explore/fx-time-and-rate) adds explicit clock boundaries, and
-[Subject](/explore/subject-event-publications) explains publication state versus current readable state.
+For time-based boundaries, continue with [Time and rate](/explore/fx-time-and-rate).
+The [operator atlas](/explore/fx-operator-atlas) covers the full Effect and Cause variants of
+these stateful transforms.

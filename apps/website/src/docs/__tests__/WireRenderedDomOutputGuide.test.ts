@@ -25,12 +25,13 @@ describe("Wire and Rendered DOM output guide", () => {
       kind: "deep-dive",
     });
     const examples = extractTypeScriptFences(guide.body).join("\n");
-    for (const term of ["DomRenderEvent", "persistent", "fromComments", "createDocumentFragment"]) {
+    for (const term of ["DomRenderEvent", "persistent", "createDocumentFragment"]) {
       expect(examples).toContain(term);
     }
-    for (const operation of ["getElements", "toHtml", "valueOf()", "internal-but-published"]) {
+    for (const operation of ["getElements", "toHtml", "valueOf()", "fromComments"]) {
       expect(guide.body).toContain(operation);
     }
+    expect(guide.body).toContain("/reference/modules/%40typed%2Ftemplate%2FWire");
     expect(guide.body).toContain("/explore/dom-updates-and-reconciliation");
     expect(extractTypeScriptFences(guide.body)).not.toHaveLength(0);
     expect(validateAuthoredExampleQuality([guide])).toEqual([]);

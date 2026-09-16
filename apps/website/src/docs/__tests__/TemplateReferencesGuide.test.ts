@@ -16,7 +16,7 @@ const readGuide = (fileName: string) => parseGuideDocumentation(
 );
 
 describe("Template references guide", () => {
-  it("documents native element access, cleanup, and hydration without inventing a component ref API", () => {
+  it("demonstrates native element access and cleanup, linking to canonical hydration guidance", () => {
     const guide = readGuide(guideFile);
 
     expect(guide).toMatchObject({
@@ -25,10 +25,9 @@ describe("Template references guide", () => {
       kind: "guide",
     });
     const examples = extractTypeScriptFences(guide.body).join("\n");
-    for (const term of ["Fx.callback", "RefSubject.set", "observer.disconnect()", "RefSubject.hydrate", "ref=${"]) {
+    for (const term of ["Fx.callback", "RefSubject.set", "observer.disconnect()", "ref=${"]) {
       expect(examples).toContain(term);
     }
-    expect(guide.body).toContain("/explore/hydrating-typed-html");
     expect(guide.body).toContain("/explore/template-spreads-data");
     expect(guide.body).toContain("/explore/refsubject-template-hydration");
     expect(extractTypeScriptFences(guide.body)).not.toHaveLength(0);

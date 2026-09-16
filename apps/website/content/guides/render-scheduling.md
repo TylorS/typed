@@ -70,34 +70,10 @@ uses the same queue key and priority, the newest replaces the earlier entry. The
 its previous count directly to `12`. The source still published all three values; its business
 Effects were not necessarily batched or canceled.
 
-The queue entry contains a key, task, cleanup callback, and numeric priority. Cleanup releases
-entry bookkeeping after execution or supersession. It should not undo the visual value immediately
-after the task writes it.
-
-```ts
-import { MixedRenderQueue, RenderPriority } from "@typed/template/RenderQueue";
-
-const output = document.createElement("output");
-const queue = new MixedRenderQueue();
-
-queue.add(
-  output,
-  () => { output.value = "12 results"; },
-  () => { /* No additional pending-entry resources to release. */ },
-  RenderPriority.Raf(5),
-);
-```
-
-This lower-level example supplies an already-known output element as its key. A renderer does the
-same kind of scheduling around its captured parts. Application components normally use the supplied
-renderer policy rather than enqueue individual DOM mutations themselves.
-
 ## Choose priority by the interaction's requirement
 
 `RenderPriority.Sync` is immediate work. `Raf(n)` expresses visual-frame work, and `Idle(n)` expresses
-background work. Lower numeric priorities run first. Reusing a key at a *different* priority does
-not automatically cancel its entry in another bucket; test that explicitly if an extension changes
-priority dynamically.
+background work. Lower numeric priorities run first within their scheduling lane.
 
 Sync is useful when a small native update must be observable immediately, especially in deterministic
 DOM tests. It can also move expensive work onto an interaction's call stack. Frame scheduling aligns
@@ -107,52 +83,12 @@ budget. Idle work must genuinely tolerate waiting.
 A queue callback finishing does not mean layout or paint has completed. Measurements and focus
 policies that require connection or geometry need their own platform coordination.
 
-## Override the queue at the rendering boundary
+## Use a synchronous policy for captured-field tests
 
-For a custom scheduler or a deterministic test environment, override `CurrentRenderQueue` at the
-rendering boundary. This is optional: changing one template's priority only needs the
-`Fx.provideService` wrapper above. The following setup replaces the mixed queue with a
-`SyncRenderQueue` for all rendering inside the provided context:
+For a test that asserts an applied DOM value, provide `RenderPriority.Sync` to the template as
+above. The assertion then need not guess how long a frame will take. This does not make an
+asynchronous producer synchronous: coordinate with its actual publication before checking the DOM.
 
-```ts
-import { Effect, Layer } from "effect";
-import { Fx } from "@typed/fx";
-import { DomRenderTemplate, html, render } from "@typed/template";
-import { CurrentRenderPriority, CurrentRenderQueue } from "@typed/template/Render";
-import { RenderPriority, SyncRenderQueue } from "@typed/template/RenderQueue";
-
-const view = html`<output>Search ready</output>`;
-const services = Layer.mergeAll(
-  DomRenderTemplate,
-  Layer.succeed(CurrentRenderQueue, new SyncRenderQueue()),
-  Layer.succeed(CurrentRenderPriority, RenderPriority.Sync),
-);
-
-export const mountForTest = (host: HTMLElement) => view.pipe(
-  render(host),
-  Fx.drain,
-  Effect.provide(services),
-  Effect.scoped,
-);
-```
-
-The renderer still owns the callbacks scheduled for its parts and disposes them with their scope.
-The queue owns its active scheduler and pending buckets. Disposing a queue cancels that scheduler
-and drops pending work; it is not a general teardown operation for already-rendered output.
-A returned entry Disposable can cancel pending work at the lower-level API boundary.
-
-## Test the scheduling decision rather than a guessed delay
-
-For a captured-field assertion, a sync policy removes frame timing from the test. Test a custom
-coalescing queue separately: add two tasks with the same key/priority, advance its scheduler,
-assert only the newest runs, and assert the superseded cleanup happens. Also test cancellation and
-same-key/different-priority behavior if an extension relies on them.
-
-In a performance trace, separate producer computation, time waiting in the queue, mutation callback
-execution, and browser layout/paint. If the producer rebuilds a thousand result records, changing
-queue policy does not eliminate that computation. If a local range change triggers expensive
-layout, delaying it does not make it scalar.
-
-Use the [RenderQueue reference](/reference/modules/%40typed%2Ftemplate%2FRenderQueue) when building
-a scheduler or directive. Keep ordinary UI state and event concurrency in the producing application;
-[Native events with Effect](/explore/native-events-with-effect) describes that distinct boundary.
+For custom schedulers, queue replacement, cancellation, and lower-level task bookkeeping, use the
+[RenderQueue reference](/reference/modules/%40typed%2Ftemplate%2FRenderQueue). Those extension
+contracts are separate from choosing when a component's captured DOM updates run.

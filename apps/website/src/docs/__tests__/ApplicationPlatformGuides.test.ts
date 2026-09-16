@@ -54,11 +54,11 @@ describe("application and platform guides", () => {
       expect(route, `URL contract example: ${api}`).toContain(api);
     }
     const router = examples("router-navigation-live-selection.md");
-    for (const api of ["Router.match", "Fx.switchMapEffect", ".layout(", ".catchTag(", ".redirectTo(", "Router.CurrentRoute.extend"]) {
+    for (const api of ["Router.match", "Fx.switchMapEffect", "TestRouter"]) {
       expect(router, `Live selection example: ${api}`).toContain(api);
     }
     const navigation = examples("navigation-as-an-effect-service.md");
-    for (const api of ["Navigation.navigate", "Navigation.currentEntry", "Navigation.transition", "useBlockNavigation", "Uuid7State", "initialMemory"]) {
+    for (const api of ["Navigation.navigate", "Navigation.currentEntry", "Navigation.transition", "useBlockNavigation", "TestRouter"]) {
       expect(navigation, `History example: ${api}`).toContain(api);
     }
     const http = examples("integrating-matcher-with-effect-http.md");

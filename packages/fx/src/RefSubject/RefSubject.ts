@@ -1585,6 +1585,11 @@ class RefSubjectImpl<A, E, R, R2>
  * Plain values, Effect programs, pull-based Effect `Stream`s, and push-based
  * `Fx` sources all enter through the same state boundary.
  *
+ * An Effect input is lazy even after construction: `yield* make(effect)` returns the ref
+ * without running or awaiting `effect`. The first read or observation starts its shared
+ * initializer. Return a template containing the ref to let rendering observe initialization;
+ * `yield* ref` instead waits for the current value before constructing the template.
+ *
  * ## Ownership and lifetime
  *
  * Creation requires an Effect `Scope`. That scope owns source acquisition,

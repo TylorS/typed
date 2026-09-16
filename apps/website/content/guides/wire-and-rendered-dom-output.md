@@ -25,6 +25,7 @@ heading.textContent = "Collection summary";
 const fragment = document.createDocumentFragment();
 const summary = document.createElement("p");
 summary.textContent = "12 saved articles";
+
 fragment.append(heading, summary);
 
 const output: Rendered = fragment;
@@ -51,6 +52,7 @@ const heading = document.createElement("h2");
 heading.textContent = "Collection summary";
 const summary = document.createElement("p");
 summary.textContent = "12 saved articles";
+
 fragment.append(heading, summary);
 
 const output = persistent(document, "article-summary-v1", fragment);
@@ -81,27 +83,10 @@ relying on arbitrary object shape.
 
 ## Adopt existing boundaries only when your extension owns them
 
-`fromComments` is an internal-but-published renderer extension function. It is appropriate when an
-integration already owns both marker comments and the complete interval between them:
-
-```ts
-import { DomRenderEvent } from "@typed/template/RenderEvent";
-import { fromComments } from "@typed/template/Wire";
-
-const fragment = document.createDocumentFragment();
-const start = document.createComment("summary:start");
-const summary = document.createElement("p");
-summary.textContent = "12 saved articles";
-const end = document.createComment("summary:end");
-fragment.append(start, summary, end);
-
-export const event = DomRenderEvent(fromComments(fragment, start, end));
-```
-
-This is not permission to point at another renderer's comments or infer ownership from arbitrary
-nearby markup. The extension is responsible for coherent boundaries and all represented nodes.
-Likewise, `diffable` and `getAllSiblingsBetween` serve range/reconciliation machinery; normal
-application components should not manufacture an alternate hydration protocol with them.
+[`fromComments`](/reference/modules/%40typed%2Ftemplate%2FWire) creates a Wire from
+existing marker comments. Use it only when the extension already owns both boundaries and the
+complete interval between them. Normal adapters should use `persistent`; borrowing another
+renderer's comments does not establish ownership of its output.
 
 ## Verify the group remains the same group
 

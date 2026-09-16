@@ -22,11 +22,18 @@ export const messages = (
     Effect.gen(function* () {
       const socket = yield* Socket.makeWebSocket(url, {
         openTimeout: "10 seconds",
-        // Our protocol treats only normal closure as successful completion.
-        closeCodeIsError: (code) => code !== 1000,
       });
+
       // Input values become outgoing frames; output values are incoming frames.
-      return outgoing.pipe(Stream.pipeThroughChannel(Socket.toChannelString(socket)));
+      return outgoing.pipe(
+        Stream.pipeThroughChannel(Socket.toChannelString(socket)),
+        // Effect reports every close as an error; our protocol completes on code 1000.
+        Stream.catchTag("SocketError", (error) =>
+          error.reason._tag === "SocketCloseError" && error.reason.code === 1000
+            ? Stream.empty
+            : Stream.fail(error),
+        ),
+      );
     }),
   );
 ```

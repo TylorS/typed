@@ -1,15 +1,14 @@
 ---
-title: "Derived, conditional, and accumulated state"
-summary: "Turn a queue model into live queries while preserving absence, service requirements, and the distinction between state and event history."
+title: "Derived values and optional state"
+summary: "Derive read-only values and make loss of selection observable with Computed and Filtered."
 section: "State"
 kind: "guide"
 order: 2.15
 ---
 
-A review queue has an authoritative selection model. The toolbar needs a count, a detail pane needs
-the focused issue, and an activity report might need accumulated events. All three are derived
-questions, but they have different contracts. Treating every query as “just another ref” either
-grants unnecessary write access or loses information about absence and history.
+A selected-ID array always has a count. A focused ID may be missing. These queries need different
+contracts: one always produces a value, while the other must decide whether absence is skipped or
+published so a consumer can clear its output.
 
 `Computed` and `Filtered` are read-only views over a Versioned source. They can be read as Effects
 or observed as Fx; they do not create another writable truth. Start with
@@ -20,8 +19,8 @@ or observed as Fx; they do not create another writable truth. Start with
 | `Computed<A, E, R>` | A value, or E | Derived updates |
 | `Filtered<A, E, R>` | A value, E, or `NoSuchElementError` | Present derived updates; absence is skipped |
 
-The current read and observation are separate capabilities. This is central to both filtering and
-accumulation: a convenient read-only type does not imply they have identical histories.
+A current read and an observation handle absence differently. Choose the view for what its
+consumer needs to observe, not just the type of its successful value.
 
 ## Compute a value that always exists
 
@@ -33,17 +32,19 @@ import { RefSubject } from "@typed/fx"
 
 const example = Effect.scoped(Effect.gen(function* () {
   const selected = yield* RefSubject.make<ReadonlyArray<string>>([])
+
   const count = RefSubject.map(selected, (ids) => ids.length)
   const empty = RefSubject.map(count, (value) => value === 0)
+
   yield* RefSubject.set(selected, ["42", "43"])
+
   return { count: yield* count, empty: yield* empty }
 }))
 ```
 
 There is no `set(count, ...)`. The model changes selected IDs and the count stays derived. The
 projection is lazy: creating the view does not run it. Current reads and observations apply it when
-a value is needed. `proxy` is a convenience for memoized object/tuple field-view objects, not a cache
-of copied field values. `makeComputed` supplies the same model for a lower-level Versioned source.
+a value is needed. The example returns `{ count: 2, empty: false }`.
 
 Prefer pure projection for formatting and totals. `mapEffect` can do effectful work, but it does not
 by itself define a feature-wide shared request cache. If several consumers must share one remote
@@ -60,12 +61,16 @@ import { RefSubject } from "@typed/fx"
 
 const example = Effect.scoped(Effect.gen(function* () {
   const focusedId = yield* RefSubject.make(Option.none<string>())
+
   const present = RefSubject.compact(focusedId)
   const label = RefSubject.getOrElse(present, () => "No focused issue")
   const explicitAbsence = present.asComputed()
+
   yield* RefSubject.set(focusedId, Option.some("42"))
   const selectedLabel = yield* label
+
   yield* RefSubject.set(focusedId, Option.none())
+
   return { selectedLabel, emptyLabel: yield* label, current: yield* explicitAbsence }
 }))
 ```
@@ -79,48 +84,19 @@ infer that its old request or output should disappear. Observe the Option-valued
 selection boundary and switch on both cases. This is not a renderer quirk: skipping an emission is
 different from emitting an empty result in any reactive system.
 
-`fromOption` and `fromNullable` are different operations: they construct writable Option state.
-They do not introduce `NoSuchElementError` until you opt into a present-only view.
-
 ## Keep projection failures and services visible
 
-An Effectful projection can add its own error and environment types. Those join the source's
-channels rather than being swallowed. A service used only by the projection is required when the
-read or observation runs, not when the view object is declared.
+`mapEffect` and `filterMapEffect` can add errors and service requirements to the source's channels.
+Services used by a projection must be provided when the read or observation runs. See
+[services and lifetime](/explore/fx-services-and-lifetime) for provisioning patterns.
 
-```ts
-import { Context, Effect } from "effect"
-import { RefSubject } from "@typed/fx"
-
-class QueueLabels extends Context.Service<QueueLabels, {
-  readonly selection: (count: number) => string
-}>()("docs/QueueLabels") {}
-
-const describeSelection = (count: number) =>
-  Effect.map(QueueLabels, (labels) => labels.selection(count))
-
-const example = Effect.scoped(Effect.gen(function* () {
-  const count = yield* RefSubject.make(2)
-  const label = RefSubject.mapEffect(count, describeSelection)
-  return yield* label
-})).pipe(Effect.provideService(QueueLabels, {
-  selection: (count) => `${count} issues selected`,
-}))
-```
-
-Here `label` requires QueueLabels until provision. A failing label service would add its expected
-error to the view. Filtered additionally adds `NoSuchElementError` only to the current-read Effect;
-its Fx does not fail merely because the projection returns None.
-
-`computedFromService` and `filteredFromService` defer retrieving an entire view from Context. They
-are useful when another subsystem owns it. Closing the relevant owner/observer Scopes ends active
-work; a Computed is not a reason to create an unrelated permanent lifetime.
+Filtered adds `NoSuchElementError` to its current-read Effect when the result is absent. Its Fx
+observation skips that absence instead of failing. Other projection errors still propagate.
 
 ## Test observations independently from snapshots
 
 A snapshot test reads the count, changes IDs, and reads it again. An observation test must actually
-subscribe before the writes it expects to see. Synchronize on subscription readiness rather than
-a fixed delay.
+subscribe before the writes it expects to see. After forking the observer, use `Effect.sleep(0)` to let it run before writing.
 
 ```ts
 import { Effect, Fiber, Option } from "effect"
@@ -130,11 +106,14 @@ import { Fx, RefSubject } from "@typed/fx"
 it("emits selections while skipping absence", () => Effect.scoped(Effect.gen(function* () {
   const source = yield* RefSubject.make<Option.Option<string>>(Option.none())
   const present = RefSubject.compact(source)
-  const observed = yield* Effect.forkScoped(Fx.collectUpTo(present, 2))
-  while ((yield* source.subscriberCount) < 1) yield* Effect.yieldNow
+
+  const observed = yield* Fx.collectUpToFork(present, 2)
+  yield* Effect.sleep(0)
+
   yield* RefSubject.set(source, Option.some("42"))
   yield* RefSubject.set(source, Option.none())
   yield* RefSubject.set(source, Option.some("43"))
+
   expect(yield* Fiber.join(observed)).toEqual(["42", "43"])
 })).pipe(Effect.runPromise))
 ```
@@ -143,7 +122,7 @@ This test demonstrates Filtered's omission, not just a successful selection. A p
 would instead observe Option and assert None. Current-read tests should also cover absence and
 projection errors. A passing DOM assertion after one selection cannot establish these contracts.
 
-## <span id="accumulate-only-when-the-intended-history-is-clear">Optional accumulation reference</span>
+## <span id="accumulate-only-when-the-intended-history-is-clear">When the question is about history</span>
 
 `scan` and `scanEffect` fold source history; they are not a count of current selection and not a
 reliable count of commands when equality suppresses repeated state commits. Use an event source when

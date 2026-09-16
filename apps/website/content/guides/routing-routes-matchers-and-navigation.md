@@ -30,6 +30,7 @@ import { Link } from "@typed/ui/Link"
 
 const Queue = Router.Parse("/issues")
 const Issue = Router.Join(Queue, Router.Int("issueId"))
+
 const pages = Router.match(Queue, html`<main><h1>Review queue</h1>
     ${Link({ href: "/issues/42", content: "Review issue 42" })}
   </main>`)
@@ -45,6 +46,7 @@ const pages = Router.match(Queue, html`<main><h1>Review queue</h1>
 
 const host = document.getElementById("review-app")
 if (host === null) throw new Error("Missing review-app host")
+
 const application = pages.redirectTo("/not-found").pipe(
   render(host),
   Fx.drain,
@@ -52,6 +54,7 @@ const application = pages.redirectTo("/not-found").pipe(
   Effect.provide(Router.BrowserRouter(window)),
   Effect.scoped,
 )
+
 const fiber = Effect.runFork(application)
 export const stop = () => Effect.runPromise(Fiber.interrupt(fiber))
 ```
@@ -79,9 +82,8 @@ the selected work.
 
 The Issue handler receives live parameters. It can retain compatible local setup while its parameter
 ref changes. The layout receives live inner content. If a different handler is selected, the old
-handler's Scope is replaced and owned work is finalized. Neither retaining nor replacing work
-automatically decides whether a draft or cached resource should survive; the feature chooses its
-owner and resource identity.
+handler's Scope is replaced and owned work is finalized. State that must survive a handler change belongs above that handler's owner; see
+[Matcher lifetime](/explore/router-navigation-live-selection#keep-services-and-layouts-at-the-boundary-that-should-retain-them).
 
 | Contract | Question it answers | Next lesson |
 | --- | --- | --- |
@@ -99,7 +101,7 @@ Open issue 42, follow the link to 43, then use Back. The selected output should 
 
 <span id="grow-url-state-from-the-users-expected-behavior"></span>
 
-The small app is complete. For shareable filters, continue with [typed URL inputs](/explore/route-typed-url-inputs). That lesson owns encoding and validation; [Navigation](/explore/navigation-as-an-effect-service) owns push versus replace.
+Choose the next lesson from the table above: URL input, history policy, or selected work.
 
 <span id="recover-at-the-boundary-that-knows-what-failed"></span>
 
@@ -107,4 +109,4 @@ Keep route-not-found recovery separate from a failed page request. [Matcher reco
 
 <span id="change-the-runtime-provider-keep-the-application-contract"></span>
 
-Use BrowserRouter for the browser, TestRouter for memory history, and ServerRouter for a request location. The [HTTP recipe](/explore/integrating-matcher-with-effect-http) shows request-local provision; sharing route declarations does not mean sharing mutable request state.
+For server requests, the [HTTP recipe](/explore/integrating-matcher-with-effect-http) shows request-local provision with ServerRouter.

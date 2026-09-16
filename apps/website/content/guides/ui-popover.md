@@ -21,6 +21,7 @@ import * as Popover from "@typed/ui/Popover";
 
 const ChartLegend = component(function* (id: string) {
   const state = yield* Popover.makeState();
+
   return [
     Popover.Trigger({ state, controls: id, content: "Explain chart colors" }),
     Popover.Content({
@@ -46,11 +47,13 @@ const ChartLegend = component(function* (id: string) {
 
 Escape on the trigger or inside content prevents the key default and sets state false. If focus has moved elsewhere, these local listeners cannot observe it. Outside click does not close this manual popover. Do not tell users a panel dismisses on blur or traps focus unless you implement and test that additional contract. For commands use [Menu](/explore/ui-menu); for a modal task use [Dialog](/explore/ui-dialog).
 
-## Keep semantics and lifetime visible
+<span id="keep-semantics-and-lifetime-visible"></span>
+
+## Choose the focus behavior
 
 `Popover.Content` adds no specialized ARIA role. The author chooses suitable content structure, names, focus order, and explicit dismissal. If the panel requires an initial focus move, that remains application work; opening a generic manual popover is not a guarantee of a dialog-like focus policy.
 
-Its parts are lazy Fx values. The resulting errors and services include dynamic props, content, event Effects, and custom host requirements; `makeState` adds its hydration/schema requirements. The mounted Scope owns native observation and listeners. A host override must retain the actual popover element, all toggle/key handlers, and the composed hydration ref.
+A host override must retain the popover element, toggle/key handlers, and composed hydration ref. See [Dom host contracts](/explore/ui-dom) for the shared composition rules.
 
 When state says open but the surface stays hidden, check the `popover` attribute, browser API availability, connection, and ref before investigating CSS. When a target button does nothing, verify the ID and native target support; omitting `controls` switches to the state click path but still requires native Popover API support for content.
 

@@ -8,14 +8,20 @@ order: 2
 
 <span id="grow-the-model-at-its-invariants"></span>
 
-A review queue needs to remember which issues are selected. A row checkbox changes selection; the
-bulk-action toolbar reads its count; a keyboard command selects another issue; a test needs to
-verify that selecting the same issue twice does not duplicate it. These are different consumers of
-one model. None of them should have to mount a component to ask what is selected.
+A selection model should work without mounting a component. A checkbox can change selected IDs,
+a toolbar can read their count, and a test can verify that selecting an ID twice does not duplicate it.
+This guide builds that model using the Effect and RefSubject basics from [Quick Start](/explore/quick-start).
 
 `RefSubject` is that model's writable state boundary. It retains a current value, publishes distinct
 commits to observers, and serializes writes. It is both an Effect for “read the current selection”
 and an Fx for “follow selection changes.” A UI is one consumer of those capabilities.
+
+**`RefSubject.make(effect)` is lazy, even when you `yield*` the constructor.** It creates the ref
+without executing or awaiting the input Effect. The first read or observation starts one shared
+initializer, and later consumers use its retained result. A component can therefore put a request
+into a ref and return its template immediately; reading `yield* ref` would wait for the data.
+[Inputs and lifetime](/explore/refsubject-sources-equality-and-lifetime) explains the distinction:
+Fx and Stream inputs start their source when construction runs, rather than waiting for a reader.
 
 Start with the invariant: selection contains each ID at most once. Then decide who can change it,
 which queries consumers need, and how long selection should survive. Choosing those contracts first
@@ -29,8 +35,9 @@ import { RefSubject } from "@typed/fx"
 
 export const makeSelection = Effect.fn("makeSelection")(function* () {
   const state = yield* RefSubject.make<ReadonlyArray<string>>([])
+
   // Consumers can follow selection without bypassing its commands to write the array.
-  const selectedIds = RefSubject.map(state, (ids) => ids)
+  const selectedIds: RefSubject.Computed<ReadonlyArray<string>> = state
   const count = RefSubject.map(state, (ids) => ids.length)
 
   // Check membership inside the serialized update so concurrent additions are not lost.
@@ -46,7 +53,7 @@ export const makeSelection = Effect.fn("makeSelection")(function* () {
 })
 ```
 
-Only the model closes over the writable ref. Its consumers receive read-only `Computed` views and
+The public type exposes the same ref as a read-only `Computed`, without mapping its values. Consumers receive that view and
 commands. Calling `select("42")` creates an Effect description; running that Effect performs the
 transition. The command checks membership against committed state inside `update`, so two callers
 do not independently read the same old array and overwrite one another's additions.
@@ -96,11 +103,13 @@ The toolbar does not need write access to selection. It needs a count and a clea
 import type { Effect } from "effect"
 import { RefSubject } from "@typed/fx"
 import { html } from "@typed/template"
+
 const SelectionToolbar = <E, R>(model: {
   readonly count: RefSubject.Computed<number, E, R>
   readonly clear: Effect.Effect<unknown, E, R>
 }) => {
   const empty = RefSubject.map(model.count, (count) => count === 0)
+
   return html`<div aria-label="Selection actions">
     <span>${model.count} selected</span>
     <button ?disabled=${empty} onclick=${model.clear}>Clear selection</button>
@@ -129,12 +138,6 @@ not create permanent state merely because another object still references the re
 inside the lifetime that will actually use it; current reads and writes of an existing ref do not
 need another construction Scope.
 
-The initial array here is available immediately when construction runs. A ref built from an Effect
-initializes lazily on its first read/observation; a ref built from Fx or Stream starts its source when
-construction runs. Those different start times matter for live data, so continue with
-[sources, equality, and lifetime](/explore/refsubject-sources-equality-and-lifetime) before substituting
-a remote producer for the plain initial value.
-
 ## Test commands before testing rendered bindings
 
 The test below checks the invariant and the derived query in one scoped program. It deliberately
@@ -147,41 +150,27 @@ import { makeSelection } from "./Selection.js"
 
 it("keeps selection unique and derives its count", Effect.fn(function* () {
   const model = yield* makeSelection()
+
   yield* model.select("42")
   yield* model.select("42")
   yield* model.select("43")
+
   expect(yield* model.selectedIds).toEqual(["42", "43"])
   expect(yield* model.count).toBe(2)
+
   yield* model.clear
+
   expect(yield* model.count).toBe(0)
 }, Effect.scoped, Effect.runPromise))
 ```
 
 This test imports the actual model rather than reproducing its implementation. Put the two named
 files beside one another and run the test with Vitest.
-Add a separate observation test when asserting reactive behavior: start a bounded Fx consumer, wait
-until it is subscribed, then issue commands. A passing current-read test does not prove that a
-publication occurred. Conversely, an equivalent write can be correct even when it publishes nothing.
-
-If the toolbar looks stale, inspect the command, current read, and publication before the DOM.
-A correct current value with no update can indicate overly broad equality; two different current
-values in two consumers can indicate two separately constructed models; a stopped source can indicate
-a closed owner. Those are model/lifetime problems with different fixes.
+For live publication behavior, see the bounded observation test in
+[derived state](/explore/derived-conditional-and-accumulated-state#test-observations-independently-from-snapshots).
 
 ## One invariant, then one next step
 
-If selection must clear when the workspace changes, commit workspace and selection together in one
-parent ref. If selected rows can disappear from a refreshed catalog, choose whether to prune selection
-or retain missing IDs for later reconciliation. These are domain transitions, not display projections.
-[Composing state](/explore/composing-refsubject-state) develops the parent-model boundary.
-
-An empty selection is still a valid value. A particular selected row may instead be absent, which
-calls for an Option-valued or Filtered view. [Derived state](/explore/derived-conditional-and-accumulated-state)
-explains why skipping absent values differs from publishing deselection.
-
-Finally, selection is state, not an event log. Clicking an already selected row may be an event even
-when the selected IDs do not change. Keep repeated intent in an event source or command and keep the
-result in RefSubject. For a command that performs remote work, represent its loading, failure, and
-optimistic results with [AsyncData](/explore/async-data), while the
-[shared-contract guide](/explore/shared-state-contracts) shows how independently built consumers can
-receive one model without gaining arbitrary write access.
+When changing workspace must clear selection, [compose those values in one parent model](/explore/composing-refsubject-state).
+When a selected row may be absent, [derive an optional view](/explore/derived-conditional-and-accumulated-state)
+that can also tell a consumer to clear its output.

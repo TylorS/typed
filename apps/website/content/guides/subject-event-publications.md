@@ -38,19 +38,26 @@ import { Fx } from "@typed/fx"
 import * as Subject from "@typed/fx/Subject"
 
 const program = Effect.scoped(Effect.gen(function* () {
-  const events = yield* Subject.make<string>(1)
-  const received = yield* Fx.collectAllFork(Fx.take(events, 2))
-  while ((yield* events.subscriberCount) < 1) yield* Effect.yieldNow
-  yield* events.onSuccess("connected")
-  yield* events.onSuccess("ready")
-  return yield* Fiber.join(received)
+  const events = yield* Subject.make<string>(0)
+
+  const activity = yield* Fx.collectAllFork(Fx.take(events, 2))
+  const notifications = yield* Fx.collectAllFork(Fx.take(events, 2))
+  yield* Effect.sleep(0)
+
+  yield* events.onSuccess("saved")
+  yield* events.onSuccess("published")
+
+  return {
+    activity: yield* Fiber.join(activity),
+    notifications: yield* Fiber.join(notifications),
+  }
 }))
 ```
 
-The readiness check is part of the test contract: zero replay cannot recover a publication made
-before subscription. `make` requires Scope; closing its owner releases subscriptions and replay.
+Both observers receive `["saved", "published"]`. `Effect.sleep(0)` lets the forked consumers run before publishing; zero replay cannot recover a
+publication made before subscription. `make` requires Scope; closing its owner releases subscriptions and replay.
 
-## <span id="observe-event-effects-without-retaining-state-in-the-subject">Optional delivery contracts</span>
+## <span id="observe-event-effects-without-retaining-state-in-the-subject">Publishing a failure does not close the Subject</span>
 
 `onSuccess` snapshots current subscribers and serializes concurrent or reentrant publications in
 FIFO order. A new subscriber sees later publications; replay can race an already-queued live
@@ -63,34 +70,37 @@ import { Cause, Data, Effect, Ref } from "effect"
 import { Sink } from "@typed/fx"
 import * as Subject from "@typed/fx/Subject"
 
-class ConnectionLost extends Data.TaggedError("ConnectionLost")<{}> {}
+class AuditUnavailable extends Data.TaggedError("AuditUnavailable")<{}> {}
 
 const program = Effect.scoped(Effect.gen(function* () {
-  const events = yield* Subject.make<string, ConnectionLost>()
+  const events = yield* Subject.make<string, AuditUnavailable>()
+
   const values = yield* Ref.make<ReadonlyArray<string>>([])
   const failures = yield* Ref.make(0)
-  const sink = Sink.make<string, ConnectionLost>(
+  const sink = Sink.make<string, AuditUnavailable>(
     () => Ref.update(failures, (count) => count + 1),
     (value) => Ref.update(values, (all) => [...all, value]),
   )
+
   yield* Effect.forkScoped(events.run(sink))
-  while ((yield* events.subscriberCount) < 1) yield* Effect.yieldNow
-  yield* events.onFailure(Cause.fail(new ConnectionLost()))
-  yield* events.onSuccess("reconnected")
+  yield* Effect.sleep(0)
+
+  yield* events.onFailure(Cause.fail(new AuditUnavailable()))
+  yield* events.onSuccess("saved")
+
   return { failures: yield* Ref.get(failures), values: yield* Ref.get(values) }
 }))
 
 await Effect.runPromise(program)
 ```
 
-## <span id="name-events-shared-by-independently-assembled-features">Optional sharing contracts</span>
+## <span id="name-events-shared-by-independently-assembled-features">Publishing events versus sharing a source</span>
 
 `Subject.Service` supplies a publication capability through a Layer when independently assembled
-features need one. `multicast`, `hold`, `replay`, and `share` instead share one source execution for
-one observer population. The first subscriber starts that source and the last leaving interrupts it;
-constructing a wrapper per consumer defeats sharing. The generated
-[operator atlas](/explore/fx-operator-atlas) is the exhaustive lookup.
+features need one. To share an existing producer instead, see [sharing one source execution](/explore/fx-services-and-lifetime#trace-a-second-observer-before-choosing-sharing).
+The distinction is who produces the events: callers publish into a Subject; a shared wrapper runs
+its source while subscribers need it.
 
-Test registration, payload delivery, Cause handling, replay, and source cleanup as separate
-promises. Continue with [services and lifetime](/explore/fx-services-and-lifetime) for the owner or
-[stateful transforms](/explore/fx-stateful-transforms) for local event history.
+Check both observers receive each publication and that a late observer receives no old events with
+capacity zero. Continue with [dynamic producers](/explore/fx-dynamic-producers) when observation
+must choose or acquire the source.

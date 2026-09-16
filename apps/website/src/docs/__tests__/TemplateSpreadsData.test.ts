@@ -12,7 +12,7 @@ const guidePath = path.join(websiteRoot, "content/guides", guideFile);
 const templateSource = path.join(websiteRoot, "../../packages/template/src");
 
 describe("Template spread and data guide", () => {
-  it("documents capability replacement and keeps every example compilable", () => {
+  it("demonstrates grouped bindings and keeps every example compilable", () => {
     const source = fs.readFileSync(guidePath, "utf8");
     const guide = parseGuideDocumentation(guideFile, source);
 
@@ -21,14 +21,14 @@ describe("Template spread and data guide", () => {
       section: "Template bindings",
       kind: "guide",
     });
-    for (const term of ["?disabled", ".data", "onclick", "ref", "replacement", "serialization"]) {
-      expect(source).toContain(term);
-    }
     expect(guide.body).toContain("/explore/template-element-bindings");
     expect(guide.body).toContain("/explore/template-references-and-element-access");
 
     const examples = extractTypeScriptFences(source);
     expect(examples).not.toHaveLength(0);
+    for (const binding of ["?disabled", ".data", "onclick", "...${"]) {
+      expect(examples.join("\n")).toContain(binding);
+    }
     expect(validateAuthoredExampleQuality([guide])).toEqual([]);
 
     const staging = fs.mkdtempSync(path.join(websiteRoot, ".template-spreads-data-check-"));

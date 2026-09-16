@@ -1,16 +1,14 @@
 ---
 title: "WindowSplitter: accessible range state for resizable panes"
 summary: "Connect native pointer dragging and keyboard resizing to the same bounded pane layout."
-section: "UI / Collections"
+section: "UI / Foundations"
 kind: "deep-dive"
 order: 251
 ---
 
-An inspector sits beside a document. The user needs more room for property names, so they focus
-the divider and press Right, or drag it with a pointer. A working splitter must change both the pane's actual width and the
-value announced for the divider. We will bind those outputs to one state, then follow collapse and
-restore to see why the current width and remembered width differ. Both interactions update the same bounded value. The component owns the native drag session;
-the application binds that value to the actual pane layout.
+A splitter must change both the pane's visible width and the divider's announced value. This
+example derives them from one bounded state. Keyboard resizing and pointer dragging update that
+same value; Enter collapses the pane and restores its remembered width.
 
 ## Bind the value to a responsive pane layout
 
@@ -27,9 +25,11 @@ export const ResizableInspector = component(function* (id: string) {
   const state = yield* WindowSplitter.makeState({
     value: 35, min: 15, max: 70, step: 5, orientation: "vertical",
   });
+
   // Reserve the handle width, then share the remaining space between panes.
   const layout = RefSubject.map(state, ({ value }) =>
     `display: grid; grid-template-columns: minmax(0, ${value}fr) 12px minmax(0, ${100 - value}fr);`);
+
   return html`<section>
     <p id=${`${id}-help`}>Drag the divider, or focus it and use Left/Right. Enter collapses or restores.</p>
     <div style=${layout}>
@@ -84,11 +84,9 @@ Every movement goes through `setValue`, retaining the same min/max clamp as keyb
 Without `valuePerPixel`, the parent dimension minus separator thickness represents 100 value units.
 This fits the default percentage range and a two-pane grid using `value` and `100 - value` fractional
 tracks. For a pixel-based pane layout, pass `valuePerPixel: 1` instead. Other units need a positive,
-finite scale. The scale and orientation are sampled when a gesture starts; responsive layout changes
-during that gesture do not continually reinterpret its origin. Positive axis-aligned CSS scaling
-is included in the conversion: pointer coordinates and separator thickness use viewport pixels,
-while the parent client area excludes borders and scrollbars. Rotation, skew, or reversed visual
-layouts need a separate layout/coordinate policy.
+finite scale. Scale and orientation are sampled at gesture start. Positive axis-aligned CSS scaling
+is supported; rotation, skew, or reversed visual layouts need a separate coordinate policy. See the
+[WindowSplitter API](/reference/modules/%40typed%2Fui%2FWindowSplitter) for custom drag scaling.
 
 Pointer up, cancellation, lost capture, and render-Scope teardown release the session. A second
 pointer cannot take over an active gesture. The host composes caller styles with `touch-action: none`
@@ -106,12 +104,9 @@ range and controls attributes; a decorative `Separator` is not interchangeable w
 
 ## Validate the layout and the announced range together
 
-State tests can prove clamping, Home/End targets, and collapse/restore memory. Browser tests must
-also inspect actual pane width, the focused separator, and `aria-valuenow` after keys and real pointer drags beyond the handle. Test release/cancel and removal during a drag,
-then verify later pointer movement cannot resize the removed pane. Test both
-orientations and disabled behavior, and check the minimum width in a narrow viewport. If the number
-changes but layout does not, inspect the style subscription. If layout changes but the announced
-value is stale, look for a second sizing state bypassing the family.
+Check pane width and `aria-valuenow` together after keys and pointer drags. Verify clamping,
+collapse/restore, disabled behavior, and removal during a drag. If only one output changes, look for
+a missing style subscription or a second sizing state bypassing the family.
 
 The splitter does not need a collection and has no selected-versus-active item distinction: its
 value is a continuous layout choice and its focus is the actual separator. Keep that simpler model

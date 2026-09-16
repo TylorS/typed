@@ -13,7 +13,7 @@ import * as RefSubject from "../RefSubject.js";
 const NumberFromStringExcept13 = Schema.String.pipe(
   Schema.decodeTo(
     Schema.Finite,
-    SchemaTransformation.transformOrFail({
+    SchemaTransformation.transformEffect({
       decode: (value) => Effect.succeed(Number(value)),
       encode: (value, options) =>
         value === 13

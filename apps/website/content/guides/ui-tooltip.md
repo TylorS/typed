@@ -21,6 +21,7 @@ import * as Tooltip from "@typed/ui/Tooltip";
 
 const RefreshWithHelp = component(function* <R>(id: string, refresh: Effect.Effect<void, never, R>) {
   const state = yield* Tooltip.makeState({ id });
+
   return [
     Tooltip.Anchor(
       { state, showDelay: 250, hideDelay: 100, content: "Refresh", onclick: refresh },
@@ -47,4 +48,4 @@ Check keyboard focus opens the description, Escape closes it, and moving pointer
 
 The implementation does not provide automatic collision-aware positioning, touch-specific long-press behavior, or a full focus-versus-hover arbitration policy. If your required interaction includes these, implement and test them at an appropriate owner. Do not infer automatic anchoring from top-layer rendering. The underlying platform behavior is documented in [MDN Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API).
 
-E and R include hydrated state acquisition and any Effectful content, callbacks, or host output. `setOpen` updates state without supplying those requirements; `Tooltip.Tooltip` aliases `Content`. A custom ref must preserve exactly one hydration owner. Continue with [Dom events and refs](/explore/ui-dom) for composition details. API: [Tooltip](/reference/modules/%40typed%2Fui%2FTooltip).
+Continue with [Dom events and refs](/explore/ui-dom) when composing a custom host. API: [Tooltip](/reference/modules/%40typed%2Fui%2FTooltip).

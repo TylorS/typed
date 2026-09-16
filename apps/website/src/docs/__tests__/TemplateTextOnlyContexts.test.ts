@@ -34,22 +34,7 @@ describe("Template text-only contexts guide", () => {
       section: "Template bindings",
       kind: "deep-dive",
     });
-    for (const term of [
-      "textarea",
-      "title",
-      "script",
-      "style",
-      "xmp",
-      "plaintext",
-      "HtmlRenderEvent",
-      "\\\\u003c",
-      "\\\\3C",
-      "&lt;",
-      "does not sanitize",
-      "hydration",
-    ]) {
-      expect(guide.body).toContain(term);
-    }
+    expect(guide.body).toContain("/explore/html-render-event");
 
     expect(parser).toContain(
       'new Set(["textarea", "script", "style", "title", "plaintext", "xmp"])',
@@ -70,7 +55,6 @@ describe("Template text-only contexts guide", () => {
     const fences = extractTypeScriptFenceDocuments(guide.body);
     expect(fences.some(({ code }) => code.includes("JSON.stringify"))).toBe(true);
     expect(fences.some(({ code }) => code.includes("<textarea"))).toBe(true);
-    expect(fences.some(({ code }) => code.includes("<style>"))).toBe(true);
     expect(validateAuthoredExampleQuality([guide])).toEqual([]);
   });
 

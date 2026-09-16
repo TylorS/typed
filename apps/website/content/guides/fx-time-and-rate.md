@@ -16,6 +16,7 @@ apply a clock only where the feature can name its outcome.
 import { Fx } from "@typed/fx"
 
 const input = Fx.fromIterable(["t", "ty", "typed"])
+
 const delayed = input.pipe(Fx.delay("100 millis"))
 const settled = input.pipe(Fx.debounce("250 millis"))
 const preview = input.pipe(Fx.throttle("100 millis"))
@@ -37,8 +38,11 @@ const settledQuery = Effect.fn(function* () {
   const search = Fx.mergeAll(Fx.at("ty", "0 millis"), Fx.at("typed", "50 millis")).pipe(
     Fx.debounce("200 millis"),
   )
+
   const fiber = yield* Effect.forkScoped(Fx.collectAll(search))
+
   yield* TestClock.adjust("250 millis")
+
   expect(yield* Fiber.join(fiber)).toEqual(["typed"])
 })
 
@@ -47,8 +51,7 @@ it.effect("keeps only the settled query", () =>
 )
 ```
 
-Advance the same Effect clock that owns the source. A browser event adapter still needs an owner
-and cleanup; [dynamic producers](/explore/fx-dynamic-producers) covers that boundary.
+Advance the same Effect clock that owns the source.
 
 ## Poll by completion or tick on a schedule
 
@@ -71,6 +74,7 @@ Failure is not repetition: [recovery](/explore/fx-errors-and-recovery) owns retr
 import { Fx } from "@typed/fx"
 
 const heartbeat = Fx.periodic("1 second")
+
 const connectionEnded = heartbeat.pipe(Fx.timeout("2 seconds"))
 const availability = heartbeat.pipe(Fx.timeoutTo("2 seconds", Fx.succeed("offline")))
 ```
@@ -78,12 +82,10 @@ const availability = heartbeat.pipe(Fx.timeoutTo("2 seconds", Fx.succeed("offlin
 `timeout` completes normally after the chosen silence. `timeoutTo` instead interrupts the source
 and begins a fallback. Neither proves a server disconnected; each models the application threshold.
 
-## <span id="give-each-drag-its-own-movement-window">Optional recipe: drag windows</span>
+<span id="give-each-drag-its-own-movement-window"></span>
 
-A drag needs a scoped event adapter, a matching stop signal, and a rate policy for derived positions.
-Those browser details are intentionally outside this timing lesson. Use [dynamic producers](/explore/fx-dynamic-producers)
-for adapters and [higher-order work](/explore/fx-higher-order-and-concurrency) when every start opens
-a replacement window.
+For clock policies applied to browser events, [dynamic producers](/explore/fx-dynamic-producers)
+covers event registration and cleanup.
 
 Continue with [errors and recovery](/explore/fx-errors-and-recovery) when a timed request fails or
 retries; [services and lifetime](/explore/fx-services-and-lifetime) attaches these clocks to a

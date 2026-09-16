@@ -25,16 +25,20 @@ const ReportStrip = <E, R>(run: (command: string) => Effect.Effect<void, E, R>) 
   const state = yield* Composite.makeState({ activeId: "strip-print", orientation: "horizontal" });
   const collection = yield* Collection.makeState<string, HTMLButtonElement>();
   const options = { state, collection };
+
   const keydown = EventHandler.make(Effect.fn(function* (event: KeyboardEvent) {
     const direction = Composite.keyMove(event, yield* state);
     if (direction === undefined) return;
+
     event.preventDefault();
     yield* Composite.moveAndFocus(options, direction);
   }));
+
   const controls = [
     { id: "strip-print", label: "Print", command: "print" },
     { id: "strip-export", label: "Export", command: "export" },
   ];
+
   return html`<div role="toolbar" aria-label="Report commands" ref=${state}
     tabindex=${Composite.rootTabIndex(state)} onkeydown=${keydown}>
     ${controls.map((item) => html`<button type="button" id=${item.id}
@@ -44,6 +48,7 @@ const ReportStrip = <E, R>(run: (command: string) => Effect.Effect<void, E, R>) 
       onclick=${run(item.command)}>${item.label}</button>`)}
   </div>`;
 });
+
 const reportStrip = ReportStrip((command) => Effect.log(command));
 ```
 
@@ -59,12 +64,10 @@ With `virtualFocus: true`, items remain at -1 and the root stays at zero. Bind `
 
 `keyMove` maps Home/End and orientation-appropriate arrows, reversing horizontal movement in RTL. `moveByKey` prevents recognized defaults and updates state but does not itself focus. `moveAndFocus` adds focus and nearest scrolling. `moveActiveId` and `moveActiveItem` are pure alternatives for tests; movement uses DOM order and skips disabled entries unless `includeDisabled` is true.
 
-`typeaheadFrom` searches after the active item and wraps, matching a case-insensitive prefix of `textValue` or ID. `typeahead` starts without an active ID. `typeaheadKey` rejects modified shortcuts; `updateTypeaheadBuffer` accepts an explicit clock value and defaults to a 500ms reset threshold. None of these installs a listener or starts a timer for you. A family decides whether matching moves focus, selects, or merely previews.
+Typeahead is a separate policy: the [typeahead helpers](/reference/modules/%40typed%2Fui%2FComposite) find matching items and maintain a search buffer, but install no listener or timer. The family decides whether a match moves focus, selects, or previews.
 
 ## Diagnose the right layer
 
 If activeId changes but focus does not, distinguish `move` from `moveAndFocus` and check `virtualFocus`. If focus fails silently, inspect registration: `focusElement` tolerates an absent focus method. If the page scrolls on arrows, the handler has not prevented the recognized default. If order seems wrong after rearrangement, inspect the actual registered elements and DOM order.
-
-The hydrated state and mounted collection have separate lifetimes. Movement combines both states' E/R; DOM focus calls add no typed domain error but can fail as defects. Scope owns registration, state, and rendered listeners. Test pure movement boundaries first, then real browser focus, scroll, disabled/removal behavior, and accessible state.
 
 Next: [Dom](/explore/ui-dom) for host assembly or the existing [Toolbar](/explore/ui-toolbar) family. API: [Composite](/reference/modules/%40typed%2Fui%2FComposite).

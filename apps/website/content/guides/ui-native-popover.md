@@ -22,10 +22,13 @@ import * as NativePopover from "@typed/ui/NativePopover";
 
 const ExportHelp = component(function* (id: string) {
   const state = yield* RefSubject.make({ open: false });
+
   const readToggle = EventHandler.make((event: Event) => {
     const open = Dom.toggleState(event) === "open";
+
     return RefSubject.set(state, { open });
   });
+
   return html`
     <button type="button" popovertarget=${id}>Export help</button>
     <button type="button" onclick=${RefSubject.set(state, { open: true })}>Show help</button>
@@ -44,7 +47,9 @@ The observer checks `element.matches(":popover-open")` before calling `showPopov
 
 Unlike the compound `Popover`, this example can select `popover="auto"` because it owns the host. Auto dismissal is supplied by the browser, not by the ref. The standard family fixes `manual` as an internal prop, so attempting to override that through `props` is not the same extension point.
 
-A ref callback accepts an `HTMLElement` and returns `Effect<void, E, R | Scope>`. State observation runs in a scoped fiber. Closing that Scope stops future synchronization but does not promise to call `hidePopover` on externally owned elements. The observer is browser-only; it contributes no serialized hydration state or SSR attributes. For hydration, compose exactly one hydrated state owner with the observer via `Dom.composeRefs`.
+State observation belongs to the ref's Scope. Closing that Scope stops synchronization but does not call `hidePopover` on externally owned elements.
+
+The observer supplies no SSR attributes or serialized state. For server-rendered markup, see [Dom ref composition](/explore/ui-dom#refs) to attach a hydration owner alongside the observer.
 
 ## Debug the native boundary
 
@@ -54,4 +59,4 @@ surface cannot open merely because it is attached later. This follows the same s
 policy as NativeDialog; hidden documents may defer the check until animation frames resume.
 A missing `popover` attribute can still make the native call invalid. Missing `showPopover` indicates that the environment does not supply the API; this primitive does not polyfill it. Exceptions in native methods are defects, while state failures retain their original typed E. Test against real toggle events, including an outside click for auto mode and repeated open/close cycles.
 
-The content still needs an appropriate role or semantic element, a readable name, focus visibility, and layout. A top-layer surface does not establish a menu keyboard model or modal inertness. Continue with [Hovercard](/explore/ui-hovercard) when pointer/focus transfer must keep interactive content available. API: [NativePopover.ref](/reference/modules/%40typed%2Fui%2FNativePopover).
+For a complete supporting panel, use [Popover](/explore/ui-popover); for interactive pointer/focus previews, use [Hovercard](/explore/ui-hovercard). API: [NativePopover.ref](/reference/modules/%40typed%2Fui%2FNativePopover).

@@ -6,14 +6,12 @@ kind: "reference"
 order: 6
 ---
 
-Suppose the query state is correct in a log but the search field appears stale. There are several
-possible breaks: the input event read the wrong field, state was not published, the render was
-stopped, a queue hasn't applied the change, or another writer overwrote the native field. Debugging
-is easier when each step has a concrete target.
+Each scalar interpolation owns a concrete DOM target: an element property, an attribute, or a text
+location. The renderer captures that target during setup and writes to it when its input publishes.
+A later update does not search the document or rerun the component generator.
 
-This guide follows the editing loop from [template authoring](/explore/authoring-typed-templates).
-The syntax's set/clear rules live in [scalar bindings](/explore/template-element-bindings); this page
-uses them to locate a real update failure.
+The syntax's set/clear rules live in [scalar bindings](/explore/template-element-bindings). Here,
+one editing loop shows how retained targets work and how to diagnose a stale field.
 
 ## Start from one complete feedback loop
 
@@ -24,9 +22,11 @@ import * as EventHandler from "@typed/template/EventHandler";
 
 export const Search = component(function* () {
   const query = yield* RefSubject.make("");
+
   const readInput = EventHandler.make((event: Event) =>
     RefSubject.set(query, (event.currentTarget as HTMLInputElement).value),
   );
+
   return html`<label>
     Search articles
     <input type="search" .value=${query} oninput=${readInput} />
@@ -60,32 +60,24 @@ same operation as assigning a string to one field.
 | `getAttribute("value")` is unchanged | read `input.value`; this template owns the property |
 | Output changed but input object was replaced | parent switching, root output, or a changing collection key |
 | Field changes then immediately reverts | another writer or another state publication |
-| Events stop after a spread change | whether the handler entry was removed and finalized |
 
 An attribute MutationObserver cannot detect every property assignment. Inspect the native property
 as well, and use a DOM breakpoint on the actual suspect element rather than observing the entire
 page. Count producer publications and applied changes separately; queue coalescing can make those
 counts differ while retaining the latest value.
 
-## Draw the cooperation boundary around fields
+## Give each field one writer
 
-Typed can own the edit property while an analytics helper owns a distinct data attribute and an
-animation library owns separate class tokens. It cannot merge simultaneous writes to `.value` or
-recover its captured input after another owner replaces the label's `innerHTML`.
+Typed can own `.value` while another library owns a distinct data attribute. Two owners writing
+`.value` can overwrite each other; replacing the label's `innerHTML` also destroys the captured
+input. For collection-valued fields, see [spread lifetimes](/explore/template-spreads-data) and
+[class contributions](/explore/dom-class-names).
 
-The same rule explains why a spread is not one opaque assignment. Each accepted entry has its own
-field and lifetime; class/data entries additionally track local collections. Use
-[spread lifetimes](/explore/template-spreads-data) and [class contributions](/explore/dom-class-names)
-when the suspected conflict is inside those collections.
+## Verify the bound property
 
-## Keep the test proportional to the failure
+For the example above, retain the input object, change `query`, and assert that the same input's
+`.value` and the output's text both match the new value after rendering applies it. Reading the
+`value` attribute would test a different field.
 
-For a property binding, assert its native value and stable element identity after a real state
-change. For an event, assert dispatch/cancellation and cleanup. For a queue, assert the chosen
-scheduling condition rather than sleeping a guessed duration. For structural replacement, test the
-owned range and child lifetimes.
-
-A passing text assertion proves only that text. It does not prove a selection survived, another
-owner's class remained, or a removed listener stopped running. Move to
-[Direct updates, local reconciliation](/explore/dom-updates-and-reconciliation) when the interaction
-actually changes a collection or nested range.
+For changes to collections or nested ranges, use
+[Direct updates, local reconciliation](/explore/dom-updates-and-reconciliation).

@@ -6,51 +6,10 @@ kind: "guide"
 order: 6.7
 ---
 
-A review queue starts with a list of issues. Users then ask to share their filtered list, reload a
-detail page, and use Back to return to the same search. Keeping the selected issue and filters only
-in component state cannot provide those behaviors: the URL needs to describe them.
-
-A `Route` is the typed contract for one URL family. It describes path/query syntax and the codecs
-that turn URL strings into handler input. It does not observe the browser, select a page, or run a
-request. That separation lets the same contract serve links, browser routing, HTTP handlers, and tests.
-Read the [routing overview](/explore/routing-routes-matchers-and-navigation) for how those pieces fit.
-
-## Decide which state should survive a copied link
-
-For this queue, the workspace identifies the collection; `q` and `status` describe filters. They
-belong in the URL because a copied link should reconstruct the same search. A draft comment and
-whether the user has opened a temporary menu can remain local.
-
-```ts
-import * as Router from "@typed/router"
-
-const Queue = Router.Parse("/workspaces/:workspaceId/issues?q=:q?&status=:status?")
-type QueueParams = Router.Type<typeof Queue>
-// workspaceId: string; q?: string; status?: string
-
-const queueHref = ({ workspaceId, q, status }: QueueParams) => {
-  const query = new URLSearchParams()
-  if (q !== undefined && q !== "") query.set("q", q)
-  if (status !== undefined && status !== "all") query.set("status", status)
-  const encoded = query.toString()
-  return `/workspaces/${encodeURIComponent(workspaceId)}/issues${encoded ? `?${encoded}` : ""}`
-}
-
-const href = queueHref({ workspaceId: "typed", q: "render & hydrate", status: "open" })
-```
-
-The optional placeholders yield optional fields. The helper defines a canonical representation:
-empty query and `all` status are omitted. Route does not infer these defaults; application code
-should derive them once after decoding, then reuse that policy for links and loaders.
-
-`URLSearchParams` handles query encoding, including characters such as `&` inside a value. Pass
-unencoded values to it and avoid encoding its output a second time. Path values are encoded as
-individual segments so separators remain separators. See the platform's
-[URLSearchParams contract](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams).
-
-This route accepts arbitrary string status values. If only `open`, `closed`, and `all` are valid,
-add that vocabulary to a Schema/Guard at the input boundary. A placeholder name gives a field a
-name and string shape, not a business constraint.
+A `Route` describes a URL family and decodes its path/query strings into typed handler input.
+Declare numeric IDs and optional filters here so links and loaders share the same contract.
+Route does not observe history or select a page; the [routing overview](/explore/routing-routes-matchers-and-navigation)
+explains those responsibilities. The examples use Effect Schema for decoding and encoding.
 
 ## Decode into the type the operation actually needs
 
@@ -73,7 +32,9 @@ const issueHref = (params: IssueParams) =>
 const example = Effect.gen(function* () {
   const decoded = yield* decodeIssue({ issueId: "42" })
   const href = yield* issueHref(decoded)
+
   const invalid = yield* Effect.exit(decodeIssue({ issueId: "forty-two" }))
+
   return { decoded, href, invalid }
 })
 
@@ -98,6 +59,7 @@ import * as Router from "@typed/router"
 import { Schema } from "effect"
 
 const WorkspaceId = Schema.String.pipe(Schema.brand("WorkspaceId"))
+
 const Workspace = Router.Join(
   Router.Parse("/workspaces"),
   Router.ParamWithSchema("workspaceId", WorkspaceId),
@@ -110,12 +72,57 @@ The brand distinguishes this identifier in TypeScript; its schema decides runtim
 reusable fragments preserves the combined decoded shape. Duplicate decoded names are rejected at
 construction: two different fragments cannot both silently claim `id`.
 
+## Decide which state should survive a copied link
+
+For a workspace's issue list, `workspaceId` identifies the collection; `q` and `status` filter it. They
+belong in the URL because a copied link should reconstruct the same search. A draft comment and
+whether the user has opened a temporary menu can remain local.
+
+```ts
+import * as Router from "@typed/router"
+
+const Queue = Router.Parse("/workspaces/:workspaceId/issues?q=:q?&status=:status?")
+type QueueParams = Router.Type<typeof Queue>
+
+// workspaceId: string; q?: string; status?: string
+
+const queueHref = ({ workspaceId, q, status }: QueueParams) => {
+  const query = new URLSearchParams()
+
+  if (q !== undefined && q !== "") query.set("q", q)
+
+  if (status !== undefined && status !== "all") query.set("status", status)
+
+  const encoded = query.toString()
+
+  return `/workspaces/${encodeURIComponent(workspaceId)}/issues${encoded ? `?${encoded}` : ""}`
+}
+
+const href = queueHref({ workspaceId: "typed", q: "render & hydrate", status: "open" })
+```
+
+The optional placeholders yield optional fields. The helper defines a canonical representation:
+empty query and `all` status are omitted. Route does not infer these defaults; application code
+should derive them once after decoding, then reuse that policy for links and loaders.
+
+`URLSearchParams` handles query encoding, including characters such as `&` inside a value. Pass
+unencoded values to it and avoid encoding its output a second time. Path values are encoded as
+individual segments so separators remain separators. See the platform's
+[URLSearchParams contract](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams).
+
+This route accepts arbitrary string status values. If only `open`, `closed`, and `all` are valid,
+add that vocabulary to a Schema/Guard at the input boundary. A placeholder name gives a field a
+name and string shape, not a business constraint.
+
 ## Test the URL as an external input
 
-Test both directions. Generate a URL from decoded parameters, let Matcher select and decode it,
-and assert the handler's input. Include spaces, non-ASCII text, reserved characters, missing
-optional values, invalid numbers, repeated declared query keys, and duplicate decoded names.
-Testing only that a link string “looks right” misses its relationship to the decoder.
+In the numeric example, verify `result.decoded.issueId === 42`, `result.href === "/issues/42"`,
+and that `result.invalid` is a failure. Then use that generated URL in the
+[Matcher journey](/explore/router-navigation-live-selection) and check the decoded handler input.
+This checks the relationship between a link and its decoder, not just the link's appearance.
+
+For query inputs, include reserved characters such as the `&` in the queue example and omitted
+optional values. The grammar reference below identifies the ambiguous patterns worth testing.
 
 When a deep link fails, inspect pathname and search separately, then the Route's normalized path and
 codecs. If they are correct, investigate [Matcher candidate selection](/explore/router-navigation-live-selection).
@@ -128,7 +135,7 @@ live page work, or the [Route reference](/reference/modules/%40typed%2Frouter%2F
 constructors and type projections.
 
 <details>
-<summary>Reference: route grammar, schema projections and library extensions</summary>
+<summary>Reference: route grammar and validation</summary>
 
 ## Read path and query grammar without guessing
 
@@ -165,6 +172,7 @@ import * as Router from "@typed/router"
 import { Schema } from "effect"
 
 const Queue = Router.Parse("/workspaces/:workspaceId/issues?q=:q?&status=:status?")
+
 const path = Schema.decodeEffect(Queue.pathSchema)({ workspaceId: "typed" })
 const query = Schema.decodeEffect(Queue.querySchema)({ q: "hydration", status: "open" })
 const params = Schema.decodeEffect(Queue.paramsSchema)({ workspaceId: "typed", status: "open" })
@@ -174,14 +182,8 @@ Syntax validation and authorization are different boundaries. A well-formed work
 needs a permission check when data is loaded or mutated. A page Guard can enrich or reject decoded
 input for selection; it cannot replace authorization in the server operation itself.
 
-Library helpers can project Route types without creating another route model. `Router.Route.Path` gives
-the normalized literal pattern; `Router.Params` describes raw syntax parameters; `Router.Type` gives
-the decoded handler shape; `PathType` and `QueryType` select their parts. `Router.Route.Schema`,
-`DecodingServices`, and `EncodingServices` expose the codec contract for generic utilities.
-
-`Router.make(ast)` is the extension point for code generators and routing libraries. It accepts the
-public [Route AST](/reference/modules/%40typed%2Frouter%2FAST); ordinary applications usually express
-the same model more clearly with Parse and Join. Type-level Path, Parser, and Uri modules underpin
-literal inference and are useful when building such tooling, not prerequisites for a queue page.
+For generic type projections and custom constructors, use the
+[Route reference](/reference/modules/%40typed%2Frouter%2FRoute) and
+[Route AST reference](/reference/modules/%40typed%2Frouter%2FAST).
 
 </details>

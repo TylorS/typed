@@ -1,6 +1,4 @@
 // oxlint-disable require-yield
-import "./styles.css";
-
 import { Effect } from "effect";
 import { Fx, RefSubject } from "@typed/fx";
 import { component, EventHandler, html, many } from "@typed/template";
@@ -13,8 +11,10 @@ const HasTodos = RefSubject.map(App.TodoList, (list) => list.length > 0).pipe(Fx
 const TodoItem = component(function* (todo: RefSubject.RefSubject<Domain.Todo>, id: Domain.TodoId) {
   const editing = yield* RefSubject.make(false);
   const draft = yield* RefSubject.make("");
+
   const text = RefSubject.map(todo, (value) => value.text);
   const completed = RefSubject.map(todo, (value) => value.completed);
+
   const begin = text.pipe(
     Effect.flatMap((value) => RefSubject.set(draft, value)),
     Effect.flatMap(() => RefSubject.set(editing, true)),
@@ -24,6 +24,7 @@ const TodoItem = component(function* (todo: RefSubject.RefSubject<Domain.Todo>, 
     Effect.flatMap((value) => App.editTodo(id, value)),
     Effect.flatMap(() => cancel),
   );
+
   return html`<li
     class="${Fx.when(completed, { onTrue: "completed", onFalse: "" })} ${Fx.when(editing, { onTrue: "editing", onFalse: "" })}"
   >
@@ -57,6 +58,7 @@ const TodoItem = component(function* (todo: RefSubject.RefSubject<Domain.Todo>, 
       onkeydown=${EventHandler.make((event: KeyboardEvent) => {
         if (event.key === "Escape") return cancel;
         if (event.key === "Enter") return save;
+
         return undefined;
       })}
     />
@@ -101,7 +103,7 @@ export const TodoApp = html`<section class="todoapp">
     </section>
     <footer class="footer">
       <span class="todo-count"><strong>${App.ActiveCount}</strong>
-        ${RefSubject.map(App.ActiveCount, (count) => (count === 1 ? "item" : "items"))} left</span>
+        ${RefSubject.map(App.ActiveCount, (count) => (count === 1 ? " item" : " items"))} left</span>
       <ul class="filters">
         ${Domain.FilterState.literals.map(
           (filter) =>

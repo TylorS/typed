@@ -15,7 +15,7 @@ Astro owns the page and its Markdown. Typed owns the order island, its reactive 
 Install the published beta package with the matching Typed beta dependencies:
 
 ```sh
-pnpm add @typed/astro@beta @typed/fx@beta @typed/template@beta @typed/ui@beta astro@^7.3.1 effect@4.0.0-rc.112
+pnpm add @typed/astro@beta @typed/fx@beta @typed/template@beta @typed/ui@beta astro@^7.3.1 effect@4.0.0-rc.115
 ```
 
 The `beta` dist-tag keeps the integration and its Typed dependencies on the same release family. Astro 7 and Effect v4 are supported by the current integration.
@@ -117,4 +117,4 @@ The [Astro package reference](/reference/packages/%40typed%2Fastro) lists the fu
 
 Test the generated page with JavaScript disabled to inspect its HTML-only state. Then enable JavaScript, click once, and verify one increment rather than duplicate listeners. Navigate away and back through your actual Astro navigation setup to verify island cleanup. Check the console and the island's `typed:error` event separately: an exception before hydration and a failure in an already-running stream occur at different boundaries.
 
-For a mismatch, compare server and client props, randomness, timestamps, locale formatting, and conditional browser-only markup before changing hydration behavior. A browser-only API belongs in an explicitly client-only component or a browser lifecycle boundary; importing a module that reads `document` during server evaluation still fails before a client directive can help. Use [Astro islands](https://docs.astro.build/en/concepts/islands/) for the page-level model and [Typed components](/explore/building-ui-components) for generator lifetime and service inference.
+For a mismatch, compare server and client props, randomness, timestamps, locale formatting, and conditional browser-only markup before changing hydration behavior. A browser-only API belongs in an explicitly client-only component or a browser lifecycle boundary; importing a module that reads `document` during server evaluation still fails before a client directive can help. Use [Astro islands](https://docs.astro.build/en/concepts/islands/) for the page-level model and [Typed components](/explore/ui-component) for generator lifetime and service inference.

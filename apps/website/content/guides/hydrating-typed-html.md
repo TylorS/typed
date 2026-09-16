@@ -9,6 +9,8 @@ order: 92
 A server-rendered search input may already contain a visitor's edit before JavaScript starts.
 Hydration tries to retain that exact element and connect the live program to it. Producing identical
 text by replacing the input is a different result, even if the page looks correct afterward.
+Retaining the node does not by itself preserve an early edit: a controlled `.value` binding can
+still overwrite it when client state arrives.
 
 Read [Rendering HTML on the server](/explore/rendering-html-on-the-server) and
 [Mounting DOM output](/explore/mounting-dom-output) first. This article explains adoption and its
@@ -21,24 +23,19 @@ failure modes; the complete request/browser example is in
 those markers below the supplied host. It does not attach behavior to arbitrary hand-authored HTML.
 
 ```ts
-import { Effect, Fiber } from "effect";
-import { Fx } from "@typed/fx";
-import { DomRenderTemplate, html, render } from "@typed/template";
+import { html, render } from "@typed/template";
 
-// The server placed this exact inner template below #app using HtmlRenderTemplate.
-const page = html`<section><h1>Saved articles</h1><p>Collection ready.</p></section>`;
+// The server rendered this same inner template with HtmlRenderTemplate.
+const page = html`<section><h1>Counter</h1><p>Ready.</p></section>`;
+
 const host = document.getElementById("app");
 if (host === null) throw new Error("Missing #app host");
 
-const application = page.pipe(
-  render(host),
-  Fx.drain,
-  Effect.provide(DomRenderTemplate.using(host.ownerDocument)),
-  Effect.scoped,
-);
-const fiber = Effect.runFork(application);
-export const stop = () => Effect.runPromise(Fiber.interrupt(fiber));
+export const output = page.pipe(render(host));
 ```
+
+Run `output` with the supervised `DomRenderTemplate` mount from
+[Mounting DOM output](/explore/mounting-dom-output).
 
 The server owns the response's document shell; the browser here owns the inner host's output.
 Passing the entire document template to this host asks for a different shape. Clearing the host
@@ -87,9 +84,6 @@ property writer. If application state must control editing, design how early edi
 reconciled and test that policy. The same distinction applies to checked state, focus, selection,
 and a widget initialized by another owner before Typed begins.
 
-A ref running during adoption is also not an after-paint hook. An observer can track later geometry;
-a library requiring a connected, laid-out element needs an explicit integration contract.
-
 ## Investigate replacement in dependency order
 
 Retain a server element before the client starts and compare it with the corresponding element
@@ -104,8 +98,5 @@ after startup. If it changed, inspect:
 Then inspect state decoding separately. Record the response/client asset versions when investigating
 a deployment-specific mismatch instead of assuming visible markup equality means template equality.
 
-A complete test retains a node, starts the client, asserts identity, performs a native interaction,
-and finally stops the render and verifies the old interaction is inert. Add an early-edit assertion
-when that behavior is part of the product. Renderer extensions may use the public
-[HydrateContext contract](/reference/modules/%40typed%2Ftemplate%2FHydrateContext), but ordinary
-applications should let `render` create and own that context.
+An adoption test retains a server node, starts the client, and asserts identity before performing
+a native interaction. Add an early-edit assertion when the view contains editable controls.

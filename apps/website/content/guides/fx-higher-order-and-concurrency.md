@@ -17,7 +17,12 @@ promises, even when all three call the same server.
 inner Fx. The inner may emit progress and a final result, fail, or remain live. A flattening operator
 owns the relationship between those runs.
 
-## Let independent attachment work overlap
+For arrivals at 0, 5, and 10 milliseconds and 20-millisecond jobs, immediate-finalization assumptions
+give these outcomes: `concatMap` finishes all three at 60; `switchMap` locally finishes only `c` at
+30; `exhaustMap` finishes only `a` at 20; `exhaustLatestMap` finishes `a` then `c` at 40. The choice
+changes what the user ultimately saved, not just throughput.
+
+## Let independent lookups overlap
 
 When one input's work does not invalidate another's, `flatMap` starts every inner immediately:
 
@@ -224,89 +229,16 @@ output: . a1 . a2 . . c1 c2 |
 It never cancels the active write. This is appropriate only when intermediate snapshots are
 replaceable; dropping an intermediate command that changes meaning is a different feature.
 
-For arrivals at 0, 5, and 10 milliseconds and 20-millisecond jobs, immediate-finalization assumptions
-give these outcomes: `concatMap` finishes all three at 60; `switchMap` locally finishes only `c` at
-30; `exhaustMap` finishes only `a` at 20; `exhaustLatestMap` finishes `a` then `c` at 40. The choice
-changes what the user ultimately saved, not just throughput.
+## One-result jobs and related policies
 
-## Reference: branch selection and racing
+When the inner job is an Effect, `Fx.concatMapEffect(save)` is shorthand for
+`Fx.concatMap((revision) => Fx.fromEffect(save(revision)))`. The other `*Effect` variants retain
+their named admission policy too; each admitted callback produces at most one successful result.
 
-Sometimes the competitors are already known. `if` switches between branches whenever its boolean
-input changes:
-
-```fx-marble
-title: if switches from the true branch to the false branch
-covers: if
-input condition: true . false . |
-operator: if(condition, { onTrue, onFalse })
-inner onTrue: ^ enabled x . .
-inner onFalse: . . ^ disabled |
-output: . enabled . disabled |
-```
-
-The true branch is interrupted when `false` arrives. The selected branch remains active until it
-ends or is replaced. Source completion waits for the selected branch to finish.
-
-`race` and `raceAll` instead choose the first producer that emits a value:
-
-```fx-marble
-title: race cancels slow once fast emits first
-covers: race
-input competitors: slow+fast . . |
-operator: race(slow, fast)
-inner slow: ^ x . .
-inner fast: ^ fast |
-output: . fast |
-```
-
-```fx-marble
-title: raceAll keeps fast and cancels the other candidates
-covers: raceAll
-input candidates: slow+fast+mid . . |
-operator: raceAll(slow, fast, mid)
-inner slow: ^ x . .
-inner fast: ^ fast |
-inner mid: ^ x . .
-output: . fast |
-```
-
-The first `fast` value selects its lane and interrupts every loser. Completion or failure without
-a value does not select a winner. The winner can continue producing afterward. This is different
-from racing ordinary Effects for a first completion.
-
-## Use Effect callbacks for one-result jobs
-
-An inner Fx can emit progress and a result; an Effect callback can produce at most one success.
-The `*Effect` convenience variants lift that one result without changing admission policy:
-
-```ts
-import { Effect } from "effect";
-import { Fx } from "@typed/fx";
-
-type Revision = { readonly id: string };
-
-const save = Effect.fn(function* (revision: Revision) {
-  yield* Effect.log(`saving ${revision.id}`);
-  return revision.id;
-});
-
-const revisions = Fx.fromIterable<Revision>([{ id: "a" }, { id: "b" }]);
-
-const explicit = revisions.pipe(
-  Fx.concatMap((revision) => Fx.fromEffect(save(revision))),
-);
-
-const convenient = revisions.pipe(Fx.concatMapEffect(save));
-```
-
-`explicit` and `convenient` preserve the same revision order. Every `*Effect` variant has the
-policy named by its base operator and produces at most one successful result per admitted input.
-Use the generated [operator atlas](/explore/fx-operator-atlas) when selecting a specific convenience
-variant; the comparison above is the learner-facing policy decision.
+Branch selection with `if` and choosing the first emitting source with `race` are separate decisions.
+Use the [operator atlas](/explore/fx-operator-atlas) for those operators and convenience variants.
 
 All policies combine outer and inner error/service channels and require a Scope owning admitted and
 waiting work. Put request recovery inside the mapper when later input should survive that failure;
-[errors and recovery](/explore/fx-errors-and-recovery) works through that placement. Count starts,
-completions, and finalizers separately when testing: an absent result can mean never admitted,
-interrupted, or failed. [Services and lifetime](/explore/fx-services-and-lifetime) gives these runs
+[errors and recovery](/explore/fx-errors-and-recovery) works through that placement. [Services and lifetime](/explore/fx-services-and-lifetime) gives these runs
 the owner that ends them when the editor closes.

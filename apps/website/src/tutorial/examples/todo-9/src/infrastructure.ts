@@ -1,14 +1,11 @@
-import { Ids } from "@typed/id/Ids";
-import { DateTimes } from "@typed/id/DateTimes";
 import { DateTime, Effect, Layer, Context, Schema } from "effect";
 import { Fx } from "@typed/fx";
 import * as Router from "@typed/router";
 import * as App from "./application.js";
 import * as Domain from "./domain.js";
 
-const TODOS_STORAGE_KEY = `@typed/tutorial/todo-9`;
+const TODOS_STORAGE_KEY = `@typed/todomvc/todos`;
 
-// Parsed JSON is not yet a TodoList; decode at the storage boundary.
 const TodoListJson = Schema.fromJsonString(Schema.toCodecJson(Domain.TodoList));
 const decodeTodoList = Schema.decodeEffect(TodoListJson);
 const encodeTodoList = Schema.encodeEffect(TodoListJson);
@@ -55,25 +52,22 @@ const FilterState = Router.match(Router.Slash, "all")
     Fx.catchCause(() => Fx.succeed("all" as const)),
   );
 
-// Load before observing changes, so an empty default cannot overwrite saved items.
 const Model = Layer.mergeAll(
   App.TodoList.make(Todos.get),
   App.FilterState.make(FilterState),
   App.TodoText.make(""),
 );
 
-const CreateTodo = Layer.effect(App.CreateTodo, Effect.gen(function* () {
-    const ids = yield* Ids;
-    const time = yield* DateTimes;
-    return Effect.fn("createTodo")(function* (text: string) {
-      return {
-        id: Domain.TodoId.make(yield* ids.uuid4),
-        text,
-        completed: false,
-        timestamp: DateTime.makeUnsafe(yield* time.now),
-      } satisfies Domain.Todo;
-    });
-  }));
+const CreateTodo = Layer.sync(
+  App.CreateTodo,
+  () => (text: string) =>
+    Effect.sync((): Domain.Todo => ({
+      id: Domain.TodoId.make(crypto.randomUUID()),
+      text,
+      completed: false,
+      timestamp: DateTime.makeUnsafe(new Date()),
+    })),
+);
 
 export const makeServices = (router = Router.BrowserRouter()) =>
   Layer.mergeAll(CreateTodo, Todos.replicateToStorage).pipe(

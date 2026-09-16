@@ -152,7 +152,8 @@ export function learningGroups(
     ...groupGuides(guides)
       .map(([title, entries]) => ({
         title: `Browse: ${title}`,
-        entries: entries.filter(({ id }) => !featured.has(id)).map(({ id }) => guide(id)),
+        // Retain the legacy chooser URL without presenting its redirect note as a lesson.
+        entries: entries.filter(({ id }) => !featured.has(id) && id !== "choosing-ui-components").map(({ id }) => guide(id)),
       }))
       .filter(({ entries }) => entries.length > 0),
   ];

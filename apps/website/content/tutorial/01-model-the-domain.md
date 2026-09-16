@@ -11,10 +11,8 @@ Two todos can have the same title. Give each one an ID so editing, moving, or de
 ## Describe a Todo in src/domain.ts
 
 ```ts
-// @source examples/todo-1/src/domain.ts#L1-L15
+// @source examples/todo-1/src/domain.ts#L3-L17
 // @expect export const TodoId
-// @expect export const Todo =
-// @expect export const TodoList
 ```
 
 `TodoId` brands a string: TypeScript can distinguish an ID from a title. `Todo` describes the fields we accept, and its inferred type keeps the runtime schema and TypeScript model together. The timestamp codec reads a string into a UTC value; we will use it when loading saved data.
@@ -24,9 +22,8 @@ Keep committed text here. An unfinished edit belongs to the row, because cancell
 ## Find an item by ID
 
 ```ts
-// @source examples/todo-1/src/domain.ts#L20-L26
-// @expect export const updateTodo
-// @expect export const editText
+// @source examples/todo-1/src/domain.ts#L22-L28
+// @expect export function updateTodo
 ```
 
 `updateTodo` returns a new array, changing only the matching item. Items with other IDs keep their object identity. `editText` supplies the particular change without repeating the lookup.
@@ -34,9 +31,13 @@ Keep committed text here. An unfinished edit belongs to the row, because cancell
 ## Give another action the same rule
 
 ```ts
-// @source examples/todo-1/src/domain.ts#L32-L40
-// @expect export const toggleCompleted
-// @expect export const deleteTodo
+// @source examples/todo-1/src/domain.ts#L30-L33
+// @expect export function toggleCompleted
+```
+
+```ts
+// @source examples/todo-1/src/domain.ts#L51-L53
+// @expect export function deleteTodo
 ```
 
 Toggling changes one completion flag. Deleting removes one ID. Neither function needs a DOM, a state container, or a browser event, so both are easy to test with ordinary values.

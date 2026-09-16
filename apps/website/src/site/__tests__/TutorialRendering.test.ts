@@ -23,7 +23,7 @@ describe("TodoMVC lesson rendering", () => {
         expect(snapshots.length, name).toBe(files.length);
         for (const file of files) {
           const snapshot = snapshots.find(
-            (element) => element.querySelector("summary")?.textContent === file.name,
+            (element) => element.querySelector("summary")?.textContent?.includes(file.name),
           );
           expect(snapshot?.hasAttribute("open"), `${name}: ${file.name}`).toBe(false);
           expect(

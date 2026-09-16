@@ -14,64 +14,41 @@ const guides = [
     section: "State",
     kind: "concept",
     order: 2,
-    terms: ["RefSubject.make", "RefSubject.update", "Computed", "Filtered", "RefSubject.map"],
   },
   {
     file: "refsubject-template-hydration.md",
     section: "State",
     kind: "guide",
     order: 2.04,
-    terms: ["RefSubject.hydrate", "hydrateAll", "HydrationRef", "html", "Schema"],
   },
   {
     file: "refsubject-sources-equality-and-lifetime.md",
     section: "State",
     kind: "guide",
     order: 2.05,
-    terms: [
-      "RefSubject.make",
-      "Effect",
-      "Stream",
-      "Fx",
-      "RefSubjectOptions",
-      "subscriberCount",
-      "RefSubject.delete",
-      "interrupt",
-    ],
   },
   {
     file: "derived-conditional-and-accumulated-state.md",
     section: "State",
     kind: "guide",
     order: 2.15,
-    terms: ["Computed", "Filtered", "makeComputed", "filterMap", "scan", "scanEffect"],
   },
   {
     file: "state-transactions-and-bidirectional-views.md",
     section: "State",
     kind: "guide",
     order: 2.25,
-    terms: ["modify", "runUpdates", "transform", "slice", "GetSetDelete"],
   },
   {
     file: "shared-state-contracts.md",
     section: "State",
     kind: "guide",
     order: 2.35,
-    terms: [
-      "Fx.Service",
-      "Sink.Service",
-      "Subject.Service",
-      "RefSubject.Service",
-      "computedFromService",
-      "filteredFromService",
-      "Layer",
-    ],
   },
 ] as const;
 
 describe("RefSubject state curriculum", () => {
-  it("covers the public state behaviors omitted by the introductory and specialized-state guides", () => {
+  it("keeps each state lesson at its public destination with a concrete example", () => {
     for (const expected of guides) {
       const guide = parseGuideDocumentation(
         expected.file,
@@ -84,8 +61,7 @@ describe("RefSubject state curriculum", () => {
         kind: expected.kind,
         order: expected.order,
       });
-      expect(extractTypeScriptFences(guide.body).length).toBeGreaterThanOrEqual(2);
-      for (const term of expected.terms) expect(guide.body).toContain(term);
+      expect(extractTypeScriptFences(guide.body).length).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -106,6 +82,25 @@ describe("RefSubject state curriculum", () => {
     }
     expect(guide.body).toContain("/explore/refsubject-sources-equality-and-lifetime");
     expect(guide.body).toContain("/explore/derived-conditional-and-accumulated-state");
+  });
+
+  it("demonstrates serialized decisions and imports one shared service in its consumer", () => {
+    const transactions = fs.readFileSync(
+      path.join(websiteRoot, "content/guides/state-transactions-and-bidirectional-views.md"), "utf8",
+    );
+    const commands = extractTypeScriptFences(transactions).join("\n");
+    expect(commands).toContain("RefSubject.modify(slots");
+    expect(commands).toContain("first: yield* reserve(slots)");
+    expect(commands).toContain("second: yield* reserve(slots)");
+
+    const sharing = extractTypeScriptFenceDocuments(fs.readFileSync(
+      path.join(websiteRoot, "content/guides/shared-state-contracts.md"), "utf8",
+    ));
+    expect(sharing.find(({ fileName }) => fileName === "Selection.ts")?.code)
+      .toContain("export class Selection");
+    const consumer = sharing.find(({ fileName }) => fileName === "selectedCount.ts")?.code;
+    expect(consumer).toContain('import { Selection } from "./Selection.js"');
+    expect(consumer).toContain("RefSubject.computedFromService");
   });
 
   it("keeps every state curriculum example compilable with their named companion modules", () => {

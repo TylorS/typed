@@ -12,6 +12,8 @@ Create `src/Counter.ts`. The count is a `RefSubject`: the template observes its 
 // @source examples/learn-3/src/Counter.ts
 ```
 
+`component` runs the generator for each mounted counter, so each gets its own count. An `onclick` binding runs its Effect when that button is clicked.
+
 Replace `src/main.ts` to render the counter into the page:
 
 ```ts file="src/main.ts"

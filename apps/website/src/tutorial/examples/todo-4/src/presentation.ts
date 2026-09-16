@@ -1,29 +1,35 @@
-import { RefSubject } from "@typed/fx";
-import { EventHandler, html } from "@typed/template";
+// oxlint-disable require-yield
+import { Effect } from "effect";
+import { Fx, RefSubject } from "@typed/fx";
+import { component, EventHandler, html, many } from "@typed/template";
 import * as App from "./application.js";
+import * as Domain from "./domain.js";
+import { Link } from "@typed/ui/Link";
 
-// Read browser edits here; the .value binding also reflects resets from the action.
 const onInput = EventHandler.make((event: InputEvent & { target: HTMLInputElement }) =>
   RefSubject.set(App.TodoText, event.target.value),
 );
-// The shell binds existing state and actions; it needs no component-local setup.
+
+const onNewTodoKeydown = EventHandler.make((event: KeyboardEvent) =>
+  event.key === "Enter" ? App.createTodo : undefined,
+);
+
 export const TodoApp = html`<section class="todoapp">
   <header class="header">
     <h1>todos</h1>
-    <form
-      class="add-todo"
-      onsubmit=${EventHandler.make(() => App.createTodo, { preventDefault: true })}
-    >
-      <input
-        class="new-todo"
-        aria-label="New todo"
-        autocomplete="off"
-        .value=${App.TodoText}
-        oninput=${onInput}
-        placeholder="What needs to be done?"
-      />
-      <button type="submit" class="add-todo-button">Add todo</button>
-    </form>
-    <p role="status">Accepted todos: ${RefSubject.map(App.TodoList, (todos) => todos.length)}</p>
+    <input
+      class="new-todo"
+      aria-label="New todo"
+      autofocus
+      autocomplete="off"
+      .value=${App.TodoText}
+      oninput=${onInput}
+      onkeydown=${onNewTodoKeydown}
+      placeholder="What needs to be done?"
+    />
   </header>
-</section>`;
+</section>
+<footer class="info">
+  <p>Double-click to edit a todo</p>
+  <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+</footer>`;

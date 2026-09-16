@@ -6,11 +6,9 @@ kind: "reference"
 order: 246
 ---
 
-An editor offers Bold and Italic beside the current text. Both can be enabled, so neither is the
-single “selected toolbar item.” The toolbar has one keyboard location; the document has two
-formatting preferences. We will connect those facts without making arrow navigation toggle text
-styles. This extends the [drawing-tools walkthrough](/explore/ui-collections-and-focus) with pressed
-state and shows where nested controls would need a different keyboard design.
+Bold and Italic are independent pressed values. Toolbar supplies one keyboard location for moving
+between them; arrowing to Italic must not toggle it. This example shows that separation. See
+[collections and focus](/explore/ui-collections-and-focus) for registration and changing item sets.
 
 ## Build a formatting toolbar with real state
 
@@ -25,8 +23,10 @@ import * as Toolbar from "@typed/ui/Toolbar";
 export const Formatting = component(function* () {
   const state = yield* Toolbar.makeState({ activeId: "format-bold" });
   const collection = yield* Toolbar.makeCollection();
+
   const bold = yield* RefSubject.make(false);
   const italic = yield* RefSubject.make(false);
+
   return html`<section>
     ${Toolbar.Root({ state, collection, label: "Text formatting", content: [
       Toolbar.Item({ state, collection, id: "format-bold", content: "Bold",
@@ -53,32 +53,18 @@ DOM element and sets active identity on focus; normal operation uses roving DOM 
 tabindex only on the active item. This family does not implement a buffered printable-key typeahead
 handler, so do not promise letter navigation just because Menu has it.
 
-The [APG toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/) discusses grouping controls
-and avoiding conflicts with controls that already need the toolbar's arrow axis. That distinction
-matters when adding a slider or editable field. The current generic root handler does not supply a
-complete nested-widget entry/exit mode. A horizontal slider nested in a horizontal toolbar would
-need an explicit event/focus design before both can own Left/Right.
+A slider or editor may already need the toolbar's arrow keys. The generic root does not supply a
+nested-widget entry/exit mode, so use separate groups or ordinary tab stops until that interaction
+is designed. The [APG toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/) explains the conflict.
 
-For simple toolbar actions, stay with the provided Item contract. For complex nested controls,
-consider separate groups or ordinary tab stops and verify the full interaction. Changing roles or
-stopping propagation indiscriminately can hide a collision without creating a usable keyboard path.
+<span id="dynamic-commands-need-identity-policy"></span>
 
-## Dynamic commands need identity policy
+## Keep focus and pressed state independent
 
-A toolbar collection knows only its mounted elements. Use stable IDs and keyed rendering when
-commands reorder. If permissions remove the active command, choose its successor before leaving
-focus on a detached element. Disabled commands stay registered but are skipped by normal toolbar
-navigation. Disabled is a behavioral input, not a replacement for removing a command that should
-not be exposed at all.
+In a browser, arrows should change focus without changing bold/italic; Enter, Space, and click should
+toggle only the activated preference. Derive visible pressed styling and `aria-pressed` from the
+same value. Guard custom mutation handlers when disabled: `aria-disabled` on the default div host
+does not disable arbitrary listeners.
 
-Application handlers must enforce their own disabled condition if they can mutate data. A div with
-`aria-disabled=true` is not a native disabled button; see
-[MDN aria-disabled](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-disabled).
-Likewise, checked or pressed state is not managed by Toolbar. Prefer one application source of truth
-and derive the visible pressed styling from the same value used for its ARIA state.
-
-Test arrows, Home/End, Enter/Space, and Tab exit against the actual focused node. Assert that arrows
-change focus without changing bold/italic, while activation toggles exactly one preference. Add RTL
-and disabled-middle-item tests if your product exposes those configurations. A custom host must
-keep the registered ref, tabindex, role, and internal event handlers together on its focusable node.
+A custom host must retain the ref, tabindex, role, and internal handlers on its focusable element.
 The [Toolbar API](/reference/modules/%40typed%2Fui%2FToolbar) lists those options.

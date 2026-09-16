@@ -1,14 +1,15 @@
 ---
-title: Application developers
-summary: Build a working order editor, share its state between views, and choose the next lesson from the feature you need to ship.
+title: Share one model between two views
+summary: Give an editor and summary the same state instance, then test their shared quantity rule.
 section: Learning paths
 kind: guide
 order: 0.1
 ---
 
-Build one useful feature first: a customer changes an order quantity and sees the subtotal update.
-We will give the editor and summary the same model, mount them, and test their shared rule.
-Use the [Quick Start project setup](/explore/quick-start#install), then add these files under `src/`.
+Give two views the same state instance so an edit in one updates the other. Build a quantity
+editor and subtotal summary, then test the minimum quantity rule without mounting the DOM.
+Start after [owning and deriving state](/explore/refsubject-renderer-independent-state),
+using the [Quick Start project setup](/explore/quick-start#install). Add these files under `src/`.
 
 ## Give the feature a model
 
@@ -24,9 +25,11 @@ export const makeLineItem = Effect.fn("makeLineItem")(function* () {
   const quantity = yield* RefSubject.make(1);
 
   return {
-    quantity: RefSubject.map(quantity, (value) => value),
+    quantity: quantity as RefSubject.Computed<number>,
+
     // Derive the total so no quantity command can forget to update it.
     subtotal: RefSubject.map(quantity, (value) => value * 1200),
+
     add: RefSubject.increment(quantity),
     remove: RefSubject.update(quantity, (value) => Math.max(1, value - 1)),
   };
@@ -74,8 +77,7 @@ screen stays still.
 
 The click binding runs its Effect on activation. A native button supplies keyboard activation and
 focus behavior; `?disabled` toggles the native boolean attribute's presence. The model still enforces
-that rule independently. Add your existing CSS, Tailwind, or DaisyUI classes to these hosts. For
-more involved interaction, use [Typed UI](/explore/ui) and keep your design system.
+that rule independently.
 
 ## Mount one shared instance
 
@@ -91,6 +93,7 @@ import { OrderSummary, QuantityEditor } from "./View.js";
 const Order = component(function* () {
   // Both children borrow this instance instead of constructing separate models.
   const item = yield* makeLineItem();
+
   return html`<main>
     <h1>Your order</h1>
     ${QuantityEditor(item)}
@@ -139,8 +142,11 @@ it("keeps a minimum quantity and an independent total for each order", () =>
     const otherOrder = yield* makeLineItem();
 
     yield* item.remove;
+
     expect(yield* item.quantity).toBe(1);
+
     yield* item.add;
+
     expect(yield* item.quantity).toBe(2);
     expect(yield* item.subtotal).toBe(2400);
     expect(yield* otherOrder.subtotal).toBe(1200);
@@ -151,7 +157,7 @@ it("keeps a minimum quantity and an independent total for each order", () =>
 This imports the same model as the mounted page. It proves the minimum, derivation, and independent
 instances without a Document. A browser test has a different job: activate the actual buttons and
 check their disabled state and visible result. [Testing Typed systems](/explore/testing-typed-systems)
-shows how to test interaction, retained DOM identity, request ordering, and cleanup.
+shows how to test that interaction.
 
 <span id="choose-where-the-next-piece-of-state-belongs"></span>
 
@@ -159,4 +165,4 @@ The editor now shares one model between two views. If the draft must survive rem
 
 ## Continue with the feature in front of you
 
-[Build TodoMVC](/explore/tutorial) to add keyed editing, URL filters and persistence. For a specific control instead, use the [UI task chooser](/explore/ui). The editor above is complete; its API reference and tests remain useful without reading another tour.
+[Build TodoMVC](/explore/tutorial) to add keyed editing, URL filters and persistence. For a specific control instead, use the [UI task chooser](/explore/ui).

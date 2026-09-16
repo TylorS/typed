@@ -1136,7 +1136,7 @@ export function mask<const Parts extends ReadonlyArray<MaskPart>>(
   const codec = Schema.String.pipe(
     Schema.decodeTo(
       valueSchema,
-      SchemaTransformation.transformOrFail({
+      SchemaTransformation.transformEffect({
         decode: (display, options) => decodeMask(parts, display, options),
         encode: (value, options) => encodeMask(parts, value, options),
       }),

@@ -14,10 +14,12 @@ it is a function from `I` to `Effect<Option<O>, E, R>`.
 unless you explicitly recover it. A Guard is an ordinary function, so applying it to an input
 returns an Effect; it does not start an independent subscription.
 
+This guide assumes familiarity with Effect's value, error, and service channels, and with `Option`.
+
 ## Narrow before doing work
 
-Start with a predicate when the decision is pure. Compose guards with `Guard.pipe`; it passes a
-successful output to the next guard and skips the next guard on `None`.
+Start with a predicate when the decision is pure. Use `map` to transform a successful output and
+`filter` to turn an unwanted output into `None`:
 
 ```ts
 import { Effect, pipe } from "effect"
@@ -33,9 +35,6 @@ const nonEmptyText = pipe(
 const accepted = await Effect.runPromise(nonEmptyText("  publish  "))
 const absent = await Effect.runPromise(nonEmptyText("   "))
 ```
-
-The module functions accept both data-first and data-last forms. Use Effect's `pipe` for transforming
-the guard function itself; use `Guard.pipe` when composing two guard stages.
 
 ## Decide whether invalid input means non-match or failure
 
@@ -59,8 +58,7 @@ const invalid = await Effect.runPromise(Effect.exit(positivePage("three")))
 
 The results are `Some(3)`, `None`, and a failed Exit respectively. If your dispatcher deliberately
 wants malformed values to count as a non-match, wrap the guard with `Guard.catchAll(() =>
-Effect.succeedNone)`. Keep that policy close to the boundary that needs it. `fromSchemaEncode`
-provides the reverse direction, while `decode` and `encode` compose a codec after an existing guard.
+Effect.succeedNone)`. Keep that policy close to the boundary that needs it.
 
 ## Compose an authorization decision without hiding an outage
 
@@ -68,6 +66,8 @@ Suppose a workspace route has both an administrator page and a read-only fallbac
 reject malformed workspace names before any lookup. A service-backed guard then checks membership.
 “No membership” may mean `None`; an unavailable membership service should stay a typed failure.
 Turning both into `None` makes a backend outage look like an ordinary missing permission.
+
+`Guard.pipe` passes a successful output to the next guard and skips it on `None`:
 
 ```ts
 import { Context, Data, Effect, Option } from "effect"
@@ -109,8 +109,8 @@ const command = Guard.any({
   Search: Guard.liftPredicate((input: string) => input.startsWith("search ")),
 })
 
-const matched = await Effect.runPromise(command("search effects"))
 // Some({ _tag: "Search", value: "search effects" })
+const matched = await Effect.runPromise(command("search effects"))
 ```
 
 Put specific cases before broad catch-alls. Test overlapping inputs as well as successful and absent
@@ -137,6 +137,7 @@ import type { GuardInput } from "@typed/guard"
 import { getGuard } from "@typed/guard/getGuard"
 
 const execute = (input: GuardInput<string, string>, value: string) => getGuard(input)(value)
+
 const selection = {
   asGuard: () => (value: string) => Effect.succeed(value === "save" ? Option.some(value) : Option.none()),
 }
@@ -144,9 +145,9 @@ const selection = {
 await Effect.runPromise(execute(selection, "save"))
 ```
 
+</details>
+
 Continue with [typed URL inputs](/explore/route-typed-url-inputs) to see this contract at a routing
 boundary, or use the [Guard reference](/reference/modules/%40typed%2Fguard) for binding, tagging,
 recovery, and service combinators. Effect's [services guide](https://www.effect.website/docs/v4/requirements-management/services/)
 explains how those requirements are supplied.
-
-</details>

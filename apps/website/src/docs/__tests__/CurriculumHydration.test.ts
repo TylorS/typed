@@ -60,16 +60,14 @@ describe("curriculum Astro islands", () => {
   };
 
   const add = async (host: Element, title: string, count: number) => {
-    input(host, ".new-todo", title);
-    host
-      .querySelector(".add-todo")!
-      .dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    input(host, ".new-todo", title)
+      .dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await vi.waitFor(() => expect(host.querySelectorAll(".todo-list > li")).toHaveLength(count));
   };
 
-  it("runs actual keyed rows through create, cancel, save, toggle and delete", async () => {
+  it.each(["todo-5", "todo-10"])("runs %s through canonical create, cancel, save, toggle and delete", async (id) => {
     const host = island("<p>Loading</p>");
-    await client(host)(Demo, { id: "todo-5" }, {}, { client: "only" });
+    await client(host)(Demo, { id }, {}, { client: "only" });
     expect(host.innerHTML).not.toContain("data-typed-refsubject");
     expect(host.querySelectorAll(".edit")).toHaveLength(0);
     await add(host, "First", 1);
@@ -77,17 +75,15 @@ describe("curriculum Astro islands", () => {
     await add(host, "Second", 2);
     expect(host.querySelectorAll(".todo-list > li")[1]).toBe(first);
 
-    first.querySelector<HTMLButtonElement>(".edit-trigger")!.click();
-    await vi.waitFor(() => expect(first.querySelector(".edit")).not.toBeNull());
+    first.querySelector(".view label")!.dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
+    await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
     const draft = input(first, ".edit", "Discard this");
     draft.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await vi.waitFor(() => expect(first.querySelector(".view label")?.textContent).toBe("First"));
-    first.querySelector<HTMLButtonElement>(".edit-trigger")!.click();
-    await vi.waitFor(() => expect(first.querySelector(".edit")).not.toBeNull());
-    input(first, ".edit", "Renamed");
-    first
-      .querySelector(".edit-form")!
-      .dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    first.querySelector(".view label")!.dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
+    await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
+    input(first, ".edit", "Renamed")
+      .dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await vi.waitFor(() => expect(first.querySelector(".view label")?.textContent).toBe("Renamed"));
     first.querySelector<HTMLInputElement>(".toggle")!.click();
     await vi.waitFor(() => expect(first.classList.contains("completed")).toBe(true));
@@ -116,7 +112,7 @@ describe("curriculum Astro islands", () => {
     host.querySelector<HTMLButtonElement>(".clear-completed")!.click();
     await vi.waitFor(() => expect(host.querySelector(".clear-completed")).toBeNull());
     await vi.waitFor(() => {
-      const saved = JSON.parse(localStorage.getItem("@typed/tutorial/todo-8")!);
+      const saved = JSON.parse(localStorage.getItem("@typed/todomvc/todos")!);
       expect(saved.map((todo: { text: string }) => todo.text)).toEqual(["Keep"]);
     });
     // Remount waits for the previous island's Scope to close before loading storage again.

@@ -1,8 +1,8 @@
 import { DateTime, Effect, Layer, Context, Schema } from "effect";
 import { Fx } from "@typed/fx";
 import * as Router from "@typed/router";
-import * as App from "./application";
-import * as Domain from "./domain";
+import * as App from "./application.js";
+import * as Domain from "./domain.js";
 
 const TODOS_STORAGE_KEY = `@typed/todomvc/todos`;
 
@@ -69,7 +69,10 @@ const CreateTodo = Layer.sync(
     })),
 );
 
-export const Services = Layer.mergeAll(CreateTodo, Todos.replicateToStorage).pipe(
-  Layer.provideMerge(Model),
-  Layer.provideMerge([Todos.local, Router.BrowserRouter()]),
-);
+export const makeServices = (router = Router.BrowserRouter()) =>
+  Layer.mergeAll(CreateTodo, Todos.replicateToStorage).pipe(
+    Layer.provideMerge(Model),
+    Layer.provideMerge([Todos.local, router]),
+  );
+
+export const Services = makeServices();

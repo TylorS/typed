@@ -241,7 +241,7 @@ const program = Effect.gen(function* () {
       "title: The Fx marble atlas",
       "summary: Trace values, errors, completion and cancellation through every public Fx operation.",
       "section: Fx",
-      "kind: deep-dive",
+      "kind: reference",
       "order: 1.99",
       "---",
       "",

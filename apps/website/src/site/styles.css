@@ -4,6 +4,8 @@
 @source "./**/*.{astro,ts}";
 @source "../tutorial/Demos.ts";
 @source "../tutorial/examples/**/*.{ts,css}";
+/* TodoMVC owns its native toggle markup; do not add DaisyUI switch thumbs. */
+@source not inline("toggle");
 
 @font-face {
   font-family: "JetBrains Mono";

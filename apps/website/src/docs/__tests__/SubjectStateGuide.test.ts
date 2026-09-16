@@ -27,7 +27,7 @@ describe("Subject Fx guide", () => {
       "Subject.make",
       "onSuccess",
       "onFailure",
-      "subscriberCount",
+      "Effect.sleep(0)",
       "Subject.Service",
       "RefSubject",
     ]) {
@@ -40,9 +40,22 @@ describe("Subject Fx guide", () => {
       "Cause.fail",
       "Sink.make",
     ]);
-    expect(guide.body).toContain("operator atlas");
     expect(guide.body).toContain("```fx-marble");
     expect(guide.body).toContain("/explore/fx-services-and-lifetime");
+  });
+
+  it("publishes the same events to both registered observers without replay", async () => {
+    const source = fs.readFileSync(guidePath, "utf8");
+    const result = await runGuideExample(
+      websiteRoot,
+      source,
+      "const notifications =",
+      "Effect.runPromise(program)",
+    );
+    expect(result).toEqual({
+      activity: ["saved", "published"],
+      notifications: ["saved", "published"],
+    });
   });
 
   it("keeps every TypeScript example independently compilable", () => {
@@ -80,14 +93,14 @@ describe("Subject Fx guide", () => {
       fs.rmSync(staging, { recursive: true, force: true });
     }
   });
-  it("keeps the authored failure-counting subscriber alive for reconnection", async () => {
+  it("keeps the authored failure-counting subscriber alive for later publications", async () => {
     const source = fs.readFileSync(guidePath, "utf8");
     const result = await runGuideExample(
       websiteRoot,
       source,
-      "class ConnectionLost",
+      "class AuditUnavailable",
       "Effect.runPromise(program)",
     );
-    expect(result).toEqual({ failures: 1, values: ["reconnected"] });
+    expect(result).toEqual({ failures: 1, values: ["saved"] });
   });
 });

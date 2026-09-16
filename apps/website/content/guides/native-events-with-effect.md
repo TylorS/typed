@@ -1,6 +1,6 @@
 ---
 title: "Handle native events with Effect"
-summary: "Attach real browser listeners whose work is an Effect, while keeping listener options, errors, services, and lifetime explicit."
+summary: "Use a direct Effect for a known action, or read native event data with EventHandler.make."
 section: "Template bindings"
 kind: "guide"
 order: 4
@@ -8,13 +8,10 @@ order: 4
 
 <span id="keep-repeated-work-and-failure-explicit"></span>
 
-Saving a search begins as a native form submission and ends as application work. The browser owns
-submit dispatch, cancellation, propagation, and the form's fields. The application owns validation,
-the save operation, its errors, and feedback. An event part connects those responsibilities without
-creating a synthetic event system.
-
-Build the field first in [Authoring Typed templates](/explore/authoring-typed-templates). Here the
-form's handler will read native input, call an Effect service, and remain owned by the running view.
+A template event binding runs an Effect when the browser dispatches an event. Use the Effect
+directly when it already has the data it needs; use `EventHandler.make` when the work needs the event.
+Building on [the search field](/explore/authoring-typed-templates), first clear a known value, then
+read a submitted query without navigating away from the page.
 
 ## Use a plain Effect when the event carries no needed data
 
@@ -26,6 +23,7 @@ import { component, html } from "@typed/template";
 
 export const ClearSearch = component(function* () {
   const query = yield* RefSubject.make("scope");
+
   return html`<section>
     <output>${query}</output>
     <button type="button" onclick=${RefSubject.set(query, "")}>Clear search</button>
@@ -38,55 +36,44 @@ it once at module initialization. There is no need to wrap it in a callback that
 
 ## Read browser data at the event boundary
 
-When the event selects the work, use `EventHandler.make`. The following handler reads a form field,
-validates that it is a string, and delegates persistence to a service:
+A form submission needs data from the form. `EventHandler.make` receives the event and returns the
+Effect to run. This example publishes the submitted query to an output:
 
 ```ts
-import { Context, Data, Effect } from "effect";
-import { html } from "@typed/template";
+import { RefSubject } from "@typed/fx";
+import { component, html } from "@typed/template";
 import * as EventHandler from "@typed/template/EventHandler";
 
-class SaveRejected extends Data.TaggedError("SaveRejected")<{
-  readonly message: string;
-}> {}
-interface SavedSearches {
-  readonly save: (query: string) => Effect.Effect<void, SaveRejected>;
-}
-const SavedSearches = Context.Service<SavedSearches>("SavedSearches");
+export const SearchForm = component(function* () {
+  const submitted = yield* RefSubject.make("");
 
-const saveSearch = EventHandler.make(
-  (event: SubmitEvent) => {
-    const form = event.currentTarget as HTMLFormElement;
-    const query = new FormData(form).get("query");
-    if (typeof query !== "string" || query.trim() === "") {
-      return Effect.fail(new SaveRejected({ message: "Enter search terms before saving" }));
-    }
-    return Effect.flatMap(SavedSearches, (searches) => searches.save(query));
-  },
-  { preventDefault: true },
-);
+  const submit = EventHandler.make(
+    (event: SubmitEvent) => {
+      const form = event.currentTarget as HTMLFormElement;
+      const query = new FormData(form).get("query");
 
-export const saveForm = html`<form onsubmit=${saveSearch}>
-  <label>Search terms <input name="query" type="search" required /></label>
-  <button type="submit">Save search</button>
-</form>`;
+      return RefSubject.set(submitted, typeof query === "string" ? query : "");
+    },
+    { preventDefault: true },
+  );
+
+  return html`<form onsubmit=${submit}>
+    <label>Search terms <input name="query" type="search" required /></label>
+    <button type="submit">Use query</button>
+    <output>Submitted query: ${submitted}</output>
+  </form>`;
+});
 ```
 
-The template retains the handler's error and service channels from the
-[Effect type](https://github.com/Effect-TS/effect/blob/main/packages/effect/src/Effect.ts). The application provides
-`SavedSearches` and decides how `SaveRejected` becomes feedback. The handler transports ordinary
-query data into that service; the service does not need a DOM event or form element.
-
-A delegated handler receives a forwarding event value. Browser properties and methods forward to
-the original event, while `currentTarget` is the element registered for this handler. `target` is
-where the event originated, possibly a nested icon. The forwarding value is not object-identical
-to the native event; do not use object identity as a cross-library protocol.
+`currentTarget` is the element registered for this handler: the form. `target` is where the event
+originated and can be a nested element. Read the needed browser data at this boundary, then pass
+ordinary values to application work. Here the output changes only when the form is submitted;
+typing alone edits the browser's input buffer.
 
 ## Decide native cancellation before awaiting application work
 
 The form in this example is handled by the application, so its handler records `preventDefault`
-as a pre-handler option. Waiting for a save request and then attempting to cancel submission would
-confuse event dispatch with asynchronous completion.
+as a pre-handler option. Cancellation must happen during dispatch, before asynchronous work begins.
 
 `EventHandler.make` accepts native `AddEventListenerOptions` plus `preventDefault`,
 `stopPropagation`, and `stopImmediatePropagation`. Native `capture`, `passive`, and `signal` keep
@@ -94,37 +81,24 @@ their meaning. A passive listener cannot cancel the default action, and a noncan
 cannot be canceled; these follow the browser's
 [`preventDefault` contract](https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault).
 
-`once` consumes a delegated registration after its first *matching* event, across active mounts.
-An unrelated click does not use up another element's once handler. Choose `once` for a one-time
-capability, not as a replacement for a save-in-progress policy.
+Use `once` only when the registration should handle one matching event. It is not a policy for
+preventing overlapping requests; those belong in the operation's state.
 
-## Keep form work and failure explicit
+## When the handler can fail
 
-Two submissions can start two Effects. Put a save-in-progress policy in the operation state and
-reflect it in the form; event registration does not choose concurrency for the application.
+The local update above needs no service and has no expected failure. If it is replaced by a request,
+the handler's error and required-service channels remain part of the template's type. Provide the
+service at the application boundary and recover expected failures where the page can show feedback.
+[`EventHandler.catchCause`](/reference/modules/%40typed%2Ftemplate%2FEventHandler) can recover a
+reusable handler. A `try/catch` around `html` cannot catch a failure from a later submission.
 
-Expected failure remains in the template's `E` channel. Recover where the page can present a useful
-result, or transform a reusable handler with `EventHandler.catchCause`:
+## Check the submitted value
 
-```ts
-import { Effect } from "effect";
-import { html } from "@typed/template";
-import * as EventHandler from "@typed/template/EventHandler";
+Enter a query and submit the form. The output should receive that query and the page should not
+navigate. In a DOM test, dispatch a cancelable `SubmitEvent` and check both the output and
+`event.defaultPrevented`. [Testing Typed systems](/explore/testing-typed-systems) covers mounting
+and teardown checks.
 
-const submit = EventHandler.make(() => Effect.fail("Save rejected"), { preventDefault: true });
-const reported = EventHandler.catchCause(submit, (cause) => Effect.logError(cause));
-export const form = html`<form onsubmit=${reported}><button>Save search</button></form>`;
-```
-
-Logging here illustrates the recovery boundary; it does not provide the user-facing error message
-a real form needs. A `try/catch` around `html` cannot catch a failure from a later submission.
-
-## Verify dispatch and lifetime independently from persistence
-
-Test the save operation without a document. Then mount the form with a test service, dispatch a real
-cancelable `SubmitEvent`, and assert cancellation and the received query. Close the render's scope
-and dispatch again; the service should not run. Also test that a pending handler is interrupted when
-its owner closes.
-
-Renderer authors who need delegated mounts can continue with
-[EventSource delegation](/explore/event-source-delegation); application templates should keep using event parts.
+For delegation mechanics and listener options across mounts, see
+[EventSource delegation](/explore/event-source-delegation). Continue with
+[keyed collections](/explore/keyed-template-collections) to keep item identity through list changes.

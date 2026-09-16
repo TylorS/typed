@@ -30,6 +30,6 @@ For an ordinary action, destination, or native field, use the corresponding [But
 
 ## Read a reference when you need a contract
 
-The module pages document exact options and limitations. Begin with [Component](/explore/ui-component) for generator arity and child scopes; [Form](/explore/ui-form) for decode, submit, and reset; [Collection](/explore/ui-collection) then [Composite](/explore/ui-composite) for managed focus; and [Dom](/explore/ui-dom) for the host boundary. The [complete UI reference](/reference/packages/@typed/ui) lists every public export.
+For submitted values, use [Form](/explore/ui-form); for keyboard movement, use [Composite](/explore/ui-composite). Each module page documents its options and limitations. The [complete UI reference](/reference/packages/@typed/ui) lists every public export.
 
 Use [Storybook](/explore/ui-storybook) and browser tests to exercise the assembled interaction. Test transitions a screenshot cannot establish: a pending save, a rejected submit, an active item disappearing, or a dialog closing while work is pending.

@@ -24,9 +24,11 @@ const canvasOutput = Fx.sync(() => {
   const canvas = document.createElement("canvas");
   canvas.width = 320;
   canvas.height = 120;
+
   return DomRenderEvent(canvas);
 });
-export const activity = html`<section aria-label="Article activity">${canvasOutput}</section>`;
+
+export const activity = html`<section aria-label="Canvas">${canvasOutput}</section>`;
 ```
 
 Each run creates one canvas lazily. A producer that already has a node can return
@@ -42,7 +44,7 @@ when inserted; use a persistent range when a multi-node result must remain addre
 A real chart adapter should acquire its chart instance in a scope and call that library's actual
 teardown. This smaller example uses an Effect-owned schedule to redraw a canvas:
 
-```ts
+```ts file="ClockCanvas.ts"
 import { Effect } from "effect";
 import { component } from "@typed/template";
 import { Fx } from "@typed/fx";
@@ -56,30 +58,32 @@ export const ClockCanvas = component(function* (document: Document) {
   const paint = Effect.sync(() => {
     const context = canvas.getContext("2d");
     if (context === null) return;
+
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillText(new Date().toLocaleTimeString(), 8, 30);
   });
 
   yield* paint;
+
   // The component's child scope owns the recurring work.
   yield* Fx.periodic("1 second").pipe(
     Fx.observe(() => paint),
     Effect.forkScoped,
   );
 
-  return DomRenderEvent(canvas);
+  return Fx.concat(Fx.succeed(DomRenderEvent(canvas)), Fx.never);
 });
 ```
 
-The component returns the event directly. Scheduled ticks redraw the same canvas without emitting
-replacement nodes. Interruption closes the component's
+The component emits the canvas once and keeps its output subscription open. Returning the event
+directly would complete the component and close its child Scope immediately. Scheduled ticks
+redraw the same canvas without emitting replacement nodes. Interruption closes the component's
 [Effect scope](https://github.com/Effect-TS/effect/blob/main/packages/effect/src/Scope.ts) and interrupts
 the periodic producer. The canvas has
 no magic disposer attached by `DomRenderEvent`; the resource finalizer is explicit in the producer.
 
-This component deliberately depends on a browser Document. Canvas pixels do not serialize into an
-equivalent server HTML view. A cross-target library should supply a distinct server representation
-through its service boundary rather than pretend the browser resource can run on the server.
+Canvas pixels do not serialize into an equivalent server HTML view. A library supporting both
+targets needs a separate server representation.
 
 ## Divide placement from foreign internals
 
@@ -92,9 +96,6 @@ that replaces the host's `innerHTML` would violate that division. A chart requir
 also needs explicit mount coordination; creating its node during component setup does not prove it
 is connected or laid out yet.
 
-For callback-based producers, `Fx.callback` models the actual subscribe/unsubscribe API. A moved or
-detached object is not necessarily a stopped resource.
-
 ## Be careful when inspecting mounted ranges
 
 `DomRenderEvent.toString()` serializes current output; it does not turn a DOM event into HTML
@@ -106,12 +107,9 @@ explains the persistent range representation and consuming conversions.
 
 ## Test the adapter's promises
 
-At construction, assert `event.valueOf() === canvas`. After an internal update, assert that the
-host still contains the same canvas. At interruption, assert the periodic producer or foreign teardown stops
-exactly once. If placement can reorder output, separately test native state required by the product;
-node identity and state-preserving platform movement are different guarantees.
+Assert `event.valueOf() === canvas`, then verify that updates retain the same canvas and interruption
+stops the recurring work. If the adapter supports reordering, check the native state it promises to
+preserve as well as node identity.
 
-Those assertions cover output transport, ongoing ownership, and resource release. A screenshot of
-the final pixels covers none of the cleanup contract. Continue with the
-[DOM output recipe](/integrate/dom-output) for a fuller adapter and the
-[RenderEvent reference](/reference/modules/%40typed%2Ftemplate%2FRenderEvent) for the public carrier.
+The [DOM output recipe](/integrate/dom-output) covers a fuller adapter; the
+[RenderEvent reference](/reference/modules/%40typed%2Ftemplate%2FRenderEvent) defines the carrier.

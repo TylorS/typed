@@ -6,9 +6,8 @@ kind: "guide"
 order: 1.16
 ---
 
-An invoice workflow must publish an audit event after saving. The workflow should know the event
-shape, while the application chooses structured logging, a transport, or a test recorder. That
-outgoing capability is a `Sink`.
+An audit-event producer should not choose whether its destination logs, sends, or records events
+for a test. Pass that destination as a `Sink`: a typed consumer for successful values and failures.
 
 After [Consuming Fx](/explore/consuming-fx), `observe` is enough for a local callback. A Sink is
 useful when independently assembled code needs to receive the consumer itself. It exposes delivery
@@ -70,7 +69,7 @@ sequential delivery gives order only when the producer honors that contract. Use
 
 ## Give workflows a named output capability
 
-A service avoids importing a global destination into every workflow:
+A service gives the same output capability a name:
 
 ```ts
 import { Effect } from "effect"
@@ -95,17 +94,13 @@ Layer supplying its implementation. The application provides that Layer once at 
 test can provide a recorder with the same event contract. A caller cannot accidentally subscribe to
 past events or read current state because the output capability exposes neither operation.
 
-For an invoice save, trace the complete operation: persist invoice → construct saved event → deliver
-to Audit → finish workflow. Decide whether audit failure should affect saving before choosing the
-boundary. A fire-and-forget root Fiber inside the save function would change that promise and detach
-shutdown from the caller.
-
 ## Test what was delivered, not merely that the source drained
 
 A test destination should record successful payloads and failure Causes separately. Assert the invoice
 ID, action, and delivery count; a test that only awaits completion also passes for a destination that
 ignores everything. If failure is deliberately logged and consumed, test that outcome explicitly.
 A callback defect remains a possible failed run even though its typed failure channel is `never`.
+See [testing techniques](/explore/testing-typed-systems) for recording and asserting delivery.
 
 Require only the capability the workflow needs. A publisher needs Sink; subscribers need Subject;
 readers and writers of current state need RefSubject. Continue with

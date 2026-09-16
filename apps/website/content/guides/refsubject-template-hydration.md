@@ -15,7 +15,8 @@ Use it only for state that crosses this server-to-browser boundary. This is an S
 use [renderer-independent state](/explore/refsubject-renderer-independent-state) for the State path.
 Use `RefSubject.make` for state
 that begins and stays in one runtime. Hydration is not a general persistence mechanism: the browser
-must be adopting compatible Typed HTML from the same template.
+must be adopting compatible Typed HTML from the same template. Set up that renderer using
+[Hydrating Typed HTML](/explore/hydrating-typed-html) before adding hydrated state.
 
 ## Hydrate one state value on its element host
 
@@ -39,7 +40,7 @@ const counter = component(function* () {
 ```
 
 Unnamed hydrated refs are stored together in Typed's versioned `data-typed-refsubject` envelope.
-The DOM renderer removes that consumed envelope after it decodes successfully. A decoding failure
+A decoding failure
 remains a typed `Schema.SchemaError` on the ref; it is not silently converted into a different
 client-side default.
 
@@ -72,8 +73,7 @@ two refs with the same named hydration attribute fails immediately, because ther
 unambiguous DOM owner. Keep `hydrateAll` at the Template boundary; it does not make unrelated
 RefSubjects one shared state model.
 
-For the full DOM adoption contract, read [Hydrating Typed HTML](/explore/hydrating-typed-html). For
-element references that acquire browser resources, read [Template references and element access](/explore/template-references-and-element-access).
+For element references that acquire browser resources, read [Template references and element access](/explore/template-references-and-element-access).
 
 ## Keep the server snapshot and browser initializer in agreement
 

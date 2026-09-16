@@ -12,31 +12,17 @@ Complete one of two items in the preview. The count should become one, and Clear
 ## Derive the answers in src/application.ts
 
 ```ts
-// @source examples/todo-6/src/application.ts#L13-L16
+// @source examples/todo-6/src/application.ts#L32-L45
 // @expect export const ActiveCount
-// @expect export const SomeAreCompleted
-// @expect export const AllAreCompleted
 ```
 
 Every creation, deletion, and toggle changes `TodoList`. These read views recompute from that authority, so actions do not also have to maintain counts and flags.
 
-The empty list deserves a deliberate rule in `src/domain.ts`:
-
-```ts
-// @source examples/todo-6/src/domain.ts#L49-L56
-// @expect export const allAreCompleted
-// @expect list.length > 0
-// @expect export const toggleAllCompleted
-```
-
-`every` alone would report true for an empty array. The nonempty check keeps Mark all complete unchecked when there are no items. Toggling all completes every item if any is active; otherwise it reopens them.
-
 ## Render the count in src/presentation.ts
 
 ```ts
-// @source examples/todo-6/src/presentation.ts#L109-L111
-// @expect ${App.ActiveCount}
-// @expect count === 1 ? "item" : "items"
+// @source examples/todo-6/src/presentation.ts#L105-L106
+// @expect <span class="todo-count"
 ```
 
 The number and its singular or plural label are both live values. The count means active items in the whole list; adding a filter later should not change that meaning.
@@ -44,13 +30,34 @@ The number and its singular or plural label are both live values. The count mean
 ## Show a control only when it can act
 
 ```ts
-// @source examples/todo-6/src/presentation.ts#L112-L121
+// @source examples/todo-6/src/presentation.ts#L107-L116
 // @expect ${Fx.if(App.SomeAreCompleted
-// @expect onclick=${App.clearCompletedTodos}
-// @expect onFalse: Fx.null
 ```
 
 After the last completed item is cleared, the button and its event binding disappear together. The action changes the list; the condition handles its presentation.
+
+## Handle the empty list
+
+The empty list deserves a deliberate rule in `src/domain.ts`:
+
+```ts
+// @source examples/todo-6/src/domain.ts#L67-L69
+// @expect export function allAreCompleted
+```
+
+`every` alone would report true for an empty array. The nonempty check keeps Mark all complete unchecked when there are no items. Toggling all completes every item if any is active; otherwise it reopens them.
+
+The main section and footer also follow the canonical non-empty condition. The named `HasTodos` view suppresses repeated boolean values.
+
+```ts
+// @source examples/todo-6/src/presentation.ts#L9-L9
+// @expect const HasTodos
+```
+
+```ts
+// @source examples/todo-6/src/presentation.ts#L90-L91
+// @expect ${Fx.if(HasTodos
+```
 
 **Try it:** clear one completed item, complete the remaining item, then toggle all. Check the count, clear button, and checkbox after each action. A stale count suggests a separate mutable counter or a one-time read where you intended a live view.
 

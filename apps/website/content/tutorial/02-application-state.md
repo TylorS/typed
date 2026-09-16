@@ -1,29 +1,28 @@
 ---
 slug: "application-state"
 title: "Own application state"
-summary: "Expose reactive capabilities instead of a browser-shaped controller."
+summary: "Name the list, draft, and Todo factory that application actions need."
 order: 2
 architecture: ["domain", "application"]
 ---
 
-Name the two values the create form will need: committed todos and the text being typed. Add these contracts in `src/application.ts`.
+Name the two values the create input will need: committed todos and the text being typed. Add these contracts in `src/application.ts`.
 
 ## Name the application state
 
 ```ts
-// @source examples/todo-2/src/application.ts#L1-L7
+// @source examples/todo-2/src/application.ts#L15-L17
 // @expect export class TodoList
-// @expect export class TodoText
 ```
 
-`TodoList` and `TodoText` name capabilities; declaring them does not allocate a global list or input. A Layer will supply their values when the application runs. The same action can then use empty state in the browser or prepared state in a test.
+`TodoList` and `TodoText` are service declarations: actions request these names, and a Layer supplies their values when the application runs. Declaring them does not allocate a global list or input. The same action can use empty state in the browser or prepared state in a test. See [shared state contracts](/explore/shared-state-contracts) for requesting and providing a state service.
 
 Keep the values separate: submitting text changes the list, but typing does not. Counts and filtered rows will be derived from that list later.
 
 ## Ask for a new Todo
 
 ```ts
-// @source examples/todo-2/src/application.ts#L8-L11
+// @source examples/todo-2/src/application.ts#L7-L13
 // @expect export class CreateTodo
 ```
 

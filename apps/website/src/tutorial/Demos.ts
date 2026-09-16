@@ -6,8 +6,7 @@ import { Preview as Todo5 } from "./examples/todo-5/src/preview.js";
 import { Preview as Todo6 } from "./examples/todo-6/src/preview.js";
 import { Preview as Todo7 } from "./examples/todo-7/src/preview.js";
 import { Preview as Todo8 } from "./examples/todo-8/src/preview.js";
-import { Preview as Todo9 } from "./examples/todo-9/src/preview.js";
-import { Preview as Todo10 } from "./examples/todo-10/src/preview.js";
+import { TodoMvc } from "./TodoMvc.js";
 
 export const curriculumDemos = {
   "counter-reactive": Reactive,
@@ -18,8 +17,8 @@ export const curriculumDemos = {
   "todo-6": Todo6,
   "todo-7": Todo7,
   "todo-8": Todo8,
-  "todo-9": Todo9,
-  "todo-10": Todo10,
+  "todo-9": TodoMvc,
+  "todo-10": TodoMvc,
 } as const;
 
 export const curriculumDemo = (id: string) =>

@@ -6,18 +6,13 @@ kind: "guide"
 order: 239
 ---
 
-A form begins with a person trying to complete a task: enter an email address, choose a plan, correct
-an invalid quantity, and submit without losing their work. Treating every field as a generic state
-setter obscures the browser behavior that makes this possible. `@typed/ui/Form` keeps native
-controls and adds a typed boundary between their representations and the values your application
-uses.
+Build a native form that decodes field values, displays errors, and previews a valid submission.
+The trial request below uses an email, a numeric team size, a plan, and an email preference.
+Submission updates a local preview so you can inspect the decoded result without a server.
 
-This walkthrough builds a trial-request editor. Submitting produces a visible preview of decoded
-request values; it does not contact a server. That makes the complete interaction available to
-inspect before attaching a request service. Read [component construction](/explore/building-ui-components)
-and [RefSubject state](/explore/composing-refsubject-state) first if the generator and reactive
-content are unfamiliar. The [Form primitive guide](/explore/ui-form) explains the broader API and
-its current implementation limits.
+Read [component construction](/explore/ui-component) and
+[RefSubject state](/explore/composing-refsubject-state) if the generator and reactive content are
+unfamiliar. The [Form reference](/explore/ui-form) covers the individual APIs and their limits.
 
 ## Choose application values before controls
 
@@ -98,11 +93,9 @@ export const TrialRequestEditor = component(function* () {
 });
 ```
 
-Mount this Fx with the application's existing renderer and Scope, as shown in
-[Mounting DOM output](/explore/mounting-dom-output). Its state, listeners, and reactive template
-content then share that render lifetime. The preview subject belongs to the enclosing editor
-because it appears outside Root; bound fields belong under Root because they consume its current
-form service.
+Bound fields belong under Root because they consume its current-form service. The preview belongs
+to the enclosing component and appears outside Root. Use the application's existing renderer;
+[Mounting DOM output](/explore/mounting-dom-output) covers setup.
 
 ## Let the browser do the interaction it already knows
 
@@ -138,35 +131,17 @@ from the field as well as available for announcement. [W3C ARIA21](https://www.w
 explains why identifying the invalid field matters. Authors must provide useful labels, stable IDs,
 and correction instructions; Typed provides the field binding and generated error relationship.
 
-Description is a neutral visible host and creates no automatic association. In the current input
-implementation, the generated error description is authoritative; do not assume another
-`aria-describedby` in consumer props is merged with it. Put essential short constraints in the
-label or visible nearby text, or design a custom field relationship carefully.
-
-Whole-form validation checks current decoded values, clears errors on success, and copies its
-aggregate error message across fields on failure. A prior field decode error alone does not ensure
-submission fails if the retained decoded value still validates. When a workflow must reject any
-invalid draft, add that policy explicitly and test it. This distinction is especially important for
-programmatic submission and custom controls that do not use native validity checks.
+For custom descriptions or submission with invalid drafts, see the
+[Form reference](/explore/ui-form). It explains generated description IDs and why whole-form
+validation checks retained decoded values rather than every editing draft.
 
 ## Attach request work at the submission boundary
 
-The example handler updates a local preview, which makes the decoded result visible. To perform
-an actual request, return the service Effect from `onValidSubmit`. Root marks `submitting` during
-validation and the returned Effect and clears it on finalization. Binding it to Submit gives the
-user visible interaction feedback; it is not a cross-request lock or a server idempotency guarantee.
-
-Choose recovery before launching remote work: retain entered values after a server rejection,
-explain what can be retried, and distinguish a business rejection from a transport failure. Form
-does not infer field errors from an HTTP response. Keep those errors within an explicit application
-model, and use an [Alert](/explore/ui-alert) only when the message warrants interruption. Do not
-launch a detached promise inside the callback and immediately return; Root can only track work
-represented by the returned Effect.
-
-This submit path reads decoded state, not native FormData. The separate `formDataToRecord` and
-`decodeFormData` APIs are useful when actual FormData is your boundary. In particular, native
-checkbox omission and disabled-field omission are not the same thing as a boolean or value already
-stored in form state.
+The handler receives decoded values and updates the preview. To perform a request, return its
+Effect from `onValidSubmit`. Root keeps `submitting` true through validation and the returned
+Effect, then clears it on finalization. The example binds this state to the submit button.
+A detached promise would not be tracked. For remote failures, handle recovery in the returned
+Effect; [errors and recovery](/explore/fx-errors-and-recovery) covers that composition.
 
 ## Reset an editor rather than only its DOM
 
@@ -176,26 +151,14 @@ visible, because that preview is an independently owned result. If “start over
 make it a named application action that updates both subjects rather than hiding that behavior
 inside a generic reset button.
 
-Use `Form.setValue` to assign an already-decoded field value. It updates touched/dirty metadata
-without validating the value or clearing an existing field error. Decode unknown data with Effect
-Schema first; call `Form.validate(form)` for an explicit whole-form check. Successful validation
-clears errors, while failure returns a `SchemaError`. Dirty tracking compares the new value with
-the default; touched is not specifically a blur flag. A new record should get the correct defaults
-and identity instead of silently inheriting the
-old record's errors. For server rendering, use stable explicit form/control IDs and matching
-initial data; [hydration](/explore/server-rendering-and-hydration) covers that handoff.
+For programmatic assignments, metadata, and explicit validation, see the
+[Form state reference](/explore/ui-form#follow-a-value-through-the-field-boundary).
 
 ## Verify one complete user path
 
-Style the native hosts through classes and `[aria-invalid]`. Preserve focus rings and visible error
-text in each theme; color alone cannot explain a correction. Custom hosts must forward native
-props, events, and hydration refs. Swapping a select for styled divs is a different control
-implementation, not a CSS adjustment.
-
 For this editor, exercise the label targets, native empty-email feedback, positive team-size rule,
 keyboard submission, displayed decoded preview, and reset. Add a service-level test for whatever
-request contract replaces the preview handler. These are verification tasks for the consuming
-application, not claims that copying this example establishes accessibility compliance.
+request contract replaces the preview handler. Keep focus indicators and error text visible while testing those interactions.
 
 Continue with the [Form API](/reference/modules/%40typed%2Fui%2FForm),
 [Button activation](/explore/ui-button), [Checkbox state](/explore/ui-checkbox),

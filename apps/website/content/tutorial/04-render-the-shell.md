@@ -1,57 +1,59 @@
 ---
 slug: "render-the-shell"
 title: "Render the application shell"
-summary: "Connect native form events to application Effects."
+summary: "Connect native input events to application Effects."
 order: 4
 demo: "todo-4"
 architecture: ["domain", "application", "presentation"]
 ---
 
-Type a title in the preview and submit it. The input clears and the accepted count increases; individual rows arrive in the next chapter. This step connects the form to the create action we already wrote.
+Type a title and press Enter. The input clears after creation; this partial preview does not reveal the list until the next chapter. Its header and event handlers are extracted from the actual TodoMVC presentation.
 
 ## Run this shell locally
 
-Install `@typed/id` with `npm install @typed/id`. Keep the Quick Start `index.html`, which loads `/src/main.ts`. Replace the files listed below, including the new `src/main.ts`, then run `npm run dev`. This launcher stays in place as you add rows, routing and persistence; chapter nine explains its composition.
+Keep the Quick Start `index.html` and replace the files below. The infrastructure now supplies a router; install it alongside the standalone styles, then start Vite:
 
-The factory uses `@typed/id` for identity and time, with defaults provided by the launcher. The [ID guide](/explore/id) explains those services and how to replace them in tests.
+```sh
+npm install --save-exact @typed/router@1.0.0-beta.11
+npm install todomvc-app-css todomvc-common
+
+npm run dev
+```
 
 ## Read input events in src/presentation.ts
 
+The handler records browser edits in the application draft.
+
 ```ts
-// @source examples/todo-4/src/presentation.ts#L1-L8
+// @source examples/todo-4/src/presentation.ts#L9-L10
 // @expect const onInput
-// @expect RefSubject.set(App.TodoText, event.target.value)
 ```
 
-The handler reads the browser's latest value and writes it into `TodoText`. No Todo is created while typing.
+Changing the draft does not create a Todo.
+
+## Create on Enter
+
+The keyboard handler runs the create action when the user presses Enter.
+
+```ts
+// @source examples/todo-4/src/presentation.ts#L13-L14
+// @expect const onNewTodoKeydown
+```
+
+The canonical input accepts Enter; blank drafts remain unchanged.
 
 ## Bind the input back to state
 
+The live value follows the same draft and clears when the action succeeds.
+
 ```ts
-// @source examples/todo-4/src/presentation.ts#L17-L24
+// @source examples/todo-4/src/presentation.ts#L25-L28
 // @expect .value=${App.TodoText}
-// @expect oninput=${onInput}
 ```
 
-`.value` updates the live input property. When `createTodo` clears the draft, the rendered input clears too. The HTML `value` attribute alone would not describe that ongoing relationship.
+The outer view is an `html` template. It does not allocate component-local state.
 
-## Submit through the form
-
-```ts
-// @source examples/todo-4/src/presentation.ts#L13-L16
-// @expect onsubmit=${EventHandler.make(() => App.createTodo, { preventDefault: true })}
-```
-
-The form runs `App.createTodo` and prevents a page navigation. Clicking Add todo and pressing Enter take the same path. The button is a native submit button:
-
-```ts
-// @source examples/todo-4/src/presentation.ts#L25-L26
-// @expect <button type="submit"
-```
-
-The surrounding `TodoApp` is simply `html` followed by a template literal. It binds existing state and actions, so no generator or `component()` wrapper is needed. Open the complete presentation file below to see the surrounding section and header.
-
-**Try it:** submit spaces, then a title with spaces around it. Blank input stays available for correction and leaves the accepted count unchanged; accepted input clears and increments the count. If Enter reloads the page, check `preventDefault`. If the visible text stays after a successful submission, check `.value`.
+**Try it:** press Enter with only spaces, then with a title. Blank input leaves the draft unchanged; accepted input clears it. Rows arrive in the next chapter. If the visible text stays after successful creation, check `.value`.
 
 ## Complete files
 
@@ -85,7 +87,9 @@ Keep the files from the previous step and replace or add these. Each full file i
 </details>
 
 <details class="curriculum-file">
-<summary>src/preview.ts</summary>
+<summary>Optional website embedding: src/preview.ts</summary>
+
+The documentation uses this entrypoint to isolate its preview. Your standalone app starts from `src/main.ts`; it does not need `preview.ts`. The [filter chapter](/explore/tutorial/route-the-filter#embed-the-app-with-a-private-router) explains the difference.
 
 ```ts file="src/preview.ts"
 // @source examples/todo-4/src/preview.ts
@@ -98,6 +102,15 @@ Keep the files from the previous step and replace or add these. Each full file i
 
 ```ts file="src/main.ts"
 // @source examples/todo-4/src/main.ts
+```
+
+</details>
+
+<details class="curriculum-file">
+<summary>src/styles.css</summary>
+
+```css file="src/styles.css"
+// @source examples/todo-4/src/styles.css
 ```
 
 </details>

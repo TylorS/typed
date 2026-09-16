@@ -14,40 +14,30 @@ A form crosses three representations: browser text and checked properties, decod
 
 ```ts
 import { Schema } from "effect";
-import { html } from "@typed/template";
-import { RefSubject } from "@typed/fx";
 import { component } from "@typed/template";
 import * as Form from "@typed/ui/Form";
 
-const Order = Form.make(Schema.Struct({
+const Quantity = Form.make(Schema.Struct({
   copies: Schema.FiniteFromString.pipe(Schema.check(Schema.isInt(), Schema.isGreaterThan(0))),
-  includeNotes: Schema.Boolean,
 }));
 
-export const PrintOrder = component(function* () {
-  const form = yield* Order.state({ copies: 1, includeNotes: false }, { id: "print-order" });
-  const submitting = RefSubject.map(form, (state) => state.submitting);
-  const preview = yield* RefSubject.make("No print request preview yet.");
-  return html`<section>${Order.Root({
+export const QuantityField = component(function* () {
+  const form = yield* Quantity.state({ copies: 1 }, { id: "quantity" });
+
+  return Quantity.Root({
     form,
     content: [
-      Order.Label({ for: "order-copies", content: "Copies" }),
-      Order.NumberInput({ name: "copies", props: { id: "order-copies", min: 1, required: true } }),
-      Order.Error({ name: "copies" }),
-      Order.Checkbox({ name: "includeNotes", props: { id: "order-notes" } }),
-      Order.Label({ for: "order-notes", content: "Include speaker notes" }),
-      Order.Submit({ content: "Preview print request", props: { "?disabled": submitting } }),
-      Order.Reset({ content: "Restore defaults" }),
+      Quantity.Label({ for: "quantity-copies", content: "Copies" }),
+      Quantity.NumberInput({ name: "copies", props: { id: "quantity-copies", min: 1, step: 1 } }),
+      Quantity.Error({ name: "copies" }),
     ],
-    onValidSubmit: (values) => RefSubject.set(
-      preview,
-      `${values.copies} copies; notes ${values.includeNotes ? "included" : "excluded"}.`,
-    ),
-  })}<p role="status">${preview}</p></section>`;
+  });
 });
 ```
 
-This example renders decoded request values in a status paragraph. Supply the actual service Effect in `onValidSubmit`; its errors and environment remain part of the component contract. Do not launch it with a detached runPromise inside a DOM callback, which separates it from render lifetime and submitting cleanup.
+The decoded default is `1`; the field codec encodes it as browser text. Bound controls consume
+current-form context from Root. For submission, preview, and reset together, follow the
+[complete form walkthrough](/explore/forms-as-a-browser-contract).
 
 ## Follow a value through the field boundary
 
@@ -57,11 +47,21 @@ Input handlers decode native strings using the field codec. A successful edit up
 
 `Form.setValue` assigns an already-decoded value and updates metadata; it does not run the field codec or clear an existing error. Decode unknown data with Effect Schema before assigning it. Use `Form.validate(form)` when you need an explicit whole-form check; successful validation clears errors, while failed validation returns a `SchemaError` as described below.
 
-The factory includes string input variants, NumberInput/RangeInput, DateInput, boolean Checkbox, native Select, MaskedInput, and array Push/Remove. `mask` and `slot` build string codecs for structured text. When every slot declares a fixed length and a character set distinct from the punctuation, MaskedInput adds that punctuation while typing or pasting and preserves the caret across edits. Incomplete or invalid text remains visible until corrected; only decoded values reach form state. Use string slot codecs for identifiers such as phone numbers so leading zeroes survive. Variable-width or ambiguous masks still validate drafts but leave formatting to the user. Push/Remove operate on top-level array fields and do not invent nested field paths or a repeated editor. Explicit-state APIs (`makeState`, `Form`, and controls with `state`) are useful when library components receive state directly.
+## Masked inputs preserve their editing draft
+
+`mask` and `slot` build string codecs for structured text. When every slot declares a fixed length
+and a character set distinct from the punctuation, MaskedInput adds that punctuation while typing
+or pasting and preserves the caret across edits. Incomplete or invalid text remains visible until
+corrected; only decoded values reach form state. This draft behavior differs from ordinary bound
+inputs. Use string slot codecs for identifiers such as phone numbers so leading zeroes survive.
+Variable-width or ambiguous masks still validate drafts but leave formatting to the user.
+
+The [Form API](/reference/modules/%40typed%2Fui%2FForm) lists input variants, top-level array
+Push/Remove, and explicit-state controls for components that receive state directly.
 
 ## Submission is not simply reading FormData
 
-Root prevents native submission, validates the current decoded values through the schema's Type, and invokes the handler on success. It sets submitting while that work runs and clears it with finalization. Native constraint validation may prevent the browser from dispatching submit first; the [HTML form standard](https://html.spec.whatwg.org/multipage/forms.html#the-form-element) explains that platform boundary.
+Root prevents native submission, validates the current decoded values through the schema's Type, and invokes the handler on success. Return request work as an Effect from `onValidSubmit`; Root sets submitting while validation and that Effect run and clears it with finalization. A detached promise is not tracked. Native constraint validation may prevent the browser from dispatching submit first; the [HTML form standard](https://html.spec.whatwg.org/multipage/forms.html#the-form-element) explains that platform boundary.
 
 Current whole-form validation clears errors on success and assigns its aggregate schema error message across fields on failure. It does not build precise per-field issue paths. Because validation reads retained decoded values, a previous field decode error is not itself proof that whole-form validation will fail. Account for that distinction when a workflow must reject submission while any draft is invalid.
 

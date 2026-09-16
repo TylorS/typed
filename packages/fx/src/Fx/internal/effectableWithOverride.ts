@@ -1,15 +1,14 @@
 import { Effectable } from "effect";
 import type * as Effect from "effect/Effect";
-import { EFFECT_EVALUATE_KEY } from "./effectableEvaluateKey.js";
 
 /** Effectable base class whose generator evaluation delegates to an explicit Effect.
  *
  * @remarks
  * ## Why
  *
- * Effect 4's `Effectable.Class` evaluates to the object itself. Typed's yieldable objects instead
- * need `Effect.gen` to execute their `override` Effect. The prototype protocol installed below
- * returns that Effect and avoids recursively yielding the same object.
+ * Effect 4's `Effectable.Class` delegates evaluation to `asEffect`. Typed's yieldable objects
+ * implement that method by returning their `override` Effect, preserving the same sampling work
+ * when yielded in `Effect.gen` or executed directly.
  *
  * ## Ownership and lifetime
  *
@@ -57,13 +56,22 @@ export abstract class EffectableWithOverride<A, E = never, R = never> extends Ef
    * @category effects
    */
   abstract override: Effect.Effect<A, E, R>;
-}
 
-// @effect-diagnostics-next-line floatingEffect:off
-Object.defineProperty(EffectableWithOverride.prototype, EFFECT_EVALUATE_KEY, {
-  value: function (this: EffectableWithOverride<unknown, unknown, unknown>) {
+  /** Returns the Effect evaluated by Effect's runtime.
+   *
+   * @remarks
+   * ## Why
+   *
+   * Implements `Effectable.Class` through its public evaluation method.
+   *
+   * ## Ownership and lifetime
+   *
+   * Reading the Effect starts no work; subclasses retain ownership of its resources.
+   *
+   * @since 1.0.0
+   * @category effects
+   */
+  asEffect(): Effect.Effect<A, E, R> {
     return this.override;
-  },
-  configurable: true,
-  writable: true,
-});
+  }
+}

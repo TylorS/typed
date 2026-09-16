@@ -383,7 +383,7 @@ function getParamsSchema(ast: AST.RouteAst): Schema.Top {
       return encoded.pipe(
         Schema.decodeTo(
           Schema.Unknown,
-          Transformation.transformOrFail<unknown, unknown, unknown, unknown>({
+          Transformation.transformEffect<unknown, unknown, unknown, unknown>({
             decode: (input, options) => {
               return Effect.forEach(childParts, ({ names, schema }) =>
                 SchemaParser.decodeEffect(schema)(projectRecord(input, names), options),

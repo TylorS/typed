@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 svelte@^5.57.0
+pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.115 svelte@^5.57.0
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
@@ -40,6 +40,7 @@ The editor keeps its draft while incoming metadata changes. Save this as `Docume
 <!-- DocumentEditor.svelte -->
 <script lang="ts">
   let { title, saved }: { title: string; saved: boolean } = $props();
+
   let draft = $state("");
 </script>
 
@@ -50,55 +51,72 @@ The editor keeps its draft while incoming metadata changes. Save this as `Docume
 </section>
 ```
 
-Pass the imported component to `editorPage`. `view` generates a unique host ID for each rendered island and restores it from server markup during hydration. An optional `id` override can provide an application-specific ID; explicit IDs must be unique on the page and match between server and browser. It accepts plain props, `Effect`, `Stream`, or `Fx`; a props update preserves the mounted Svelte instance.
+Import the component directly in `editor-page.ts`. `view` generates a unique host ID for each rendered island and restores it from server markup during hydration. An optional `id` override can provide an application-specific ID; explicit IDs must be unique on the page and match between server and browser. It accepts plain props, `Effect`, `Stream`, or `Fx`; a props update preserves the mounted Svelte instance.
 
 ```ts file="editor-page.ts"
-import type { Component } from "svelte";
+import DocumentEditor from "./DocumentEditor.svelte";
 import { RefSubject } from "@typed/fx";
 import { view } from "@typed/svelte";
 import { html, component } from "@typed/template";
 
-export const editorPage = (Editor: Component<{ title: string; saved: boolean }>) =>
-  component(function* () {
-    const metadata = yield* RefSubject.make({ title: "Draft", saved: false });
-    return html`<main>
-      ${view(Editor, metadata)}
-      <button onclick=${RefSubject.update(metadata, (value) => ({ ...value, saved: true }))}>
-        Mark saved
-      </button>
-    </main>`;
-  });
+export const editorPage = component(function* () {
+  const metadata = yield* RefSubject.make({ title: "Draft", saved: false });
+
+  return html`<main>
+    ${view(DocumentEditor, metadata)}
+    <button onclick=${RefSubject.update(metadata, (value) => ({ ...value, saved: true }))}>
+      Mark saved
+    </button>
+  </main>`;
+});
 ```
 
 Pass the view directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects and supplies Svelte’s backend from the active Typed renderer. The same entrypoints handle browser rendering, SSR, and build-time static HTML. Browser rendering adopts existing server hosts; start with matching props.
 
-```ts file="render-page.ts"
-import { RandomValues } from "@typed/id/RandomValues";
+### Render HTML
+
+```ts file="render-html.ts"
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
-import { DomRenderTemplate, render } from "@typed/template/Render";
-import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { RandomValues } from "@typed/id/RandomValues";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template";
 import { editorPage } from "./editor-page.js";
-import DocumentEditor from "./DocumentEditor.svelte";
 
-const page = editorPage(DocumentEditor);
+const Services = Layer.merge(HtmlRenderTemplate, RandomValues.Default);
 
-export const htmlChunks = renderToHtml(page).pipe(Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)));
-
-export const renderPage = () => Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
+export const htmlChunks = editorPage.pipe(
+  renderToHtml,
+  Fx.provide(Services),
 );
 
-export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
-  Fx.drainLayer,
-  Layer.provide(Layer.merge(DomRenderTemplate.using(host.ownerDocument), RandomValues.Default)),
+export const htmlString = editorPage.pipe(
+  renderToHtmlString,
+  Effect.provide(Services),
+  Effect.scoped,
 );
-
-export const mountPage = (host: HTMLElement) =>
-  Effect.runFork(Layer.launch(pageLayer(host)));
 ```
 
-These are Typed’s standard renderer layers; `view` composes the framework’s server output as a native template child and mounts through the template’s ref in the browser. Prefer `htmlChunks` for a streaming response, observed inside the request Scope. Use `renderPage` when a complete string is required, including static generation. Both preserve the same HTML order and hydration markers. Compose `pageLayer(host)` with the application’s other Layers. At the application boundary, `mountPage` launches that Layer and returns the fiber to interrupt at shutdown.
+Consume `htmlChunks` in the request's Scope when the response can stream. `htmlString` is an Effect returning the complete HTML; compose it with the request handler or static-generation program and run that program at its entrypoint. Both use the same view and hydration markers.
+
+### Render into the DOM
+
+```ts file="main.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { RandomValues } from "@typed/id/RandomValues";
+import { DomRenderTemplate, render } from "@typed/template";
+import { editorPage } from "./editor-page.js";
+
+await editorPage.pipe(
+  render(document.body),
+  Fx.drainLayer,
+  Layer.provide([DomRenderTemplate, RandomValues.Default]),
+  Layer.launch,
+  Effect.runPromise,
+);
+```
+
+The browser entrypoint launches the rendering Layer. Add application services to `Layer.provide`; the Layer's Scope owns rendering and cleanup. The integration selects its backend from the active Typed renderer.
 
 Svelte’s public server API returns a complete `body` and `head`. The surrounding Typed template and opening Svelte host stream immediately; the Svelte body follows when its props and asynchronous rendering are ready. `onHead` receives the completed head output. This also applies to static rendering.
 
@@ -116,6 +134,7 @@ export class ProfileService extends Context.Service<ProfileService, {
 
 export const ProfileLive = Layer.succeed(ProfileService, { name: Effect.succeed("Ada") });
 export const loadName = Effect.flatMap(ProfileService, (profile) => profile.name);
+
 export const status = html`<p role="status">Account ready</p>`;
 ```
 
@@ -130,6 +149,7 @@ export const status = html`<p role="status">Account ready</p>`;
   import { loadName } from "./profile.js";
 
   let { initialName }: { initialName: string } = $props();
+
   const profile = useSource(loadName, { initial: AsyncData.success(initialName) });
   const { latest, pending, failure } = profile;
 </script>
@@ -163,6 +183,7 @@ Use the native writable bridge for shared state:
   let { count }: {
     count: RefSubject.RefSubject<number>;
   } = $props();
+
   const value = useRefSubject(count);
 </script>
 
@@ -186,6 +207,7 @@ The owner creates `count` in its Scope. The store starts with `undefined` and `N
   import Profile from "./Profile.svelte";
 
   let { runtime, initialName }: AppProps = $props();
+
   provideRuntime(toStore(() => runtime));
 </script>
 
@@ -220,10 +242,13 @@ import { loadName, ProfileLive } from "./profile.js";
 
 export async function renderApp(App: Component<AppProps>) {
   const runtime = ManagedRuntime.make(ProfileLive);
+
   try {
     const initial = await runtime.runPromise(prefetch(loadName));
     const initialName = Option.getOrThrow(AsyncData.getSuccess(initial));
+
     const output = await render(App, { props: { runtime, initialName } });
+
     return { html: output.body, head: output.head, data: { initialName } };
   } finally {
     await runtime.dispose();
@@ -242,8 +267,13 @@ import { ProfileLive } from "./profile.js";
 export function hydrateApp(App: Component<AppProps>, target: HTMLElement,
   data: Pick<AppProps, "initialName">) {
   const runtime = ManagedRuntime.make(ProfileLive);
+
   const app = hydrate(App, { target, props: { runtime, ...data } });
-  return async () => { await unmount(app); await runtime.dispose(); };
+
+  return async () => {
+    await unmount(app);
+    await runtime.dispose();
+  };
 }
 ```
 
@@ -263,6 +293,7 @@ Provide `BrowserRouter`, `ServerRouter`, or `TestRouter` in the same runtime as 
   const navigation = useNavigation();
   const { latest: path } = useCurrentPath();
   const { latest: matched } = useRoute(Route.Parse("/profile"));
+
   const openProfile = () => navigation.navigate("/profile").catch(console.error);
 </script>
 
@@ -303,9 +334,12 @@ it("renders with test services", async () => {
     Layer.succeed(ProfileService, { name: Effect.succeed("Test user") }),
     TestRouter({ url: "https://example.test/profile" }),
   ));
+
   try {
     const entry = await runtime.runPromise(Effect.scoped(Navigation.currentEntry));
+
     expect(entry.url.pathname).toBe("/profile");
+
     // Pass this runtime to App or a component fixture to test its native stores and navigation.
   } finally {
     await runtime.dispose();

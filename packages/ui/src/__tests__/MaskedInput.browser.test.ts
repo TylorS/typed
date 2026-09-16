@@ -314,7 +314,7 @@ it("does not let a slow slot decoder overwrite a newer edit or reset", () =>
         const delayed = Schema.String.pipe(
           Schema.decodeTo(
             Schema.String,
-            SchemaTransformation.transformOrFail({
+            SchemaTransformation.transformEffect({
               decode: (value) =>
                 value === "111"
                   ? Effect.gen(function* () {

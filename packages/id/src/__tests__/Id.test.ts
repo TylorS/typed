@@ -1,5 +1,5 @@
 import * as Effect from "effect/Effect";
-import * as FastCheck from "effect/testing/FastCheck";
+import * as FastCheck from "fast-check";
 import { describe, expect, it } from "vitest";
 import * as Cuid from "../Cuid.js";
 import { Ids } from "../Ids.js";

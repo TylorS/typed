@@ -6,9 +6,8 @@ kind: "guide"
 order: 1.1
 ---
 
-A status panel can show a computed label, request the server's status once, or remain subscribed to
-changes. Those are different sources even when each emits a string. Pick a constructor that tells
-the truth about when work starts, how many values may arrive, and how the work stops.
+Pick a constructor by what you already have: a value, a computation, an iterable, an Effect,
+or a callback API. The choice determines when work starts and how it stops.
 
 Read [Fx: work arrives](/explore/fx-push-reactivity) first. Here, every example builds a source and
 leaves its execution with an Effect consumer; construction alone starts nothing.
@@ -42,6 +41,7 @@ import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
 const ids = Fx.fromIterable(new Set(["ada", "grace", "barbara"]));
+
 const program: Effect.Effect<ReadonlyArray<string>> = Fx.collectAll(ids);
 
 const result = await Effect.runPromise(program);
@@ -52,75 +52,36 @@ is safe here because the source completes. Be careful with an already-created ge
 obtaining it again does not rewind it. If each run must enumerate from the beginning, construct the
 iterator inside [lazy setup](/explore/fx-dynamic-producers).
 
-## Make a cancelable one-shot request
+## Lift an existing Effect
 
-Use Effect's HTTP client for requests. Its service selects the transport, and its typed errors
-preserve request, status, and response-body failures:
+`fromEffect` emits the Effect's success once and preserves its errors, service requirements, and
+interruption behavior:
 
 ```ts
 import { Effect } from "effect";
-import { FetchHttpClient, HttpClient, HttpClientError, HttpClientResponse } from "effect/unstable/http";
 import { Fx } from "@typed/fx";
 
-const request = HttpClient.get("https://example.com/api/status").pipe(
-  // HTTP error statuses become typed failures before reading the body.
-  Effect.flatMap(HttpClientResponse.filterStatusOk),
-  Effect.flatMap((response) => response.text),
-);
-
-const response: Fx.Fx<string, HttpClientError.HttpClientError, HttpClient.HttpClient> =
-  Fx.fromEffect(request);
-
-const program = Fx.first(response).pipe(Effect.provide(FetchHttpClient.layer));
-```
-
-`FetchHttpClient.layer` provides the browser transport and connects Effect interruption to request
-cancellation. The HTTP client requirement remains until that Layer is provided; errors remain in
-the Effect's failure channel. `Fx.first` returns an Option, so successful absence and failure stay
-distinct. For an application service, provide the client once at its Layer boundary.
-
-`Fx.fail` constructs an expected failure directly; use `Fx.die` only for an unexpected invariant
-violation. Use `Effect.tryPromise` when adapting a Promise API without an existing Effect service.
-
-## Reuse an existing Stream or Effect clock
-
-If a library already supplies an Effect Stream, keep its source contract and adapt it:
-
-```ts
-import { Effect, Stream } from "effect";
-import { Fx } from "@typed/fx";
-
-const source = Fx.fromStream(Stream.make(1, 2, 3));
-const program = Fx.collectAll(source).pipe(
-  Effect.map((values) => values.reduce((sum, value) => sum + value, 0)),
-);
-```
-
-`fromStream` preserves errors, requirements, and finalizers. `toStream` is the reverse boundary for
-an existing Stream consumer. Neither adapter starts work until its consumer runs.
-
-For timed status updates, use Effect's clock rather than an unowned interval. `Fx.at(value, delay)`
-emits once after a delay, `periodic(period)` emits `void` after each full period, and `fromSchedule`
-uses a recurrence policy:
-
-```ts
-import { Effect, Fiber, Schedule } from "effect";
-import * as TestClock from "effect/testing/TestClock";
-import { Fx } from "@typed/fx";
-
-const finiteTicks = Fx.fromSchedule(Schedule.recurs(2));
-
-const test = Effect.gen(function* () {
-  const fiber = yield* Effect.forkChild(Fx.collectUpTo(Fx.periodic("1 second"), 2));
-  yield* TestClock.adjust("2 seconds");
-  return yield* Fiber.join(fiber);
+const decode = Effect.try({
+  try: () => JSON.parse('{"ready":true}') as unknown,
+  catch: () => "InvalidJson" as const,
 });
+
+const decoded: Fx.Fx<unknown, "InvalidJson"> = Fx.fromEffect(decode);
+
+const program = Fx.collectAll(decoded);
 ```
 
-The test fragment forks a bounded observation, advances the test clock, and joins its result.
-`Schedule.recurs(2)` produces two ticks through `fromSchedule`; it is not the same count as repeating
-an initial source twice. [Time and rate](/explore/fx-time-and-rate) supplies a complete test and
-explains debounce, throttle, and silence detection.
+Running `program` parses the text. Success produces a one-element array; invalid JSON fails the
+Effect with `InvalidJson`. The adapter adds no retries or fallback. An Effect that requires an HTTP
+client still requires that client after lifting; see the [fetch integration](/integrate/fetch-schema).
+
+`Fx.fail` constructs an expected failure directly; `Fx.die` represents an unexpected invariant
+violation. Adapt Promise APIs with `Effect.tryPromise` before lifting them.
+
+For an existing Effect Stream, use `Fx.fromStream`; `Fx.toStream` is the reverse boundary. Both
+retain errors, requirements, and finalizers, and remain lazy until consumed. For clock-driven sources,
+[time and rate](/explore/fx-time-and-rate) covers `at`, `periodic`, and `fromSchedule` with a complete
+TestClock example.
 
 ## Register the live browser boundary
 
@@ -135,6 +96,7 @@ const keydowns: Fx.Fx<KeyboardEvent> = Fx.callback((emit) => {
   const onKeydown = (event: KeyboardEvent) => emit.succeed(event);
 
   document.addEventListener("keydown", onKeydown);
+
   return Effect.sync(() => document.removeEventListener("keydown", onKeydown));
 });
 

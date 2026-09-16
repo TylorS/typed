@@ -6,10 +6,9 @@ kind: "deep-dive"
 order: 91
 ---
 
-An article editor may need a textarea for notes, a document title, and a JSON data script in its
-server response. Each contains text, but they do not use one interchangeable HTML escaping rule.
-The surrounding element determines how the browser parses its contents and what can accidentally
-end that context.
+A textarea, document title, and JSON data script all contain text, but require different escaping.
+The surrounding element determines how the browser parses its contents and what can end that
+context.
 
 Read [scalar bindings](/explore/template-element-bindings) first. This page separates the initial
 text context from live properties and explains the serialization boundary a server renderer must
@@ -21,10 +20,12 @@ preserve.
 import { html } from "@typed/template";
 
 const notes = "Remember the <scope> example & its cleanup rule.";
+
 export const editor = html`<label>
   Article notes
   <textarea name="notes">${notes}</textarea>
 </label>`;
+
 export const title = html`<title>${"Saved articles & notes"}</title>`;
 ```
 
@@ -38,9 +39,6 @@ For editing, the textarea body supplies initial content. Its current edit buffer
 property and capture events. Updating initial markup and controlling current editing are separate
 decisions.
 
-An Effect, Fx, or Stream can supply these text values. Their ordinary producer lifetime remains;
-choosing a text-only position changes the interpretation of each value, not who owns its subscription.
-
 ## Serialize the inner format before protecting the outer HTML
 
 A JSON data script has two contracts: valid JSON inside and an intact HTML script element around it.
@@ -53,6 +51,7 @@ const article = {
   id: "scope",
   note: "A literal </script> can occur in saved text.",
 };
+
 export const initialData = html`<script type="application/json">
   ${JSON.stringify(article)}
 </script>`;
@@ -80,36 +79,11 @@ CSS, URLs, or arbitrary literal markup. It protects the relevant dynamic context
 `plaintext` is recognized by parsing but cannot carry a reliable closing/hydration boundary;
 rendering it throws. It is not an alternative escaping strategy.
 
-For CSS, keep the same division of responsibilities:
+Closing-tag protection does not validate CSS. Use a stylesheet and class bindings for ordinary
+component appearance rather than constructing dynamic stylesheet text.
 
-```ts
-import { html } from "@typed/template";
-
-const authoredCss = ".article-note { white-space: pre-wrap; }";
-export const stylesheet = html`<style>${authoredCss}</style>`;
-```
-
-Do not interpolate unvalidated CSS merely because the closing tag is neutralized. For ordinary
-component appearance, a stylesheet and class contributions are usually a clearer boundary than
-constructing dynamic stylesheet text.
-
-## Keep renderer-owned HTML distinct from application data
-
-`HtmlRenderEvent` is a serializer's explicit output type. It does not sanitize its input string.
-Even branded output follows text escaping in `textarea` and `title`; raw-text contexts use its
-renderer-owned string with matching closing-tag neutralization.
-
-```ts
-import { html, HtmlRenderEvent } from "@typed/template";
-
-// The producing serializer owns the format and trust policy for this constant.
-const serialized = HtmlRenderEvent('{"id":"scope","kind":"article"}', true);
-export const data = html`<script type="application/json">${serialized}</script>`;
-```
-
-Application data should use ordinary interpolation, as in `initialData`. Wrapping user input in
-`HtmlRenderEvent` would assert a serialization responsibility that has not actually been fulfilled.
-The [HTML output contract](/explore/html-render-event) explains when a library legitimately owns it.
+Application data should use ordinary interpolation, as in `initialData`. Renderer authors who
+produce already serialized output should read the [HTML output contract](/explore/html-render-event).
 
 ## Test what the browser parsed
 
@@ -118,9 +92,3 @@ resulting elements, and inspect their text. For the JSON example, parse the data
 JSON and compare the recovered note. This checks both the outer boundary and inner format.
 
 For a textarea, test initial content separately from a later `.value` update and a user's edit.
-For hydratable output, retain the server element and assert adoption identity as well as text.
-Matching markers prove compatible template structure, not a trust policy or valid application data.
-
-The [HtmlChunk reference](/reference/modules/%40typed%2Ftemplate%2FHtmlChunk) exposes context-aware
-serialization for renderer authors. [Hydrating Typed HTML](/explore/hydrating-typed-html) explains the
-separate browser adoption contract.

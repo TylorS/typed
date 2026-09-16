@@ -10,9 +10,42 @@ A confirmation dialog has at least three outcomes: the person cancels, the appli
 
 Start with [component construction](/explore/ui-component) and [overlay selection](/explore/overlays-disclosure-and-transient-ui). The parts share one hydrated `{ open }` state. `Content` renders a real `<dialog>`, and its ref uses `showModal()` by default. The browser owns modal top-layer placement and inertness. `modal: false` chooses `show()` and permits interaction elsewhere; changing a role or CSS does not make a non-modal surface modal. See [MDN dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog).
 
-## Build an archive confirmation
+## Open and request dismissal
 
-Supply the real archive Effect and a stable, page-unique instance ID. Its service requirements remain in the returned view. A recoverable rejection appears in the dialog; success closes it.
+`Trigger` and `Content` share one state. Give the dialog a stable, page-unique heading ID and an explicit dismissal control.
+
+```ts
+import { html, component } from "@typed/template";
+import * as Dialog from "@typed/ui/Dialog";
+
+const ArchiveConfirmation = component(function* (id: string) {
+  const state = yield* Dialog.makeState();
+
+  return [
+    Dialog.Trigger({ state, content: "Archive project" }),
+    Dialog.Content({
+      state,
+      labelledBy: `${id}-title`,
+      content: html`
+        <h2 id=${`${id}-title`}>Archive project</h2>
+        <p>You can restore this project later.</p>
+        ${Dialog.RequestClose({ state, content: "Cancel" })}
+      `,
+    }),
+  ];
+});
+```
+
+`RequestClose` invokes the mounted element's native `requestClose()` when available. Its fallback dispatches a cancelable `cancel` event and closes only when accepted. With no mounted `Content`, the request does nothing. In contrast, `Dialog.close(state)` closes directly: use that after an action succeeds.
+
+<span id="build-an-archive-confirmation"></span>
+
+## Add the archive action
+
+Supply the real archive Effect and a stable, page-unique instance ID. Its service requirements remain in the returned view. A recoverable rejection appears in the dialog; success closes it. The busy claim prevents competing clicks from starting the operation twice.
+
+<details>
+<summary>Complete confirmation with busy and failure handling</summary>
 
 ```ts
 import { Data, Effect } from "effect";
@@ -29,13 +62,16 @@ const ArchiveProject = component(function* <R>(id: string, archive: Effect.Effec
   const state = yield* Dialog.makeState();
   const busy = yield* RefSubject.make(false);
   const message = yield* RefSubject.make("");
+
   const confirm = Effect.acquireUseRelease(
     // Protect the busy claim and its release from interruption.
     RefSubject.modify(busy, (running) => [!running, true] as const),
     (acquired) => acquired
       ? Effect.gen(function* () {
           yield* RefSubject.set(message, "Archiving…");
+
           yield* archive;
+
           yield* RefSubject.set(message, "Archived.");
           yield* Dialog.close(state);
         }).pipe(
@@ -43,9 +79,11 @@ const ArchiveProject = component(function* <R>(id: string, archive: Effect.Effec
           Effect.asVoid,
         )
       : Effect.void,
+
     // A competing click must not release the active operation's claim.
     (acquired) => acquired ? RefSubject.set(busy, false) : Effect.void,
   );
+
   return [
     Dialog.Trigger({ state, content: "Archive project" }),
     Dialog.Content({
@@ -63,9 +101,9 @@ const ArchiveProject = component(function* <R>(id: string, archive: Effect.Effec
 });
 ```
 
-Closing this dialog dismisses the view; it does not cancel an archive already underway. Reopening shows its current status. The handler belongs to the mounted component Scope, so removing that component interrupts the work. If archiving must survive navigation, let an application service own that operation.
+</details>
 
-`RequestClose` invokes the registered element's native `requestClose()` when available. Its fallback dispatches a cancelable `cancel` event and closes only when accepted. With no mounted `Content`, the request does nothing. In contrast, `close` sets state false without asking permission; `Close` and its alias `Dismiss` provide that direct path. `Dialog.Dialog` aliases `Content`.
+Closing this dialog dismisses the view; it does not cancel an archive already underway. Reopening shows its current status. The handler belongs to the mounted component Scope, so removing that component interrupts the work. If archiving must survive navigation, let an application service own that operation.
 
 ## Choose one command path
 
@@ -76,7 +114,5 @@ Omitting `controls`, as above, installs the state-driven click behavior. Supplyi
 ## Diagnose lifecycle disagreements
 
 If the dialog is visible but `state.open` is false, inspect `cancel`, `close`, and `toggle` handlers and the composed ref on the actual `<dialog>`. A custom host must forward all of them. A prevented user `cancel` handler vetoes the internal close handler; cancel browser behavior synchronously, before asynchronous work. If opening does nothing, distinguish an unsupported command from an unmounted content ref. If opening throws, inspect connection and native open state rather than adding another boolean.
-
-The component's inferred Fx carries yielded state/schema requirements and the errors/services of returned content and handlers. Rendering owns event work and native observation by Scope; removing the component stops that observation and unregisters its dialog handle. Keeping an accepted operation alive after route removal is a service-lifetime decision, not a reason to leak the render Scope.
 
 Continue to [NativeDialog](/explore/ui-native-dialog) to see the smaller synchronization layer, or [Dom contracts](/explore/ui-dom) before overriding a host. API: [Dialog](/reference/modules/%40typed%2Fui%2FDialog).

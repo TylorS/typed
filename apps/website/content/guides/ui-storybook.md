@@ -1,6 +1,6 @@
 ---
 title: "Storybook: mount a story with an owned render scope"
-summary: "Advanced Storybook integration reference for owned mount scopes and disposal."
+summary: "Mount and dispose Typed output in a component explorer or browser fixture."
 section: "UI / Foundations"
 kind: "deep-dive"
 order: 296
@@ -23,6 +23,7 @@ import { mount } from "@typed/ui/Storybook";
 
 const CounterStory = component(function* () {
   const count = yield* RefSubject.make(0);
+
   return html`<section aria-label="Counter example">
     <button type="button" onclick=${RefSubject.update(count, (value) => value + 1)}>Add item</button>
     <output aria-live="polite">${count} items</output>
@@ -32,6 +33,7 @@ const CounterStory = component(function* () {
 export async function showCounterStory(container: HTMLElement) {
   const story = await mount(CounterStory, container.ownerDocument);
   container.append(story.canvas);
+
   return async () => {
     await story.dispose();
     story.canvas.remove();
@@ -53,12 +55,10 @@ The returned `dispose` is idempotent. It interrupts the render fiber and closes 
 
 The helper also observes document mutations. Once its canvas has been connected, later removal triggers automatic disposal. A never-connected canvas cannot rely on that transition, and environments without MutationObserver receive no such fallback. Explicit disposal remains the reliable ownership contract for tests and integrations.
 
-Pass the intended document when rendering into an iframe or alternate window. The helper creates its canvas and DOM renderer from that document. Refs, native dialogs, popovers, and element classes can be document-sensitive; test them in the same environment users will encounter. Opening a native dialog during first render may need the host to be connected, so do not treat a detached first-render canvas as proof of all native interaction behavior.
+Pass the intended document when rendering into an iframe or alternate window. The helper creates its canvas and DOM renderer from that document. Native interactions may require a connected host, so append the canvas before testing them.
 
 ## Turn the fixture into useful evidence
 
-A story shows a concrete interaction, not automatic accessibility conformance. Test keyboard focus and activation, labels, disabled behavior, and disposal where relevant. For delayed overlays, remove the story during a pending delay and confirm no later UI effect survives. For external subscriptions, observe finalization rather than merely checking that an element vanished.
-
 If mount hangs, inspect whether the source emits renderable output. If it rejects immediately, inspect the original failure and required services. If behavior duplicates after navigation between stories, inspect the owner of the old fixture and whether its dispose function was retained and called.
 
-Continue with [testing Typed systems](/explore/testing-typed-systems) and the specific [Dialog](/explore/ui-dialog) or [Composite](/explore/ui-composite) guide for browser assertions. API: [Storybook.mount and MountedStory](/reference/modules/%40typed%2Fui%2FStorybook).
+Continue with [testing Typed systems](/explore/testing-typed-systems) for browser assertions. API: [Storybook.mount and MountedStory](/reference/modules/%40typed%2Fui%2FStorybook).

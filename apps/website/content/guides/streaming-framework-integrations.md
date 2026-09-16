@@ -6,8 +6,8 @@ kind: "reference"
 order: 4.2
 ---
 
-**Typed supports third-party streaming SSR out of the box.** React and Vue forward their HTML
-chunks directly into Typed's render stream.
+React and Vue can forward HTML chunks into Typed before their complete output is ready. Other
+integration directions collect the embedded component's body first; the table identifies each boundary.
 
 ## Streaming support by direction
 

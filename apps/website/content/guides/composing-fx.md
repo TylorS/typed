@@ -28,7 +28,9 @@ const local = Fx.at("saved locally", "5 millis");
 const server = Fx.at("saved on the server", "1 millis");
 
 const activity = Fx.merge(local, server);
+
 const messages = await Effect.runPromise(Fx.collectAll(activity));
+
 // ["saved on the server", "saved locally"]
 ```
 
@@ -56,12 +58,14 @@ A cache-first feed has a different promise: finish the snapshot, then subscribe 
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
-const cached = Fx.fromIterable(["cached: Ada", "cached: Lin"]);
-const live = Fx.fromIterable(["live: Grace"]);
+const cached = Fx.fromIterable(["snapshot: 1", "snapshot: 2"]);
+const live = Fx.fromIterable(["update: 3"]);
 
-const people = Fx.concat(cached, live);
-const values = await Effect.runPromise(Fx.collectAll(people));
-// ["cached: Ada", "cached: Lin", "live: Grace"]
+const feed = Fx.concat(cached, live);
+
+const values = await Effect.runPromise(Fx.collectAll(feed));
+
+// ["snapshot: 1", "snapshot: 2", "update: 3"]
 ```
 
 ```fx-marble
@@ -103,6 +107,7 @@ const queries = Fx.fromIterable(["effect", "effect v4"]);
 const filters = Fx.fromIterable(["guides", "api"]);
 
 const searchInput = Fx.zipLatest(queries, filters);
+
 const states = await Effect.runPromise(Fx.collectAll(searchInput));
 ```
 
@@ -161,43 +166,12 @@ The `tick` reads the latest value; changes between ticks only replace that retai
 completion ends the result and cancels the sampler. This is useful for periodic snapshots of a
 changing measurement, not for commands where every occurrence must be handled.
 
-## Preserve position only when position has meaning
+## When order is the requirement
 
-`zip` pairs first with first, then second with second. It is appropriate for corresponding protocol
-records, not for pairing an event feed with a rarely changing setting:
-
-```fx-marble
-title: zip variants pair each next value until a completed lane runs out of values
-covers: zip, zipWith, zipLeft, zipRight
-input left: left-1 . left-2 . |
-input right: . right-1 . right-2 |
-operator: zip / zipWith / zipLeft / zipRight
-output zip: . L1+R1 . L2+R2 |
-output zipWith: . pair(L1,R1) . pair(L2,R2) |
-output zipLeft: . left-1 . left-2 |
-output zipRight: . right-1 . right-2 |
-```
-
-Every output waits for its matching partner. A completed lane can still supply its queued values;
-pairing ends when a completion marker is reached after those values. Remaining unmatched inputs
-are discarded. `zipWith`, `zipLeft`, and `zipRight` change the output representation, not this
-clock. Unmatched inputs wait in queues; a fast lane can therefore retain substantial work.
-
-`mergeOrdered` solves a different ordering problem: subscribe to all lanes now but expose their
-values in lane order.
-
-```fx-marble
-title: mergeOrdered buffers a faster later lane behind an earlier lane
-covers: mergeOrdered
-input first: . first . | .
-input second: second . . . |
-operator: mergeOrdered(first, second)
-output: . first . second |
-```
-
-Here `second` is already available but waits for the first lane to finish. A first lane that never
-finishes prevents later buffered values from appearing. Choose ordered buffering because the feature
-requires it, not merely to make a test's output easier to compare.
+`zip` pairs inputs by position and queues unmatched values. `mergeOrdered` subscribes to all lanes
+but buffers later lanes behind earlier ones. Those policies can retain substantial work when one
+lane is slow or never finishes. They answer an ordering question rather than a latest-value question;
+consult the [operator atlas](/explore/fx-operator-atlas) when position or lane order is part of the contract.
 
 ## Hand a ready input to the admission policy
 

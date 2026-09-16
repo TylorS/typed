@@ -8,16 +8,15 @@ order: 1.6
 
 <span id="parse-useful-records-before-counting-them"></span>
 
-An import screen receives raw status lines. It should omit malformed records, show the next two
-useful messages after a banner, and include the final “complete” record before stopping. These are
-three decisions: admission, a counted window, and a terminal boundary. Treating them as one filter
-makes it easy to stop at the wrong moment.
+Selection decides which pushed values reach a consumer and when its subscription stops. The
+examples below demonstrate three independent choices: which values pass, how many accepted values
+to keep, and whether to include the value that ends the run.
 
 [Transforming Fx](/explore/transforming-fx) introduced zero-or-one output. Here we connect that choice
 to how long the producer remains subscribed. A source can be active while every value is rejected;
 “nothing visible” does not mean “nothing running.”
 
-## Count and stop a useful feed
+## Choose which values pass
 
 ```ts
 import { Option } from "effect";
@@ -26,39 +25,34 @@ import { Fx } from "@typed/fx";
 const messages = Fx.fromIterable(["", "notice: connected", "ready", "done"]).pipe(
   Fx.filterMap((line) => {
     const separator = line.indexOf(": ");
+
     return separator < 0 ? Option.none() : Option.some(line.slice(separator + 2));
   }),
 );
+
 // Emits: ["connected"]
 ```
 
 `filterMap` emits `Some` and omits `None`; the example extracts only the structured notice. If the
-original value should remain unchanged, use `filter`. An Effectful admission rule exposes its
-failures and service requirements:
+original value should remain unchanged, use `filter`.
 
-```ts
-import { Effect } from "effect";
-import { Fx } from "@typed/fx";
+`filterEffect` makes the same admission decision with an Effect. Returning `false` omits one value;
+failure reports a Cause instead. On a concurrent producer, Effectful checks may finish out of input
+order. See [concurrency policies](/explore/fx-higher-order-and-concurrency) when order matters.
 
-const visible = Fx.fromIterable([
-  { text: "private", allowed: false },
-  { text: "queued", allowed: true },
-]).pipe(Fx.filterEffect((message) => Effect.succeed(message.allowed)));
-// Emits only the allowed message.
-```
-
-An Effect returning `false` omits one value. An Effect failure reports a Cause instead; it is not a
-negative predicate result. On a concurrent producer, Effectful checks may finish out of input order,
-so choose an explicit serialized boundary if record order is part of the contract.
+Operator order changes the count. For `blank, connected, indexing`, filtering blanks before `Fx.take(2)`
+returns both useful messages. Taking two raw records before filtering returns only `connected`.
+Choose whether the bound means “inspect two inputs” or “show two useful outputs.”
 
 ## Select the useful window
 
 ```ts
 import { Fx } from "@typed/fx";
 
-const page = Fx.fromIterable(["banner", "connected", "indexing", "complete", "ignored"]).pipe(
+const window = Fx.fromIterable(["banner", "connected", "indexing", "complete", "ignored"]).pipe(
   Fx.slice({ skip: 1, take: 2 }),
 );
+
 // Emits: ["connected", "indexing"]
 ```
 
@@ -94,11 +88,6 @@ output: . connected indexing | . .
 `banner` is skipped, `connected` and `indexing` are emitted, then upstream stops. The Effect variants
 obtain their bounds before subscribing to the source.
 
-Operator order changes the count. For `blank, connected, indexing`, filtering blanks before `take(2)`
-returns both useful messages. Taking two raw records before filtering returns only `connected`.
-Choose whether the bound means “inspect two inputs” or “show two useful outputs.” This is an event
-window, not server-side pagination unless the producer supplies that dataset and ordering contract.
-
 ## Include or exclude the terminal record
 
 ```ts
@@ -107,44 +96,15 @@ import { Fx } from "@typed/fx";
 const beforeComplete = Fx.fromIterable(["connected", "indexing", "complete", "ignored"]).pipe(
   Fx.takeUntil((line) => line === "complete"),
 );
+
 // Emits: ["connected", "indexing"]
 
 const throughComplete = Fx.fromIterable(["connected", "indexing", "complete", "ignored"]).pipe(
   Fx.dropAfter((line) => line === "complete"),
 );
+
 // Emits: ["connected", "indexing", "complete"]
 ```
-
-```fx-marble
-title: skipWhile drops a matching prefix, and dropWhile is its alias
-covers: skipWhile, skipWhileEffect, dropWhile, dropWhileEffect
-input: banner banner connected indexing |
-operator: skipWhile(isBanner)
-output: . . connected indexing |
-```
-
-`skipWhile`/`dropWhile` omit the true prefix. After the gate opens, later matching values are no
-longer part of that prefix.
-
-```fx-marble
-title: dropUntil includes the boundary that opens its gate
-covers: dropUntil, dropUntilEffect
-input: banner banner connected indexing |
-operator: dropUntil(isConnected)
-output: . . connected indexing |
-```
-
-`dropUntil` includes the value that first satisfies its predicate and all later values.
-
-```fx-marble
-title: takeWhile stops before its first false value
-covers: takeWhile, takeWhileEffect
-input: connected indexing complete ignored |
-operator: takeWhile(isInProgress)
-output: connected indexing | . .
-```
-
-`takeWhile` excludes the first false value and stops.
 
 ```fx-marble
 title: takeUntil excludes its matching sentinel
@@ -164,13 +124,21 @@ operator: dropAfter(isComplete)
 output: connected indexing complete | .
 ```
 
-`dropAfter` includes that sentinel before closing. Use this for the import screen's final visible
-status. Read the last occupied output slot, not merely the method name: “until” and “after” make
-opposite promises about that boundary value.
+`dropAfter` includes the matching value before closing. Use it when the terminal record is part
+of the result, rather than a control signal to discard.
 
-Effectful variants use the same boundary after resolving their checks, and add the checks' errors
+The related prefix operators differ at the boundary:
+
+| Operator | Values forwarded |
+| --- | --- |
+| `skipWhile` / `dropWhile` | Everything from the first false predicate result onward. |
+| `dropUntil` | The first matching value and everything afterward. |
+| `takeWhile` | Values before the first false predicate result. |
+
+Effectful variants resolve their checks before applying the same boundary and add the checks' errors
 and requirements. `skipWhileEffect` and `dropUntilEffect` still evaluate after their gate opens;
-choose a pure predicate when later service calls would be unintended work.
+choose a pure predicate when later service calls would be unintended work. The
+[operator atlas](/explore/fx-operator-atlas) compares these variants in detail.
 
 ## Let another producer open or close the window
 
@@ -200,35 +168,9 @@ output: draft . saved | . .
 `until(events, stop)` closes when the stop lane emits. Its control value never reaches output, and
 its failure propagates because the signal owns stopping work.
 
-```fx-marble
-title: during forwards only while its named window is active
-covers: during
-input events: before . move . after . |
-input drag: . down |
-operator: during(events, drag)
-inner stop: . ^ . . . up |
-output: . . move . after | .
-```
+An unopened `since` gate still runs its event source; an absent `until` signal cannot stop an
+infinite source. Use [a timeout](/explore/fx-time-and-rate) when there is an actual time limit.
 
-`during(events, starts)` uses the first start value as an inner stop Fx. Read the inner `up` token as
-the end of that selected window. Signal failures propagate. For repeated drag windows carrying start
-coordinates, use the explicit `switchMap`/`until` composition in [Time and rate](/explore/fx-time-and-rate).
-
-A boolean chooses branch values rather than directly counting or gating source events:
-
-```fx-marble
-title: when selects a value for each spaced condition
-covers: when
-input condition: true . false |
-operator: when(condition, { onTrue, onFalse })
-output: . open . closed |
-```
-
-`when` selects the corresponding constant branch. Closely spaced conditions can replace a branch
-before it emits, so this is not guaranteed one output per pushed boolean.
-
-The import is finished when its terminal rule is met, even if the underlying listener could keep
-producing. Its callback cleanup still needs a real subscription owner. Test an absent start signal,
-an absent stop signal, and a signal failure as well as the happy path. A silent gate can remain live
-forever; use [a timeout](/explore/fx-time-and-rate) only when the product defines a time limit.
-For one optional answer instead of a bounded Fx, continue with [Fx.first](/explore/consuming-fx).
+For a window with both a start and a stop, see `during` in the
+[operator atlas](/explore/fx-operator-atlas). For one optional answer instead of a bounded Fx,
+continue with [Fx.first](/explore/consuming-fx).

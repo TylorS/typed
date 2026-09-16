@@ -1,23 +1,26 @@
 ---
 title: "Choose specialized state from the questions it answers"
-summary: "Model a review queue's ordered rows, keyed lookup, optional focus, field edits, and settled outcomes with the appropriate RefSubject operations."
+summary: "Choose RefSubject helpers for ordered values, keyed lookup, optional focus, field updates, and stored results."
 section: "State"
 kind: "reference"
 order: 2.2
 ---
 
-A review queue has several kinds of state. Rows have order. Selection has unique membership. A
-focused issue may be absent. A settings object has named fields. Forcing all of these through an
-untyped “store” API makes each caller rediscover the representation's rules.
+Specialized RefSubject modules name the transitions and queries for a particular representation.
+They retain the same current read, Fx observation, serialized writes, errors, and Scope ownership.
+Use this lookup after [RefSubject's model](/explore/refsubject-renderer-independent-state).
 
-Specialized RefSubject modules give those representations named transitions and queries. They
-retain the same Effect current read, Fx observation, serialized writes, errors, and Scope ownership.
-Choose the representation from the model's questions, then choose the helper whose return type
-expresses whether it writes, computes a value, or represents absence.
+| Need | Representation | Example result kinds |
+| --- | --- | --- |
+| Preserve order | `RefArray` | `append`: write Effect; `mapValues`: Computed; `head`: Filtered |
+| Find a value by identity | `RefHashMap` | `set`: write Effect; `has`: Computed; `get`: Filtered |
+| Store presence and absence | `RefOption` | `setNone`: write Effect; `getOrElse`: Computed; `getValue`: Filtered |
+| Update named fields together | `RefStruct` | `merge`: write Effect; `get`: Computed |
+| Keep a domain failure as data | `RefResult` | A current read returns the stored Result |
 
-Read [RefSubject's model](/explore/refsubject-renderer-independent-state) first. This is a
-representation lookup, not the State path's next required lesson. The specialization
-is a vocabulary over that model, not a new state architecture.
+A write Effect changes state when executed. A Computed reads or observes a derived value. A
+Filtered represents a query that can be absent. Choose the return kind as carefully as the
+representation.
 
 ## Keep an array when order is meaningful
 
@@ -29,11 +32,14 @@ import { Effect } from "effect"
 import * as RefArray from "@typed/fx/RefArray"
 
 type Issue = { readonly id: string; readonly title: string }
+
 const makeQueue = Effect.fn("makeQueue")(function* () {
   const issues = yield* RefArray.make<Issue>([])
   const titles = RefArray.mapValues(issues, (issue) => issue.title)
   const count = RefArray.length(issues)
+
   yield* RefArray.append(issues, { id: "42", title: "Review the release" })
+
   return { issues, titles, count }
 })
 ```
@@ -46,7 +52,7 @@ For transitions without a suitable helper, use `RefSubject.update` with an immut
 transformation. Preserve IDs while editing content so keyed rendering retains row identity.
 The current `RefArray.map` declaration says Computed, but its runtime performs a write; use
 `mapValues` for projections and `RefSubject.update` for rewrites until that mismatch is corrected.
-That specific discrepancy is also a reason to test command versus query behavior at the boundary.
+See the [RefArray reference](/reference/modules/%40typed%2Ffx%2FRefArray) for the current signatures.
 
 ## Use a keyed collection when identity is the frequent query
 
@@ -60,9 +66,12 @@ import * as RefHashMap from "@typed/fx/RefHashMap"
 const makeCatalog = Effect.fn("makeCatalog")(function* () {
   const issues = yield* RefHashMap.make(HashMap.empty<string, { readonly title: string }>())
   const selectedExists = RefHashMap.has(issues, "42")
+
   yield* RefHashMap.set(issues, "42", { title: "Review the release" })
   const beforeRemoval = yield* selectedExists
+
   yield* RefHashMap.remove(issues, "42")
+
   return { beforeRemoval, afterRemoval: yield* selectedExists }
 })
 ```
@@ -88,9 +97,12 @@ import * as RefOption from "@typed/fx/RefOption"
 const makeFocus = Effect.fn("makeFocus")(function* () {
   const focusedId = yield* RefOption.make(Option.none<string>())
   const label = RefOption.getOrElse(focusedId, () => "No focused issue")
+
   yield* RefOption.setSome(focusedId, "42")
   const focusedLabel = yield* label
+
   yield* RefOption.setNone(focusedId)
+
   return { focusedLabel, emptyLabel: yield* label, focusedId }
 })
 ```
@@ -112,8 +124,10 @@ import * as RefStruct from "@typed/fx/RefStruct"
 const makeSettings = Effect.fn("makeSettings")(function* () {
   const settings = yield* RefStruct.make({ title: "Review queue", compact: false })
   const title = RefStruct.get(settings, "title")
+
   yield* RefStruct.set(settings, "title", "Release review")
   yield* RefStruct.merge(settings, { title: "Compact review", compact: true })
+
   return { settings, title }
 })
 ```
@@ -136,16 +150,15 @@ Other modules address particular value semantics:
 
 | Representation | Module family | Boundary to inspect |
 | --- | --- | --- |
-| Flags/text | `RefBoolean`, `RefString` | Toggle/replace writes versus negation/trim queries |
-| Numeric values | `RefBigInt`, `RefBigDecimal` | Exact representation and operation return types |
-| Time values | `RefDuration`, `RefDateTime` | Duration units versus timestamp/calendar interpretation |
-| Indexed structures | `RefTrie`, `RefGraph`, `RefHashRing` | Missing lookup, structural constraints, distribution semantics |
-| Generic iterable values | `RefIterable` | Whether repeated traversal is appropriate for the source |
+| Flags/text | [`RefBoolean`](/reference/modules/%40typed%2Ffx%2FRefBoolean), [`RefString`](/reference/modules/%40typed%2Ffx%2FRefString) | Toggle/replace writes versus negation/trim queries |
+| Numeric values | [`RefBigInt`](/reference/modules/%40typed%2Ffx%2FRefBigInt), [`RefBigDecimal`](/reference/modules/%40typed%2Ffx%2FRefBigDecimal) | Exact representation and operation return types |
+| Time values | [`RefDuration`](/reference/modules/%40typed%2Ffx%2FRefDuration), [`RefDateTime`](/reference/modules/%40typed%2Ffx%2FRefDateTime) | Duration units versus timestamp/calendar interpretation |
+| Indexed structures | [`RefTrie`](/reference/modules/%40typed%2Ffx%2FRefTrie), [`RefGraph`](/reference/modules/%40typed%2Ffx%2FRefGraph), [`RefHashRing`](/reference/modules/%40typed%2Ffx%2FRefHashRing) | Missing lookup, structural constraints, distribution semantics |
+| Generic iterable values | [`RefIterable`](/reference/modules/%40typed%2Ffx%2FRefIterable) | Whether repeated traversal is appropriate for the source |
 
 For example, store a Duration when the model describes elapsed time and derive milliseconds only
 at a timer boundary. Choose Graph because relationships are genuinely graph-shaped, not because a
-more specialized name sounds like a better store. These modules do not add persistence, cache
-invalidation, or network conflict resolution.
+more specialized name sounds like a better store.
 
 When adopting a specialization, test one transition, one query, and the absent/invalid boundary
 that matters to the feature. Inspect the actual Effect/Computed/Filtered return type; similar names

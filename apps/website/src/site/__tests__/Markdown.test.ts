@@ -12,6 +12,42 @@ const documentFor = (code: string) => {
 };
 
 describe("site Markdown rendering", () => {
+  it.each(["ts", "typescript", "tsx"])(
+    "highlights nested Typed HTML inside %s without leaking into following code",
+    async (language) => {
+      const source = [
+        "const view = Html.html`<input .value=${Fx.map(value, (n) => `${n}`)} ?checked=${true} />",
+        '<span class="item ${color}" @click=${() => ({ value: "ok" })}>',
+        "${items.map((item) => html`<b>${item.name}</b>`)}",
+        "</span>`;",
+        "const after: number = 1;",
+      ].join("\n");
+      const document = documentFor(
+        (await renderMarkdown(`\`\`\`${language}\n${source}\n\`\`\``)).code,
+      );
+      expect(document.querySelector("code")?.textContent).toBe(source);
+      const tokens = [...document.querySelectorAll("code span[style]")];
+      const color = (text: string) =>
+        tokens.find((token) => token.textContent?.trim() === text)?.getAttribute("style");
+      const htmlDocument = documentFor(
+        (await renderMarkdown("```html\n<input><span><b></b></span>\n```")).code,
+      );
+      const tagStyle = [...htmlDocument.querySelectorAll("code span[style]")]
+        .find((token) => token.textContent === "input")
+        ?.getAttribute("style");
+      expect(tagStyle).toBeDefined();
+      for (const tag of ["input", "span", "b"]) expect(color(tag)).toBe(tagStyle);
+      expect(color(".value")).toBeDefined();
+      expect(color("?checked")).toBeDefined();
+      expect(tokens.filter((token) => token.textContent === "const")).toHaveLength(2);
+      expect(
+        tokens
+          .filter((token) => token.textContent === "const")
+          .map((token) => token.getAttribute("style")),
+      ).toEqual([color("const"), color("const")]);
+      expect(document.querySelector("input")).toBeNull();
+    },
+  );
   it("preserves relative indentation through source expansion and syntax highlighting", async () => {
     const source = [
       "        const draft = input.value;",

@@ -7,15 +7,13 @@ order: 4.2
 ---
 
 An editor has three tools: Move, Draw, and Erase. The user tabs into its toolbar, presses Right to
-inspect Draw, then presses Enter to use it. Later, the document becomes read-only and Erase disappears.
+inspect Draw, then presses Enter to use it. Later, Erase becomes unavailable and disappears.
 A good implementation must answer two questions that a row of styled buttons does not answer: did
 moving focus also change the editor tool, and where does focus go when its current control vanishes?
 
 We will build that interaction in two stages. First, give the toolbar a keyboard location without
 confusing it with the selected editor tool. Then make the command list change while preserving the
-relationship between logical identity and actual DOM elements. The same reasoning explains why a
-combobox can keep focus in an input, why a grid can keep focus on its root, and why those families
-cannot all use one generic “selected item” abstraction.
+relationship between logical identity and actual DOM elements. Read [Component](/explore/ui-component) first if acquiring local state inside a component is new.
 
 ## Start with two different facts
 
@@ -30,6 +28,7 @@ import * as Toolbar from "@typed/ui/Toolbar";
 
 export const DrawingTools = component(function* () {
   const tool = yield* RefSubject.make("move");
+
   const state = yield* Toolbar.makeState({ activeId: "drawing-move" });
   const collection = yield* Toolbar.makeCollection();
 
@@ -53,11 +52,8 @@ export const DrawingTools = component(function* () {
 });
 ```
 
-Render `DrawingTools` inside the application's normal render scope. The zero-argument component
-is an Fx; creating the value does not eagerly mount elements or install keyboard listeners. Its
-generator acquires state when rendered. The canvas-tool subject, toolbar state, and collection then
-share that component's lifetime. See [building components](/explore/building-ui-components) if this
-acquisition boundary is new.
+Render `DrawingTools` as a component value. Its tool state, toolbar state, and collection share the
+mounted instance's lifetime.
 
 Tab into Move and press Right. `state.activeId` becomes `drawing-draw`, the actual Draw element
 receives focus, and `tool` stays `move`. Press Enter: the root activates the registered item, which
@@ -115,6 +111,7 @@ export const ChangingDrawingTools = component(function* () {
     { id: "drawing-erase", label: "Erase" },
   ]);
   const tool = yield* RefSubject.make("drawing-move");
+
   const state = yield* Toolbar.makeState({ activeId: "drawing-move" });
   const collection = yield* Toolbar.makeCollection();
 
@@ -123,6 +120,7 @@ export const ChangingDrawingTools = component(function* () {
       ? Effect.flatMap(collection, (items) => {
           const erased = items.find((item) => item.id === "drawing-erase")?.element;
           const heldFocus = erased !== undefined && erased.ownerDocument.activeElement === erased;
+
           return Effect.andThen(
             RefSubject.update(state, (current) => ({ ...current, activeId: "drawing-move" })),
             heldFocus ? Composite.focusActive({ state, collection }) : Effect.void,
@@ -178,24 +176,16 @@ the wrong node. If arrow state changes but the visual focus indicator stays behi
 boundary before changing the movement algorithm. Disabled commands are skipped by toolbar movement;
 a custom application click effect still needs to respect the same disabled condition.
 
-## Transfer the reasoning, not the exact focus implementation
+## Choose the focus assertion for the family
 
-A [Listbox](/explore/ui-listbox) intentionally selects as real focus moves. A
-[Combobox](/explore/ui-combobox) keeps browser focus in the native input and reports its active option
-through `aria-activedescendant`; moving to a suggestion does not commit the text. A
-[Grid](/explore/ui-grid) likewise keeps focus on its root while active cell identity changes.
-For those widgets, asserting that `document.activeElement.id` equals the option or cell ID would
-be the wrong test. [MDN's active-descendant reference](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-activedescendant)
-explains the alternative relationship.
+| Family | Browser focus | What movement changes |
+| --- | --- | --- |
+| [Toolbar](/explore/ui-toolbar) | Active item | Active command; activation is separate |
+| [Listbox](/explore/ui-listbox) | Active option | Active option and selected value |
+| [Combobox](/explore/ui-combobox) | Native input | Active suggestion via `aria-activedescendant` |
+| [Grid](/explore/ui-grid) | Grid root | Active cell via `aria-activedescendant` |
 
-Hierarchy introduces another boundary. [Tree](/explore/ui-tree) descendants share one registry and
-use parent metadata to calculate visible navigation. A [Menu](/explore/ui-menu) submenu gets its
-own registry; its trigger links parent and child interaction scopes. Arbitrary nested editors do
-not acquire such coordination automatically. A text input placed inside Grid can still bubble
-arrow events to the root, so an editing mode needs a deliberate entry, exit, and event policy.
-
-The [APG keyboard interface guidance](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/)
-provides the broader focus-versus-selection vocabulary. Continue to [Toolbar](/explore/ui-toolbar)
-for its full public behavior, [Tabs](/explore/ui-tabs) for manual panel activation, or
-[Collection](/reference/modules/%40typed%2Fui%2FCollection) and
-[Composite](/reference/modules/%40typed%2Fui%2FComposite) when implementing a new interaction family.
+For Combobox and Grid, checking that `document.activeElement.id` equals the active item's ID would
+be the wrong assertion. Check the focused host and its `aria-activedescendant` instead. See
+[Collection](/explore/ui-collection) and [Composite](/explore/ui-composite) when implementing a new
+interaction family.

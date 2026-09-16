@@ -94,7 +94,7 @@ describe("Quick Start and TodoMVC curriculum", () => {
     const shell = fileAt("render-the-shell", "src/presentation.ts");
     expect(shell).toContain('placeholder="What needs to be done?"');
     expect(shell).not.toContain("many(");
-    expect(fileAt("render-keyed-items", "src/presentation.ts")).toContain("many(App.TodoList");
+    expect(fileAt("render-keyed-items", "src/presentation.ts")).toContain("many(App.Todos");
   });
 
   it("keeps the TodoMVC progression client-only", () => {
@@ -121,7 +121,7 @@ describe("Quick Start and TodoMVC curriculum", () => {
     expect(creation).toContain("createTodo");
     expect(creation).not.toContain("toggleTodoCompleted");
     expect(fileAt("render-keyed-items", "src/application.ts")).toContain("toggleTodoCompleted");
-    expect(fileAt("render-keyed-items", "src/presentation.ts")).toContain("App.TodoList");
+    expect(fileAt("render-keyed-items", "src/presentation.ts")).toContain("App.Todos");
     expect(fileAt("route-the-filter", "src/presentation.ts")).toContain("App.Todos");
     expect(fileAt("persist-the-list", "src/infrastructure.ts")).toContain("Schema.encodeEffect");
     expect(fileAt("persist-the-list", "src/infrastructure.ts")).toContain("localStorage.setItem");

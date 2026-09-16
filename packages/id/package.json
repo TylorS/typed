@@ -1,6 +1,6 @@
 {
   "name": "@typed/id",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "description": "Branded ID generators and facades for Typed applications.",
   "homepage": "https://github.com/TylorS/typed/tree/development/packages/id#readme",
   "bugs": "https://github.com/TylorS/typed/issues",
@@ -85,6 +85,7 @@
     "effect": "catalog:"
   },
   "devDependencies": {
+    "fast-check": "4.10.1",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

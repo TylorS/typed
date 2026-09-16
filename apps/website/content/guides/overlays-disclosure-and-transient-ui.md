@@ -22,4 +22,4 @@ Choose the surface from its interaction policy.
 | A supporting panel or interactive preview | [Popover](/explore/ui-popover) or [Hovercard](/explore/ui-hovercard) | Visibility, dismissal, and focus transfer are explicit. |
 | A task that must be resolved or cancelled | [Dialog](/explore/ui-dialog) | Native lifecycle, close request, and accepted action are distinct. |
 
-The [Dialog archive confirmation](/explore/ui-dialog) is the maintained worked example. It covers cancellation, recoverable failure, accepted archive work, and mounted versus visible lifetime once. Consult [NativeDialog](/explore/ui-native-dialog), [NativePopover](/explore/ui-native-popover), or [NativeDetails](/explore/ui-native-details) only when application-owned markup needs their low-level state bridges.
+The [Dialog archive confirmation](/explore/ui-dialog) is the maintained worked example. It shows how dismissing a dialog differs from completing the action inside it. Consult [NativeDialog](/explore/ui-native-dialog), [NativePopover](/explore/ui-native-popover), or [NativeDetails](/explore/ui-native-details) only when application-owned markup needs their low-level state bridges.

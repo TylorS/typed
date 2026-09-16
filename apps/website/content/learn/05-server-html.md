@@ -17,7 +17,7 @@ Create `src/server.ts`. Its document template places `Counter` inside a host and
 // @expect <script type="module" src="/src/client.ts"></script>
 ```
 
-Use `HtmlRenderTemplate` to interpret the document as HTML:
+Use `HtmlRenderTemplate` to interpret the document as HTML. Prefix the result with a doctype to enable standards mode:
 
 ```ts
 // @source examples/learn-5/src/server.ts#L18-L24
@@ -26,11 +26,11 @@ Use `HtmlRenderTemplate` to interpret the document as HTML:
 // @expect Effect.provide(HtmlRenderTemplate)
 ```
 
-`renderToHtmlString` collects the first rendered value. `Effect.scoped` closes the resources used to produce it. The doctype enables standards mode. Keep the rendering comments in the result: they identify DOM ranges during hydration.
+`renderToHtmlString` collects the first rendered value. `Effect.scoped` closes the resources used to produce it.
 
 ### Give the browser its matching entry
 
-Create `src/client.ts`. Target **Counter inside #app**, so the browser adopts the same subtree the server rendered:
+Create `src/client.ts`. Target **Counter inside #app**, so the browser adopts the same subtree the server rendered. Keep the rendering comments in the HTML: they identify DOM ranges during hydration.
 
 ```ts
 // @source examples/learn-5/src/client.ts#L6-L15
@@ -43,24 +43,16 @@ Create `src/client.ts`. Target **Counter inside #app**, so the browser adopts th
 
 ### Serve the page and its modules
 
-Create `dev.ts` in the project root. Start Vite as middleware so it can serve the browser's TypeScript modules:
+Create `dev.ts` in the project root using the complete file below. Vite's middleware serves the browser's TypeScript modules. For `/`, the Node request handler loads the server entry and sends its HTML:
 
 ```ts
-// @source examples/learn-5/dev.ts#L4-L7
-// @expect const vite = await createViteServer({
-// @expect server: { middlewareMode: true }
-```
-
-For `/`, the Node request handler loads the server entry and sends its HTML:
-
-```ts
-// @source examples/learn-5/dev.ts#L15-L17
+// @source examples/learn-5/dev.ts#L17-L20
 // @expect const { markup } = await vite.ssrLoadModule("/src/server.ts");
 // @expect const document = await vite.transformIndexHtml("/", markup);
 // @expect response.writeHead(200
 ```
 
-`/` receives HTML; `/src/client.ts` receives JavaScript transformed by Vite. This uses Vite's [middleware SSR API](https://vite.dev/guide/ssr.html#setting-up-the-dev-server). Copy the complete files before starting the server.
+This uses Vite's [middleware SSR API](https://vite.dev/guide/ssr.html#setting-up-the-dev-server). Copy the complete files before starting the server.
 
 ### Complete files
 
@@ -106,6 +98,7 @@ Stop the earlier Vite command, then run:
 
 ```sh file="terminal"
 npm install --save-dev tsx @types/node
+
 npx tsx dev.ts
 ```
 

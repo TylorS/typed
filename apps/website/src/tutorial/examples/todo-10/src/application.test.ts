@@ -13,7 +13,7 @@ const model = Layer.mergeAll(
 );
 
 describe("createTodo", () => {
-  it("ignores blank drafts and commits trimmed text before clearing the input", () => {
+  it("ignores blank drafts and commits the entered text before clearing the input", () => {
     // A blank draft must not reach the factory, even if it leaves the list unchanged.
     let calls = 0;
     const create = Layer.succeed(App.CreateTodo, (text) =>
@@ -28,15 +28,17 @@ describe("createTodo", () => {
     return Effect.gen(function* () {
       yield* RefSubject.set(App.TodoText, "   ");
       yield* App.createTodo;
+
       expect(calls).toBe(0);
       expect(yield* App.TodoList).toEqual([]);
       expect(yield* App.TodoText).toBe("   ");
 
       yield* RefSubject.set(App.TodoText, "  Learn Typed  ");
       yield* App.createTodo;
+
       expect(calls).toBe(1);
       expect(yield* App.TodoList).toEqual([
-        { id: Domain.TodoId.make("todo-1"), text: "Learn Typed", completed: false, timestamp },
+        { id: Domain.TodoId.make("todo-1"), text: "  Learn Typed  ", completed: false, timestamp },
       ]);
       expect(yield* App.TodoText).toBe("");
       expect(yield* App.ActiveCount).toBe(1);
@@ -46,7 +48,9 @@ describe("createTodo", () => {
   it("preserves the draft when the factory cannot create an item", () =>
     Effect.gen(function* () {
       yield* RefSubject.set(App.TodoText, "Keep this draft");
+
       const exit = yield* Effect.exit(App.createTodo);
+
       expect(Exit.isFailure(exit)).toBe(true);
       expect(yield* App.TodoList).toEqual([]);
       expect(yield* App.TodoText).toBe("Keep this draft");

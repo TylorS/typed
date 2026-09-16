@@ -18,4 +18,4 @@ import { Button } from "@typed/ui/Button";
 export const SaveButton = Button({ type: "button", content: "Save draft" });
 ```
 
-A repeated action needs explicit state such as `aria-pressed`; a destination is a [Link](/explore/ui-link). See the [Button API](/reference/modules/%40typed%2Fui%2FButton) and the [save-control walkthrough](/explore/building-ui-components).
+A toggle button needs explicit pressed state such as `aria-pressed`; a destination is a [Link](/explore/ui-link). See the [Button API](/reference/modules/%40typed%2Fui%2FButton) and the [save-control walkthrough](/explore/building-ui-components).

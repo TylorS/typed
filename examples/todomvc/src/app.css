@@ -6,6 +6,7 @@
   position: relative;
   width: 100%;
   max-width: 42rem;
+  container: todo / inline-size;
   margin: 1.5rem auto;
   border: 1px solid var(--todo-line);
   border-radius: 0.6rem;
@@ -67,23 +68,33 @@
 }
 .todoapp .todo-list { margin: 0; padding: 0; list-style: none; }
 .todoapp .todo-list li { position: relative; margin: 0; padding: 0.75rem 1.25rem; border-top: 1px solid var(--todo-line); border-bottom: 0; font-size: 1rem; }
-.todoapp .todo-list .view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.65rem; }
+.todoapp .todo-list .view { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.65rem; }
 .todoapp .todo-list .view label { display: block; margin: 0; padding: 0; font: inherit; line-height: 1.5; overflow-wrap: anywhere; }
 .todoapp .todo-list li.completed .view label { color: var(--muted, #526d5d); text-decoration: line-through; }
 .todoapp .todo-list .destroy { display: block; position: static; width: auto; height: auto; margin: 0; color: inherit; font-size: 1.2rem; line-height: 1; }
-.todoapp .todo-list .destroy::after { content: none; }
+.todoapp .todo-list .destroy::after { content: "×"; }
 .todoapp .edit-form { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.5rem; align-items: center; }
-.todoapp .footer { position: static; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; height: auto; padding: 1rem 1.25rem; border-top: 1px solid var(--todo-line); color: var(--todo-foreground); text-align: left; }
+.todoapp .footer { position: static; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "count filters clear"; align-items: center; gap: 0.8rem; height: auto; padding: 1rem 1.25rem; border-top: 1px solid var(--todo-line); color: var(--todo-foreground); text-align: left; }
 .todoapp .footer::before { content: none; }
-.todoapp .todo-count { float: none; font-size: 0.8rem; }
-.todoapp .filters { position: static; display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.todoapp .todo-count { display: block; white-space: nowrap; grid-area: count; float: none; font-size: 0.8rem; }
+.todoapp .filters { grid-area: filters; justify-self: center; position: static; display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
 .todoapp .filters li { display: block; margin: 0; padding: 0; }
 .todoapp .filters li a { display: inline-block; margin: 0; }
 .todoapp .filters a[aria-current], .todoapp .filters a.selected { border-color: var(--todo-accent); color: var(--todo-accent); }
-.todoapp .clear-completed { position: static; float: none; line-height: inherit; }
+.todoapp .clear-completed { grid-area: clear; justify-self: end; white-space: nowrap; position: static; float: none; line-height: inherit; }
+@container todo (max-width: 36rem) {
+  .todoapp .footer { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "count clear" "filters filters"; grid-template-rows: minmax(2.5rem, auto) auto; }
+}
 @media (max-width: 480px) {
   .todoapp .header, .todoapp .todo-list li, .todoapp .footer { padding: 0.8rem; }
   .todoapp .add-todo, .todoapp .edit-form { grid-template-columns: minmax(0, 1fr); }
   .todoapp .add-todo-button { justify-self: start; }
   .todoapp .edit-form button { justify-self: start; }
 }
+
+.todoapp .todo-list .edit { display: none; }
+.todoapp .todo-list li.editing .view { display: none; }
+.todoapp .todo-list li.editing .edit { display: block; width: 100%; padding: 0.5rem; border: 1px solid var(--todo-accent); border-radius: 0.3rem; background: var(--todo-background); color: inherit; font: inherit; }
+.todoapp .main > .toggle-all { margin: 0.75rem 0.6rem 0.75rem 1.25rem; vertical-align: middle; }
+.todoapp .main > .toggle-all + label { font-size: 0.8rem; }
+.curriculum-demo > .info { margin-top: 1rem; text-align: center; color: var(--muted); font-size: 0.75rem; }

@@ -13,9 +13,14 @@ order: 213
 `Group` supplies a semantic group; connect its name explicitly with `label` or `labelledBy`. Use a native `fieldset` and `legend` when controls form one browser form group.
 
 ```ts
+import { html } from "@typed/template";
 import * as Group from "@typed/ui/Group";
 
-export const PreviewControls = Group.Group({ label: "Preview controls", content: "…" });
+export const PreviewControls = Group.Group({
+  label: "Preview controls",
+  content: html`<button type="button">Previous page</button>
+    <button type="button">Next page</button>`,
+});
 ```
 
 Grouping does not choose child names or validation behavior. [Group API](/reference/modules/%40typed%2Fui%2FGroup).

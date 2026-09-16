@@ -6,11 +6,9 @@ kind: "deep-dive"
 order: 243
 ---
 
-An editor keeps File and Help available above the document. File opens a popup; Help immediately
-reveals instructions. A user should be able to tab into this row, arrow between its labels, and open
-File without adding every child command to the page's Tab sequence. This is a menubar interaction,
-not ordinary website navigation. We will build the bar and popup as separate focus scopes joined
-by one trigger. Read [Menu](/explore/ui-menu) first if native command popups are unfamiliar.
+A menubar joins a horizontal command row to independently navigated popup menus. Here File opens
+a menu and Help runs an immediate command. The bar and popup use separate collections connected by
+`Menu.SubmenuTrigger`. Read [Menu](/explore/ui-menu) first for popup behavior.
 
 ## Connect a menu to a menubar item
 
@@ -27,10 +25,13 @@ import * as Menu from "@typed/ui/Menu";
 export const EditorCommands = component(function* () {
   const bar = yield* Menubar.makeState({ activeId: "editor-file" });
   const barItems = yield* Menubar.makeCollection();
+
   const file = yield* Menu.makeState({ id: "editor-file-menu" });
   const fileItems = yield* Menu.makeCollection();
+
   const documents = yield* RefSubject.make(1);
   const help = yield* RefSubject.make(false);
+
   return html`<section>
     ${Menubar.Root({ state: bar, collection: barItems, label: "Editor commands", content: [
       Menu.SubmenuTrigger({ state: bar, collection: barItems, submenu: file,
@@ -74,21 +75,15 @@ ArrowLeft. It is not a complete desktop application's menu-switching engine: do 
 optional APG cross-menu switching, hover delay, or sibling dismissal rules are supplied. Verify
 that any additional policy closes the intended popup and keeps the chosen parent item focused.
 
-## Separate the focus surface from application commands
+<span id="separate-the-focus-surface-from-application-commands"></span>
 
-An item has no `selected` setting: `activeId` means keyboard location. If a command enables an
-editor feature, store that preference separately and expose its state using the appropriate
-checked menu item or toolbar toggle. Keep command execution in the click effect, and guard disabled
-application effects explicitly. Do not run actions when observing every active-ID change.
+## Keep commands separate from focus
 
-The [APG menu and menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/) describes the
-expected distinction between persistent menubars and popup menus. The
-[native Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API) governs the actual
-popup lifecycle. Neither adding `role=menubar` nor putting a native popover nearby wires the two
-keyboard scopes together; use the public trigger contract.
+`activeId` is keyboard location, not a selected preference. Execute commands in click effects, not
+on active-ID changes. Checked preferences, disabled custom effects, and native popover synchronization
+follow the [Menu contract](/explore/ui-menu).
 
-Test the bar independently with two immediate items, then add one submenu and test Down, Escape,
-and Left return. For multiple menus, explicitly test sibling open/close behavior. If focus jumps
-inside a hidden popup, inspect collection membership and DOM nesting before changing key mappings.
+For multiple menus, test sibling open/close behavior and return focus. If focus enters a hidden
+popup, inspect collection membership and DOM nesting first.
 The [Menubar API](/reference/modules/%40typed%2Fui%2FMenubar) and
 [Menu API](/reference/modules/%40typed%2Fui%2FMenu) document the two cooperating families.

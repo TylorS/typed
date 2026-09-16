@@ -1,6 +1,6 @@
 {
   "name": "@typed/astro",
-  "version": "1.0.0-beta.10",
+  "version": "1.0.0-beta.11",
   "description": "Astro integration for Typed HTML templates and hydrated islands.",
   "keywords": [
     "astro-integration",
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@typed/ui": "workspace:*",
     "@vitest/browser-playwright": "catalog:",
-    "astro": "^7.3.1",
+    "astro": "^7.3.2",
     "happy-dom": "catalog:",
     "playwright": "^1.63.0",
     "typescript": "catalog:",

@@ -22,7 +22,7 @@ test(
     const lines = createInterface({ input: server.stdout });
     let origin;
     for await (const line of lines) {
-      const match = /Listening on http:\/\/[^:]+:(\d+)/.exec(line);
+      const match = /Listening on http:\/\/(?:\[[^\]]+\]|[^:]+):(\d+)/.exec(line);
       if (match) {
         origin = `http://127.0.0.1:${match[1]}`;
         break;

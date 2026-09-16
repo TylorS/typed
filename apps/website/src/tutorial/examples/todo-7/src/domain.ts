@@ -1,6 +1,5 @@
 import * as Schema from "effect/Schema";
 
-// Titles can change or match; the ID remains the item's identity.
 export const TodoId = Schema.String.pipe(Schema.brand("TodoId"));
 export type TodoId = typeof TodoId.Type;
 
@@ -10,54 +9,80 @@ export const Todo = Schema.Struct({
   completed: Schema.Boolean,
   timestamp: Schema.DateTimeUtcFromString,
 });
+export type TodoJson = typeof Todo.Encoded;
 export type Todo = typeof Todo.Type;
+
 export const TodoList = Schema.Array(Todo);
+export type TodoListJson = typeof TodoList.Encoded;
 export type TodoList = typeof TodoList.Type;
 
 export const FilterState = Schema.Literals(["all", "active", "completed"]);
 export type FilterState = typeof FilterState.Type;
 
-// Keep untouched item objects, even though the array itself changes.
-export const updateTodo =
-  (id: TodoId, f: (todo: Todo) => Todo) =>
-  (list: TodoList): TodoList =>
-    list.map((todo) => (todo.id === id ? f(todo) : todo));
+export function updateTodo(list: TodoList, id: TodoId, f: (todo: Todo) => Todo): TodoList {
+  return list.map((todo) => (todo.id === id ? f(todo) : todo));
+}
 
-export const editText = (id: TodoId, text: string) => updateTodo(id, (todo) => ({ ...todo, text }));
+export function editText(id: TodoId, text: string) {
+  return (list: TodoList): TodoList => updateTodo(list, id, (todo) => ({ ...todo, text }));
+}
 
-export const updateText =
-  (text: string) =>
-  (todo: Todo): Todo => ({ ...todo, text });
+export function toggleCompleted(id: TodoId) {
+  return (list: TodoList): TodoList =>
+    updateTodo(list, id, (todo) => ({ ...todo, completed: !todo.completed }));
+}
 
-export const toggleCompleted =
-  (id: TodoId) =>
-  (list: TodoList): TodoList =>
-    updateTodo(id, (todo) => ({ ...todo, completed: !todo.completed }))(list);
+export function isCompleted(todo: Todo): boolean {
+  return todo.completed;
+}
 
-export const deleteTodo =
-  (id: TodoId) =>
-  (list: TodoList): TodoList =>
-    list.filter((todo) => todo.id !== id);
+export function isActive(todo: Todo): boolean {
+  return !todo.completed;
+}
 
-export const clearCompleted = (list: TodoList): TodoList => list.filter((todo) => !todo.completed);
+export function toggleAllCompleted(list: TodoList): TodoList {
+  if (list.some(isActive)) {
+    return list.map((todo) => ({ ...todo, completed: true }));
+  } else {
+    return list.map((todo) => ({ ...todo, completed: false }));
+  }
+}
 
-export const activeCount = (list: TodoList): number =>
-  list.filter((todo) => !todo.completed).length;
+export function deleteTodo(id: TodoId) {
+  return (list: TodoList): TodoList => list.filter((todo) => todo.id !== id);
+}
 
-export const someAreCompleted = (list: TodoList): boolean => list.some((todo) => todo.completed);
+export function clearCompleted(list: TodoList): TodoList {
+  return list.filter(isActive);
+}
 
-// An empty list should not check the "mark all" control.
-export const allAreCompleted = (list: TodoList): boolean =>
-  list.length > 0 && list.every((todo) => todo.completed);
+export function activeCount(list: TodoList): number {
+  return list.filter(isActive).length;
+}
 
-export const toggleAllCompleted = (list: TodoList): TodoList => {
-  const completed = list.some((todo) => !todo.completed);
-  return list.map((todo) => ({ ...todo, completed }));
-};
+export function completedCount(list: TodoList): number {
+  return list.filter(isCompleted).length;
+}
 
-export const filterTodoList = ({ list, state }: { list: TodoList; state: FilterState }) =>
-  state === "active"
-    ? list.filter((todo) => !todo.completed)
-    : state === "completed"
-      ? list.filter((todo) => todo.completed)
-      : list;
+export function allAreCompleted(list: TodoList): boolean {
+  return list.length > 0 && list.every(isCompleted);
+}
+
+export function someAreCompleted(list: TodoList): boolean {
+  return list.some(isCompleted);
+}
+
+export function filterTodoList({ list, state }: { list: TodoList; state: FilterState }): TodoList {
+  switch (state) {
+    case "all":
+      return list;
+    case "active":
+      return list.filter(isActive);
+    case "completed":
+      return list.filter(isCompleted);
+  }
+}
+
+export function updateText(text: string) {
+  return (todo: Todo): Todo => ({ ...todo, text });
+}

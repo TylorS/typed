@@ -8,7 +8,7 @@ order: 287
 
 An author preview can contain a profile link. That makes it different from a tooltip: focus must be allowed into the content. Typed `Hovercard.Content` uses a named `role="dialog"` manual popover; it is non-modal and does not trap focus or make the surrounding page inert.
 
-Prerequisites: [Tooltip](/explore/ui-tooltip) for descriptive popups and [Popover](/explore/ui-popover) for native top-layer behavior. There is no dedicated APG hovercard pattern; do not claim modal-dialog conformance for a manual popover. Choose [Dialog](/explore/ui-dialog) when a task genuinely needs modal interaction.
+Use [Tooltip](/explore/ui-tooltip) for non-interactive descriptions or [Dialog](/explore/ui-dialog) for modal tasks. There is no dedicated APG hovercard pattern; a manual popover does not provide modal-dialog behavior.
 
 ## Offer an author preview with a permanent destination
 
@@ -18,6 +18,7 @@ import * as Hovercard from "@typed/ui/Hovercard";
 
 const AuthorPreview = component(function* (id: string) {
   const state = yield* Hovercard.makeState({ id });
+
   return [
     Hovercard.Anchor(
       { state, content: "Ada Lovelace", showDelay: 150, hideDelay: 150 },
@@ -50,7 +51,7 @@ The browser provides native popover visibility and top-layer placement. The elem
 
 Do not require hovering to reach the profile or another essential action. Keyboard users should be able to focus the anchor, inspect the preview, follow its link, and leave. Check the actual DOM order: visual positioning near the anchor does not reorder sequential keyboard navigation. Use the [APG keyboard guidance](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/) when assessing focus visibility and navigation.
 
-The state creator adds hydrated-state Scope/schema requirements; the Fx preserves dynamic content and callback errors/services. The rendered Scope owns delay Effects, event listeners, and native observation. `Hovercard.Hovercard` aliases `Content`; `setOpen` is available to an explicit application controller.
+Removing the rendered card stops its delay Effects, event listeners, and native observation.
 
 If a preview collapses while tabbing into it, inspect the content ID, `aria-controls`, DOM containment, and `relatedTarget`. If it opens with a mouse but not a keyboard, inspect the actual host receiving focus. If custom styling makes it disappear, verify the spread still includes the native popover/ref and role/name props. Test rapid transitions and unmounting during a delay as well as the steady visible state.
 

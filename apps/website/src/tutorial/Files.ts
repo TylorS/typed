@@ -25,7 +25,10 @@ export const resolveCurriculumSource = (source: string): string => {
     return dedent(source);
   }
   // Astro moves this module into a prerender chunk; source paths remain relative to the site root.
-  const fullSource = readFileSync(resolve("src/tutorial", match[1]!), "utf8").trimEnd();
+  const fullSource = readFileSync(
+    resolve(match[1]!.startsWith("examples/todomvc/") ? "../.." : "src/tutorial", match[1]!),
+    "utf8",
+  ).trimEnd();
   if (!match[2]) {
     if (checks.length) throw new Error(`Unexpected source checks: ${reference}`);
     return fullSource;
@@ -70,7 +73,7 @@ export const remarkCurriculumSources = () => (tree: MarkdownNode) => {
 
 export interface CurriculumFile {
   readonly name: string;
-  readonly language: "ts" | "json" | "html" | "sh";
+  readonly language: "ts" | "json" | "html" | "sh" | "css";
   readonly source: string;
 }
 
@@ -80,7 +83,7 @@ export const parseCurriculumFiles = (fileName: string, markdown: string) => {
   const body = markdown
     .replaceAll("\r\n", "\n")
     .replace(
-      /(?:^|\n)```(ts|json|html|sh) file="([^"]+)"\n([\s\S]*?)\n```(?=\n|$)/gu,
+      /(?:^|\n)```(ts|json|html|sh|css) file="([^"]+)"\n([\s\S]*?)\n```(?=\n|$)/gu,
       (_match, language: CurriculumFile["language"], name: string, source: string) => {
         if (files.some((file) => file.name === name)) {
           throw new Error(`Duplicate file snapshot in ${fileName}: ${name}`);

@@ -17,6 +17,7 @@ import { Fx } from "@typed/fx";
 import { HtmlRenderEvent } from "@typed/template/RenderEvent";
 
 const htmlString = "<article><h1>Typed</h1></article>";
+
 const output = Fx.sync(() => HtmlRenderEvent(htmlString, true));
 ```
 
@@ -46,6 +47,7 @@ rename it “trusted.” If the value is data, keep it as data:
 import { html } from "@typed/template";
 
 const search = '<img src=x onerror="alert(1)">';
+
 const page = html`<p>${search}</p>`;
 ```
 

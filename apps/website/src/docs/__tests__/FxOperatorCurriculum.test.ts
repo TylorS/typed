@@ -35,12 +35,12 @@ const operatorGuides = [
   {
     file: "fx-errors-and-recovery.md",
     order: 1.8,
-    operators: ["Fx.catchTag", "Fx.catchCause", "Fx.retry", "Fx.result"],
+    operators: ["Fx.catchTag", "Fx.catch", "Fx.retry"],
   },
   {
     file: "fx-services-and-lifetime.md",
     order: 1.9,
-    operators: ["Fx.provide", "Fx.genScoped", "Fx.drainLayer", "Fx.observeLayer"],
+    operators: ["Fx.provide", "Fx.genScoped", "Fx.observe"],
   },
   {
     file: "fx-stateful-transforms.md",
@@ -149,16 +149,12 @@ describe("Fx operator curriculum", () => {
       "switchMap",
       "exhaustMap",
       "exhaustLatestMap",
-      "if",
-      "race",
-      "raceAll",
     ];
     expect(extractFxMarbleOperators(source)).toEqual(
       expect.arrayContaining(operators),
     );
     expect(rendered.match(/class="fx-marble"/gu)?.length).toBeGreaterThanOrEqual(operators.length);
-    expect(source).toContain("can produce at most one success");
-    expect(source).toContain("convenience variants");
+    expect(source).toContain("/explore/fx-operator-atlas");
   });
 
   it("visibly covers the stateful value-history transforms", async () => {
@@ -176,15 +172,12 @@ describe("Fx operator curriculum", () => {
     );
     const operators = [
       "filterMapLoop",
-      "filterMapLoopEffect",
       "changesWithEffect",
       "grouped",
       "groupedWithin",
       "loop",
-      "loopEffect",
       "pairwise",
       "scan",
-      "scanEffect",
       "skipRepeats",
       "skipRepeatsWith",
     ] as const;

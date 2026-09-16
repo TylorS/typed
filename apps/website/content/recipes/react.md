@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/react@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta effect@4.0.0-rc.112 react@^19.2.0 react-dom@^19.2.0
+pnpm add @typed/react@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta effect@4.0.0-rc.115 react@^19.2.0 react-dom@^19.2.0
 pnpm add -D @types/react@^19.2.0 @types/react-dom@^19.2.0
 ```
 
@@ -30,6 +30,7 @@ import { useState } from "react";
 
 export function Account({ name }: { readonly name: string }) {
   const [draft, setDraft] = useState("");
+
   return <section>
     <h2>{name}</h2>
     <label>Note <input value={draft} onChange={(event) => setDraft(event.target.value)} /></label>
@@ -58,30 +59,50 @@ Use the component-and-props form when an Effect, Stream, or Fx should update its
 
 The same `page` goes directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlString`. `view` selects React’s backend from the active Typed renderer, including when HTML is rendered in a browser. Match initial props during hydration. React's shell and Suspense updates stream through Effect Stream into native HTML render events. The request Scope owns the stream; interruption aborts React and releases its reader.
 
-```ts file="render-page.ts"
-import { RandomValues } from "@typed/id/RandomValues";
+### Render HTML
+
+```ts file="server.ts"
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
-import { DomRenderTemplate, render } from "@typed/template/Render";
-import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { RandomValues } from "@typed/id/RandomValues";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template";
 import { page } from "./page.js";
 
-export const htmlChunks = renderToHtml(page).pipe(Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)));
+const Services = Layer.merge(HtmlRenderTemplate, RandomValues.Default);
 
-export const renderPage = () => Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
+export const htmlChunks = page.pipe(
+  renderToHtml,
+  Fx.provide(Services),
 );
 
-export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
-  Fx.drainLayer,
-  Layer.provide(Layer.merge(DomRenderTemplate.using(host.ownerDocument), RandomValues.Default)),
+export const htmlString = page.pipe(
+  renderToHtmlString,
+  Effect.provide(Services),
+  Effect.scoped,
 );
-
-export const mountPage = (host: HTMLElement) =>
-  Effect.runFork(Layer.launch(pageLayer(host)));
 ```
 
-These are Typed’s standard renderer layers. Consume `htmlChunks` inside the request Scope for streaming, or use `renderPage` when a complete string is needed. React's streamed Suspense output includes scripts that apply deferred content during normal HTML loading; retain those chunks before hydrating. Compose `pageLayer(host)` with the application’s other Layers. At the application boundary, `mountPage` launches that Layer and returns the fiber to interrupt at shutdown.
+Consume `htmlChunks` in the request's Scope when the response can stream. `htmlString` is an Effect returning the complete HTML; compose it with the request handler or static-generation program and run that program at its entrypoint. Both use the same view and hydration markers. React’s Suspense output includes scripts that apply deferred content during normal HTML loading; retain those chunks before hydrating.
+
+### Render into the DOM
+
+```ts file="main.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { RandomValues } from "@typed/id/RandomValues";
+import { DomRenderTemplate, render } from "@typed/template";
+import { page } from "./page.js";
+
+await page.pipe(
+  render(document.body),
+  Fx.drainLayer,
+  Layer.provide([DomRenderTemplate, RandomValues.Default]),
+  Layer.launch,
+  Effect.runPromise,
+);
+```
+
+The browser entrypoint launches the rendering Layer. Add application services to `Layer.provide`; the Layer's Scope owns rendering and cleanup. The integration selects its backend from the active Typed renderer.
 
 ## Typed output inside React
 
@@ -121,6 +142,7 @@ export const ProfileLive = Layer.succeed(ProfileService, {
 export function Profile({ initialName }: { readonly initialName: string }) {
   const profile = useService(ProfileService);
   const name = useEffect(profile.name, { initial: AsyncData.success(initialName) });
+
   return <section aria-busy={name.pending}>
     <h2>{profile.heading}</h2>
     <p>{Option.getOrElse(name.latest, () => "Loading…")}</p>
@@ -145,6 +167,7 @@ export function Counter({ count, initialCount }: {
   readonly initialCount: number;
 }) {
   const state = useRefSubject(count, { initial: AsyncData.success(initialCount) });
+
   return <button onClick={() => { void state.update((value) => value + 1); }}>
     {Option.getOrElse(state.value, () => initialCount)}
   </button>;
@@ -188,10 +211,12 @@ export async function renderApp(
 
   try {
     await runtime.context();
+
     const initialName = await runtime.runPromise(
       Effect.flatMap(ProfileService, (profile) => profile.name),
       { signal },
     );
+
     const stream = await renderToReadableStream(
       <App runtime={runtime} initialName={initialName} signal={signal} />,
       { signal },
@@ -219,8 +244,13 @@ export async function hydrateApp(host: Element, data: {
 }) {
   const runtime = ManagedRuntime.make(ProfileLive);
   await runtime.context();
+
   const root = hydrateRoot(host, <App runtime={runtime} {...data} />);
-  return async () => { root.unmount(); await runtime.dispose(); };
+
+  return async () => {
+    root.unmount();
+    await runtime.dispose();
+  };
 }
 ```
 
@@ -240,9 +270,11 @@ it("renders with test services", async () => {
     heading: "Test profile",
     name: Effect.succeed("Test user"),
   });
+
   const markup = renderToString(<Provider context={context}>
     <Profile initialName="Test user" />
   </Provider>);
+
   expect(markup).toContain("Test profile");
   expect(markup).toContain("Test user");
 });
@@ -263,6 +295,7 @@ function UserPage({ id }: { readonly id: string }) {
   const route = useCurrentRoute();
   const navigation = useNavigation();
   const home = useAction(() => navigation.navigate("/"));
+
   return <section>
     <h2>User {id}</h2>
     <small>Route: {route.route.path}</small>
@@ -279,7 +312,6 @@ export const routes = Matcher.match(Route.Parse("/users/:id"), routeComponent(Us
 `useRoute(route, { currentRoute: { route: Route.Parse("/admin") } })` uses that mount instead of the ambient one; `{ route: Route.Slash }` matches from `/`. The supplied mount is applied once. Its wildcard fallback returns `None` inside that mount, while leaving it reports the native `RouteNotFound` failure. Omitting `currentRoute` keeps the default global fallback, which remains live when leaving and reentering the ambient mount.
 
 ```ts file="routes.test.ts"
-import * as Layer from "effect/Layer";
 import { RandomValues } from "@typed/id/RandomValues";
 import { expect, it } from "vitest";
 import { Effect, ManagedRuntime } from "effect";
@@ -289,10 +321,16 @@ import { routes } from "./routes.js";
 
 it("uses deterministic test navigation", async () => {
   const runtime = ManagedRuntime.make(TestRouter({ url: "https://example.test/users/42" }));
+
   try {
     const markup = await runtime.runPromise(
-      renderToHtmlString(routes).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
+      routes.pipe(
+        renderToHtmlString,
+        Effect.provide([HtmlRenderTemplate, RandomValues.Default]),
+        Effect.scoped,
+      ),
     );
+
     expect(markup).toContain("42");
   } finally {
     await runtime.dispose();
@@ -314,6 +352,7 @@ import { Account } from "./Account.js";
 import { status } from "./Status.js";
 
 export const account = view(Account, { name: "Ada" }, { stopPropagation: { click: true } });
+
 const events = Context.make(CurrentRootEvents, { click: true });
 export const StatusBoundary = () => <Provider context={events}>
   <Typed value={status} stopPropagation={{ click: false, keydown: true }} onError={console.error} />

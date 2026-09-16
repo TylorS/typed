@@ -1,25 +1,18 @@
 ---
-title: "Implement a RenderTemplate target"
-summary: "Build or decorate a renderer at the public RenderTemplate boundary while keeping parsing, output ownership, and platform policy inside the target."
+title: "Decorate a RenderTemplate target"
+summary: "Capture the existing RenderTemplate service and observe its output without changing application templates."
 section: "Template internals"
 kind: "deep-dive"
 order: 5
 ---
 
-Suppose a platform team wants to observe when templates produce output without changing every
-application component. That is a renderer policy: capture the existing `RenderTemplate` service,
-delegate interpretation to it, and return a service with the same contract. Replacing the whole
-parser or wrapping every component is unnecessary.
+Capture the existing `RenderTemplate` service, add an output observer, and provide the decorated
+service to your templates. The existing renderer continues to interpret parts and own its resources.
+This example observes emitted output; it does not count DOM updates.
 
-Read [The template compilation pipeline](/explore/template-compilation-pipeline) first. This article
-starts with a complete decorator, then identifies the additional responsibilities of a genuinely
-new template target.
-
-## Choose the smallest library boundary
-
-Use `RenderTemplate` only for policy around interpreting authored literals or for a genuinely new
-target. A chart or other existing output belongs in `DomRenderEvent`; a resource on one element
-belongs in a ref. [RenderEvent output](/explore/render-event-substrate) is the concise boundary chooser.
+Read [The template compilation pipeline](/explore/template-compilation-pipeline) for the service's
+place in rendering. To embed existing nodes rather than change template interpretation, use
+[RenderEvent output](/explore/render-event-substrate).
 
 ## Decorate the shipped target without recursive resolution
 
@@ -32,6 +25,7 @@ export const ObservedDomTarget = Layer.effect(
   RenderTemplate,
   Effect.gen(function* () {
     const delegate = yield* RenderTemplate;
+
     return (strings, values) => delegate(strings, values).pipe(
       Fx.tap(() => Effect.log("Template emitted output")),
     );
@@ -48,9 +42,9 @@ This is a complete implementation of the service because the delegate still hand
 namespace selection, normalization, event/ref policy, output, and finalization. Application templates
 receive the observed target at their ordinary rendering boundary.
 
-`Fx.tap` participates in output delivery. A slow observer delays downstream output. Additional
-observer requirements must be supplied while constructing the layer or handled under an explicit
-outer contract; hiding them with `any` or detached promises defeats service inference and supervision.
+`Fx.tap` runs the observer before forwarding each emitted value. A slow observer delays downstream
+output; a failing observer prevents that value from reaching the consumer. Its errors and required
+services remain in the returned Fx type.
 
 ## Observe the operation that actually happens
 
@@ -58,54 +52,15 @@ A DOM template usually emits its root once and later mutates retained parts. The
 emits ordered chunks. Counting RenderEvents therefore does not count DOM writes and is not a valid
 cross-target performance comparison.
 
-Choose the metric before the hook. This decorator can tell you output was delivered or failed;
-it cannot establish the number of changed class tokens or moved list nodes. Those require a
-focused measurement at the corresponding operation or browser boundary.
+The log confirms an emission reached the observer. It does not observe source failures or confirm
+that a downstream consumer received the value. Measure class changes or moved nodes at those
+operations or at the browser boundary.
 
 A decorator test should run its delegate's observable contract plus the added policy. Assert one
 observation for the tested output and verify interruption still finalizes the producer. Do not
 rewrite the application's templates to accommodate the observer.
 
-## Define a new target's semantics before implementing its parser loop
-
-The decorator above is complete. The following is a separate task: implement a new target only when
-the public parser/AST/output contracts are required.
-
-The service returns an Fx of RenderEvents while preserving the interpolation values' errors,
-requirements, and running Scope. A fresh target must decide how every supported part behaves:
-
-- Scalar and sparse fields need context-specific interpretation, not generic stringification.
-- Nested output and keyed values need ordered composition and the target's lifetime policy.
-- Namespace and text-only boundaries must survive compilation.
-- Events, refs, and DOM properties need an explicit supported/omitted/rejected policy.
-- Adoption needs an actual compatible marker/state protocol, not just matching visible markup.
-
-For a finite HTML target, ordinary live inputs provide response values and ordered nested HTML
-chunks must complete. For a live browser target, subscriptions, listeners, queued work, and acquired
-resources remain owned until interruption. These are different media sharing an authoring boundary.
-
-Document intentionally unsupported behavior. Omitting a DOM property from HTML because it lacks a
-representation is a coherent target policy. Silently converting arbitrary objects to child text and
-claiming full compatibility is not.
-
-## Keep shared compilation and per-run resources separate
-
-A parsed-literal cache can be shared by a target. An input subscription, event listener, or ref
-resource belongs to one run. Reusing the former is an optimization; sharing the latter across
-independent mounts would couple their lifetime and state.
-
-Use the public `Template` AST and `HtmlChunk` contracts where applicable. Avoid importing
-`@typed/template/internal/*` to obtain a private shortcut that the library then exposes as a public
-assumption. If the public contracts cannot express a required target behavior, identify that gap
-rather than silently depending on implementation details.
-
-## Publish a contract you can test
-
-Test a static literal, each supported part family, nested output order, expected Effect failure,
-and interruption of a live producer. Then test target-specific promises: exact DOM identity/native
-events or HTML escaping/finite completion. If hydration is advertised, test original node identity,
-state decoding, and behavior after adoption—not only equal text.
-
-Keep exported signatures inferred or accurately typed so `E` and `R` remain visible. The
-[RenderTemplate reference](/reference/modules/%40typed%2Ftemplate%2FRenderTemplate) defines that
-boundary; [RenderEvent output](/explore/render-event-substrate) covers the smaller adapter option.
+For a new target rather than a decorator, follow the
+[target contract checklist](/explore/template-compilation-pipeline#check-a-new-targets-contract).
+The [RenderTemplate reference](/reference/modules/%40typed%2Ftemplate%2FRenderTemplate) defines
+the service signature.

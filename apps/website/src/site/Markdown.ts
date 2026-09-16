@@ -1,3 +1,4 @@
+import { typedHighlightingLanguages } from "./Highlighting.js";
 import { unified } from "@astrojs/markdown-remark";
 import type { AstroUserConfig } from "astro";
 import { renderFxMarble } from "../docs/FxMarble.js";
@@ -72,7 +73,11 @@ function typedMarkdown() {
 }
 
 export const markdown = {
-  shikiConfig: { themes: { light: "github-light", dark: "github-dark" }, wrap: false },
+  shikiConfig: {
+    langs: typedHighlightingLanguages,
+    themes: { light: "github-light", dark: "github-dark" },
+    wrap: false,
+  },
   processor: unified({ remarkPlugins: [remarkCurriculumSources, typedMarkdown] }),
 } satisfies NonNullable<AstroUserConfig["markdown"]>;
 

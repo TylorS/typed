@@ -18,4 +18,4 @@ import { Link } from "@typed/ui/Link";
 export const AccountLink = Link({ href: "/account/profile", content: "Edit profile" });
 ```
 
-Choose a plain anchor when no router integration is required, and keep scheme policy in the application. [Link API](/reference/modules/%40typed%2Fui%2FLink).
+Choose a plain anchor when no router integration is required, and keep scheme policy in the application. See [Navigation as an Effect service](/explore/navigation-as-an-effect-service) for router setup and the [Link API](/reference/modules/%40typed%2Fui%2FLink) for click classification.

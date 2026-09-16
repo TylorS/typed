@@ -26,16 +26,18 @@ const articles = Fx.succeed([
   { id: "scope", title: "Understanding resource scopes" },
   { id: "events", title: "Native browser events" },
 ]);
+
 const rows = many(
   articles,
   (article) => article.id,
   (article) => html`<li>${article.pipe(RefSubject.map((value) => value.title))}</li>`,
 );
+
 export const page = html`<output>${query}</output><ul>${rows}</ul>`;
 ```
 
-Changing `query` reaches one retained part. Changing the article array invokes keyed collection
-work and then a concrete-node range diff. A row title update is narrower than a reorder, and a
+These single-emission sources show the shape of the view. With live sources in the same positions,
+a new query reaches one retained part; a new article array invokes keyed collection work and then a concrete-node range diff. A row title update is narrower than a reorder, and a
 complete new root emission is broader than either. Start a performance investigation by identifying
 which of these the application actually produced.
 
@@ -98,13 +100,9 @@ screenshot with matching row text.
 
 ## Measure the producer, renderer, and browser separately
 
-For the search example, measure initial mount, one query edit, one title update, and a pure reorder
-as separate interactions. Record whether record values were recreated, whether child scopes were
-started/closed, which existing nodes moved, and how much time the browser spent in layout/paint.
-
-If a query edit constructs a new root template, inspect application composition first. If keys are
-stable but all rows publish, inspect immutable update/equality behavior. If publications are narrow
-but frames remain expensive, inspect projection cost and browser layout before blaming key lookup.
+Measure initial mount, one scalar edit, one title update, and a pure reorder separately. Record
+which subjects publish, which child scopes start or close, which nodes move, and browser layout/paint
+time. That distinguishes application projection cost, renderer work, and browser work.
 
 A queue changes when captured work runs; it does not erase these costs. Continue with
 [Schedule DOM rendering](/explore/render-scheduling). For scalar field diagnostics, use

@@ -12,9 +12,8 @@ You have been running `src/main.ts` since the shell chapter. Now follow how it c
 ## Import the outer pieces
 
 ```ts
-// @source examples/todo-9/src/main.ts#L3-L7
-// @expect import { Services }
-// @expect import { TodoApp }
+// @source examples/todomvc/src/main.ts#L1-L7
+// @expect import "./styles.css"
 ```
 
 Presentation depends on application contracts, while infrastructure implements those contracts. The entrypoint may know both because connecting them is its job.
@@ -22,33 +21,22 @@ Presentation depends on application contracts, while infrastructure implements t
 ## Start the application
 
 ```ts
-// @source examples/todo-9/src/main.ts#L9-L14
-// @expect await render(TodoApp, document.body).pipe
-// @expect Services.pipe(Layer.provide([Ids.Default, DateTimes.Default]))
+// @source examples/todomvc/src/main.ts#L9-L14
+// @expect await render
 ```
 
 Read the pipeline in order:
 
 1. `render` describes mounting `TodoApp` into the chosen host.
 2. `Fx.drainLayer` gives the running render stream a Layer lifetime.
-3. `Layer.provide` supplies application services and the DOM renderer. The entry chooses `Ids.Default` and `DateTimes.Default`; the factory receives those services without fixing a runtime itself.
+3. `Layer.provide` supplies application services and the DOM renderer. The factory comes from the canonical infrastructure module.
 4. `Layer.launch` keeps the application running, and `Effect.runPromise` starts it from the JavaScript entrypoint.
 
 Keep mounting here. Importing `TodoApp` in a test should not start a second application.
 
-## Compare the embedded entry
-
-```ts
-// @source examples/todo-9/src/preview.ts#L1-L14
-// @expect ServerRouter
-// @expect makeServices
-```
-
-The preview imports the same component and service implementation. It selects a private router because its filters belong to the embedded app. Your browser entry uses the browser router.
-
 **Try the complete flow:** create two todos, save an edit, complete that item, select Completed, clear it, return to All, then reload. The other item should remain. Missing-service types point to assembly; duplicate event handling can indicate that the same host was mounted twice without closing the first lifetime.
 
-The complete files below are a checkpoint if you joined midway. Next, combine the tests you ran earlier with rendered identity and teardown checks.
+The complete files below are a checkpoint if you joined midway. Next, add a presentation test for retained row identity and cancelled edits to the domain and application tests.
 
 ## Complete files
 
@@ -58,7 +46,7 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/domain.ts</summary>
 
 ```ts file="src/domain.ts"
-// @source examples/todo-9/src/domain.ts
+// @source examples/todomvc/src/domain.ts
 ```
 
 </details>
@@ -67,7 +55,7 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/application.ts</summary>
 
 ```ts file="src/application.ts"
-// @source examples/todo-9/src/application.ts
+// @source examples/todomvc/src/application.ts
 ```
 
 </details>
@@ -76,7 +64,7 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/presentation.ts</summary>
 
 ```ts file="src/presentation.ts"
-// @source examples/todo-9/src/presentation.ts
+// @source examples/todomvc/src/presentation.ts
 ```
 
 </details>
@@ -85,7 +73,7 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/infrastructure.ts</summary>
 
 ```ts file="src/infrastructure.ts"
-// @source examples/todo-9/src/infrastructure.ts
+// @source examples/todomvc/src/infrastructure.ts
 ```
 
 </details>
@@ -94,13 +82,15 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/main.ts</summary>
 
 ```ts file="src/main.ts"
-// @source examples/todo-9/src/main.ts
+// @source examples/todomvc/src/main.ts
 ```
 
 </details>
 
 <details class="curriculum-file">
-<summary>src/preview.ts</summary>
+<summary>Optional website embedding: src/preview.ts</summary>
+
+The website preview imports the completed component and services directly from `examples/todomvc`, with the [private router described earlier](/explore/tutorial/route-the-filter#embed-the-app-with-a-private-router). The standalone app continues to use `src/main.ts`.
 
 ```ts file="src/preview.ts"
 // @source examples/todo-9/src/preview.ts

@@ -25,24 +25,17 @@ describe("Building Fx values guide", () => {
     expect(guide.body).toContain("Fx.fromIterable");
     expect(guide.body).toContain("Fx.sync");
     expect(guide.body).toContain("Fx.fromStream");
-    expect(guide.body).toContain("Fx.fromSchedule");
     expect(guide.body).toContain("Fx.callback");
-    expect(guide.body).toContain("HttpClientError.HttpClientError");
     expect(guide.body).toContain("/explore/fx-dynamic-producers#keep-acquisition-alive-through-the-selected-producer");
     expectExampleCalls(guide.body, [
       "Fx.fromEffect",
       "Fx.fromIterable",
       "Fx.sync",
-      "Fx.fromStream",
-      "Fx.fromSchedule",
       "Fx.callback",
-      "HttpClient.get",
-      "Effect.provide",
+      "Effect.try",
     ]);
     const dynamic = fs.readFileSync(dynamicGuidePath, "utf8");
-    expect(dynamic).toContain("Fx.genScoped");
-    expect(dynamic).toContain("Context.Service");
-    expectExampleCalls(dynamic, ["Fx.genScoped", "Effect.acquireRelease"]);
+    expectExampleCalls(dynamic, ["Fx.unwrapScoped", "Effect.acquireRelease"]);
   });
 
   it("keeps every TypeScript example independently compilable", () => {
@@ -82,4 +75,13 @@ describe("Building Fx values guide", () => {
     const result = await runGuideExample(websiteRoot, source, "const ids =", "result");
     expect(result).toEqual(["ada", "grace", "barbara"]);
   });
+  it("executes the lifted parsing Effect and preserves its failure", async () => {
+    const source = fs.readFileSync(guidePath, "utf8");
+    expect(await runGuideExample(websiteRoot, source, "const decode =", "Effect.runPromise(program)"))
+      .toEqual([{ ready: true }]);
+    const invalid = source.replace("JSON.parse('{\"ready\":true}')", "JSON.parse('invalid')");
+    expect(await runGuideExample(websiteRoot, invalid, "const decode =", "Effect.runPromise(Effect.flip(program))"))
+      .toBe("InvalidJson");
+  });
+
 });

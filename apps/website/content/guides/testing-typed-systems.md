@@ -6,7 +6,9 @@ kind: "reference"
 order: 9
 ---
 
-Choose the observation that could disprove your feature's contract. These are independent test techniques; use the one needed by the lesson you are working on.
+Choose the behavior your test must distinguish: a state change, a replaced request, a retained DOM
+node, or released work. Each recipe stands alone. Start with the claim your feature makes, then
+choose an observation that would catch a broken implementation.
 
 | Claim | Technique |
 | --- | --- |
@@ -18,39 +20,29 @@ Choose the observation that could disprove your feature's contract. These are in
 | A client adopts server output | [Separate serialization and adoption](#test-server-output-and-browser-adoption-as-two-stages) |
 | Wrappers preserve E/R | [Compile exact type assertions](#make-the-type-level-promises-executable-too) |
 
-The examples use `@effect/vitest`: `it.effect` supplies a test Scope. For small runnable checkpoints, see the early [TodoMVC model test](/explore/tutorial/model-the-domain#check-identity-now) and [request test](/explore/async-data-requests-and-cache#checkpoint-4-prove-behavior).
+The examples use `@effect/vitest`: `it.effect` supplies a test Scope. For small runnable checkpoints, see the early [TodoMVC model test](/explore/tutorial/model-the-domain#check-identity-now) and [request test](/explore/async-data-requests-and-cache#prove-replacement-without-timing-guesses).
 
 ## Establish the state invariant without a view
 
-The picker allows a set of selected IDs. Selecting an already selected ID should not increase the
-count. That rule does not concern HTML, so exercise the state and its derived value directly:
+A Todo action must change the requested ID, leave other items alone, and preserve the input array.
+These rules do not concern HTML. The [complete model test](/explore/tutorial/model-the-domain#check-identity-now)
+imports the tutorial's actual `toggleCompleted` operation and calls it on two todos with identical
+titles but different IDs. Its assertions check:
 
-```ts
-import { Effect } from "effect"
-import { expect, it } from "@effect/vitest"
-import { RefSubject } from "@typed/fx"
+- Only the requested todo becomes complete.
+- The original array still contains two incomplete todos.
+- The other todo retains its object identity.
+- Updating an empty list leaves it empty.
 
-it.effect("preserves a state invariant", Effect.fn("preservesStateInvariant")(function* () {
-    const selected = yield* RefSubject.make<ReadonlySet<string>>(new Set<string>())
-    const count = RefSubject.map(selected, (ids) => ids.size)
+Matching by title would toggle both items; mutating the input would break the second assertion;
+rebuilding every item would break the third. Each assertion rejects a specific implementation error.
+This test does not prove that a checkbox invokes the action; that needs a browser test.
 
-    yield* RefSubject.update(selected, (ids) => new Set([...ids, "invoice-42"]))
-    yield* RefSubject.update(selected, (ids) => new Set([...ids, "invoice-42"]))
-
-    expect([...(yield* selected)]).toEqual(["invoice-42"])
-    expect(yield* count).toBe(1)
-  }))
-```
-
-This test can fail if the update creates duplicate logical selections or if the derived count stops
-reflecting the source. It does not prove that the button is wired correctly; that is a later browser
-assertion. Keeping this distinction lets a failing count tell you where to investigate.
-
-A current read and a pushed observation also prove different things. If the contract promises a
-particular sequence of emissions, observe the source before updating it. Wait for a known subscriber
-count or a Deferred signaled by observation. A fixed sleep merely assumes the subscription has started.
-For derived and transactional behavior, see [state composition](/explore/composing-refsubject-state)
-and [transactions](/explore/state-transactions-and-bidirectional-views).
+A current state read and a pushed observation also prove different things. If the contract promises a
+sequence of emissions, observe the source before updating it and signal a Deferred from the first
+observation. The cancellation recipe below demonstrates that coordination. For derived and
+transactional behavior, see [state composition](/explore/composing-refsubject-state) and
+[transactions](/explore/state-transactions-and-bidirectional-views).
 
 ## Control the order that asynchronous work completes
 
@@ -63,7 +55,9 @@ Provide a test repository whose requests wait on Deferred values owned by the te
 Deferred when each request starts, so the test knows which work has actually been acquired. This makes
 request start and completion explicit rather than depending on elapsed wall-clock time. If the
 contract includes cancellation, observe the replaced request’s finalizer as well as the final value.
-[Concurrency policies](/explore/fx-higher-order-and-concurrency) explains the behavior you are selecting.
+The [request replacement test](/explore/async-data-requests-and-cache#prove-replacement-without-timing-guesses)
+provides a complete Deferred-controlled example. [Concurrency policies](/explore/fx-higher-order-and-concurrency)
+explains the behavior you are selecting.
 
 Choose the consumer to match the source’s lifetime. `Fx.collectAll` is useful for a finite sequence;
 it cannot return while a live input source remains open. Use `Fx.collectUpTo` for a bounded result,
@@ -84,9 +78,11 @@ import * as Fx from "@typed/fx/Fx"
 it.effect("cleans up a live callback source", Effect.fn("cleansUpCallback")(function* () {
     let active = 0
     const ready = yield* Deferred.make<void>()
+
     const source = Fx.callback<number>((emit) => {
       active++
       void emit.succeed(1)
+
       return Effect.sync(() => active--)
     })
 
@@ -95,8 +91,11 @@ it.effect("cleans up a live callback source", Effect.fn("cleansUpCallback")(func
       Effect.forkScoped,
     )
     yield* Deferred.await(ready)
+
     expect(active).toBe(1)
+
     yield* Fiber.interrupt(fiber)
+
     expect(active).toBe(0)
   }))
 ```
@@ -112,9 +111,8 @@ expected failure separate: cancelling an obsolete query is not the same event as
 
 ## Test retained rows as objects, not strings
 
-The picker’s results can reorder. Its retained IDs should keep their rendered rows while each live
-item updates the content. Rendering the same final text into new elements would hide an identity
-regression, so retain an element reference:
+A keyed list should retain each row when its item moves. Rendering the same final text into new
+elements would hide an identity regression, so compare the element before and after reordering:
 
 ```ts
 import { Deferred, Effect, Fiber } from "effect"
@@ -129,19 +127,23 @@ const keepsKeyedIdentity = Effect.fn("keepsKeyedIdentity")(function* () {
     { id: "b", label: "B" },
   ] as const
   const items = yield* RefSubject.make<ReadonlyArray<(typeof initial)[number]>>(initial)
+
   const view = html`<ul>${many(
     items,
     (item) => item.id,
     (item) => html`<li>${RefSubject.map(item, (value) => value.label)}</li>`,
   )}</ul>`
+
   const host = yield* Effect.acquireRelease(
     Effect.sync(() => {
       const host = document.createElement("div");
       document.body.append(host);
+
       return host;
     }),
     (host) => Effect.sync(() => host.remove()),
   );
+
   const ready = yield* Deferred.make<void>()
   const renderer = yield* render(view, host).pipe(
     Fx.provide(DomRenderTemplate.using(document)),
@@ -150,16 +152,20 @@ const keepsKeyedIdentity = Effect.fn("keepsKeyedIdentity")(function* () {
     Effect.forkScoped,
   )
   yield* Deferred.await(ready)
+
   yield* Effect.promise(() => vi.waitFor(() => {
     expect(Array.from(host.querySelectorAll("li"), row => row.textContent)).toEqual(["A", "B"])
   }))
+
   const original = host.querySelectorAll("li")[1]
 
   yield* RefSubject.set(items, [initial[1], initial[0]])
+
   yield* Effect.promise(() => vi.waitFor(() => {
     expect(host.querySelectorAll("li")[0]?.textContent).toBe("B")
     expect(host.querySelectorAll("li")[0]).toBe(original)
   }))
+
   yield* Fiber.interrupt(renderer)
 })
 
@@ -184,17 +190,13 @@ listener contracts, but focus, selection, dialog behavior, and state-preserving 
 checks. For an editable row, add assertions for the current input value and selection after sorting.
 Stable JavaScript identity and preservation of browser-managed state are separate claims.
 
-A component’s accessibility contract also needs actions. For a dialog, test its name, the opening
-action, focus destination, Escape behavior, and focus return. A role attribute cannot establish that
-sequence. The [ARIA Authoring Practices introduction](https://www.w3.org/WAI/ARIA/apg/practices/read-me-first/)
-explains the interaction responsibilities attached to custom semantics. Use [the UI guides](/explore/ui)
-to identify the primitive’s behavior and test your wrapper’s labels, state policy, and prop forwarding.
+For keyboard and focus interaction tests, use the relevant [UI guide](/explore/ui) to identify the
+component's contract. Those checks complement row identity; neither proves the other.
 
 ## Replace history with a provider when testing route selection
 
-Opening an account from a URL adds another boundary: URL decoding and selected output. Those tests
-should not depend on the browser’s global history. `TestRouter` provides memory navigation for the
-same matcher contract:
+Route-selection tests should control the starting URL without changing the browser’s global
+history. `TestRouter` provides memory navigation for the same matcher contract:
 
 ```ts
 import * as Router from "@typed/router"
@@ -210,8 +212,10 @@ layer(TestRouter({ url: "http://localhost/users/1" }))("memory routing", (it) =>
       const matcher = Router.match(route, (params) => Fx.map(params, ({ id }) => `user:${id}`));
 
       expect(yield* Fx.collectAll(Fx.take(matcher, 1))).toEqual(["user:1"]);
+
       yield* Navigation.navigate("http://localhost/users/2");
       const currentEntry = yield* Navigation.currentEntry;
+
       expect(currentEntry.url.pathname).toBe("/users/2");
     }))
 })
@@ -225,9 +229,8 @@ the navigation. Keep a separate small browser suite for back/forward behavior an
 same starting state independently, provide a fresh `TestRouter` inside each test instead. Shared
 service lifetime is part of the fixture design, not a harmless test-speed setting.
 
-Import test services through `@typed/router/RouterTest` and `@typed/id/IdsTest`. `IdsTest` gives each
-acquired provider its own deterministic sequence; two successive ID calls should still produce
-distinct IDs. These providers belong in test imports rather than production Router or ID entry points.
+For deterministic ID fixtures, see the [ID guide](/explore/id). Import test providers from their
+test entry points, as with `@typed/router/RouterTest` above.
 
 ## Test server output and browser adoption as two stages
 
@@ -243,9 +246,11 @@ import { HtmlRenderTemplate, html, renderToHtmlString } from "@typed/template"
 
 it.effect("serializes state for hydration", Effect.fn("serializesHydrationState")(function* () {
     const count = yield* RefSubject.hydrate(Schema.Finite, 7)
+
     const output = yield* renderToHtmlString(html`<button ref=${count}>${count}</button>`).pipe(
       Effect.provide(HtmlRenderTemplate),
     )
+
     expect(output).toContain("data-typed-refsubject=")
     expect(output).toContain("7")
   }))
@@ -260,7 +265,8 @@ For the browser half, retain the original server-rendered button, hydrate the sa
 assert that the original node was adopted, the value `7` was restored, the hydration attribute was
 consumed, and a later `RefSubject.set` updates the button. Test static HTML separately:
 `StaticHtmlRenderTemplate` intentionally omits interactive hydration metadata. The
-[Quick Start](/explore/quick-start) gives the server-to-client progression these tests follow.
+[state restoration lesson](/explore/counter/hydrate-state) supplies the complete server and client
+files for this handoff.
 
 ## Make the type-level promises executable too
 
@@ -277,14 +283,20 @@ import { html, type RenderTemplate } from "@typed/template";
 
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
+
 class Service extends Context.Service<Service, { readonly value: string }>()("docs/Service") {}
+
 const value = Effect.gen(function* () {
   yield* Service;
+
   return yield* Effect.fail("failed" as const);
 });
+
 const view = html`<p>${value}</p>`;
+
 type _Errors = Assert<Equal<Fx.Error<typeof view>, "failed">>;
 type _Services = Assert<Equal<Fx.Services<typeof view>, Service | Scope.Scope | RenderTemplate>>;
+
 // @ts-expect-error nested failures must remain visible
 const _erased: Fx.Fx<unknown, never, Fx.Services<typeof view>> = view;
 ```

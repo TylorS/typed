@@ -6,19 +6,23 @@ kind: "guide"
 order: 2.05
 ---
 
-`RefSubject` is the right boundary when a producer should become _current state_: readers can ask
-for the latest value and observers can follow later distinct changes. It is not a way to disguise a
-subscription. In particular, it matters both when the constructor Effect is run and when the input
-producer is run.
+A `RefSubject` gives its consumers a current read and an observation of later distinct changes.
+After [basic RefSubject state](/explore/refsubject-renderer-independent-state), use this guide to
+choose its input and understand startup, reset, equality, and ownership.
 
-Calling `RefSubject.make` only creates an
-[Effect](https://www.effect.website/docs/v4/getting-started/the-effect-type/) description. Executing
-that Effect—usually `yield*`-ing it in an application-owned Scope—allocates the ref and its private
-child Scope. What happens next depends on the input shape.
+**An Effect input stays lazy after construction:** `yield* RefSubject.make(effect)` returns the ref
+without running or awaiting `effect`. Its first read or observation starts the shared initializer.
+This lets a component return its template while data is still pending. `yield* ref` waits for the
+current value; interpolating the ref or its derived fields lets rendering observe it instead.
 
-`make` is the application-facing constructor for every input form: a regular value, an Effect, a
-Stream, or an Fx. The overload resolves the input without asking application code to select a
-different constructor name. The sections below distinguish their behavior.
+Calling `RefSubject.make` creates a constructor Effect. Executing it allocates the ref and its
+private child Scope; the input determines what starts next:
+
+| Input | When its source starts | Initial current read |
+| --- | --- | --- |
+| Regular value | No source worker | Returns the supplied value |
+| Effect | First read or observation | Waits for the shared initializer |
+| Fx or Stream | Construction forks one source run | Waits for its first success or expected failure |
 
 ## A regular value is current immediately
 
@@ -35,6 +39,7 @@ const makeDraftState = Effect.fn("makeDraftState")(function* () {
   const draft = yield* RefSubject.make({ title: "Untitled", body: "" })
 
   yield* RefSubject.update(draft, (current) => ({ ...current, title: "Typed" }))
+
   return yield* draft
 })
 ```
@@ -61,12 +66,14 @@ const makeProfileState = Effect.gen(function* () {
   const profile = yield* RefSubject.make(
     Effect.sync(() => {
       starts += 1;
+
       return { name: "Ada" };
     }),
   );
 
   // `starts` is still 0: constructing the ref did not run the source.
   const current = yield* profile;
+
   // `starts` is now 1. Later reads use the retained current value.
 
   return { current, starts };
@@ -132,6 +139,7 @@ const loadProfile = Effect.sync(() => ({ id: ++starts }))
 const reloadProfile = Effect.fn("reloadProfile")(function* () {
   const profile = yield* RefSubject.make(loadProfile)
   const first = yield* profile
+
   const previous = yield* RefSubject.delete(profile)
   const reloaded = yield* profile
 
@@ -156,33 +164,9 @@ that Context. Once construction has returned the ref, reading and observing that
 requires those source services. This keeps the dependency visible at the owning boundary without
 asking every consumer to provide it.
 
-```ts
-import { Context, Data, Effect } from "effect";
-import { RefSubject } from "@typed/fx";
-
-class ProfileMissing extends Data.TaggedError("ProfileMissing")<{}> {}
-
-class Profiles extends Context.Service<
-  Profiles,
-  {
-    readonly load: Effect.Effect<{ readonly name: string }, ProfileMissing>;
-  }
->()("docs/Profiles") {}
-
-const source = Effect.flatMap(Profiles, ({ load }) => load);
-
-const makeProfileState = Effect.gen(function* () {
-  // Constructing requires `Profiles` and Scope; `profile` retains only `ProfileMissing` as E.
-  const profile = yield* RefSubject.make(source);
-
-  return yield* profile.pipe(
-    Effect.catchTag("ProfileMissing", () => Effect.succeed({ name: "Guest" })),
-  );
-});
-```
-
-Provide `Profiles` where `makeProfileState` is constructed—an application Layer, a request scope, or
-another real owner—not in every component that later consumes `profile`.
+Provide the source's services at construction, in the Layer or Scope that owns the ref. Consumers
+reuse the captured source Context. See [sharing a reactive capability](/explore/shared-state-contracts)
+for the service and provider setup.
 
 ## Current state has one-value replay, and equality controls publications
 
@@ -209,6 +193,7 @@ const exerciseEquality = Effect.gen(function* () {
   );
 
   const versionBefore = yield* temperature.version;
+
   yield* RefSubject.set(temperature, { celsius: 20, sampledAt: 1 });
 
   return {
@@ -246,13 +231,12 @@ Use it when the real owner ends early.
 | A mounted view stops receiving updates | Did the construction Scope close before the view finished? |
 | An empty/reset live ref never reloads | Did the original finite source already finish? |
 
-Test source startup with a counter or acquisition finalizer, and synchronize observer tests with
-`subscriberCount`. A delay in a test may hide the race without explaining whether the subscription
-was active. `subscriberCount` measures ref observers, so zero subscribers is compatible with a live
-source still running in the ref's private Scope.
+Test source startup with a counter or acquisition finalizer. In observer tests, use
+`Effect.sleep(0)` after forking the consumer to let it run before writing. `subscriberCount` is a
+lifecycle diagnostic, not a startup polling loop: it measures ref observers, so zero subscribers is
+compatible with a live source still running in the ref's private Scope.
 
-## <span id="define-equality-from-every-consumers-needs">Equality checklist</span>
+<span id="define-equality-from-every-consumers-needs"></span>
 
-Choose equality for every consumer of the owner, return new values from `update`, and derive narrow
-views at the edge. The earlier temperature example is the canonical equality contract: an equivalent
-write can replace the current value without publishing or advancing `version`.
+For equality decisions, use the [temperature example above](#current-state-has-one-value-replay-and-equality-controls-publications):
+equivalent writes still replace the current value without publishing or advancing `version`.

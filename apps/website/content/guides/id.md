@@ -31,10 +31,12 @@ type Issue = { readonly id: string; readonly title: string }
 
 const createIssue = Effect.fn(function* (title: string) {
   const id = yield* Ids.uuid7
+
   return { id, title } satisfies Issue
 })
 
 const program = createIssue("Document @typed/id").pipe(Effect.provide(Ids.Default))
+
 const issue = await Effect.runPromise(program)
 ```
 
@@ -69,12 +71,6 @@ NanoId, CUID, their schemas, and their focused dependencies.
 
 Use `Ids` when the feature shares these dependencies; use a focused generator at a narrow boundary.
 
-## <span id="carry-identity-through-optimistic-creation-and-acknowledgment">Carry identity through acknowledgement</span>
-
-Keep a client-generated entity key when a server later returns a persistent ID. Replacing the
-rendering key makes acknowledgement look like deleting and remounting a row, which can discard
-focus or local draft state. Store the server ID beside the client key instead.
-
 ## Decode external IDs through a schema
 
 <span id="decode-external-ids-through-their-schema"></span>
@@ -86,12 +82,12 @@ JSON, a URL, or storage.
 import { Schema } from "effect"
 import { Uuid7 } from "@typed/id/Uuid7"
 
-const Invoice = Schema.Struct({ id: Uuid7, description: Schema.String })
-const decodeInvoice = Schema.decodeUnknownEffect(Invoice)
+const Issue = Schema.Struct({ id: Uuid7, title: Schema.String })
+const decodeIssue = Schema.decodeUnknownEffect(Issue)
 
-const invoice = decodeInvoice({
+const issue = decodeIssue({
   id: "018f3c8a-4c00-7000-8000-000000000001",
-  description: "Documentation work",
+  title: "Document @typed/id",
 })
 ```
 
@@ -123,14 +119,17 @@ expect(first[0]).toBe(repeated[0])
 ```
 
 The first assertion proves sequence state advances within one Layer; the second proves an identical
-fresh Layer reproduces the sequence. Keep client IDs stable through
-[optimistic edits](/explore/async-data-optimistic-edits) and hydration rather than replacing a row
-key when a server acknowledgement arrives. `currentTime` fixes `DateTimes`; advancing the TestClock
+fresh Layer reproduces the sequence. `currentTime` fixes `DateTimes`; advancing the TestClock
 provided by `IdsTest` does not advance that fixed time service. Provide a custom `DateTimes` Layer
 when a test needs generator time to change.
 
-## Diagnose identity changes
+## <span id="carry-identity-through-optimistic-creation-and-acknowledgment">Carry identity through acknowledgement</span>
 
-Trace the creation command, not the renderer. Count generator executions and check for remounts or
-recreated entities. Deterministic layers make equal generator-call sequences comparable; they do not
-make two different programs consume the same IDs.
+Keep a client-generated entity key when a server later returns a persistent ID. Replacing the
+rendering key makes acknowledgement look like deleting and remounting a row, which can discard
+focus or local draft state. Store the server ID beside the client key instead.
+
+This matters for [keyed rows](/explore/keyed-template-collections) and
+[optimistic edits](/explore/async-data-optimistic-edits). If identity changes unexpectedly,
+trace the creation command and count generator executions. Deterministic layers make equal
+generator-call sequences comparable; they do not make different programs consume the same IDs.

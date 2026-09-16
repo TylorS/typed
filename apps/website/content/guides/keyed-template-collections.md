@@ -18,7 +18,8 @@ is sufficient for fixed output; use `many` when records can be added, removed, u
 For newly created records, [generate an ID with `@typed/id`](/explore/id) in the creation command and retain it with the record. The renderer consumes that key; it does not generate one on each update.
 
 Use an ID that stays with the record. A title can change and an array index can refer to a different
-record after sorting, so neither is a reliable key for editable rows.
+record after sorting, so neither is a reliable key for editable rows. Keys must also be unique within
+the current array; duplicate keys fail rather than merging records.
 
 The example makes that distinction observable: reversing the list changes positions, while each
 row's browser-owned note input should stay with its article.
@@ -44,7 +45,9 @@ export const SavedArticles = component(function* () {
     { id: "scope", title: "Understanding resource scopes" },
     { id: "events", title: "Native browser events" },
   ]);
+
   const reverse = RefSubject.update(articles, (current) => [...current].reverse());
+
   const rows = many(articles, (article) => article.id, ArticleRow);
 
   return html`<section>
@@ -53,11 +56,6 @@ export const SavedArticles = component(function* () {
   </section>`;
 });
 ```
-
-[`many`](/reference/modules/%40typed%2Ftemplate%2Fmany) returns a renderer descriptor, not an
-independently flattened Fx. It supplies the collection,
-key function, and child renderer to the target. The DOM target can therefore own the keyed entry map
-directly, while the HTML target can render one finite initial collection.
 
 ## Read each retained item through its subject
 
@@ -99,16 +97,5 @@ Node identity and browser-managed state are related but distinct. Test the fallb
 supported browsers require; [the reconciliation deep dive](/explore/dom-updates-and-reconciliation)
 has the platform-specific move contract.
 
-## Carry the same identity through a server response
-
-Keys must be unique within the current array. Duplicate keys fail with `Cause.IllegalArgumentError`
-in both DOM and HTML rendering; they are not an instruction to merge records. For hydratable output,
-use a string, number, or `Symbol.for()` key. A local `Symbol()` has no serializable identity and fails
-that boundary.
-
-The server reads the initial collection, validates it, and serializes items in order with keyed
-markers when using the hydratable renderer. It does not keep live child scopes around after the
-response to process future sorting. The browser later uses compatible initial keys to adopt those
-ranges. Share IDs and initial state across that handoff; array position alone cannot restore them.
-Continue with [Server rendering and hydration](/explore/server-rendering-and-hydration) when this
-list should arrive as interactive server HTML.
+For server-rendered lists, continue with [Server rendering and hydration](/explore/server-rendering-and-hydration).
+That handoff also requires compatible initial state and serializable keys.

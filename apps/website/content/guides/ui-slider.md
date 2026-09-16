@@ -8,7 +8,8 @@ order: 236
 
 A slider is useful when position conveys a value and rough adjustment is more useful than typing an exact number. Volume, zoom, and preview intensity fit that shape. Use [SpinButton](/explore/ui-spin-button) when exact numeric entry matters. Typed's Slider retains a native `<input type="range">`; it does not implement a custom thumb or multi-thumb range.
 
-`State` contains one numeric `value`. `makeState({ value })` hydrates it through `Schema.Finite`, and `setValue` updates it. `SliderOptions` requires state and accepts reactive `min`, `max`, and `step`, including `"any"` for step. Labels, IDs, names, and other native metadata travel through `props`.
+`makeState({ value })` creates the numeric state. The range accepts reactive `min`, `max`, and
+`step`; labels, IDs, and native metadata travel through `props`.
 
 ## Show the number that position represents
 
@@ -20,6 +21,7 @@ import * as Slider from "@typed/ui/Slider";
 export const ZoomControl = component(function* () {
   const state = yield* Slider.makeState({ value: 100 });
   const percentage = RefSubject.map(state, ({ value }) => `${value}%`);
+
   return html`<div class="zoom-control">
     <label for="preview-zoom">Preview zoom</label>
     ${Slider.Slider({
@@ -39,10 +41,14 @@ Slider listens to native `input` and reads `valueAsNumber`, so dragging can publ
 
 Native min/max/step constrain browser interaction. They do not add a matching domain validator to `setValue`: its implementation assigns the supplied number. Setting an out-of-range number programmatically can make the browser's sanitized range value disagree with the subject. Clamp or validate at the application boundary, and maintain min ≤ max with a compatible step. [MDN's range reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range) explains browser defaults and sanitization.
 
-The [APG slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider/) describes accessible naming, value semantics, arrows, and endpoint movement. This implementation delegates keyboard behavior to the native input instead of duplicating those handlers. Test the actual browser and assistive technology you support, especially touch input; using the APG role vocabulary is not a certification of a custom host.
+Keyboard movement comes from the native range input. Keep that host and a visible focus indicator
+when styling the track or thumb.
 
 ## Preserve a usable track across themes
 
-Start with native range styling and `accent-color`. If styling vendor-specific track/thumb pseudo-elements, retain adequate thumb size and a focus indicator in light, dark, and forced-color modes. A non-focusable painted track next to an invisible input can create a mismatch between the visible target and the keyboard target.
+Use native range styling or its track/thumb pseudo-elements while keeping the keyboard target
+visible. If the thumb jumps, inspect programmatic writes and changes to min/max. If the display
+updates only after release, check that it observes Slider state rather than a separate change listener.
 
-A custom host must still supply a range input if you expect native keyboard, pointer, and form behavior. Copying attributes onto a div does not implement dragging. If state updates only after release, check that your consumer is observing the subject rather than a separate change listener. If the thumb jumps, inspect programmatic writes and bound changes. See the [Slider API](/reference/modules/%40typed%2Fui%2FSlider), [Meter](/explore/ui-meter) for read-only quantities, and [Form](/explore/ui-form) for schema-bound RangeInput.
+See the [Slider API](/reference/modules/%40typed%2Fui%2FSlider), [Meter](/explore/ui-meter) for
+read-only quantities, and [Form](/explore/ui-form) for schema-bound RangeInput.

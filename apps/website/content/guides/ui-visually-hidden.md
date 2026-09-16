@@ -22,4 +22,4 @@ export const CloseButton = Button({
 });
 ```
 
-This is visual clipping, not semantic hiding: `hidden`, `display: none`, and `aria-hidden="true"` remove text from the intended accessibility relationship. Test the button's accessible name, and do not hide focusable content this way. [VisuallyHidden API](/reference/modules/%40typed%2Fui%2FVisuallyHidden).
+This is visual clipping, not semantic hiding: `hidden`, `display: none`, and `aria-hidden="true"` remove text from the intended accessibility relationship. Test the button's accessible name. [VisuallyHidden API](/reference/modules/%40typed%2Fui%2FVisuallyHidden).

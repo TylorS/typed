@@ -65,6 +65,7 @@ const page = html`<main>
 </main>`;
 
 export const chunks = page.pipe(renderToHtml, Fx.provide(HtmlRenderTemplate));
+
 export const responseStream = chunks.pipe(Fx.toStream);
 ```
 
@@ -73,10 +74,8 @@ headers, content type, cancellation, and backpressure at its transport boundary.
 collects the stream before sending it, switching this API alone has not made the response stream.
 A chunk need not be a complete element or application message.
 
-Once a transport has committed headers and body bytes, a later render failure cannot replace them
-with a different status and error document. Resolve or recover expected request-data failures before
-serialization where possible. Request cancellation should interrupt rendering work rather than leave
-its producers alive after the client disconnects.
+The [HTML output recipe](/integrate/html-output) covers response transport, including failures
+and cancellation after output begins.
 
 ## Supply values that can exist during a response
 
@@ -105,15 +104,12 @@ script/style text has different closing-tag handling. `HtmlRenderEvent` asserts 
 serializer owns the string; it is not a sanitizer for user content.
 [Text-only contexts](/explore/template-text-only-contexts) develops that boundary.
 
-## Locate a stalled response before changing render modes
+## Check initial output and completion
 
-Observe data readiness, first chunk, and completion separately. If no initial data arrives, fix the
-producer; streaming does not invent it. If data is ready but serialization emits nothing, inspect
-required services and the selected renderer. If chunks arrive without completion, inspect nested
-output completion and live inputs. If serialization completes but the client sees nothing, inspect
-transport buffering and encoding.
+If no initial value arrives, fix the producer; streaming does not invent one. If data is ready but
+serialization emits nothing, inspect required services and the selected renderer. If nested chunks
+arrive without completion, inspect their completion protocol.
 
-A focused serialization test parses the result and compares recovered text, verifies finite
-completion, and checks metadata for the chosen layer. Test HTTP cancellation and post-header
-failures at the transport adapter separately. The [Html reference](/reference/modules/%40typed%2Ftemplate%2FHtml)
-defines both layers and consumers; the [HTML output recipe](/integrate/html-output) adds transport.
+A serialization test parses the result and compares recovered text, verifies finite completion,
+and checks metadata for the chosen layer. The
+[Html reference](/reference/modules/%40typed%2Ftemplate%2FHtml) defines both layers and consumers.

@@ -20,9 +20,11 @@ import { component, EventHandler, html } from "@typed/template";
 
 export const Newsletter = component(function* () {
   const hint = yield* RefSubject.make("");
+
   const updateHint = EventHandler.make(
     (event: InputEvent & { target: HTMLInputElement }) => {
       const input = event.target;
+
       return RefSubject.set(hint,
         input.value.length === 0 ? "" : input.validity.valid
           ? "Email format looks valid."
@@ -92,7 +94,9 @@ import { Newsletter } from "./Newsletter.js";
 
 export const mountNewsletter = (host: HTMLElement) => {
   const runtime = ManagedRuntime.make(DomRenderTemplate.using(host.ownerDocument));
+
   runtime.runFork(Effect.scoped(Fx.drain(render(Newsletter, host))));
+
   // The navigation owner calls this when it removes the form.
   return () => runtime.dispose();
 };
@@ -105,6 +109,7 @@ import { mountNewsletter } from "./client.js";
 
 const host = document.getElementById("app");
 if (host === null) throw new Error("Missing newsletter mount");
+
 export const stop = mountNewsletter(host);
 ```
 

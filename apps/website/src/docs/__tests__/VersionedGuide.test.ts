@@ -21,20 +21,13 @@ describe("Versioned guide", () => {
       section: "State",
       kind: "guide",
     });
-    for (const term of [
-      "Versioned.make",
-      "Versioned.of",
-      "Versioned.Service",
-      "Versioned.provide",
-      "Versioned.hold",
-      "Fx.collectAll",
-      "version",
-      "Versioned.tuple",
-      "onFx",
-      "onEffect",
-    ]) {
-      expect(guide.body).toContain(term);
-    }
+    const documents = extractTypeScriptFenceDocuments(guide.body);
+    expect(documents.map(({ fileName }) => fileName)).toEqual(["Settings.ts", "Settings.test.ts"]);
+    expect(documents[0].code).toContain("Versioned.make");
+    expect(documents[0].code).toContain("Fx.callback");
+    expect(documents[0].code).toContain("listeners.delete(publish)");
+    expect(documents[1].code).toContain("store.state.version");
+    expect(documents[1].code).toContain("Fx.first(store.state)");
 
     const staging = fs.mkdtempSync(path.join(websiteRoot, ".versioned-guide-check-"));
     try {
@@ -44,7 +37,6 @@ describe("Versioned guide", () => {
         fs.writeFileSync(file, code);
         return file;
       });
-      expect(examples.length).toBeGreaterThanOrEqual(3);
 
       const program = ts.createProgram(examples, {
         esModuleInterop: true,

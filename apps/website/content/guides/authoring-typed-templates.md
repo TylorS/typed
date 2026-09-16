@@ -9,21 +9,11 @@ order: 2
 <span id="begin-with-the-html-you-want-the-browser-to-have"></span>
 <span id="choose-where-the-changing-value-lives"></span>
 
-A search field has several kinds of change. Someone types, the application records the query, the
-input displays that query, and an output describes what is being searched. Its label and surrounding
-structure usually stay put. Typed lets you describe those stable elements once and connect changing
-values to the particular browser fields they affect.
-
-Read [Render your first template](/explore/render-your-first-template) first if you have not yet
-mounted a view. This article develops the view itself; mounting belongs to the application that owns
-its lifetime. By the end, the field will be a reusable component with a real input event and a live
-state source.
+The [first template](/explore/render-your-first-template) owns its query inside the field's view.
+Extract the field so a parent page can share that query with other output. The page will own state;
+the field will own its markup and input handler.
 
 ## Make the state boundary match the reusable component
-
-The first field owns its query. A page that loads results also needs that state, so move creation to
-the page and pass the existing subject to the field. The field owns markup and the event binding;
-the page owns state.
 
 ```ts
 import { RefSubject } from "@typed/fx";
@@ -34,6 +24,7 @@ const SearchField = (query: RefSubject.RefSubject<string>) => {
   const readQuery = EventHandler.make((event: Event) =>
     RefSubject.set(query, (event.currentTarget as HTMLInputElement).value),
   );
+
   return html`<label>
     Search terms
     <input type="search" .value=${query} oninput=${readQuery} />
@@ -42,6 +33,7 @@ const SearchField = (query: RefSubject.RefSubject<string>) => {
 
 export const SearchPage = component(function* () {
   const query = yield* RefSubject.make("");
+
   return html`<main>
     <h1>Saved articles</h1>
     ${SearchField(query)}
@@ -55,10 +47,8 @@ The field needs no yielded setup, so a direct template function is sufficient. T
 the child's label. The running Effect scope owns the state and subscriptions; constructing either
 value starts no fiber. [Mounting DOM output](/explore/mounting-dom-output) supplies that lifetime.
 
-Use `component` when the view needs its own child Scope, or setup can return other Renderable forms
-such as an array of templates. It forks the parent's Scope and provides that child to both setup
-and returned output. `component` is for a view with setup; plain `html` is
-enough when there is no yielded setup. These are composition choices, not different rendering systems.
+For other setup and output choices, see [Component](/explore/ui-component) and
+[What a template can render](/explore/renderable-normalization).
 
 ## Name the browser surface you intend to change
 
@@ -71,23 +61,13 @@ using one generic property record for everything:
 | Set a control's current edit buffer | `.value=${query}` | the live `value` property |
 | Describe expansion to assistive technology | `aria-expanded=${expanded}` | one serialized attribute |
 | Enable or disable a control | `?disabled=${disabled}` | the boolean attribute's presence |
-| Contribute visual state | `class=${classes}` | this part's class tokens |
-| Group related metadata | `.data=${record}` | the contributed `data-*` keys |
 | Run work from an input event | `oninput=${handler}` | a scoped native registration |
-| Integrate an element-based API | `ref=${callback}` | setup attached to that exact element |
 
-An attribute containing `"false"` and an absent boolean attribute mean different things. Likewise,
-`class` contributes tokens rather than replacing every class another library added. The detailed
-set, clear, and cooperation rules belong in [Attributes, properties, and boolean state](/explore/template-element-bindings),
-[Class contributions](/explore/dom-class-names), and [Spread props and data records](/explore/template-spreads-data).
+An attribute containing `"false"` and an absent boolean attribute mean different things. See
+[Attributes, properties, and boolean state](/explore/template-element-bindings) for the set and clear
+rules. [Classes](/explore/dom-class-names), [data records](/explore/template-spreads-data), and
+[element references](/explore/template-references-and-element-access) have dedicated binding forms.
 
-## Decide what to connect next
-
-The reusable field is intentionally only an editing loop. Searching a remote source adds request
-ordering, pending state, and errors; those policies belong to the application producer, not the
-HTML tag. A live result list adds stable item identity; it belongs in
-[Change a keyed template collection](/explore/keyed-template-collections).
-
-Continue with [Handle native events with Effect](/explore/native-events-with-effect), then add a
-[keyed collection](/explore/keyed-template-collections). [What a template can render](/explore/renderable-normalization)
-is optional lookup for other output shapes.
+Continue with [Handle native events with Effect](/explore/native-events-with-effect) to read browser
+event data, then [Change a keyed template collection](/explore/keyed-template-collections) to preserve
+item identity as a list changes.

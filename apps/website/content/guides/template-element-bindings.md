@@ -14,6 +14,13 @@ is `"false"`.
 After [authoring a template](/explore/authoring-typed-templates), use this compact lookup when a
 binding must choose an exact browser field.
 
+| Binding | Inspect | Clearing behavior |
+| --- | --- | --- |
+| `title=${value}` | `getAttribute("title")` | nullish removes the attribute |
+| `title="Search: ${value}"` | the complete joined attribute | nullish segment becomes empty text |
+| `.value=${value}` | `input.value` | assigns the supplied value directly |
+| `?disabled=${value}` | `hasAttribute("disabled")` | falsy removes presence |
+
 ## Use attributes for serialized metadata
 
 An ordinary `name=${value}` part sets one attribute. Non-nullish values become strings; `null` and
@@ -52,9 +59,11 @@ import * as EventHandler from "@typed/template/EventHandler";
 
 export const QueryField = component(function* () {
   const query = yield* RefSubject.make("scope");
+
   const readQuery = EventHandler.make((event: Event) =>
     RefSubject.set(query, (event.currentTarget as HTMLInputElement).value),
   );
+
   return html`<input value="scope" .value=${query} oninput=${readQuery} />`;
 });
 ```
@@ -83,6 +92,7 @@ import { component, html } from "@typed/template";
 
 export const SaveControl = component(function* () {
   const readOnly = yield* RefSubject.make(false);
+
   return html`<button type="button" ?disabled=${readOnly}>Save search</button>`;
 });
 ```
@@ -97,19 +107,7 @@ representing true or false, not a presence-only HTML boolean. `aria-expanded=${e
 
 ## Inspect the field that the binding actually owns
 
-| Binding | Inspect | Clearing behavior |
-| --- | --- | --- |
-| `title=${value}` | `getAttribute("title")` | nullish removes the attribute |
-| `title="Search: ${value}"` | the complete joined attribute | nullish segment becomes empty text |
-| `.value=${value}` | `input.value` | assigns the supplied value directly |
-| `?disabled=${value}` | `hasAttribute("disabled")` | falsy removes presence |
-
-When DevTools shows a surprising result, compare the attribute and property instead of assuming
-the renderer missed a state change. A mutation observer for attributes cannot prove that a property
-wasn't written. When the input object itself changes, inspect a parent switch or changing key;
-one scalar binding does not require that replacement.
-
-These parts retain their exact targets after setup. A later write is direct relative to the
-surrounding tree; serialization and browser work can still depend on the value. Record-shaped
-bindings have additional local work, described in [Spread props and data records](/explore/template-spreads-data).
-For diagnostics, see [DOM scalar parts and attributes](/explore/dom-parts-and-attributes).
+When DevTools shows a surprising result, compare the attribute and property. An attribute mutation
+observer cannot tell you whether a property was written. See
+[DOM scalar parts and attributes](/explore/dom-parts-and-attributes) for diagnosis, or
+[Spread props and data records](/explore/template-spreads-data) to group bindings.

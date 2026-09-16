@@ -6,9 +6,9 @@ kind: "guide"
 order: 4
 ---
 
-An account page has a Save button. While a request is running, another click should not send a duplicate. If the server rejects the change, the page should explain why and allow another attempt. A successful save should be announced without moving focus. Removing the page should release its subscriptions and interrupt work owned by that page.
+Build a Save button that ignores overlapping submissions, displays an expected rejection, and permits retry. The caller supplies the save operation; the control owns its pending state and status message. Its policy can be tested without a renderer, then connected to a native button.
 
-Those requirements give the component its shape. The account data and remote operation belong to the caller. This control owns the availability and status of one save interaction. We will keep that policy usable without a renderer, then connect it to a native button.
+This is a complete interaction recipe. For basic composition and per-instance setup, start with [Component](/explore/ui-component). Here, `Effect.fn` builds the state and command, a plain template displays them, and `component` gives each rendered control its own state.
 
 ## A template is already a view
 
@@ -58,13 +58,16 @@ export const makeSaveState = Effect.fn("makeSaveState")(function* <R>(
 ) {
   const busy = yield* RefSubject.make(false);
   const status = yield* RefSubject.make("Ready to save");
+
   const submit = Effect.acquireUseRelease(
     // Claim atomically; acquisition and release cannot be interrupted.
     RefSubject.modify(busy, (current) => [!current, true] as const),
     (acquired) => acquired
       ? Effect.gen(function* () {
           yield* RefSubject.set(status, "Saving…");
+
           yield* save;
+
           yield* RefSubject.set(status, "Saved");
         }).pipe(
           // Expected rejections become UI messages; defects remain failures.
@@ -72,15 +75,14 @@ export const makeSaveState = Effect.fn("makeSaveState")(function* <R>(
           Effect.asVoid,
         )
       : Effect.void,
+
     // A competing caller must not release the first caller's claim.
     (acquired) => acquired ? RefSubject.set(busy, false) : Effect.void,
   );
 
-  return {
-    busy: RefSubject.map(busy, (value) => value),
-    status: RefSubject.map(status, (value) => value),
-    submit,
-  } satisfies SaveState<R>;
+  const state: SaveState<R> = { busy, status, submit };
+
+  return state;
 });
 
 export const SaveStatus = <R>({ busy, status, submit }: SaveState<R>) => html`<section aria-busy=${busy}>
@@ -97,7 +99,7 @@ export const SaveAccount = component(function* <R>(
 
 `makeSaveState` is an Effect-returning function, so it uses `Effect.fn`. `SaveStatus` only arranges live values and an action, so it returns `html` directly. `SaveAccount` allocates the state when rendered, so it uses `component`. These are three different jobs with three small, ordinary contracts.
 
-The returned state exposes Computed views. A consumer can read or observe them, but cannot set the internal busy flag to manufacture an available button. It can run `submit`, which owns the whole transition. The local state is independent for each execution of `SaveAccount`; passing the same save Effect to two controls does not serialize their writes together.
+The `SaveState<R>` annotation exposes `busy` and `status` as `Computed` values, so callers can read and observe them while updates go through `submit`. The same RefSubjects are returned directly. The annotation narrows the public TypeScript API without changing their runtime behavior. Each execution of `SaveAccount` owns separate state; passing the same save Effect to two controls does not serialize their writes together.
 
 ## Decide what failure means before styling it
 
@@ -127,12 +129,15 @@ it("ignores overlapping submissions and permits retry after rejection", () =>
     const save = Effect.suspend(() => ++attempts === 1
       ? Deferred.succeed(started, undefined).pipe(Effect.andThen(Deferred.await(pending)))
       : Effect.void);
+
     const state = yield* makeSaveState(save);
     const running = yield* Effect.forkScoped(state.submit);
+
     // Compete with a request that has actually started, independent of scheduler timing.
     yield* Deferred.await(started);
     expect(yield* state.busy).toBe(true);
     expect(yield* state.status).toBe("Saving…");
+
     yield* state.submit;
     expect(yield* state.busy).toBe(true); // The competing call did not release the owner.
     expect(attempts).toBe(1);
@@ -141,6 +146,7 @@ it("ignores overlapping submissions and permits retry after rejection", () =>
     yield* Fiber.join(running);
     expect(yield* state.busy).toBe(false);
     expect(yield* state.status).toContain("Review and retry");
+
     yield* state.submit;
     expect(attempts).toBe(2);
     expect(yield* state.status).toBe("Saved");
@@ -152,9 +158,11 @@ it("releases its claim when interrupted", () =>
     const state = yield* makeSaveState(
       Deferred.succeed(started, undefined).pipe(Effect.andThen(Effect.never)),
     );
+
     const running = yield* Effect.forkScoped(state.submit);
     yield* Deferred.await(started);
     expect(yield* state.busy).toBe(true);
+
     yield* Fiber.interrupt(running);
     expect(yield* state.busy).toBe(false);
   }).pipe(Effect.scoped, Effect.runPromise));
@@ -162,22 +170,26 @@ it("releases its claim when interrupted", () =>
 it("connects a native button click to visible pending and saved states", async () => {
   const host = document.createElement("div");
   document.body.append(host);
+
   try {
     await Effect.gen(function* () {
       const pending = yield* Deferred.make<void, SaveRejected>();
       const mounted = yield* Deferred.make<void>();
+
       // Keep the render subscription alive while testing the component's events.
       yield* render(SaveAccount(Deferred.await(pending)), host).pipe(
         Fx.observe(() => Deferred.succeed(mounted, undefined)),
         Effect.forkScoped,
       );
       yield* Deferred.await(mounted);
+
       const button = host.querySelector<HTMLButtonElement>("button")!;
       button.click();
       yield* Effect.promise(() => vi.waitFor(() => {
         expect(button.disabled).toBe(true);
         expect(host.querySelector('[role="status"]')?.textContent).toBe("Saving…");
       }));
+
       yield* Deferred.succeed(pending, undefined);
       yield* Effect.promise(() => vi.waitFor(() => {
         expect(button.disabled).toBe(false);
@@ -194,19 +206,4 @@ Run `npm install --save-dev vitest happy-dom`, then `npx vitest run SaveAccount.
 
 A real-browser test should additionally check keyboard activation and focus retention. Happy DOM checks event wiring, not what a screen reader announces or how a browser lays out the control.
 
-## Reuse the host instead of rebuilding its behavior
-
-Add classes through the primitive's `props` option. If a design system needs different markup inside the native button, use its host function and spread the complete composed props onto that button:
-
-```ts
-import { Effect } from "effect";
-import { html } from "@typed/template";
-import { Button } from "@typed/ui/Button";
-
-const action = Button(
-  { content: "Save account", onclick: Effect.void, props: { class: "btn btn-primary" } },
-  (props, content) => html`<button ...${props}><span>${content}</span></button>`,
-);
-```
-
-The props include behavior and references as well as styling. Moving them onto the inner span changes the host contract. Learn [Button](/explore/ui-button) for activation and availability, [Component](/explore/ui-component) for generator ergonomics, and [Dom](/explore/ui-dom) when you need to author a new semantic host. Keep this control's contract small until a real requirement calls for something else.
+For styling or a custom native-button host, see [Button](/explore/ui-button). Keep its composed props on the button so event handling, references, and availability remain attached to the interactive element.

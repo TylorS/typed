@@ -51,22 +51,22 @@ describe("curriculum Markdown files", () => {
   it("expands source-derived excerpts and checks their intended declarations", () => {
     const source = resolveCurriculumSource("// @source examples/todo-1/src/domain.ts");
     const reference = [
-      "// @source examples/todo-1/src/domain.ts#L3-L14",
+      "// @source examples/todo-1/src/domain.ts#L3-L17",
       "// @expect export const TodoId",
       "// @expect export const TodoList",
     ].join("\n");
     const excerpt = resolveCurriculumSource(reference);
-    expect(excerpt).toBe(source.split("\n").slice(2, 14).join("\n").trim());
+    expect(excerpt).toBe(source.split("\n").slice(2, 17).join("\n").trim());
     expect(expandCurriculumSources(`\`\`\`ts\n${reference}\n\`\`\``)).toBe(
       `\`\`\`ts\n${excerpt}\n\`\`\``,
     );
-    expect(() => resolveCurriculumSource(reference.replace("L3-L14", "L16-L25"))).toThrow(
+    expect(() => resolveCurriculumSource(reference.replace("L3-L17", "L16-L25"))).toThrow(
       "no longer contains",
     );
-    expect(() => resolveCurriculumSource(reference.replace("L3-L14", "L14-L3"))).toThrow(
+    expect(() => resolveCurriculumSource(reference.replace("L3-L17", "L14-L3"))).toThrow(
       "Invalid curriculum source range",
     );
-    expect(() => resolveCurriculumSource(reference.replace("L3-L14", "L3-L999"))).toThrow(
+    expect(() => resolveCurriculumSource(reference.replace("L3-L17", "L3-L999"))).toThrow(
       "Invalid curriculum source range",
     );
     expect(() => resolveCurriculumSource(reference.split("\n")[0]!)).toThrow(
@@ -87,7 +87,7 @@ describe("curriculum Markdown files", () => {
       expect(expandCurriculumSources(markdown), name).not.toContain("@source");
       const { files } = parseCurriculumFiles(name, markdown);
       for (const { name: file } of files) {
-        expect(markdown, name).toContain(`<summary>${file}</summary>`);
+        expect([...markdown.matchAll(/<summary>(.*?)<\/summary>/g)].some(([, label]) => label!.includes(file)), name).toBe(true);
       }
     }
   });

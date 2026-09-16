@@ -41,12 +41,15 @@ const Handlers = SummaryRpc.toLayer({
     let total = 0;
     for (let start = 0; start < values.length; start += 4096) {
       const end = Math.min(start + 4096, values.length);
+
       for (let index = start; index < end; index++) {
         total += values[index]!;
       }
+
       // Let the worker process cancellation messages between chunks.
       yield* Effect.yieldNow;
     }
+
     return total;
   }),
 });

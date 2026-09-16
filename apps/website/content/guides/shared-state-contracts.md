@@ -14,36 +14,36 @@ a Layer supplies one implementation in the lifetime where those consumers run.
 Start with [renderer-independent state](/explore/refsubject-renderer-independent-state). The choice
 here is not whether state is “global.” It is which capability crosses a construction boundary and
 which owner provides it. Two independently provided implementations of the same service can
-legitimately represent two workspaces or two tests. The capability table is canonical; Sink,
-Subject, and RefSubject mechanics remain in their focused guides.
+legitimately represent two workspaces or two tests. Choose the smallest capability the consumer needs:
 
 ## Choose the public capability before its facade
 
 | Consumer needs | Contract | Example |
 | --- | --- | --- |
-| Observe values | `Fx.Service` | Read a transport's incoming events |
-| Submit values | `Sink.Service` | Send audit records to an owner |
-| Publish and observe events | `Subject.Service` | Shared notification bus without current state |
-| Read, observe, and replace state | `RefSubject.Service` | Internal feature model trusted by its consumers |
+| Observe values | [`Fx.Service`](/explore/fx-services-and-lifetime) | Read a transport's incoming events |
+| Submit values | [`Sink.Service`](/explore/sink-writing-effects) | Send audit records to an owner |
+| Publish and observe events | [`Subject.Service`](/explore/subject-event-publications) | Shared notification bus without current state |
+| Read, observe, and replace state | [`RefSubject.Service`](/explore/refsubject-renderer-independent-state) | Internal feature model trusted by its consumers |
 | Read state and invoke constrained commands | Custom Context service | Selection with a uniqueness invariant |
 
 RefSubject.Service is convenient, but importing it grants arbitrary writes. If every caller must
 preserve uniqueness, expose the selected IDs and a `select` operation instead of the internal ref.
 
-```ts
+```ts file="Selection.ts"
 import { Context, Effect, Layer } from "effect"
 import { RefSubject } from "@typed/fx"
 
-class Selection extends Context.Service<Selection, {
+export class Selection extends Context.Service<Selection, {
   readonly selected: RefSubject.Computed<ReadonlyArray<string>>
   readonly select: (id: string) => Effect.Effect<ReadonlyArray<string>>
   readonly clear: Effect.Effect<ReadonlyArray<string>>
 }>()("docs/Selection") {}
 
-const SelectionLive = Layer.effect(Selection, Effect.gen(function* () {
+export const SelectionLive = Layer.effect(Selection, Effect.gen(function* () {
   const state = yield* RefSubject.make<ReadonlyArray<string>>([])
+
   return {
-    selected: RefSubject.map(state, (ids) => ids),
+    selected: state,
     select: (id: string) => RefSubject.update(state, (ids) =>
       ids.includes(id) ? ids : [...ids, id],
     ),
@@ -61,15 +61,14 @@ not a security boundary against arbitrary code executing in the same process.
 A library can define a service-backed query without choosing where the model is built.
 `computedFromService` returns a Computed that retrieves the actual view when read or observed.
 
-```ts
-import { Context, Effect } from "effect"
+Import the same `Selection` service in the consumer module:
+
+```ts file="selectedCount.ts"
+import { Effect } from "effect"
 import { RefSubject } from "@typed/fx"
+import { Selection } from "./Selection.js"
 
-class Selection extends Context.Service<Selection, {
-  readonly selected: RefSubject.Computed<ReadonlyArray<string>>
-}>()("docs/SelectionView") {}
-
-const selectedCount = RefSubject.computedFromService(
+export const selectedCount = RefSubject.computedFromService(
   Effect.map(Selection, ({ selected }) => RefSubject.map(selected, (ids) => ids.length)),
 )
 ```
@@ -99,8 +98,10 @@ class QueueSettings extends RefSubject.Service<QueueSettings, {
 
 const QueueSettingsLive = QueueSettings.make({ density: "comfortable" })
 const compact = RefSubject.update(QueueSettings, () => ({ density: "compact" as const }))
+
 const inspect = Effect.gen(function* () {
   yield* compact
+
   return yield* QueueSettings
 }).pipe(Effect.provide(QueueSettingsLive), Effect.scoped)
 ```
@@ -113,26 +114,6 @@ prove a lazy initializer will succeed when the state is first read.
 A test can provide a new QueueSettings Layer with a different initial value. It does not need to
 patch a global or render the settings control. Use one provision around the whole test journey so
 commands and reads observe the same state.
-
-## Events and write-only boundaries have smaller facades
-
-```ts
-import { Effect } from "effect"
-import { Fx, Sink, Subject } from "@typed/fx"
-
-class QueueEvents extends Fx.Service<QueueEvents, string>()("docs/QueueEvents") {}
-class Audit extends Sink.Service<Audit, string>()("docs/Audit") {}
-class Notifications extends Subject.Service<Notifications, string>()("docs/Notifications") {}
-
-const QueueEventsLive = QueueEvents.make(Fx.fromIterable(["connected", "ready"]))
-const AuditLive = Audit.make(Effect.logError, Effect.log)
-const NotificationsLive = Notifications.make(1)
-```
-
-An Audit consumer cannot subscribe just because another subsystem can. A QueueEvents consumer
-cannot publish. Notifications adds both capabilities but has no current-state read; its replay
-choice is an event-retention policy. Use the [Subject guide](/explore/subject-event-publications)
-when repeated occurrences matter and RefSubject when the newest state matters.
 
 Keep the smallest contract that lets the consumer do its work. Do not add Context merely to avoid
 passing one local ref to a directly constructed child. Services are useful for independent

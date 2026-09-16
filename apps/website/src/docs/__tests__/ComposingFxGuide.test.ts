@@ -79,6 +79,6 @@ describe("Composing Fx guide", () => {
   it("delivers the authored cached phase before its continuation", async () => {
     const source = fs.readFileSync(guidePath, "utf8");
     const result = await runGuideExample(websiteRoot, source, "const cached =", "values");
-    expect(result).toEqual(["cached: Ada", "cached: Lin", "live: Grace"]);
+    expect(result).toEqual(["snapshot: 1", "snapshot: 2", "update: 3"]);
   });
 });

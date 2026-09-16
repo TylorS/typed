@@ -39,6 +39,7 @@ const program: Effect.Effect<ReadonlyArray<{ readonly type: "shortcut"; readonly
   Fx.collectAll(shortcuts)
 
 const values = await Effect.runPromise(program)
+
 // [{ type: "shortcut", command: "open-search" }, { type: "shortcut", command: "open-settings" }]
 ```
 
@@ -52,84 +53,17 @@ It need not allocate an intermediate collection. A higher-order operator such as
 owns child subscriptions. That is where replacing a request becomes part of the program rather than
 an ad hoc callback check.
 
-## Let a request keep its typed contract
+## Give each subscription an owner
 
-`Fx.fromEffect` turns one Effect success into one emission. It retains expected errors and required
-services, so the screen cannot accidentally hide its dependency on a search implementation:
+Running an ordinary Fx twice starts its producer twice. Assigning it to a constant does not share
+work. For a callback source, each subscription registers its own listener and removes that listener
+when it ends. [Building Fx](/explore/building-fx#register-the-live-browser-boundary) shows that adapter;
+[Subject sharing](/explore/subject-event-publications) covers a deliberately shared connection.
 
-```ts
-import { Context, Data, Effect, Layer } from "effect"
-import { Fx } from "@typed/fx"
-
-class SearchUnavailable extends Data.TaggedError("SearchUnavailable")<{
-  readonly query: string
-}> {}
-
-class WorkspaceSearch extends Context.Service<WorkspaceSearch, {
-  readonly first: (query: string) => Effect.Effect<string, SearchUnavailable>
-}>()("example/WorkspaceSearch") {}
-
-const firstResult = Fx.fromEffect(
-  Effect.gen(function* () {
-    const search = yield* WorkspaceSearch
-    return yield* search.first("effect")
-  }),
-)
-
-const reported: Effect.Effect<unknown, SearchUnavailable, WorkspaceSearch> = Fx.observe(
-  firstResult,
-  (result) => Effect.log(`first result: ${result}`),
-)
-
-const WorkspaceSearchLive = Layer.succeed(WorkspaceSearch, {
-  first: () => Effect.succeed("Effect documentation"),
-})
-
-const program = reported.pipe(Effect.provide(WorkspaceSearchLive))
-```
-
-`reported` still requires `WorkspaceSearch` and can fail with `SearchUnavailable`. Providing the
-Layer chooses an implementation; it does not erase the failure. At the request boundary, decide
-whether unavailability becomes a displayed value, a cached fallback, or a failure returned to the
-owner. [Errors and recovery](/explore/fx-errors-and-recovery) shows why placing that recovery inside
-one request can keep the input listener alive.
-
-## Make one subscription own one listener
-
-For a foreign callback API, registration and removal are one lifetime. This small executable test
-makes the stop condition observable without relying on a particular browser event:
-
-```ts
-import { Effect } from "effect"
-import { expect, it } from "vitest"
-import { Fx } from "@typed/fx"
-
-it("cleans up a callback subscription", async () => {
-  let removals = 0
-
-  const source = Fx.callback<string>((emit) => {
-    queueMicrotask(() => {
-      emit.succeed("ready")
-    })
-
-    return Effect.sync(() => {
-      removals += 1
-    })
-  })
-
-  await Effect.runPromise(Fx.collectAll(source.pipe(Fx.take(1))))
-  expect(removals).toBe(1)
-})
-```
-
-The observation starts registration. The microtask emits `ready`. `take(1)` ends the useful run and
-the returned cleanup Effect runs once. `emit.succeed` starts delivery immediately and returns its
-Fiber; it is not a Promise that the foreign API awaits. An adapter still needs an ordering policy
-if its callbacks can overlap.
-
-Observing an ordinary Fx twice runs registration twice. Assigning a source to a constant does not
-share it. [Subject sharing](/explore/subject-event-publications) is the explicit choice when two
-consumers should use one active connection.
+Effects and Fx retain their expected failures and required services throughout composition.
+[Services and lifetime](/explore/fx-services-and-lifetime) explains provisioning, and
+[recovery](/explore/fx-errors-and-recovery) shows where to handle a failed job so later input survives.
+Basic Effect composition is the prerequisite for those lessons.
 
 ## Continue with one decision at a time
 

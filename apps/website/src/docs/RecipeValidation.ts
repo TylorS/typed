@@ -19,8 +19,8 @@ export interface TypeScriptFenceDocument {
 
 export const extractTypeScriptFenceDocuments = (
   markdown: string,
-): ReadonlyArray<TypeScriptFenceDocument> =>
-  Array.from(
+): ReadonlyArray<TypeScriptFenceDocument> => {
+  const files: ReadonlyArray<TypeScriptFenceDocument> = Array.from(
     markdown.matchAll(
       /^```(ts|tsx|typescript|typescriptreact)(?:[ \t]+file="([^"]+)")?[ \t]*\r?\n([\s\S]*?)^```\s*$/gmu,
     ),
@@ -35,6 +35,19 @@ export const extractTypeScriptFenceDocuments = (
       };
     },
   );
+
+  // Teaching excerpts must stay identical to the complete, compiled module beside them.
+  for (const [, fileName, excerpt] of markdown.matchAll(
+    /^```(?:ts|tsx|typescript|typescriptreact)[ \t]+excerpt="([^"]+)"[ \t]*\r?\n([\s\S]*?)^```\s*$/gmu,
+  )) {
+    const source = files.find((file) => file.fileName === fileName);
+    if (!source || !excerpt!.trim() || !source.code.includes(excerpt!.trim())) {
+      throw new Error(`Example excerpt does not match its complete source: ${fileName}`);
+    }
+  }
+
+  return files;
+};
 
 export const extractTypeScriptFences = (markdown: string): ReadonlyArray<string> =>
   extractTypeScriptFenceDocuments(markdown).map(({ code }) => code);

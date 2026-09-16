@@ -7,15 +7,15 @@ demo: "todo-5"
 architecture: ["domain", "application", "presentation"]
 ---
 
-Create two items, edit one, then press Escape. The label should keep its original text. We need stable rows and a separate draft to make that work.
+Create two items, double-click one label to edit it, then press Escape. The label should keep its original text. We need stable rows and a separate draft to make that work.
 
 ## Give each row its ID
 
 In `src/presentation.ts`, the list delegates each item to `TodoItem`:
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L97-L101
-// @expect ${many(App.TodoList, (todo) => todo.id, TodoItem)}
+// @source examples/todo-5/src/presentation.ts#L93-L93
+// @expect ${many(App.Todos, (todo) => todo.id, TodoItem)}
 ```
 
 `many` matches rows by Todo ID. Prepending another item can move an existing row without recreating it. Titles and array positions cannot make that promise.
@@ -23,10 +23,8 @@ In `src/presentation.ts`, the list delegates each item to `TodoItem`:
 ## Allocate state inside the row
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L7-L12
+// @source examples/todo-5/src/presentation.ts#L11-L16
 // @expect const TodoItem = component
-// @expect const editing =
-// @expect const draft =
 ```
 
 Here `component()` earns its place: each mounted row needs its own editing flag and draft. `text` and `completed` are read views of its Todo. The outer `TodoApp` remains a direct `html` template because it allocates nothing.
@@ -34,26 +32,22 @@ Here `component()` earns its place: each mounted row needs its own editing flag 
 ## Begin, cancel, and save
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L13-L22
+// @source examples/todo-5/src/presentation.ts#L18-L28
 // @expect const begin =
-// @expect const cancel =
-// @expect const save =
 ```
 
 Beginning copies committed text into the draft. Cancelling only hides the editor. Saving sends the draft to `App.editTodo` before closing it. Typing into committed text directly would leave nothing for Cancel to preserve.
 
-The application action trims saved text and deletes a Todo when that text is blank. That policy stays outside the row's browser handlers.
+The application action rejects whitespace-only text by deleting that Todo; other text is saved as entered. That policy stays outside the row's browser handlers.
 
 ## Bind the editor to the draft
 
 ```ts
-// @source examples/todo-5/src/presentation.ts#L28-L39
+// @source examples/todo-5/src/presentation.ts#L50-L64
 // @expect .value=${draft}
-// @expect event.key === "Escape"
-// @expect <button type="submit">Save</button>
 ```
 
-`Fx.if(editing, …)` selects this editor or the ordinary label and controls. Enter submits its form; Escape and Cancel discard the draft. Edit is also a button, so double-clicking the label is not the only way to begin.
+The ordinary view and editor remain in the row. The `editing` class controls their visibility. Enter or blur saves the draft; Escape cancels. Double-clicking the label begins editing.
 
 **Try it:** keep one row in edit mode while adding another above it. Then cancel, edit again, and save. If rows share drafts, check where those subjects were allocated and whether IDs are unique. Removing or filtering out a row ends its rendered lifetime; an unfinished draft is not persisted application data.
 

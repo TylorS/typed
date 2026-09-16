@@ -10,7 +10,7 @@
     "clean:dist": "tsx scripts/clean-dist.ts",
     "build:static": "pnpm build:storybook && astro sync --force && astro build",
     "start": "astro preview",
-    "docs:dependencies": "node node_modules/typescript-compiler/bin/tsc6 -b ../../tsconfig.build.json && pnpm --filter @typed/svelte build:components",
+    "docs:dependencies": "pnpm tutorial:generate && node node_modules/typescript-compiler/bin/tsc6 -b ../../tsconfig.build.json && pnpm --filter @typed/svelte build:components",
     "docs:generate": "pnpm docs:dependencies && tsx scripts/generate-docs.ts",
     "test": "pnpm test:production",
     "test:docs": "pnpm docs:dependencies && vitest run --config vitest.config.ts src/docs/__tests__ src/site/__tests__",
@@ -20,7 +20,8 @@
     "preview": "astro preview",
     "test:static": "node --test test/production-smoke.test.mjs test/static-links.test.mjs test/reference-layout.test.mjs test/marble-playback.test.mjs test/storybook-embed.test.mjs test/search-experience.test.mjs test/curriculum-navigation.test.mjs test/deploy-pages-workflow.test.mjs && node --test test/page-layouts.test.mjs",
     "format:astro": "prettier --plugin prettier-plugin-astro --write \"src/site/**/*.astro\"",
-    "build:storybook": "pnpm --filter @typed/ui exec storybook build --output-dir ../../apps/website/public/storybook --disable-telemetry"
+    "build:storybook": "pnpm --filter @typed/ui exec storybook build --output-dir ../../apps/website/public/storybook --disable-telemetry",
+    "tutorial:generate": "tsx scripts/generate-todomvc.ts"
   },
   "dependencies": {
     "@effect/platform-browser": "catalog:",
@@ -37,23 +38,23 @@
     "@typed/template": "workspace:*",
     "@typed/ui": "workspace:*",
     "@typed/vue": "workspace:*",
-    "astro": "7.3.1",
+    "astro": "7.3.2",
     "effect": "catalog:"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@astrojs/markdown-remark": "7.3.0",
-    "@effect/vitest": "4.0.0-rc.112",
+    "@astrojs/markdown-remark": "7.3.1",
+    "@effect/vitest": "4.0.0-rc.115",
     "@tailwindcss/vite": "^4.3.3",
     "@typed/tsconfig": "workspace:*",
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.6.1",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "daisyui": "^5.7.28",
+    "daisyui": "^5.7.38",
     "happy-dom": "catalog:",
     "playwright": "^1.63.0",
     "prettier": "3.9.6",
-    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-astro": "1.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "svelte": "catalog:",
@@ -64,6 +65,7 @@
     "typescript-compiler": "npm:@typescript/typescript6@6.0.2",
     "vite": "catalog:",
     "vitest": "catalog:",
-    "vue": "^3.5.42"
+    "vue": "^3.5.42",
+    "@shikijs/langs": "4.4.3"
   }
 }

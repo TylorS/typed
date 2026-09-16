@@ -6,15 +6,12 @@ kind: "guide"
 order: 6.85
 ---
 
-A user filters a queue, opens issue 42, changes its tab, then presses Back. The expected destination
-is a product decision: should Back undo each filter keystroke, leave the issue entirely, or return
-to its previous tab? A URL contract describes valid inputs; it cannot decide this history policy.
+Navigation owns history and transitions through an Effect service. Use it to decide whether a
+change creates a Back stop, replaces the current stop, or waits for confirmation.
 
-Navigation owns history and transitions through an Effect service. Views read its live state;
-commands request changes. Matcher consumes committed locations to select page work, but a command
-palette, editor, or analytics operation can use Navigation without depending on a renderer or Matcher.
-Start with the [routing overview](/explore/routing-routes-matchers-and-navigation) if those jobs are
-not yet distinct.
+This guide has two independent tasks: run a push/replace journey, then optionally register a dirty
+editor's leave confirmation. Start with the [routing overview](/explore/routing-routes-matchers-and-navigation)
+if URL contracts, history, and page selection are not yet distinct.
 
 ## Make push and replacement deliberate
 
@@ -28,11 +25,14 @@ import { TestRouter } from "@typed/router/RouterTest"
 
 const visitIssue = Effect.gen(function* () {
   yield* Navigation.navigate("/issues/42", { history: "push" })
+
   // Changing tabs should not add another Back stop inside this issue visit.
   yield* Navigation.navigate("/issues/42?tab=activity", { history: "replace" })
   const detail = yield* Navigation.currentEntry
+
   yield* Navigation.back()
   const returned = yield* Navigation.currentEntry
+
   return {
     detail: detail.url.pathname + detail.url.search,
     returned: returned.url.pathname + returned.url.search,
@@ -40,6 +40,7 @@ const visitIssue = Effect.gen(function* () {
 }).pipe(Effect.provide(TestRouter({ url: "https://test.local/issues?status=open" })))
 
 const result = await Effect.runPromise(visitIssue)
+
 // detail: "/issues/42?tab=activity"; returned: "/issues?status=open"
 ```
 
@@ -64,16 +65,15 @@ import { html } from "@typed/template"
 
 const issueLink = Link({ href: "/issues/42", content: "Review issue 42" })
 const activityLink = Link({ href: "/issues/42?tab=activity", replace: true, content: "Activity" })
+
 const actions = html`<nav aria-label="Issue navigation">${issueLink} ${activityLink}</nav>`
 ```
 
-Link intercepts eligible same-origin primary clicks. Modified clicks, external HTTP destinations,
-downloads, and non-self targets retain native behavior. The href remains present in server HTML.
-For commands such as “open next unreviewed issue” or “navigate after successful save,” call
-Navigation.navigate from the Effect workflow. Build parameterized hrefs with the
-[Route encoding contract](/explore/route-typed-url-inputs).
+[Link](/explore/ui-link) preserves native behavior for modified clicks and external destinations.
+Use `Navigation.navigate` inside an Effect workflow, such as navigating after a successful save.
+Build parameterized hrefs with the [Route encoding contract](/explore/route-typed-url-inputs).
 
-Run the history journey above: opening an issue adds a stop, changing the filter replaces that stop, and Back returns to the queue. Choose the optional task below only when your feature needs it.
+Run the history journey above: opening an issue adds a stop, changing its tab replaces that stop, and Back returns to the queue. Choose the optional task below only when your feature needs it.
 
 <details>
 <summary>Reference: entry metadata and pending intent</summary>
@@ -94,6 +94,7 @@ const openFromQueue = Effect.fn("openFromQueue")(function* (issueId: string) {
     state: { returnTo: "/issues?status=open" },
     info: { source: "queue-keyboard" },
   })
+
   return destination.url.pathname
 })
 ```
@@ -103,11 +104,8 @@ belongs in path/query instead. Entry state is unknown at the service boundary; d
 using application fields. TypeScript inference in the writing command does not validate state
 restored or supplied elsewhere.
 
-`updateCurrentEntry({ state })` replaces state without changing the current slot's URL. `entries`
-exposes retained entries; `canGoBack` and `canGoForward` are derived views. Back/forward at a retained
-edge return the current destination without backend work. `traverseTo(key)` selects a retained
-entry, while a push after going back discards its forward branch. `reload` is a separate command;
-a browser reload can end the JavaScript lifetime rather than merely refresh one resource.
+For entry updates, traversal, and reload commands, see the
+[Navigation reference](/reference/modules/%40typed%2Fnavigation%2FNavigation).
 
 ## Observe pending intent separately from the committed location
 
@@ -120,8 +118,10 @@ import { CurrentPath, Navigation } from "@typed/navigation"
 
 const pathname = RefSubject.map(Navigation.currentEntry, (entry) => entry.url.pathname)
 const matchedPath = CurrentPath
+
 // Keep absence visible so pending UI can clear after commit or cancellation.
 const pending = Navigation.transition.asComputed()
+
 const canGoBack = Navigation.canGoBack
 ```
 
@@ -155,8 +155,10 @@ import { component } from "@typed/template"
 
 const DraftEditor = component(function* () {
   const dirty = yield* RefSubject.make(false)
+
   // Register with the editor's Scope so the blocker cannot outlive the draft editor.
   const blocker = yield* useBlockNavigation({ shouldBlock: () => dirty })
+
   const confirmation = Fx.switchMap(blocker.asComputed(), Option.match({
     // Emit empty output to remove the previous confirmation when the decision settles.
     onNone: () => Fx.null,
@@ -166,6 +168,7 @@ const DraftEditor = component(function* () {
       <button onclick=${decision.cancel}>Keep editing</button>
     </section>`,
   }))
+
   return html`<section aria-label="Draft editor">
     <label>Comment<textarea oninput=${RefSubject.set(dirty, true)}></textarea></label>
     ${confirmation}
@@ -200,18 +203,24 @@ const confirmJourney = Effect.scoped(Effect.gen(function* () {
   const dirty = yield* RefSubject.make(true)
   const blocker = yield* useBlockNavigation({ shouldBlock: () => dirty })
   const initiallyBlocking = yield* blocker.isBlocking
+
   // Navigation cannot finish until this test settles the blocker, so run it concurrently.
   const navigation = yield* Effect.forkScoped(Navigation.navigate("/issues", { history: "push" }))
+
   // A Filtered emits when a decision exists; await that value without polling.
   const decision = yield* Fx.first(blocker).pipe(Effect.flatMap(Effect.fromOption))
   const before = yield* Navigation.currentEntry
+
   yield* decision.confirm
+
   // Confirming releases the decision; joining observes the actual destination commit.
   const after = yield* Fiber.join(navigation)
+
   return { initiallyBlocking, before: before.url.pathname, after: after.url.pathname }
 })).pipe(Effect.provide(TestRouter({ url: "https://test.local/issues/42" })))
 
 const result = await Effect.runPromise(confirmJourney)
+
 // initiallyBlocking: false; before: "/issues/42"; after: "/issues"
 ```
 
@@ -240,6 +249,7 @@ const legacyAccount = Navigation.onBeforeNavigation((event) =>
     ? Effect.fail(new RedirectError({ url: "/settings" }))
     : Effect.succeed(Option.none()),
 )
+
 const reportVisit = Navigation.onNavigation((event) =>
   Effect.succeed(Option.some(Effect.log(`visited ${event.destination.url.pathname}`))),
 )
@@ -251,25 +261,11 @@ history failed after the URL already committed.
 
 ## Provide one history at the runtime edge
 
-BrowserRouter, ServerRouter, and TestRouter provide the common Router/Navigation contract. A
-standalone workflow can instead install Navigation directly, supplying its UUIDv7 dependency:
-
-```ts
-import { Effect, Layer } from "effect"
-import { Uuid7State } from "@typed/id/Uuid7"
-import { Navigation } from "@typed/navigation/Navigation"
-import { initialMemory } from "@typed/navigation/memory"
-
-const History = initialMemory({ url: "https://test.local/issues" }).pipe(
-  Layer.provide(Uuid7State.Default),
-)
-const open = Navigation.navigate("/issues/42").pipe(Effect.provide(History))
-```
-
-The browser equivalent is `fromWindow(window)` with the same UUID dependency; router layers already
-compose it. Create the provider around the feature/application or server request, not once per page.
-Nested route structure belongs to [CurrentRoute and Matcher](/explore/router-navigation-live-selection).
-Use the [Navigation reference](/reference/modules/%40typed%2Fnavigation%2FNavigation) and
-[Blocking reference](/reference/modules/%40typed%2Fnavigation%2FBlocking) for exact command and event types.
+BrowserRouter, ServerRouter, and TestRouter provide the Router/Navigation contract. Install one at
+the application or request boundary. Nested route structure belongs to
+[CurrentRoute and Matcher](/explore/router-navigation-live-selection), not another history provider.
+For standalone providers and exact event types, use the
+[Navigation reference](/reference/modules/%40typed%2Fnavigation%2FNavigation) and
+[Blocking reference](/reference/modules/%40typed%2Fnavigation%2FBlocking).
 
 </details>

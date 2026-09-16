@@ -12,11 +12,8 @@ Create an item and reload this page. It should return. We will load the initial 
 ## Decode storage in src/infrastructure.ts
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L9-L14
+// @source examples/todo-8/src/infrastructure.ts#L7-L11
 // @expect const TODOS_STORAGE_KEY
-// @expect const TodoListJson
-// @expect const decodeTodoList
-// @expect const encodeTodoList
 ```
 
 Storage holds a string. This codec checks the Todo fields and converts timestamps between stored strings and domain values; `JSON.parse` alone would not establish that contract.
@@ -24,10 +21,8 @@ Storage holds a string. This codec checks the Todo fields and converts timestamp
 The `Todos` service exposes load and save. Its local implementation handles the browser boundary:
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L37-L47
+// @source examples/todo-8/src/infrastructure.ts#L34-L44
 // @expect static readonly local
-// @expect localStorage.getItem
-// @expect localStorage.setItem
 ```
 
 No saved string means an empty list. Browser operations and codec work stay inside Effects, where the adapter can handle failure.
@@ -35,9 +30,8 @@ No saved string means an empty list. Browser operations and codec work stay insi
 ## Choose the load-failure policy
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L23-L26
+// @source examples/todo-8/src/infrastructure.ts#L20-L23
 // @expect static readonly get
-// @expect Effect.catchCause
 ```
 
 This small example falls back to an empty list for invalid data or unavailable storage. That is a product choice: it can overwrite corrupt data with a later save. An application that must recover records should retain the original string and show a warning instead.
@@ -45,21 +39,20 @@ This small example falls back to an empty list for invalid data or unavailable s
 ## Initialize before observing
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L58-L63
-// @expect App.TodoList.make(Todos.get)
+// @source examples/todo-8/src/infrastructure.ts#L55-L58
+// @expect const Model
 ```
 
-The subject starts from the decoded load result, rather than publishing an empty default while loading. Its observer then persists the current value and subsequent changes:
+The initializer is lazy: creating the subject does not load storage. Its first read or subscription runs the load Effect, so its first value is the decoded result. The observer persists that value and subsequent changes:
 
 ```ts
-// @source examples/todo-8/src/infrastructure.ts#L35-L35
+// @source examples/todo-8/src/infrastructure.ts#L32-L32
 // @expect static readonly replicateToStorage
-// @expect Fx.observeLayer(Todos.set)
 ```
 
 `Todos.set` logs write failures and leaves the in-memory app usable. Load failure and save failure have different consequences; do not hide either in a button handler.
 
-**Try it:** create and complete an item, reload, and switch filters. Committed todos persist; an unfinished input does not. Inspect `@typed/tutorial/todo-8` in browser storage to see the encoded value. If valid data disappears, check decoding and initialization before changing the renderer.
+**Try it:** create and complete an item, reload, and switch filters. Committed todos persist; an unfinished input does not. Inspect `@typed/todomvc/todos` in browser storage to see the encoded value. If valid data disappears, check decoding and initialization before changing the renderer.
 
 ## Complete files
 

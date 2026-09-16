@@ -24,6 +24,7 @@ import { component, html } from "@typed/template";
 export const SelectableArticle = component(function* () {
   const selected = yield* RefSubject.make(false);
   const stateClass = selected.pipe(RefSubject.map((value) => value ? "is-selected" : ""));
+
   const toggle = RefSubject.update(selected, (value) => !value);
 
   return html`<article class="article ${stateClass}">
@@ -66,13 +67,12 @@ tokens. This lets a projection produce a single state token or a group without c
 import { html } from "@typed/template";
 
 const state = ["article", ["is-selected", null], "has-note"];
+
 export const row = html`<article class=${state}>Understanding resource scopes</article>`;
 ```
 
-The cost depends on the previous and next local token collections, not on the number of descendants
-in the article or nodes elsewhere on the page. A very large generated class list still takes work
-to normalize and compare. Sparse literal segments participate in the same ledger; they are not
-independent writes to the attribute.
+Sparse literal segments participate in the same ledger; they are not independent writes to the
+attribute.
 
 ## Hydration doesn't claim all server classes
 
@@ -93,8 +93,5 @@ To investigate a disappearing animation, record three moments: Typed's initial e
 animation library's mutation, and Typed's next emitted tokens. Look for either a shared token or a
 whole-attribute assignment. A DOM breakpoint on the class attribute can identify the latter.
 
-A focused test should add a foreign token after mounting, toggle selection, then clear Typed's
-state contribution. Assert the article is still the same object, the expected local token changed,
-and the foreign token survived. Add a matching hydration case if preexisting server classes matter.
-Those tests establish the actual cooperation contract without claiming all third-party class writers
-are compatible.
+To check cooperation, add a foreign token after mounting and toggle selection. The local
+`is-selected` token should change while the foreign token survives.

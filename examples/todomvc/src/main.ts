@@ -1,8 +1,10 @@
+import "./styles.css";
+
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
 import { DomRenderTemplate, render } from "@typed/template";
-import { Services } from "./infrastructure";
-import { TodoApp } from "./presentation";
+import { Services } from "./infrastructure.js";
+import { TodoApp } from "./presentation.js";
 
 await render(TodoApp, document.body).pipe(
   Fx.drainLayer,

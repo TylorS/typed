@@ -1,12 +1,12 @@
 ---
 id: "hydrate-state"
-title: "Hydrate state and adopt the DOM"
+title: "Restore the server's state"
 summary: "Serialize Schema-checked state on the server and restore it before live parts run."
 order: 6
 demo: "counter-hydrated"
 ---
 
-Start with the working server from [the server rendering lesson](/explore/counter/server-html). Suppose the server knows the count is seven, while a fresh browser would start at zero. Replace `RefSubject.make` with `RefSubject.hydrate` in `Counter.ts`:
+Continue with the working server from [the server rendering lesson](/explore/counter/server-html). The server will initialize the count to seven while the browser's default remains zero. Restore the server value before the Counter becomes interactive by replacing `RefSubject.make` with `RefSubject.hydrate` in `Counter.ts`:
 
 ```ts
 // @source examples/learn-6/src/Counter.ts#L5-L10
@@ -41,7 +41,7 @@ Replace `src/Counter.ts` with the complete file and reload `http://127.0.0.1:517
 </details>
 
 <details class="curriculum-file">
-<summary>src/client.ts</summary>
+<summary>src/client.ts (unchanged)</summary>
 
 ```ts file="src/client.ts"
 // @source examples/learn-6/src/client.ts

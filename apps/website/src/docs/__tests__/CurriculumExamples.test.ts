@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,26 @@ import { quickStartSections, tutorialSteps } from "../../tutorial/Content.js";
 const websiteRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 describe("Authored curriculum examples", () => {
+  it("derives every TodoMVC checkpoint from the canonical example without drift", () => {
+    execFileSync(
+      process.execPath,
+      [
+        path.join(websiteRoot, "node_modules/tsx/dist/cli.mjs"),
+        path.join(websiteRoot, "scripts/generate-todomvc.ts"),
+        "--check",
+      ],
+      { cwd: websiteRoot },
+    );
+    for (const name of ["domain", "application", "presentation", "infrastructure", "main"]) {
+      const source = fs.readFileSync(
+        path.join(websiteRoot, "../../examples/todomvc/src", `${name}.ts`),
+        "utf8",
+      );
+      expect(tutorialSteps[8]!.files.find((file) => file.name === `src/${name}.ts`)?.source).toBe(
+        source.trimEnd(),
+      );
+    }
+  });
   it("displays every local module reached by each preview entry, byte for byte", () => {
     for (const entries of [quickStartSections, tutorialSteps]) {
       const snapshots = new Map<string, string>();
@@ -32,12 +53,7 @@ describe("Authored curriculum examples", () => {
             snapshots.get(name),
             `${entry.demo}: ${name} must be the displayed executable source`,
           ).toBe(source);
-          const parsed = ts.createSourceFile(
-            name,
-            source,
-            ts.ScriptTarget.ES2022,
-            true,
-          );
+          const parsed = ts.createSourceFile(name, source, ts.ScriptTarget.ES2022, true);
           for (const statement of parsed.statements) {
             if (
               !ts.isImportDeclaration(statement) ||
@@ -48,72 +64,62 @@ describe("Authored curriculum examples", () => {
             if (!specifier.startsWith(".")) continue;
             visit(
               path.posix.normalize(
-                path.posix.join(
-                  path.posix.dirname(name),
-                  specifier.replace(/\.js$/u, ".ts"),
-                ),
+                path.posix.join(path.posix.dirname(name), specifier.replace(/\.js$/u, ".ts")),
               ),
             );
           }
         };
-        visit(
-          entry.demo.startsWith("todo-") ? "src/preview.ts" : "src/Counter.ts",
-        );
+        visit(entry.demo.startsWith("todo-") ? "src/preview.ts" : "src/Counter.ts");
         expect(visited.size).toBeGreaterThan(0);
       }
     }
   });
 
   // This builds a complete curriculum/atlas, including compiler or highlighter startup on CI.
-  it("typechecks every cumulative milestone against the public packages", { timeout: 60_000 }, () => {
-    const staging = fs.mkdtempSync(
-      path.join(websiteRoot, ".curriculum-examples-"),
-    );
+  it(
+    "typechecks every cumulative milestone against the public packages",
+    { timeout: 60_000 },
+    () => {
+      const staging = fs.mkdtempSync(path.join(websiteRoot, ".curriculum-examples-"));
 
-    try {
-      const files: Array<string> = [];
-      const curricula = [quickStartSections, tutorialSteps];
-      for (const [curriculumIndex, entries] of curricula.entries()) {
-        const snapshots = new Map<string, string>();
-        for (const [stepIndex, entry] of entries.entries()) {
-          for (const file of entry.files) {
-            if (file.language === "ts") snapshots.set(file.name, file.source);
-          }
-          for (const [name, source] of snapshots) {
-            const file = path.join(
-              staging,
-              String(curriculumIndex),
-              String(stepIndex),
-              name,
-            );
-            fs.mkdirSync(path.dirname(file), { recursive: true });
-            fs.writeFileSync(file, source);
-            files.push(file);
+      try {
+        const files: Array<string> = [];
+        const curricula = [quickStartSections, tutorialSteps];
+        for (const [curriculumIndex, entries] of curricula.entries()) {
+          const snapshots = new Map<string, string>();
+          for (const [stepIndex, entry] of entries.entries()) {
+            for (const file of entry.files) {
+              if (file.language === "ts") snapshots.set(file.name, file.source);
+            }
+            for (const [name, source] of snapshots) {
+              const file = path.join(staging, String(curriculumIndex), String(stepIndex), name);
+              fs.mkdirSync(path.dirname(file), { recursive: true });
+              fs.writeFileSync(file, source);
+              files.push(file);
+            }
           }
         }
-      }
-      const program = ts.createProgram(files, {
-        esModuleInterop: true,
-        module: ts.ModuleKind.NodeNext,
-        moduleResolution: ts.ModuleResolutionKind.NodeNext,
-        noEmit: true,
-        skipLibCheck: true,
-        strict: true,
-        target: ts.ScriptTarget.ES2022,
-      });
+        const program = ts.createProgram(files, {
+          esModuleInterop: true,
+          types: ["vite/client"],
+          module: ts.ModuleKind.NodeNext,
+          moduleResolution: ts.ModuleResolutionKind.NodeNext,
+          noEmit: true,
+          skipLibCheck: true,
+          strict: true,
+          target: ts.ScriptTarget.ES2022,
+        });
 
-      expect(
-        ts.formatDiagnosticsWithColorAndContext(
-          ts.getPreEmitDiagnostics(program),
-          {
+        expect(
+          ts.formatDiagnosticsWithColorAndContext(ts.getPreEmitDiagnostics(program), {
             getCanonicalFileName: (fileName) => fileName,
             getCurrentDirectory: () => websiteRoot,
             getNewLine: () => "\n",
-          },
-        ),
-      ).toBe("");
-    } finally {
-      fs.rmSync(staging, { recursive: true, force: true });
-    }
-  });
+          }),
+        ).toBe("");
+      } finally {
+        fs.rmSync(staging, { recursive: true, force: true });
+      }
+    },
+  );
 });

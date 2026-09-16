@@ -1,15 +1,14 @@
 ---
 title: "The template compilation pipeline"
-summary: "Build a renderer or framework target on the public Template, HtmlChunk, and RenderEvent contracts."
+summary: "Follow an authored literal through the parser, target interpretation, and RenderEvent output."
 section: "Template internals"
 kind: "deep-dive"
 order: 4
 ---
 
-An alternate renderer cannot implement `html` by simply joining strings and values. A query in
-`.value` is a DOM property, an article title is escaped text, and a nested preview is ordered output
-with its own lifetime. The parser preserves those distinctions so a target can interpret them
-without making application components aware of its machinery.
+An alternate renderer cannot implement `html` by simply joining strings and values. An input's
+`.value` is a DOM property, while the same query in an `<output>` element is escaped text. The parser
+preserves those distinctions so a target can interpret them without changing application components.
 
 Start with [RenderEvent output](/explore/render-event-substrate). This guide is for a library that
 must understand template syntax itself; an adapter with existing nodes should stop at RenderEvent.
@@ -49,6 +48,7 @@ const template = parse([
 for (const [part, path] of template.parts) {
   console.log(part._tag, path);
 }
+
 console.log(template.hash);
 ```
 
@@ -74,8 +74,14 @@ context-aware rendering functions:
 import { parse } from "@typed/template/Parser";
 import { addTemplateHash, templateToHtmlChunks } from "@typed/template/HtmlChunk";
 
-const template = parse(["<article><h2>", "</h2></article>"]);
+const template = parse([
+  '<label>Search <input .value="',
+  '" /></label><output>',
+  '</output>',
+]);
+
 const chunks = addTemplateHash(templateToHtmlChunks(template), template);
+
 export const serialized = chunks.map((chunk) => {
   switch (chunk._tag) {
     case "text": return chunk.text;
@@ -85,14 +91,15 @@ export const serialized = chunks.map((chunk) => {
 }).join("");
 ```
 
-This example inspects one title interpolation; it is not a complete renderer for arbitrary streams
-and nested values. `addTemplateHash` adds the boundary information used by interactive adoption.
-Static output can omit it. `HtmlChunksBuilder` is the advanced assembly API when a target needs to
-construct a sequence incrementally.
+This example uses the same query string for both interpolation positions. The HTML target serializes
+the `.value` binding as a `value` attribute and escapes the output's text. This inspects chunk
+rendering, not a complete renderer for arbitrary streams and nested values. `addTemplateHash` adds
+the boundary information used by interactive adoption. Static output can omit it.
+`HtmlChunksBuilder` supports targets that assemble a chunk sequence incrementally.
 
-A DOM property has no generic serialized attribute equivalent. Events have no server listener to
-install. Hydration refs have an explicit serialization protocol. These are target decisions, not
-reasons to discard the parsed kind and guess from a runtime value.
+Assigning a property in the DOM and serializing an HTML attribute are different operations. The
+target chooses that mapping; events have no server listener to install, and hydration refs use an
+explicit serialization protocol. Keep the parsed kind available when making those decisions.
 
 ## Preserve the contexts that strings alone erase
 
@@ -111,13 +118,22 @@ DOM interpretation emits `DomRenderEvent`; HTML interpretation emits ordered `Ht
 chunks. Those values are transport, not owners of subscriptions or cleanup. The returned Fx must
 preserve input errors/service requirements and close per-render work on interruption.
 
-Test parsing, target interpretation, and runtime lifetime independently. Start with a scalar part,
-sparse attribute, property, boolean, and nested template. Then exercise namespace/text context,
-expected failure, and an interrupted producer. For a browser target assert native identity; for
-HTML assert parsing recovers intended text and finite ordered completion.
+## Check a new target's contract
+
+A new target needs explicit behavior for each part it supports. Check:
+
+- Scalar, sparse, property, boolean, namespace, and text-only parts retain their distinct contexts.
+- Nested output preserves order; live inputs and acquired resources stop on interruption.
+- Unsupported events, refs, or properties are deliberately omitted or rejected.
+- Input errors and service requirements remain visible in the returned Fx type.
+- DOM output preserves native identity; finite HTML output escapes data and completes in order.
+- If hydration is supported, adoption retains nodes, restores state, and leaves interactions working.
+
+Test parsing separately from target interpretation and lifetime. A parsed-literal cache may be
+shared, but subscriptions, event listeners, and ref resources belong to each run.
 
 Use published `Parser`, `Template`, `HtmlChunk`, `RenderTemplate`, and `RenderEvent` modules.
-Private diffing, hashing, marker construction, and many-item implementations are evidence about
-the shipped renderer, not application extension contracts. Continue with
-[Implement a RenderTemplate target](/explore/implementing-render-template) to wrap or provide the
-service without coupling to those internals.
+Private diffing and marker implementations are not extension contracts. If the public boundary
+cannot express required behavior, identify that gap instead of importing private machinery.
+To add policy while reusing the shipped renderer, see
+[Decorate a RenderTemplate target](/explore/implementing-render-template).

@@ -26,6 +26,7 @@ import * as Tree from "@typed/ui/Tree";
 export const ProjectFiles = component(function* () {
   const state = yield* Tree.makeState({ activeId: "files-source", loop: false });
   const collection = yield* Tree.makeCollection();
+
   return Tree.Root({ state, collection, label: "Project files", content: [
     Tree.Item({ state, collection, id: "files-source", level: 1, hasChildren: true,
       content: html`Source${Tree.Group({ state, parentId: "files-source", content: [
@@ -68,8 +69,7 @@ multiple selection needs more than an array of checked CSS classes.
 `Group` uses the [hidden attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/hidden),
 so collapsed content remains mounted. Its registrations persist, but parent expansion metadata
 filters it out of visible keyboard traversal. This retains local state and avoids remounting; it
-also retains subscriptions and memory. Large or remote hierarchies need a deliberate loading and
-unmounting policy rather than treating the collection as an offscreen database.
+also retains subscriptions. Unmount descendants separately if collapse should release their work.
 
 Never use cyclic parent relationships. Visibility checks walk ancestors, so a parent graph must
 terminate. A missing parent or inconsistent `hasChildren` can make a visibly indented item behave
@@ -85,7 +85,6 @@ text while the tree independently handles the same event. The existing family ha
 entry/exit protocol. Even nested click actions need testing because a child's click bubbles through
 ancestor item elements; avoid attaching unconditional open-file actions to every ancestor.
 
-Test expand, descend, return, collapse, and the next visible sibling in a real browser. Assert
-`document.activeElement`, expanded IDs, and `hidden` together. Include programmatic collapse of an
-active descendant and disabled-child traversal in your application checks; sibling movement and
-parent/child movement use different paths. Public contracts: [Tree API](/reference/modules/%40typed%2Fui%2FTree).
+Check expand, descend, return, and collapse with `document.activeElement`, expanded IDs, and `hidden`
+together. Also check programmatic collapse while a descendant is active: that path must repair focus.
+Public contracts: [Tree API](/reference/modules/%40typed%2Fui%2FTree).

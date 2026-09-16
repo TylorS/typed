@@ -23,6 +23,7 @@ export const UpdatePreference = component(function* () {
   const message = RefSubject.map(state, ({ checked }) =>
     checked === true ? "Product updates enabled" : "Product updates disabled",
   );
+
   return html`<div class="preference">
     <label>
       ${Checkbox.Input({ state, props: { name: "updates", value: "yes" } })}
@@ -45,6 +46,10 @@ Native form submission includes checked checkboxes with their name/value, while 
 
 ## Keep styling subordinate to interaction
 
-Start with native appearance and `accent-color`; preserve `:focus-visible`, disabled feedback, and adequate label spacing. If drawing a separate visual check, hide only decorative marks from assistive technology and keep the actual input usable. `display: none` removes the input's keyboard interaction. Mixed styling should be visibly different from checked, not merely a different color.
+Use native appearance and `accent-color`, keeping a visible focus indicator and a distinct mixed
+state. When state and appearance disagree, inspect both `.checked` and `.indeterminate`; HTML
+attributes alone cannot show the complete state. A custom host must retain the native input,
+both properties, ARIA state, change handler, and hydration ref.
 
-When state and appearance disagree, inspect both `.checked` and `.indeterminate`; HTML attributes alone cannot show the complete state. If reset only changes the browser presentation, coordinate resetting the subject or use the form-bound control. Custom hosts must retain input type, both properties, ARIA state, the change handler, and hydration ref. See the [Checkbox API](/reference/modules/%40typed%2Fui%2FCheckbox) and [Switch](/explore/ui-switch) for the distinct on/off contract.
+See the [Checkbox API](/reference/modules/%40typed%2Fui%2FCheckbox) and
+[Switch](/explore/ui-switch) for the distinct on/off contract.

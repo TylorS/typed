@@ -27,8 +27,10 @@ import * as Menu from "@typed/ui/Menu";
 export const DocumentActions = component(function* () {
   const state = yield* Menu.makeState({ id: "document-actions" });
   const collection = yield* Menu.makeCollection();
+
   const copies = yield* RefSubject.make(0);
   const showGuides = yield* RefSubject.make(true);
+
   return html`<section>
     ${Menu.Trigger({ state, content: "Document actions" })}
     ${Menu.Content({ state, collection, label: "Document actions", content: [
@@ -45,11 +47,9 @@ export const DocumentActions = component(function* () {
 });
 ```
 
-`Trigger` is a native button wired to the state ID as its popover target. `Content` is a manual
-native popover with menu semantics. Its rendered scope owns the state/popover synchronization,
-collection references, and event handlers. Opening through the trigger supplies an invoker for
-focus restoration. A programmatic `setOpen(state, true)` changes state, but does not invent a
-missing invoker element.
+`Trigger` is a native button targeting the manual popover rendered by `Content`. Opening through
+that trigger records an invoker for focus restoration; programmatic `setOpen(state, true)` does not
+invent one. See [native popover synchronization](/explore/ui-native-popover) for the browser boundary.
 
 ## Keyboard focus is not command execution
 
@@ -89,7 +89,6 @@ Preserve the component's ref and toggle handler in a custom host; losing them ca
 actual visibility disagreeing. Guard application effects for disabled commands: `aria-disabled`
 and the family's inert internal handler do not disable unrelated custom listeners.
 
-Browser checks should cover click-open, first focused item, a disabled item reached by arrows,
-checked-state updates that remain open, ordinary activation, Escape restoration, Tab exit, and
-submenu return. Inspect `document.activeElement` as well as `activeId`; a state assertion cannot
-prove that the browser restored focus. Public parts: [Menu API](/reference/modules/%40typed%2Fui%2FMenu).
+Check both outcomes in a browser: an ordinary command closes the menu, while a checked item stays
+open. Verify `document.activeElement` after Escape or submenu return, not only `activeId`.
+Public parts: [Menu API](/reference/modules/%40typed%2Fui%2FMenu).

@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.112 vue@^3.5.42
+pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.115 vue@^3.5.42
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.
@@ -69,6 +69,7 @@ import { PriceCard } from "./PriceCard.js";
 
 export const page = component(function* () {
   const price = yield* RefSubject.make({ symbol: "DEMO", last: 42 });
+
   return html`<main>
     ${view(PriceCard, price)}
     <button onclick=${RefSubject.update(price, (value) => ({ ...value, last: value.last + 1 }))}>
@@ -82,30 +83,50 @@ Pass the page directly to Typed’s `render`, `renderToHtml`, or `renderToHtmlSt
 
 `view(Component, props, { configureApp })` configures each Vue app, including plugins and app-level providers. `view(Component, props, { onSSRContext })` exposes the request's Vue SSR context, including teleports; the application places those teleport fragments in its document.
 
-```ts file="render-page.ts"
-import { RandomValues } from "@typed/id/RandomValues";
+### Render HTML
+
+```ts file="render-html.ts"
 import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
-import { DomRenderTemplate, render } from "@typed/template/Render";
-import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template/Html";
+import { RandomValues } from "@typed/id/RandomValues";
+import { HtmlRenderTemplate, renderToHtml, renderToHtmlString } from "@typed/template";
 import { page } from "./page.js";
 
-export const htmlChunks = renderToHtml(page).pipe(Fx.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)));
+const Services = Layer.merge(HtmlRenderTemplate, RandomValues.Default);
 
-export const renderPage = () => Effect.runPromise(
-  renderToHtmlString(page).pipe(Effect.provide(Layer.merge(HtmlRenderTemplate, RandomValues.Default)), Effect.scoped),
+export const htmlChunks = page.pipe(
+  renderToHtml,
+  Fx.provide(Services),
 );
 
-export const pageLayer = (host: HTMLElement) => render(page, host).pipe(
-  Fx.drainLayer,
-  Layer.provide(Layer.merge(DomRenderTemplate.using(host.ownerDocument), RandomValues.Default)),
+export const htmlString = page.pipe(
+  renderToHtmlString,
+  Effect.provide(Services),
+  Effect.scoped,
 );
-
-export const mountPage = (host: HTMLElement) =>
-  Effect.runFork(Layer.launch(pageLayer(host)));
 ```
 
-These are Typed’s standard renderer layers; `view` composes the framework’s server output as a native template child and mounts through the template’s ref in the browser. Prefer `htmlChunks` for a streaming response, observed inside the request Scope. Use `renderPage` when a complete string is required, including static generation. Both preserve the same HTML order and hydration markers. Compose `pageLayer(host)` with the application’s other Layers. At the application boundary, `mountPage` launches that Layer and returns the fiber to interrupt at shutdown.
+Consume `htmlChunks` in the request's Scope when the response can stream. `htmlString` is an Effect returning the complete HTML; compose it with the request handler or static-generation program and run that program at its entrypoint. Both use the same view and hydration markers.
+
+### Render into the DOM
+
+```ts file="main.ts"
+import { Effect, Layer } from "effect";
+import { Fx } from "@typed/fx";
+import { RandomValues } from "@typed/id/RandomValues";
+import { DomRenderTemplate, render } from "@typed/template";
+import { page } from "./page.js";
+
+await page.pipe(
+  render(document.body),
+  Fx.drainLayer,
+  Layer.provide([DomRenderTemplate, RandomValues.Default]),
+  Layer.launch,
+  Effect.runPromise,
+);
+```
+
+The browser entrypoint launches the rendering Layer. Add application services to `Layer.provide`; the Layer's Scope owns rendering and cleanup. The integration selects its backend from the active Typed renderer.
 
 Vue’s native `renderToWebStream` supplies incremental HTML to Effect’s `Stream.fromReadableStream`. `view` forwards those chunks in tree order and closes its host after rendering and `onSSRContext` finish. A pending child delays its following siblings, while earlier HTML can already reach the response. Interrupting the request closes Typed resources and cancels the stream reader; Vue suppresses later output but does not abort arbitrary component promises.
 
@@ -123,6 +144,7 @@ export class ProfileService extends Context.Service<ProfileService, {
 
 export const ProfileLive = Layer.succeed(ProfileService, { name: Effect.succeed("Ada") });
 export const loadName = Effect.flatMap(ProfileService, (profile) => profile.name);
+
 export const status = html`<p role="status">Account ready</p>`;
 ```
 
@@ -238,6 +260,7 @@ export async function renderApp(
 
   try {
     const initialName = await runtime.runPromise(loadName);
+
     const app = createSSRApp(App, { initialName });
     installRuntime(app, runtime);
 
@@ -259,10 +282,15 @@ import { ProfileLive } from "./services.js";
 
 export function hydrateApp(target: Element, data: { readonly initialName: string }) {
   const runtime = ManagedRuntime.make(ProfileLive);
+
   const app = createSSRApp(App, data);
   installRuntime(app, runtime);
   app.mount(target);
-  return async () => { app.unmount(); await runtime.dispose(); };
+
+  return async () => {
+    app.unmount();
+    await runtime.dispose();
+  };
 }
 ```
 
@@ -285,6 +313,7 @@ const PriceRoute = defineComponent({
   props: { symbol: { type: String, required: true } },
   setup: (props) => () => <PriceCard symbol={props.symbol} last={42} />,
 });
+
 export const routes = Matcher.match(Route.Parse("/prices/:symbol"),
   routeComponent(PriceRoute),
 ).match(Route.Wildcard, html`<p>Choose a price.</p>`);
@@ -328,9 +357,11 @@ it("renders with test services", async () => {
     Layer.succeed(ProfileService, { name: Effect.succeed("Test user") }),
     TestRouter({ url: "https://example.test/prices/DEMO" }),
   ));
+
   try {
     const app = createSSRApp(Routes);
     installRuntime(app, runtime);
+
     expect(await renderToString(app)).toContain("DEMO: 42");
   } finally {
     await runtime.dispose();

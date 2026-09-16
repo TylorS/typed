@@ -6,11 +6,11 @@ kind: "deep-dive"
 order: 244
 ---
 
-A project inspector shows Summary beside an Activity tab. Someone reading tab labels with arrow
-keys should not have to load Activity merely to discover its name. We will build manual activation:
-focus can reach Activity while Summary stays visible, and Enter opens the requested panel. Then we
-will consider when automatic activation would be better and what hiding a panel does to its work.
-If the choice is a bookmarkable destination rather than a local panel, use routing instead.
+Tabs connect buttons to visible panels. In manual mode, arrows move focus while the selected panel
+stays visible; Enter, Space, or click changes the panel. This example uses Summary and Activity to
+show the difference between `activeId` and `selectedId`. Hidden panels stay mounted, so manual
+activation does not itself defer their requests or subscriptions. Use routing for bookmarkable
+destinations instead of local panels.
 
 ## Build manually activated panels
 
@@ -18,20 +18,24 @@ If the choice is a bookmarkable destination rather than a local panel, use routi
 import { html, component } from "@typed/template";
 import * as Tabs from "@typed/ui/Tabs";
 
-export const ProjectInspector = component(function* () {
-  const state = yield* Tabs.makeState({ selectedId: "project-summary", activationMode: "manual" });
+export const ProjectInspector = component(function* (id: string) {
+  const summaryId = `${id}-summary`;
+  const activityId = `${id}-activity`;
+
+  const state = yield* Tabs.makeState({ selectedId: summaryId, activationMode: "manual" });
   const collection = yield* Tabs.makeCollection();
+
   return html`<section>
     <h2>Project inspector</h2>
     ${Tabs.List({ state, collection, label: "Project information", content: [
-      Tabs.Tab({ state, collection, id: "project-summary", panelId: "project-summary-panel",
+      Tabs.Tab({ state, collection, id: summaryId, panelId: `${summaryId}-panel`,
         content: "Summary" }),
-      Tabs.Tab({ state, collection, id: "project-activity", panelId: "project-activity-panel",
+      Tabs.Tab({ state, collection, id: activityId, panelId: `${activityId}-panel`,
         content: "Activity" }),
     ] })}
-    ${Tabs.Panel({ state, id: "project-summary-panel", tabId: "project-summary",
+    ${Tabs.Panel({ state, id: `${summaryId}-panel`, tabId: summaryId,
       content: html`<p>The project is ready for review.</p>` })}
-    ${Tabs.Panel({ state, id: "project-activity-panel", tabId: "project-activity",
+    ${Tabs.Panel({ state, id: `${activityId}-panel`, tabId: activityId,
       content: html`<ul><li>Draft created</li><li>Review requested</li></ul>` })}
   </section>`;
 });
@@ -91,28 +95,8 @@ and that nested controls in the selected panel keep their own behavior.
 
 ## Reuse a tab set safely
 
-Each repeated inspector needs its own state, collection, and stable ID namespace. The caller supplies the prefix; each execution makes a new state and registry.
-
-```ts
-import { component } from "@typed/template";
-import * as Tabs from "@typed/ui/Tabs";
-
-export const Details = component(function* (id: string) {
-  const summaryId = `${id}-summary`;
-  const historyId = `${id}-history`;
-  const state = yield* Tabs.makeState({ selectedId: summaryId, activationMode: "manual" });
-  const collection = yield* Tabs.makeCollection();
-  return [
-    Tabs.List({ state, collection, label: "Project details", content: [
-      Tabs.Tab({ state, collection, id: summaryId, panelId: `${summaryId}-panel`, content: "Summary" }),
-      Tabs.Tab({ state, collection, id: historyId, panelId: `${historyId}-panel`, content: "History" }),
-    ] }),
-    Tabs.Panel({ state, id: `${summaryId}-panel`, tabId: summaryId, content: "Draft" }),
-    Tabs.Panel({ state, id: `${historyId}-panel`, tabId: historyId, content: "Created today" }),
-  ];
-});
-
-export const CompareDetails = [Details("left-project"), Details("right-project")];
-```
+The first example accepts an ID prefix so each rendered inspector can own distinct tab/panel IDs.
+For example, render `ProjectInspector("left-project")` beside `ProjectInspector("right-project")`.
+Each execution creates its own state and collection; every prefix must be unique on the page.
 
 Never generate different random IDs during server and client rendering. Visible labels may match, but every `aria-controls` relationship must resolve within its own instance. The singular [Tab](/explore/ui-tab) entry point is an alias for this module. Consult the [Tabs API](/reference/modules/%40typed%2Fui%2FTabs) for exact exports.

@@ -9,16 +9,16 @@ order: 1.2
 <span id="normalize-before-comparing-repeated-input"></span>
 
 A catalog feed contains records the page cannot display directly: inactive products, raw cents, and
-prices that need a currency service. The source already decides when records arrive. This lesson
+prices that need formatting. The source already decides when records arrive. This lesson
 turns each record into useful page data without changing who owns the source.
 
 Start with [Building Fx](/explore/building-fx). We make decisions from one input alone, then introduce
-a service. Repeated input and clocks have their own [time lesson](/explore/fx-time-and-rate).
+an Effectful callback. Repeated input and clocks have their own [time lesson](/explore/fx-time-and-rate).
 
 ## Admit a product and build its display value
 
 ```ts
-import { Effect, Option } from "effect";
+import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
 interface Product {
@@ -34,7 +34,7 @@ const products = Fx.fromIterable<Product>([
 ]);
 
 const cards = products.pipe(
-  Fx.filterMap((product) => (product.active ? Option.some(product) : Option.none())),
+  Fx.filter((product) => product.active),
   Fx.map(({ id, name, priceInCents }) => ({
     id,
     title: name,
@@ -43,13 +43,13 @@ const cards = products.pipe(
 );
 
 const result = await Effect.runPromise(Fx.collectAll(cards));
+
 // [{ id: "desk", title: "Standing desk", price: "$499.00" }]
 ```
 
-The active desk becomes a card; the inactive lamp produces no output. `filterMap` combines admission
-and transformation through `Option`: `Some` emits, `None` omits. Use `filter` when the original value
-should remain unchanged and `map` when every input always has one output. `as` replaces each value
-with a constant; `compact` unwraps a producer that already emits Options.
+The active desk becomes a card; the inactive lamp produces no output. `filter` keeps admitted
+values unchanged, and `map` transforms each admitted value. Put admission first so rejected products
+do not need formatting.
 
 ```fx-marble
 title: map and as emit once for every input
@@ -71,6 +71,26 @@ operator: filter(isEven)
 output: . 2 . 4 |
 ```
 
+## Transform only when a value is available
+
+Use `filterMap` when the transformation itself returns an Option. For example, a lookup can produce
+a label or omit an unknown ID:
+
+```ts
+import { Effect, Option } from "effect";
+import { Fx } from "@typed/fx";
+
+const names = new Map([["desk", "Standing desk"], ["lamp", "Desk lamp"]]);
+
+const labels = Fx.fromIterable(["desk", "missing", "lamp"]).pipe(
+  Fx.filterMap((id) => Option.fromNullishOr(names.get(id))),
+);
+
+const result = await Effect.runPromise(Fx.collectAll(labels));
+
+// ["Standing desk", "Desk lamp"]
+```
+
 ```fx-marble
 title: filterMap omits None and emits each Some in order
 covers: filterMap
@@ -79,91 +99,40 @@ operator: filterMap(toOption)
 output: . 20 . 40 |
 ```
 
-```fx-marble
-title: compact drops None and unwraps Some
-covers: compact
-input: Some(a) None Some(b) |
-operator: compact
-output: a . b |
-```
+The empty slots are omissions, not delayed work. `compact` handles a source that already emits
+Options. See the [operator atlas](/explore/fx-operator-atlas) for constant mapping with `as` and
+translating both success and failure with `mapBoth`.
 
-The empty output slots are omissions, not work delayed until later. In the catalog pipeline, the
-lamp is rejected before formatting. Swapping a filter with expensive formatting changes which work
-runs even when the displayed cards happen to match.
+## Make failure explicit with an Effect callback
 
-`mapBoth` additionally translates the expected failure channel while mapping successful records.
-It does not recover the source or restart its work:
-
-```fx-marble
-title: mapBoth keeps one success output while also mapping typed failures
-covers: mapBoth
-input: ok !offline
-operator: mapBoth({ onSuccess, onFailure })
-output: OK !OfflineError
-```
-
-Here `ok` becomes `OK`, and a later `offline` failure becomes `OfflineError`. A thrown decoder error
-inside `map` is a defect, not a typed parse result. Move expected failure into Effect rather than
-using a pure callback as an untracked request or exception boundary.
-
-## Introduce the currency service where it is needed
-
-Converting prices requires a rate and can fail when a currency is unsupported. The Effect callback
-makes those requirements visible on the output Fx:
+Pure callbacks should not hide requests or expected parsing errors. `mapEffect` runs a callback
+whose failure and service requirements become part of the resulting Fx:
 
 ```ts
-import { Context, Data, Effect } from "effect";
+import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
-class MissingRate extends Data.TaggedError("MissingRate")<{
-  readonly currency: string;
-}> {}
+const parsePrice = (text: string): Effect.Effect<number, "InvalidPrice"> => {
+  const price = Number(text);
 
-class ExchangeRates extends Context.Service<
-  ExchangeRates,
-  {
-    readonly fromUsd: (currency: string) => Effect.Effect<number, MissingRate>;
-  }
->()("docs/ExchangeRates") {}
+  return text.trim() !== "" && Number.isFinite(price)
+    ? Effect.succeed(price)
+    : Effect.fail("InvalidPrice" as const);
+};
 
-interface Price {
-  readonly usd: number;
-  readonly currency: string;
-}
-
-const prices = Fx.fromIterable<Price>([
-  { usd: 499, currency: "EUR" },
-  { usd: 89, currency: "GBP" },
-]);
-
-const convertPrice = Effect.fn("convertPrice")(function* (price: Price) {
-  const rates = yield* ExchangeRates;
-  const rate = yield* rates.fromUsd(price.currency);
-  return price.usd * rate;
-});
-
-const converted: Fx.Fx<number, MissingRate, ExchangeRates> = prices.pipe(
-  Fx.mapEffect(convertPrice),
+const prices: Fx.Fx<number, "InvalidPrice"> = Fx.fromIterable(["499.00", "89.00"]).pipe(
+  Fx.mapEffect(parsePrice),
 );
 
-const runnable = converted.pipe(
-  Fx.provideService(ExchangeRates, {
-    fromUsd: (currency) =>
-      currency === "EUR"
-        ? Effect.succeed(0.92)
-        : currency === "GBP"
-          ? Effect.succeed(0.79)
-          : Effect.fail(new MissingRate({ currency })),
-  }),
-);
+const result = await Effect.runPromise(Fx.collectAll(prices));
 
-const result = await Effect.runPromise(Fx.collectAll(runnable));
-// [459.08, 70.31]
+// [499, 89]
 ```
 
-[`mapEffect`](/reference/symbols/QHR5cGVkL2Z4L0Z4I21hcEVmZmVjdA) combines the source and callback
-error/service channels. `converted` therefore requires `ExchangeRates` and can report `MissingRate`.
-Providing the service chooses the application's rates; it does not silently catch missing ones.
+Replacing `"89.00"` with `"unknown"` fails collection with `InvalidPrice`. The earlier emission is
+not retracted, but `collectAll` cannot return a successful array after failure. If the callback
+requires a service, that requirement is retained too; [services and lifetime](/explore/fx-services-and-lifetime)
+shows how to provide it.
 
 ```fx-marble
 title: mapEffect emits one successful result for each input
@@ -174,22 +143,6 @@ output: label-1 . label-2 . label-3 |
 ```
 
 ```fx-marble
-title: filterEffect keeps values whose Effectful predicate succeeds
-covers: filterEffect
-input: 1 2 3 4 |
-operator: filterEffect(isEven)
-output: . 2 . 4 |
-```
-
-```fx-marble
-title: filterMapEffect emits only successful Some results
-covers: filterMapEffect
-input: 1 2 3 4 |
-operator: filterMapEffect(parse)
-output: . 10 . 40 |
-```
-
-```fx-marble
 title: tap observes each value before forwarding it
 covers: tap
 input: 1 . 2 . 3 |
@@ -197,9 +150,9 @@ operator: tap(record)
 output: 1 . 2 . 3 |
 ```
 
-These rows assume sequential delivery. `mapEffect` forwards the callback's result; `filterEffect`
-forwards the original value only for `true`; `filterMapEffect` forwards only `Some`; `tap` forwards
-the original after its observation Effect. A failed predicate is not `false`: it enters the failure
+These rows assume sequential delivery. `tap` runs an Effect while keeping the original value.
+The corresponding admission operators are `filterEffect` (keep for `true`) and `filterMapEffect`
+(emit each `Some`). A failed predicate is not `false`: it enters the failure
 channel. [Recovery](/explore/fx-errors-and-recovery) decides whether that stops the feature.
 
 Effectful transformation inherits producer concurrency. If two callback deliveries overlap, the

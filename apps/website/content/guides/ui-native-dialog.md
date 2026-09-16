@@ -22,11 +22,14 @@ import * as NativeDialog from "@typed/ui/NativeDialog";
 
 const KeyboardHelp = component(function* (id: string) {
   const state = yield* RefSubject.make({ open: false });
+
   const setOpen = (open: boolean) => RefSubject.set(state, { open });
   const readNative = EventHandler.make((event: Event) => {
     const element = Dom.currentTarget<HTMLDialogElement>(event);
+
     return setOpen(element.open);
   });
+
   return html`
     <button type="button" onclick=${setOpen(true)}>Keyboard shortcuts</button>
     <dialog aria-labelledby=${`${id}-title`}
@@ -48,7 +51,7 @@ Native modal dialogs make the surrounding page inert. A literal `open` attribute
 
 Without `onclose` or another reverse synchronization path, Escape can close the element while state still says open. Subsequent state emissions may reopen it. The example reads current native state for both events: a queued close from an earlier opening must not close a dialog that has already reopened. If you need vetoable cancellation, attach a real cancel handler that calls `preventDefault()` during dispatch; an asynchronous confirmation cannot retroactively cancel the browser event.
 
-The callback returns `Effect<void, E, R | Scope>`, retaining the input state's errors and services. Its fiber belongs to the ref's Scope. Scope closure stops observation; the primitive does not itself close the element or remove externally owned markup. DOM method exceptions are defects from `Effect.sync`, not a new typed domain-error case.
+The observer belongs to the ref's Scope. Closing that Scope stops observation; it does not close the element or remove externally owned markup.
 
 Test state-to-native opening, native-to-state closing, and teardown independently. In a DOM mock, missing `showModal` is a platform limitation; use a real browser to test modal focus. Modal opening waits for a detached host to connect; a newer closed state or Scope teardown cancels that wait. Avoid two observers competing over the same element.
 

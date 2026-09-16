@@ -6,15 +6,8 @@ kind: "concept"
 order: -1
 ---
 
-You are searching for an issue. While you type, an earlier request finishes. The results
-change, but the input keeps focus. You open an issue, edit its title, and save. A slow
-connection should leave your draft intact. A failed save should explain what happened and
-let you try again. Using a keyboard or a screen reader should give you the same ability
-to finish the task.
-
-There is a lot of engineering inside that ordinary experience.
-
-Typed is built around one idea:
+A save action has a result, a possible failure, and services it needs. Connecting it to a button
+should preserve those contracts, while the button keeps its native keyboard and focus behavior.
 
 **Software should be able to participate without taking over.**
 
@@ -37,12 +30,12 @@ Typed brings those ideas together across Effect, [Fx](/explore/fx-push-reactivit
 
 `Effect.Effect<A, E, R>` describes a result, possible failure and required services. Typed preserves that contract when work reaches the browser.
 
-Consider saving a search:
+For example, a save Effect requires a service and can fail with `SaveRejected`. Binding it
+to a native button keeps both in the resulting template type:
 
 ```ts file="saved-search.ts"
 import { Context, Data, Effect } from "effect"
-import { Fx } from "@typed/fx"
-import { EventHandler, html } from "@typed/template"
+import { html } from "@typed/template"
 
 class SaveRejected extends Data.TaggedError("SaveRejected")<{
   readonly message: string
@@ -57,35 +50,25 @@ class SavedSearches extends Context.Service<
   }
 >()("SavedSearches") {}
 
-const saveSearch = EventHandler.make(
-  Effect.fn(function* (event: SubmitEvent & { currentTarget: HTMLFormElement }) {
-    const searches = yield* SavedSearches
-    const query = String(
-      new FormData(event.currentTarget).get("query") ?? "",
-    )
-    yield* searches.save(query)
-  }),
-  { preventDefault: true },
-)
+const saveSearch = Effect.gen(function* () {
+  const searches = yield* SavedSearches
 
-export const form = html`
-  <form onsubmit=${saveSearch}>
-    <input name="query" type="search" />
-    <button type="submit">Save search</button>
-  </form>
-`
+  yield* searches.save("Typed documentation")
+})
+
+export const saveButton = html`<button type="button" onclick=${saveSearch}>Save search</button>`
 ```
 
-The [event handler](/explore/native-events-with-effect) carries the Effect into a template. Its failure and service requirements survive both boundaries:
+The event binding carries the Effect into a template. Its failure and service requirements survive:
 
 ```ts
 import { Fx } from "@typed/fx"
-import { form } from "./saved-search.js"
+import { saveButton } from "./saved-search.js"
 
-type Errors = Fx.Error<typeof form>
+type Errors = Fx.Error<typeof saveButton>
 // SaveRejected
 
-type Services = Fx.Services<typeof form>
+type Services = Fx.Services<typeof saveButton>
 // SavedSearches | Scope.Scope | RenderTemplate
 ```
 
@@ -94,10 +77,7 @@ Each layer adds what it needs without erasing what came before it.
 **Errors disappear because you handled them. Requirements disappear because you provided
 them. They do not disappear because your Effect happened to reach a button.**
 
-The browser keeps its side of the contract too. `preventDefault`, capture, propagation,
-passive listeners, and native events retain their platform meanings. `EventHandler`
-connects browser dispatch to Effect work instead of inventing a synthetic event universe
-around it.
+For handlers that need the event or dispatch options, see [native events with Effect](/explore/native-events-with-effect).
 
 ## Let work and state answer different questions
 
@@ -129,4 +109,4 @@ Use native buttons, links, labels and form behavior. [UI primitives](/explore/ui
 <span id="keep-those-promises-observable"></span>
 <span id="a-toolkit-not-a-takeover"></span>
 
-These contracts matter when they protect someone's unfinished work. Test an obsolete completion, a keyed reorder and an interrupted owner—not only the final screenshot. You can adopt the capability you need in one part of a page. [Run the counter](/explore/quick-start) to start building, or [choose a library boundary](/explore/library-developers) to extend the toolkit.
+You can adopt the capability you need in one part of a page. [Run the counter](/explore/quick-start) to start building, or [choose a library boundary](/explore/library-developers) to extend the toolkit.

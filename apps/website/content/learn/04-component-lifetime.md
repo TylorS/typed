@@ -9,7 +9,7 @@ demo: "counter-component"
 Start from the [Quick Start counter](/explore/quick-start) and add a value computed from the count. Inside `Counter`, map the subject:
 
 ```ts
-// @source examples/learn-4/src/Counter.ts#L4-L8
+// @source examples/learn-4/src/Counter.ts#L4-L9
 // @expect const count = yield* RefSubject.make(0);
 // @expect const doubled = RefSubject.map(count, (value) => value * 2);
 ```
@@ -17,7 +17,7 @@ Start from the [Quick Start counter](/explore/quick-start) and add a value compu
 `doubled` observes the count. There is no second mutable value to keep in sync, and the button handlers stay the same. Display it below the controls:
 
 ```ts
-// @source examples/learn-4/src/Counter.ts#L17-L17
+// @source examples/learn-4/src/Counter.ts#L18-L18
 // @expect <p>Twice the count: ${doubled}</p>
 ```
 

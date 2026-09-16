@@ -1,5 +1,6 @@
 import { RefSubject } from "@typed/fx";
 import { component, html } from "@typed/template";
+
 export const Counter = component(function* () {
   // Allocate per mounted view so separate counters keep independent state.
   const count = yield* RefSubject.make(0);

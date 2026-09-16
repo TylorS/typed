@@ -35,7 +35,6 @@ describe("Consuming Fx guide", () => {
       "Fx.first",
       "Fx.collectAll",
       "Fx.collectUpTo",
-      "Fx.toStream",
       "Effect.runPromise",
       "Fx.runPromiseExit",
     ]);

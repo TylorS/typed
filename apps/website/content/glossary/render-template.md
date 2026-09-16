@@ -13,4 +13,4 @@ selects its interpretation; the resulting program still needs to run.
 
 An adapter that already has nodes usually needs a RenderEvent rather than another interpreter.
 Read [the compilation pipeline](/explore/template-compilation-pipeline) before
-[implementing a renderer](/explore/implementing-render-template).
+[decorating a renderer](/explore/implementing-render-template).

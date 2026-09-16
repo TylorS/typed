@@ -1,6 +1,6 @@
 ---
-title: "State transactions and bidirectional views"
-summary: "Commit a local reservation from one snapshot; keep remote work and input representations at their own boundaries."
+title: "Return results from serialized state updates"
+summary: "Decide and commit from one current value with RefSubject.modify, and know when transaction-local operations are needed."
 section: "State"
 kind: "guide"
 order: 2.25
@@ -33,6 +33,7 @@ const reserve = <E, R>(slots: RefSubject.RefSubject<number, E, R>) =>
 
 const example = Effect.scoped(Effect.gen(function* () {
   const slots = yield* RefSubject.make(1)
+
   return { first: yield* reserve(slots), second: yield* reserve(slots), remaining: yield* slots }
 }))
 ```
@@ -42,32 +43,18 @@ not a defect. Keep a server request outside that transition, then reconcile a re
 operation ID or revision still applies; [optimistic AsyncData](/explore/async-data-optimistic-edits)
 owns that policy.
 
-## Use transaction-local operations for several steps
+## Use transaction-local operations only when one replacement is insufficient
 
-```ts
-import { Effect } from "effect"
-import { RefSubject } from "@typed/fx"
+Prefer `modify` for the reservation above: its result and replacement fully describe the command.
+For operations that must read and write the same ref in several steps, `runUpdates` supplies
+transaction-local `get`, `set`, and `delete` operations under one serialized boundary. See
+[`RefSubject.runUpdates`](/reference/modules/%40typed%2Ffx%2FRefSubject) for its contract.
 
-const reserveMany = <E, R>(slots: RefSubject.RefSubject<number, E, R>) =>
-  RefSubject.runUpdates(slots, Effect.fn(function* (transaction) {
-    const available = yield* transaction.get
-    if (available === 0) return { accepted: false } as const
-    yield* transaction.set(available - 1)
-    return { accepted: true, slot: available } as const
-  }))
-```
+Do not re-enter the same ref through top-level writes inside that callback. Each local write remains
+real if the callback fails or is interrupted: serialization does not provide rollback. Keep remote
+work outside this boundary.
 
-`runUpdates` gives its callback `GetSetDelete` operations for this one serialized boundary. Do not
-re-enter the same ref through top-level writes. Each local write remains real if the callback fails
-or is interrupted, so use `modify` whenever one result and one replacement describe the command.
-
-## <span id="expose-another-writable-representation-only-when-conversion-is-valid">Optional input-state reference</span>
-
-`transform` makes a writable representation only when every accepted input has the intended inverse
-mapping. Keep invalid drafts as input state instead of forcing `Number` conversion on every keystroke.
-`slice` bounds an observer's Fx channel; it does not truncate current state or history. Both are
-representation tools, not reservation rules. Their signatures are available through
-`RefSubject.transform` and `RefSubject.slice` in the [API reference](/reference/modules/%40typed%2Ffx).
+<span id="expose-another-writable-representation-only-when-conversion-is-valid"></span>
 
 Test reservation receipts and current state separately from observed publications: an equivalent
 write can return a command result while equality suppresses a new event.

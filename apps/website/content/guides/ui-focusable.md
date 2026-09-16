@@ -16,7 +16,12 @@ order: 291
 ```ts
 import * as Focusable from "@typed/ui/Focusable";
 
-export const ReportRegion = Focusable.Focusable({ tabIndex: 0, role: "region", content: "Report" });
+export const ReportRegion = Focusable.Focusable({
+  tabIndex: 0,
+  role: "region",
+  props: { "aria-label": "Report preview" },
+  content: "Report",
+});
 ```
 
 Put the props on the element that receives focus. For roving keyboard movement, use [Composite](/explore/ui-composite). [Focusable API](/reference/modules/%40typed%2Fui%2FFocusable).

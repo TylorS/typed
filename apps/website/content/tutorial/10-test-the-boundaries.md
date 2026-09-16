@@ -1,7 +1,7 @@
 ---
 slug: "test-the-boundaries"
 title: "Prove the application works"
-summary: "Test domain identity, application transitions, and real form events using the code you built."
+summary: "Test domain identity, application transitions, and real browser events using the code you built."
 order: 10
 demo: "todo-10"
 architecture: ["domain", "application", "presentation", "infrastructure", "main"]
@@ -9,76 +9,34 @@ architecture: ["domain", "application", "presentation", "infrastructure", "main"
 
 Test the three behaviors we relied on: IDs choose the right item, creation preserves rejected drafts, and editing preserves the right row. These tests import the application you just built.
 
-## Test identity in src/domain.test.ts
+## Keep the domain and application checks
 
-Start with matching titles and different IDs:
+The [domain test](/explore/tutorial/model-the-domain) already checks that toggling one ID preserves the other item's identity and leaves the input unchanged. The [creation test](/explore/tutorial/create-a-todo) checks blank rejection, successful insertion, and preserving the draft when the factory fails. Their complete files are included below.
+
+The factory has no expected-error channel, so its failure test supplies a defect with `Effect.die`. That checks that failure neither partially commits nor loses the draft; it does not introduce a new expected rejection type.
+
+## Test the real view in src/presentation.test.ts
+
+The test mounts `TodoApp` with controlled services. Fork the renderer in the test Scope and await its first emission through a Deferred. The renderer stays subscribed while the test sends events:
 
 ```ts
-// @source examples/todo-10/src/domain.test.ts#L7-L13
-// @expect const first = TodoId.make("first")
-// @expect id: TodoId.make("second")
+// @source examples/todo-10/src/presentation.test.ts#L43-L50
+// @expect const ready = yield* Deferred.make<void>();
+// @expect yield* Deferred.await(ready);
 ```
 
-Toggle one ID and check the result and the unchanged input:
+The event helpers reproduce the events our handlers consume:
 
 ```ts
-// @source examples/todo-10/src/domain.test.ts#L14-L18
-// @expect const next = toggleCompleted(first)(todos)
-// @expect expect(next[1]).toBe(todos[1])
-```
-
-The matching item changes, the input remains unchanged, and the other item keeps its object. The empty-list assertion records what happens when the ID is absent. No browser or state service is needed.
-
-## Test creation in src/application.test.ts
-
-Provide fresh application state for the test:
-
-```ts
-// @source examples/todo-10/src/application.test.ts#L9-L13
-// @expect const model = Layer.mergeAll
-// @expect App.TodoList.make([])
-```
-
-A deterministic factory counts calls and returns predictable IDs; its complete setup is below. First, prove whitespace never reaches it:
-
-```ts
-// @source examples/todo-10/src/application.test.ts#L29-L33
-// @expect expect(calls).toBe(0)
-// @expect expect(yield* App.TodoText).toBe("   ")
-```
-
-Then submit valid text and check the committed item before checking the cleared draft:
-
-```ts
-// @source examples/todo-10/src/application.test.ts#L35-L42
-// @expect yield* RefSubject.set(App.TodoText, "  Learn Typed  ")
-// @expect expect(yield* App.ActiveCount).toBe(1)
-```
-
-The second test makes the factory unavailable:
-
-```ts
-// @source examples/todo-10/src/application.test.ts#L48-L52
-// @expect const exit = yield* Effect.exit(App.createTodo)
-// @expect expect(yield* App.TodoText).toBe("Keep this draft")
-```
-
-Our factory has no expected-error channel, so this test supplies a defect with `Effect.die`. It verifies that a failed factory neither partially commits nor loses the draft. A remote factory should declare its expected rejection type and decide how the UI presents it.
-
-## Test the real form in src/presentation.test.ts
-
-The test mounts `TodoApp` with controlled services. A scoped renderer fiber stays subscribed during the test; a Deferred readiness signal waits for its first emission without ending it. Its helpers reproduce the events our handlers consume:
-
-```ts
-// @source examples/todo-10/src/presentation.test.ts#L29-L37
+// @source examples/todo-10/src/presentation.test.ts#L34-L42
 // @expect input.dispatchEvent(new Event("input"
-// @expect new Event("submit"
+// @expect new KeyboardEvent("keydown"
 ```
 
 Changing `.value` alone would not notify the application. After the first submission, retain its row. Prepend another todo and check that the retained row merely moved:
 
 ```ts
-// @source examples/todo-10/src/presentation.test.ts#L49-L59
+// @source examples/todo-10/src/presentation.test.ts#L60-L72
 // @expect const original = host.querySelector
 // @expect toBe(original)
 ```
@@ -86,7 +44,7 @@ Changing `.value` alone would not notify the application. After the first submis
 Now edit that row and press Escape:
 
 ```ts
-// @source examples/todo-10/src/presentation.test.ts#L61-L68
+// @source examples/todo-10/src/presentation.test.ts#L72-L80
 // @expect type(edit, "Uncommitted text")
 // @expect key: "Escape"
 // @expect toBe("Same title")
@@ -100,10 +58,11 @@ Copy the three test files below into `src`, then run:
 
 ```sh
 npm install --save-dev vitest happy-dom
+
 npx vitest run src/domain.test.ts src/application.test.ts src/presentation.test.ts
 ```
 
-The domain and application tests run without a DOM environment. The presentation file's first line selects Happy DOM. Use a real browser for focus, layout, and keyboard usability, and for the assembled create → edit → complete → filter → clear → reload flow. The preview above runs the chapter's own storage key.
+The domain and application tests run without a DOM environment. The presentation file's first line selects Happy DOM. Use a real browser for focus, layout, and keyboard usability, and for the assembled create → edit → complete → filter → clear → reload flow. The completed preview uses the example's own storage key and service implementation.
 
 Continue with [testing Typed systems](/explore/testing-typed-systems) for controlled time and lifetimes, or [building UI components](/explore/building-ui-components) for the same techniques applied to another interaction.
 
@@ -142,7 +101,7 @@ Keep the files from the previous step and replace or add these. Each full file i
 <summary>src/infrastructure.ts</summary>
 
 ```ts file="src/infrastructure.ts"
-// @source examples/todo-10/src/infrastructure.ts
+// @source examples/todomvc/src/infrastructure.ts
 ```
 
 </details>

@@ -58,11 +58,11 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
     diagram:
       "title: catch_(fallback)\ncovers: catch\ninput source: ^ guide . !offline\noperator: catch (alias of catch_)\ninner fallback: . . . . ^ cached |\noutput: . guide . . . cached |",
     explanation:
-      "Exact export alias of catch_; the trace and lifecycle are identical. Recover a typed failure by running the replacement Fx; earlier values remain delivered.",
+      "Alias of `catch_`; the diagram uses this export name.",
     aliasOf: "catch_",
     source: "packages/fx/src/Fx/combinators/catch.ts",
     lifecycle:
-      "The source runs until it reports a Cause containing a `Fail`. The first typed failure starts exactly one fallback and the entire original Cause is replaced, including any defects or interrupts composed beside that Fail. A Cause with no Fail passes through unchanged. Source values already delivered remain delivered. The fallback's services become requirements of the returned Fx, and external interruption stops whichever run is active.",
+      "See [catch_](/explore/fx-operator-atlas#catch_) for the shared behavior and lifetime contract.",
     category: "Errors and recovery",
   },
   {
@@ -84,9 +84,9 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
       "title: catchAll shares catch_ semantics\ncovers: catchAll\ninput source: ^ guide . !offline\noperator: catchAll (alias of catch_)\ninner fallback: . . . . ^ cached |\noutput: . guide . . . cached |",
     source: "packages/fx/src/Fx/combinators/catch.ts",
     explanation:
-      "Exact alias of catch_. Recover a typed failure by running the replacement Fx; earlier values remain delivered.",
+      "Alias of `catch_`; the diagram uses this export name.",
     lifecycle:
-      "It has exactly the source/fallback switching, failure, service, and interruption semantics of `catch`; it allocates no wrapper resource beyond that combinator.",
+      "See [catch_](/explore/fx-operator-atlas#catch_) for the shared behavior and lifetime contract.",
     category: "Errors and recovery",
     aliasOf: "catch_",
   },
@@ -299,9 +299,9 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
       "title: delay shifts every value by 100ms (two 50ms slots)\ncovers: delay\ninput: a . b . c . . |\noperator: delay(100ms)\noutput: . . a . b . c |",
     source: "packages/fx/src/Fx/combinators/delay.ts",
     explanation:
-      "Delays every source value by `duration` while preserving its value and order.",
+      "Sleeps for `duration` before forwarding each value; the diagram shows serial delivery.",
     lifecycle:
-      "Each delivered value runs an Effect sleep before reaching the sink. Because this uses sequential effectful mapping, later values wait behind earlier sleeps and arrival order is preserved. Source failures propagate; interrupting the subscription interrupts the active sleep. No external resource is retained.",
+      "This uses `mapEffect` and inherits producer concurrency. A serial producer waits for each delayed delivery; concurrent deliveries can overlap their sleeps. No queue or ordering guarantee is added. Source failures propagate and interruption cancels active sleeps.",
     category: "Time and rate",
   },
   {
@@ -393,9 +393,9 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
       "title: dropWhile shares skipWhile semantics\ncovers: dropWhile\ninput: banner banner connected indexing |\noperator: dropWhile (alias of skipWhile)\noutput: . . connected indexing |",
     source: "packages/fx/src/Fx/combinators/skipWhile.ts",
     explanation:
-      "Exact alias of skipWhile. Skips elements from an Fx while a predicate returns true. Emits from the first element for which the predicate returns false (including that element) and all following elements.",
+      "Alias of `skipWhile`; the diagram uses this export name.",
     lifecycle:
-      "This alias has exactly `skipWhile`'s per-run gate and acquires no additional resource.",
+      "See [skipWhile](/explore/fx-operator-atlas#skipwhile) for the shared behavior and lifetime contract.",
     category: "Selecting values",
     aliasOf: "skipWhile",
   },
@@ -406,9 +406,9 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
       "title: dropWhileEffect shares skipWhileEffect semantics\ncovers: dropWhileEffect\ninput: banner . banner . connected . indexing . |\ninner predicate: ^ true ^ true ^ false ^ false |\noutput: . . . . . connected . indexing |\noperator: dropWhileEffect (alias of skipWhileEffect)",
     source: "packages/fx/src/Fx/combinators/skipWhile.ts",
     explanation:
-      "Exact alias of skipWhileEffect. Each predicate Effect takes one turn in this serialized source. Its failure is forwarded rather than treated as false. The predicate still runs after the gate opens.",
+      "Alias of `skipWhileEffect`; the diagram uses this export name.",
     lifecycle:
-      "This alias retains `skipWhileEffect`'s failure, service, state, and interruption semantics.",
+      "See [skipWhileEffect](/explore/fx-operator-atlas#skipwhileeffect) for the shared behavior and lifetime contract.",
     category: "Selecting values",
     aliasOf: "skipWhileEffect",
   },
@@ -1046,7 +1046,7 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
     name: "null",
     guide: "building-fx",
     explanation:
-      "Exact export alias of succeedNull; the trace and lifecycle are identical. Deliver one null value and complete. This is a value pulse, distinct from empty.",
+      "Alias of `succeedNull`; the diagram uses this export name.",
     diagram:
       "title: succeedNull\ncovers: null\ninput subscription: ^ . .\noutput: . null |\noperator: null (alias of succeedNull)",
     aliasOf: "succeedNull",
@@ -1695,7 +1695,7 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
     name: "undefined",
     guide: "building-fx",
     explanation:
-      "Exact export alias of succeedUndefined; the trace and lifecycle are identical. Deliver one undefined value and complete. This is a value pulse, distinct from empty.",
+      "Alias of `succeedUndefined`; the diagram uses this export name.",
     diagram:
       "title: succeedUndefined\ncovers: undefined\ninput subscription: ^ . .\noutput: . undefined |\noperator: undefined (alias of succeedUndefined)",
     aliasOf: "succeedUndefined",
@@ -1743,7 +1743,7 @@ export const fxOperatorDiagrams: ReadonlyArray<FxOperatorDiagram> = [
     name: "void",
     guide: "building-fx",
     explanation:
-      "Exact export alias of succeedVoid; the trace and lifecycle are identical. Deliver one void value and complete. This is a value pulse, distinct from empty.",
+      "Alias of `succeedVoid`; the diagram uses this export name.",
     diagram:
       "title: succeedVoid\ncovers: void\ninput subscription: ^ . .\noutput: . void |\noperator: void (alias of succeedVoid)",
     aliasOf: "succeedVoid",

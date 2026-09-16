@@ -1,16 +1,14 @@
 ---
 title: "Component: generators that return renderable values"
-summary: "Canonical reference for component arity, channel inference, and child Scope ownership."
-section: "UI / Foundations"
+summary: "Create a component value or function whose setup and output share one instance lifetime."
+section: "Template authoring"
 kind: "deep-dive"
 order: 290
 ---
 
-A component combines Effectful setup with renderable output. Use `component` when you need to acquire local state or services before returning a template, another component, text, a collection of renderables, or another supported Template input. The generator returns that Renderable; `component` turns it into the render program, so the generator does not return an Fx explicitly.
+`component` combines Effectful setup with a renderable result. A generator with no arguments creates a component value; a generator with arguments creates a component function. Each execution owns the state and scoped work it creates. Import it from `@typed/template`; it does not require the UI package.
 
-Read [your first template](/explore/render-your-first-template) and [Fx services and lifetime](/explore/fx-services-and-lifetime) first. The exported API is `component` from `@typed/template`. “Any renderable” describes the accepted result (`Renderable.Any`); it is not an `anyRenderable` helper to import.
-
-Use `@typed/template` for component construction; it does not require the UI package.
+Start with [your first template](/explore/render-your-first-template). Use a component when local state or service acquisition must happen before returning the view. A static template needs only `html`.
 
 ## A component value and a component function
 
@@ -18,50 +16,31 @@ Use `@typed/template` for component construction; it does not require the UI pac
 import { RefSubject } from "@typed/fx";
 import { html, component } from "@typed/template";
 
-const SessionNotice = html`<p>Your changes are saved locally until you publish.</p>`;
+const CounterNotice = html`<p>Each counter starts with its own state.</p>`;
 
-const SessionCounter = component(function* () {
+const Counter = component(function* () {
   const count = yield* RefSubject.make(0);
-  return html`<button onclick=${RefSubject.update(count, (n) => n + 1)}>
-    Changes in this session: ${count}
+
+  return html`<button type="button" onclick=${RefSubject.update(count, (n) => n + 1)}>
+    Count: ${count}
   </button>`;
 });
 
-const ItemCounter = component(function* (label: string, initial: number) {
+const LabelledCounter = component(function* (label: string, initial: number) {
   const count = yield* RefSubject.make(initial);
+
   return html`<section aria-label=${label}>
     <p>${label}: ${count}</p>
     <button type="button" onclick=${RefSubject.update(count, (value) => value + 1)}>Add one</button>
   </section>`;
 });
 
-const inventorySummary = html`${SessionNotice}${SessionCounter}${ItemCounter("Stock items", 4)}`;
+const counters = html`${CounterNotice}${Counter}${LabelledCounter("Second counter", 4)}`;
 ```
 
-`SessionNotice` needs no generator: `html` already describes its output. `SessionCounter` allocates local state, so it uses `component`; its zero-argument generator produces an Fx value. `ItemCounter` is a function; calling it with its arguments produces an Fx. Both are lazy descriptions: setup runs when their output is observed/rendered. Each independent execution of `ItemCounter` owns its own count. Sharing the function does not share a singleton RefSubject.
+`CounterNotice` needs no generator: `html` already describes its output. `Counter` allocates local state, so it uses `component`; its zero-argument generator produces an Fx value. `LabelledCounter` is a function; calling it with its arguments produces an Fx. Both are lazy descriptions: setup runs when their output is observed/rendered. Each independent execution of `LabelledCounter` owns its own count. Sharing the function does not share a singleton RefSubject.
 
 The implementation distinguishes those forms using JavaScript `body.length`. Avoid a component signature whose only parameter has a default value or whose only parameter is a rest argument: those can have runtime length zero while appearing callable in TypeScript. Prefer one required options object and put defaults inside the generator. A component needing no arguments should be used as a value rather than called as a function.
-
-## Return a renderable without erasing its channels
-
-```ts
-import { Effect } from "effect";
-import { component, html, liftRenderableToFx, type Renderable } from "@typed/template";
-
-const LoadedNotice = component(function* <E, R>(
-  load: Effect.Effect<string, E, R>,
-  footer: Renderable<string, E, R>,
-) {
-  const message = yield* load;
-  return html`<section><p role="status">${message}</p><footer>${liftRenderableToFx<E, R>(footer)}</footer></section>`;
-});
-
-const notice = LoadedNotice(Effect.succeed("Inventory refreshed"), "Review before publishing.");
-```
-
-The output combines `Effect.Error<Yield>` with `Renderable.Error<Result>`, and the corresponding service requirements. The rendered success type comes from `Renderable.Success<Result>`. Returning a string is valid; returning an arbitrary business object is not an instruction to stringify it. Format domain values explicitly.
-
-The constructor does not catch errors or supply application services. A load failure remains in E until an owner handles it. State, renderer, and application services remain in R until provided at the correct boundary. This makes the component usable in browser or server renderers without hiding the resources it needs.
 
 ## Each execution owns a child Scope
 
@@ -75,26 +54,14 @@ active while mounted. Even a component returning a scalar requires a parent Scop
 `Effect.forkScoped` for ongoing work owned by the instance; provide longer-lived application
 services outside the component when their work should survive it.
 
-## Pipelines receive the original arguments
+<span id="return-a-renderable-without-erasing-its-channels"></span>
+<span id="pipelines-receive-the-original-arguments"></span>
 
-Pipeline callbacks receive the preceding output followed by the component arguments, as in `Fx.fn`. This supports per-instance instrumentation without closing over stale arguments.
+## Result types and pipelines
 
-```ts
-import { Effect } from "effect";
-import { Fx } from "@typed/fx";
-import { component, html } from "@typed/template";
+The generator can return any supported [renderable input](/explore/renderable-normalization), including a template, another component, or text. Format domain objects explicitly. Errors and service requirements from both setup and output remain in the resulting Fx; `component` does not catch failures or provide application services.
 
-const NamedPanel = component(
-  function* (name: string, load: Effect.Effect<string>) {
-    const description = yield* load;
-    return html`<section aria-label=${name}><h2>${name}</h2><p>${description}</p></section>`;
-  },
-  (output, name) => output.pipe(Fx.tap(() => Effect.log(`Rendered panel: ${name}`))),
-);
-const ordersPanel = NamedPanel("Orders", Effect.succeed("Orders awaiting review"));
-```
-
-For a zero-argument generator, each pipeline receives only the output. Pipeline callbacks themselves run when the component value/function is constructed or called; put runtime side effects inside Fx/Effect operators as above. The generator body remains lazy. Use `Fx.fn` for generator-backed functions whose return already follows the Fx contract and which are not component constructors; use `Fx.gen` for plain reusable Fx programs.
+Optional pipeline callbacks receive the preceding output followed by the original component arguments, as in `Fx.fn`. They run when the component value is constructed or the component function is called. Put execution-time side effects inside Fx/Effect operators; the generator itself remains lazy. See the [component API](/reference/modules/%40typed%2Ftemplate) for generic inference and pipeline overloads.
 
 ## Debug construction separately from rendering
 

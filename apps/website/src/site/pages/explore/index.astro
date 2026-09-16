@@ -3,7 +3,9 @@ import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { siteHref } from "../../../SiteHref.js";
 import { groupGuides } from "../../Guides.js";
-const groups = groupGuides(await getCollection("guides"));
+const groups = groupGuides(
+  (await getCollection("guides")).filter(({ id }) => id !== "choosing-ui-components"),
+);
 ---
 
 <Base
@@ -115,11 +117,6 @@ const groups = groupGuides(await getCollection("guides"));
               "Integration recipes",
               "Connect Typed to your existing stack.",
               "/integrate",
-            ],
-            [
-              "Package reference",
-              "Browse every Typed package and its public API.",
-              "/reference",
             ],
           ].map(([title, description, href]) => (
             <a href={siteHref(href!)}>

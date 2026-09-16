@@ -14,7 +14,7 @@ const guideFile = "fx-dynamic-producers.md";
 const guidePath = path.join(websiteRoot, "content/guides", guideFile);
 
 describe("dynamic Fx producers guide", () => {
-  it("places the guide in the construction sequence and covers every public combinator", async () => {
+  it("places producer selection before scoped acquisition", async () => {
     const source = fs.readFileSync(guidePath, "utf8");
     const guide = parseGuideDocumentation(guideFile, source);
     const rendered = (await renderMarkdown(guide.body)).code;
@@ -31,20 +31,24 @@ describe("dynamic Fx producers guide", () => {
     expectExampleCalls(source, [
       "Fx.unwrap",
       "Fx.fn",
-      "Fx.genScoped",
       "Fx.unwrapScoped",
       "Effect.acquireRelease",
-      "Effect.provideService",
     ]);
     expect(extractFxMarbleOperators(source)).toEqual(
       expect.arrayContaining(["gen", "unwrap", "unwrapScoped"]),
     );
   });
 
-  it("runs the authored Fx.fn workspace factory with its provided service", async () => {
+  it("runs the authored Fx.fn factory after resolving its mode", async () => {
     const source = fs.readFileSync(guidePath, "utf8");
-    const result = await runGuideExample(websiteRoot, source, "const designActivity:", "result");
-    expect(result).toEqual(["design:opened", "design:updated"]);
+    const result = await runGuideExample(websiteRoot, source, "const activityFor =", "result");
+    expect(result).toEqual(["opened", "updated"]);
+  });
+
+  it("returns the first selected value from scoped setup", async () => {
+    const source = fs.readFileSync(guidePath, "utf8");
+    const result = await runGuideExample(websiteRoot, source, "const acquireActivity =", "result");
+    expect(result).toMatchObject({ _tag: "Some", value: "opened" });
   });
 
   it("keeps every TypeScript example independently compilable", () => {

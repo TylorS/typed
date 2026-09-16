@@ -16,7 +16,7 @@ describe("Transforming Fx guide", () => {
   const source = fs.readFileSync(guidePath, "utf8");
   const guide = parseGuideDocumentation("transforming-fx.md", source);
 
-  it("teaches pure and Effectful transformation with executable service requirements", () => {
+  it("teaches pure and Effectful transformation with typed failure", () => {
     expect(guide).toMatchObject({
       slug: "transforming-fx",
       section: "Fx",
@@ -25,16 +25,13 @@ describe("Transforming Fx guide", () => {
     });
     expect(source).toContain("Fx.filterMap");
     expect(source).toContain("Fx.mapEffect");
-    expect(source).toContain("Data.TaggedError");
-    expect(source).toContain("Context.Service");
-    expect(source).toContain("Fx.provideService");
     expect(source).toContain("/explore/fx-time-and-rate");
     expect(source).not.toContain("declare ");
     expectExampleCalls(source, [
       "Fx.filterMap",
       "Fx.map",
       "Fx.mapEffect",
-      "Fx.provideService",
+      "Fx.filter",
     ]);
     expect(fs.readFileSync(statefulGuidePath, "utf8")).toContain("Fx.skipRepeats");
     expect(fs.readFileSync(timeGuidePath, "utf8")).toContain("Fx.debounce");
@@ -76,4 +73,13 @@ describe("Transforming Fx guide", () => {
     const result = await runGuideExample(websiteRoot, source, "interface Product", "result");
     expect(result).toEqual([{ id: "desk", title: "Standing desk", price: "$499.00" }]);
   });
+  it("omits missing lookups and preserves Effectful parse errors", async () => {
+    expect(await runGuideExample(websiteRoot, source, "const names =", "result"))
+      .toEqual(["Standing desk", "Desk lamp"]);
+    expect(await runGuideExample(websiteRoot, source, "const parsePrice =", "result"))
+      .toEqual([499, 89]);
+    expect(await runGuideExample(websiteRoot, source, "const parsePrice =", 'Effect.runPromise(Effect.flip(Fx.collectAll(Fx.succeed("unknown").pipe(Fx.mapEffect(parsePrice)))))'))
+      .toBe("InvalidPrice");
+  });
+
 });

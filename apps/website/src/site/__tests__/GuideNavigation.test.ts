@@ -50,7 +50,9 @@ describe("bounded learning paths and optional reference", () => {
   it("keeps every destination exactly once and every sequence reciprocal", () => {
     const ids = groups.flatMap(({ entries }) => entries.map(({ id }) => id));
     expect(new Set(ids).size).toBe(ids.length);
-    for (const guide of guides) expect(ids).toContain(guide.id);
+    for (const guide of guides.filter(({ id }) => id !== "choosing-ui-components"))
+      expect(ids).toContain(guide.id);
+    expect(ids).not.toContain("choosing-ui-components");
     for (const group of groups) {
       group.entries.forEach((entry, index) => {
         expect(adjacentLinks(entry.id, groups), entry.id).toEqual(

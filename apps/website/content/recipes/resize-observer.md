@@ -52,10 +52,12 @@ import { sizes, type Size } from "./sizes.js";
 
 export const MeasuredChartHost = component(function* () {
   const size = yield* RefSubject.make<Size | null>(null);
+
   const measure = (element: HTMLDivElement) => sizes(element).pipe(
     // A ref drains its returned Fx for the element's rendering lifetime.
     Fx.tap((value) => RefSubject.set(size, value)),
   );
+
   const caption = RefSubject.map(size, (value) => value === null
     ? "Waiting for the chart's dimensions…"
     : `${Math.round(value.width)} × ${Math.round(value.height)} CSS pixels`);

@@ -24,6 +24,7 @@ import * as TreeGrid from "@typed/ui/TreeGrid";
 export const StorageBrowser = component(function* () {
   const state = yield* TreeGrid.makeState({ activeId: "storage-source-name" });
   const collection = yield* TreeGrid.makeCollection();
+
   return TreeGrid.Root({ state, collection, label: "Storage files and sizes", content: [
     TreeGrid.Row({ state, rowId: "storage-source", level: 1, hasChildren: true, content: [
       TreeGrid.Cell({ state, collection, id: "storage-source-name", rowId: "storage-source",
@@ -62,24 +63,16 @@ spreadsheet engine. It inherits Grid's current upward boundary asymmetry: the fi
 in a column can wrap to the last through negative indexing. Test that behavior against the product's
 expected interaction before using the primitive for a large operational grid.
 
-The [APG treegrid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/) describes richer
-combinations of row focus, cell focus, selection, and embedded controls. This family uses cell IDs
-with root-held focus. It does not implement all those variants, editing mode, selection ranges, or
-custom control entry/exit keys. [MDN active-descendant](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-activedescendant)
-explains why the referenced cell must remain in the rendered accessible structure.
+TreeGrid tracks expansion and activity, not row selection or editing. Those additional interaction
+modes have the same boundaries described in [Tree](/explore/ui-tree) and [Grid](/explore/ui-grid).
+The [APG treegrid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/) describes other variants.
 
 ## Expansion does not select a row
 
-`TreeGrid.makeState`, `expand`, `collapse`, `activate`, and `isExpanded` reuse the Tree state
-contract. They track expansion and activity, not which records an application has selected.
-Do not derive a saved account or file selection automatically from `activeId` unless that is the
-explicit product behavior. A user may move across a row only to inspect its size.
-
-Group hiding keeps descendant rows mounted. This preserves state but does not release their
-subscriptions. A remote folder loader needs separate loading/error state and a decision about what
-happens when the folder collapses during a request. Removing rows also needs active-cell repair;
-otherwise the root may keep referencing a vanished ID. If a parent is collapsed programmatically
-while a descendant is active, move activity to the parent cell as part of the same interaction.
+`expand`, `collapse`, `activate`, and `isExpanded` reuse the Tree state contract. Moving across a
+row to inspect its size does not select that record. Group hiding retains mounted descendants;
+removing a row instead requires repair of any active cell ID that disappears. If a programmatic
+collapse hides the active descendant, move activity to the parent cell in the same interaction.
 
 ## Debug both metadata layers
 
@@ -88,8 +81,6 @@ not only the Row props. If Right never expands, inspect the active cell's `colum
 `hasChildren`. If expansion changes state but not visibility, inspect the Group's parent row ID.
 A row's `level` changes ARIA metadata, not the registry's ancestry.
 
-Keep nested text inputs and buttons out until their event ownership is designed: bubbling arrow
-keys currently reach the root navigation handler. Test parent expand, descend, return, collapse,
-next visible row, second-column movement, and active-descendant existence after data replacement.
-The exact focused DOM node should remain the root throughout those navigation checks.
+Verify parent expansion, descent, return, collapse, and second-column movement. Throughout those
+operations, DOM focus stays on the root and its active-descendant ID must name a visible cell.
 Public contracts: [TreeGrid](/reference/modules/%40typed%2Fui%2FTreeGrid).

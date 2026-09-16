@@ -11,7 +11,7 @@ Use `@typed/template/WebComponent` to publish a Typed feature as a native custom
 The integration is part of `@typed/template`; there is no separate Web Components package. Install the published beta packages:
 
 ```sh
-pnpm add @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta effect@4.0.0-rc.112
+pnpm add @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta effect@4.0.0-rc.115
 ```
 
 Use matching Typed beta versions when adding other Typed packages to the application.
@@ -40,6 +40,7 @@ export const counter = WebComponent.make({
   render: Fx.fn(function* ({ title }: { readonly title: RefSubject.Computed<string> }) {
     const labels = yield* CounterLabels;
     const clicks = yield* RefSubject.make(0);
+
     return html`<section>
       <h2>${title}</h2>
       <button onclick=${RefSubject.increment(clicks)}>${labels.increment}</button>
@@ -55,7 +56,7 @@ Templates retain the ordinary Typed contract: interpolate values, `Effect`, `Str
 Register with a layer and compose it with the application's rendering layer. Registration provides no services; its Scope owns the connected instances. Use the element in an ordinary template.
 
 ```ts file="browser.ts"
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 import { Fx } from "@typed/fx";
 import { html } from "@typed/template";
 import * as WebComponent from "@typed/template/WebComponent";
@@ -66,17 +67,16 @@ export const CounterLive = WebComponent.register(counter).pipe(
   Layer.provide(Layer.succeed(CounterLabels, { increment: "Add one" })),
 );
 
-export const application = render(
-  html`<typed-counter title="Items" />`,
-  document.body,
-).pipe(
+await html`<typed-counter title="Items" />`.pipe(
+  render(document.body),
   Fx.drainLayer,
-  Layer.provide(Layer.merge(DomRenderTemplate, CounterLive)),
+  Layer.provide([DomRenderTemplate, CounterLive]),
   Layer.launch,
+  Effect.runPromise,
 );
 ```
 
-The application runs through the usual Effect entrypoint. Closing its Scope releases the registration and every connected instance. Registration captures `CurrentRenderDocument` and `CurrentShadowRoot` from its layer, so provide those references at the boundary when rendering into another document or choosing light/closed shadow DOM.
+The browser entrypoint launches the rendering Layer. Closing its Scope releases the registration and every connected instance. Registration captures `CurrentRenderDocument` and `CurrentShadowRoot` from its layer, so provide those references at the boundary when rendering into another document or choosing light/closed shadow DOM.
 
 ## Custom-element output inside Typed
 
@@ -143,9 +143,13 @@ const Services = HtmlRenderTemplate.pipe(
   Layer.provideMerge(Layer.succeed(CounterLabels, { increment: "Add one" })),
 );
 
-export const response = renderToHtml(page).pipe(Fx.provide(Services));
+export const response = page.pipe(
+  renderToHtml,
+  Fx.provide(Services),
+);
 
-export const snapshot = renderToHtmlString(page).pipe(
+export const snapshot = page.pipe(
+  renderToHtmlString,
   Effect.provide(Services),
   Effect.scoped,
 );
@@ -164,8 +168,9 @@ import { counter } from "./counter.js";
 const OpenShadow = Layer.succeed(WebComponent.CurrentShadowRoot, { mode: "open" as const });
 const CounterLive = WebComponent.register(counter).pipe(Layer.provide(OpenShadow));
 
-const markup = renderToHtmlString(WebComponent.server(counter, { title: "Items" })).pipe(
-  Effect.provide(Layer.merge(HtmlRenderTemplate, OpenShadow)),
+const markup = WebComponent.server(counter, { title: "Items" }).pipe(
+  renderToHtmlString,
+  Effect.provide([HtmlRenderTemplate, OpenShadow]),
   Effect.scoped,
 );
 ```
@@ -182,11 +187,13 @@ import * as WebComponent from "@typed/template/WebComponent";
 import { counter, CounterLabels } from "./counter.js";
 
 it("renders with test services", async () => {
-  const markup = await Effect.runPromise(renderToHtmlString(WebComponent.server(counter)).pipe(
+  const markup = await WebComponent.server(counter).pipe(
+    renderToHtmlString,
     Effect.provide(HtmlRenderTemplate),
     Effect.provideService(CounterLabels, { increment: "Test increment" }),
     Effect.scoped,
-  ));
+    Effect.runPromise,
+  );
 
   expect(markup).toContain("Test increment");
 });
@@ -219,10 +226,12 @@ export const profileElement = WebComponent.make({
   },
   render: Effect.fn(function* (props: { readonly "profile-id": RefSubject.Computed<string> }) {
     const profiles = yield* Profiles;
+
     const request = Fx.switchMap(props["profile-id"], (profileId) => Fx.concat(
       Fx.succeed(AsyncData.loading()),
       Fx.fromEffect(Effect.map(Effect.exit(profiles.load(profileId)), AsyncData.fromExit)),
     ));
+
     const content = Fx.map(request, (data) => AsyncData.match(data, {
       NoData: () => "Choose a profile.",
       Loading: () => "Loading…",
@@ -230,6 +239,7 @@ export const profileElement = WebComponent.make({
       Failure: () => "Profile unavailable.",
       Optimistic: (name) => `${name} (saving)`,
     }));
+
     return html`<section><small>${profiles.connection}</small><p>${content}</p></section>`;
   }),
 });
@@ -277,11 +287,14 @@ import * as WebComponent from "@typed/template/WebComponent";
 import { userElement } from "./routed-element.js";
 
 it("uses deterministic test navigation", async () => {
-  const markup = await Effect.runPromise(renderToHtmlString(WebComponent.server(userElement)).pipe(
+  const markup = await WebComponent.server(userElement).pipe(
+    renderToHtmlString,
     Effect.provide(HtmlRenderTemplate),
     Effect.provide(TestRouter({ url: "https://example.test/users/42" })),
     Effect.scoped,
-  ));
+    Effect.runPromise,
+  );
+
   expect(markup).toContain("42");
 });
 ```

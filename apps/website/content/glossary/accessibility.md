@@ -11,6 +11,6 @@ Accessibility is part of a control’s behavior: its name and meaning, keyboard 
 and state must work together. A native button supplies behavior that a clickable div does not gain
 merely by receiving a role. Typed UI composes those contracts with native hosts.
 
-Start with [choosing UI components](/explore/choosing-ui-components), then test the actual interaction
+Start with [choosing UI components](/explore/ui), then test the actual interaction
 in a browser. The [ARIA Authoring Practices introduction](https://www.w3.org/WAI/ARIA/apg/practices/read-me-first/)
 explains the responsibilities that come with custom semantics.

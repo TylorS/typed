@@ -6,9 +6,9 @@ kind: "guide"
 order: 2
 ---
 
-A reusable search field sometimes receives a capability record: a help title, an analytics ID,
-a disabled state, and an event handler. The record may change when a feature is enabled or removed.
-A spread lets those fields travel together while preserving each field's native meaning and lifetime.
+A spread groups bindings in a record: attributes, properties, dataset values, events, and refs.
+The record can change over time. Each entry keeps the same meaning as an explicitly authored
+binding, including cleanup when an entry is removed.
 
 Read [Attributes, properties, and boolean state](/explore/template-element-bindings) first. A spread
 is a grouping mechanism for those operations, not an alternative object model for DOM elements.
@@ -16,14 +16,14 @@ is a grouping mechanism for those operations, not an alternative object model fo
 ## Keep known fields explicit; group fields that belong together
 
 If a component always owns `.value`, write that part directly. Use a spread when a caller genuinely
-supplies a group of fields or when the set of contributed capabilities changes:
+supplies a group of fields or when the set of bindings changes:
 
 ```ts
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 import { html } from "@typed/template";
 
-const saveCapabilities = {
+const saveBindings = {
   title: "Save the current search",
   "aria-label": "Save search",
   "?disabled": Fx.succeed(false),
@@ -31,15 +31,12 @@ const saveCapabilities = {
   onclick: Effect.log("Save search requested"),
 } as const;
 
-export const save = html`<button type="button" ...${saveCapabilities}>Save</button>`;
+export const save = html`<button type="button" ...${saveBindings}>Save</button>`;
 ```
 
 Each accepted key installs the same kind of part as explicitly authored syntax. The event is a
 registration; `?disabled` controls presence; the dataset contains serialized metadata. They do not
 all become string attributes merely because they were supplied in a record.
-
-This example logs a command rather than claiming to persist anything. In an application, replace
-the Effect with the actual command operation and retain its error/service requirements.
 
 ## Understand the accepted surface before designing a public prop bag
 
@@ -75,7 +72,7 @@ A nullish or non-object record contributes no keys, clearing this part's previou
 That differs from a nullish value inside a record, which follows value serialization for that key.
 Do not confuse clearing the record with removing all `data-*` attributes on the element.
 
-## Follow a capability through replacement and removal
+## Replace or remove entries
 
 Suppose the outer record initially contains `title`, `onclick`, and `ref`, then becomes an empty
 record. Typed removes the contributed title, unregisters that handler, and closes the resource scope
@@ -85,10 +82,8 @@ Removing a spread property restores the property's value from before that part w
 Removing class/data/nested spread entries clears their local contributions. This makes removal
 meaningful: a capability has both a value and an end to its lifetime.
 
-A retained record containing a reactive `.value` does not need to be re-enumerated for every emission
-from that entry. The retained entry updates its captured target. Replacing the *outer record* does
-require comparing its keys and replacing, retaining, or disposing entries. Measure those separately
-when a large capability record is involved.
+An emission from a reactive entry updates that binding; changing the outer record compares its
+keys to decide which entries to retain, replace, or remove.
 
 Two independent writers should not claim the same field. A spread cannot distinguish another
 owner's later write to its `title` from its own contribution when it removes that key. Give helpers

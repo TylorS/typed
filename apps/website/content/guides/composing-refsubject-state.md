@@ -8,36 +8,40 @@ order: 2.1
 
 <span id="choose-whether-a-missing-selection-is-observable"></span>
 
-The [selection model](/explore/refsubject-renderer-independent-state) becomes more interesting when
-an application adds a workspace selector. Changing workspace must clear selected issues. A toolbar
-still needs only the selection count, while a bulk action needs the workspace and IDs together.
-How should those pieces be represented?
+Changing workspace must also clear its selected IDs. Put both values in one RefSubject so
+consumers observe one valid transition, then derive the read-only views each consumer needs.
+This extends the [selection model](/explore/refsubject-renderer-independent-state).
 
-Start with the invariant: selected IDs belong to the current workspace. If the workspace and IDs
-are written independently, another consumer can observe the new workspace with the old selection.
-Combining refs later does not eliminate that intermediate state. Put values that must change
-together in one parent and derive smaller capabilities for consumers.
+If workspace and IDs are written independently, a consumer can observe the new workspace with the
+old selection. Combining refs later cannot remove that intermediate state. Use `struct` or `tuple`
+for values whose updates really are independent.
 
 ## Commit related values as one model
 
 ```ts
-import { Effect, Option } from "effect"
+import { Effect } from "effect"
 import { RefSubject } from "@typed/fx"
 
 const makeReviewState = Effect.fn("makeReviewState")(function* () {
   const state = yield* RefSubject.make({
     workspaceId: "typed",
     selectedIds: [] as ReadonlyArray<string>,
-    focusedId: Option.none<string>(),
   })
+
   const fields = RefSubject.proxy(state)
   const count = RefSubject.map(fields.selectedIds, (ids) => ids.length)
+
   const changeWorkspace = (workspaceId: string) => RefSubject.update(state, () => ({
     workspaceId,
     selectedIds: [] as ReadonlyArray<string>,
-    focusedId: Option.none<string>(),
   }))
-  return { workspaceId: fields.workspaceId, selectedIds: fields.selectedIds, count, changeWorkspace }
+  const select = (id: string) => RefSubject.update(state, (current) =>
+    current.selectedIds.includes(id) ? current : {
+      ...current, selectedIds: [...current.selectedIds, id],
+    },
+  )
+
+  return { workspaceId: fields.workspaceId, selectedIds: fields.selectedIds, count, select, changeWorkspace }
 })
 ```
 
@@ -62,9 +66,11 @@ import { RefSubject } from "@typed/fx"
 const model = Effect.gen(function* () {
   const query = yield* RefSubject.make("")
   const density = yield* RefSubject.make("comfortable")
+
   const normalized = RefSubject.map(query, (value) => value.trim().toLowerCase())
   const presentation = RefSubject.struct({ query: normalized, density })
   const rawInputs = RefSubject.tuple([query, density])
+
   return { presentation, rawInputs, query, density }
 })
 ```
@@ -86,58 +92,15 @@ Independent writers remain independent. Do not treat `struct` as a global transa
 a set of separately changing refs. The parent-object model above is clearer when a transition must
 preserve a cross-field invariant.
 
-## Link absence to its derived-state home
+## Expose commands and derived views
 
-A focused row may not exist. Keeping Option in state preserves both focus and loss of focus. A
-Filtered view is useful for commands or consumers interested only in present IDs.
+Keep the writable parent private and return named transitions plus the read-only fields consumers
+need. Avoid copying fields into separate writable refs: that introduces synchronization work and
+allows the two representations to disagree.
 
-```ts
-import { Effect, Option } from "effect"
-import { RefSubject } from "@typed/fx"
+Test the public transition: run `select("42")`, then `changeWorkspace("next")`. Both a current read
+and an observation should show the new workspace with no selected IDs. Testing the combined value
+is what checks the invariant; testing each field separately can miss an invalid intermediate state.
 
-const focusModel = Effect.gen(function* () {
-  const focusedId = yield* RefSubject.fromOption(Option.none<string>())
-  const presentId = RefSubject.compact(focusedId)
-  const label = RefSubject.getOrElse(presentId, () => "No focused issue")
-  yield* RefSubject.set(focusedId, Option.some("42"))
-  return { focusedId, presentId, label }
-})
-```
-
-Reading `presentId` while absent fails with `NoSuchElementError`; observing it skips absence.
-That is useful when an operation requires an ID. A detail pane that must disappear on deselection
-should observe the Option-valued source or `presentId.asComputed()`. Otherwise it receives the last
-present ID and no later value telling it to clear. The [derived-state guide](/explore/derived-conditional-and-accumulated-state)
-explores this distinction and the error channels it creates.
-
-## Avoid copying live values between stores
-
-A common workaround is to observe a parent, copy a field into a child ref, and observe the child to
-copy changes back. That creates two writable truths and an ordering problem. Use `map` for a
-read-only projection, `transform` for a truly reversible writable representation, or a named parent
-transition for edits. See [transactions and bidirectional views](/explore/state-transactions-and-bidirectional-views)
-for their different contracts.
-
-When the source is already an Effect, Stream, or Fx, `RefSubject.make` adapts it once in the owning
-Scope. `fromEffect`, `fromFx`, and `fromStream` are the explicit source forms; `fromOption` and
-`fromNullable` store Option values rather than creating a Filtered view. Captured source services
-belong to construction, while later projection services remain requirements of those projections.
-The [source guide](/explore/refsubject-sources-equality-and-lifetime) explains initialization timing.
-
-## Expose the composition at the correct boundary
-
-Pass a borrowed Computed directly when a parent builds the consumer. Use
-[Context services](/explore/shared-state-contracts) when independent routes, commands, or libraries
-need to request the same model. A service declaration is a dependency key; the providing Layer
-chooses whether two consumers receive the same instance and how long it lives.
-
-Keep the model's commands named after the domain: `changeWorkspace`, `select`, and `clearSelection`.
-Their implementation can choose `set` for replacement, `update` for a next value, `modify` for a
-separate command result, or `runUpdates` for several steps inside one serialized ref. `reset` clears
-the current slot and returns its previous value as an Option; it does not promise to restart a
-completed live source. A resource refresh deserves an explicit request command.
-
-Test the invariant at the public command boundary: change workspace with a nonempty selection,
-read the combined model, and observe the published model. Then verify consumers cannot accidentally
-write read-only projections in type tests. More state objects are not automatically more modular;
-smaller capabilities over a coherent owner often give the better separation.
+For a field that may be absent, continue with [derived and optional state](/explore/derived-conditional-and-accumulated-state).
+For consumers that request the same model through Context, see [shared state contracts](/explore/shared-state-contracts).

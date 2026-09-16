@@ -23,6 +23,13 @@ describe("integration recipes", () => {
     ).toThrow("Invalid example file name");
   });
 
+  it("checks teaching excerpts against their compiled companion module", () => {
+    const markdown = '```ts file="Model.ts"\nexport const count = 1;\nexport const next = count + 1;\n```\n\n```ts excerpt="Model.ts"\nexport const next = count + 1;\n```';
+    expect(extractTypeScriptFenceDocuments(markdown)).toHaveLength(1);
+    expect(() => extractTypeScriptFenceDocuments(markdown.replace('excerpt="Model.ts"', 'excerpt="Missing.ts"'))).toThrow("does not match");
+    expect(() => extractTypeScriptFenceDocuments(markdown.replace(/count \+ 1;(?=\n```$)/, "count + 2;"))).toThrow("does not match");
+  });
+
   const domRecipe = recipes.find(({ slug }) => slug === "dom-output")!;
   const htmlRecipe = recipes.find(({ slug }) => slug === "html-output")!;
   const reactRecipe = recipes.find(({ slug }) => slug === "react")!;

@@ -18,4 +18,4 @@ import * as Tab from "@typed/ui/Tab";
 export const createTabState = Tab.makeState;
 ```
 
-Use [Tabs](/explore/ui-tabs) for manual versus automatic activation, stable tab/panel identities, hidden mounted panels, and repeated instances. Keep every instance's IDs unique and stable across server rendering and hydration. The [Tab API](/reference/modules/%40typed%2Fui%2FTab) remains the reference for the singular import path.
+Use [Tabs](/explore/ui-tabs) for manual versus automatic activation, stable tab/panel identities, hidden mounted panels, and repeated instances. The [Tab API](/reference/modules/%40typed%2Fui%2FTab) remains the reference for the singular import path.

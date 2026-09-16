@@ -21,21 +21,16 @@ the subscription and makes its failures and service requirements part of the own
 Use `observe` when each event should cause an Effect and no collection is needed:
 
 ```ts
-import { Effect, Ref } from "effect";
+import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
 const events = Fx.fromIterable(["saved", "published"]);
 
-const program = Effect.gen(function* () {
-  const handled = yield* Ref.make<ReadonlyArray<string>>([]);
-  yield* Fx.observe(events, (event) => Ref.update(handled, (all) => [...all, event]));
-  return yield* Ref.get(handled);
-});
+const program = Fx.observe(events, (event) => Effect.log(event));
 ```
 
-The finite fixture produces `saved`, waits for its observer, then produces `published`. The Ref
-records the example's result; it is not part of `observe` itself. For a live source the handler
-keeps running until the source ends or its owner interrupts it.
+The finite source logs `saved`, waits for its observer, then logs `published`. For a live source,
+the handler keeps running until the source ends or its owner interrupts it.
 
 The handler can fail or require services, and those channels join the returned Effect. A failed
 persistence handler can end observation even when the underlying event API remains capable of
@@ -100,38 +95,15 @@ For work whose useful effects already happen inside the producer, keep only comp
 import { Effect } from "effect";
 import { Fx } from "@typed/fx";
 
-const migrations = Fx.fromIterable(["users", "projects"]).pipe(
-  Fx.tap((table) => Effect.log(`migrated ${table}`)),
+const logged = Fx.fromIterable(["saved", "published"]).pipe(
+  Fx.tap((event) => Effect.log(event)),
 );
 
-const runMigrations: Effect.Effect<void> = Fx.drain(migrations);
+const finished: Effect.Effect<void> = Fx.drain(logged);
 ```
 
-`drain` discards emitted values, but it still reports failures. It is appropriate for the migration
-fixture because `tap` performs the logging. It would be a bug to replace a required storage handler
+`drain` discards emitted values, but it still reports failures. Here `tap` already performs the logging. It would be a bug to replace a required storage handler
 with `drain` and assume that ignored values were persisted somewhere.
-
-## Keep an existing Stream consumer at its boundary
-
-If downstream code already uses Stream operations, adapt once:
-
-```ts
-import { Stream } from "effect";
-import { Fx } from "@typed/fx";
-
-const temperatures = Fx.fromIterable([18, 20, 21, 23]);
-
-const average = Stream.runFold(
-  Fx.toStream(temperatures),
-  () => ({ total: 0, count: 0 }),
-  (state, value) => ({ total: state.total + value, count: state.count + 1 }),
-);
-```
-
-`toStream` starts the Fx lazily when the Stream runs. The Stream scope owns the adapter queue and
-cleanup. Its optional buffer settings are Effect Stream callback options. `fromStream` carries
-Stream values back into Fx while retaining errors, services, and finalizers. Compose with the
-operations your consumer needs; both remain owned by the same Effect program.
 
 ## Give the live observer the feature's real lifetime
 
@@ -152,10 +124,9 @@ Observation blocks until the producer completes, fails, or is interrupted. Inter
 the heartbeat's wait and prevents future ticks. Inside an Effect program, yield the observation
 directly; fork only when other work needs to proceed concurrently.
 
-For infrastructure composed into an application Layer, use `observeLayer` or `drainLayer` and
-launch the application with `Layer.launch`. The Layer owns the subscription and its Scope.
-Successful Layer acquisition does not supervise future background failures; handle those within
-the source or observer.
+For subscriptions owned by an application Layer, see
+[services and lifetime](/explore/fx-services-and-lifetime). If the consumer already uses Effect
+Stream, `Fx.toStream` adapts at that boundary without starting an independent root execution.
 
 ## Cross into a foreign host once
 

@@ -20,11 +20,15 @@ import * as NativeDetails from "@typed/ui/NativeDetails";
 
 const ShippingExplanation = component(function* () {
   const state = yield* RefSubject.make({ open: false, topic: "Shipping estimates" });
+
   const readToggle = EventHandler.make((event: Event) => {
     const open = Dom.currentTarget<HTMLDetailsElement>(event).open;
+
     return RefSubject.update(state, (current) => ({ ...current, open }));
   });
+
   const show = RefSubject.update(state, (current) => ({ ...current, open: true }));
+
   return html`
     <button type="button" onclick=${show}>Explain shipping estimate</button>
     <details ref=${NativeDetails.ref(state)} ontoggle=${readToggle}>
@@ -35,7 +39,7 @@ const ShippingExplanation = component(function* () {
 });
 ```
 
-The external button requests open state; the ref updates the native property. Activating summary changes that property independently; `ontoggle` sends the native value back. The extra `topic` field is preserved by both updates and ignored by the native observer. There is no independent React-like controlled/uncontrolled switch: there are simply two explicit update directions.
+The external button requests open state; the ref updates the native property. Activating summary changes that property independently; `ontoggle` sends the native value back. The extra `topic` field is preserved by both updates and ignored by the native observer.
 
 ## Understand what the ref owns
 
@@ -47,8 +51,8 @@ Scope closure interrupts the observer. It does not promise to reset `element.ope
 
 The example uses plain `RefSubject.make`, so it does not encode an SSR snapshot. An application using hydrated state must compose that one hydration owner with `NativeDetails.ref`; merely passing hydrated state to the observer does not attach its serialization protocol to the host. [Disclosure](/explore/ui-disclosure) already performs this composition.
 
-Read `currentTarget.open` during the handler, before yielding to asynchronous work. Toggle events describe the browser's resulting state and may coalesce rapid changes; do not count them as a complete history of every user action. If analytics needs activation intent, record that separately from visibility synchronization.
+Read `currentTarget.open` during the handler, before yielding to asynchronous work. Toggle events describe the browser's resulting state and may coalesce rapid changes; do not count them as a complete history of every user action.
 
-Test native summary activation, external open requests, repeated equal state, and removal followed by later state updates. If state reopens a user-closed element, the reverse `ontoggle` path is absent or attached to the wrong host. If the whole page shifts when opening, that is ordinary in-flow details layout; use [Popover](/explore/ui-popover) for a different presentation contract.
+Test native summary activation, external open requests, repeated equal state, and removal followed by later state updates. If state reopens a user-closed element, the reverse `ontoggle` path is absent or attached to the wrong host.
 
 API: [NativeDetails.ref](/reference/modules/%40typed%2Fui%2FNativeDetails). Next: [Dom composition](/explore/ui-dom) for refs that retain hydration and cleanup.

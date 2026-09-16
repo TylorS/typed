@@ -26,10 +26,9 @@ Chunks remain in producer order. Exactly the terminal chunk has `last: true`. A 
 `HtmlRenderEvent(completeHtml, true)`, normally produced lazily with `Fx.sync` when serialization is
 synchronous.
 
-The marker belongs to the renderer's protocol. Do not infer it from an index inside `Fx.map`; an Fx
-can be empty, asynchronous, unbounded, or interrupted. If a foreign callback reports its terminal
-event, adapt that callback directly. If an Effect Stream needs one-chunk lookahead, keep that protocol
-in the adapter and acknowledge Sink delivery in order.
+The marker belongs to the renderer's completion protocol. An emission index alone cannot identify
+the last chunk of an asynchronous or interrupted producer. The
+[HTML output recipe](/integrate/html-output) shows how to consume ordered output.
 
 ## Treat HTML as trusted renderer output
 
@@ -42,6 +41,7 @@ Ordinary Typed interpolation is the application-data path:
 import { html } from "@typed/template";
 
 const userName = "<script>alert('not markup')</script>";
+
 const safe = html`<p>Hello, ${userName}</p>`;
 ```
 
@@ -58,13 +58,6 @@ Use the public guards when a protocol endpoint accepts either representation. Ap
 normally do not branch: the selected `RenderTemplate` consumes the representation appropriate to
 that edge.
 
-## Connect to Effect HTTP at the response boundary
-
-Typed's HTML renderer can produce an Fx of chunks. Adapt it to an Effect Stream and pass the encoded
-bytes to `HttpServerResponse.stream`, or buffer a finite document and use
-`HttpServerResponse.html`. Keep status, headers, cookies, compression, and route composition in
-Effect's HTTP ecosystem; `HtmlRenderEvent` only describes renderer output.
-
-The [HTML output recipe](/integrate/html-output) shows both response forms with the real Effect v4
-HTTP modules. [Server rendering and hydration](/explore/server-rendering-and-hydration) explains
-when Typed emits hydration markers and when static HTML is the honest result.
+For buffered or streaming HTTP responses, follow the [HTML output recipe](/integrate/html-output).
+[Server rendering and hydration](/explore/server-rendering-and-hydration) explains when to emit
+hydration markers or static HTML.

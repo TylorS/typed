@@ -45,6 +45,7 @@ fragment.append(
 
 const templateIdentity = "unique-template-id-or-hash";
 const content = persistent(document, templateIdentity, fragment);
+
 const event = DomRenderEvent(content);
 ```
 
@@ -131,7 +132,7 @@ produce it.
 
 A serialization assertion cannot prove node identity. In a browser test, retain the actual host and input references, edit a selection, reorder the surrounding Typed list, and assert that the references still match. Test both native `moveBefore` and the fallback behavior when browser-managed state matters. Identity preservation alone does not promise equivalent focus behavior on every browser; the [DOM move contract](https://developer.mozilla.org/en-US/docs/Web/API/Element/moveBefore) documents the platform distinction.
 
-Next remove the adapter and verify its disposal callback, event listeners, and observers. If the host disappears but the editor continues processing, the bug is in the acquisition/finalization bridge. If the editor's children change unexpectedly, inspect whether a Typed template also targets that host. Start with [components](/explore/building-ui-components), then use a concrete [React](/integrate/react), [Svelte](/integrate/svelte), or [Vue](/integrate/vue) integration.
+Next remove the adapter and verify its disposal callback, event listeners, and observers. If the host disappears but the editor continues processing, the bug is in the acquisition/finalization bridge. If the editor's children change unexpectedly, inspect whether a Typed template also targets that host. Start with [components](/explore/ui-component), then use a concrete [React](/integrate/react), [Svelte](/integrate/svelte), or [Vue](/integrate/vue) integration.
 
 ## Related APIs
 
