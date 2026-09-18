@@ -110,3 +110,7 @@ pnpm --filter typed-website dev
 ```
 
 See [website development](apps/website/README.md) and the [@typed/astro integration](packages/astro/README.md) for commands and rendering contracts.
+
+## Discord
+
+Come chat with us! [https://discord.gg/WGcm3uwvE](https://discord.gg/WGcm3uwvE)
