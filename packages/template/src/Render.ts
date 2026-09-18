@@ -543,8 +543,15 @@ function setupRenderParts(
   ctx: TemplateContext,
 ): PartSetup {
   const setup = makePartSetup();
-  for (const [part, path] of parts) {
-    const effect = setupRenderPart(part, findPath(fragment, path), ctx);
+
+  // Primitive parts can insert nodes synchronously. Resolve every original
+  // template path before those insertions change sibling indexes.
+  const nodes = parts.map(([, path]) => findPath(fragment, path));
+
+  for (let index = 0; index < parts.length; index++) {
+    const [part] = parts[index];
+    const effect = setupRenderPart(part, nodes[index], ctx);
+
     if (effect !== undefined) {
       addPartEffect(setup, part, effect, ctx);
     }
