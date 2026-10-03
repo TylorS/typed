@@ -14,7 +14,7 @@ Type a title and press Enter. The input clears after creation; this partial prev
 Keep the Quick Start `index.html` and replace the files below. The infrastructure now supplies a router; install it alongside the standalone styles, then start Vite:
 
 ```sh
-npm install --save-exact @typed/router@1.0.0-beta.11
+npm install --save-exact @typed/router@1.0.0-beta.14
 npm install todomvc-app-css todomvc-common
 
 npm run dev

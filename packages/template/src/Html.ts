@@ -535,7 +535,7 @@ function liftRenderableToFx<E, R>(
         return takeOneIfNotRenderEvent(renderable);
       } else if (Effect.isEffect(renderable)) {
         return Fx.unwrap(
-          Effect.map(renderable, (r) =>
+          Effect.map(renderable as Effect.Effect<unknown, E, R>, (r) =>
             liftRenderableToFx<E, R>(r, isStatic, propertyAncestors, nodeContext, classContext),
           ),
         );

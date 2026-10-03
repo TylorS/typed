@@ -2,7 +2,7 @@ import { NodeHttpServer, NodeRuntime } from "@effect/platform-node";
 import { HtmlRenderTemplate } from "@typed/template";
 import { handleHttpServerError, ssrForHttp } from "@typed/ui";
 import { Layer } from "effect";
-import { HttpRouter } from "effect/unstable/http";
+import { HttpRouter } from "effect/http";
 import * as Http from "node:http";
 import { parseArgs } from "node:util";
 import type { ViteDevServer } from "vite";

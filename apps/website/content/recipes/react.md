@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/react@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta effect@4.0.0-rc.115 react@^19.2.0 react-dom@^19.2.0
+pnpm add @typed/react@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta effect@4.0.0 react@^19.2.0 react-dom@^19.2.0
 pnpm add -D @types/react@^19.2.0 @types/react-dom@^19.2.0
 ```
 

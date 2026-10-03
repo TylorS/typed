@@ -5,7 +5,7 @@ import {
   HttpServerRequest,
   HttpServerResponse,
   HttpStaticServer,
-} from "effect/unstable/http";
+} from "effect/http";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 

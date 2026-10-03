@@ -11,7 +11,7 @@ Use `@typed/template/WebComponent` to publish a Typed feature as a native custom
 The integration is part of `@typed/template`; there is no separate Web Components package. Install the published beta packages:
 
 ```sh
-pnpm add @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta effect@4.0.0-rc.115
+pnpm add @typed/template@beta @typed/fx@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta effect@4.0.0
 ```
 
 Use matching Typed beta versions when adding other Typed packages to the application.

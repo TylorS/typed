@@ -11,7 +11,7 @@ Create a Vite TypeScript project, install Typed, and start the development serve
 npm create vite@latest typed-counter -- --template vanilla-ts
 cd typed-counter
 
-npm install --save-exact effect@4.0.0-rc.115 @typed/fx@2.0.0-beta.11 @typed/template@1.0.0-beta.11 @typed/ui@1.0.0-beta.11
+npm install --save-exact effect@4.0.0 @typed/fx@2.0.0-beta.14 @typed/template@1.0.0-beta.14 @typed/ui@1.0.0-beta.14
 
 npm run dev
 ```

@@ -12,7 +12,7 @@ The server sends JSON such as `{"deployment":"api","status":"running"}`. Use Eff
 
 ```ts file="socket.ts"
 import { Effect, Stream } from "effect";
-import * as Socket from "effect/unstable/socket/Socket";
+import * as Socket from "effect/socket/Socket";
 
 export const messages = (
   url: string,
@@ -40,7 +40,7 @@ export const messages = (
 
 `Stream.never` leaves the outgoing side idle while the server sends updates. `toChannelString` accepts text frames and decodes binary frames as UTF-8, matching this protocol's encoding. The browser constructor is a service supplied in the next step, so application code does not manage `message`, `error`, or `close` listeners.
 
-The connection opens when this stream runs. Interrupting that run releases the socket. The APIs here come from the installed Effect 4 `effect/unstable/socket` module; see Effect's [Socket implementation](https://github.com/Effect-TS/effect-smol/blob/main/packages/effect/src/unstable/socket/Socket.ts) for the channel and platform contracts.
+The connection opens when this stream runs. Interrupting that run releases the socket. The APIs here come from the installed Effect 4 `effect/socket` module; see Effect's [Socket implementation](https://github.com/Effect-TS/effect/blob/main/packages/effect/src/socket/Socket.ts) for the channel and platform contracts.
 
 ## Decode before rendering
 
@@ -48,7 +48,7 @@ Import the connection into `DeploymentStatus.ts`. Parsing JSON and checking its 
 
 ```ts file="DeploymentStatus.ts"
 import { Schema, Stream } from "effect";
-import * as Socket from "effect/unstable/socket/Socket";
+import * as Socket from "effect/socket/Socket";
 import * as Fx from "@typed/fx/Fx";
 import { html } from "@typed/template";
 import { messages } from "./socket.js";
@@ -93,7 +93,7 @@ The outgoing stream can send a subscription request before waiting for more comm
 
 ```ts file="subscription.ts"
 import { Stream } from "effect";
-import * as Socket from "effect/unstable/socket/Socket";
+import * as Socket from "effect/socket/Socket";
 import { messages } from "./socket.js";
 
 const subscribe = Stream.succeed(

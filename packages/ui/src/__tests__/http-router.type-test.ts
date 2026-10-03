@@ -1,6 +1,6 @@
 import type * as Effect from "effect/Effect";
-import type * as HttpRouter from "effect/unstable/http/HttpRouter";
-import type * as HttpServerError from "effect/unstable/http/HttpServerError";
+import type * as HttpRouter from "effect/http/HttpRouter";
+import type * as HttpServerError from "effect/http/HttpServerError";
 import * as Matcher from "@typed/router/Matcher";
 import * as Route from "@typed/router/Route";
 import { html, type RenderTemplate } from "@typed/template";

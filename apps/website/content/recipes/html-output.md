@@ -81,7 +81,7 @@ At the HTTP edge, project the events back to bytes and let Effect own the respon
 import { Stream } from "effect";
 import { Fx } from "@typed/fx";
 import { HtmlRenderEvent } from "@typed/template/RenderEvent";
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
+import * as HttpServerResponse from "effect/http/HttpServerResponse";
 
 const rendered = Fx.fromIterable([
   HtmlRenderEvent("<main>", false),
@@ -119,4 +119,4 @@ A browser hydration test answers a different question: whether the resulting HTM
 
 - [`HtmlRenderEvent`](/reference/%40typed%2Ftemplate%2FRenderEvent%23HtmlRenderEvent)
 - [`streamingSsrForHttp`](/reference/%40typed%2Fui%2FHttpRouter%23streamingSsrForHttp)
-- [Effect `HttpServerResponse`](https://effect.website/docs/v4/api/effect/unstable/http/HttpServerResponse)
+- [Effect `HttpServerResponse`](https://effect.website/docs/v4/api/effect/http/HttpServerResponse)

@@ -867,7 +867,7 @@ function renderValue<E, R, X>(
 function liftNodeEffectResult<E, R>(value: Renderable<unknown, E, R>): Fx.Fx<unknown, E, R> {
   if (Fx.isFx(value)) return value;
   if (Effect.isEffect(value)) {
-    return Fx.unwrap(Effect.map(value, liftNodeEffectResult<E, R>));
+    return Fx.unwrap(Effect.map(value as Effect.Effect<unknown, E, R>, liftNodeEffectResult<E, R>));
   }
   if (Array.isArray(value)) return Fx.tuple(...value.map(liftNodeEffectResult<E, R>));
   if (isOption(value)) return isNone(value) ? Fx.null : liftNodeEffectResult<E, R>(value.value);
@@ -1309,7 +1309,9 @@ export function liftRenderableToFx<E = never, R = never>(
       } else if (isStream(renderable)) {
         return Fx.fromStream(renderable as Stream<unknown, E, R>);
       } else if (Effect.isEffect(renderable)) {
-        return Fx.unwrap(Effect.map(renderable, liftRenderableToFx<E, R>));
+        return Fx.unwrap(
+          Effect.map(renderable as Effect.Effect<unknown, E, R>, liftRenderableToFx<E, R>),
+        );
       } else if (isRenderEvent(renderable)) {
         return Fx.succeed(renderable);
       } else {

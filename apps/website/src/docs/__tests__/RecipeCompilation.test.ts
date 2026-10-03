@@ -48,7 +48,7 @@ describe("integration recipes", () => {
     expect(htmlRecipe.body).toContain("Fx.sync(() => HtmlRenderEvent(htmlString, true))");
     expect(htmlRecipe.body).toContain("HtmlRenderEvent");
     expect(htmlRecipe.body).toContain("last");
-    expect(htmlRecipe.body).toContain("effect/unstable/http/HttpServerResponse");
+    expect(htmlRecipe.body).toContain("effect/http/HttpServerResponse");
     expect(htmlRecipe.body).not.toContain("interface ServerResponse");
     expect(htmlRecipe.body).not.toContain(["Fx.map((html,", " index)"].join(""));
   });

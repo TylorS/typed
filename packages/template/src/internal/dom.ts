@@ -394,6 +394,9 @@ export function getEventHandlerValue<E, R>(
   value: unknown,
 ): EventHandler<Event, E, R> | null | undefined {
   if (isNullish(value)) return null;
-  if (isEventHandler(value) || Effect.isEffect(value)) return fromEffectOrEventHandler(value);
+  if (isEventHandler<Event, E, R>(value)) return value;
+  if (Effect.isEffect(value)) {
+    return fromEffectOrEventHandler<Event, E, R>(value as Effect.Effect<unknown, E, R>);
+  }
   return null;
 }

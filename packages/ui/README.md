@@ -130,7 +130,7 @@ function handleHttpServerError(
 ): Effect.Effect<
   void,
   never,
-  import("effect/unstable/http/HttpRouter").Request<"GlobalError", unknown>
+  import("effect/http/HttpRouter").Request<"GlobalError", unknown>
 >;
 ```
 

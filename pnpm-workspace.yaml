@@ -8,9 +8,9 @@ allowBuilds:
   msgpackr-extract: false
 
 catalog:
-  effect: 4.0.0-rc.115
-  "@effect/platform-browser": 4.0.0-rc.115
-  "@effect/platform-node": 4.0.0-rc.115
+  effect: 4.0.0
+  "@effect/platform-browser": 4.0.0
+  "@effect/platform-node": 4.0.0
   "@effect/tsgo": 0.45.0
   # @effect/tsgo 0.45.0 supports Oxlint through 1.82.0.
   oxlint: 1.82.0

@@ -26,7 +26,7 @@ response is not intended to hydrate.
 import * as Router from "@typed/router"
 import { NodeHttpServer } from "@effect/platform-node"
 import { Effect, Layer } from "effect"
-import { HttpClient, HttpRouter } from "effect/unstable/http"
+import { HttpClient, HttpRouter } from "effect/http"
 import { Fx } from "@typed/fx"
 import { html, StaticHtmlRenderTemplate } from "@typed/template"
 import { handleHttpServerError, ssrForHttp } from "@typed/ui/HttpRouter"
@@ -77,7 +77,7 @@ static server; replace the page table with the application's renderable Matcher.
 import * as Router from "@typed/router"
 import { NodeHttpServer, NodeRuntime } from "@effect/platform-node"
 import { Layer } from "effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpRouter from "effect/http/HttpRouter"
 import * as Http from "node:http"
 import { html, StaticHtmlRenderTemplate } from "@typed/template"
 import { handleHttpServerError, ssrForHttp } from "@typed/ui/HttpRouter"
@@ -129,7 +129,7 @@ sent. The choice changes recovery and cancellation behavior, not route syntax.
 ```ts
 import * as Router from "@typed/router"
 import { Layer } from "effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpRouter from "effect/http/HttpRouter"
 import { html, StaticHtmlRenderTemplate } from "@typed/template"
 import { streamingSsrForHttp } from "@typed/ui/HttpRouter"
 

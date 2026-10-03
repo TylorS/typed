@@ -15,7 +15,7 @@ Astro owns the page and its Markdown. Typed owns the order island, its reactive 
 Install the published beta package with the matching Typed beta dependencies:
 
 ```sh
-pnpm add @typed/astro@beta @typed/fx@beta @typed/template@beta @typed/ui@beta astro@^7.3.1 effect@4.0.0-rc.115
+pnpm add @typed/astro@beta @typed/fx@beta @typed/template@beta @typed/ui@beta astro@^7.3.1 effect@4.0.0
 ```
 
 The `beta` dist-tag keeps the integration and its Typed dependencies on the same release family. Astro 7 and Effect v4 are supported by the current integration.

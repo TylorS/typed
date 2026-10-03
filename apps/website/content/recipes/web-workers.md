@@ -6,7 +6,7 @@ summary: Use Effect RPC and its browser worker platform for typed requests, coop
 
 Move CPU-heavy computation into a Worker while Typed keeps the page responsive. Effect's worker-backed RPC supplies the request IDs, schema validation, replies, and cancellation protocol. Your application supplies the computation and the template.
 
-Install `@effect/platform-browser` at the version matching your `effect` release. This recipe uses Effect 4's `effect/unstable/rpc` APIs and three files in the same directory.
+Install `@effect/platform-browser` at the version matching your `effect` release. This recipe uses Effect 4's `effect/rpc` APIs and three files in the same directory.
 
 ## Describe the request in `summary.ts`
 
@@ -14,7 +14,7 @@ The page and the worker share a schema, not DOM nodes or mutable UI state. RPC v
 
 ```ts file="summary.ts"
 import { Schema } from "effect";
-import { Rpc, RpcGroup } from "effect/unstable/rpc";
+import { Rpc, RpcGroup } from "effect/rpc";
 
 export const SummaryRpc = RpcGroup.make(
   Rpc.make("Summarize", {
@@ -33,7 +33,7 @@ The browser runner provides the worker transport. The RPC server decodes a reque
 ```ts file="summary.worker.ts"
 import * as BrowserWorkerRunner from "@effect/platform-browser/BrowserWorkerRunner";
 import { Effect, Layer } from "effect";
-import { RpcServer } from "effect/unstable/rpc";
+import { RpcServer } from "effect/rpc";
 import { SummaryRpc } from "./summary.js";
 
 const Handlers = SummaryRpc.toLayer({
@@ -74,7 +74,7 @@ import * as BrowserWorker from "@effect/platform-browser/BrowserWorker";
 import * as Fx from "@typed/fx/Fx";
 import { html, component } from "@typed/template";
 import { Layer } from "effect";
-import { RpcClient } from "effect/unstable/rpc";
+import { RpcClient } from "effect/rpc";
 import { SummaryRpc } from "./summary.js";
 
 const WorkerProtocol = RpcClient.layerProtocolWorker({ size: 1 }).pipe(
@@ -108,4 +108,4 @@ When the owning subscription ends, the protocol closes its pool and sends the wo
 
 Check a known result, a rejected payload, and worker startup failure. Replace a large computation before it finishes and verify only the latest selection renders. Remove the view and verify the worker exits. Measure responsiveness and total latency with realistic input sizes: worker startup and structured cloning have costs, and ordinary asynchronous I/O does not need a worker.
 
-Continue with [switching work](/explore/fx-higher-order-and-concurrency), [component lifetime](/explore/ui-component), and Effect's [browser worker platform](https://github.com/Effect-TS/effect-smol/blob/main/packages/platform-browser/src/BrowserWorker.ts). The worker entry uses [Vite's worker bundling syntax](https://vite.dev/guide/features#web-workers); the Typed view itself is independent of a site framework.
+Continue with [switching work](/explore/fx-higher-order-and-concurrency), [component lifetime](/explore/ui-component), and Effect's [browser worker platform](https://github.com/Effect-TS/effect/blob/main/packages/platform-browser/src/BrowserWorker.ts). The worker entry uses [Vite's worker bundling syntax](https://vite.dev/guide/features#web-workers); the Typed view itself is independent of a site framework.

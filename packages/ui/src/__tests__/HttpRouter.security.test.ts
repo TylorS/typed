@@ -6,7 +6,7 @@ import { IdsTest } from "@typed/id/IdsTest";
 import * as Matcher from "@typed/router/Matcher";
 import * as Route from "@typed/router/Route";
 import { HtmlRenderTemplate, html, StaticHtmlRenderTemplate } from "@typed/template";
-import { HttpClient, HttpRouter as EffectHttpRouter } from "effect/unstable/http";
+import { HttpClient, HttpRouter as EffectHttpRouter } from "effect/http";
 import { ssrForHttp } from "../HttpRouter.js";
 
 const payload = '<img id="ordinary-xss" src="x" onerror="globalThis.__typedTs01Executed = true">';

@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.115 svelte@^5.57.0
+pnpm add @typed/svelte@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0 svelte@^5.57.0
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.

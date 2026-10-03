@@ -15,7 +15,7 @@ See [streaming SSR across framework boundaries](/explore/streaming-framework-int
 Install the integration with matching Typed beta packages:
 
 ```sh
-pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0-rc.115 vue@^3.5.42
+pnpm add @typed/vue@beta @typed/template@beta @typed/fx@beta @typed/id@beta @typed/async-data@beta @typed/router@beta @typed/navigation@beta @typed/ui@beta effect@4.0.0 vue@^3.5.42
 ```
 
 Keep Typed packages on the same beta release family and use the supported Effect v4 release shown above.

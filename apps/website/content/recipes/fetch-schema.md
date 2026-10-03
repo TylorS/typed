@@ -12,8 +12,8 @@ In `Profile.ts`, request the profile through the `HttpClient` service. Reject no
 
 ```ts file="Profile.ts"
 import { Effect, Schema } from "effect";
-import * as HttpClient from "effect/unstable/http/HttpClient";
-import * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
+import * as HttpClient from "effect/http/HttpClient";
+import * as HttpClientResponse from "effect/http/HttpClientResponse";
 
 const Profile = Schema.Struct({
   id: Schema.String,
@@ -61,7 +61,7 @@ In `Browser.ts`, supply the Fetch-backed implementation. Render `profile` with t
 
 ```ts file="Browser.ts"
 import { Fx } from "@typed/fx";
-import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient";
+import * as FetchHttpClient from "effect/http/FetchHttpClient";
 import { ProfileCard } from "./ProfileCard.js";
 
 export const profile = ProfileCard("ada").pipe(
@@ -69,7 +69,7 @@ export const profile = ProfileCard("ada").pipe(
 );
 ```
 
-The same request can receive a test client or a server client's configuration through its service requirement. For multiple screens, provide the client once around the application instead of choosing a new transport in each component. The [Effect HTTP client reference](https://effect.website/docs/v4/api/effect/unstable/http/HttpClient) describes the shared request and response operations.
+The same request can receive a test client or a server client's configuration through its service requirement. For multiple screens, provide the client once around the application instead of choosing a new transport in each component. The [Effect HTTP client reference](https://effect.website/docs/v4/api/effect/http/HttpClient) describes the shared request and response operations.
 
 ## Choose who may share the result
 

@@ -169,7 +169,7 @@ explicit key, freshness, sharing, and eviction policy. Keep those decisions with
 
 ```ts file="Api.ts"
 import { Context, Data, Effect, Layer, Schema } from "effect"
-import { FetchHttpClient, HttpClient, HttpClientError, HttpClientResponse } from "effect/unstable/http"
+import { FetchHttpClient, HttpClient, HttpClientError, HttpClientResponse } from "effect/http"
 
 export const Issue = Schema.Struct({ id: Schema.String, title: Schema.String })
 export type Issue = typeof Issue.Type

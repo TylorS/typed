@@ -46,7 +46,7 @@
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@astrojs/markdown-remark": "7.3.1",
-    "@effect/vitest": "4.0.0-rc.115",
+    "@effect/vitest": "4.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@typed/tsconfig": "workspace:*",
     "@types/node": "^26.6.1",

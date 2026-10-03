@@ -12,10 +12,10 @@ import {
   type Request as HttpRouterRequest,
   type Route,
   RouteContext,
-} from "effect/unstable/http/HttpRouter";
-import * as HttpServerError from "effect/unstable/http/HttpServerError";
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
+} from "effect/http/HttpRouter";
+import * as HttpServerError from "effect/http/HttpServerError";
+import * as HttpServerRequest from "effect/http/HttpServerRequest";
+import * as HttpServerResponse from "effect/http/HttpServerResponse";
 import {
   type CurrentRouteTree,
   type CompiledEntry,
@@ -149,7 +149,7 @@ function getMatcherPath(path: string): `/${string}` {
  * ```ts
  * import { ssrForHttp } from "@typed/ui/HttpRouter"
  * import { Effect } from "effect"
- * import * as HttpRouter from "effect/unstable/http/HttpRouter"
+ * import * as HttpRouter from "effect/http/HttpRouter"
  * import { Parse, match } from "@typed/router"
  * import { html } from "@typed/template"
  *
@@ -192,7 +192,7 @@ export const ssrForHttp: {
  * ```ts
  * import { streamingSsrForHttp } from "@typed/ui/HttpRouter"
  * import { Effect } from "effect"
- * import * as HttpRouter from "effect/unstable/http/HttpRouter"
+ * import * as HttpRouter from "effect/http/HttpRouter"
  * import { Parse, match } from "@typed/router"
  * import { html } from "@typed/template"
  *
@@ -232,7 +232,7 @@ export const streamingSsrForHttp: {
  * ```ts
  * import { handleHttpServerError } from "@typed/ui/HttpRouter"
  * import { Effect } from "effect"
- * import * as HttpRouter from "effect/unstable/http/HttpRouter"
+ * import * as HttpRouter from "effect/http/HttpRouter"
  *
  * const router = Effect.gen(function* () {
  *   const router = yield* HttpRouter.make
