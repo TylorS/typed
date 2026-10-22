@@ -15,13 +15,20 @@ import {
   type RenderTemplate,
 } from "@typed/template";
 import { handleHttpServerError, ssrForHttp, streamingSsrForHttp } from "../HttpRouter.js";
-import { HttpClient, HttpRouter as EffectHttpRouter } from "effect/http";
+import { HttpClient, HttpMiddleware, HttpRouter as EffectHttpRouter } from "effect/http";
+import { IpNetwork } from "effect/net";
 import * as HttpServerError from "effect/http/HttpServerError";
 import * as HttpServerRequest from "effect/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/http/HttpServerResponse";
 import type { Matcher as RouterMatcher } from "@typed/router";
 
 const testServer = Layer.mergeAll(IdsTest(), NodeHttpServer.layerTest);
+
+type TestHttpApp = Effect.Effect<
+  HttpServerResponse.HttpServerResponse,
+  HttpServerError.HttpServerError,
+  Scope | HttpServerRequest.HttpServerRequest
+>;
 
 function bufferedSsrLive(
   matcher: RouterMatcher<RenderEvent, never, RenderTemplate | Scope>,
@@ -37,10 +44,11 @@ function bufferedSsrLive(
 
 function bufferedSsrLiveWithNavigation(
   matcher: RouterMatcher<RenderEvent, never, RenderTemplate | Scope | NavigationService>,
+  middleware?: (app: TestHttpApp) => TestHttpApp,
 ) {
   return EffectHttpRouter.use(ssrForHttp(matcher)).pipe(
     Layer.provide(StaticHtmlRenderTemplate),
-    EffectHttpRouter.serve,
+    (app) => EffectHttpRouter.serve(app, { middleware }),
     Layer.provideMerge(testServer),
   );
 }
@@ -427,35 +435,47 @@ describe("typed/ui/HttpRouter", () => {
     }).pipe(Effect.provide(Live), Effect.scoped, Effect.runPromise);
   });
 
-  it("derives Navigation origin and current URL from the current HTTP request", () => {
-    const matcher = Matcher.empty.match(
-      Route.Parse("test"),
-      Fx.gen(function* () {
-        const origin = yield* Navigation.origin;
-        const base = yield* Navigation.base;
-        const currentEntry = yield* Navigation.currentEntry;
-        return html`<div
-          data-origin="${origin}"
-          data-base="${base}"
-          data-url="${currentEntry.url.href}"
-        ></div>`;
+  for (const [name, middleware, expectedOrigin] of [
+    ["untrusted forwarding headers", undefined, /^http:\/\/127\.0\.0\.1:\d+$/],
+    [
+      "trusted forwarding headers",
+      HttpMiddleware.xForwardedHeaders({
+        trustedProxies: [IpNetwork.fromStringUnsafe("127.0.0.1/32")],
       }),
-    );
-    const Live = bufferedSsrLiveWithNavigation(matcher);
-    return Effect.gen(function* () {
-      const response = yield* HttpClient.get("/test", {
-        headers: {
-          "x-forwarded-proto": "https",
-        },
-      }).pipe(Effect.flatMap((r) => r.text));
-      const origin = response.match(/data-origin="([^"]+)"/)?.[1];
-      const url = response.match(/data-url="([^"]+)"/)?.[1];
+      /^https:\/\/127\.0\.0\.1:\d+$/,
+    ],
+  ] as const) {
+    it(`derives Navigation origin and current URL with ${name}`, () => {
+      const matcher = Matcher.empty.match(
+        Route.Parse("test"),
+        Fx.gen(function* () {
+          const origin = yield* Navigation.origin;
+          const base = yield* Navigation.base;
+          const currentEntry = yield* Navigation.currentEntry;
+          return html`<div
+            data-origin="${origin}"
+            data-base="${base}"
+            data-url="${currentEntry.url.href}"
+          ></div>`;
+        }),
+      );
+      const Live = bufferedSsrLiveWithNavigation(matcher, middleware);
+      return Effect.gen(function* () {
+        const response = yield* HttpClient.get("/test", {
+          headers: {
+            "x-forwarded-for": "198.51.100.10",
+            "x-forwarded-proto": "https",
+          },
+        }).pipe(Effect.flatMap((r) => r.text));
+        const origin = response.match(/data-origin="([^"]+)"/)?.[1];
+        const url = response.match(/data-url="([^"]+)"/)?.[1];
 
-      assert.match(origin ?? "", /^https:\/\/127\.0\.0\.1:\d+$/);
-      assert.ok(response.includes('data-base="/"'), response);
-      assert.strictEqual(url, `${origin}/test`);
-    }).pipe(Effect.provide(Live), Effect.scoped, Effect.runPromise);
-  });
+        assert.match(origin ?? "", expectedOrigin);
+        assert.ok(response.includes('data-base="/"'), response);
+        assert.strictEqual(url, `${origin}/test`);
+      }).pipe(Effect.provide(Live), Effect.scoped, Effect.runPromise);
+    });
+  }
 
   it("provides CurrentRoute with correct route path", () => {
     const matcher = Matcher.empty.match(

@@ -83,7 +83,7 @@
   },
   "devDependencies": {
     "effect": "catalog:",
-    "fast-check": "4.10.1",
+    "fast-check": "4.10.2",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

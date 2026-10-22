@@ -26,6 +26,7 @@ describe("Storybook color theme", () => {
   it("follows the containing website without replacing the active story", async () => {
     document.documentElement.dataset.theme = "matrix";
     const iframe = document.createElement("iframe");
+    iframe.srcdoc = "";
     document.body.append(iframe);
     const view = iframe.contentWindow!;
     const button = view.document.createElement("button");
@@ -44,8 +45,10 @@ describe("Storybook color theme", () => {
     document.documentElement.dataset.theme = "matrix";
     localStorage.setItem("typed-theme", "matrix-light");
     const manager = document.createElement("iframe");
+    manager.srcdoc = "";
     document.body.append(manager);
     const preview = manager.contentDocument!.createElement("iframe");
+    preview.srcdoc = "";
     manager.contentDocument!.body.append(preview);
     const changed = vi.fn();
     cleanup.push(observeTheme(changed, preview.contentWindow!));
@@ -72,6 +75,7 @@ describe("Storybook color theme", () => {
   it("pauses native observation while cached and refreshes on restoration", async () => {
     document.documentElement.dataset.theme = "matrix";
     const iframe = document.createElement("iframe");
+    iframe.srcdoc = "";
     document.body.append(iframe);
     const view = iframe.contentWindow!;
     const added = vi.spyOn(view, "addEventListener");
@@ -106,6 +110,7 @@ describe("Storybook color theme", () => {
   it("releases subscriptions when the Storybook module is replaced", async () => {
     document.documentElement.dataset.theme = "matrix";
     const iframe = document.createElement("iframe");
+    iframe.srcdoc = "";
     document.body.append(iframe);
     const changed = vi.fn();
     const dispose = observeTheme(changed, iframe.contentWindow!);

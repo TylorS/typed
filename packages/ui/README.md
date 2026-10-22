@@ -72,7 +72,7 @@ In addition, `LinkOptions` accepts standard anchor event handlers (e.g. `onclick
 
 Registers route handlers on an Effect **HttpRouter** for server-side rendering. The matcher's routes are compiled and each case is exposed as a GET route; requests are parsed, matched, and the corresponding Fx is rendered to HTML. Rendering is buffered: the complete HTML string is produced before the response begins. Requires **Router** and **Scope** to be provided elsewhere; other matcher services remain in the effect requirement. Matcher and render failures remain in Effect HTTP's request error channel so middleware can handle them.
 
-Path captures are authoritative. If a request supplies the same name in the query string, the matched path value is passed to route decoding. The adapter initializes navigation state from Effect's request URL conversion, including the request host and `x-forwarded-proto`; deployments must only accept forwarding headers behind a trusted proxy.
+Path captures are authoritative. If a request supplies the same name in the query string, the matched path value is passed to route decoding. The adapter initializes navigation state from Effect's request URL conversion, using the transport scheme and request host. Behind a trusted proxy, configure `HttpMiddleware.xForwardedHeaders({ trustedProxies: [...] })` on the server to validate forwarding headers before request handling.
 
 **Overloads:**
 

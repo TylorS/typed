@@ -8,31 +8,35 @@ allowBuilds:
   msgpackr-extract: false
 
 catalog:
-  effect: 4.0.0
-  "@effect/platform-browser": 4.0.0
-  "@effect/platform-node": 4.0.0
-  "@effect/tsgo": 0.45.0
-  # @effect/tsgo 0.45.0 supports Oxlint through 1.82.0.
-  oxlint: 1.82.0
-  oxfmt: 0.68.0
-  oxlint-tsgolint: 7.0.2001
+  effect: 4.0.6
+  "@effect/platform-browser": 4.0.6
+  "@effect/platform-node": 4.0.6
+  "@effect/tsgo": 0.56.0
+  oxlint: 1.89.0
+  oxfmt: 0.74.0
+  oxlint-tsgolint: 7.0.2004
   typescript: 7.0.2
-  vite: 8.3.0
-  vitest: 5.0.1
-  "@vitest/browser-playwright": 5.0.1
-  happy-dom: 20.14.5
-  svelte: 5.57.0
-  react: 19.3.0
-  react-dom: 19.3.0
+  vite: 8.3.5
+  vitest: 5.0.5
+  "@vitest/browser-playwright": 5.0.5
+  happy-dom: 21.0.4
+  svelte: 5.57.2
+  react: 19.3.1
+  react-dom: 19.3.1
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
-  vue: 3.5.42
-  "@sveltejs/vite-plugin-svelte": 7.3.0
-  "@vitest/coverage-v8": 5.0.1
-  "@modelcontextprotocol/sdk": 1.30.0
-  tsx: 4.23.13
+  vue: 3.5.44
+  "@sveltejs/vite-plugin-svelte": 7.3.1
+  "@vitest/coverage-v8": 5.0.5
+  "@modelcontextprotocol/sdk": 1.32.1
+  tsx: 4.23.15
 
 minimumReleaseAgeExclude:
+  - "effect@4.0.6"
+  - "@effect/platform-browser@4.0.6"
+  - "@effect/platform-node@4.0.6"
+  - "@effect/platform-node-shared@4.0.6"
+  - "@effect/vitest@4.0.6"
   - "@effect/tsgo-darwin-arm64@0.40.0"
   - "@effect/tsgo-darwin-x64@0.40.0"
   - "@effect/tsgo-linux-arm64@0.40.0"
