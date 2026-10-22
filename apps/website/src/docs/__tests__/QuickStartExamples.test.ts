@@ -8,10 +8,15 @@ import { createServer } from "vite";
 import { describe, expect, it } from "vitest";
 import { expandCurriculumSources } from "../../tutorial/Files.js";
 import Demo from "../../site/components/CurriculumDemo.js";
+import { curriculumDemo } from "../../tutorial/Demos.js";
 
 const exampleRoot = fileURLToPath(new URL("../../tutorial/examples/", import.meta.url));
 
 describe("Quick Start examples", () => {
+  it.each(["missing", "toString", "__proto__"])("rejects unknown demo %s", async (id) => {
+    await expect(curriculumDemo(id)).rejects.toThrow(`Unknown curriculum demo: ${id}`);
+  });
+
   it.each(["counter-reactive", "counter-component", "counter-hydrated"])(
     "embeds %s under the page landmark and heading",
     async (id) => {

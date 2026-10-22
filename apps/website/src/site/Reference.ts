@@ -73,12 +73,18 @@ export const descriptions: Readonly<Record<string, string>> = {
     "Decode and refine values through composable guards with typed success and failure.",
   "@typed/id": "Create and validate identifiers with explicit formats and type-safe identity.",
   "@typed/navigation": "Model browser navigation and URL changes as Effect services.",
+  "@typed/react":
+    "Render React components and Typed templates together, with server rendering, hydration, and scoped cleanup.",
   "@typed/router": "Define typed routes, decode URL inputs, and select matching application views.",
+  "@typed/svelte":
+    "Render Svelte components and Typed templates together, with server rendering, hydration, and scoped cleanup.",
   "@typed/template":
     "Describe renderer-independent templates and interpret them as cooperative DOM or ordered HTML.",
   "@typed/tsconfig":
     "Share TypeScript configuration for libraries, browser applications, and build tooling.",
   "@typed/ui":
     "Build accessible browser interactions and reusable UI from Typed state and templates.",
+  "@typed/vue":
+    "Render Vue components and Typed templates together, with server rendering, hydration, and scoped cleanup.",
 };
 export { siteHref };

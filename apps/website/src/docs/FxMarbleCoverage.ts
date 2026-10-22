@@ -1,4 +1,4 @@
-import { renderFxMarble } from "./FxMarble.js";
+import { parseFxMarble } from "./MarbleDiagram.js";
 
 export interface FxMarbleAppearance {
   readonly guideSlug: string;
@@ -13,21 +13,13 @@ export interface FxMarbleCoverageReport {
 }
 
 const fxMarbleFence = /^```fx-marble\s*\n([\s\S]*?)^```\s*$/gmu;
-const coversLine = /^covers:\s*(.+)$/mu;
 
 export const extractFxMarbleOperators = (
   markdown: string,
 ): ReadonlyArray<string> =>
-  [...markdown.matchAll(fxMarbleFence)].flatMap(([, source]) => {
-    if (renderFxMarble(source!) === undefined) return [];
-    const covers = coversLine.exec(source!)?.[1];
-    return covers === undefined
-      ? []
-      : covers
-          .split(",")
-          .map((name) => name.trim())
-          .filter(Boolean);
-  });
+  [...markdown.matchAll(fxMarbleFence)].flatMap(
+    ([, source]) => parseFxMarble(source!)?.covers ?? [],
+  );
 
 export const validateFxMarbleCoverage = (
   publicOperators: ReadonlyArray<string>,

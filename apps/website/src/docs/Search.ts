@@ -326,8 +326,7 @@ const candidatesFor = (
 ): ReadonlyArray<SearchEntry> => {
   const candidates = new Set<number>();
   for (const token of tokens) {
-    for (const index of artifact.prefixes[token.slice(0, 8)] ?? artifact.prefixes[token] ?? [])
-      candidates.add(index);
+    for (const index of artifact.prefixes[token.slice(0, 8)] ?? []) candidates.add(index);
     for (const gram of grams(token)) {
       for (const index of artifact.trigrams[gram] ?? []) candidates.add(index);
     }
@@ -355,6 +354,7 @@ export const searchDocumentation = (
       entry,
     ]),
   );
+  const destinationsByTopic = Map.groupBy(entriesById.values(), ({ topicId }) => topicId);
   const ranked = entries
     .flatMap((entry): ReadonlyArray<SearchResult> => {
       // A namespace re-export such as RefSubject.map must not make `map` an
@@ -425,7 +425,7 @@ export const searchDocumentation = (
     .map(([key, matches]) => {
       const best = matches[0]!;
       if (best.topicId === undefined) return best;
-      const destinations = [...entriesById.values()].filter((entry) => entry.topicId === key);
+      const destinations = destinationsByTopic.get(key) ?? [];
       const exact = matches.find((entry) => entry.id === query.trim());
       const preferred = exact ?? destinations.find((entry) => entry.kind === "module") ?? best;
       const seen = new Set([preferred.canonicalId ?? preferred.id]);

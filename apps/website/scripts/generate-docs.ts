@@ -95,18 +95,13 @@ const generatedModule = (imports: string, values: Readonly<Record<string, unknow
     )
     .join("\n\n")}\n`;
 
-const packageMarkdown = (inventory: ReferenceInventory, packageName: string): string => {
-  const pkg = inventory.packages.find((candidate) => candidate.packageName === packageName)!;
-  return `# ${packageName}\n\nVersion ${pkg.packageVersion}. ${pkg.uniqueExportCount} unique exports across ${pkg.moduleSpecifiers.length} modules.\n\n${pkg.moduleSpecifiers
+const packageMarkdown = (pkg: ReferenceInventory["packages"][number]): string =>
+  `# ${pkg.packageName}\n\nVersion ${pkg.packageVersion}. ${pkg.uniqueExportCount} unique exports across ${pkg.moduleSpecifiers.length} modules.\n\n${pkg.moduleSpecifiers
     .map((specifier) => `- [${specifier}](/reference/modules/${encodeURI(specifier)})`)
     .join("\n")}\n`;
-};
 
-const moduleMarkdown = (inventory: ReferenceInventory, consumerSpecifier: string): string => {
-  const module = inventory.modules.find(
-    (candidate) => candidate.consumerSpecifier === consumerSpecifier,
-  )!;
-  return `# ${consumerSpecifier}\n\n${module.uniqueExportCount} unique exports.\n\n${module.categories
+const moduleMarkdown = (module: ReferenceInventory["modules"][number]): string =>
+  `# ${module.consumerSpecifier}\n\n${module.uniqueExportCount} unique exports.\n\n${module.categories
     .map(
       (category) =>
         `## ${category.name}\n\n${category.exposureIds
@@ -114,24 +109,22 @@ const moduleMarkdown = (inventory: ReferenceInventory, consumerSpecifier: string
           .join("\n")}`,
     )
     .join("\n\n")}\n`;
-};
 
 const fullReferenceMarkdown = (
   inventory: ReferenceInventory,
-  symbols: ReadonlyArray<SymbolDocumentation>,
+  symbolDocuments: ReadonlyArray<{ readonly id: string; readonly markdown: string }>,
 ): string =>
   artifactMarkdown(
     [
       "# Typed complete API reference",
       "Every public exposure is included with its own identity, signatures, documentation, and examples. Re-exported aliases remain included so each supported import path can be inspected independently.",
       "# Packages",
-      ...inventory.packages.map((pkg) => packageMarkdown(inventory, pkg.packageName)),
+      ...inventory.packages.map(packageMarkdown),
       "# Modules",
-      ...inventory.modules.map((module) => moduleMarkdown(inventory, module.consumerSpecifier)),
+      ...inventory.modules.map(moduleMarkdown),
       "# Public API",
-      ...symbols.map(
-        (symbol) =>
-          `[Public API: ${symbol.id}](${referencePath(symbol.id)})\n\n${renderSymbolMarkdown(symbol)}`,
+      ...symbolDocuments.map(
+        ({ id, markdown }) => `[Public API: ${id}](${referencePath(id)})\n\n${markdown}`,
       ),
     ].join("\n\n---\n\n"),
   );
@@ -410,7 +403,7 @@ const program = Effect.gen(function* () {
       const name = referenceSlug(`package:${pkg.packageName}`);
       nodeFs.writeFileSync(
         path.join(referenceStage, "packages", `${name}.md`),
-        artifactMarkdown(packageMarkdown(inventory, pkg.packageName)),
+        artifactMarkdown(packageMarkdown(pkg)),
       );
       nodeFs.writeFileSync(
         path.join(referenceStage, "packages", `${name}.json`),
@@ -421,7 +414,7 @@ const program = Effect.gen(function* () {
       const name = referenceSlug(`module:${module.consumerSpecifier}`);
       nodeFs.writeFileSync(
         path.join(referenceStage, "modules", `${name}.md`),
-        artifactMarkdown(moduleMarkdown(inventory, module.consumerSpecifier)),
+        artifactMarkdown(moduleMarkdown(module)),
       );
       nodeFs.writeFileSync(
         path.join(referenceStage, "modules", `${name}.json`),
@@ -432,8 +425,11 @@ const program = Effect.gen(function* () {
       inventory.declarations.map((declaration) => [declaration.declarationKey, declaration]),
     );
     const canonicalByDeclaration = canonicalExposureIds(inventory);
+    const symbolDocuments: Array<{ readonly id: string; readonly markdown: string }> = [];
     for (const [index, exposure] of inventory.exposures.entries()) {
       const symbol = symbols[index]!;
+      const markdown = renderSymbolMarkdown(symbol);
+      symbolDocuments.push({ id: symbol.id, markdown });
       const canonicalId =
         exposure.recordKind === "resource"
           ? exposure.id
@@ -451,7 +447,7 @@ const program = Effect.gen(function* () {
       const name = referenceSlug(exposure.id);
       nodeFs.writeFileSync(
         path.join(referenceStage, "exposures", `${name}.md`),
-        artifactMarkdown(renderSymbolMarkdown(symbol)),
+        artifactMarkdown(markdown),
       );
       nodeFs.writeFileSync(path.join(referenceStage, "exposures", `${name}.json`), json(payload));
     }
@@ -476,7 +472,7 @@ const program = Effect.gen(function* () {
       path.join(referenceStage, "llms.txt"),
       `# Typed API reference\n\n${inventory.packages.map((pkg) => `- [${pkg.packageName}](${artifactUrl(`/reference/packages/${encodeURI(pkg.packageName)}`)}): ${pkg.uniqueExportCount} unique exports`).join("\n")}\n`,
     );
-    const completeReference = fullReferenceMarkdown(inventory, symbols);
+    const completeReference = fullReferenceMarkdown(inventory, symbolDocuments);
     const completeReferenceFenceErrors = validateMarkdownFences(completeReference);
     if (completeReferenceFenceErrors.length > 0) {
       throw new Error(

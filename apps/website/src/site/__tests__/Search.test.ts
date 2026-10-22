@@ -29,7 +29,7 @@ async function mount() {
 
 const artifact: SearchArtifact = {
   schemaVersion: 1,
-  prefixes: { refsubject: [0] },
+  prefixes: { refsubje: [0] },
   trigrams: {},
   entries: [
     {
@@ -50,6 +50,47 @@ describe("Astro Typed search", () => {
     expect(dialog.open).toBe(false);
     expect(host.textContent).toContain("Search docs");
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["composing", "handled"] as const)(
+    "leaves a %s keyboard shortcut to its existing owner",
+    async (owner) => {
+      const { dialog } = await mount();
+      const shortcut = new KeyboardEvent("keydown", {
+        key: "k",
+        ctrlKey: true,
+        isComposing: owner === "composing",
+        bubbles: true,
+        cancelable: true,
+      });
+      if (owner === "handled") shortcut.preventDefault();
+      document.body.dispatchEvent(shortcut);
+      expect(dialog.open).toBe(false);
+      expect(shortcut.defaultPrevented).toBe(owner === "handled");
+    },
+  );
+
+  it("returns focus to the query when the shortcut is used inside an open search", async () => {
+    const { host, trigger, dialog, input } = await mount();
+    trigger.click();
+    await vi.waitFor(() => expect(dialog.open).toBe(true));
+    const link = host.querySelector<HTMLAnchorElement>(".search-start a")!;
+    link.focus();
+    link.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true, cancelable: true }),
+    );
+    expect(document.activeElement).toBe(input);
+    expect(dialog.open).toBe(true);
+  });
+
+  it.each([0, 1, 2])("closes search when starter destination %i opens", async (index) => {
+    const { host, trigger, dialog } = await mount();
+    trigger.click();
+    await vi.waitFor(() => expect(dialog.open).toBe(true));
+    const link = host.querySelectorAll<HTMLAnchorElement>(".search-start a")[index]!;
+    link.addEventListener("click", (event) => event.preventDefault());
+    link.click();
+    await vi.waitFor(() => expect(dialog.open).toBe(false));
   });
 
   it("cancels superseded requests and closes the active request with the island", async () => {

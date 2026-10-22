@@ -68,3 +68,48 @@ it("measures available reference space, handles replacement markup, and releases
   expect(replacement.style.maxHeight).toBe("123px");
   expect(replacement.scrollTop).toBe(0);
 });
+
+it("preserves browsing position when another navigation group or article disclosure opens", async () => {
+  const { sidebar } = fixture();
+  const otherGroup = document.createElement("details");
+  otherGroup.open = true;
+  otherGroup.innerHTML = "<summary>Other lessons</summary><a>Another lesson</a>";
+  sidebar.querySelector("nav")!.append(otherGroup);
+  const articleDisclosure = document.createElement("details");
+  articleDisclosure.open = true;
+  articleDisclosure.innerHTML = '<summary>Example</summary><a aria-current="page">Current tab</a>';
+  document.body.append(articleDisclosure);
+  const listen = vi.spyOn(document, "addEventListener");
+  const fiber = Effect.runFork(sidebarNavigation(document));
+  try {
+    await vi.waitFor(() =>
+      expect(listen.mock.calls.some(([name]) => name === "toggle")).toBe(true),
+    );
+    sidebar.scrollTop = 120;
+    otherGroup.dispatchEvent(new Event("toggle"));
+    articleDisclosure.dispatchEvent(new Event("toggle"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sidebar.scrollTop).toBe(120);
+  } finally {
+    await Effect.runPromise(Fiber.interrupt(fiber));
+  }
+});
+
+it("leaves hidden entries in collapsed groups alone", async () => {
+  const { sidebar, selected } = fixture();
+  document.querySelector("details")!.open = false;
+  vi.mocked(selected.getBoundingClientRect).mockReturnValue(new DOMRect());
+  sidebar.scrollTop = 120;
+  const listen = vi.spyOn(window, "addEventListener");
+  const fiber = Effect.runFork(sidebarNavigation(document));
+  try {
+    await vi.waitFor(() =>
+      expect(listen.mock.calls.some(([name]) => name === "resize")).toBe(true),
+    );
+    window.dispatchEvent(new Event("resize"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sidebar.scrollTop).toBe(120);
+  } finally {
+    await Effect.runPromise(Fiber.interrupt(fiber));
+  }
+});

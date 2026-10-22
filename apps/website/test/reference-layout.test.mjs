@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { preview } from "astro";
 import { chromium } from "playwright";
 
-test("reference names wrap and the selected module is visible without scrolling the page", async (t) => {
+test("reference navigation works at mobile and desktop widths without overflowing", async (t) => {
   const server = process.env.SITE_ORIGIN ? undefined : await preview({
     root: new URL("../", import.meta.url).pathname,
     server: { host: "127.0.0.1", port: 0 }, logLevel: "silent",
@@ -18,6 +18,7 @@ test("reference names wrap and the selected module is visible without scrolling 
   for (const width of [320, 360, 390, 1440]) {
     await page.setViewportSize({ width, height: 950 });
     for (const route of [
+      "/reference/packages/@typed/react/",
       "/reference/modules/@typed/template/Renderable/",
       "/reference/modules/@typed/ui/WindowSplitter/",
       "/reference/symbols/QHR5cGVkL3VpL2luZGV4I1dpbmRvd1NwbGl0dGVyLldpbmRvd1NwbGl0dGVyT3B0aW9ucw/",
@@ -39,6 +40,34 @@ test("reference names wrap and the selected module is visible without scrolling 
       assert.equal(state.main, "MAIN");
       assert.equal(state.pageY, 0, "revealing a module must not move the document");
       assert.ok(state.visible, `${route} selected module is outside the viewport`);
+      assert.ok((await page.locator(".reference-summary").innerText()).trim(), `${route} has no summary`);
+
+      const mobileNavigation = page.locator(".reference-layout > .mobile-nav");
+      if (width < 900) {
+        const toggle = mobileNavigation.locator("summary").first();
+        assert.ok(await toggle.isVisible(), `${route} has no mobile navigation`);
+        await toggle.focus();
+        await page.keyboard.press("Enter");
+        assert.ok(await mobileNavigation.evaluate((element) => element instanceof HTMLDetailsElement && element.open));
+        assert.equal(
+          await mobileNavigation.locator("a").count(),
+          await page.locator(".reference-layout > .docs-sidebar a").count(),
+          "mobile navigation must retain every desktop link",
+        );
+        const sectionLink = mobileNavigation.locator('a[href^="#"]').first();
+        const destination = await sectionLink.getAttribute("href");
+        assert.ok(destination);
+        await sectionLink.focus();
+        await page.keyboard.press("Enter");
+        assert.equal(new URL(page.url()).hash, destination);
+        assert.equal(await page.locator(destination).count(), 1, "section links need one target");
+        assert.ok(
+          await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+          `${route} expanded navigation overflows ${width}px`,
+        );
+      } else {
+        assert.equal(await mobileNavigation.isVisible(), false);
+      }
     }
   }
 });

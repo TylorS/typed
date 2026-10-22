@@ -21,10 +21,11 @@
   --muted: color-mix(in srgb, var(--color-base-content) 64%, var(--color-base-100));
   --line: color-mix(in srgb, var(--color-primary) 20%, var(--color-base-100));
   --reading-width: 72ch;
+  --header-height: 76px;
   font-family: var(--sans);
   background: var(--color-base-100);
   color: var(--color-base-content);
-  scroll-padding-top: 6rem;
+  scroll-padding-top: calc(var(--header-height) + 1rem);
 }
 * {
   box-sizing: border-box;
@@ -85,7 +86,7 @@ kbd {
   max-width: 1440px;
   margin: auto;
   padding: 0 2rem;
-  height: 76px;
+  height: var(--header-height);
   display: flex;
   align-items: center;
   gap: 2.5rem;
@@ -113,25 +114,45 @@ kbd {
   content: "Typed";
   border-right: 0.3em solid var(--color-primary);
   padding-right: 0.12em;
-  animation: logo-typing 7.5s step-end infinite, logo-caret 0.5s step-end infinite;
+  animation:
+    logo-typing 7.5s step-end infinite,
+    logo-caret 0.5s step-end infinite;
   animation-delay: 0.5s;
 }
 @keyframes logo-typing {
-  0%, 89%, 100% { content: ""; }
-  5%, 86% { content: "T"; }
-  10%, 83% { content: "Ty"; }
-  15%, 80% { content: "Typ"; }
-  20%, 78% { content: "Type"; }
-  25%, 75% { content: "Typed"; }
+  0%,
+  89%,
+  100% {
+    content: "";
+  }
+  5%,
+  86% {
+    content: "T";
+  }
+  10%,
+  83% {
+    content: "Ty";
+  }
+  15%,
+  80% {
+    content: "Typ";
+  }
+  20%,
+  78% {
+    content: "Type";
+  }
+  25%,
+  75% {
+    content: "Typed";
+  }
 }
 @keyframes logo-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--color-primary); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .typewriter::after {
-    content: "Typed";
-    animation: none;
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--color-primary);
   }
 }
 .site-nav {
@@ -140,6 +161,9 @@ kbd {
   font-size: 0.88rem;
 }
 .site-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
   color: var(--muted);
 }
 .site-nav a[aria-current],
@@ -214,7 +238,7 @@ kbd {
   margin: auto;
   padding: 6.5rem 2rem 5rem;
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   align-items: center;
   gap: 4rem;
 }
@@ -236,6 +260,7 @@ kbd {
 }
 .home-hero > * {
   position: relative;
+  min-width: 0;
 }
 .home-hero h1 {
   font-size: clamp(3.2rem, 5.7vw, 5.2rem);
@@ -331,7 +356,7 @@ kbd {
   gap: 0.8rem;
   cursor: pointer;
   font-size: 0.85rem;
-  min-height: 32px;
+  min-height: 2.75rem;
 }
 .release-tasks label:has(:checked) span {
   color: var(--muted);
@@ -362,7 +387,7 @@ kbd {
   margin: auto;
   padding: 2rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2rem;
   border-bottom: 1px solid var(--line);
 }
@@ -471,9 +496,12 @@ kbd {
 }
 .code-story {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 4rem;
   align-items: center;
+}
+.code-story > * {
+  min-width: 0;
 }
 .code-story h2 {
   font-size: 2.1rem;
@@ -514,8 +542,8 @@ kbd {
 .docs-sidebar,
 .toc {
   position: sticky;
-  top: 105px;
-  max-height: calc(100dvh - 130px);
+  top: calc(var(--header-height) + 1.75rem);
+  max-height: calc(100dvh - var(--header-height) - 3.25rem);
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -620,9 +648,6 @@ kbd {
 .prose h4 {
   font-weight: 600;
   margin-top: 1.75rem;
-}
-.prose :where(h2, h3, h4) {
-  scroll-margin-top: 6rem;
 }
 .prose p,
 .prose li {
@@ -910,8 +935,10 @@ html[data-theme="matrix"] .astro-code span {
   }
 }
 @media (max-width: 800px) {
+  :root {
+    --header-height: 65px;
+  }
   .header-inner {
-    height: 65px;
     padding-inline: 1rem;
     gap: 1rem;
   }
@@ -939,7 +966,7 @@ html[data-theme="matrix"] .astro-code span {
     gap: 3rem;
   }
   .home-hero h1 {
-    font-size: clamp(3.2rem, 9vw, 4.7rem);
+    font-size: clamp(2.7rem, 9vw, 4.7rem);
   }
   .hero-description {
     max-width: 55ch;
@@ -1018,7 +1045,10 @@ html[data-theme="matrix"] .astro-code span {
     margin-top: 2rem;
   }
 }
-@media (max-width: 420px) {
+@media (max-width: 600px) {
+  :root {
+    --header-height: 7rem;
+  }
   .header-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1052,6 +1082,10 @@ html[data-theme="matrix"] .astro-code span {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .typewriter::after {
+    content: "Typed";
+    animation: none;
+  }
   *,
   *::before,
   *::after {

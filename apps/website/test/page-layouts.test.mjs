@@ -61,6 +61,8 @@ test(
             const route = routes[cursor++];
             const response = await page.goto(`${origin}${base}${route}`, { waitUntil: "load" });
             if (response?.status() !== 200) failures.push(`${route}: HTTP ${response?.status()}`);
+            // Static redirect documents navigate again before the article is available.
+            await page.locator("#main-content").waitFor({ state: "attached" });
             const layout = await page.evaluate(() => {
               const main = document.querySelector("#main-content");
               const active = document.querySelector('.docs-sidebar [aria-current="page"]');

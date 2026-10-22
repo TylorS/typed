@@ -3,6 +3,7 @@ import server from "@typed/astro/server";
 import { Window } from "happy-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import Demo from "../../site/components/CurriculumDemo.js";
+import * as Demos from "../../tutorial/Demos.js";
 
 const cleanup: Array<() => void> = [];
 
@@ -29,6 +30,7 @@ describe("curriculum Astro islands", () => {
     for (const unmount of cleanup.splice(0)) unmount();
     await Promise.resolve();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("adopts the server Counter node, restores its value, and wires interaction", async () => {
@@ -60,37 +62,84 @@ describe("curriculum Astro islands", () => {
   };
 
   const add = async (host: Element, title: string, count: number) => {
-    input(host, ".new-todo", title)
-      .dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await vi.waitFor(() => expect(host.querySelector(".new-todo")).not.toBeNull());
+    input(host, ".new-todo", title).dispatchEvent(
+      new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    );
     await vi.waitFor(() => expect(host.querySelectorAll(".todo-list > li")).toHaveLength(count));
   };
 
-  it.each(["todo-5", "todo-10"])("runs %s through canonical create, cancel, save, toggle and delete", async (id) => {
-    const host = island("<p>Loading</p>");
-    await client(host)(Demo, { id }, {}, { client: "only" });
-    expect(host.innerHTML).not.toContain("data-typed-refsubject");
-    expect(host.querySelectorAll(".edit")).toHaveLength(0);
-    await add(host, "First", 1);
-    const first = host.querySelector(".todo-list > li")!;
-    await add(host, "Second", 2);
-    expect(host.querySelectorAll(".todo-list > li")[1]).toBe(first);
+  it("keeps a loading message visible until a client-only demo arrives", async () => {
+    const demo = await Demos.curriculumDemo("todo-5");
+    const pending = Promise.withResolvers<typeof demo>();
+    vi.spyOn(Demos, "curriculumDemo").mockReturnValueOnce(pending.promise);
+    const host = island("<p>Astro fallback</p>");
 
-    first.querySelector(".view label")!.dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
-    await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
-    const draft = input(first, ".edit", "Discard this");
-    draft.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    await vi.waitFor(() => expect(first.querySelector(".view label")?.textContent).toBe("First"));
-    first.querySelector(".view label")!.dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
-    await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
-    input(first, ".edit", "Renamed")
-      .dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    await vi.waitFor(() => expect(first.querySelector(".view label")?.textContent).toBe("Renamed"));
-    first.querySelector<HTMLInputElement>(".toggle")!.click();
-    await vi.waitFor(() => expect(first.classList.contains("completed")).toBe(true));
-    first.querySelector<HTMLButtonElement>(".destroy")!.click();
-    await vi.waitFor(() => expect(host.querySelectorAll(".todo-list > li")).toHaveLength(1));
-    expect(host.textContent).toContain("Second");
+    await client(host)(Demo, { id: "todo-5" }, {}, { client: "only" });
+    expect(host.querySelector('[role="status"]')?.textContent).toContain(
+      "Loading the interactive example",
+    );
+    expect(host.querySelector(".new-todo")).toBeNull();
+
+    pending.resolve(demo);
+    await add(host, "Loaded example", 1);
+    expect(host.querySelector('[role="status"]')).toBeNull();
+    expect(host.querySelector(".todo-list")?.textContent).toContain("Loaded example");
   });
+
+  it("replaces the loading message with a readable failure when a demo import rejects", async () => {
+    const pending = Promise.withResolvers<Awaited<ReturnType<typeof Demos.curriculumDemo>>>();
+    vi.spyOn(Demos, "curriculumDemo").mockReturnValueOnce(pending.promise);
+    const host = island("<p>Astro fallback</p>");
+
+    await client(host)(Demo, { id: "todo-5" }, {}, { client: "only" });
+    expect(host.querySelector('[role="status"]')).not.toBeNull();
+    pending.reject(new Error("Chunk download failed"));
+
+    await vi.waitFor(() => {
+      expect(host.querySelector('[role="alert"]')?.textContent).toContain(
+        "The interactive example could not load. Reload the page to try again.",
+      );
+    });
+    expect(host.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it.each(["todo-5", "todo-10"])(
+    "runs %s through canonical create, cancel, save, toggle and delete",
+    async (id) => {
+      const host = island("<p>Loading</p>");
+      await client(host)(Demo, { id }, {}, { client: "only" });
+      expect(host.innerHTML).not.toContain("data-typed-refsubject");
+      expect(host.querySelectorAll(".edit")).toHaveLength(0);
+      await add(host, "First", 1);
+      const first = host.querySelector(".todo-list > li")!;
+      await add(host, "Second", 2);
+      expect(host.querySelectorAll(".todo-list > li")[1]).toBe(first);
+
+      first
+        .querySelector(".view label")!
+        .dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
+      await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
+      const draft = input(first, ".edit", "Discard this");
+      draft.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await vi.waitFor(() => expect(first.querySelector(".view label")?.textContent).toBe("First"));
+      first
+        .querySelector(".view label")!
+        .dispatchEvent(new window.MouseEvent("dblclick", { bubbles: true }));
+      await vi.waitFor(() => expect(first.classList.contains("editing")).toBe(true));
+      input(first, ".edit", "Renamed").dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+      await vi.waitFor(() =>
+        expect(first.querySelector(".view label")?.textContent).toBe("Renamed"),
+      );
+      first.querySelector<HTMLInputElement>(".toggle")!.click();
+      await vi.waitFor(() => expect(first.classList.contains("completed")).toBe(true));
+      first.querySelector<HTMLButtonElement>(".destroy")!.click();
+      await vi.waitFor(() => expect(host.querySelectorAll(".todo-list > li")).toHaveLength(1));
+      expect(host.textContent).toContain("Second");
+    },
+  );
 
   it("uses route-derived filtering and the actual storage observer", async () => {
     const host = island("");

@@ -90,6 +90,11 @@ const inventory: ReferenceInventory = {
 };
 
 describe("documentation search", () => {
+  it("treats an absent constructor token as an empty posting list", () => {
+    const artifact = buildSearchArtifact({ ...model, guides: [], glossary: [] });
+    expect(searchDocumentation(artifact, "constructor")).toEqual([]);
+  });
+
   it("groups a module, its main type, a resolved namespace export, and its definition", () => {
     const artifact = buildSearchArtifact(model, inventory);
     const results = searchDocumentation(artifact, "RefSubject");

@@ -35,6 +35,17 @@ After.`),
     ).toEqual([]);
   });
 
+  it("uses the diagram grammar for indented metadata and repeated operator names", () => {
+    expect(
+      extractFxMarbleOperators(`\`\`\`fx-marble
+  covers: map, map, mapEffect
+  input: 1 |
+  operator: map / mapEffect
+  output: a |
+\`\`\``),
+    ).toEqual(["map", "mapEffect"]);
+  });
+
   it("reports missing, duplicate, and non-public operator names", () => {
     const report = validateFxMarbleCoverage(
       ["map", "filter"],

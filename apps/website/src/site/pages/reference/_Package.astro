@@ -1,5 +1,6 @@
 ---
 import type { ReferencePackage } from "../../../docs/Model.js";
+import Navigation from "./_Navigation.astro";
 import {
   descriptions,
   inventory,
@@ -25,7 +26,7 @@ const { pkg } = Astro.props;
   </dl>
 </header>
 <div class="reference-layout">
-  <nav class="docs-sidebar" aria-label="Reference packages">
+  <Navigation label="Reference packages">
     <div class="sidebar-group">
       <strong>Packages</strong>
       {
@@ -51,7 +52,7 @@ const { pkg } = Astro.props;
         ))
       }
     </div>
-  </nav>
+  </Navigation>
   <article class="reference-article">
     {
       pkg.moduleGroups.map((group) => (

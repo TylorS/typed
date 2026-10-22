@@ -10,9 +10,9 @@ afterEach(() => {
     host.dispatchEvent(new Event("astro:unmount"));
     host.remove();
   }
+  vi.restoreAllMocks();
   localStorage.clear();
   delete document.documentElement.dataset.theme;
-  vi.restoreAllMocks();
 });
 
 async function mount(dark = true) {
@@ -67,16 +67,16 @@ describe("Typed website theme", () => {
   });
 
   it("keeps the current page usable when storage is unavailable", async () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("Unavailable");
-    });
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    const storage = vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
       throw new Error("Unavailable");
     });
     const { button } = await mount(false);
     await expectTheme("matrix-light");
+    expect(storage).toHaveBeenCalled();
+    storage.mockClear();
     button.click();
     await expectTheme("matrix");
+    expect(storage).toHaveBeenCalled();
     const removed = vi.spyOn(window, "removeEventListener");
     window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
     await vi.waitFor(() =>
@@ -85,6 +85,45 @@ describe("Typed website theme", () => {
     window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
     await new Promise<void>((resolve) => queueMicrotask(resolve));
     await expectTheme("matrix");
+  });
+
+  it("keeps an unsaved choice after a cached return when storage is read-only", async () => {
+    localStorage.setItem("typed-theme", "matrix-light");
+    const { button } = await mount(false);
+    await expectTheme("matrix-light");
+    const storage = window.localStorage;
+    const write = vi.fn(() => {
+      throw new DOMException("Storage is full", "QuotaExceededError");
+    });
+    vi.spyOn(window, "localStorage", "get").mockReturnValue(
+      new Proxy(storage, {
+        get(target, property) {
+          if (property === "setItem") return write;
+          const value = Reflect.get(target, property, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      }),
+    );
+    button.click();
+    await expectTheme("matrix");
+    expect(write).toHaveBeenCalledWith("typed-theme", "matrix");
+    expect(localStorage.getItem("typed-theme")).toBe("matrix-light");
+
+    const removed = vi.spyOn(window, "removeEventListener");
+    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    await vi.waitFor(() =>
+      expect(removed.mock.calls.some(([type]) => type === "storage")).toBe(true),
+    );
+    const added = vi.spyOn(window, "addEventListener");
+    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    await vi.waitFor(() =>
+      expect(added.mock.calls.some(([type]) => type === "storage")).toBe(true),
+    );
+    await expectTheme("matrix");
+
+    storage.removeItem("typed-theme");
+    window.dispatchEvent(new StorageEvent("storage", { key: "typed-theme", newValue: null }));
+    await expectTheme("matrix-light");
   });
 
   it("reacquires browser preferences after a cached return and cleans up on unmount", async () => {

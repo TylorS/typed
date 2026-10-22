@@ -9,16 +9,9 @@ type ColorTheme = "matrix" | "matrix-light";
 const colorTheme = (value: string | null): ColorTheme | undefined =>
   value === "matrix" || value === "matrix-light" ? value : undefined;
 
-const savedTheme = (view: Window, fallback: ColorTheme | undefined): ColorTheme | undefined => {
-  try {
-    return colorTheme(view.localStorage.getItem("typed-theme"));
-  } catch {
-    return fallback;
-  }
-};
-
 export default component(function* () {
   const preference = yield* RefSubject.make<ColorTheme | undefined>(undefined);
+  const unsavedPreference = yield* RefSubject.make(false);
   const systemDark = yield* RefSubject.make(true);
   const theme = RefSubject.map(
     RefSubject.tuple([preference, systemDark]),
@@ -28,14 +21,21 @@ export default component(function* () {
   const attach = (element: HTMLButtonElement) => {
     const view = element.ownerDocument.defaultView!;
     const refreshPreference = Effect.gen(function* () {
-      // Unavailable storage cannot erase a choice made in this still-live page.
-      yield* RefSubject.set(preference, savedTheme(view, yield* preference));
+      let saved: ColorTheme | undefined;
+      try {
+        saved = colorTheme(view.localStorage.getItem("typed-theme"));
+      } catch {
+        return;
+      }
+      yield* RefSubject.set(preference, saved);
+      yield* RefSubject.set(unsavedPreference, false);
     });
     return whilePageActive(
       view,
       Effect.gen(function* () {
         const system = view.matchMedia("(prefers-color-scheme: dark)");
-        yield* refreshPreference;
+        // Returning to this document must not replace an unsaved choice with stale storage.
+        if (!(yield* unsavedPreference)) yield* refreshPreference;
         yield* RefSubject.set(systemDark, system.matches);
         yield* Fx.mergeAll(
           events<MediaQueryListEvent>(system, "change").pipe(
@@ -70,9 +70,11 @@ export default component(function* () {
       Effect.gen(function* () {
         const next: ColorTheme = (yield* theme) === "matrix" ? "matrix-light" : "matrix";
         yield* RefSubject.set(preference, next);
+        yield* RefSubject.set(unsavedPreference, true);
         const view = (event.currentTarget as HTMLButtonElement).ownerDocument.defaultView!;
         try {
           view.localStorage.setItem("typed-theme", next);
+          yield* RefSubject.set(unsavedPreference, false);
         } catch {
           // A storage failure never prevents a change on the current page.
         }

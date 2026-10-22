@@ -76,6 +76,53 @@ describe("site Markdown rendering", () => {
       `${(process.env.SITE_BASE ?? "/typed/").replace(/\/$/u, "")}/explore/quick-start/`,
     );
   });
+  it("applies the deployment base once and preserves URLs outside the site", () => {
+    expect(siteHref("/typed/explore/quick-start?mode=example#install", "/typed/")).toBe(
+      "/typed/explore/quick-start/?mode=example#install",
+    );
+    expect(siteHref("/typed/reference/modules/@typed/tsconfig/base.json", "/typed/")).toBe(
+      "/typed/reference/modules/@typed/tsconfig/base.json/",
+    );
+    expect(siteHref("/typed", "/typed/")).toBe("/typed/");
+    expect(siteHref("/explore/quick-start", "/")).toBe("/explore/quick-start/");
+    for (const href of ["#install", "?mode=example", "https://effect.website/", "//example.com/"]) {
+      expect(siteHref(href, "/typed/")).toBe(href);
+    }
+  });
+  it("resolves reference definitions and images inside authored links", async () => {
+    const base = (process.env.SITE_BASE ?? "/typed/").replace(/\/$/u, "");
+    const source = [
+      "[Quick Start][guide]",
+      "",
+      "[![Architecture](/diagrams/architecture.svg)](/explore/quick-start)",
+      "",
+      "[guide]: /explore/quick-start#install",
+    ].join("\n");
+    const rendered = documentFor((await renderMarkdown(source)).code);
+    expect(rendered.querySelector("a")?.getAttribute("href")).toBe(
+      `${base}/explore/quick-start/#install`,
+    );
+    expect(rendered.querySelector("a img")?.getAttribute("src")).toBe(
+      `${base}/diagrams/architecture.svg`,
+    );
+  });
+  it("preserves explicit destinations when linked labels contain known Typed symbols", async () => {
+    const rendered = documentFor(
+      (
+        await renderMarkdown(
+          "[`Fx.map`](/explore/building-fx) and [`Fx.map`][guide]\n\n[guide]: /explore/building-fx",
+        )
+      ).code,
+    );
+    const links = [...rendered.querySelectorAll("a")];
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link.textContent).toBe("Fx.map");
+      expect(link.getAttribute("href")).toBe(
+        siteHref("/explore/building-fx", process.env.SITE_BASE ?? "/typed/"),
+      );
+    }
+  });
   it("resolves authored API links consistently without rewriting fenced examples", async () => {
     const path = "/reference/%40typed%2Fui%2FMenu%23makeState";
     const prose = `[Menu setup](${path})`;

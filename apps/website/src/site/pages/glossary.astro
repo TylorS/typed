@@ -13,46 +13,43 @@ const entries = [...glossaryEntries].sort((a, b) =>
 >
   <main class="page-container" id="main-content" tabindex="-1">
     <header class="page-intro">
-      <p class="eyebrow">REFERENCE / SHARED VOCABULARY</p><h1
-        class="page-title"
-      >
-        A few useful words.
-      </h1><p>
-        Terms used across the guides and reference. Follow the links for the
-        contracts behind each one.
+      <p class="eyebrow">REFERENCE / SHARED VOCABULARY</p>
+      <h1 class="page-title">Glossary.</h1>
+      <p>
+        Terms used across the guides and API reference, with examples and links
+        to learn more.
       </p>
     </header>
     <div class="reference-layout">
       <nav class="docs-sidebar sidebar-group" aria-label="Glossary terms">
-        <h2>Terms</h2>{
-          entries.map((entry) => <a href={`#${entry.id}`}>{entry.term}</a>)
-        }
+        <h2>Terms</h2>
+        {entries.map((entry) => (
+          <a href={`#${entry.id}`}>{entry.term}</a>
+        ))}
       </nav>
       <article class="prose reference-article">
-        {
-          entries.map((entry) => (
-            <section>
-              <h2 id={entry.id}>{entry.term}</h2>
-              {entry.aliases.map((alias) => (
-                <span id={alias} />
-              ))}
-              <p>{entry.definition}</p>
-              <Markdown source={entry.details} />
-              {entry.links.length > 0 && (
-                <ul>
-                  {entry.links.map((href) => (
-                    <li>
-                      <a href={href}>
-                        {new URL(href).hostname}
-                        {new URL(href).pathname}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))
-        }
+        {entries.map((entry) => (
+          <section>
+            <h2 id={entry.id}>{entry.term}</h2>
+            {entry.aliases.map((alias) => (
+              <span id={alias} />
+            ))}
+            <p>{entry.definition}</p>
+            <Markdown source={entry.details} />
+            {entry.links.length > 0 && (
+              <ul>
+                {entry.links.map((href) => (
+                  <li>
+                    <a href={href}>
+                      {new URL(href).hostname}
+                      {new URL(href).pathname}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
       </article>
     </div>
   </main>

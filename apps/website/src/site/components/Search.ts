@@ -98,7 +98,7 @@ export default component(function* () {
       message:
         entries.length === 0
           ? `No results for “${term}”.`
-          : `${entries.length === 12 ? "Top " : ""}${entries.length} results`,
+          : `${entries.length === 12 ? "Top " : ""}${entries.length} ${entries.length === 1 ? "result" : "results"}`,
       entries,
     });
   });
@@ -107,12 +107,15 @@ export default component(function* () {
     const document = element.ownerDocument;
     const keydown = EventHandler.make(
       Effect.fn(function* (event: KeyboardEvent) {
+        if (event.defaultPrevented || event.isComposing) return;
         if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === "k") {
           event.preventDefault();
-          yield* Dialog.setOpen(state, true);
+          if ((yield* state).open)
+            element.querySelector<HTMLInputElement>("#docs-search-query")?.focus();
+          else yield* Dialog.setOpen(state, true);
           return;
         }
-        if (event.isComposing || event.altKey || event.metaKey || event.ctrlKey) return;
+        if (event.altKey || event.metaKey || event.ctrlKey) return;
         if (!(yield* state).open) return;
         const input = element.querySelector<HTMLInputElement>("#docs-search-query");
         if (input === null) return;
@@ -159,14 +162,22 @@ export default component(function* () {
 
   return html`<div ref=${attach}>
     ${Button.Button({
-      content: html`<svg class="search-trigger__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      content: html`<svg
+          class="search-trigger__icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <circle cx="10.5" cy="10.5" r="6.5" />
-          <path d="m16 16 4.5 4.5" />
-        </svg><span>Search docs</span><kbd>⌘ K</kbd>`,
+          <path d="m16 16 4.5 4.5" /></svg
+        ><span>Search docs</span><kbd>⌘ K</kbd>`,
       onclick: Dialog.setOpen(state, true),
       props: {
         class: "search-trigger btn btn-ghost",
-          "aria-label": "Search docs",
+        "aria-label": "Search docs",
+        "aria-keyshortcuts": "Control+k Meta+k",
         "aria-haspopup": "dialog",
         "aria-controls": "docs-search",
         "aria-expanded": RefSubject.map(state, ({ open }) => open),
@@ -207,13 +218,15 @@ export default component(function* () {
             value.trim()
               ? Fx.null
               : html`<nav class="search-start" aria-label="Start exploring">
-                  <a href=${siteHref("/explore/quick-start")}
+                  <a href=${siteHref("/explore/quick-start")} @click=${Dialog.close(state)}
                     >Quick Start <span>Build your first counter</span></a
                   >
-                  <a href=${siteHref("/explore/cooperative-by-design")}
+                  <a
+                    href=${siteHref("/explore/cooperative-by-design")}
+                    @click=${Dialog.close(state)}
                     >Cooperative by design <span>How the pieces fit together</span></a
                   >
-                  <a href=${siteHref("/reference")}
+                  <a href=${siteHref("/reference")} @click=${Dialog.close(state)}
                     >API reference <span>Browse packages and modules</span></a
                   >
                 </nav>`,
@@ -222,33 +235,34 @@ export default component(function* () {
             ${many(
               RefSubject.map(results, ({ entries }) => entries),
               (entry) => entry.id,
-              (entry) => html`<li class="search-result">
-                <a
-                  class="search-result-link"
-                  href=${RefSubject.map(entry, (value) => siteHref(value.href))}
-                  @click=${Dialog.close(state)}
-                >
-                  <span class="search-result-heading"
-                    ><strong>${RefSubject.map(entry, (value) => value.title)}</strong
-                    ><span class="search-kind">${RefSubject.map(entry, kindLabel)}</span></span
+              (entry) =>
+                html`<li class="search-result">
+                  <a
+                    class="search-result-link"
+                    href=${RefSubject.map(entry, (value) => siteHref(value.href))}
+                    @click=${Dialog.close(state)}
                   >
-                  <span class="search-result-meta"
-                    >${RefSubject.map(entry, (value) => value.specifier ?? value.section ?? value.kind)}</span
-                  >
-                  <span class="search-description">${RefSubject.map(entry, description)}</span>
-                </a>
-                ${Fx.switchMap(entry, (value) =>
-                  value.related?.length
-                    ? html`<div
-                        class="search-related"
-                        role="group"
-                        aria-label="More about ${value.title}"
-                      >
-                        ${value.related.map((related) => html`<a href=${siteHref(related.href)} @click=${Dialog.close(state)}>${related.destination ?? related.kind}</a>`)}
-                      </div>`
-                    : Fx.null,
-                )}
-              </li>`,
+                    <span class="search-result-heading"
+                      ><strong>${RefSubject.map(entry, (value) => value.title)}</strong
+                      ><span class="search-kind">${RefSubject.map(entry, kindLabel)}</span></span
+                    >
+                    <span class="search-result-meta"
+                      >${RefSubject.map(entry, (value) => value.specifier ?? value.section ?? value.kind)}</span
+                    >
+                    <span class="search-description">${RefSubject.map(entry, description)}</span>
+                  </a>
+                  ${Fx.switchMap(entry, (value) =>
+                    value.related?.length
+                      ? html`<div
+                          class="search-related"
+                          role="group"
+                          aria-label="More about ${value.title}"
+                        >
+                          ${value.related.map((related) => html`<a href=${siteHref(related.href)} @click=${Dialog.close(state)}>${related.destination ?? related.kind}</a>`)}
+                        </div>`
+                      : Fx.null,
+                  )}
+                </li>`,
             )}
           </ul>
         </div>

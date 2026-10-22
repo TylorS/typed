@@ -1,0 +1,16 @@
+---
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+---
+
+<nav class="docs-sidebar" aria-label={label}>
+  <slot />
+</nav>
+<details class="mobile-nav">
+  <summary>{label}</summary>
+  <nav aria-label={label}>
+    <slot />
+  </nav>
+</details>

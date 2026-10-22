@@ -4,7 +4,9 @@ import Base from "../../layouts/Base.astro";
 import { siteHref } from "../../../SiteHref.js";
 import { groupGuides } from "../../Guides.js";
 const groups = groupGuides(
-  (await getCollection("guides")).filter(({ id }) => id !== "choosing-ui-components"),
+  (await getCollection("guides")).filter(
+    ({ id }) => id !== "choosing-ui-components",
+  ),
 );
 ---
 
@@ -15,52 +17,52 @@ const groups = groupGuides(
   <main class="page-container" id="main-content" tabindex="-1">
     <header class="page-intro">
       <p class="eyebrow">EXPLORE / LEARN BY DOING</p>
-      <h1 class="page-title">Choose a task.<br />Build it with Typed.</h1>
+      <h1 class="page-title">
+        Choose a task.
+        <br />
+        Build it with Typed.
+      </h1>
       <p>
-        Each path has a finish. Start with the result you need; keep API
-        reference and implementation details close for later.
+        New to Typed? Start with the counter. Already using Effect? Choose a
+        focused path for streams, state, interfaces, or libraries.
       </p>
     </header>
     <div class="path-grid">
       <article class="path-card">
-        <p class="eyebrow">YOUR FIRST APPLICATION</p><h2>
-          Click a counter, then build TodoMVC
-        </h2>
+        <p class="eyebrow">YOUR FIRST APPLICATION</p>
+        <h2>Click a counter, then build TodoMVC</h2>
         <p>
           Start with basic TypeScript. Mount a view, derive state, then add
           keyed editing, URL filters and persistence to a client-side app.
         </p>
         <a href={siteHref("/explore/quick-start")}>Run the counter →</a>
-        <a href={siteHref("/explore/tutorial")}
-          >Already set up? Build TodoMVC →</a
-        >
+        <a href={siteHref("/explore/tutorial")}>
+          Already set up? Build TodoMVC →
+        </a>
       </article>
       <article class="path-card">
-        <p class="eyebrow">EFFECT USERS / NO DOM REQUIRED</p><h2>
-          Run push-based work
-        </h2>
+        <p class="eyebrow">EFFECT USERS / NO DOM REQUIRED</p>
+        <h2>Run push-based work</h2>
         <p>
           Bring your knowledge of Effect. Adapt a source, observe values,
-          compose work and recover from competing requests.
+          compose work, and handle errors and cancellation.
         </p>
         <a href={siteHref("/explore/fx-push-reactivity")}>Start with Fx →</a>
       </article>
       <article class="path-card">
-        <p class="eyebrow">STATE AND REQUESTS</p><h2>
-          Give a feature one model
-        </h2>
+        <p class="eyebrow">STATE AND REQUESTS</p>
+        <h2>Give a feature one model</h2>
         <p>
           Own writable state, derive live views and handle a refresh without
           losing useful data. Start after you can run an Effect.
         </p>
-        <a href={siteHref("/explore/refsubject-renderer-independent-state")}
-          >Own and derive state →</a
-        >
+        <a href={siteHref("/explore/refsubject-renderer-independent-state")}>
+          Own and derive state →
+        </a>
       </article>
       <article class="path-card">
-        <p class="eyebrow">NATIVE INTERACTION</p><h2>
-          Build a form, picker or dialog
-        </h2>
+        <p class="eyebrow">NATIVE INTERACTION</p>
+        <h2>Build a form, picker or dialog</h2>
         <p>
           Choose the interaction you need. Use a working example, then look up
           the component's specific keyboard and state contracts.
@@ -68,26 +70,26 @@ const groups = groupGuides(
         <a href={siteHref("/explore/ui")}>Choose an interface task →</a>
       </article>
       <article class="path-card">
-        <p class="eyebrow">LIBRARY AUTHORS</p><h2>Extend a capability</h2>
+        <p class="eyebrow">LIBRARY AUTHORS</p>
+        <h2>Extend a capability</h2>
         <p>
           Use Effect services and scopes to expose producers, consumers and
           shared resources while preserving your caller's dependencies.
         </p>
-        <a href={siteHref("/explore/library-developers")}
-          >Build a reusable capability →</a
-        >
+        <a href={siteHref("/explore/library-developers")}>
+          Build a reusable capability →
+        </a>
       </article>
       <article class="path-card">
-        <p class="eyebrow">OPTIONAL / SERVER HANDOFF</p><h2>
-          Render and adopt HTML
-        </h2>
+        <p class="eyebrow">OPTIONAL / SERVER HANDOFF</p>
+        <h2>Render and adopt HTML</h2>
         <p>
           After the counter, serve a finite HTML response, restore state and
           retain the server's DOM when the browser starts.
         </p>
-        <a href={siteHref("/explore/counter/server-html")}
-          >Take the counter to the server →</a
-        >
+        <a href={siteHref("/explore/counter/server-html")}>
+          Take the counter to the server →
+        </a>
       </article>
     </div>
     <section class="lookup" aria-labelledby="lookup-title">
@@ -96,77 +98,72 @@ const groups = groupGuides(
         <h2 id="lookup-title">Find a specific answer</h2>
       </header>
       <nav class="lookup-links" aria-label="Reference and practical guides">
-        {
+        {[
           [
-            [
-              "API reference",
-              "Signatures, examples and public contracts.",
-              "/reference",
-            ],
-            [
-              "Fx operator atlas",
-              "Compare values, timing and cancellation.",
-              "/explore/fx-operator-atlas",
-            ],
-            [
-              "UI Storybook",
-              "Try controls and keyboard interactions.",
-              "/explore/storybook",
-            ],
-            [
-              "Integration recipes",
-              "Connect Typed to your existing stack.",
-              "/integrate",
-            ],
-          ].map(([title, description, href]) => (
-            <a href={siteHref(href!)}>
-              <strong>{title}</strong>
-              <span class="lookup-description">{description}</span>
-              <span class="lookup-arrow" aria-hidden="true">
-                ↗
-              </span>
-            </a>
-          ))
-        }
+            "API reference",
+            "Signatures, examples and public contracts.",
+            "/reference",
+          ],
+          [
+            "Fx operator atlas",
+            "Compare values, timing and cancellation.",
+            "/explore/fx-operator-atlas",
+          ],
+          [
+            "UI Storybook",
+            "Try controls and keyboard interactions.",
+            "/explore/storybook",
+          ],
+          [
+            "Integration recipes",
+            "Connect Typed to your existing stack.",
+            "/integrate",
+          ],
+        ].map(([title, description, href]) => (
+          <a href={siteHref(href!)}>
+            <strong>{title}</strong>
+            <span class="lookup-description">{description}</span>
+            <span class="lookup-arrow" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ))}
       </nav>
       <aside class="background-reading" aria-label="Background reading">
         <span>Background reading</span>
-        <a href={siteHref("/explore/cooperative-by-design")}
-          >Cooperative by design</a
-        >
+        <a href={siteHref("/explore/cooperative-by-design")}>
+          Cooperative by design
+        </a>
         <a href="https://effect.website/docs/v4/">Effect fundamentals ↗</a>
       </aside>
     </section>
     <section class="topic-browser" aria-labelledby="topics-title">
       <header class="explore-section-heading">
         <h2 id="topics-title">Browse all topics</h2>
-        <p>Guides, deep dives and reference, grouped by topic.</p>
+        <p>Guides and deep dives, grouped by topic.</p>
       </header>
       <div class="topic-groups">
-        {
-          [...groups].map(([section, entries]) => (
-            <details class="topic-group">
-              <summary>
-                <span class="topic-toggle" aria-hidden="true">
-                  +
-                </span>
-                <span>{section}</span>
-                <span class="topic-count">
-                  {entries.length}{" "}
-                  {entries.length === 1 ? "article" : "articles"}
-                </span>
-              </summary>
-              <div class="guide-list">
-                {entries.map((entry) => (
-                  <a href={siteHref(`/explore/${entry.id}`)}>
-                    <strong>{entry.data.title} ↗</strong>
-                    <p>{entry.data.summary}</p>
-                  </a>
-                ))}
-              </div>
-            </details>
-          ))
-        }
+        {groups.map(([section, entries]) => (
+          <details class="topic-group">
+            <summary>
+              <span class="topic-toggle" aria-hidden="true">
+                +
+              </span>
+              <span>{section}</span>
+              <span class="topic-count">
+                {entries.length} {entries.length === 1 ? "article" : "articles"}
+              </span>
+            </summary>
+            <div class="guide-list">
+              {entries.map((entry) => (
+                <a href={siteHref(`/explore/${entry.id}`)}>
+                  <strong>{entry.data.title} ↗</strong>
+                  <p>{entry.data.summary}</p>
+                </a>
+              ))}
+            </div>
+          </details>
+        ))}
       </div>
     </section>
   </main>

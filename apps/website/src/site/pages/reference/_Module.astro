@@ -1,6 +1,7 @@
 ---
 import type { ReferenceModule } from "../../../docs/Model.js";
 import Markdown from "../../components/Markdown.astro";
+import Navigation from "./_Navigation.astro";
 import { uiGuidePath } from "../../Guides.js";
 import { siteHref } from "../../../SiteHref.js";
 import {
@@ -26,7 +27,13 @@ const uiGuide = uiGuidePath(mod.consumerSpecifier);
       mod.packageVersion
     }
   </p>
-  <h1 class="page-title">{mod.consumerSpecifier}</h1>
+  <h1 class="page-title">
+    {
+      mod.consumerSpecifier.split("/").map((part, index) => (
+        <>{index > 0 && "/"}{index > 0 && <wbr />}{part}</>
+      ))
+    }
+  </h1>
   <p class="reference-summary">
     {mod.uniqueExportCount} unique exports available through this public import path,
     including their members and aliases.
@@ -65,7 +72,7 @@ const uiGuide = uiGuidePath(mod.consumerSpecifier);
   </div>
 </header>
 <div class="reference-layout">
-  <nav class="docs-sidebar" aria-label="Module navigation">
+  <Navigation label="Module navigation">
     <div class="sidebar-group">
       <strong>On this page</strong>
       {
@@ -93,7 +100,7 @@ const uiGuide = uiGuidePath(mod.consumerSpecifier);
         ))
       }
     </details>
-  </nav>
+  </Navigation>
   <article class="reference-article">
     {
       mod.categories.map((category) => (

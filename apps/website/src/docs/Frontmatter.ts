@@ -15,10 +15,13 @@ const splitArray = (value: string): Array<string> => {
   const parts: Array<string> = [];
   let current = "";
   let quote: "'" | '"' | undefined;
+  let escaped = false;
   for (const character of content) {
     if (quote !== undefined) {
       current += character;
-      if (character === quote) quote = undefined;
+      if (escaped) escaped = false;
+      else if (quote === '"' && character === "\\") escaped = true;
+      else if (character === quote) quote = undefined;
     } else if (character === "'" || character === '"') {
       quote = character;
       current += character;
@@ -31,6 +34,32 @@ const splitArray = (value: string): Array<string> => {
   }
   parts.push(current.trim());
   return parts.map((part) => parseValue(part) as string);
+};
+
+const markdownHeadings = (body: string): ReadonlyArray<string> => {
+  const headings: Array<string> = [];
+  let fence: { readonly marker: string; readonly length: number } | undefined;
+  for (const line of body.split(/\r?\n/u)) {
+    const delimiter = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line);
+    if (fence !== undefined) {
+      if (
+        delimiter !== null &&
+        delimiter[1]![0] === fence.marker &&
+        delimiter[1]!.length >= fence.length &&
+        delimiter[2]!.trim() === ""
+      ) {
+        fence = undefined;
+      }
+      continue;
+    }
+    if (delimiter !== null) {
+      fence = { marker: delimiter[1]![0]!, length: delimiter[1]!.length };
+      continue;
+    }
+    const heading = /^##\s+(.+)$/u.exec(line);
+    if (heading !== null) headings.push(heading[1]!.trim());
+  }
+  return headings;
 };
 
 const parseValue = (value: string): unknown => {
@@ -165,7 +194,7 @@ export const parseGuideDocumentation = (fileName: string, source: string): Guide
     section: frontmatter.section,
     kind: frontmatter.kind,
     order: frontmatter.order,
-    headings: Array.from(parsed.body.matchAll(/^##\s+(.+)$/gmu), ([, heading]) => heading!.trim()),
+    headings: markdownHeadings(parsed.body),
     body: parsed.body,
     relations: [],
   };
@@ -185,7 +214,7 @@ export const parseRecipeDocumentation = (fileName: string, source: string): Reci
     slug: frontmatter.slug,
     title: frontmatter.title,
     summary: frontmatter.summary,
-    headings: Array.from(parsed.body.matchAll(/^##\s+(.+)$/gmu), ([, heading]) => heading!.trim()),
+    headings: markdownHeadings(parsed.body),
     body: parsed.body,
   };
 };

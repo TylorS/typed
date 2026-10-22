@@ -12,51 +12,49 @@ const families = groupRecipes(await getCollection("recipes"));
 >
   <main class="page-container" id="main-content" tabindex="-1">
     <header class="page-intro">
-      <p class="eyebrow">INTEGRATE / KEEP WHAT WORKS</p><h1 class="page-title">
-        Bring your stack.
-      </h1><p>
-        Use Typed for one island or build the whole interface. Each integration
-        makes the same decisions explicit: who creates the output, who updates
-        it, and who cleans it up.
+      <p class="eyebrow">INTEGRATE / KEEP WHAT WORKS</p>
+      <h1 class="page-title">Bring your stack.</h1>
+      <p>
+        Choose your framework, rendering target, or browser API. Each guide
+        explains who creates the output, who updates it, and who cleans it up.
       </p>
     </header>
-    {
-      families.map(({ title, description, entries }) => (
-        <section class="integration-section">
-          <div class="section-heading">
-            <>
-              <div>
-                <h2>{title}</h2>
-              </div>
-              <p>{description}</p>
-            </>
+    {families.map(({ title, description, entries }) => (
+      <section class="integration-section">
+        <div class="section-heading">
+          <div>
+            <h2>{title}</h2>
           </div>
-          <div class="path-grid">
-            {entries.map((entry) => (
-              <article class="path-card">
-                <h3>{entry.data.title}</h3>
-                <p>{entry.data.summary}</p>
-                <a href={siteHref(`/integrate/${entry.data.slug}`)}>
-                  Open the integration →
-                </a>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))
-    }
+          <p>{description}</p>
+        </div>
+        <div class="path-grid">
+          {entries.map((entry) => (
+            <article class="path-card">
+              <h3>{entry.data.title}</h3>
+              <p>{entry.data.summary}</p>
+              <a
+                href={siteHref(`/integrate/${entry.data.slug}`)}
+                aria-label={`Read the guide: ${entry.data.title}`}
+              >
+                Read the guide <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
     <section class="integration-section">
       <article class="path-card">
         <p class="eyebrow">STREAMING SSR</p>
         <h2>Third-party components can keep streaming.</h2>
         <p>
           React and Vue forward their server-rendered chunks directly through
-          Typed. See what streams, what buffers, and how the integration direction
-          changes the result.
+          Typed. See what streams, what buffers, and how the integration
+          direction changes the result.
         </p>
-        <a href={siteHref("/explore/streaming-framework-integrations")}
-          >Compare streaming support →</a
-        >
+        <a href={siteHref("/explore/streaming-framework-integrations")}>
+          Compare streaming support →
+        </a>
       </article>
     </section>
   </main>

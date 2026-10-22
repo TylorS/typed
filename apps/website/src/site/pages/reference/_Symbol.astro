@@ -4,6 +4,7 @@ import type {
   SymbolDocumentation,
 } from "../../../docs/Model.js";
 import Markdown from "../../components/Markdown.astro";
+import Navigation from "./_Navigation.astro";
 import {
   findFxOperatorDiagram,
   renderFxOperatorDiagramMarkdown,
@@ -148,9 +149,10 @@ const relationHref = (kind: string, target: string) =>
   }
 </header>
 <div class="reference-layout">
-  <nav class="docs-sidebar" aria-label="Symbol navigation">
+  <Navigation label="Symbol navigation">
     <div class="sidebar-group">
       <strong>On this page</strong>
+      {diagram && <a href="#timeline">Execution timeline</a>}
       <a href="#import"
         >{
           exposure.recordKind === "resource"
@@ -163,7 +165,6 @@ const relationHref = (kind: string, target: string) =>
           exposure.recordKind === "resource" ? "Configuration" : "Signatures"
         }</a
       >
-      {diagram && <a href="#timeline">Execution timeline</a>}
       {
         sections.map((section) => (
           <a href={`#${section.id}`}>{section.title}</a>
@@ -172,6 +173,7 @@ const relationHref = (kind: string, target: string) =>
       {symbol.examples.length > 0 && <a href="#examples">Examples</a>}
       {members.length > 0 && <a href="#members">Members</a>}
       {alternatives.length > 0 && <a href="#aliases">Other public imports</a>}
+      {symbol.relations.length > 0 && <a href="#related">Related reading</a>}
       <a href="#source">Source</a>
     </div>
     <div class="sidebar-group">
@@ -181,7 +183,7 @@ const relationHref = (kind: string, target: string) =>
       >
       {parent && <a href={symbolHref(parent.id)}>{parent.qualifiedName}</a>}
     </div>
-  </nav>
+  </Navigation>
   <article class="reference-article prose">
     {
       diagram && (
@@ -322,7 +324,7 @@ const relationHref = (kind: string, target: string) =>
     }
     {
       symbol.relations.length > 0 && (
-        <section>
+        <section id="related">
           <h2>Related reading</h2>
           <ul>
             {symbol.relations.map((relation) => (

@@ -34,6 +34,8 @@ export const sidebarNavigation = (document: Document): Effect.Effect<void> =>
           const selected = container.querySelector<HTMLElement>('[aria-current="page"]');
           if (!selected || container.clientHeight === 0) continue;
           const item = selected.getBoundingClientRect();
+          // A collapsed group has no visible entry to reveal.
+          if (item.height === 0) continue;
           const viewport = container.getBoundingClientRect();
           if (item.top < viewport.top || item.bottom > viewport.bottom) {
             container.scrollTop +=
@@ -52,7 +54,11 @@ export const sidebarNavigation = (document: Document): Effect.Effect<void> =>
         Fx.observe(
           events(document, "toggle", { capture: true }).pipe(
             Fx.filter(
-              (event) => event.target instanceof window.HTMLDetailsElement && event.target.open,
+              (event) =>
+                event.target instanceof window.HTMLDetailsElement &&
+                event.target.open &&
+                event.target.closest("[data-docs-navigation], .mobile-nav") !== null &&
+                event.target.querySelector('[aria-current="page"]') !== null,
             ),
           ),
           () => reveal,

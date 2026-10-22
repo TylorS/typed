@@ -32,14 +32,14 @@ const exposures = new Set(referenceInventory.exposures.map(({ id }) => id));
 function typedMarkdown() {
   return (tree: Node) => {
     const base = (process.env.SITE_BASE ?? "/typed/").replace(/\/$/u, "");
-    const visit = (node: Node): void => {
+    const visit = (node: Node, insideLink = false): void => {
       if (node.type === "code" && node.lang === "fx-marble") {
         const diagram = renderFxMarble(node.value ?? "");
         if (diagram === undefined) throw new Error("Invalid Fx marble diagram");
         node.type = "html";
         node.value = diagram;
       }
-      if (node.type === "inlineCode" && node.value) {
+      if (!insideLink && node.type === "inlineCode" && node.value) {
         const [namespace, ...members] = node.value.split(".");
         const specifier = namespaces[namespace!];
         const id = specifier && `${specifier}#${members.join(".")}`;
@@ -57,16 +57,14 @@ function typedMarkdown() {
         }
       }
       if (
-        (node.type === "link" || node.type === "image") &&
+        (node.type === "link" || node.type === "image" || node.type === "definition") &&
         node.url?.startsWith("/") &&
         !node.url.startsWith("//")
       ) {
-        node.url = canonicalReferencePath(node.url);
-        if (!base || (node.url !== base && !node.url.startsWith(`${base}/`)))
-          node.url = siteHref(node.url, base);
+        node.url = siteHref(canonicalReferencePath(node.url), base);
       }
-      // A generated inline-code link already contains its final leaf.
-      if (node.type !== "link") node.children?.forEach(visit);
+      const linked = insideLink || node.type === "link" || node.type === "linkReference";
+      node.children?.forEach((child) => visit(child, linked));
     };
     visit(tree);
   };

@@ -71,21 +71,31 @@ test(
     // Shiki emits light colors inline and dark colors as custom properties.
     // Both must survive the site's theme styles and switching back again.
     for (const theme of ["matrix-light", "matrix", "matrix-light", "matrix"]) {
-      await page.evaluate((theme) => { document.documentElement.dataset.theme = theme; }, theme);
-      const highlights = await page.locator(".astro-code span[style]").evaluateAll((tokens, theme) =>
-        tokens.flatMap((token) => {
-          if (!(token instanceof HTMLElement)) return [];
-          const color = theme === "matrix"
-            ? token.style.getPropertyValue("--shiki-dark")
-            : token.style.color;
-          if (!color) return [];
-          const expected = document.createElement("span");
-          expected.style.color = color;
-          return [{ actual: getComputedStyle(token).color, expected: expected.style.color }];
-        }), theme);
+      await page.evaluate((theme) => {
+        document.documentElement.dataset.theme = theme;
+      }, theme);
+      const highlights = await page.locator(".astro-code span[style]").evaluateAll(
+        (tokens, theme) =>
+          tokens.flatMap((token) => {
+            if (!(token instanceof HTMLElement)) return [];
+            const color =
+              theme === "matrix" ? token.style.getPropertyValue("--shiki-dark") : token.style.color;
+            if (!color) return [];
+            const expected = document.createElement("span");
+            expected.style.color = color;
+            return [{ actual: getComputedStyle(token).color, expected: expected.style.color }];
+          }),
+        theme,
+      );
       assert(highlights.length > 0, `${theme}: highlighted tokens exist`);
-      assert(new Set(highlights.map(({ actual }) => actual)).size > 2, `${theme}: distinct syntax colors`);
-      assert(highlights.every(({ actual, expected }) => actual === expected), `${theme}: token colors match Shiki`);
+      assert(
+        new Set(highlights.map(({ actual }) => actual)).size > 2,
+        `${theme}: distinct syntax colors`,
+      );
+      assert(
+        highlights.every(({ actual, expected }) => actual === expected),
+        `${theme}: token colors match Shiki`,
+      );
     }
     await page.getByRole("button", { name: "Switch color theme" }).click();
     await page.waitForFunction(() => document.documentElement.dataset.theme === "matrix-light");
@@ -188,17 +198,27 @@ test(
         colorScheme: scheme,
       });
       mobile.on("pageerror", (error) => errors.push(error.message));
-      for (const route of [
-        "",
-        "explore/application-developers/",
-        "reference/modules/@typed/template/",
-      ]) {
-        await mobile.goto(`${origin}${base}/${route}`);
-        assert.equal(
-          await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-          true,
-          `${scheme} ${route} must not overflow`,
-        );
+      for (const width of [320, 390, 421, 540, 800]) {
+        await mobile.setViewportSize({ width, height: 844 });
+        for (const route of [
+          "",
+          "explore/application-developers/",
+          "reference/modules/@typed/template/",
+        ]) {
+          await mobile.goto(`${origin}${base}/${route}`);
+          assert.equal(
+            await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+            true,
+            `${scheme} ${route} must not overflow at ${width}px`,
+          );
+          for (const link of await mobile
+            .getByRole("navigation", { name: "Primary navigation" })
+            .getByRole("link")
+            .all()) {
+            const bounds = await link.boundingBox();
+            assert.ok(bounds && bounds.height >= 44, "navigation links need usable touch targets");
+          }
+        }
       }
       assert.equal(
         await mobile.locator("html").getAttribute("data-theme"),
